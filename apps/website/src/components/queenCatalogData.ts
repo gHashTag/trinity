@@ -1,7 +1,7 @@
 import {HEX_R,S_CELL,hexCellCount,hexRingStart,hexRingsFor,hexToWorld,spiralAxial,hexIndexAt} from './queenHud.ts';
 import {keyWorldAtlas,type UniverseAtlas} from '../lib/queenUniverseAtlas.ts';
 import type {WorldIssue} from './queenRepositoryWorld.ts';
-import {hiveFocusZoom} from './queenHiveDisplay.ts';
+import {HIVE_ZOOM_CEILING,hiveFocusZoom,hiveMaxZoom} from './queenHiveDisplay.ts';
 
 export type CatalogCell = {kind:'spec';key:string;specId:string;placement:'core'|'source';sourceRepo?:string;title:string;sources:string[];count:1}
   | {kind:'repo';key:string;title:string;repo:string;count:number;open:number|null};
@@ -110,22 +110,30 @@ export function catalogSpecSelection(map:CatalogHive,index:number|null):{indices
   return {indices,links:(map.specLinks??[]).filter(([a,b])=>selected.has(a)&&selected.has(b))};
 }
 
-export function catalogConnectionView(map:CatalogHive,index:number,halfWidth:number,halfHeight:number,inset={right:0,bottom:0}) {
+const smallestScale=new WeakMap<CatalogHive,number>();
+/** The zoom ceiling of this map when zoom 1 spans 2*halfWidth world units across `width` pixels (see hiveMaxZoom). */
+export function catalogMaxZoom(map:CatalogHive,halfWidth:number,width:number):number {
+  let scale=smallestScale.get(map);
+  if(scale===undefined){scale=Infinity;for(const p of map.positions??[])if(p.scale<scale)scale=p.scale;if(!Number.isFinite(scale))scale=1;smallestScale.set(map,scale);}
+  return hiveMaxZoom(S_CELL*scale*width/(halfWidth*2));
+}
+
+export function catalogConnectionView(map:CatalogHive,index:number,halfWidth:number,halfHeight:number,inset={right:0,bottom:0},maxZoom=HIVE_ZOOM_CEILING) {
   const {indices}=catalogSpecSelection(map,index),points=indices.flatMap(i=>map.positions?.[i]?[map.positions[i]]:[]);
   if(!points.length)return null;
   const minX=Math.min(...points.map(p=>p.x-HEX_R*p.scale)),maxX=Math.max(...points.map(p=>p.x+HEX_R*p.scale));
   const minY=Math.min(...points.map(p=>p.y-HEX_R*p.scale)),maxY=Math.max(...points.map(p=>p.y+HEX_R*p.scale));
-  const zoom=Math.min(128,Math.max(.05,Math.min(halfWidth*2*(1-inset.right)/(maxX-minX+S_CELL),halfHeight*2*(1-inset.bottom)/(maxY-minY+S_CELL))*.78));
+  const zoom=Math.min(maxZoom,Math.max(.05,Math.min(halfWidth*2*(1-inset.right)/(maxX-minX+S_CELL),halfHeight*2*(1-inset.bottom)/(maxY-minY+S_CELL))*.78));
   return {x:(minX+maxX)/2+inset.right*halfWidth/zoom,y:(minY+maxY)/2-inset.bottom*halfHeight/zoom,zoom};
 }
 
 /** Region and cell close-ups share the exact camera sizing contract on desktop and mobile. */
 export function catalogFocusView(map:CatalogHive,index:number,halfWidth:number,halfHeight:number,width:number,height:number,inset={right:0,bottom:0}) {
   const position=map.positions?.[index];if(!position)return null;
-  const region=map.regions?.find(r=>r.portalIndex===index);
+  const region=map.regions?.find(r=>r.portalIndex===index),maxZoom=catalogMaxZoom(map,halfWidth,width);
   const zoom=region?
-    Math.min(128,Math.max(.5,Math.min(halfWidth,halfHeight)/(region.focusRadius*1.12))):
-    hiveFocusZoom(S_CELL*position.scale*width/(halfWidth*2),width*(1-inset.right),height*(1-inset.bottom));
+    Math.min(maxZoom,Math.max(.5,Math.min(halfWidth,halfHeight)/(region.focusRadius*1.12))):
+    hiveFocusZoom(S_CELL*position.scale*width/(halfWidth*2),width*(1-inset.right),height*(1-inset.bottom),maxZoom);
   return {x:(region?.x??position.x)+(region?0:inset.right*halfWidth/zoom),y:(region?.y??position.y)-(region?0:inset.bottom*halfHeight/zoom),zoom};
 }
 

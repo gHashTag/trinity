@@ -16,7 +16,7 @@ use tritype-base::usize;
 // ============================================================================
 
 /// JSON-RPC version string
-pub const JSON_RPC_VERSION : [6]u8 = "2.0";
+pub const JSON_RPC_VERSION : []const u8 = "2.0";
 
 /// Default buffer size for message encoding
 pub const DEFAULT_BUFFER_SIZE : usize = 4096;
@@ -25,46 +25,46 @@ pub const DEFAULT_BUFFER_SIZE : usize = 4096;
 pub const MAX_MESSAGE_LENGTH : usize = 10485760;
 
 /// Request method for initialize
-pub const METHOD_INITIALIZE : [10]u8 = "initialize";
+pub const METHOD_INITIALIZE : []const u8 = "initialize";
 
 /// Request method for initialized
-pub const METHOD_INITIALIZED : [11]u8 = "initialized";
+pub const METHOD_INITIALIZED : []const u8 = "initialized";
 
 /// Request method for shutdown
-pub const METHOD_SHUTDOWN : [8]u8 = "shutdown";
+pub const METHOD_SHUTDOWN : []const u8 = "shutdown";
 
 /// Request method for exit
-pub const METHOD_EXIT : [4]u8 = "exit";
+pub const METHOD_EXIT : []const u8 = "exit";
 
 /// Request method for textDocument/didOpen
-pub const METHOD_DID_OPEN : [20]u8 = "textDocument/didOpen";
+pub const METHOD_DID_OPEN : []const u8 = "textDocument/didOpen";
 
 /// Request method for textDocument/didChange
-pub const METHOD_DID_CHANGE : [21]u8 = "textDocument/didChange";
+pub const METHOD_DID_CHANGE : []const u8 = "textDocument/didChange";
 
 /// Request method for textDocument/didClose
-pub const METHOD_DID_CLOSE : [20]u8 = "textDocument/didClose";
+pub const METHOD_DID_CLOSE : []const u8 = "textDocument/didClose";
 
 /// Request method for textDocument/completion
-pub const METHOD_COMPLETION : [21]u8 = "textDocument/completion";
+pub const METHOD_COMPLETION : []const u8 = "textDocument/completion";
 
 /// Request method for textDocument/hover
-pub const METHOD_HOVER : [17]u8 = "textDocument/hover";
+pub const METHOD_HOVER : []const u8 = "textDocument/hover";
 
 /// Request method for textDocument/definition
-pub const METHOD_DEFINITION : [23]u8 = "textDocument/definition";
+pub const METHOD_DEFINITION : []const u8 = "textDocument/definition";
 
 /// Request method for textDocument/documentSymbol
-pub const METHOD_DOCUMENT_SYMBOL : [24]u8 = "textDocument/documentSymbol";
+pub const METHOD_DOCUMENT_SYMBOL : []const u8 = "textDocument/documentSymbol";
 
 /// Request method for workspace/symbol
-pub const METHOD_WORKSPACE_SYMBOL : [16]u8 = "workspace/symbol";
+pub const METHOD_WORKSPACE_SYMBOL : []const u8 = "workspace/symbol";
 
 /// Request method for textDocument/codeAction
-pub const METHOD_CODE_ACTION : [21]u8 = "textDocument/codeAction";
+pub const METHOD_CODE_ACTION : []const u8 = "textDocument/codeAction";
 
 /// Request method for textDocument/rename
-pub const METHOD_RENAME : [17]u8 = "textDocument/rename";
+pub const METHOD_RENAME : []const u8 = "textDocument/rename";
 
 // ============================================================================
 // Types
@@ -355,7 +355,7 @@ test "lsp_response_error_create" {
 
 test "lsp_notification_create" {
     const notif = notification_create("test", "");
-    try std.testing.expectEqual(@as(usize, notif.method.len), @as(usize, 4));
+    try std.testing.expect(std.mem.eql(u8, notif.method, "test"));
 }
 
 test "lsp_json_rpc_error_create" {
@@ -370,17 +370,17 @@ test "lsp_message_buffer_create" {
 
 test "lsp_initialize_request_create" {
     const req = initialize_request_create(1, "{}");
-    try std.testing.expectEqual(@as(usize, req.method.len), @as(usize, 10));
+    try std.testing.expect(std.mem.eql(u8, req.method, METHOD_INITIALIZE));
 }
 
 test "lsp_shutdown_request_create" {
     const req = shutdown_request_create(1);
-    try std.testing.expectEqual(@as(usize, req.method.len), @as(usize, 8));
+    try std.testing.expect(std.mem.eql(u8, req.method, METHOD_SHUTDOWN));
 }
 
 test "lsp_completion_request_create" {
     const req = completion_request_create(1, "{}");
-    try std.testing.expectEqual(@as(usize, req.method.len), @as(usize, 21));
+    try std.testing.expect(std.mem.eql(u8, req.method, METHOD_COMPLETION));
 }
 
 test "lsp_response_is_success" {
@@ -396,7 +396,7 @@ test "lsp_response_has_error" {
 
 test "lsp_message_type_to_string" {
     const str = message_type_to_string(.request);
-    try std.testing.expectEqual(@as(usize, str.len), @as(usize, 7));
+    try std.testing.expect(std.mem.eql(u8, str, "request"));
 }
 
 test "lsp_connection_is_active" {
@@ -406,7 +406,7 @@ test "lsp_connection_is_active" {
 
 test "lsp_connection_state_to_string" {
     const str = connection_state_to_string(.connected);
-    try std.testing.expectEqual(@as(usize, str.len), @as(usize, 9));
+    try std.testing.expect(std.mem.eql(u8, str, "connected"));
 }
 
 test "lsp_transport_supports_duplex" {
@@ -425,8 +425,8 @@ invariant json_rpc_version_constant {
 
 invariant message_type_in_range {
     // MessageType is in [0, 3]
-    @compileAssert(@as(u8, MessageType.request) == 0);
-    @compileAssert(@as(u8, MessageType.error) == 3);
+    @compileAssert(@intFromEnum(MessageType.request) == 0);
+    @compileAssert(@intFromEnum(MessageType.error) == 3);
 }
 
 invariant request_has_id {
@@ -451,8 +451,8 @@ invariant transport_type_valid {
 
 invariant connection_state_in_range {
     // ConnectionState is in [0, 3]
-    @compileAssert(@as(u8, ConnectionState.disconnected) == 0);
-    @compileAssert(@as(u8, ConnectionState.error) == 3);
+    @compileAssert(@intFromEnum(ConnectionState.disconnected) == 0);
+    @compileAssert(@intFromEnum(ConnectionState.error) == 3);
 }
 
 invariant json_rpc_error_has_code {

@@ -32,7 +32,10 @@ module validation_rules {
 
         if (has_test) {
             // Check test blocks are not empty
-            for (spec.test_blocks) |test_block| {
+            // (Zig `for (xs) |x|` loops are written as indexed while loops.)
+            var k: usize = 0;
+            while (k < spec.test_blocks.len) : (k += 1) {
+                const test_block = spec.test_blocks[k];
                 if (test_block.statements.len == 0) {
                     return ValidationResult{
                         .valid = false,
@@ -45,7 +48,9 @@ module validation_rules {
 
         if (has_invariant) {
             // Check invariants have assertions
-            for (spec.invariant_blocks) |inv_block| {
+            var k: usize = 0;
+            while (k < spec.invariant_blocks.len) : (k += 1) {
+                const inv_block = spec.invariant_blocks[k];
                 if (inv_block.statements.len == 0) {
                     return ValidationResult{
                         .valid = false,
@@ -286,229 +291,266 @@ module validation_rules {
 // ═══════════════════════════════════════════════════════════════════════════════════════════
 // TDD-Inside-Spec: Tests and Invariants for Validation Rules
 // ═══════════════════════════════════════════════════════════════════════════════════════════
+// (Blocks were keyword-style with Zig statements; now brace form:
+// `try std.testing.expect(x)` -> `assert x`, `validation_rules.f` -> `f`
+// (same module), and each bench's `target:` line is kept as a comment.)
 
-test validate_tdd_contract_passes_with_tests
-    const spec_with_tests = Spec{ .test_blocks = &[_]TestBlock{{.statements = &[_]u8{}}} };
-    const result = validation_rules.validate_tdd_contract(spec_with_tests);
-    try std.testing.expect(result.valid == true);
+// (Zig anonymous element literals `{.statements = ...}` inside the typed
+// arrays below are written with their type name: `TestBlock{ ... }`.)
+test validate_tdd_contract_passes_with_tests {
+    const spec_with_tests = Spec{ .test_blocks = &[_]TestBlock{ TestBlock{ .statements = &[_]u8{} } } };
+    const result = validate_tdd_contract(spec_with_tests);
+    assert result.valid == true;
+}
 
-test validate_tdd_contract_passes_with_invariants
-    const spec_with_invariants = Spec{ .invariant_blocks = &[_]InvariantBlock{{.statements = &[_]u8{}}} };
-    const result = validation_rules.validate_tdd_contract(spec_with_invariants);
-    try std.testing.expect(result.valid == true);
+test validate_tdd_contract_passes_with_invariants {
+    const spec_with_invariants = Spec{ .invariant_blocks = &[_]InvariantBlock{ InvariantBlock{ .statements = &[_]u8{} } } };
+    const result = validate_tdd_contract(spec_with_invariants);
+    assert result.valid == true;
+}
 
-test validate_tdd_contract_fails_without_tests_or_invariants
+test validate_tdd_contract_fails_without_tests_or_invariants {
     const spec_empty = Spec{ .test_blocks = &[_]TestBlock{}, .invariant_blocks = &[_]InvariantBlock{} };
-    const result = validation_rules.validate_tdd_contract(spec_empty);
-    try std.testing.expect(result.valid == false);
+    const result = validate_tdd_contract(spec_empty);
+    assert result.valid == false;
+}
 
-test validate_tdd_contract_fails_with_empty_test_block
-    const spec_empty_test = Spec{ .test_blocks = &[_]TestBlock{{.statements = &[_]u8{}}} };
-    const result = validation_rules.validate_tdd_contract(spec_empty_test);
-    try std.testing.expect(result.valid == false);
+test validate_tdd_contract_fails_with_empty_test_block {
+    const spec_empty_test = Spec{ .test_blocks = &[_]TestBlock{ TestBlock{ .statements = &[_]u8{} } } };
+    const result = validate_tdd_contract(spec_empty_test);
+    assert result.valid == false;
+}
 
-test validate_language_policy_passes_ascii_only
+test validate_language_policy_passes_ascii_only {
     const spec_ascii = Spec{ .path = "specs/test.t27", .content = "test content" };
-    const result = validation_rules.validate_language_policy(spec_ascii);
-    try std.testing.expect(result.valid == true);
+    const result = validate_language_policy(spec_ascii);
+    assert result.valid == true;
+}
 
-test validate_language_policy_passes_in_docs
+test validate_language_policy_passes_in_docs {
     const spec_docs = Spec{ .path = "docs/test.md", .content = "test" };
-    const result = validation_rules.validate_language_policy(spec_docs);
-    try std.testing.expect(result.valid == true);
+    const result = validate_language_policy(spec_docs);
+    assert result.valid == true;
+}
 
-test validate_language_policy_fails_cyrillic_in_source
+test validate_language_policy_fails_cyrillic_in_source {
     const spec_cyrillic = Spec{ .path = "specs/test.t27", .content = "test" };
     _ = spec_cyrillic;
     // Note: actual Cyrillic check would use contains_cyrillic
     // For now, skip this test since we can't easily embed Cyrillic in test
-    try std.testing.expect(true);
+    assert true;
+}
 
-test validate_generated_header_passes_with_header
-    const header =
-        \\// This file is generated from specs/test.t27
-        \\// DO NOT EDIT - Changes will be overwritten
-        \\// Generated at: 2026-04-04T00:00:00Z
-        \\// Source spec: specs/test.t27
-        \\pub fn test() {}
-    ;
-    const result = validation_rules.validate_generated_header("test.zig", header);
-    try std.testing.expect(result.valid == true);
+test validate_generated_header_passes_with_header {
+    // (Zig `\\` multi-line string written as one literal with \n
+    // separators -- the same five lines, no trailing newline.)
+    const header = "// This file is generated from specs/test.t27\n// DO NOT EDIT - Changes will be overwritten\n// Generated at: 2026-04-04T00:00:00Z\n// Source spec: specs/test.t27\npub fn test() {}";
+    const result = validate_generated_header("test.zig", header);
+    assert result.valid == true;
+}
 
-test validate_generated_header_fails_without_header
+test validate_generated_header_fails_without_header {
     const no_header = "pub fn test() {}";
-    const result = validation_rules.validate_generated_header("test.zig", no_header);
-    try std.testing.expect(result.valid == false);
+    const result = validate_generated_header("test.zig", no_header);
+    assert result.valid == false;
+}
 
-test validate_generated_header_fails_missing_do_not_edit
-    const no_warning =
-        \\// This file is generated from specs/test.t27
-        \\// Generated at: 2026-04-04T00:00:00Z
-        \\pub fn test() {}
-    ;
-    const result = validation_rules.validate_generated_header("test.zig", no_warning);
-    try std.testing.expect(result.valid == false);
+test validate_generated_header_fails_missing_do_not_edit {
+    const no_warning = "// This file is generated from specs/test.t27\n// Generated at: 2026-04-04T00:00:00Z\npub fn test() {}";
+    const result = validate_generated_header("test.zig", no_warning);
+    assert result.valid == false;
+}
 
-test validate_push_skill_passes_sealed_non_toxic
+test validate_push_skill_passes_sealed_non_toxic {
     const skill = Skill{ .status = "sealed", .verdict = "NOT TOXIC" };
-    const result = validation_rules.validate_push_skill(skill);
-    try std.testing.expect(result.valid == true);
+    const result = validate_push_skill(skill);
+    assert result.valid == true;
+}
 
-test validate_push_skill_fails_not_sealed
+test validate_push_skill_fails_not_sealed {
     const skill = Skill{ .status = "active", .verdict = "NOT TOXIC" };
-    const result = validation_rules.validate_push_skill(skill);
-    try std.testing.expect(result.valid == false);
+    const result = validate_push_skill(skill);
+    assert result.valid == false;
+}
 
-test validate_push_skill_fails_toxic
+test validate_push_skill_fails_toxic {
     const skill = Skill{ .status = "sealed", .verdict = "TOXIC" };
-    const result = validation_rules.validate_push_skill(skill);
-    try std.testing.expect(result.valid == false);
+    const result = validate_push_skill(skill);
+    assert result.valid == false;
+}
 
-test validate_commit_skill_passes_active_with_issue
+test validate_commit_skill_passes_active_with_issue {
     const skill = Skill{ .status = "active", .issue = "123" };
-    const result = validation_rules.validate_commit_skill(skill);
-    try std.testing.expect(result.valid == true);
+    const result = validate_commit_skill(skill);
+    assert result.valid == true;
+}
 
-test validate_commit_skill_passes_sealed_with_issue
+test validate_commit_skill_passes_sealed_with_issue {
     const skill = Skill{ .status = "sealed", .issue = "123" };
-    const result = validation_rules.validate_commit_skill(skill);
-    try std.testing.expect(result.valid == true);
+    const result = validate_commit_skill(skill);
+    assert result.valid == true;
+}
 
-test validate_commit_skill_fails_without_issue
+test validate_commit_skill_fails_without_issue {
     const skill = Skill{ .status = "active", .issue = "" };
-    const result = validation_rules.validate_commit_skill(skill);
-    try std.testing.expect(result.valid == false);
+    const result = validate_commit_skill(skill);
+    assert result.valid == false;
+}
 
-test validate_policy_matrix_passes_recovery_with_all
+test validate_policy_matrix_passes_recovery_with_all {
     const skill = Skill{ .kind = "recovery", .artifacts = "checkpoint1,checkpoint2,checkpoint3,spec,docs" };
-    const result = validation_rules.validate_policy_matrix(skill);
-    try std.testing.expect(result.valid == true);
+    const result = validate_policy_matrix(skill);
+    assert result.valid == true;
+}
 
-test validate_policy_matrix_fails_recovery_missing_checkpoints
+test validate_policy_matrix_fails_recovery_missing_checkpoints {
     const skill = Skill{ .kind = "recovery", .artifacts = "checkpoint1,checkpoint2,spec,docs" };
-    const result = validation_rules.validate_policy_matrix(skill);
-    try std.testing.expect(result.valid == false);
+    const result = validate_policy_matrix(skill);
+    assert result.valid == false;
+}
 
-test validate_policy_matrix_fails_hotfix_without_checkpoint
+test validate_policy_matrix_fails_hotfix_without_checkpoint {
     const skill = Skill{ .kind = "hotfix", .artifacts = "spec,docs" };
-    const result = validation_rules.validate_policy_matrix(skill);
-    try std.testing.expect(result.valid == false);
+    const result = validate_policy_matrix(skill);
+    assert result.valid == false;
+}
 
-test validate_policy_matrix_passes_hotfix_with_checkpoint
+test validate_policy_matrix_passes_hotfix_with_checkpoint {
     const skill = Skill{ .kind = "hotfix", .artifacts = "checkpoint1,spec" };
-    const result = validation_rules.validate_policy_matrix(skill);
-    try std.testing.expect(result.valid == true);
+    const result = validate_policy_matrix(skill);
+    assert result.valid == true;
+}
 
-test validate_policy_matrix_fails_feature_without_spec
+test validate_policy_matrix_fails_feature_without_spec {
     const skill = Skill{ .kind = "feature", .artifacts = "docs" };
-    const result = validation_rules.validate_policy_matrix(skill);
-    try std.testing.expect(result.valid == false);
+    const result = validate_policy_matrix(skill);
+    assert result.valid == false;
+}
 
-test validate_remote_url_passes_correct_remote
+test validate_remote_url_passes_correct_remote {
     const url = "https://github.com/gHashTag/t27.git";
-    const result = validation_rules.validate_remote_url(url);
-    try std.testing.expect(result.valid == true);
+    const result = validate_remote_url(url);
+    assert result.valid == true;
+}
 
-test validate_remote_url_fails_wrong_remote
+test validate_remote_url_fails_wrong_remote {
     const url = "https://gitlab.com/other/repo.git";
-    const result = validation_rules.validate_remote_url(url);
-    try std.testing.expect(result.valid == false);
+    const result = validate_remote_url(url);
+    assert result.valid == false;
+}
 
-test contains_cyrillic_returns_false_for_ascii
+test contains_cyrillic_returns_false_for_ascii {
     const text = "test content without cyrillic";
-    const result = validation_rules.contains_cyrillic(text);
-    try std.testing.expect(result == false);
+    const result = contains_cyrillic(text);
+    assert result == false;
+}
 
-test is_docs_path_returns_true_for_docs
+test is_docs_path_returns_true_for_docs {
     const path = "docs/test.md";
-    const result = validation_rules.is_docs_path(path);
-    try std.testing.expect(result == true);
+    const result = is_docs_path(path);
+    assert result == true;
+}
 
-test is_docs_path_returns_false_for_specs
+test is_docs_path_returns_false_for_specs {
     const path = "specs/test.t27";
-    const result = validation_rules.is_docs_path(path);
-    try std.testing.expect(result == false);
+    const result = is_docs_path(path);
+    assert result == false;
+}
 
-test count_checkpoints_returns_count
+test count_checkpoints_returns_count {
     const artifacts = "checkpoint1,checkpoint2,checkpoint3,spec";
-    const result = validation_rules.count_checkpoints(artifacts);
-    try std.testing.expect(result == 3);
+    const result = count_checkpoints(artifacts);
+    assert result == 3;
+}
 
-invariant validate_tdd_contract_always_returns_result
+invariant validate_tdd_contract_always_returns_result {
     // validate_tdd_contract always returns a ValidationResult
     assert true;
+}
 
-invariant validate_language_policy_always_returns_result
+invariant validate_language_policy_always_returns_result {
     // validate_language_policy always returns a ValidationResult
     assert true;
+}
 
-invariant validate_generated_header_always_returns_result
+invariant validate_generated_header_always_returns_result {
     // validate_generated_header always returns a ValidationResult
     assert true;
+}
 
-invariant validate_push_skill_always_returns_result
+invariant validate_push_skill_always_returns_result {
     // validate_push_skill always returns a ValidationResult
     assert true;
+}
 
-invariant validate_commit_skill_always_returns_result
+invariant validate_commit_skill_always_returns_result {
     // validate_commit_skill always returns a ValidationResult
     assert true;
+}
 
-invariant validate_policy_matrix_always_returns_result
+invariant validate_policy_matrix_always_returns_result {
     // validate_policy_matrix always returns a ValidationResult
     assert true;
+}
 
-invariant is_docs_path_for_docs_prefix
+invariant is_docs_path_for_docs_prefix {
     // All paths starting with "docs/" are docs paths
     const path = "docs/test.md";
-    assert validation_rules.is_docs_path(path);
+    assert is_docs_path(path);
+}
 
-invariant count_checkpoints_never_negative
+invariant count_checkpoints_never_negative {
     // Checkpoint count is always >= 0
-    assert validation_rules.count_checkpoints("") >= 0;
+    assert count_checkpoints("") >= 0;
+}
 
-bench validate_tdd_contract_latency
-    target: < 100us
-    const spec_with_tests = Spec{ .test_blocks = &[_]TestBlock{{.statements = &[_]u8{}}} };
+bench validate_tdd_contract_latency {
+    // target: < 100us
+    const spec_with_tests = Spec{ .test_blocks = &[_]TestBlock{ TestBlock{ .statements = &[_]u8{} } } };
     const start = std.time.nanoTimestamp();
-    _ = validation_rules.validate_tdd_contract(spec_with_tests);
+    _ = validate_tdd_contract(spec_with_tests);
     const end = std.time.nanoTimestamp();
     const elapsed = end - start;
-    try std.testing.expect(elapsed < 100000);
+    assert elapsed < 100000;
+}
 
-bench validate_language_policy_latency
-    target: < 50us
+bench validate_language_policy_latency {
+    // target: < 50us
     const spec_ascii = Spec{ .path = "specs/test.t27", .content = "test" };
     const start = std.time.nanoTimestamp();
-    _ = validation_rules.validate_language_policy(spec_ascii);
+    _ = validate_language_policy(spec_ascii);
     const end = std.time.nanoTimestamp();
     const elapsed = end - start;
-    try std.testing.expect(elapsed < 50000);
+    assert elapsed < 50000;
+}
 
-bench validate_generated_header_latency
-    target: < 10us
-    const header =
-        \\// header\npub fn test() {}
-    ;
+bench validate_generated_header_latency {
+    // target: < 10us
+    // (Zig multi-line strings take no escapes, so the original `\n` here is
+    // a literal backslash + n, kept as `\\n`.)
+    const header = "// header\\npub fn test() {}";
     const start = std.time.nanoTimestamp();
-    _ = validation_rules.validate_generated_header("test.zig", header);
+    _ = validate_generated_header("test.zig", header);
     const end = std.time.nanoTimestamp();
     const elapsed = end - start;
-    try std.testing.expect(elapsed < 10000);
+    assert elapsed < 10000;
+}
 
-bench validate_policy_matrix_latency
-    target: < 10us
+bench validate_policy_matrix_latency {
+    // target: < 10us
     const skill = Skill{ .kind = "feature", .artifacts = "spec" };
     const start = std.time.nanoTimestamp();
-    _ = validation_rules.validate_policy_matrix(skill);
+    _ = validate_policy_matrix(skill);
     const end = std.time.nanoTimestamp();
     const elapsed = end - start;
-    try std.testing.expect(elapsed < 10000);
+    assert elapsed < 10000;
+}
 
-bench contains_cyrillic_latency
-    target: < 1us
+bench contains_cyrillic_latency {
+    // target: < 1us
     const start = std.time.nanoTimestamp();
-    _ = validation_rules.contains_cyrillic("test content without cyrillic");
+    _ = contains_cyrillic("test content without cyrillic");
     const end = std.time.nanoTimestamp();
     const elapsed = end - start;
-    try std.testing.expect(elapsed < 1000);
+    assert elapsed < 1000;
+}

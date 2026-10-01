@@ -15,6 +15,20 @@ module TriMaybe;
         value : T,
     };
 
+    // Function-typed parameters are spelled through named aliases: the
+    // parameter grammar has no inline `fn(...)` type. Zig order, no arrow.
+    // MaybeBindFn is fn(T) -> Maybe(T); MaybeMapFn is fn(T) -> T.
+    // APPROXIMATION: the aliases are not generic. ADR-008 accepts a
+    // parameterised const only when it names a struct, so
+    // `pub const MaybeBindFn(T) = fn(T) Maybe(T);` is rejected. Their T is
+    // the module-level T that nothing/pure/bind/map/join also use, not a
+    // type parameter of the alias or of bind/map, so the inline
+    // `f: fn(T) -> Maybe(T)` tie to the caller's T is not expressed.
+    // (The C backend lowers these aliases to an invalid
+    // `static const int MaybeBindFn = fn ( T ) ...`.)
+    pub const MaybeBindFn = fn(T) Maybe(T);
+    pub const MaybeMapFn = fn(T) T;
+
     // ═══════════════════════════════════════════════════════════
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
@@ -31,7 +45,7 @@ module TriMaybe;
     }
 
     // bind(maybe: Maybe(T), f: fn(T) -> Maybe(T)) → Maybe(T)
-    fn bind(maybe: Maybe(T), f: fn(T) -> Maybe(T)) -> Maybe(T) {
+    fn bind(maybe: Maybe(T), f: MaybeBindFn) -> Maybe(T) {
         // The sequencer: short-circuits on absence, chains computations on presence
         if (maybe.computed == false) {
             return nothing();
@@ -40,7 +54,7 @@ module TriMaybe;
     }
 
     // map(maybe: Maybe(T), f: fn(T) -> T) → Maybe(T)
-    fn map(maybe: Maybe(T), f: fn(T) -> T) -> Maybe(T) {
+    fn map(maybe: Maybe(T), f: MaybeMapFn) -> Maybe(T) {
         // Apply a plain function under the wrapper: absent in, absent out
         if (maybe.computed == false) {
             return nothing();
@@ -56,6 +70,25 @@ module TriMaybe;
             return nothing();
         }
         return nested.value;
+    }
+
+    // Test helpers. The tests originally passed anonymous closures
+    // (`fn(x: i64) -> ... { ... }`) inline; t27 has no closure literals, so
+    // each closure is a named function with the identical body.
+    fn double_then_pure(x: i64) -> Maybe(i64) {
+        return pure(x * 2);
+    }
+
+    fn always_nothing(x: i64) -> Maybe(i64) {
+        return nothing();
+    }
+
+    fn double_i64(x: i64) -> i64 {
+        return x * 2;
+    }
+
+    fn add_ten_i64(x: i64) -> i64 {
+        return x + 10;
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -88,14 +121,14 @@ module TriMaybe;
 
     test "bind_on_present_maybe_returns_function_result" {
         var present = pure(42);
-        var out = bind(present, fn(x: i64) -> Maybe(i64) { return pure(x * 2); });
+        var out = bind(present, double_then_pure);
         assert(out.computed == true);
         assert(out.value == 84);
     }
 
     test "bind_preserves_absence_from_function" {
         var present = pure(42);
-        var out = bind(present, fn(x: i64) -> Maybe(i64) { return nothing(); });
+        var out = bind(present, always_nothing);
         assert(out.computed == false);
     }
 
@@ -114,20 +147,20 @@ module TriMaybe;
 
     test "map_on_an_absent_maybe_stays_absent" {
         var absent = Maybe(i64){ .computed = false, .value = undefined };
-        var out = map(absent, fn(x: i64) -> i64 { return x * 2; });
+        var out = map(absent, double_i64);
         assert(out.computed == false);
     }
 
     test "map_on_present_maybe_applies_function_once" {
         var present = pure(21);
-        var out = map(present, fn(x: i64) -> i64 { return x * 2; });
+        var out = map(present, double_i64);
         assert(out.computed == true);
         assert(out.value == 42);
     }
 
     test "map_keeps_computed_true" {
         var present = pure(-5);
-        var out = map(present, fn(x: i64) -> i64 { return x + 10; });
+        var out = map(present, add_ten_i64);
         assert(out.computed == true);
         assert(out.value == 5);
     }

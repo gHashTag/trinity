@@ -2,6 +2,11 @@ import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react-swc'
 import fs from 'fs'
 import path from 'path'
+// Read at config time, so the tag is the hash of the file this build is about
+// to copy. Shared with qa/spec-catalog-contract.mjs, which hands the same
+// value to the same driver under node -- see that module for why the compiler
+// needs a content-addressed URL at all.
+import { t27WasmTag } from './scripts/t27-wasm-tag.ts'
 
 const escapeHtml = (s: unknown) =>
   String(s)
@@ -141,6 +146,12 @@ export default defineConfig(() => ({
   // the page rendered blank. Safe here because routing is HashRouter.
   base: './',
   plugins: [react(), prerenderHero(), rssFeed()],
+  // Textually replaced, so `t27/t27_compiler.wasm?v=${__T27_WASM_TAG__}` in the
+  // bundle is a literal. Deliberately NOT given a fallback: a context that
+  // evaluates this identifier without defining it throws a ReferenceError,
+  // which is louder than quietly serving the unversioned URL this exists to
+  // replace. The node-side gate sets it on globalThis for the same reason.
+  define: { __T27_WASM_TAG__: JSON.stringify(t27WasmTag()) },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

@@ -26,7 +26,7 @@ Dear Professor Baez,
 
 I've been following your Azimuth blog posts distinguishing numerology from structural physics. I'm hoping you could help evaluate something I've encountered.
 
-I'm building an open-source ternary computing framework (Trinity) grounded in φ² + φ⁻² = 3. The engineering results are concrete: $30 FPGA running a ternary LLM at 63 tok/s, ~1W, zero DSP blocks.
+I'm building an open-source ternary computing framework (Trinity) grounded in φ² + φ⁻² = 3. The engineering results are concrete: $30 FPGA running a ternary LLM at ~34 tok/s measured at 50 MHz (power not measured), zero DSP blocks.
 
 The mathematics led to φ-based expressions that approximate some physical constants:
 - m_p/m_e ≈ 6π⁵ (0.002% error)

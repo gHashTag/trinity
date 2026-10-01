@@ -380,175 +380,174 @@ pub fn gf256_clamp(value: GF256, min: GF256, max: GF256) GF256 {
 // ============================================================================
 
 test "gf256_zero_is_zero" {
-    try std.testing.expect(gf256_is_zero(gf256_zero()) == true);
+    assert(gf256_is_zero(gf256_zero()) == true);
 }
 
 test "gf256_negative_zero_is_zero" {
-    try std.testing.expect(gf256_is_zero(gf256_negative_zero()) == true);
+    assert(gf256_is_zero(gf256_negative_zero()) == true);
 }
 
 test "gf256_nonzero_is_not_zero" {
-    given value = gf256_encode_f64(1.0)
-    try std.testing.expect(gf256_is_zero(value) == false);
+    const value = gf256_encode_f64(1.0);
+    assert(gf256_is_zero(value) == false);
 }
 
 test "gf256_inf_is_special" {
-    try std.testing.expect(gf256_is_special(gf256_inf_positive()) == true);
+    assert(gf256_is_special(gf256_inf_positive()) == true);
 }
 
 test "gf256_nan_is_special" {
-    try std.testing.expect(gf256_is_special(gf256_nan()) == true);
+    assert(gf256_is_special(gf256_nan()) == true);
 }
 
 test "gf256_inf_positive" {
-    try std.testing.expect(gf256_is_inf(gf256_inf_positive()) == true);
+    assert(gf256_is_inf(gf256_inf_positive()) == true);
 }
 
 test "gf256_inf_negative" {
-    try std.testing.expect(gf256_is_inf(gf256_inf_negative()) == true);
+    assert(gf256_is_inf(gf256_inf_negative()) == true);
 }
 
 test "gf256_nan" {
-    try std.testing.expect(gf256_is_nan(gf256_nan()) == true);
+    assert(gf256_is_nan(gf256_nan()) == true);
 }
 
 test "gf256_inf_not_nan" {
-    try std.testing.expect(gf256_is_nan(gf256_inf_positive()) == false);
+    assert(gf256_is_nan(gf256_inf_positive()) == false);
 }
 
 test "gf256_extract_sign_positive" {
-    given value = gf256_encode_f64(1.0)
-    try std.testing.expect(sign = gf256_extract_sign(value));
-    try std.testing.expect(sign == 0);
+    const value = gf256_encode_f64(1.0);
+    const sign = gf256_extract_sign(value);
+    assert(sign == 0);
 }
 
 test "gf256_extract_sign_negative" {
-    given value = gf256_encode_f64(-1.0)
-    try std.testing.expect(sign = gf256_extract_sign(value));
-    try std.testing.expect(sign == -1);
+    const value = gf256_encode_f64(-1.0);
+    const sign = gf256_extract_sign(value);
+    assert(sign == -1);
 }
 
 test "gf256_encode_f64_zero" {
-    given gf = gf256_encode_f64(0.0)
-    try std.testing.expect(gf256_is_equal(gf, gf256_zero()) == true);
+    const gf = gf256_encode_f64(0.0);
+    assert(gf256_is_equal(gf, gf256_zero()) == true);
 }
 
 test "gf256_encode_f64_one" {
-    given gf = gf256_encode_f64(1.0)
-    try std.testing.expect(decoded = gf256_decode_f64(gf));
-    try std.testing.expect(abs(decoded - 1.0) < 0.0001);
+    const gf = gf256_encode_f64(1.0);
+    const decoded = gf256_decode_f64(gf);
+    assert(abs(decoded - 1.0) < 0.0001);
 }
 
 test "gf256_encode_f64_negative_one" {
-    given gf = gf256_encode_f64(-1.0)
-    try std.testing.expect(decoded = gf256_decode_f64(gf));
-    try std.testing.expect(abs(decoded + 1.0) < 0.0001);
+    const gf = gf256_encode_f64(-1.0);
+    const decoded = gf256_decode_f64(gf);
+    assert(abs(decoded + 1.0) < 0.0001);
 }
 
 test "gf256_encode_f64_roundtrip" {
-    given original = 42.5
-    try std.testing.expect(gf = gf256_encode_f64(original));
-    try std.testing.expect(decoded = gf256_decode_f64(gf));
-    try std.testing.expect(abs(decoded - original) < 0.001);
+    const original = 42.5;
+    const gf = gf256_encode_f64(original);
+    const decoded = gf256_decode_f64(gf);
+    assert(abs(decoded - original) < 0.001);
 }
 
 test "gf256_add_simple" {
-    given a = gf256_encode_f64(1.0)
-    try std.testing.expect(b = gf256_encode_f64(2.0));
-    try std.testing.expect(result = gf256_add(a, b));
-    try std.testing.expect(decoded = gf256_decode_f64(result));
-    try std.testing.expect(abs(decoded - 3.0) < 0.01);
+    const a = gf256_encode_f64(1.0);
+    const b = gf256_encode_f64(2.0);
+    const result = gf256_add(a, b);
+    const decoded = gf256_decode_f64(result);
+    assert(abs(decoded - 3.0) < 0.01);
 }
 
 test "gf256_mul_simple" {
-    given a = gf256_encode_f64(3.0)
-    try std.testing.expect(b = gf256_encode_f64(4.0));
-    try std.testing.expect(result = gf256_mul(a, b));
-    try std.testing.expect(decoded = gf256_decode_f64(result));
-    try std.testing.expect(abs(decoded - 12.0) < 0.01);
+    const a = gf256_encode_f64(3.0);
+    const b = gf256_encode_f64(4.0);
+    const result = gf256_mul(a, b);
+    const decoded = gf256_decode_f64(result);
+    assert(abs(decoded - 12.0) < 0.01);
 }
 
 test "gf256_abs_positive" {
-    given value = gf256_encode_f64(5.0)
-    try std.testing.expect(abs_val = gf256_abs(value));
-    try std.testing.expect(gf256_is_equal(abs_val, value) == true);
+    const value = gf256_encode_f64(5.0);
+    const abs_val = gf256_abs(value);
+    assert(gf256_is_equal(abs_val, value) == true);
 }
 
 test "gf256_abs_negative" {
-    given value = gf256_encode_f64(-5.0)
-    try std.testing.expect(abs_val = gf256_abs(value));
-    try std.testing.expect(gf256_extract_sign(abs_val) == 0);
+    const value = gf256_encode_f64(-5.0);
+    const abs_val = gf256_abs(value);
+    assert(gf256_extract_sign(abs_val) == 0);
 }
 
 test "gf256_neg_positive" {
-    given value = gf256_encode_f64(5.0)
-    try std.testing.expect(neg_val = gf256_neg(value));
-    try std.testing.expect(gf256_extract_sign(neg_val) < 0);
+    const value = gf256_encode_f64(5.0);
+    const neg_val = gf256_neg(value);
+    assert(gf256_extract_sign(neg_val) < 0);
 }
 
 test "gf256_neg_negative" {
-    given value = gf256_encode_f64(-5.0)
-    try std.testing.expect(neg_val = gf256_neg(value));
-    try std.testing.expect(gf256_extract_sign(neg_val) == 0);
+    const value = gf256_encode_f64(-5.0);
+    const neg_val = gf256_neg(value);
+    assert(gf256_extract_sign(neg_val) == 0);
 }
 
 test "gf256_is_equal_same" {
-    given value = gf256_encode_f64(1.0)
-    try std.testing.expect(gf256_is_equal(value, value) == true);
+    const value = gf256_encode_f64(1.0);
+    assert(gf256_is_equal(value, value) == true);
 }
 
 test "gf256_is_equal_nan" {
-    try std.testing.expect(gf256_is_equal(gf256_nan(), gf256_nan()) == false);
+    assert(gf256_is_equal(gf256_nan(), gf256_nan()) == false);
 }
 
 test "gf256_is_equal_zero" {
-    try std.testing.expect(gf256_is_equal(gf256_zero(), gf256_negative_zero()) == true);
+    assert(gf256_is_equal(gf256_zero(), gf256_negative_zero()) == true);
 }
 
 test "gf256_is_greater_positive" {
-    given a = gf256_encode_f64(5.0)
-    try std.testing.expect(b = gf256_encode_f64(3.0));
-    try std.testing.expect(gf256_is_greater(a, b) == true);
+    const a = gf256_encode_f64(5.0);
+    const b = gf256_encode_f64(3.0);
+    assert(gf256_is_greater(a, b) == true);
 }
 
 test "gf256_is_greater_negative" {
-    given a = gf256_encode_f64(-3.0)
-    try std.testing.expect(b = gf256_encode_f64(-5.0));
-    try std.testing.expect(gf256_is_greater(a, b) == true);
+    const a = gf256_encode_f64(-3.0);
+    const b = gf256_encode_f64(-5.0);
+    assert(gf256_is_greater(a, b) == true);
 }
 
 test "gf256_max_returns_larger" {
-    given a = gf256_encode_f64(3.0)
-    try std.testing.expect(b = gf256_encode_f64(5.0));
-    try std.testing.expect(result = gf256_max(a, b));
-    try std.testing.expect(decoded = gf256_decode_f64(result));
-    try std.testing.expect(decoded >= 4.0);
+    const a = gf256_encode_f64(3.0);
+    const b = gf256_encode_f64(5.0);
+    const result = gf256_max(a, b);
+    const decoded = gf256_decode_f64(result);
+    assert(decoded >= 4.0);
 }
 
 test "gf256_min_returns_smaller" {
-    given a = gf256_encode_f64(3.0)
-    try std.testing.expect(b = gf256_encode_f64(5.0));
-    try std.testing.expect(result = gf256_min(a, b));
-    try std.testing.expect(decoded = gf256_decode_f64(result));
-    try std.testing.expect(decoded <= 4.0);
+    const a = gf256_encode_f64(3.0);
+    const b = gf256_encode_f64(5.0);
+    const result = gf256_min(a, b);
+    const decoded = gf256_decode_f64(result);
+    assert(decoded <= 4.0);
 }
 
 test "gf256_from_components_roundtrip" {
-    given sign = -1
-    try std.testing.expect(exp = 2147483648);
-    try std.testing.expect(mant = gf256_zero());
-    try std.testing.expect(mant.parts[0] = 0x8000000000000000);
-    try std.testing.expect(gf = gf256_from_components(sign, exp, mant));
-    try std.testing.expect(extracted_sign = gf256_extract_sign(gf));
-    try std.testing.expect(extracted_exp = gf256_extract_exponent(gf));
-    try std.testing.expect(extracted_sign == sign and extracted_exp == exp);
+    const sign = -1;
+    const exp = 2147483648;
+    var mant = gf256_zero();
+    mant.parts[0] = 0x8000000000000000;
+    const gf = gf256_from_components(sign, exp, mant);
+    const extracted_sign = gf256_extract_sign(gf);
+    const extracted_exp = gf256_extract_exponent(gf);
+    assert(extracted_sign == sign and extracted_exp == exp);
 }
 
 // ============================================================================
 // Invariants
 // ============================================================================
 
-}
 invariant gf256_bits_total
     assert SIGN_BITS + EXP_BITS + MANT_BITS == 256
 
@@ -569,10 +568,11 @@ invariant gf256_neg_zero_has_sign
 invariant gf256_abs_removes_sign
     assert (gf256_abs(gf256_negative_zero()).parts[3] & 0x8000000000000000) == 0
 
-invariant gf256_neg_toggles_sign
-    given pos = gf256_encode_f64(5.0)
-    try std.testing.expect(neg = gf256_neg(pos));
-    assert (pos.parts[3] & 0x8000000000000000) != (neg.parts[3] & 0x8000000000000000)
+invariant gf256_neg_toggles_sign {
+    const pos = gf256_encode_f64(5.0);
+    const neg = gf256_neg(pos);
+    assert((pos.parts[3] & 0x8000000000000000) != (neg.parts[3] & 0x8000000000000000));
+}
 
 // ============================================================================
 // Benchmarks

@@ -1,4 +1,8 @@
+import { body as body_how_to_join_the_swarm, ruBody as ruBody_how_to_join_the_swarm } from './bodies/how-to-join-the-swarm'
 import { postsIndex } from './index'
+import { body as body_queen_browser_actions_you_can_follow, ruBody as ruBody_queen_browser_actions_you_can_follow } from './bodies/queen-browser-actions-you-can-follow'
+import { body as body_a_partial_module_needs_its_own_verdict, ruBody as ruBody_a_partial_module_needs_its_own_verdict } from './bodies/a-partial-module-needs-its-own-verdict'
+import { body as body_an_invitation_in_the_language_it_describes, ruBody as ruBody_an_invitation_in_the_language_it_describes } from './bodies/an-invitation-in-the-language-it-describes'
 import { body as body_signal_health_self_run32, ruBody as ruBody_signal_health_self_run32 } from './bodies/signal-health-self-run32'
 import { body as body_queen_phone_orientation_gate, ruBody as ruBody_queen_phone_orientation_gate } from './bodies/queen-phone-orientation-gate'
 import { body as body_merge_diff_ci_boundaries, ruBody as ruBody_merge_diff_ci_boundaries } from './bodies/merge-diff-ci-boundaries'
@@ -10,7 +14,13 @@ import { body as body_one_saturation_rule_five_artefacts, ruBody as ruBody_one_s
 import { body as body_ninety_tests_were_unreachable, ruBody as ruBody_ninety_tests_were_unreachable } from './bodies/ninety-tests-were-unreachable'
 import { body as body_four_languages_one_tri_extension, ruBody as ruBody_four_languages_one_tri_extension } from './bodies/four-languages-one-tri-extension'
 import { body as body_the_fpga_row_was_corrected, ruBody as ruBody_the_fpga_row_was_corrected } from './bodies/the-fpga-row-was-corrected'
+import { body as body_a_small_agent_needs_an_exact_judge, ruBody as ruBody_a_small_agent_needs_an_exact_judge } from './bodies/a-small-agent-needs-an-exact-judge'
 import type { Post, PostBody } from './types'
+import { body as body_mask_over_scale_ternary_drafts_that_compile, ruBody as ruBody_mask_over_scale_ternary_drafts_that_compile } from './bodies/mask-over-scale-ternary-drafts-that-compile'
+import { body as body_the_seed_moved_it_the_pins_moved_it_more, ruBody as ruBody_the_seed_moved_it_the_pins_moved_it_more } from './bodies/the-seed-moved-it-the-pins-moved-it-more'
+import { body as body_tri_mined_not_sold, ruBody as ruBody_tri_mined_not_sold } from './bodies/tri-mined-not-sold'
+import { body as body_trained_weights_ran_receipts_were_not_checked, ruBody as ruBody_trained_weights_ran_receipts_were_not_checked } from './bodies/trained-weights-ran-receipts-were-not-checked'
+import { body as body_golden_ratio_weights_ran_on_the_board, ruBody as ruBody_golden_ratio_weights_ran_on_the_board } from './bodies/golden-ratio-weights-ran-on-the-board'
 import { body as body_the_only_stable_speed_belonged_to_the_tool, ruBody as ruBody_the_only_stable_speed_belonged_to_the_tool } from './bodies/the-only-stable-speed-belonged-to-the-tool'
 import { body as body_queen_review_lifecycle_queues, ruBody as ruBody_queen_review_lifecycle_queues } from './bodies/queen-review-lifecycle-queues'
 import { body as body_physical_width_changed_the_question, ruBody as ruBody_physical_width_changed_the_question } from './bodies/physical-width-changed-the-question'
@@ -71,6 +81,11 @@ import { body as body_real_value_in_integer_container, ruBody as ruBody_real_val
 import { body as body_one_commit_nine_workflow_outcomes, ruBody as ruBody_one_commit_nine_workflow_outcomes } from './bodies/one-commit-nine-workflow-outcomes'
 
 const bodies: Record<string, PostBody> = {
+  'tri-mined-not-sold': { body: body_tri_mined_not_sold, ruBody: ruBody_tri_mined_not_sold },
+  'how-to-join-the-swarm': { body: body_how_to_join_the_swarm, ruBody: ruBody_how_to_join_the_swarm },
+  'queen-browser-actions-you-can-follow': { body: body_queen_browser_actions_you_can_follow, ruBody: ruBody_queen_browser_actions_you_can_follow },
+  'a-partial-module-needs-its-own-verdict': { body: body_a_partial_module_needs_its_own_verdict, ruBody: ruBody_a_partial_module_needs_its_own_verdict },
+  'an-invitation-in-the-language-it-describes': { body: body_an_invitation_in_the_language_it_describes, ruBody: ruBody_an_invitation_in_the_language_it_describes },
   'the-fpga-row-was-corrected': { body: body_the_fpga_row_was_corrected, ruBody: ruBody_the_fpga_row_was_corrected },
   'signal-health-self-run32': { body: body_signal_health_self_run32, ruBody: ruBody_signal_health_self_run32 },
   'queen-phone-orientation-gate': { body: body_queen_phone_orientation_gate, ruBody: ruBody_queen_phone_orientation_gate },
@@ -136,6 +151,11 @@ const bodies: Record<string, PostBody> = {
   'two-bitstreams-one-bit-apart': { body: body_two_bitstreams_one_bit_apart, ruBody: ruBody_two_bitstreams_one_bit_apart },
   'a-multiplicity-correction-changed-the-deployment-reading': { body: body_a_multiplicity_correction_changed_the_deployment_reading, ruBody: ruBody_a_multiplicity_correction_changed_the_deployment_reading },
   'the-only-stable-speed-belonged-to-the-tool': { body: body_the_only_stable_speed_belonged_to_the_tool, ruBody: ruBody_the_only_stable_speed_belonged_to_the_tool },
+  'a-small-agent-needs-an-exact-judge': { body: body_a_small_agent_needs_an_exact_judge, ruBody: ruBody_a_small_agent_needs_an_exact_judge },
+  'trained-weights-ran-receipts-were-not-checked': { body: body_trained_weights_ran_receipts_were_not_checked, ruBody: ruBody_trained_weights_ran_receipts_were_not_checked },
+  'golden-ratio-weights-ran-on-the-board': { body: body_golden_ratio_weights_ran_on_the_board, ruBody: ruBody_golden_ratio_weights_ran_on_the_board },
+  'mask-over-scale-ternary-drafts-that-compile': { body: body_mask_over_scale_ternary_drafts_that_compile, ruBody: ruBody_mask_over_scale_ternary_drafts_that_compile },
+  'the-seed-moved-it-the-pins-moved-it-more': { body: body_the_seed_moved_it_the_pins_moved_it_more, ruBody: ruBody_the_seed_moved_it_the_pins_moved_it_more },
 }
 
 export type { Block, Post } from './types'

@@ -20,12 +20,20 @@
    this component has no standalone route: the shell is the only place it renders.
    No `display` is declared here on purpose — the face switch in QueenAgents puts
    this away with the `hidden` attribute, and a `display` would defeat it. */
+/* The ground is only half of it. 0.94 still lets 6% of the hive through, and 6%
+   of a hexagon edge is a hexagon edge: alpha scales the field's amplitude and
+   leaves its spatial frequency exactly where it was, so the lattice keeps
+   crossing the letterforms at full sharpness however dark this gets. The blur
+   is the half that removes the edges, and it belongs here rather than on the
+   rows inside: backdrop-filter makes this element a backdrop root, so one layer
+   low-passes the whole face instead of one layer per metric in it. */
 .mcp-view {
   height: 100%;
   min-height: 0;
   overflow-y: auto;
   padding: 18px 20px 28px;
   background: rgba(6, 8, 10, 0.94);
+  backdrop-filter: blur(8px);
   position: relative;
   z-index: 3;
   color: #dff5e8;
@@ -41,7 +49,7 @@
 
 .mcp-head p {
   margin: 0 0 16px;
-  color: var(--hud-muted, rgba(255, 255, 255, 0.55));
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
   max-width: 68ch;
   line-height: 1.5;
 }
@@ -61,9 +69,15 @@
   max-width: 132px;
 }
 
+/* No blur of its own. --hud-panel resolves to 0.88 inside the shell, so 12% of
+   the hive still reaches these five numbers with its edges unchanged -- but the
+   low pass that removes those edges is on .mcp-view above, and .mcp-view is the
+   only element this ever renders inside. Its backdrop-filter already makes it
+   the backdrop root for everything in the face; a blur here would be five more
+   compositing layers over a backdrop that has been through the filter once. */
 .mcp-metric {
   border: 1px solid var(--hud-line, rgba(0, 255, 136, 0.22));
-  background: var(--hud-panel, rgba(2, 8, 6, 0.62));
+  background: var(--hud-panel, rgba(2, 8, 6, 0.88));
   border-radius: 8px;
   padding: 10px 12px;
   display: flex;
@@ -81,7 +95,7 @@
   font-size: 11px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--hud-muted, rgba(255, 255, 255, 0.55));
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
 }
 
 .mcp-metric.is-online b { color: var(--hud-green, #00ff88); }
@@ -97,7 +111,7 @@
 
 .mcp-scanned {
   font-size: 12px;
-  color: var(--hud-muted, rgba(255, 255, 255, 0.55));
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
 }
 
 .mcp-btn {
@@ -119,7 +133,7 @@
   margin: 0 0 12px;
   font-size: 12px;
   line-height: 1.5;
-  color: var(--hud-muted, rgba(255, 255, 255, 0.55));
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
   max-width: 76ch;
 }
 
@@ -134,10 +148,14 @@
   gap: 6px;
 }
 
+/* Unfrosted for the reason given above .mcp-metric: the same 0.88 ground, the
+   same single parent, and .mcp-view low-passes the field for the whole face.
+   This is also the row the hub can return dozens of, so a backdrop root per
+   card is where the second layer would have cost the most. */
 .mcp-card {
   border: 1px solid var(--hud-line, rgba(0, 255, 136, 0.22));
   border-left-width: 3px;
-  background: var(--hud-panel, rgba(2, 8, 6, 0.62));
+  background: var(--hud-panel, rgba(2, 8, 6, 0.88));
   border-radius: 6px;
 }
 
@@ -187,7 +205,7 @@
 .mcp-state,
 .mcp-ms {
   font-size: 12px;
-  color: var(--hud-muted, rgba(255, 255, 255, 0.55));
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
 }
 
 .mcp-transport { min-width: 60px; }
@@ -217,7 +235,7 @@
 .mcp-keys {
   margin: 0 0 6px;
   font-size: 12px;
-  color: var(--hud-muted, rgba(255, 255, 255, 0.55));
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
 }
 
 .mcp-tools {
@@ -244,7 +262,7 @@
 }
 
 .mcp-tools span {
-  color: var(--hud-muted, rgba(255, 255, 255, 0.55));
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
 }
 
 .mcp-down {
@@ -263,7 +281,7 @@
 .mcp-down p {
   margin: 0 0 12px;
   line-height: 1.55;
-  color: var(--hud-muted, rgba(255, 255, 255, 0.55));
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
 }
 
 .mcp-cmd {
@@ -285,7 +303,7 @@
 }
 
 .mcp-loading {
-  color: var(--hud-muted, rgba(255, 255, 255, 0.55));
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
   font-size: 13px;
 }
 

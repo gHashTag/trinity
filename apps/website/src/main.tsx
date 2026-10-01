@@ -12,6 +12,7 @@ import GlobalStarfield from './components/GlobalStarfield.tsx'
 import { handExplorerLinksToQueen } from './lib/queenFrame'
 import { redirectLegacyQueen } from './lib/legacyQueenRedirect'
 import { triIdentity } from './lib/triIdentity'
+import { installBotLinkCarry, reportArrival } from './lib/trafficArrival'
 
 // THE QUEEN MOVED to https://app.t27.ai/queen/, which now builds this same
 // bundle and serves the board on the app's own origin. #/queen here is the old
@@ -26,6 +27,14 @@ import { triIdentity } from './lib/triIdentity'
 // too. See src/lib/legacyQueenRedirect.ts and qa/queen-redirect-contract.mjs,
 // which calls the decision with both origins as input.
 const leaving = redirectLegacyQueen()
+
+// A visitor from a tagged link (utm_source=x, reddit, threads...) is counted
+// once, by channel, where the agents' links land. Not for a page that is on
+// its way to another address. See src/lib/trafficArrival.ts.
+if (!leaving) {
+  void reportArrival()
+  installBotLinkCarry()
+}
 
 // In a Queen tab's frame, a link to another Explorer switches the Queen's tab instead
 // of navigating the frame under a rail that names a different one.

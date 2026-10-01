@@ -486,7 +486,7 @@ module TriNetFormats {
     // ========================================================================
 
     pub fn get_format_by_name(name: string) -> ?FormatDescriptor {
-        for (const TRI_NET_FORMATS) |fmt| {
+        for (TRI_NET_FORMATS) |fmt| {
             if (fmt.name == name) {
                 return fmt;
             }
@@ -497,7 +497,7 @@ module TriNetFormats {
     pub fn get_format_by_bits(bits: u8) -> []FormatDescriptor {
         var result : [16]FormatDescriptor = undefined;
         var count : u8 = 0;
-        for (const TRI_NET_FORMATS) |fmt| {
+        for (TRI_NET_FORMATS) |fmt| {
             if (fmt.bits == bits) {
                 result[count] = fmt;
                 count = count + 1;
@@ -508,7 +508,7 @@ module TriNetFormats {
 
     pub fn get_phi_optimal_format() -> FormatDescriptor {
         var best : FormatDescriptor = TRI_NET_FORMATS[0];
-        for (const TRI_NET_FORMATS) |fmt| {
+        for (TRI_NET_FORMATS) |fmt| {
             if (fmt.phi_dist < best.phi_dist) {
                 best = fmt;
             }
@@ -752,7 +752,7 @@ module TriNetFormats {
             return 0.0 / 0.0;
         }
 
-        const is_integer = exp == @floor(exp);
+        const is_integer = exp == floor(exp);  // the helper below (was spelled @floor)
 
         if (is_integer) {
             let exp_int = exp as i32;
@@ -812,7 +812,8 @@ module TriNetFormats {
         return result;
     }
 
-    fn @floor(x: f32) -> f32 {
+    // was `fn @floor`: @-names are Zig builtins, not declarable fn names
+    fn floor(x: f32) -> f32 {
         let xi = x as i32;
         if (x >= 0.0 || x == xi as f32) {
             return xi as f32;
@@ -843,16 +844,18 @@ module TriNetFormats {
         given best = get_phi_optimal_format()
         then best.name == "GF12" and best.phi_dist < 0.05
 
-    test tri_net_all_formats_have_positive_bits
-        for (const TRI_NET_FORMATS) |fmt| {
+    test tri_net_all_formats_have_positive_bits {
+        for (TRI_NET_FORMATS) |fmt| {
             assert fmt.bits > 0;
         }
+    }
 
-    test tri_net_all_formats_sum_bits_correct
-        for (const TRI_NET_FORMATS) |fmt| {
+    test tri_net_all_formats_sum_bits_correct {
+        for (TRI_NET_FORMATS) |fmt| {
             assert fmt.sign_bits + fmt.exp_bits + fmt.mant_bits == fmt.bits
               or fmt.category == .posit;  // Posit has different structure
         }
+    }
 
     test tri_nft_n4_levels_count_is_16
         given count = NF4_LEVELS.len()
@@ -941,39 +944,44 @@ module TriNetFormats {
         given result = f32_to_nf4(0.0)
         then result == 6 or result == 7  // Either center value
 
-    invariant tri_net_all_formats_have_valid_category
-        for (const TRI_NET_FORMATS) |fmt| {
+    invariant tri_net_all_formats_have_valid_category {
+        for (TRI_NET_FORMATS) |fmt| {
             assert fmt.category >= .goldenfloat and fmt.category <= .binary;
         }
+    }
 
-    invariant tri_net_all_phi_distances_non_negative
-        for (const TRI_NET_FORMATS) |fmt| {
+    invariant tri_net_all_phi_distances_non_negative {
+        for (TRI_NET_FORMATS) |fmt| {
             assert fmt.phi_dist >= 0.0;
         }
+    }
 
-    invariant tri_nft_all_memory_ratios_positive
-        for (const TRI_NET_FORMATS) |fmt| {
+    invariant tri_nft_all_memory_ratios_positive {
+        for (TRI_NET_FORMATS) |fmt| {
             assert fmt.memory_ratio > 0.0;
         }
+    }
 
     invariant tri_net_gf_formats_have_best_phi_distance
         const golden_fmts = get_format_by_bits(16);  // GF16 vs others
         // GF family should have better phi distance than IEEE formats
         // (This is a rough check - detailed comparison would need more logic)
 
-    invariant tri_net_nf4_levels_are_monotonic
+    invariant tri_net_nf4_levels_are_monotonic {
         for (i in 0..15) {
             if (i < 15) {
                 assert NF4_LEVELS[i] < NF4_LEVELS[i + 1];
             }
         }
+    }
 
-    invariant tri_net_format_registry_consistent
-        for (const TRI_NET_FORMATS) |fmt| {
+    invariant tri_net_format_registry_consistent {
+        for (TRI_NET_FORMATS) |fmt| {
             assert fmt.name.len() > 0;
             assert fmt.bits >= 4;
             assert fmt.sign_bits == 1;
         }
+    }
 
     bench tri_net_get_format_by_name_latency
         measure: nanoseconds to get_format_by_name("GF16")

@@ -452,545 +452,544 @@ pub fn int8_reverse_bits(value: Int8) Int8 {
 // ============================================================================
 
 test "int8_from_i8_identity" {
-    given value = 42
-    try std.testing.expect(result = int8_from_i8(value));
-    try std.testing.expect(result == 42);
+    const value = 42;
+    const result = int8_from_i8(value);
+    assert(result == 42);
 }
 
 test "int8_from_i16_positive" {
-    given value = 100
-    try std.testing.expect(result = int8_from_i16(value));
-    try std.testing.expect(result == 100);
+    const value = 100;
+    const result = int8_from_i16(value);
+    assert(result == 100);
 }
 
 test "int8_from_i16_overflow" {
-    given value = 200
-    try std.testing.expect(result = int8_from_i16(value));
-    try std.testing.expect(result == MAX);
+    const value = 200;
+    const result = int8_from_i16(value);
+    assert(result == MAX);
 }
 
 test "int8_from_i16_negative" {
-    given value = -50
-    try std.testing.expect(result = int8_from_i16(value));
-    try std.testing.expect(result == -50);
+    const value = -50;
+    const result = int8_from_i16(value);
+    assert(result == -50);
 }
 
 test "int8_from_i16_underflow" {
-    given value = -200
-    try std.testing.expect(result = int8_from_i16(value));
-    try std.testing.expect(result == MIN);
+    const value = -200;
+    const result = int8_from_i16(value);
+    assert(result == MIN);
 }
 
 test "int8_from_i32_in_range" {
-    given value = 42
-    try std.testing.expect(result = int8_from_i32(value));
-    try std.testing.expect(result == 42);
+    const value = 42;
+    const result = int8_from_i32(value);
+    assert(result == 42);
 }
 
 test "int8_from_i32_overflow" {
-    given value = 1000
-    try std.testing.expect(result = int8_from_i32(value));
-    try std.testing.expect(result == MAX);
+    const value = 1000;
+    const result = int8_from_i32(value);
+    assert(result == MAX);
 }
 
 test "int8_from_u8_in_range" {
-    given value = 100
-    try std.testing.expect(result = int8_from_u8(value));
-    try std.testing.expect(result == 100);
+    const value = 100;
+    const result = int8_from_u8(value);
+    assert(result == 100);
 }
 
 test "int8_from_u8_overflow" {
-    given value = 200
-    try std.testing.expect(result = int8_from_u8(value));
-    try std.testing.expect(result == MAX);
+    const value = 200;
+    const result = int8_from_u8(value);
+    assert(result == MAX);
 }
 
 test "int8_from_f32_zero" {
-    given value = 0.0
-    try std.testing.expect(result = int8_from_f32(value));
-    try std.testing.expect(result == 0);
+    const value = 0.0;
+    const result = int8_from_f32(value);
+    assert(result == 0);
 }
 
 test "int8_from_f32_one" {
-    given value = 1.0
-    try std.testing.expect(result = int8_from_f32(value));
-    try std.testing.expect(result == 1);
+    const value = 1.0;
+    const result = int8_from_f32(value);
+    assert(result == 1);
 }
 
 test "int8_from_f32_round_up" {
-    given value = 1.6
-    try std.testing.expect(result = int8_from_f32(value));
-    try std.testing.expect(result == 2);
+    const value = 1.6;
+    const result = int8_from_f32(value);
+    assert(result == 2);
 }
 
 test "int8_from_f32_round_down" {
-    given value = 1.4
-    try std.testing.expect(result = int8_from_f32(value));
-    try std.testing.expect(result == 1);
+    const value = 1.4;
+    const result = int8_from_f32(value);
+    assert(result == 1);
 }
 
 test "int8_from_f32_nan" {
-    given result = int8_from_f32(std.math.nan(f32))
-    try std.testing.expect(result == 0);
+    const result = int8_from_f32(std.math.nan(f32));
+    assert(result == 0);
 }
 
 test "int8_to_i8_identity" {
-    given value: Int8 = 42
-    try std.testing.expect(result = int8_to_i8(value));
-    try std.testing.expect(result == 42);
+    const value: Int8 = 42;
+    const result = int8_to_i8(value);
+    assert(result == 42);
 }
 
 test "int8_to_i16_sign_extend" {
-    given value: Int8 = -1
-    try std.testing.expect(result = int8_to_i16(value));
-    try std.testing.expect(result == -1);
+    const value: Int8 = -1;
+    const result = int8_to_i16(value);
+    assert(result == -1);
 }
 
 test "int8_to_i32_sign_extend" {
-    given value: Int8 = -1
-    try std.testing.expect(result = int8_to_i32(value));
-    try std.testing.expect(result == -1);
+    const value: Int8 = -1;
+    const result = int8_to_i32(value);
+    assert(result == -1);
 }
 
 test "int8_to_u8_positive" {
-    given value: Int8 = 42
-    try std.testing.expect(result = int8_to_u8(value));
-    try std.testing.expect(result.? == 42);
+    const value: Int8 = 42;
+    const result = int8_to_u8(value);
+    assert(result.? == 42);
 }
 
 test "int8_to_u8_negative" {
-    given value: Int8 = -1
-    try std.testing.expect(result = int8_to_u8(value));
-    try std.testing.expect(result == null);
+    const value: Int8 = -1;
+    const result = int8_to_u8(value);
+    assert(result == null);
 }
 
 test "int8_add_simple" {
-    given a: Int8 = 50
-    try std.testing.expect(b: Int8 = 30);
-    try std.testing.expect(result = int8_add(a, b));
-    try std.testing.expect(result == 80);
+    const a: Int8 = 50;
+    const b: Int8 = 30;
+    const result = int8_add(a, b);
+    assert(result == 80);
 }
 
 test "int8_add_overflow" {
-    given a: Int8 = 100
-    try std.testing.expect(b: Int8 = 50);
-    try std.testing.expect(result = int8_add(a, b));
-    try std.testing.expect(result == MAX);
+    const a: Int8 = 100;
+    const b: Int8 = 50;
+    const result = int8_add(a, b);
+    assert(result == MAX);
 }
 
 test "int8_add_underflow" {
-    given a: Int8 = -100
-    try std.testing.expect(b: Int8 = -50);
-    try std.testing.expect(result = int8_add(a, b));
-    try std.testing.expect(result == MIN);
+    const a: Int8 = -100;
+    const b: Int8 = -50;
+    const result = int8_add(a, b);
+    assert(result == MIN);
 }
 
 test "int8_sub_simple" {
-    given a: Int8 = 50
-    try std.testing.expect(b: Int8 = 30);
-    try std.testing.expect(result = int8_sub(a, b));
-    try std.testing.expect(result == 20);
+    const a: Int8 = 50;
+    const b: Int8 = 30;
+    const result = int8_sub(a, b);
+    assert(result == 20);
 }
 
 test "int8_sub_negative" {
-    given a: Int8 = 30
-    try std.testing.expect(b: Int8 = 50);
-    try std.testing.expect(result = int8_sub(a, b));
-    try std.testing.expect(result == -20);
+    const a: Int8 = 30;
+    const b: Int8 = 50;
+    const result = int8_sub(a, b);
+    assert(result == -20);
 }
 
 test "int8_mul_positive" {
-    given a: Int8 = 10
-    try std.testing.expect(b: Int8 = 5);
-    try std.testing.expect(result = int8_mul(a, b));
-    try std.testing.expect(result == 50);
+    const a: Int8 = 10;
+    const b: Int8 = 5;
+    const result = int8_mul(a, b);
+    assert(result == 50);
 }
 
 test "int8_mul_negative" {
-    given a: Int8 = -10
-    try std.testing.expect(b: Int8 = 5);
-    try std.testing.expect(result = int8_mul(a, b));
-    try std.testing.expect(result == -50);
+    const a: Int8 = -10;
+    const b: Int8 = 5;
+    const result = int8_mul(a, b);
+    assert(result == -50);
 }
 
 test "int8_mul_overflow" {
-    given a: Int8 = 20
-    try std.testing.expect(b: Int8 = 20);
-    try std.testing.expect(result = int8_mul(a, b));
-    try std.testing.expect(result == MAX);
+    const a: Int8 = 20;
+    const b: Int8 = 20;
+    const result = int8_mul(a, b);
+    assert(result == MAX);
 }
 
 test "int8_div_simple" {
-    given a: Int8 = 50
-    try std.testing.expect(b: Int8 = 5);
-    try std.testing.expect(result = int8_div(a, b));
-    try std.testing.expect(result == 10);
+    const a: Int8 = 50;
+    const b: Int8 = 5;
+    const result = int8_div(a, b);
+    assert(result == 10);
 }
 
 test "int8_div_by_zero_positive" {
-    given a: Int8 = 50
-    try std.testing.expect(b: Int8 = 0);
-    try std.testing.expect(result = int8_div(a, b));
-    try std.testing.expect(result == MAX);
+    const a: Int8 = 50;
+    const b: Int8 = 0;
+    const result = int8_div(a, b);
+    assert(result == MAX);
 }
 
 test "int8_div_by_zero_negative" {
-    given a: Int8 = -50
-    try std.testing.expect(b: Int8 = 0);
-    try std.testing.expect(result = int8_div(a, b));
-    try std.testing.expect(result == MIN);
+    const a: Int8 = -50;
+    const b: Int8 = 0;
+    const result = int8_div(a, b);
+    assert(result == MIN);
 }
 
 test "int8_mod_simple" {
-    given a: Int8 = 10
-    try std.testing.expect(b: Int8 = 3);
-    try std.testing.expect(result = int8_mod(a, b));
-    try std.testing.expect(result == 1);
+    const a: Int8 = 10;
+    const b: Int8 = 3;
+    const result = int8_mod(a, b);
+    assert(result == 1);
 }
 
 test "int8_mod_by_zero" {
-    given a: Int8 = 10
-    try std.testing.expect(b: Int8 = 0);
-    try std.testing.expect(result = int8_mod(a, b));
-    try std.testing.expect(result == 0);
+    const a: Int8 = 10;
+    const b: Int8 = 0;
+    const result = int8_mod(a, b);
+    assert(result == 0);
 }
 
 test "int8_pow_zero" {
-    given base: Int8 = 5
-    try std.testing.expect(exp: u8 = 0);
-    try std.testing.expect(result = int8_pow(base, exp));
-    try std.testing.expect(result == 1);
+    const base: Int8 = 5;
+    const exp: u8 = 0;
+    const result = int8_pow(base, exp);
+    assert(result == 1);
 }
 
 test "int8_pow_one" {
-    given base: Int8 = 5
-    try std.testing.expect(exp: u8 = 1);
-    try std.testing.expect(result = int8_pow(base, exp));
-    try std.testing.expect(result == 5);
+    const base: Int8 = 5;
+    const exp: u8 = 1;
+    const result = int8_pow(base, exp);
+    assert(result == 5);
 }
 
 test "int8_pow_two" {
-    given base: Int8 = 5
-    try std.testing.expect(exp: u8 = 2);
-    try std.testing.expect(result = int8_pow(base, exp));
-    try std.testing.expect(result == 25);
+    const base: Int8 = 5;
+    const exp: u8 = 2;
+    const result = int8_pow(base, exp);
+    assert(result == 25);
 }
 
 test "int8_pow_overflow" {
-    given base: Int8 = 20
-    try std.testing.expect(exp: u8 = 2);
-    try std.testing.expect(result = int8_pow(base, exp));
-    try std.testing.expect(result == MAX);
+    const base: Int8 = 20;
+    const exp: u8 = 2;
+    const result = int8_pow(base, exp);
+    assert(result == MAX);
 }
 
 test "int8_and_simple" {
-    given a: Int8 = 0b10101010
-    try std.testing.expect(b: Int8 = 0b11001100);
-    try std.testing.expect(result = int8_and(a, b));
-    try std.testing.expect(result == 0b10001000);
+    const a: Int8 = 0b10101010;
+    const b: Int8 = 0b11001100;
+    const result = int8_and(a, b);
+    assert(result == 0b10001000);
 }
 
 test "int8_or_simple" {
-    given a: Int8 = 0b10101010
-    try std.testing.expect(b: Int8 = 0b11001100);
-    try std.testing.expect(result = int8_or(a, b));
-    try std.testing.expect(result == 0b11101110);
+    const a: Int8 = 0b10101010;
+    const b: Int8 = 0b11001100;
+    const result = int8_or(a, b);
+    assert(result == 0b11101110);
 }
 
 test "int8_xor_simple" {
-    given a: Int8 = 0b10101010
-    try std.testing.expect(b: Int8 = 0b11001100);
-    try std.testing.expect(result = int8_xor(a, b));
-    try std.testing.expect(result == 0b01100110);
+    const a: Int8 = 0b10101010;
+    const b: Int8 = 0b11001100;
+    const result = int8_xor(a, b);
+    assert(result == 0b01100110);
 }
 
 test "int8_not_simple" {
-    given value: Int8 = 0b10101010
-    try std.testing.expect(result = int8_not(value));
-    try std.testing.expect(result == 0b01010101);
+    const value: Int8 = 0b10101010;
+    const result = int8_not(value);
+    assert(result == 0b01010101);
 }
 
 test "int8_shl_simple" {
-    given value: Int8 = 0b00000011
-    try std.testing.expect(amount: u8 = 2);
-    try std.testing.expect(result = int8_shl(value, amount));
-    try std.testing.expect(result == 0b00001100);
+    const value: Int8 = 0b00000011;
+    const amount: u8 = 2;
+    const result = int8_shl(value, amount);
+    assert(result == 0b00001100);
 }
 
 test "int8_shl_overflow" {
-    given value: Int8 = 64
-    try std.testing.expect(amount: u8 = 2);
-    try std.testing.expect(result = int8_shl(value, amount));
-    try std.testing.expect(result == MAX);
+    const value: Int8 = 64;
+    const amount: u8 = 2;
+    const result = int8_shl(value, amount);
+    assert(result == MAX);
 }
 
 test "int8_shr_simple" {
-    given value: Int8 = 0b00001100
-    try std.testing.expect(amount: u8 = 2);
-    try std.testing.expect(result = int8_shr(value, amount));
-    try std.testing.expect(result == 0b00000011);
+    const value: Int8 = 0b00001100;
+    const amount: u8 = 2;
+    const result = int8_shr(value, amount);
+    assert(result == 0b00000011);
 }
 
 test "int8_rol_simple" {
-    given value: Int8 = 0b00000011
-    try std.testing.expect(amount: u8 = 2);
-    try std.testing.expect(result = int8_rol(value, amount));
-    try std.testing.expect(result == 0b00001100);
+    const value: Int8 = 0b00000011;
+    const amount: u8 = 2;
+    const result = int8_rol(value, amount);
+    assert(result == 0b00001100);
 }
 
 test "int8_ror_simple" {
-    given value: Int8 = 0b00001100
-    try std.testing.expect(amount: u8 = 2);
-    try std.testing.expect(result = int8_ror(value, amount));
-    try std.testing.expect(result == 0b00000011);
+    const value: Int8 = 0b00001100;
+    const amount: u8 = 2;
+    const result = int8_ror(value, amount);
+    assert(result == 0b00000011);
 }
 
 test "int8_abs_positive" {
-    given value: Int8 = 42
-    try std.testing.expect(result = int8_abs(value));
-    try std.testing.expect(result == 42);
+    const value: Int8 = 42;
+    const result = int8_abs(value);
+    assert(result == 42);
 }
 
 test "int8_abs_negative" {
-    given value: Int8 = -42
-    try std.testing.expect(result = int8_abs(value));
-    try std.testing.expect(result == 42);
+    const value: Int8 = -42;
+    const result = int8_abs(value);
+    assert(result == 42);
 }
 
 test "int8_abs_min" {
-    given value: Int8 = MIN
-    try std.testing.expect(result = int8_abs(value));
-    try std.testing.expect(result == MAX);
+    const value: Int8 = MIN;
+    const result = int8_abs(value);
+    assert(result == MAX);
 }
 
 test "int8_neg_positive" {
-    given value: Int8 = 42
-    try std.testing.expect(result = int8_neg(value));
-    try std.testing.expect(result == -42);
+    const value: Int8 = 42;
+    const result = int8_neg(value);
+    assert(result == -42);
 }
 
 test "int8_neg_negative" {
-    given value: Int8 = -42
-    try std.testing.expect(result = int8_neg(value));
-    try std.testing.expect(result == 42);
+    const value: Int8 = -42;
+    const result = int8_neg(value);
+    assert(result == 42);
 }
 
 test "int8_neg_min" {
-    given value: Int8 = MIN
-    try std.testing.expect(result = int8_neg(value));
-    try std.testing.expect(result == MAX);
+    const value: Int8 = MIN;
+    const result = int8_neg(value);
+    assert(result == MAX);
 }
 
 test "int8_sign_positive" {
-    given value: Int8 = 42
-    try std.testing.expect(result = int8_sign(value));
-    try std.testing.expect(result == 1);
+    const value: Int8 = 42;
+    const result = int8_sign(value);
+    assert(result == 1);
 }
 
 test "int8_sign_negative" {
-    given value: Int8 = -42
-    try std.testing.expect(result = int8_sign(value));
-    try std.testing.expect(result == -1);
+    const value: Int8 = -42;
+    const result = int8_sign(value);
+    assert(result == -1);
 }
 
 test "int8_sign_zero" {
-    given value: Int8 = 0
-    try std.testing.expect(result = int8_sign(value));
-    try std.testing.expect(result == 0);
+    const value: Int8 = 0;
+    const result = int8_sign(value);
+    assert(result == 0);
 }
 
 test "int8_min_smaller" {
-    given a: Int8 = 42
-    try std.testing.expect(b: Int8 = 50);
-    try std.testing.expect(result = int8_min(a, b));
-    try std.testing.expect(result == 42);
+    const a: Int8 = 42;
+    const b: Int8 = 50;
+    const result = int8_min(a, b);
+    assert(result == 42);
 }
 
 test "int8_max_larger" {
-    given a: Int8 = 42
-    try std.testing.expect(b: Int8 = 50);
-    try std.testing.expect(result = int8_max(a, b));
-    try std.testing.expect(result == 50);
+    const a: Int8 = 42;
+    const b: Int8 = 50;
+    const result = int8_max(a, b);
+    assert(result == 50);
 }
 
 test "int8_clamp_in_range" {
-    given value: Int8 = 42
-    try std.testing.expect(min: Int8 = 0);
-    try std.testing.expect(max: Int8 = 100);
-    try std.testing.expect(result = int8_clamp(value, min, max));
-    try std.testing.expect(result == 42);
+    const value: Int8 = 42;
+    const min: Int8 = 0;
+    const max: Int8 = 100;
+    const result = int8_clamp(value, min, max);
+    assert(result == 42);
 }
 
 test "int8_clamp_below" {
-    given value: Int8 = -50
-    try std.testing.expect(min: Int8 = 0);
-    try std.testing.expect(max: Int8 = 100);
-    try std.testing.expect(result = int8_clamp(value, min, max));
-    try std.testing.expect(result == 0);
+    const value: Int8 = -50;
+    const min: Int8 = 0;
+    const max: Int8 = 100;
+    const result = int8_clamp(value, min, max);
+    assert(result == 0);
 }
 
 test "int8_clamp_above" {
-    given value: Int8 = 150
-    try std.testing.expect(min: Int8 = 0);
-    try std.testing.expect(max: Int8 = 100);
-    try std.testing.expect(result = int8_clamp(value, min, max));
-    try std.testing.expect(result == 100);
+    const value: Int8 = 150;
+    const min: Int8 = 0;
+    const max: Int8 = 100;
+    const result = int8_clamp(value, min, max);
+    assert(result == 100);
 }
 
 test "int8_lerp_zero" {
-    given a: Int8 = 10
-    try std.testing.expect(b: Int8 = 50);
-    try std.testing.expect(t = 0.0);
-    try std.testing.expect(result = int8_lerp(a, b, t));
-    try std.testing.expect(result == 10);
+    const a: Int8 = 10;
+    const b: Int8 = 50;
+    const t = 0.0;
+    const result = int8_lerp(a, b, t);
+    assert(result == 10);
 }
 
 test "int8_lerp_one" {
-    given a: Int8 = 10
-    try std.testing.expect(b: Int8 = 50);
-    try std.testing.expect(t = 1.0);
-    try std.testing.expect(result = int8_lerp(a, b, t));
-    try std.testing.expect(result == 50);
+    const a: Int8 = 10;
+    const b: Int8 = 50;
+    const t = 1.0;
+    const result = int8_lerp(a, b, t);
+    assert(result == 50);
 }
 
 test "int8_lerp_half" {
-    given a: Int8 = 0
-    try std.testing.expect(b: Int8 = 20);
-    try std.testing.expect(t = 0.5);
-    try std.testing.expect(result = int8_lerp(a, b, t));
-    try std.testing.expect(result == 10);
+    const a: Int8 = 0;
+    const b: Int8 = 20;
+    const t = 0.5;
+    const result = int8_lerp(a, b, t);
+    assert(result == 10);
 }
 
 test "int8_sq_positive" {
-    given value: Int8 = 10
-    try std.testing.expect(result = int8_sq(value));
-    try std.testing.expect(result == 100);
+    const value: Int8 = 10;
+    const result = int8_sq(value);
+    assert(result == 100);
 }
 
 test "int8_sq_negative" {
-    given value: Int8 = -10
-    try std.testing.expect(result = int8_sq(value));
-    try std.testing.expect(result == 100);
+    const value: Int8 = -10;
+    const result = int8_sq(value);
+    assert(result == 100);
 }
 
 test "int8_sq_overflow" {
-    given value: Int8 = 20
-    try std.testing.expect(result = int8_sq(value));
-    try std.testing.expect(result == MAX);
+    const value: Int8 = 20;
+    const result = int8_sq(value);
+    assert(result == MAX);
 }
 
 test "int8_abs_diff_same" {
-    given a: Int8 = 42
-    try std.testing.expect(b: Int8 = 42);
-    try std.testing.expect(result = int8_abs_diff(a, b));
-    try std.testing.expect(result == 0);
+    const a: Int8 = 42;
+    const b: Int8 = 42;
+    const result = int8_abs_diff(a, b);
+    assert(result == 0);
 }
 
 test "int8_abs_diff_positive" {
-    given a: Int8 = 50
-    try std.testing.expect(b: Int8 = 30);
-    try std.testing.expect(result = int8_abs_diff(a, b));
-    try std.testing.expect(result == 20);
+    const a: Int8 = 50;
+    const b: Int8 = 30;
+    const result = int8_abs_diff(a, b);
+    assert(result == 20);
 }
 
 test "int8_sqrt_zero" {
-    given value: Int8 = 0
-    try std.testing.expect(result = int8_sqrt(value));
-    try std.testing.expect(result == 0);
+    const value: Int8 = 0;
+    const result = int8_sqrt(value);
+    assert(result == 0);
 }
 
 test "int8_sqrt_one" {
-    given value: Int8 = 1
-    try std.testing.expect(result = int8_sqrt(value));
-    try std.testing.expect(result == 1);
+    const value: Int8 = 1;
+    const result = int8_sqrt(value);
+    assert(result == 1);
 }
 
 test "int8_sqrt_four" {
-    given value: Int8 = 4
-    try std.testing.expect(result = int8_sqrt(value));
-    try std.testing.expect(result == 2);
+    const value: Int8 = 4;
+    const result = int8_sqrt(value);
+    assert(result == 2);
 }
 
 test "int8_sqrt_sixteen" {
-    given value: Int8 = 16
-    try std.testing.expect(result = int8_sqrt(value));
-    try std.testing.expect(result == 4);
+    const value: Int8 = 16;
+    const result = int8_sqrt(value);
+    assert(result == 4);
 }
 
 test "int8_sqrt_negative" {
-    given value: Int8 = -4
-    try std.testing.expect(result = int8_sqrt(value));
-    try std.testing.expect(result == 0);
+    const value: Int8 = -4;
+    const result = int8_sqrt(value);
+    assert(result == 0);
 }
 
 test "int8_is_power_of_two_true" {
-    given value: Int8 = 8
-    try std.testing.expect(int8_is_power_of_two(value) == true);
+    const value: Int8 = 8;
+    assert(int8_is_power_of_two(value) == true);
 }
 
 test "int8_is_power_of_two_false" {
-    given value: Int8 = 6
-    try std.testing.expect(int8_is_power_of_two(value) == false);
+    const value: Int8 = 6;
+    assert(int8_is_power_of_two(value) == false);
 }
 
 test "int8_is_power_of_two_zero" {
-    given value: Int8 = 0
-    try std.testing.expect(int8_is_power_of_two(value) == false);
+    const value: Int8 = 0;
+    assert(int8_is_power_of_two(value) == false);
 }
 
 test "int8_count_ones_zero" {
-    given value: Int8 = 0
-    try std.testing.expect(result = int8_count_ones(value));
-    try std.testing.expect(result == 0);
+    const value: Int8 = 0;
+    const result = int8_count_ones(value);
+    assert(result == 0);
 }
 
 test "int8_count_ones_all" {
-    given value: Int8 = 0xFF
-    try std.testing.expect(result = int8_count_ones(value));
-    try std.testing.expect(result == 8);
+    const value: Int8 = 0xFF;
+    const result = int8_count_ones(value);
+    assert(result == 8);
 }
 
 test "int8_count_ones_mixed" {
-    given value: Int8 = 0b10101010
-    try std.testing.expect(result = int8_count_ones(value));
-    try std.testing.expect(result == 4);
+    const value: Int8 = 0b10101010;
+    const result = int8_count_ones(value);
+    assert(result == 4);
 }
 
 test "int8_count_zeros_zero" {
-    given value: Int8 = 0
-    try std.testing.expect(result = int8_count_zeros(value));
-    try std.testing.expect(result == 8);
+    const value: Int8 = 0;
+    const result = int8_count_zeros(value);
+    assert(result == 8);
 }
 
 test "int8_count_zeros_all" {
-    given value: Int8 = 0xFF
-    try std.testing.expect(result = int8_count_zeros(value));
-    try std.testing.expect(result == 0);
+    const value: Int8 = 0xFF;
+    const result = int8_count_zeros(value);
+    assert(result == 0);
 }
 
 test "int8_reverse_bits_zero" {
-    given value: Int8 = 0
-    try std.testing.expect(result = int8_reverse_bits(value));
-    try std.testing.expect(result == 0);
+    const value: Int8 = 0;
+    const result = int8_reverse_bits(value);
+    assert(result == 0);
 }
 
 test "int8_reverse_bits_one" {
-    given value: Int8 = 0b10000000
-    try std.testing.expect(result = int8_reverse_bits(value));
-    try std.testing.expect(result == 0b00000001);
+    const value: Int8 = 0b10000000;
+    const result = int8_reverse_bits(value);
+    assert(result == 0b00000001);
 }
 
 test "int8_reverse_bits_all" {
-    given value: Int8 = 0xFF
-    try std.testing.expect(result = int8_reverse_bits(value));
-    try std.testing.expect(result == 0xFF);
+    const value: Int8 = 0xFF;
+    const result = int8_reverse_bits(value);
+    assert(result == 0xFF);
 }
 
 // ============================================================================
 // Invariants
 // ============================================================================
 
-}
 invariant int8_bits_constant
     assert BITS == 8
 
@@ -1072,8 +1071,8 @@ invariant int8_abs_non_negative
 
 invariant int8_neg_twice_original
     given value: Int8 = 42
-    try std.testing.expect(neg = int8_neg(value));
-    try std.testing.expect(neg_again = int8_neg(neg));
+    and neg = int8_neg(value)
+    and neg_again = int8_neg(neg)
     assert neg_again == value or value == MIN
 
 invariant int8_sign_positive_one
@@ -1087,35 +1086,35 @@ invariant int8_sign_zero_zero
 
 invariant int8_min_le_both
     given a: Int8 = 42
-    try std.testing.expect(b: Int8 = 50);
-    try std.testing.expect(result = int8_min(a, b));
+    and b: Int8 = 50
+    and result = int8_min(a, b)
     assert result <= a and result <= b
 
 invariant int8_max_ge_both
     given a: Int8 = 42
-    try std.testing.expect(b: Int8 = 50);
-    try std.testing.expect(result = int8_max(a, b));
+    and b: Int8 = 50
+    and result = int8_max(a, b)
     assert result >= a and result >= b
 
 invariant int8_lerp_zero_start
     given a: Int8 = 10
-    try std.testing.expect(b: Int8 = 50);
+    and b: Int8 = 50
     assert int8_lerp(a, b, 0.0) == a
 
 invariant int8_lerp_one_end
     given a: Int8 = 10
-    try std.testing.expect(b: Int8 = 50);
+    and b: Int8 = 50
     assert int8_lerp(a, b, 1.0) == b
 
 invariant int8_sq_non_negative
     given value: Int8 = 42
-    try std.testing.expect(result = int8_sq(value));
+    and result = int8_sq(value)
     assert result >= 0
 
 invariant int8_sqrt_square_original_or_less
     given value: Int8 = 42
-    try std.testing.expect(sqrt_result = int8_sqrt(value));
-    try std.testing.expect(sqrt_sq = int8_sq(sqrt_result));
+    and sqrt_result = int8_sqrt(value)
+    and sqrt_sq = int8_sq(sqrt_result)
     assert sqrt_sq <= value
 
 invariant int8_count_ones_plus_count_zeros_equals_bits

@@ -1,0 +1,67 @@
+name: t27 contracts at the pinned revision
+
+# S12 of #988 (#989): the t27 contracts this repository consumes -- external/t27, written only
+# by `tools/contracts.py vendor` -- held byte for byte to specs/reproduce/contracts.t27 and to
+# gHashTag/t27 at the revision it pins, then read and tested by the compiler built from that
+# revision. t27c parse-complete and test-report exit 0 whatever they find, so tools/contracts.py
+# reads every verdict from what they print, and a run it cannot read is a finding, not a pass.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "external/t27/**"
+      - "specs/reproduce/contracts.t27"
+      - "tools/contracts.py"
+      - ".github/workflows/contracts.yml"
+  push:
+    branches: [main]
+    paths:
+      - "external/t27/**"
+      - "specs/reproduce/contracts.t27"
+      - "tools/contracts.py"
+      - ".github/workflows/contracts.yml"
+  schedule:
+    - cron: "41 4 * * 1"
+  workflow_dispatch:
+
+jobs:
+  contracts:
+    name: t27 contracts, byte for byte and with the pinned compiler
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      # Every rule of the check is planted once, on a toy t27 and a toy compiler that print what
+      # the real ones print, and must fire; a rule nobody planted fails this step too.
+      - name: Negative control
+        run: python3 tools/contracts.py --self-check
+
+      - name: Read the pin
+        id: pin
+        run: |
+          echo "revision=$(python3 tools/contracts.py revision)" >> "$GITHUB_OUTPUT"
+          echo "zig=$(python3 tools/contracts.py test-zig)" >> "$GITHUB_OUTPUT"
+
+      - name: Check out gHashTag/t27 at the pinned revision
+        uses: actions/checkout@v4
+        with:
+          repository: gHashTag/t27
+          ref: ${{ steps.pin.outputs.revision }}
+          path: t27-pinned
+          fetch-depth: 1
+
+      # The compiler the lock names: built from the workspace root at the pinned revision, with
+      # the root Cargo.lock unchanged (--locked), into its own target directory.
+      - name: Build the pinned compiler
+        run: cargo build --release --locked -p t27c --manifest-path t27-pinned/Cargo.toml --target-dir t27c-target
+
+      - name: Setup the Zig t27 runs its spec tests with
+        uses: mlugg/setup-zig@v2
+        with:
+          version: ${{ steps.pin.outputs.zig }}
+          use-cache: false
+
+      - name: The consumed contracts, byte for byte and with the pinned compiler
+        run: python3 tools/contracts.py check --t27 t27-pinned --t27c t27c-target/release/t27c

@@ -266,407 +266,406 @@ pub fn int4_abs_diff(a: Int4, b: Int4) Int4 {
 // ============================================================================
 
 test "int4_from_i8_in_range" {
-    given value = 5
-    try std.testing.expect(result = int4_from_i8(value));
-    try std.testing.expect(result == 5);
+    const value = 5;
+    const result = int4_from_i8(value);
+    assert(result == 5);
 }
 
 test "int4_from_i8_above_max" {
-    given value = 10
-    try std.testing.expect(result = int4_from_i8(value));
-    try std.testing.expect(result == MAX);
+    const value = 10;
+    const result = int4_from_i8(value);
+    assert(result == MAX);
 }
 
 test "int4_from_i8_below_min" {
-    given value = -10
-    try std.testing.expect(result = int4_from_i8(value));
-    try std.testing.expect(result == MIN);
+    const value = -10;
+    const result = int4_from_i8(value);
+    assert(result == MIN);
 }
 
 test "int4_from_i8_at_max" {
-    given value = 7
-    try std.testing.expect(result = int4_from_i8(value));
-    try std.testing.expect(result == MAX);
+    const value = 7;
+    const result = int4_from_i8(value);
+    assert(result == MAX);
 }
 
 test "int4_from_i8_at_min" {
-    given value = -8
-    try std.testing.expect(result = int4_from_i8(value));
-    try std.testing.expect(result == MIN);
+    const value = -8;
+    const result = int4_from_i8(value);
+    assert(result == MIN);
 }
 
 test "int4_from_i16_positive" {
-    given value = 100
-    try std.testing.expect(result = int4_from_i16(value));
-    try std.testing.expect(result == MAX);
+    const value = 100;
+    const result = int4_from_i16(value);
+    assert(result == MAX);
 }
 
 test "int4_from_i16_negative" {
-    given value = -100
-    try std.testing.expect(result = int4_from_i16(value));
-    try std.testing.expect(result == MIN);
+    const value = -100;
+    const result = int4_from_i16(value);
+    assert(result == MIN);
 }
 
 test "int4_from_i16_in_range" {
-    given value = 3
-    try std.testing.expect(result = int4_from_i16(value));
-    try std.testing.expect(result == 3);
+    const value = 3;
+    const result = int4_from_i16(value);
+    assert(result == 3);
 }
 
 test "int4_from_i32_positive" {
-    given value = 1000
-    try std.testing.expect(result = int4_from_i32(value));
-    try std.testing.expect(result == MAX);
+    const value = 1000;
+    const result = int4_from_i32(value);
+    assert(result == MAX);
 }
 
 test "int4_from_i32_negative" {
-    given value = -1000
-    try std.testing.expect(result = int4_from_i32(value));
-    try std.testing.expect(result == MIN);
+    const value = -1000;
+    const result = int4_from_i32(value);
+    assert(result == MIN);
 }
 
 test "int4_from_f32_zero" {
-    given value = 0.0
-    try std.testing.expect(result = int4_from_f32(value));
-    try std.testing.expect(result == 0);
+    const value = 0.0;
+    const result = int4_from_f32(value);
+    assert(result == 0);
 }
 
 test "int4_from_f32_one" {
-    given value = 1.0
-    try std.testing.expect(result = int4_from_f32(value));
-    try std.testing.expect(result == 1);
+    const value = 1.0;
+    const result = int4_from_f32(value);
+    assert(result == 1);
 }
 
 test "int4_from_f32_negative" {
-    given value = -1.5
-    try std.testing.expect(result = int4_from_f32(value));
-    try std.testing.expect(result == -2);
+    const value = -1.5;
+    const result = int4_from_f32(value);
+    assert(result == -2);
 }
 
 test "int4_from_f32_nan" {
-    given result = int4_from_f32(std.math.nan(f32))
-    try std.testing.expect(result == 0);
+    const result = int4_from_f32(std.math.nan(f32));
+    assert(result == 0);
 }
 
 test "int4_from_f32_round_up" {
-    given value = 1.6
-    try std.testing.expect(result = int4_from_f32(value));
-    try std.testing.expect(result == 2);
+    const value = 1.6;
+    const result = int4_from_f32(value);
+    assert(result == 2);
 }
 
 test "int4_from_f32_round_down" {
-    given value = 1.4
-    try std.testing.expect(result = int4_from_f32(value));
-    try std.testing.expect(result == 1);
+    const value = 1.4;
+    const result = int4_from_f32(value);
+    assert(result == 1);
 }
 
 test "int4_to_i8_identity" {
-    given value: Int4 = 5
-    try std.testing.expect(result = int4_to_i8(value));
-    try std.testing.expect(result == value);
+    const value: Int4 = 5;
+    const result = int4_to_i8(value);
+    assert(result == value);
 }
 
 test "int4_to_i16_sign_extend" {
-    given value: Int4 = -1
-    try std.testing.expect(result = int4_to_i16(value));
-    try std.testing.expect(result == -1);
+    const value: Int4 = -1;
+    const result = int4_to_i16(value);
+    assert(result == -1);
 }
 
 test "int4_to_i32_sign_extend" {
-    given value: Int4 = -1
-    try std.testing.expect(result = int4_to_i32(value));
-    try std.testing.expect(result == -1);
+    const value: Int4 = -1;
+    const result = int4_to_i32(value);
+    assert(result == -1);
 }
 
 test "int4_to_f32_positive" {
-    given value: Int4 = 5
-    try std.testing.expect(result = int4_to_f32(value));
-    try std.testing.expect(abs(result - 5.0) < 0.001);
+    const value: Int4 = 5;
+    const result = int4_to_f32(value);
+    assert(abs(result - 5.0) < 0.001);
 }
 
 test "int4_to_f32_negative" {
-    given value: Int4 = -3
-    try std.testing.expect(result = int4_to_f32(value));
-    try std.testing.expect(abs(result + 3.0) < 0.001);
+    const value: Int4 = -3;
+    const result = int4_to_f32(value);
+    assert(abs(result + 3.0) < 0.001);
 }
 
 test "int4_add_simple" {
-    given a: Int4 = 3
-    try std.testing.expect(b: Int4 = 4);
-    try std.testing.expect(result = int4_add(a, b));
-    try std.testing.expect(result == MAX  // 3 + 4 = 7 = MAX);
+    const a: Int4 = 3;
+    const b: Int4 = 4;
+    const result = int4_add(a, b);
+    assert(result == MAX);  // 3 + 4 = 7 = MAX
 }
 
 test "int4_add_overflow" {
-    given a: Int4 = 5
-    try std.testing.expect(b: Int4 = 5);
-    try std.testing.expect(result = int4_add(a, b));
-    try std.testing.expect(result == MAX  // 5 + 5 = 10 -> 7);
+    const a: Int4 = 5;
+    const b: Int4 = 5;
+    const result = int4_add(a, b);
+    assert(result == MAX);  // 5 + 5 = 10 -> 7
 }
 
 test "int4_add_underflow" {
-    given a: Int4 = -5
-    try std.testing.expect(b: Int4 = -5);
-    try std.testing.expect(result = int4_add(a, b));
-    try std.testing.expect(result == MIN  // -5 + -5 = -10 -> -8);
+    const a: Int4 = -5;
+    const b: Int4 = -5;
+    const result = int4_add(a, b);
+    assert(result == MIN);  // -5 + -5 = -10 -> -8
 }
 
 test "int4_sub_simple" {
-    given a: Int4 = 7
-    try std.testing.expect(b: Int4 = 3);
-    try std.testing.expect(result = int4_sub(a, b));
-    try std.testing.expect(result == 4);
+    const a: Int4 = 7;
+    const b: Int4 = 3;
+    const result = int4_sub(a, b);
+    assert(result == 4);
 }
 
 test "int4_sub_negative" {
-    given a: Int4 = 3
-    try std.testing.expect(b: Int4 = 7);
-    try std.testing.expect(result = int4_sub(a, b));
-    try std.testing.expect(result == -4);
+    const a: Int4 = 3;
+    const b: Int4 = 7;
+    const result = int4_sub(a, b);
+    assert(result == -4);
 }
 
 test "int4_mul_positive" {
-    given a: Int4 = 2
-    try std.testing.expect(b: Int4 = 3);
-    try std.testing.expect(result = int4_mul(a, b));
-    try std.testing.expect(result == 6);
+    const a: Int4 = 2;
+    const b: Int4 = 3;
+    const result = int4_mul(a, b);
+    assert(result == 6);
 }
 
 test "int4_mul_negative" {
-    given a: Int4 = -2
-    try std.testing.expect(b: Int4 = 3);
-    try std.testing.expect(result = int4_mul(a, b));
-    try std.testing.expect(result == -6);
+    const a: Int4 = -2;
+    const b: Int4 = 3;
+    const result = int4_mul(a, b);
+    assert(result == -6);
 }
 
 test "int4_mul_overflow" {
-    given a: Int4 = 4
-    try std.testing.expect(b: Int4 = 4);
-    try std.testing.expect(result = int4_mul(a, b));
-    try std.testing.expect(result == MAX  // 4 * 4 = 16 -> 7);
+    const a: Int4 = 4;
+    const b: Int4 = 4;
+    const result = int4_mul(a, b);
+    assert(result == MAX);  // 4 * 4 = 16 -> 7
 }
 
 test "int4_div_simple" {
-    given a: Int4 = 6
-    try std.testing.expect(b: Int4 = 2);
-    try std.testing.expect(result = int4_div(a, b));
-    try std.testing.expect(result == 3);
+    const a: Int4 = 6;
+    const b: Int4 = 2;
+    const result = int4_div(a, b);
+    assert(result == 3);
 }
 
 test "int4_div_by_zero_positive" {
-    given a: Int4 = 5
-    try std.testing.expect(b: Int4 = 0);
-    try std.testing.expect(result = int4_div(a, b));
-    try std.testing.expect(result == MAX);
+    const a: Int4 = 5;
+    const b: Int4 = 0;
+    const result = int4_div(a, b);
+    assert(result == MAX);
 }
 
 test "int4_div_by_zero_negative" {
-    given a: Int4 = -5
-    try std.testing.expect(b: Int4 = 0);
-    try std.testing.expect(result = int4_div(a, b));
-    try std.testing.expect(result == MIN);
+    const a: Int4 = -5;
+    const b: Int4 = 0;
+    const result = int4_div(a, b);
+    assert(result == MIN);
 }
 
 test "int4_abs_positive" {
-    given value: Int4 = 5
-    try std.testing.expect(result = int4_abs(value));
-    try std.testing.expect(result == 5);
+    const value: Int4 = 5;
+    const result = int4_abs(value);
+    assert(result == 5);
 }
 
 test "int4_abs_negative" {
-    given value: Int4 = -5
-    try std.testing.expect(result = int4_abs(value));
-    try std.testing.expect(result == 5);
+    const value: Int4 = -5;
+    const result = int4_abs(value);
+    assert(result == 5);
 }
 
 test "int4_abs_min" {
-    given value: Int4 = MIN
-    try std.testing.expect(result = int4_abs(value));
-    try std.testing.expect(result == MAX  // |-8| = 7 (saturated));
+    const value: Int4 = MIN;
+    const result = int4_abs(value);
+    assert(result == MAX);  // |-8| = 7 (saturated)
 }
 
 test "int4_neg_positive" {
-    given value: Int4 = 5
-    try std.testing.expect(result = int4_neg(value));
-    try std.testing.expect(result == -5);
+    const value: Int4 = 5;
+    const result = int4_neg(value);
+    assert(result == -5);
 }
 
 test "int4_neg_negative" {
-    given value: Int4 = -5
-    try std.testing.expect(result = int4_neg(value));
-    try std.testing.expect(result == 5);
+    const value: Int4 = -5;
+    const result = int4_neg(value);
+    assert(result == 5);
 }
 
 test "int4_neg_min" {
-    given value: Int4 = MIN
-    try std.testing.expect(result = int4_neg(value));
-    try std.testing.expect(result == MAX  // -(-8) = 7 (saturated));
+    const value: Int4 = MIN;
+    const result = int4_neg(value);
+    assert(result == MAX);  // -(-8) = 7 (saturated)
 }
 
 test "int4_is_equal_true" {
-    given a: Int4 = 3
-    try std.testing.expect(b: Int4 = 3);
-    try std.testing.expect(int4_is_equal(a, b) == true);
+    const a: Int4 = 3;
+    const b: Int4 = 3;
+    assert(int4_is_equal(a, b) == true);
 }
 
 test "int4_is_equal_false" {
-    given a: Int4 = 3
-    try std.testing.expect(b: Int4 = 5);
-    try std.testing.expect(int4_is_equal(a, b) == false);
+    const a: Int4 = 3;
+    const b: Int4 = 5;
+    assert(int4_is_equal(a, b) == false);
 }
 
 test "int4_is_greater_true" {
-    given a: Int4 = 5
-    try std.testing.expect(b: Int4 = 3);
-    try std.testing.expect(int4_is_greater(a, b) == true);
+    const a: Int4 = 5;
+    const b: Int4 = 3;
+    assert(int4_is_greater(a, b) == true);
 }
 
 test "int4_is_greater_false" {
-    given a: Int4 = 3
-    try std.testing.expect(b: Int4 = 5);
-    try std.testing.expect(int4_is_greater(a, b) == false);
+    const a: Int4 = 3;
+    const b: Int4 = 5;
+    assert(int4_is_greater(a, b) == false);
 }
 
 test "int4_min_smaller" {
-    given a: Int4 = 3
-    try std.testing.expect(b: Int4 = 5);
-    try std.testing.expect(result = int4_min(a, b));
-    try std.testing.expect(result == 3);
+    const a: Int4 = 3;
+    const b: Int4 = 5;
+    const result = int4_min(a, b);
+    assert(result == 3);
 }
 
 test "int4_min_larger" {
-    given a: Int4 = 5
-    try std.testing.expect(b: Int4 = 3);
-    try std.testing.expect(result = int4_min(a, b));
-    try std.testing.expect(result == 3);
+    const a: Int4 = 5;
+    const b: Int4 = 3;
+    const result = int4_min(a, b);
+    assert(result == 3);
 }
 
 test "int4_max_smaller" {
-    given a: Int4 = 3
-    try std.testing.expect(b: Int4 = 5);
-    try std.testing.expect(result = int4_max(a, b));
-    try std.testing.expect(result == 5);
+    const a: Int4 = 3;
+    const b: Int4 = 5;
+    const result = int4_max(a, b);
+    assert(result == 5);
 }
 
 test "int4_max_larger" {
-    given a: Int4 = 5
-    try std.testing.expect(b: Int4 = 3);
-    try std.testing.expect(result = int4_max(a, b));
-    try std.testing.expect(result == 5);
+    const a: Int4 = 5;
+    const b: Int4 = 3;
+    const result = int4_max(a, b);
+    assert(result == 5);
 }
 
 test "int4_clamp_in_range" {
-    given value: Int4 = 5
-    try std.testing.expect(min: Int4 = 0);
-    try std.testing.expect(max: Int4 = MAX);
-    try std.testing.expect(result = int4_clamp(value, min, max));
-    try std.testing.expect(result == 5);
+    const value: Int4 = 5;
+    const min: Int4 = 0;
+    const max: Int4 = MAX;
+    const result = int4_clamp(value, min, max);
+    assert(result == 5);
 }
 
 test "int4_clamp_below_min" {
-    given value: Int4 = -10
-    try std.testing.expect(min: Int4 = -5);
-    try std.testing.expect(max: Int4 = MAX);
-    try std.testing.expect(result = int4_clamp(value, min, max));
-    try std.testing.expect(result == -5);
+    const value: Int4 = -10;
+    const min: Int4 = -5;
+    const max: Int4 = MAX;
+    const result = int4_clamp(value, min, max);
+    assert(result == -5);
 }
 
 test "int4_clamp_above_max" {
-    given value: Int4 = 10
-    try std.testing.expect(min: Int4 = MIN);
-    try std.testing.expect(max: Int4 = 5);
-    try std.testing.expect(result = int4_clamp(value, min, max));
-    try std.testing.expect(result == 5);
+    const value: Int4 = 10;
+    const min: Int4 = MIN;
+    const max: Int4 = 5;
+    const result = int4_clamp(value, min, max);
+    assert(result == 5);
 }
 
 test "int4_is_in_range_true" {
-    try std.testing.expect(int4_is_in_range(5) == true);
+    assert(int4_is_in_range(5) == true);
 }
 
 test "int4_is_in_range_false_high" {
-    try std.testing.expect(int4_is_in_range(10) == false);
+    assert(int4_is_in_range(10) == false);
 }
 
 test "int4_is_in_range_false_low" {
-    try std.testing.expect(int4_is_in_range(-10) == false);
+    assert(int4_is_in_range(-10) == false);
 }
 
 test "int4_is_in_range_at_max" {
-    try std.testing.expect(int4_is_in_range(MAX) == true);
+    assert(int4_is_in_range(MAX) == true);
 }
 
 test "int4_is_in_range_at_min" {
-    try std.testing.expect(int4_is_in_range(MIN) == true);
+    assert(int4_is_in_range(MIN) == true);
 }
 
 test "int4_lerp_zero" {
-    given a: Int4 = 1
-    try std.testing.expect(b: Int4 = 5);
-    try std.testing.expect(t = 0.0);
-    try std.testing.expect(result = int4_lerp(a, b, t));
-    try std.testing.expect(result == 1);
+    const a: Int4 = 1;
+    const b: Int4 = 5;
+    const t = 0.0;
+    const result = int4_lerp(a, b, t);
+    assert(result == 1);
 }
 
 test "int4_lerp_one" {
-    given a: Int4 = 1
-    try std.testing.expect(b: Int4 = 5);
-    try std.testing.expect(t = 1.0);
-    try std.testing.expect(result = int4_lerp(a, b, t));
-    try std.testing.expect(result == 5);
+    const a: Int4 = 1;
+    const b: Int4 = 5;
+    const t = 1.0;
+    const result = int4_lerp(a, b, t);
+    assert(result == 5);
 }
 
 test "int4_lerp_half" {
-    given a: Int4 = 0
-    try std.testing.expect(b: Int4 = 4);
-    try std.testing.expect(t = 0.5);
-    try std.testing.expect(result = int4_lerp(a, b, t));
-    try std.testing.expect(result == 2);
+    const a: Int4 = 0;
+    const b: Int4 = 4;
+    const t = 0.5;
+    const result = int4_lerp(a, b, t);
+    assert(result == 2);
 }
 
 test "int4_sq_positive" {
-    given value: Int4 = 3
-    try std.testing.expect(result = int4_sq(value));
-    try std.testing.expect(result == 9  // saturates to 7);
+    const value: Int4 = 3;
+    const result = int4_sq(value);
+    assert(result == 9);  // saturates to 7
 }
 
 test "int4_sq_negative" {
-    given value: Int4 = -3
-    try std.testing.expect(result = int4_sq(value));
-    try std.testing.expect(result == 9  // saturates to 7);
+    const value: Int4 = -3;
+    const result = int4_sq(value);
+    assert(result == 9);  // saturates to 7
 }
 
 test "int4_sq_zero" {
-    given value: Int4 = 0
-    try std.testing.expect(result = int4_sq(value));
-    try std.testing.expect(result == 0);
+    const value: Int4 = 0;
+    const result = int4_sq(value);
+    assert(result == 0);
 }
 
 test "int4_abs_diff_same" {
-    given a: Int4 = 5
-    try std.testing.expect(b: Int4 = 5);
-    try std.testing.expect(result = int4_abs_diff(a, b));
-    try std.testing.expect(result == 0);
+    const a: Int4 = 5;
+    const b: Int4 = 5;
+    const result = int4_abs_diff(a, b);
+    assert(result == 0);
 }
 
 test "int4_abs_diff_positive" {
-    given a: Int4 = 5
-    try std.testing.expect(b: Int4 = 2);
-    try std.testing.expect(result = int4_abs_diff(a, b));
-    try std.testing.expect(result == 3);
+    const a: Int4 = 5;
+    const b: Int4 = 2;
+    const result = int4_abs_diff(a, b);
+    assert(result == 3);
 }
 
 test "int4_abs_diff_negative" {
-    given a: Int4 = 2
-    try std.testing.expect(b: Int4 = 5);
-    try std.testing.expect(result = int4_abs_diff(a, b));
-    try std.testing.expect(result == 3);
+    const a: Int4 = 2;
+    const b: Int4 = 5;
+    const result = int4_abs_diff(a, b);
+    assert(result == 3);
 }
 
 // ============================================================================
 // Invariants
 // ============================================================================
 
-}
 invariant int4_bits_constant
     assert BITS == 4
 
@@ -721,20 +720,20 @@ invariant int4_abs_non_negative
 
 invariant int4_neg_twice_original
     given value: Int4 = 5
-    try std.testing.expect(neg = int4_neg(value));
-    try std.testing.expect(neg_again = int4_neg(neg));
+    when neg = int4_neg(value)
+    and neg_again = int4_neg(neg)
     assert neg_again == value or value == MIN  // MIN saturates
 
 invariant int4_min_le_both
     given a: Int4 = 3
-    try std.testing.expect(b: Int4 = 5);
-    try std.testing.expect(result = int4_min(a, b));
+    and b: Int4 = 5
+    and result = int4_min(a, b)
     assert result <= a and result <= b
 
 invariant int4_max_ge_both
     given a: Int4 = 3
-    try std.testing.expect(b: Int4 = 5);
-    try std.testing.expect(result = int4_max(a, b));
+    and b: Int4 = 5
+    and result = int4_max(a, b)
     assert result >= a and result >= b
 
 invariant int4_clamp_result_in_range

@@ -45,7 +45,7 @@ export function QueenLadder({
    *  The board has no such number, and draws the row without one. */
   counts?: LadderCounts | null
   /** Which family this row is, for anything that needs to tell them apart. */
-  family?: 'specs' | 'board'
+  family?: 'specs' | 'board' | 'project'
 }) {
   return (
     <nav className="queen27-ladder" data-family={family} aria-label={aria}>

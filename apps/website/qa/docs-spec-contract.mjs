@@ -170,8 +170,11 @@ if (witnessTable) {
 const constitution = readFileSync(join(CORPUS, 'docs/T27-CONSTITUTION.md'), 'utf8')
 const alphabet = readFileSync(join(CORPUS, 'docs/agents/AGENTS_ALPHABET.md'), 'utf8')
 const laws = parseLawTable(constitution), phases = parsePhases(alphabet)
-assert.equal(laws.rows.length, 7, 'the constitution defines L1-L7')
-assert.deepEqual(laws.rows.map((l) => l.law), ['L1', 'L2', 'L3', 'L4', 'L5', 'L6', 'L7'])
+// L0 PURPOSE (adopted 2026-09-23) opens the table and sits outside the L1-L7
+// ordering by the constitution's own words; L1-L7 follow in order, unchanged.
+const lawIds = laws.rows.map((l) => l.law)
+const orderedLaws = lawIds[0] === 'L0' ? lawIds.slice(1) : lawIds
+assert.deepEqual(orderedLaws, ['L1', 'L2', 'L3', 'L4', 'L5', 'L6', 'L7'], 'the constitution defines L1-L7, optionally preceded by L0 PURPOSE')
 if (lawsTable) assert.deepEqual(lawsTable.rows, laws.rows)
 assert.deepEqual(docs.figures['law-hierarchy'].laws.map((l) => l.law), laws.rows.map((l) => l.law))
 assert.equal(phases.length, 7, 'the alphabet draws six phases plus GIT WORKFLOW')

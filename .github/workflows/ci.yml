@@ -32,21 +32,20 @@ jobs:
           # Build with -Dci=true to skip GUI targets requiring raylib
           zig build -Dci=true
 
-      # P0.4: Memory leak detection via Zig's General Purpose Allocator (GPA).
-      # Any memory leaks will cause the test to fail with a "leaked" error message.
-      # This is a HARD GATE - the build will fail if any tests leak memory.
-      # The leak checking is enabled by using std.testing.allocator in tests.
-      # Additional runtime leak checking can be enabled with --zig-lib-dir.
-      - name: Test (with leak detection)
-        run: |
-          # Run tests with Zig's built-in leak detection
-          # Tests using std.testing.allocator will automatically detect leaks
-          zig build test -Dci=true 2>&1 | tee test-output.txt
-          # Check for any memory leak indicators
-          if grep -i "leak\|memory.*leak\|allocation.*leak" test-output.txt; then
-            echo "::error::Memory leaks detected in tests"
-            exit 1
-          fi
+      # P0.4: Memory leak detection via Zig's General Purpose Allocator (GPA) is kept: a
+      # leak fails this step as before.
+      #
+      # The test step is judged, not piped. It used to run `zig build test -Dci=true 2>&1 | tee`
+      # under bash without pipefail, so its exit code was tee's: on main five test roots do not
+      # compile -- src/trinity.zig, the library's own test root, among them -- and the step was
+      # green on every push while its summary said "124/135 steps succeeded; 5 failed" (#616;
+      # #987 is the tee fix alone). tools/reproduce.py reads the exit code from the process and
+      # holds the result to specs/reproduce/headless.t27: exactly the roots that file names as
+      # blocked may fail, a sixth fails this step, and so does a blocked root that compiles again
+      # (take it off the list); a failed test, a leak, fewer tests or fewer run steps fail it too.
+      # The record of the run is test-output.json.
+      - name: Test (judged against specs/reproduce/headless.t27)
+        run: python3 tools/reproduce.py test --reuse-cache --out test-output.json
 
       - name: Format check
         run: |

@@ -3,7 +3,7 @@
 .queen-hero-block {
   border-top: 1px solid rgba(0, 255, 136, .24);
   background: #020605;
-  color: var(--text, #e7f7fa);
+  color: var(--text, #FFFFFF);
 }
 
 .queen-hero-block-inner {
@@ -77,12 +77,39 @@
 .queen-hero-block-stats span { color: #a8c1ba; font-size: .68rem; }
 .queen-hero-block-atlas > small { position: absolute; right: 1rem; bottom: 1rem; color: #64dcff; font-size: .65rem; }
 
-/* The stats sit over the live scene now, so they need their own ground. */
+/* The stats sit over the live scene now, so they need their own ground.
+
+   A ground was half of it, and this is the surface that proves the other half
+   matters most where it is least expected. The block mounts the same
+   QueenCatalogHive -> QueenCombBabylon the board does, with foundationVisible
+   and fitInset 0: a live rotating lattice, on the public landing, above the
+   fold, the first thing anyone who has never heard of this project sees.
+   #000000b8 is alpha 0.7216, so 28% of that lattice reaches the digits -- and
+   alpha scales the field's amplitude while leaving its spatial frequency
+   untouched, so what reaches them is a hexagon edge at full sharpness, read as
+   a stroke of a numeral. The three inks pass 4.5:1 over a lit field (4.87,
+   5.85, 6.56 -- from 0xb8/255 and not from a 0.72 rounded on the way in, which
+   is the kind of slip a comment can make and a stylesheet cannot), which is
+   why the arithmetic never objected: contrast models the
+   backdrop as one flat colour, and a lattice is not one.
+
+   Darkening #000000b8 is the answer that was tried twice on the board, on
+   KANBAN and on TRI, and rejected both times for the same reason it would fail
+   here. blur() is the only declaration in CSS that touches the frequency.
+
+   qa/queen-contrast-contract.mjs could not have found this until today, and
+   the reason is worth keeping next to the fix: the gate derives the sheets it
+   reads by walking imports, and it walked from the board's route entry alone.
+   The landing is a different root. A gate rooted at one page is honest about
+   one page and silent about every other, and silence had been reading as
+   approval. It now walks from src/App.tsx as well. */
 .queen-hero-block-stats,
 .queen-hero-block-atlas > small {
   z-index: 3;
   padding: .3rem .5rem;
   background: #000000b8;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
 @media (max-width: 720px) {

@@ -141,7 +141,7 @@ module GoldenFloatFamily {
     // 352353354355356357358359360361362363364365366367368369370371372373374375376377378379380381382383384385386387388389390391392393394395396397398399400401402403404405406407408409410411412413414415416417418419420421422423424
 
     fn get_format_by_name(name: string) -> Option<GoldenFloatFormat> {
-        for (const GOLDEN_FLOAT_FAMILY) |fmt| {
+        for fmt in GOLDEN_FLOAT_FAMILY {
             if (fmt.name == name) {
                 return fmt;
             }
@@ -150,7 +150,7 @@ module GoldenFloatFamily {
     }
 
     fn get_format_by_bits(bits: u8) -> Option<GoldenFloatFormat> {
-        for (const GOLDEN_FLOAT_FAMILY) |fmt| {
+        for fmt in GOLDEN_FLOAT_FAMILY {
             if (fmt.bits == bits) {
                 return fmt;
             }
@@ -188,7 +188,7 @@ module GoldenFloatFamily {
         // Check for duplicate names
         var names_seen : [10]string = ["", "", "", "", "", "", "", "", "", ""];
 
-        for (const GOLDEN_FLOAT_FAMILY) |fmt| {
+        for fmt in GOLDEN_FLOAT_FAMILY {
             format_count = format_count + 1;
 
             // Count primary formats (should be exactly 1)
@@ -205,7 +205,7 @@ module GoldenFloatFamily {
             total_dist = total_dist + fmt.phi_distance;
 
             // Check for duplicate names
-            for (const names_seen) |name| {
+            for name in names_seen {
                 if (name != "" && name == fmt.name) {
                     all_names_unique = false;
                 }
@@ -301,7 +301,7 @@ module GoldenFloatFamily {
 
     test gffamily_only_gf16_is_primary
         var count = 0
-        for (const GOLDEN_FLOAT_FAMILY) |fmt| {
+        for fmt in GOLDEN_FLOAT_FAMILY {
             if (fmt.is_primary) { count = count + 1; }
         }
         then count == 1
@@ -403,23 +403,26 @@ module GoldenFloatFamily {
     invariant gffamily_gf32_at_index_6
         assert GOLDEN_FLOAT_FAMILY[6].name == "GF32"
 
-    invariant gffamily_all_formats_have_sign_bits_1
-        for (const GOLDEN_FLOAT_FAMILY) |fmt| {
+    invariant gffamily_all_formats_have_sign_bits_1 {
+        for fmt in GOLDEN_FLOAT_FAMILY {
             assert fmt.sign_bits == 1;
         }
+    }
 
-    invariant gffamily_all_formats_bits_sum_correct
-        for (const GOLDEN_FLOAT_FAMILY) |fmt| {
+    invariant gffamily_all_formats_bits_sum_correct {
+        for fmt in GOLDEN_FLOAT_FAMILY {
             assert fmt.sign_bits + fmt.exp_bits + fmt.mant_bits == fmt.bits;
         }
+    }
 
     invariant gffamily_primary_is_gf16
         assert GOLDEN_FLOAT_FAMILY[3].is_primary == true
 
-    invariant gffamily_phi_distances_non_negative
-        for (const GOLDEN_FLOAT_FAMILY) |fmt| {
+    invariant gffamily_phi_distances_non_negative {
+        for fmt in GOLDEN_FLOAT_FAMILY {
             assert fmt.phi_distance >= 0.0;
         }
+    }
 
     invariant gffamily_memory_efficiency_gf4
         assert abs(memory_efficiency(GOLDEN_FLOAT_FAMILY[0]) - 0.125) < 0.01

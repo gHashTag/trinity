@@ -119,7 +119,7 @@ pub fn clk_domain_decay(domain: ClkDomain) ClkDomain {
 // is_subthreshold(voltage_mv: u16, config: SubthConfig) -> bool
 // Check if voltage is in sub-threshold region
 pub fn is_subthreshold(voltage_mv: u16, config: SubthConfig) bool {
-    if (not config.enable_subth) {
+    if (!config.enable_subth) {
         return false;
     }
     return voltage_mv < config.threshold_mv;
@@ -182,8 +182,9 @@ pub fn power_state_deeper(a: PowerState, b: PowerState) PowerState {
 // power_state_sleep_ok(domains: [NUM_CLK_DOMAINS]ClkDomain, current_cycle: u32) -> bool
 // Check if all domains can go to sleep
 pub fn power_state_sleep_ok(domains: [NUM_CLK_DOMAINS]ClkDomain, current_cycle: u32) bool {
-    for (domains) |domain| {
-        if (not clk_domain_is_idle(domain, current_cycle, 100)) {
+    for i in 0..NUM_CLK_DOMAINS {
+        const domain = domains[i];
+        if (!clk_domain_is_idle(domain, current_cycle, 100)) {
             return false;
         }
     }
@@ -217,207 +218,206 @@ pub fn decode_subth_clk(encoded: u16) struct { domain_id: u8, mode: u8 } {
 // ============================================================================
 
 test "num_clk_domains_eight" {
-    try std.testing.expect(NUM_CLK_DOMAINS == 8);
+    assert(NUM_CLK_DOMAINS == 8);
 }
 
 test "subth_threshold_four_hundred" {
-    try std.testing.expect(SUBTH_THRESHOLD_MV == 400);
+    assert(SUBTH_THRESHOLD_MV == 400);
 }
 
 test "normal_voltage_eleven_hundred" {
-    try std.testing.expect(NORMAL_VOLTAGE_MV == 1100);
+    assert(NORMAL_VOLTAGE_MV == 1100);
 }
 
 test "clk_gate_mode_off" {
-    try std.testing.expect(@intFromEnum(ClkGateMode.off) == 0);
+    assert(@intFromEnum(ClkGateMode.off) == 0);
 }
 
 test "clk_gate_mode_on" {
-    try std.testing.expect(@intFromEnum(ClkGateMode.on) == 1);
+    assert(@intFromEnum(ClkGateMode.on) == 1);
 }
 
 test "clk_gate_mode_auto" {
-    try std.testing.expect(@intFromEnum(ClkGateMode.auto) == 2);
+    assert(@intFromEnum(ClkGateMode.auto) == 2);
 }
 
 test "power_state_active" {
-    try std.testing.expect(@intFromEnum(PowerState.active) == 0);
+    assert(@intFromEnum(PowerState.active) == 0);
 }
 
 test "power_state_deep_sleep" {
-    try std.testing.expect(@intFromEnum(PowerState.deep_sleep) == 3);
+    assert(@intFromEnum(PowerState.deep_sleep) == 3);
 }
 
 test "clk_domain_enabled_true" {
-    given domain = ClkDomain{.id = 0, .enabled = true, .gate_mode = ClkGateMode.on, .activity_count = 0, .last_active_cycle = 0}
-    try std.testing.expect(clk_domain_enabled(domain) == true);
+    const domain = ClkDomain{.id = 0, .enabled = true, .gate_mode = ClkGateMode.on, .activity_count = 0, .last_active_cycle = 0};
+    assert(clk_domain_enabled(domain) == true);
 }
 
 test "clk_domain_enabled_false_gate_off" {
-    given domain = ClkDomain{.id = 0, .enabled = true, .gate_mode = ClkGateMode.off, .activity_count = 0, .last_active_cycle = 0}
-    try std.testing.expect(clk_domain_enabled(domain) == false);
+    const domain = ClkDomain{.id = 0, .enabled = true, .gate_mode = ClkGateMode.off, .activity_count = 0, .last_active_cycle = 0};
+    assert(clk_domain_enabled(domain) == false);
 }
 
 test "clk_domain_enabled_false_disabled" {
-    given domain = ClkDomain{.id = 0, .enabled = false, .gate_mode = ClkGateMode.on, .activity_count = 0, .last_active_cycle = 0}
-    try std.testing.expect(clk_domain_enabled(domain) == false);
+    const domain = ClkDomain{.id = 0, .enabled = false, .gate_mode = ClkGateMode.on, .activity_count = 0, .last_active_cycle = 0};
+    assert(clk_domain_enabled(domain) == false);
 }
 
 test "clk_domain_gate_active_off" {
-    given domain = ClkDomain{.id = 0, .enabled = true, .gate_mode = ClkGateMode.off, .activity_count = 10, .last_active_cycle = 0}
-    try std.testing.expect(clk_domain_gate_active(domain) == true);
+    const domain = ClkDomain{.id = 0, .enabled = true, .gate_mode = ClkGateMode.off, .activity_count = 10, .last_active_cycle = 0};
+    assert(clk_domain_gate_active(domain) == true);
 }
 
 test "clk_domain_gate_active_auto_idle" {
-    given domain = ClkDomain{.id = 0, .enabled = true, .gate_mode = ClkGateMode.auto, .activity_count = 0, .last_active_cycle = 0}
-    try std.testing.expect(clk_domain_gate_active(domain) == true);
+    const domain = ClkDomain{.id = 0, .enabled = true, .gate_mode = ClkGateMode.auto, .activity_count = 0, .last_active_cycle = 0};
+    assert(clk_domain_gate_active(domain) == true);
 }
 
 test "clk_domain_gate_active_auto_active" {
-    given domain = ClkDomain{.id = 0, .enabled = true, .gate_mode = ClkGateMode.auto, .activity_count = 10, .last_active_cycle = 0}
-    try std.testing.expect(clk_domain_gate_active(domain) == false);
+    const domain = ClkDomain{.id = 0, .enabled = true, .gate_mode = ClkGateMode.auto, .activity_count = 10, .last_active_cycle = 0};
+    assert(clk_domain_gate_active(domain) == false);
 }
 
 test "clk_domain_is_idle_true" {
-    given domain = ClkDomain{.id = 0, .enabled = true, .gate_mode = ClkGateMode.on, .activity_count = 0, .last_active_cycle = 0}
-    try std.testing.expect(clk_domain_is_idle(domain, 200, 100) == true);
+    const domain = ClkDomain{.id = 0, .enabled = true, .gate_mode = ClkGateMode.on, .activity_count = 0, .last_active_cycle = 0};
+    assert(clk_domain_is_idle(domain, 200, 100) == true);
 }
 
 test "clk_domain_is_idle_false_active" {
-    given domain = ClkDomain{.id = 0, .enabled = true, .gate_mode = ClkGateMode.on, .activity_count = 10, .last_active_cycle = 0}
-    try std.testing.expect(clk_domain_is_idle(domain, 200, 100) == false);
+    const domain = ClkDomain{.id = 0, .enabled = true, .gate_mode = ClkGateMode.on, .activity_count = 10, .last_active_cycle = 0};
+    assert(clk_domain_is_idle(domain, 200, 100) == false);
 }
 
 test "clk_domain_is_idle_false_recent" {
-    given domain = ClkDomain{.id = 0, .enabled = true, .gate_mode = ClkGateMode.on, .activity_count = 0, .last_active_cycle = 150}
-    try std.testing.expect(clk_domain_is_idle(domain, 200, 100) == false);
+    const domain = ClkDomain{.id = 0, .enabled = true, .gate_mode = ClkGateMode.on, .activity_count = 0, .last_active_cycle = 150};
+    assert(clk_domain_is_idle(domain, 200, 100) == false);
 }
 
 test "clk_domain_pulse" {
-    given domain = ClkDomain{.id = 0, .enabled = true, .gate_mode = ClkGateMode.on, .activity_count = 0, .last_active_cycle = 0}
-    try std.testing.expect(result = clk_domain_pulse(domain, 100));
-    try std.testing.expect(result.activity_count == 1);
-    try std.testing.expect(result.last_active_cycle == 100);
+    const domain = ClkDomain{.id = 0, .enabled = true, .gate_mode = ClkGateMode.on, .activity_count = 0, .last_active_cycle = 0};
+    const result = clk_domain_pulse(domain, 100);
+    assert(result.activity_count == 1);
+    assert(result.last_active_cycle == 100);
 }
 
 test "clk_domain_decay" {
-    given domain = ClkDomain{.id = 0, .enabled = true, .gate_mode = ClkGateMode.on, .activity_count = 5, .last_active_cycle = 0}
-    try std.testing.expect(result = clk_domain_decay(domain));
-    try std.testing.expect(result.activity_count == 4);
+    const domain = ClkDomain{.id = 0, .enabled = true, .gate_mode = ClkGateMode.on, .activity_count = 5, .last_active_cycle = 0};
+    const result = clk_domain_decay(domain);
+    assert(result.activity_count == 4);
 }
 
 test "clk_domain_decay_zero" {
-    given domain = ClkDomain{.id = 0, .enabled = true, .gate_mode = ClkGateMode.on, .activity_count = 0, .last_active_cycle = 0}
-    try std.testing.expect(result = clk_domain_decay(domain));
-    try std.testing.expect(result.activity_count == 0);
+    const domain = ClkDomain{.id = 0, .enabled = true, .gate_mode = ClkGateMode.on, .activity_count = 0, .last_active_cycle = 0};
+    const result = clk_domain_decay(domain);
+    assert(result.activity_count == 0);
 }
 
 test "is_subthreshold_true" {
-    given config = SubthConfig{.threshold_mv = 400, .hysteresis_mv = 20, .enable_subth = true, .transition_cycles = 10}
-    try std.testing.expect(is_subthreshold(300, config) == true);
+    const config = SubthConfig{.threshold_mv = 400, .hysteresis_mv = 20, .enable_subth = true, .transition_cycles = 10};
+    assert(is_subthreshold(300, config) == true);
 }
 
 test "is_subthreshold_false_disabled" {
-    given config = SubthConfig{.threshold_mv = 400, .hysteresis_mv = 20, .enable_subth = false, .transition_cycles = 10}
-    try std.testing.expect(is_subthreshold(300, config) == false);
+    const config = SubthConfig{.threshold_mv = 400, .hysteresis_mv = 20, .enable_subth = false, .transition_cycles = 10};
+    assert(is_subthreshold(300, config) == false);
 }
 
 test "is_subthreshold_false_high_voltage" {
-    given config = SubthConfig{.threshold_mv = 400, .hysteresis_mv = 20, .enable_subth = true, .transition_cycles = 10}
-    try std.testing.expect(is_subthreshold(500, config) == false);
+    const config = SubthConfig{.threshold_mv = 400, .hysteresis_mv = 20, .enable_subth = true, .transition_cycles = 10};
+    assert(is_subthreshold(500, config) == false);
 }
 
 test "voltage_within_range_true" {
-    try std.testing.expect(voltage_within_range(1100, 1100, 50) == true);
+    assert(voltage_within_range(1100, 1100, 50) == true);
 }
 
 test "voltage_within_range_low" {
-    try std.testing.expect(voltage_within_range(1060, 1100, 50) == true);
+    assert(voltage_within_range(1060, 1100, 50) == true);
 }
 
 test "voltage_within_range_high" {
-    try std.testing.expect(voltage_within_range(1140, 1100, 50) == true);
+    assert(voltage_within_range(1140, 1100, 50) == true);
 }
 
 test "voltage_within_range_false" {
-    try std.testing.expect(voltage_within_range(1000, 1100, 50) == false);
+    assert(voltage_within_range(1000, 1100, 50) == false);
 }
 
 test "subth_power_estimate_normal" {
-    try std.testing.expect(subth_power_estimate(1100) == 100);
+    assert(subth_power_estimate(1100) == 100);
 }
 
 test "subth_power_estimate_half" {
-    try std.testing.expect(subth_power_estimate(550) == 25);
+    assert(subth_power_estimate(550) == 25);
 }
 
 test "subth_power_estimate_quarter" {
-    try std.testing.expect(subth_power_estimate(275) == 6);
+    assert(subth_power_estimate(275) == 6);
 }
 
 test "power_savings_ratio_fifty_percent" {
-    given result = power_savings_ratio(1100, 777)
-    try std.testing.expect(result == 50);
+    const result = power_savings_ratio(1100, 777);
+    assert(result == 50);
 }
 
 test "power_savings_ratio_seventy_five_percent" {
-    given result = power_savings_ratio(1100, 550)
-    try std.testing.expect(result == 75);
+    const result = power_savings_ratio(1100, 550);
+    assert(result == 75);
 }
 
 test "power_state_can_gate_active" {
-    try std.testing.expect(power_state_can_gate(PowerState.active) == false);
+    assert(power_state_can_gate(PowerState.active) == false);
 }
 
 test "power_state_can_gate_idle" {
-    try std.testing.expect(power_state_can_gate(PowerState.idle) == true);
+    assert(power_state_can_gate(PowerState.idle) == true);
 }
 
 test "power_state_can_gate_sleep" {
-    try std.testing.expect(power_state_can_gate(PowerState.sleep) == true);
+    assert(power_state_can_gate(PowerState.sleep) == true);
 }
 
 test "power_state_deeper" {
-    try std.testing.expect(power_state_deeper(PowerState.idle, PowerState.deep_sleep) == PowerState.deep_sleep);
-    try std.testing.expect(power_state_deeper(PowerState.deep_sleep, PowerState.idle) == PowerState.deep_sleep);
+    assert(power_state_deeper(PowerState.idle, PowerState.deep_sleep) == PowerState.deep_sleep);
+    assert(power_state_deeper(PowerState.deep_sleep, PowerState.idle) == PowerState.deep_sleep);
 }
 
 test "power_state_sleep_ok_true" {
-    given domains = [_]ClkDomain{
+    const domains = [_]ClkDomain{
         .{.id = 0, .enabled = true, .gate_mode = ClkGateMode.on, .activity_count = 0, .last_active_cycle = 0},
         .{.id = 1, .enabled = true, .gate_mode = ClkGateMode.on, .activity_count = 0, .last_active_cycle = 0},
-    } ** 8
-    try std.testing.expect(power_state_sleep_ok(domains, 200) == true);
+    } ** 8;
+    assert(power_state_sleep_ok(domains, 200) == true);
 }
 
 test "power_state_sleep_ok_false" {
-    given domains = [_]ClkDomain{
+    const domains = [_]ClkDomain{
         .{.id = 0, .enabled = true, .gate_mode = ClkGateMode.on, .activity_count = 10, .last_active_cycle = 0},
         .{.id = 1, .enabled = true, .gate_mode = ClkGateMode.on, .activity_count = 0, .last_active_cycle = 0},
-    } ** 8
-    try std.testing.expect(power_state_sleep_ok(domains, 200) == false);
+    } ** 8;
+    assert(power_state_sleep_ok(domains, 200) == false);
 }
 
 test "encode_subth_clk" {
-    given encoded = encode_subth_clk(0x05, 0x02)
-    try std.testing.expect((encoded >> 8) == OP_SUBTH_CLK);
+    const encoded = encode_subth_clk(0x05, 0x02);
+    assert((encoded >> 8) == OP_SUBTH_CLK);
 }
 
 test "decode_subth_clk" {
-    given decoded = decode_subth_clk(0xE5A8)
-    try std.testing.expect(decoded.domain_id == 0x05);
-    try std.testing.expect(decoded.mode == 0x02);
+    const decoded = decode_subth_clk(0xE5A8);
+    assert(decoded.domain_id == 0x05);
+    assert(decoded.mode == 0x02);
 }
 
 test "opcode_constant" {
-    try std.testing.expect(OP_SUBTH_CLK == 0xE5);
+    assert(OP_SUBTH_CLK == 0xE5);
 }
 
 // ============================================================================
 // Invariants
 // ============================================================================
 
-}
 invariant num_clk_domains_eight
     assert NUM_CLK_DOMAINS == 8
 
@@ -425,25 +425,25 @@ invariant subth_threshold_bound
     assert SUBTH_THRESHOLD_MV < NORMAL_VOLTAGE_MV
 
 invariant power_estimate_positive
-    try std.testing.expect(subth_power_estimate(100) >= 0);
+    assert subth_power_estimate(100) >= 0
 
 invariant power_savings_bound
-    try std.testing.expect(power_savings_ratio(1100, 550) <= 100);
+    assert power_savings_ratio(1100, 550) <= 100
 
 invariant power_state_enum_range
-    try std.testing.expect(@intFromEnum(PowerState.active) >= 0 and @intFromEnum(PowerState.deep_sleep) <= 3);
+    assert @intFromEnum(PowerState.active) >= 0 and @intFromEnum(PowerState.deep_sleep) <= 3
 
 invariant clk_gate_mode_enum_range
-    try std.testing.expect(@intFromEnum(ClkGateMode.off) >= 0 and @intFromEnum(ClkGateMode.auto) <= 2);
+    assert @intFromEnum(ClkGateMode.off) >= 0 and @intFromEnum(ClkGateMode.auto) <= 2
 
 invariant clk_domain_pulse_increases_activity
     given domain = ClkDomain{.id = 0, .enabled = true, .gate_mode = ClkGateMode.on, .activity_count = 0, .last_active_cycle = 0}
-    try std.testing.expect(result = clk_domain_pulse(domain, 100));
+    and result = clk_domain_pulse(domain, 100)
     assert result.activity_count > domain.activity_count
 
 invariant clk_domain_decay_decreases_or_same
     given domain = ClkDomain{.id = 0, .enabled = true, .gate_mode = ClkGateMode.on, .activity_count = 5, .last_active_cycle = 0}
-    try std.testing.expect(result = clk_domain_decay(domain));
+    and result = clk_domain_decay(domain)
     assert result.activity_count <= domain.activity_count
 
 invariant power_savings_symmetric

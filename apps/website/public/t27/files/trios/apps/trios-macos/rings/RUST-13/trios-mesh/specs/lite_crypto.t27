@@ -54,7 +54,7 @@ module LiteCrypto {
         return (((new_s3 & 0xFFFFFFFF) << 96) |
                ((new_s2 & 0xFFFFFFFF) << 64) |
                ((new_s1 & 0xFFFFFFFF) << 32) |
-               (new_s0 & 0xFFFFFFFF);
+               (new_s0 & 0xFFFFFFFF));
     }
 
     // Generate 128-bit PSK from seed

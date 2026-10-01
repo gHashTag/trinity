@@ -6,7 +6,7 @@
 .agi-game {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   background: #020605;
-  color: var(--text, #e7f7fa);
+  color: var(--text, #FFFFFF);
 }
 
 .agi-game-inner {

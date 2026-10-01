@@ -3,6 +3,390 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: "the-seed-moved-it-the-pins-moved-it-more",
+    title: "The seed moved Fmax 1.22x. The pins moved it 2.6x.",
+    summary: "[nextpnr-xilinx post-route estimates on xc7a200tfbg484-2, not sign-off timing; a stand-alone unit on synthetic pins, not a full design; JTAG result from our own bench] Two bench questions became two commands. tri fpga-seeds treats Fmax as a range over placement seeds: a 321-LUT ternary dot-product unit ran 164.15 to 200.40 MHz over 20 seeds, and 62.68 to 76.75 MHz with its pins spread across the package, with the same netlist on every run. tri fpga-jtag reads which chip is on the chain, never programs, and tells a silent TDO from a broken cable. On our bench it caught an XC7A200T where an XC7A100T was expected.",
+    date: "2026-10-01",
+    readingMinutes: 5,
+    tags: ["FPGA", "Open toolchain", "Verification", "Tooling"],
+    receipts: [
+      { label: "nextpnr-xilinx, the place-and-route tool whose seeds were swept", href: "https://github.com/openXC7/nextpnr-xilinx" },
+      { label: "openFPGALoader, used for the FTDI path of fpga-jtag", href: "https://github.com/trabucayre/openFPGALoader" },
+      { label: "xc3sprog, used for the Platform Cable USB II path", href: "https://sourceforge.net/projects/xc3sprog/" },
+    ],
+    openQuestions: [
+      "The unit is measured stand-alone on synthetic pins. Its Fmax inside a real SoC is set by a different critical path and is not claimed here.",
+      "The spread-pinout sweep has 10 seeds, not 20: one seed did not finish under machine load and the rest were not run.",
+      "Seed spread was measured for one small unit on one part. Larger designs may spread more or less.",
+      "The second bench, an XC7A100T on a DLC10 clone, still returns no chain; the cause is not yet found.",
+      "The two commands live in a private repository for now, so a reader cannot yet run them.",
+    ],
+    published: true,
+    ru: {
+      title: "Seed сдвинул Fmax в 1,22 раза. Выводы — в 2,6 раза.",
+      summary: "[оценки nextpnr-xilinx после разводки на xc7a200tfbg484-2, не подписанный тайминг; отдельный блок на синтетических выводах, а не целый дизайн; результат JTAG — с нашего стенда] Два вопроса стенда стали двумя командами. tri fpga-seeds считает Fmax диапазоном по seed размещения: тернарный блок скалярного произведения на 321 LUT дал от 164,15 до 200,40 МГц на 20 seed и от 62,68 до 76,75 МГц с выводами, разнесёнными по корпусу, при одном и том же нетлисте во всех прогонах. tri fpga-jtag читает, какой чип стоит в цепочке, никогда не прошивает и отличает молчащий TDO от сломанного кабеля. На нашем стенде она поймала XC7A200T там, где ожидался XC7A100T.",
+      openQuestions: [
+        "Блок измерен отдельно, на синтетических выводах. Его Fmax внутри настоящей SoC задаётся другим критическим путём и здесь не заявляется.",
+        "В переборе с разнесёнными выводами 10 seed, а не 20: один seed не завершился под нагрузкой машины, остальные не запускались.",
+        "Разброс по seed измерен для одного маленького блока на одной микросхеме. У больших дизайнов он может быть больше или меньше.",
+        "Второй стенд, XC7A100T на клоне DLC10, по-прежнему не показывает цепочку; причина пока не найдена.",
+        "Обе команды пока лежат в закрытом репозитории, так что читатель ещё не может их запустить.",
+      ],
+    },
+  },
+  {
+    slug: "mask-over-scale-ternary-drafts-that-compile",
+    title: "Mask over scale: a 9M ternary model whose drafts compile",
+    summary: "[measured on the 391-item strict t27 bench: 0/150 flat vs 3/150 masked on the same 30 hardest items; 65% of flat first compile errors are undeclared identifiers; strict loop closed at 30 rounds / 8083 samples = 4/391 pass, 283/391 compile; three decode constraints, zero parameters; benched checkpoint = t27-domain finetune of tern_tc, the package ships the base] tern_tc, a 9M ternary model sized to XC7A200T block RAM, cannot learn the names of a scope -- so instead of scaling it we constrained its decoder: a scope mask at every decode step, diversity by mask rule rather than temperature (15/30 vs 3/30 union compile), and a repeat-n-gram ban after 1517/2177 blocked candidates turned out to be repetition cascades. The result is not a solver: 1.0% of the strict set passes. It is a draft model for a verifier -- 72% of the strict set gets a compiling body, tri tc-draft returns the first test-verified one or an honest refusal.",
+    date: "2026-09-29",
+    readingMinutes: 7,
+    tags: ["tern_tc", "Ternary", "t27", "Code generation", "Verification"],
+    receipts: [
+      { label: "The package: model, tokenizer, verify.sh, sha256 receipts", href: "https://huggingface.co/playra/tern-tc-9m" },
+      { label: "The public verify workflow -- green against today's hub bytes", href: "https://github.com/gHashTag/tern-tc-9m-verify/actions" },
+      { label: "Earlier: a small agent needs an exact judge", href: "https://t27.ai/blog/a-small-agent-needs-an-exact-judge/" },
+      { label: "Earlier: ternary won the wire, not the gate", href: "https://t27.ai/blog/ternary-won-the-wire-not-the-gate/" },
+    ],
+    openQuestions: [
+      "The selfcheck loop is not a clean A/B on --no-repeat: the flag went in at round 25 of a live run, so the two late passes are consistent with the ban but not isolated by it.",
+      "The strict loop ran one seed of the model; ternary training spread at 52m was measured at ~1.7%, so 4-vs-3 passes is within noise and the honest number is 'a handful, not a rate'.",
+      "Mask rules and the repeat ban were tuned on the same bench they are reported on; no held-out spec set exists for them.",
+      "The 72% compile union is per-item over unlimited retries (~21 samples median); compile@1 on fresh items is far lower.",
+      "The bench's judge is the spec's own tests, and some of those tests are weak -- that is what the strict subset is for, but weak-test leakage outside it is unquantified.",
+      "Every number here comes from the t27-finetuned bench checkpoint; the HF package ships the base checkpoint whose card claims no quality. The finetune is now published as playra/tern-tc-9m-t27; its finetune corpus and the bench corpus are both t27 specs at pinned commits, so no held-out set separates them.",
+    ],
+    published: true,
+    ru: {
+      title: "Маска вместо масштаба: тернарная модель на 9M, чьи черновики компилируются",
+      summary: "[измерено на строгом сете t27 из 391 айтемов: 0/150 плоской генерации против 3/150 маскированной на тех же 30 труднейших; 65% первых ошибок компиляции — необъявленные идентификаторы; строгая петля закрыта на 30 раундах / 8083 сэмплах = 4/391 pass, 283/391 compile; три ограничения декодера, ноль параметров; чекпоинт бенчмарка = t27-файнтюн tern_tc, пакет шипит базовый] tern_tc, тернарная модель на 9M под блочную память XC7A200T, не может выучить имена областей видимости — и вместо масштабирования мы ограничили её декодер: маска области видимости на каждом шаге, разнообразие правилами маски, а не температурой (15/30 против 3/30 union compile), и запрет n-граммов повторов после того, как 1517/2177 нескомпилированных кандидатов оказались каскадами повторов. Результат — не решатель: 1.0% строгого сета проходит тесты. Это модель-черновик для верификатора: 72% сета получает компилируемое тело, tri tc-draft возвращает первое проверенное тестами или честный отказ.",
+      openQuestions: [
+        "Петля самопроверки — не чистый A/B по --no-repeat: флаг вошёл в живой прогон на 25-м раунде, поэтому два поздних прохождения согласуются с запретом, но не изолированы им.",
+        "Строгая петля гонялась на одном сиде модели; разброс тернарного обучения на 52m измерен как ~1.7%, поэтому 4 против 3 прохождений — внутри шума, честная формулировка — «горстка, а не rate».",
+        "Правила маски и запрет повторов настраивались на том же бенчмарке, на котором отчётываются; held-out сета спек для них нет.",
+        "Union compile 72% — на айтем при неограниченных повторах (медиана ~21 сэмпл); compile@1 на свежих айтемах сильно ниже.",
+        "Судья бенчмарка — собственные тесты спеки, и часть тестов слабая — для этого и есть строгое подмножество, но утечка слабых тестов вне его не квантифицирована.",
+        "Все числа — с файнтюннутого t27-чекпоинта; HF-пакет шипит базовый, чья карточка не делает заявлений о качестве. Файнтюн опубликован как playra/tern-tc-9m-t27; его файнтюн-корпус и корпус бенчмарка — оба спеки t27 на запиненных коммитах, held-out сета между ними нет.",
+      ],
+    },
+  },
+  {
+    slug: "golden-ratio-weights-ran-on-the-board",
+    title: "Golden-ratio weights ran on the board. The phi cost one add per output.",
+    summary: "[measured on FPGA: layer 0, 403,200 of 403,200 receipts verified, registered before the run; the phi step and digit recombination are host arithmetic; one synthetic activation vector] The TNF paper's GFTernary weights, t*phi, applied to activations in Z[phi], ran on the unchanged AX7203 node with no multiplier. Each output is W.b + (W.a + W.b)*phi, so the node computes only ternary dots and the host adds once per output. All 5,632 Z[phi] rows of layer 0 matched a plain Z[phi] multiplication oracle bit for bit.",
+    date: "2026-09-27",
+    readingMinutes: 6,
+    tags: ["FPGA", "Ternary", "Number formats", "Verification", "TRI-NET"],
+    receipts: [
+      { label: "The pre-registration and the result, side by side", href: "https://github.com/gHashTag/trinity-fpga/blob/8a203217084eb3499d6dee5815be6a462575878f/conformance/GFT_ZPHI_ON_THE_NODE.md" },
+      { label: "The board log: 403,200 / 403,200 receipts, 5,632 / 5,632 Z[phi] rows", href: "https://github.com/gHashTag/trinity-fpga/blob/8a203217084eb3499d6dee5815be6a462575878f/conformance/board_runs/gft_zphi_l0.log" },
+      { label: "The harness, with its Z[phi] oracle and negative controls", href: "https://github.com/gHashTag/trinity-fpga/blob/8a203217084eb3499d6dee5815be6a462575878f/conformance/gft_zphi_ax7203.py" },
+      { label: "Ten weak points of the tern_tc record, ranked", href: "https://github.com/gHashTag/trinity-fpga/blob/8a203217084eb3499d6dee5815be6a462575878f/conformance/TERN_TC_WEAK_POINTS.md" },
+      { label: "The pull request that carries it: gHashTag/trinity-fpga 800", href: "https://github.com/gHashTag/trinity-fpga/pull/800" },
+      { label: "Earlier: the golden ratio in this format is a scale factor, not information", href: "https://t27.ai/blog/phi-is-a-scale-not-information/" },
+      { label: "Earlier: the board's receipts were never checked; now all 403,200 are", href: "https://t27.ai/blog/trained-weights-ran-receipts-were-not-checked/" },
+    ],
+    openQuestions: [
+      "Only layer 0 ran, with one synthetic Z[phi] activation vector, not the activations of a real forward pass.",
+      "The TNF accumulator and its rounding have no RTL, so the part of the claim beyond the dot products is untested on hardware.",
+      "The node computes ternary dots; the digit recombination and the phi step run on the host. The result says the linear path needs no multiplier, not that the FPGA did all of it.",
+      "Speed is not claimed: about 151,000 ternary multiply-accumulates per second over UART (derived).",
+      "A SipHash receipt is not publicly verifiable, and it does not stop an operator forging their own.",
+    ],
+    published: true,
+    ru: {
+      title: "Веса с золотым сечением отработали на плате. phi стоил одно сложение на выход.",
+      summary: "[измерено на FPGA: слой 0, проверено 403 200 из 403 200 квитанций, зарегистрировано до запуска; шаг phi и сборка разрядов — арифметика хоста; один синтетический вектор активаций] Веса GFTernary из статьи о TNF, t*phi, применённые к активациям из Z[phi], отработали на неизменённом узле AX7203 без умножителя. Каждый выход равен W.b + (W.a + W.b)*phi, так что узел считает только тернарные скалярные произведения, а хост делает одно сложение на выход. Все 5 632 строки Z[phi] слоя 0 совпали бит в бит с оракулом обычного умножения в Z[phi].",
+      openQuestions: [
+        "Прогнан только слой 0 с одним синтетическим вектором активаций из Z[phi], а не с активациями настоящего прямого прохода.",
+        "У аккумулятора TNF и его округления нет RTL, так что часть утверждения сверх скалярных произведений на железе не проверена.",
+        "Узел считает тернарные скалярные произведения; сборка разрядов и шаг phi выполняются на хосте. Результат говорит, что линейному пути не нужен умножитель, а не что всё сделала FPGA.",
+        "Скорость не заявляется: около 151 000 тернарных умножений с накоплением в секунду через UART (выведено).",
+        "Квитанция SipHash не проверяется публично и не мешает оператору подделать свои собственные.",
+      ],
+    },
+  },
+  {
+    slug: "trained-weights-ran-receipts-were-not-checked",
+    title: "The board's receipts were never checked. Now all 403,200 are.",
+    summary: "[measured on FPGA: all 42 trained matrices, every receipt verified; the activations were test vectors, not a forward pass] An AX7203 computed 28,416 of 28,416 rows of the trained tern_tc model's weight matrices bit-exact, while its harness reported 284,160 authenticated receipts without comparing a single tag. The fixed harness fails on seven kinds of misbehaving cell. On the board it then verified all 403,200 receipts across all 42 ternary matrices, with 33,792 of 33,792 rows bit-exact, plus 51,840 for w_down with int8 activations. Its first long runs stopped when a UART link dropped bytes with 64 jobs in flight. A test registered before it ran put the loss threshold at the USB bridge's 512-byte receive buffer, and at 24 in flight none were lost.",
+    date: "2026-09-27",
+    readingMinutes: 11,
+    tags: ["IGLA", "FPGA", "Ternary", "Verification", "TRI-NET", "Correction"],
+    receipts: [
+      { label: "The fix: gHashTag/trinity-fpga pull request 800", href: "https://github.com/gHashTag/trinity-fpga/pull/800" },
+      { label: "The commit whose receipt count is withdrawn (1f131fd)", href: "https://github.com/gHashTag/trinity-fpga/commit/1f131fdd3fdf1c78317a923a7cd070e11f101a8a" },
+      { label: "What is verified, by what, and how to reproduce it; every board run, the controls, the registered buffer test and the byte analysis", href: "https://github.com/gHashTag/trinity-fpga/blob/09b3d6f733e4fe2df8aa09791db1ecde8b2f54c6/conformance/TERN_TC_LAYER_RECEIPTS.md" },
+      { label: "The full 42-matrix board log: 403,200 / 403,200 receipts verified", href: "https://github.com/gHashTag/trinity-fpga/blob/09b3d6f733e4fe2df8aa09791db1ecde8b2f54c6/conformance/board_runs/tern_tc_all_w24.log" },
+      { label: "The window-64 control log: the link lost 59 bytes after 6,744 jobs", href: "https://github.com/gHashTag/trinity-fpga/blob/09b3d6f733e4fe2df8aa09791db1ecde8b2f54c6/conformance/board_runs/tern_tc_all_w64.log" },
+      { label: "The registered buffer test: window 26 (494 B) clean, window 30 (570 B) slipped", href: "https://github.com/gHashTag/trinity-fpga/blob/09b3d6f733e4fe2df8aa09791db1ecde8b2f54c6/conformance/board_runs/tern_tc_all_w30.log" },
+      { label: "All raw board logs from 2026-09-27", href: "https://github.com/gHashTag/trinity-fpga/tree/09b3d6f733e4fe2df8aa09791db1ecde8b2f54c6/conformance/board_runs" },
+      { label: "Prior art for tern_tc, with the CP2102N figures checked against its datasheet", href: "https://github.com/gHashTag/trinity-fpga/blob/09b3d6f733e4fe2df8aa09791db1ecde8b2f54c6/conformance/TERN_TC_PRIOR_ART.md" },
+      { label: "The fixed harness that ran them, with its negative controls", href: "https://github.com/gHashTag/trinity-fpga/blob/b1e95f6fd5ec43b5be709af86b179750ae8b27a5/conformance/tern_tc_layer_ax7203.py" },
+      { label: "The RTL testbench that replays the harness over UART", href: "https://github.com/gHashTag/trinity-fpga/blob/2b9830c5837aa47ad142a90a7279c2d8a8d401fe/formal/tern_tc_layer_rtl_tb.v" },
+      { label: "The node cell under test: trinet_node_core.v", href: "https://github.com/gHashTag/trinity-fpga/blob/2b9830c5837aa47ad142a90a7279c2d8a8d401fe/fpga/portable/trinet_node_core.v" },
+    ],
+    openQuestions: [
+      "The loss threshold sits between 494 and 570 bytes in flight, around the CP2102N's 512-byte receive buffer, and the node has no flow control. What stalls the bridge's USB transfers long enough to fill it is not measured, and the hub is not excluded.",
+      "The activation vectors were random test vectors, not the model's real activations. int8 activations have run on the board for one matrix.",
+      "No forward pass, token rate or power figure has been measured on the board.",
+      "A SipHash receipt is not publicly verifiable, and it does not stop an operator forging their own.",
+    ],
+    published: true,
+    ru: {
+      title: "Квитанции с платы никто не проверял. Теперь проверены все 403 200.",
+      summary: "[измерено на FPGA: все 42 обученные матрицы, проверена каждая квитанция; активации — тестовые векторы, а не прямой проход] AX7203 посчитала 28 416 из 28 416 строк матриц весов обученной модели tern_tc бит-точно, а её харнесс сообщил о 284 160 аутентифицированных квитанциях, не сравнив ни одного тега. Исправленный харнесс падает на семи видах неисправной ячейки. На плате он затем проверил все 403 200 квитанций по всем 42 тернарным матрицам, 33 792 из 33 792 строк бит-точно, и ещё 51 840 для w_down с int8-активациями. Первые длинные прогоны остановились, когда канал UART терял байты при 64 задачах в полёте. Проверка, зарегистрированная до запуска, поместила порог потерь на приёмный буфер USB-моста в 512 байт, а при 24 задачах в полёте не потерялось ни одного байта.",
+      openQuestions: [
+        "Порог потерь лежит между 494 и 570 байтами в полёте, около приёмного буфера CP2102N в 512 байт, а у узла нет управления потоком. Что задерживает USB-передачи моста настолько, чтобы буфер заполнился, не измерено, и хаб не исключён.",
+        "Векторы активаций были случайными тестовыми, а не настоящими активациями модели. int8-активации на плате прогнаны для одной матрицы.",
+        "Ни прямой проход, ни скорость в токенах, ни мощность на плате не измерены.",
+        "Квитанция SipHash не проверяется публично и не мешает оператору подделать свои собственные.",
+      ],
+    },
+  },
+  {
+    slug: "a-small-agent-needs-an-exact-judge",
+    title: "A small agent is only useful next to an exact judge",
+    summary: "[model results measured on GPUs; board throughput derived, not measured] One Artix-7 200T holds the layers of a 13M-parameter ternary model in its own block memory. In our own twin experiment the 100M ternary model passes 1.01% vs 1.68% for full precision across eight languages, and compile rate, not correctness, is the gap. A model that is wrong most of the time becomes useful only where a compiler checks every answer.",
+    date: "2026-09-26",
+    readingMinutes: 9,
+    tags: ["IGLA", "Agents", "FPGA", "Ternary", "Verification", "Plan"],
+    receipts: [
+      { label: "Codex paper, Table 1: pass@k for 12M-85M code models (arXiv:2107.03374)", href: "https://arxiv.org/abs/2107.03374" },
+      { label: "JetBrains Full Line Code Completion: a local 100M model, 16,384-token vocabulary (arXiv:2405.08704)", href: "https://arxiv.org/abs/2405.08704" },
+      { label: "Branch-Train-Merge (arXiv:2208.03306)", href: "https://arxiv.org/abs/2208.03306" },
+      { label: "c-BTM: scaling expert language models with unsupervised domain discovery (arXiv:2303.14177)", href: "https://arxiv.org/abs/2303.14177" },
+      { label: "TerEffic: on-chip vs HBM ternary inference on FPGA (arXiv:2502.16473)", href: "https://arxiv.org/abs/2502.16473" },
+      { label: "nextpnr-xilinx releases: 0.9.5, LiteX DDR3 memtest passing on hardware", href: "https://github.com/openXC7/nextpnr-xilinx/releases" },
+      { label: "AMD DS180: 7-series block RAM counts", href: "https://docs.amd.com/api/khub/documents/2LByHkO~nSZXcei2D55fTg/content" },
+      { label: "TRI CLAW: an agent you can audit (the device this lane runs on)", href: "https://t27.ai/blog/tri-claw-an-agent-you-can-audit/" },
+      { label: "MultiPL-E: MultiPL-E benchmark, HumanEval-164 in 18+ languages (arXiv:2208.08227)", href: "https://arxiv.org/abs/2208.08227" },
+    ],
+    openQuestions: [
+      "Update 2026-09-27: the trained tern_tc model's 320-input weight matrices ran bit-exact on an AX7203 (see the follow-up post). No forward pass has run on a board, and every throughput figure here is still a ceiling derived from memory bandwidth and LUT counts.",
+      "The code ability of a 13M model on .t27 is unknown. The HumanEval figures above are for Python and for another model family.",
+      "The open DDR3 path on Artix-7 has passed memtest on hardware only since nextpnr-xilinx 0.9.5 (13 September 2026). The independent UberDDR3 test reached a 333 MHz DDR clock, not the 400 MHz the AX7203 is rated for.",
+      "Integer inference must be shown to cost little quality against the float model before receipts can rest on it.",
+      "The c-BTM experts had 1.3B parameters or more, a hundred times the size of a board-sized one. Whether the result holds at 13M is a measurement, not an inference.",
+      "The twin numbers are for 100M-parameter models trained on GPUs. A board-sized ternary model (tern_tc, 9.08M parameters) has since been trained; its code ability has not been measured.",
+    ],
+    published: true,
+    ru: {
+      title: "Маленький агент полезен только рядом с точным судьёй",
+      summary: "[результаты моделей измерены на GPU; пропускная способность платы выведена, не измерена] Одна Artix-7 200T держит слои тернарной модели на 13M параметров в собственной блочной памяти. В нашем парном эксперименте тернарная модель на 100M проходит 1,01% против 1,68% у полной точности на восьми языках, и разрыв — это компиляция, а не корректность. Модель, чаще ошибающаяся, полезна только там, где каждый ответ проверяет компилятор.",
+      openQuestions: [
+        "Обновление 2026-09-27: матрицы весов с входом 320 обученной модели tern_tc посчитались на AX7203 бит-точно (см. следующий пост). Прямой проход на плате не запускался, и каждая цифра скорости здесь по-прежнему потолок, выведенный из пропускной способности памяти и числа LUT.",
+        "Способность модели на 13M писать .t27 неизвестна. Цифры HumanEval выше относятся к Python и к другому семейству моделей.",
+        "Открытый путь к DDR3 на Artix-7 проходит memtest на железе только с nextpnr-xilinx 0.9.5 (13 сентября 2026). Независимый тест UberDDR3 достиг частоты DDR 333 МГц, а не 400 МГц, на которые рассчитана AX7203.",
+        "Нужно показать, что целочисленный вывод почти не теряет в качестве по сравнению с плавающей точкой. Только после этого на него могут опираться квитанции.",
+        "Эксперты в c-BTM имели 1,3B параметров и больше — в сто раз больше, чем модель размером с плату. Держится ли результат при 13M, решит замер, а не рассуждение.",
+        "Числа двойняшек относятся к моделям на 100M параметров, обученным на GPU. С тех пор обучена тернарная модель размером с плату (tern_tc, 9,08M параметров); её способность писать код не измерена.",
+      ],
+    },
+  },
+  {
+    slug: 'tri-mined-not-sold',
+    title: 'The token is mined, not sold',
+    summary: '[design] 100% of TRI is mined by accepted .t27 work with zero pre-mine; the mint-on-acceptance rule is a Zig golden oracle (11/11 tests) with a TON and Solana minter whose digest matches cross-language (cargo test 4/4). Nothing is deployed.',
+    date: '2026-09-24',
+    readingMinutes: 5,
+    tags: ['DePIN', 'TRI', 'Tokenomics', 'TON', 'Solana', 'Design'],
+    receipts: [
+      { label: 'Protocol spec: mint_on_acceptance.t27', href: 'https://github.com/gHashTag/trinity-fpga/blob/trinet-fleet-truth/specs/trinet/mint_on_acceptance.t27' },
+      { label: 'Tested oracle + reference contracts (commit 2901c62)', href: 'https://github.com/gHashTag/trinity-fpga/commit/2901c6273' },
+      { label: '100% mined, zero pre-mine (commit c31157a)', href: 'https://github.com/gHashTag/trinity-fpga/commit/c31157ae0' },
+    ],
+    openQuestions: [
+      'Nothing is deployed: no contract, key, or mint exists on any live network.',
+      'V1 trusts an honest majority of the attestor set; it is not trustless, and who holds the keys is undecided.',
+      'The reference contracts are unaudited, and the cross-chain shared-nonce mechanism is unspecified.',
+      'No legal review of issuance or secondary trading has been done; that is the first task the decision creates.',
+      'The oracle is tested in software; it is not a hardware, silicon, or deployed-network result.',
+    ],
+    published: true,
+    ru: {
+      title: 'Токен намывают, а не продают',
+      summary: '[дизайн] 100% TRI намывается за принятую работу .t27, без премайна; правило чеканки-при-принятии — золотой оракул на Zig (11/11 тестов), с минтерами TON и Solana, чей дайджест совпадает межъязыково (cargo test 4/4). Ничего не задеплоено.',
+      openQuestions: [
+        'Ничего не задеплоено: ни контракта, ни ключа, ни чеканки в живой сети.',
+        'V1 доверяет честному большинству аттестаторов; это не трастлесс, и кто держит ключи — не решено.',
+        'Эталонные контракты без аудита, а механизм общего nonce между цепями не специфицирован.',
+        'Юридической проверки выпуска и вторичного рынка не было; это первая задача, которую создаёт решение.',
+        'Оракул проверен в софте; это не результат на железе, кремнии или в живой сети.',
+      ],
+    },
+  },
+  {
+    "slug": "queen-browser-actions-you-can-follow",
+    "title": "The browser agent should show its work",
+    "summary": "Queen’s merged browser changes expose actions as they arrive, keep a compact journal, and let human input request server-side control—with the remaining handover limits made explicit.",
+    "date": "2026-09-23",
+    "readingMinutes": 6,
+    "tags": [
+      "Queen",
+      "BrowserAutomation",
+      "Agents",
+      "Observability",
+      "Testing"
+    ],
+    "receipts": [
+      {
+        "label": "Trinity #1088 — one remote browser in Queen · MERGED 2026-09-21",
+        "href": "https://github.com/gHashTag/trinity/pull/1088"
+      },
+      {
+        "label": "Trinity #1094 — chat reaches the browser-equipped agent · MERGED 2026-09-21",
+        "href": "https://github.com/gHashTag/trinity/pull/1094"
+      },
+      {
+        "label": "Trinity #1096 — incremental action and text events · MERGED 2026-09-21",
+        "href": "https://github.com/gHashTag/trinity/pull/1096"
+      },
+      {
+        "label": "Trinity #1104 — connection-state messages · MERGED 2026-09-21",
+        "href": "https://github.com/gHashTag/trinity/pull/1104"
+      },
+      {
+        "label": "Trinity #1107 — recent browser journal · MERGED 2026-09-21",
+        "href": "https://github.com/gHashTag/trinity/pull/1107"
+      },
+      {
+        "label": "Trinity #1109 — human-control request from the board · MERGED 2026-09-22",
+        "href": "https://github.com/gHashTag/trinity/pull/1109"
+      },
+      {
+        "label": "Trinity #1111 — consecutive journal repeats folded · MERGED 2026-09-22",
+        "href": "https://github.com/gHashTag/trinity/pull/1111"
+      },
+      {
+        "label": "Website checks — browser contract passed in run 35689898918",
+        "href": "https://github.com/gHashTag/trinity/actions/runs/35689898918/job/106624452015"
+      }
+    ],
+    "openQuestions": [
+      "The source diffs and browser contract were inspected and the contract rerun for this article; no fresh signed-in end-to-end remote-browser session was independently tested.",
+      "The driving indicator updates before server acknowledgement and a failed wheel request is not surfaced; the indicator alone is not evidence of accepted control, and cancellation of in-flight actions is not established.",
+      "The journal shows at most six folded lines from up to 24 recent entries, polls every five seconds, and is not a complete audit archive.",
+      "Connection handling and human-control enforcement depend on the matching viewer and server deployments; a source merge alone does not establish live delivery. Server behaviour is attributed to the public #1109 report, not independently reproduced here.",
+      "The public #1109 report says a human-control lease can persist until its ten-minute expiry after a tab is closed; this article does not claim a general security guarantee or measured productivity improvement."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Браузерный агент должен показывать свою работу",
+      "summary": "Смерженные изменения Queen показывают действия по мере поступления, сохраняют компактный журнал и позволяют вводу человека запрашивать управление на сервере — с явными ограничениями передачи руля.",
+      "openQuestions": [
+        "Для статьи изучены изменения и браузерный контракт, который также запущен повторно; новая сквозная проверка удалённого браузера в авторизованной сессии независимо не выполнялась.",
+        "Индикатор управления меняется до подтверждения сервера, а отказ запроса не показывается; одного индикатора недостаточно для подтверждения принятого управления, отмена уже начатых действий не установлена.",
+        "Журнал показывает не более шести свёрнутых строк из максимум 24 последних записей, опрашивается каждые пять секунд и не является полным архивом аудита.",
+        "Обработка соединения и ограничение действий зависят от соответствующих версий окна просмотра и сервера; слияние исходников само по себе не подтверждает доставку на живой сайт. Поведение сервера приведено по публичному отчёту #1109, а не независимо воспроизведено здесь.",
+        "По публичному отчёту #1109 после закрытия вкладки право управления может сохраняться до истечения десятиминутного срока; статья не заявляет общей гарантии безопасности или измеренного роста производительности."
+      ]
+    }
+  },
+  {
+    "slug": "a-partial-module-needs-its-own-verdict",
+    "title": "A partial module needs its own verdict",
+    "summary": "JavaScript and TypeScript generation gained explicit omission records, so the Spec Explorer can distinguish a useful partial module from a complete one and from a failed compilation.",
+    "date": "2026-09-23",
+    "readingMinutes": 6,
+    "tags": [
+      "Compiler",
+      "TypeScript",
+      "Testing",
+      "Reproducibility"
+    ],
+    "receipts": [
+      {
+        "label": "Trinity #1084 — partial output becomes a warning · MERGED 2026-09-21",
+        "href": "https://github.com/gHashTag/trinity/pull/1084"
+      },
+      {
+        "label": "t27 #4529 — references and explicit omission records · MERGED 2026-09-21",
+        "href": "https://github.com/gHashTag/t27/pull/4529"
+      },
+      {
+        "label": "t27 #4502 — TypeScript shares the JS value layer · MERGED 2026-09-21",
+        "href": "https://github.com/gHashTag/t27/pull/4502"
+      },
+      {
+        "label": "Reviewed manifest — 1,419-spec snapshot at e7a11be",
+        "href": "https://github.com/gHashTag/trinity/blob/e7a11be07eb73fceaf41fb693a628d10ec245637/apps/website/public/t27/manifest.json"
+      },
+      {
+        "label": "Website checks for #1084 · SUCCESS 2026-09-21",
+        "href": "https://github.com/gHashTag/trinity/actions/runs/35599487248/job/106331933482"
+      }
+    ],
+    "openQuestions": [
+      "The reviewed website snapshot still has 211 specifications with no AST and seven parsed specifications losing a backend; their causes are not resolved by this article.",
+      "The upstream 1,414-spec test corpus and the website's 1,419-spec snapshot are different populations, so their counts are not interchangeable.",
+      "A partial declaration artifact does not establish complete language support or runtime correctness for every generated program.",
+      "Upstream test results are attributed to their merged PR reports, not presented as independently rerun compiler benchmarks."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Частичному модулю нужен собственный вердикт",
+      "summary": "Генераторы JavaScript и TypeScript получили явные записи о пропусках: Spec Explorer теперь отличает полезный, но частичный модуль от полного результата и от неудачной компиляции.",
+      "openQuestions": [
+        "В изученном снимке сайта остаются 211 спецификаций без AST и семь разобранных файлов с отказом backend; статья не устраняет причины этих ошибок.",
+        "Корпус upstream-проверки из 1 414 спецификаций и снимок сайта из 1 419 — разные выборки, их числа нельзя подменять друг другом.",
+        "Частичный артефакт объявлений не устанавливает полную поддержку языка или корректность исполнения каждой сгенерированной программы.",
+        "Результаты upstream-тестов приведены по отчётам смерженных PR, а не как независимо повторённые бенчмарки компилятора."
+      ]
+    }
+  },
+  {
+    "slug": "an-invitation-in-the-language-it-describes",
+    "title": "An invitation in the language it describes",
+    "summary": "T27's agent-facing introduction is one compiler-checked module served at two addresses, with executable claim checks and an explicit boundary around the reader's authority.",
+    "date": "2026-09-23",
+    "readingMinutes": 6,
+    "tags": [
+      "Agents",
+      "Compiler",
+      "Spec-first",
+      "Testing"
+    ],
+    "receipts": [
+      {
+        "label": "Trinity #1047 — one .t27 onboarding source · MERGED 2026-09-20",
+        "href": "https://github.com/gHashTag/trinity/pull/1047"
+      },
+      {
+        "label": "Trinity #1074 — backend and corpus claims checked · MERGED 2026-09-21",
+        "href": "https://github.com/gHashTag/trinity/pull/1074"
+      },
+      {
+        "label": "Reviewed generator — schema, assertions, consent and rendered-output checks",
+        "href": "https://github.com/gHashTag/trinity/blob/e7a11be07eb73fceaf41fb693a628d10ec245637/apps/website/scripts/onboarding-from-spec.mjs"
+      },
+      {
+        "label": "Reviewed onboarding source — nine tests and declared unknowns",
+        "href": "https://github.com/gHashTag/trinity/blob/e7a11be07eb73fceaf41fb693a628d10ec245637/apps/website/specs/catalog/onboarding.t27"
+      },
+      {
+        "label": "Website checks — nine blocks, 49 assertions · SUCCESS 2026-09-21",
+        "href": "https://github.com/gHashTag/trinity/actions/runs/35599487248/job/106331933482"
+      }
+    ],
+    "openQuestions": [
+      "Serving the document at llms.txt does not establish compatibility with every consumer, crawler indexing or external adoption.",
+      "The consent checks constrain this generated document; they are not a universal prompt-injection defence.",
+      "Comparing declared counts with the shipped manifest proves agreement, not independent correctness of the corpus classification.",
+      "The initial audit and negative-control results are attributed to the merged PR; no count of outside readers or contributions is established."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Приглашение на языке, о котором оно рассказывает",
+      "summary": "Введение T27 для агентов — один проверяемый компилятором модуль по двум адресам, с исполняемыми проверками утверждений и явной границей полномочий читателя.",
+      "openQuestions": [
+        "Публикация документа по адресу llms.txt не устанавливает совместимость со всеми потребителями, индексацию или внешнее использование.",
+        "Проверки согласия ограничивают данный сгенерированный документ, но не являются универсальной защитой от prompt injection.",
+        "Сравнение объявленных чисел с поставляемым manifest доказывает согласованность, а не независимую правильность классификации корпуса.",
+        "Исходный аудит и отрицательные контроли приведены по смерженному PR; число внешних читателей или вкладов не установлено."
+      ]
+    }
+  },
+  {
     slug: 'the-fpga-row-was-corrected',
     title: 'The FPGA row was corrected before it became evidence',
     summary: '[proven] A merged t27 PR corrected an invalid Yosys invocation and changed three FPGA status rows from green to red after 881 historical runs showed 36 successes, 842 failures, and 3 cancellations.',
@@ -2451,6 +2835,80 @@ export const postsIndex: PostMeta[] = [
         "Аппаратный захват IDDR на Artix-7 не работает, и открыт сам диагноз, а не только починка: issue #114 отзывает собственный первый вывод («Q1 мёртв, Q2 жив») после того, как детектор оказался односторонним. Оба выхода инертны во всех испробованных режимах фронта. Приёмный тракт использует захват DDR на фабрике как обходной путь.",
         "Sigma ~= 470 пс никогда не измерялась. Она выведена из размаха перекоса в пять шагов через закон длины кадра, а значит не может служить подтверждением этого же закона. Независимое измерение джиттера — тот единственный опыт, который закрыл бы вопрос; значение около 50 пс опровергло бы объяснение.",
         "Частота ошибок по кадрам не измерялась напрямую, а только выводилась из того, поднялся ли линк. Три точки по перекосу цензурированы справа на отсчёте 31 и не позволяют различить конкурирующие модели."
+      ]
+    }
+  },
+  {
+    "slug": "how-to-join-the-swarm",
+    "title": "How to join the swarm",
+    "summary": "A hive of coding agents is rewriting this stack into its own language, one file per issue. There are two ways in - write a spec, or lend a provider key - and this is what each costs, what each earns, and which providers' terms quietly forbid the second one.",
+    "date": "2026-09-23",
+    "readingMinutes": 9,
+    "tags": [
+      "onboarding",
+      "queen",
+      "leaderboard",
+      "t27"
+    ],
+    "receipts": [
+      {
+        "label": "LEADERBOARD - the lanes and their XP, live",
+        "href": "https://app.t27.ai/queen/#/queen?tab=leaderboard"
+      },
+      {
+        "label": "ROADMAP - the .t27 share of the stack, live",
+        "href": "https://app.t27.ai/queen/#/queen?tab=roadmap"
+      },
+      {
+        "label": "The rules of the game, machine-readable and test-checked",
+        "href": "https://t27.ai/llms.txt"
+      },
+      {
+        "label": "The open port issues, one file each",
+        "href": "https://github.com/gHashTag/t27/issues?q=is%3Aissue+in%3Atitle+%22Port+tools%2F%22+is%3Aopen"
+      },
+      {
+        "label": "NVIDIA API Trial Terms of Service (bars production use and making the service available to others)",
+        "href": "https://assets.ngc.nvidia.com/products/api-catalog/legal/NVIDIA%20API%20Trial%20Terms%20of%20Service.pdf"
+      },
+      {
+        "label": "OpenRouter rate limits (20/min, 50/day free; 1,000/day after a $10 lifetime top-up)",
+        "href": "https://openrouter.ai/docs/api-reference/limits"
+      },
+      {
+        "label": "GitHub Models retired 2026-07-30",
+        "href": "https://docs.github.com/en/github-models"
+      },
+      {
+        "label": "Anthropic Consumer Terms - \"You may not share your Account login information, Anthropic API key, or Account credentials with anyone else\"",
+        "href": "https://www.anthropic.com/legal/consumer-terms"
+      },
+      {
+        "label": "Google APIs Terms of Service - \"Developer credentials may not be embedded in open source projects\"",
+        "href": "https://developers.google.com/terms"
+      },
+      {
+        "label": "AI Horde - donated GPUs for kudos, and its rule that kudos are not a currency",
+        "href": "https://aihorde.net/"
+      },
+      {
+        "label": "Z.AI pricing - GLM-4.7-Flash and GLM-4.5-Flash at zero",
+        "href": "https://docs.z.ai/guides/overview/pricing"
+      }
+    ],
+    "openQuestions": [
+      "A bee that runs on your own machine on your own key is the shape that lets someone contribute capacity without breaching a provider agreement - the way AI Horde and BOINC have always worked. It is not built here, and nothing in this post should be read as a promise that it is coming.",
+      "Free-tier rate limits at Google, Z.AI and Mistral are no longer published or are login-gated, so the table states what each provider states and marks the rest unknown rather than guessing.",
+      "Whether a donated key breaches a given provider's terms is a question about YOUR agreement with them, and the reading here is ours, not legal advice."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Как войти в рой",
+      "summary": "Рой кодовых агентов переписывает этот стек на собственный язык, по одному файлу на задачу. Войти можно двумя способами - написать спеку или одолжить ключ провайдера, - и здесь сказано, чего стоит каждый, что приносит, и чьи условия тихо запрещают второй.",
+      "openQuestions": [
+        "Пчела, работающая на вашей машине на вашем ключе, — та форма, которая позволяет отдавать мощность, не нарушая соглашения с провайдером, и именно так всегда работали AI Horde и BOINC. Здесь она не построена, и ничто в этом тексте не следует читать как обещание, что она будет.",
+        "Лимиты бесплатных тарифов у Google, Z.AI и Mistral больше не публикуются или закрыты логином, поэтому таблица приводит то, что заявляет сам провайдер, а остальное помечает неизвестным, вместо того чтобы угадывать.",
+        "Нарушает ли одолженный ключ условия конкретного провайдера - это вопрос о ВАШЕМ соглашении с ним, и прочтение здесь наше, а не юридическая консультация."
       ]
     }
   }

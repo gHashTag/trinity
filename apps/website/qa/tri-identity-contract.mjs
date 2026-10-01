@@ -47,7 +47,7 @@ import {
   chipOf,
   whoamiProfile,
   signInHref,
-  PLAYER_VIEWS,
+  APP_BOARD_HOME,
   createTriIdentity,
 } from '../src/lib/triIdentity.ts'
 import { APP_ORIGIN as TRI_APP_ORIGIN, TRI_SCREENS } from '../src/lib/triScreens.ts'
@@ -183,7 +183,7 @@ const playerReturnTargetOf = (raw) => {
   const [, tab, screen] = match
   const queen = 'https://t27.ai/#/queen'
   if (tab === undefined) return queen
-  const view = PLAYER_VIEWS.find((known) => known === tab)
+  const view = /^[a-z]{1,16}$/.test(tab) ? tab : undefined
   if (!view) return null
   if (screen === undefined) return `${queen}?tab=${view}`
   if (view !== 'tri') return null
@@ -201,9 +201,15 @@ const SCREEN_IDS = TRI_SCREENS.map((entry) => entry.screen)
 //      a real defect and still fails here.
 //   2. The views the player does NOT know are named, below, with what it costs.
 //      A new one appearing unannounced fails this gate exactly as before.
-const UNKNOWN_TO_PLAYER = HUD_VIEWS.filter((view) => !PLAYER_VIEWS.includes(view))
-eq(PLAYER_VIEWS.filter((view) => !HUD_VIEWS.includes(view)), [], 'the player follows no view the Queen does not have')
-eq([...UNKNOWN_TO_PLAYER], ['passport'], 'the views the deployed player has not been told about, and no others')
+// There is no list to drift any more. The player takes any well-shaped tab and
+// the board decides whether it has such a view, so a view added here works
+// there the day it ships -- which is the whole reason the two lists are gone.
+const UNKNOWN_TO_PLAYER = HUD_VIEWS.filter((view) => !/^[a-z]{1,16}$/.test(view))
+// PASSPORT and BROWSER were named here until the player learned them
+// (999-multibots-telegraf#2736, its QUEEN_VIEWS), and ROADMAP until the same
+// deploy that ships it taught the player its name. Now none: every view
+// returns to itself.
+eq([...UNKNOWN_TO_PLAYER], [], 'the views the deployed player has not been told about, and no others')
 eq([...SCREEN_IDS].sort(), [...PLAYER_SCREENS].sort(), "the player's copy of the TRI screens is the Queen's table")
 
 const returns = new Set()
@@ -212,7 +218,7 @@ for (const view of HUD_VIEWS) {
   eq(href.origin + href.pathname, `${APP_ORIGIN}/`, `${view}: the player's login`)
   eq([...href.searchParams.keys()], ['return'], `${view}: one parameter`)
   const back = href.searchParams.get('return')
-  const carried = view !== 'comb' && PLAYER_VIEWS.includes(view)
+  const carried = view !== 'comb' && /^[a-z]{1,16}$/.test(view)
   eq(back, carried ? `${GAME_ORIGIN}/#/queen?tab=${view}` : `${GAME_ORIGIN}/#/queen`,
     carried ? `${view}: returns to its view` : `${view}: the player cannot follow it, so it returns to the comb`)
   eq(playerReturnTargetOf(back), back, `${view}: the player accepts the return as it is`)
@@ -240,10 +246,27 @@ for (const hostile of ['tri&screen=crm', 'kanban&embed=1', 'profile/144022504', 
 }
 eq(new URL(signInHref('constructor', HUD_VIEWS)).searchParams.get('return'), `${GAME_ORIGIN}/#/queen`, 'an object key is not a view')
 eq(new URL(signInHref('nope', HUD_VIEWS)).searchParams.get('return'), `${GAME_ORIGIN}/#/queen`, 'an unknown view returns to the comb')
-ok([...returns].every((r) => r.startsWith(`${GAME_ORIGIN}/#/queen`) && !/embed|screen|path|lead|\d/.test(r.slice(GAME_ORIGIN.length))), 'no view return carries embed, a screen, a path or an id')
+// The board on app.t27.ai/queen/ signs in and comes back to ITSELF, not to
+// t27.ai: there the app's frame is a guest and never sees the session
+// (2026-09-21). The player accepts exactly this home (returnTarget.ts APP_BOARD).
+eq(APP_BOARD_HOME, 'https://app.t27.ai/queen/', 'the app board home')
+eq(new URL(signInHref('tri', HUD_VIEWS, 'profile', SCREEN_IDS, APP_BOARD_HOME)).searchParams.get('return'), `${APP_BOARD_HOME}#/queen?tab=tri&screen=profile`, 'from the app board, back to the same screen of the app board')
+eq(new URL(signInHref('kanban', HUD_VIEWS, null, [], APP_BOARD_HOME)).searchParams.get('return'), `${APP_BOARD_HOME}#/queen?tab=kanban`, 'from the app board, back to the same view')
+eq(new URL(signInHref('kanban', HUD_VIEWS, null, [], 'https://evil.test/queen/')).searchParams.get('return'), `${GAME_ORIGIN}/#/queen?tab=kanban`, 'a home that is not the app board falls back to the game, never to itself')
+// The parameters themselves, not the letters of the address: `embed`, `screen`,
+// `path` and `lead` are PARAMETER NAMES, and matching them as substrings also
+// refuses a view whose own name contains one (LEADERBOARD carries `lead`). So
+// this reads what the return actually asks the board to do: name one view, and
+// nothing else -- no embed, no TRI screen, no CRM lead, no id of a person.
+for (const back of returns) {
+  ok(back.startsWith(`${GAME_ORIGIN}/#/queen`), `${back}: returns to the board`)
+  const asked = new URLSearchParams(back.slice(back.indexOf('#/queen') + '#/queen'.length).replace(/^\?/, ''))
+  ok([...asked.keys()].every((key) => key === 'tab'), `${back}: a view return carries no parameter but the tab`)
+  ok(/^[a-z]*$/.test(asked.get('tab') ?? ''), `${back}: the tab is a view name, not a path or an id`)
+}
 // One route per view the PLAYER knows -- the views it does not know share the
 // comb's return, so the count follows its list, not ours.
-eq(returns.size, PLAYER_VIEWS.length, 'one fixed route per view the player follows')
+eq(returns.size, HUD_VIEWS.length, 'one fixed route per view of the board')
 
 // ---- 7. The chip: one next step for every code ----
 // The codes the client can receive: the render server's /api/auth/game-token

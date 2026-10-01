@@ -58,7 +58,7 @@ pub fn gf64_extract_sign(gf64: GF64) i8 {
 // Extract exponent bits (bits 62-45)
 // Returns: 0-262143
 pub fn gf64_extract_exponent(gf64: GF64) i16 {
-    return @as(i16, @intCast((gf64 >> EXP_SHIFT) & (EXP_MAX)));
+    return ((gf64 >> EXP_SHIFT) & (EXP_MAX)) as i16;
 }
 
 // gf64_extract_mantissa(gf64: GF64) -> u64
@@ -72,8 +72,9 @@ pub fn gf64_extract_mantissa(gf64: GF64) u64 {
 // Assemble GF64 from sign, exponent, mantissa
 pub fn gf64_from_components(sign: i8, exp: i16, mant: u64) GF64 {
     const sign_bit = if (sign < 0) 1 else 0;
-    return (@as(GF64, @intCast(sign_bit)) << SIGN_SHIFT) |
-           (@as(GF64, @intCast(exp & EXP_MAX)) << EXP_SHIFT) |
+    // `as` takes a builtin type name; GF64 is u64 (see Types).
+    return ((sign_bit as u64) << SIGN_SHIFT) |
+           (((exp & EXP_MAX) as u64) << EXP_SHIFT) |
            (mant & MANT_MASK);
 }
 
@@ -86,7 +87,7 @@ pub fn gf64_is_zero(gf64: GF64) bool {
 // gf64_is_special(gf64: GF64) -> bool
 // Check if GF64 is Inf or NaN (exp == 262143)
 pub fn gf64_is_special(gf64: GF64) bool {
-    return gf64_extract_exponent(gf64) == @as(i16, @intCast(EXP_MAX));
+    return gf64_extract_exponent(gf64) == (EXP_MAX as i16);
 }
 
 // gf64_is_inf(gf64: GF64) -> bool
@@ -94,7 +95,7 @@ pub fn gf64_is_special(gf64: GF64) bool {
 pub fn gf64_is_inf(gf64: GF64) bool {
     const exp = gf64_extract_exponent(gf64);
     const mant = gf64_extract_mantissa(gf64);
-    return exp == @as(i16, @intCast(EXP_MAX)) and mant == 0;
+    return exp == (EXP_MAX as i16) and mant == 0;
 }
 
 // gf64_is_nan(gf64: GF64) -> bool
@@ -102,7 +103,7 @@ pub fn gf64_is_inf(gf64: GF64) bool {
 pub fn gf64_is_nan(gf64: GF64) bool {
     const exp = gf64_extract_exponent(gf64);
     const mant = gf64_extract_mantissa(gf64);
-    return exp == @as(i16, @intCast(EXP_MAX)) and mant != 0;
+    return exp == (EXP_MAX as i16) and mant != 0;
 }
 
 // gf64_encode_f64(f64: f64) -> GF64
@@ -129,8 +130,10 @@ pub fn gf64_encode_f64(value: f64) GF64 {
     const abs_value = if (value < 0.0) -value else value;
 
     // Get f64 components
+    // @bitCast: reinterpret the f64 bits as u64 (no `as` form for this; the
+    // canonical numeric/gf16.t27 uses the same intrinsic).
     const f64_bits: u64 = @bitCast(abs_value);
-    var f64_exp: i16 = @intCast((f64_bits >> 52) & 0x7FF) - 1023;
+    var f64_exp: i16 = (((f64_bits >> 52) & 0x7FF) as i16) - 1023;
     var f64_mant: u64 = f64_bits & 0x000FFFFFFFFFFFFF;
 
     // Convert exp from f64 bias (1023) to GF64 bias (131071)
@@ -140,7 +143,7 @@ pub fn gf64_encode_f64(value: f64) GF64 {
     if (gf64_exp < 0) {
         // Underflow - could return subnormal, but flushing to zero for simplicity
         return if (sign < 0) GF64_ZERO_NEG else GF64_ZERO_POS;
-    } else if (gf64_exp > @as(i16, @intCast(EXP_MAX - 1))) {
+    } else if (gf64_exp > ((EXP_MAX - 1) as i16)) {
         return if (sign < 0) GF64_INF_NEG else GF64_INF_POS;
     }
 
@@ -157,7 +160,7 @@ pub fn gf64_encode_f64(value: f64) GF64 {
             mant += 1;
             if (mant > MANT_MASK) {
                 mant = 0;
-                if (gf64_exp < @as(i16, @intCast(EXP_MAX - 1))) {
+                if (gf64_exp < ((EXP_MAX - 1) as i16)) {
                     gf64_exp += 1;
                 }
             }
@@ -191,9 +194,9 @@ pub fn gf64_decode_f64(gf64: GF64) f64 {
     const mant = gf64_extract_mantissa(gf64);
 
     // Decode value: mantissa * 2^(exp - bias)
-    const bias_adjusted = @as(i64, exp) - @as(i64, BIAS);
-    const mant_f64 = @as(f64, @floatFromInt(mant)) / @as(f64, @floatFromInt(MANT_DIVISOR));
-    const value = mant_f64 * std.math.pow(f64, 2.0, @as(f64, @floatFromInt(bias_adjusted)));
+    const bias_adjusted = (exp as i64) - (BIAS as i64);
+    const mant_f64 = (mant as f64) / (MANT_DIVISOR as f64);
+    const value = mant_f64 * std.math.pow(f64, 2.0, bias_adjusted as f64);
 
     return if (sign < 0) -value else value;
 }
@@ -308,7 +311,7 @@ pub fn gf64_lerp(a: GF64, b: GF64, t: GF64) GF64 {
 // gf64_from_u32(value: u32) -> GF64
 // Convert unsigned 32-bit integer to GF64
 pub fn gf64_from_u32(value: u32) GF64 {
-    return gf64_encode_f64(@as(f64, @floatFromInt(value)));
+    return gf64_encode_f64(value as f64);
 }
 
 // gf64_to_u32(gf64: GF64) -> ?u32
@@ -318,17 +321,18 @@ pub fn gf64_to_u32(gf64: GF64) ?u32 {
     if (gf64_is_nan(gf64) or gf64_is_inf(gf64)) {
         return null;
     }
-    const value = gf64_decode_f64(gf64);
-    if (value < 0.0 or value > @as(f64, @floatFromInt(std.math.maxInt(u32)))) {
+    // Typed f64 local so the Zig backend lowers `value as u32` to @intFromFloat.
+    const value: f64 = gf64_decode_f64(gf64);
+    if (value < 0.0 or value > (std.math.maxInt(u32) as f64)) {
         return null;
     }
-    return @as(u32, @intFromFloat(value));
+    return value as u32;
 }
 
 // gf64_from_i32(value: i32) -> GF64
 // Convert signed 32-bit integer to GF64
 pub fn gf64_from_i32(value: i32) GF64 {
-    return gf64_encode_f64(@as(f64, @floatFromInt(value)));
+    return gf64_encode_f64(value as f64);
 }
 
 // gf64_to_i32(gf64: GF64) -> ?i32
@@ -338,12 +342,13 @@ pub fn gf64_to_i32(gf64: GF64) ?i32 {
     if (gf64_is_nan(gf64) or gf64_is_inf(gf64)) {
         return null;
     }
-    const value = gf64_decode_f64(gf64);
-    if (value < @as(f64, @floatFromInt(std.math.minInt(i32))) or
-        value > @as(f64, @floatFromInt(std.math.maxInt(i32)))) {
+    // Typed f64 local so the Zig backend lowers `value as i32` to @intFromFloat.
+    const value: f64 = gf64_decode_f64(gf64);
+    if (value < (std.math.minInt(i32) as f64) or
+        value > (std.math.maxInt(i32) as f64)) {
         return null;
     }
-    return @as(i32, @intFromFloat(value));
+    return value as i32;
 }
 
 // ============================================================================
@@ -351,348 +356,347 @@ pub fn gf64_to_i32(gf64: GF64) ?i32 {
 // ============================================================================
 
 test "gf64_extract_sign_positive" {
-    given value = 0x0000000000001234
-    try std.testing.expect(sign = gf64_extract_sign(value));
-    try std.testing.expect(sign == 0);
+    const value = 0x0000000000001234;
+    const sign = gf64_extract_sign(value);
+    assert(sign == 0);
 }
 
 test "gf64_extract_sign_negative" {
-    given value = 0x8000000000001234
-    try std.testing.expect(sign = gf64_extract_sign(value));
-    try std.testing.expect(sign == -1);
+    const value = 0x8000000000001234;
+    const sign = gf64_extract_sign(value);
+    assert(sign == -1);
 }
 
 test "gf64_extract_exponent_middle" {
-    given value = 0x0000800000000000  // exp = 131072
-    try std.testing.expect(exp = gf64_extract_exponent(value));
-    try std.testing.expect(exp == 131072);
+    const value = 0x0000800000000000;  // exp = 131072
+    const exp = gf64_extract_exponent(value);
+    assert(exp == 131072);
 }
 
 test "gf64_extract_mantissa_max" {
-    given value = 0x00007FFFFFFFFFFF
-    try std.testing.expect(mant = gf64_extract_mantissa(value));
-    try std.testing.expect(mant == 0x00007FFFFFFFFFFF);
+    const value = 0x00007FFFFFFFFFFF;
+    const mant = gf64_extract_mantissa(value);
+    assert(mant == 0x00007FFFFFFFFFFF);
 }
 
 test "gf64_is_zero_positive" {
-    try std.testing.expect(gf64_is_zero(GF64_ZERO_POS) == true);
+    assert(gf64_is_zero(GF64_ZERO_POS) == true);
 }
 
 test "gf64_is_zero_negative" {
-    try std.testing.expect(gf64_is_zero(GF64_ZERO_NEG) == true);
+    assert(gf64_is_zero(GF64_ZERO_NEG) == true);
 }
 
 test "gf64_is_zero_nonzero" {
-    try std.testing.expect(gf64_is_zero(0x0000000000000001) == false);
+    assert(gf64_is_zero(0x0000000000000001) == false);
 }
 
 test "gf64_is_special_inf" {
-    try std.testing.expect(gf64_is_special(GF64_INF_POS) == true);
+    assert(gf64_is_special(GF64_INF_POS) == true);
 }
 
 test "gf64_is_special_nan" {
-    try std.testing.expect(gf64_is_special(GF64_NAN) == true);
+    assert(gf64_is_special(GF64_NAN) == true);
 }
 
 test "gf64_is_special_normal" {
-    try std.testing.expect(gf64_is_special(0x0000000000001234) == false);
+    assert(gf64_is_special(0x0000000000001234) == false);
 }
 
 test "gf64_is_inf_positive" {
-    try std.testing.expect(gf64_is_inf(GF64_INF_POS) == true);
+    assert(gf64_is_inf(GF64_INF_POS) == true);
 }
 
 test "gf64_is_inf_negative" {
-    try std.testing.expect(gf64_is_inf(GF64_INF_NEG) == true);
+    assert(gf64_is_inf(GF64_INF_NEG) == true);
 }
 
 test "gf64_is_inf_not_nan" {
-    try std.testing.expect(gf64_is_inf(GF64_NAN) == false);
+    assert(gf64_is_inf(GF64_NAN) == false);
 }
 
 test "gf64_is_nan" {
-    try std.testing.expect(gf64_is_nan(GF64_NAN) == true);
+    assert(gf64_is_nan(GF64_NAN) == true);
 }
 
 test "gf64_is_nan_not_inf" {
-    try std.testing.expect(gf64_is_nan(GF64_INF_POS) == false);
+    assert(gf64_is_nan(GF64_INF_POS) == false);
 }
 
 test "gf64_encode_f64_zero" {
-    given gf = gf64_encode_f64(0.0)
-    try std.testing.expect(gf == GF64_ZERO_POS);
+    const gf = gf64_encode_f64(0.0);
+    assert(gf == GF64_ZERO_POS);
 }
 
 test "gf64_encode_f64_negative_zero" {
-    given gf = gf64_encode_f64(-0.0)
-    try std.testing.expect(gf == GF64_ZERO_NEG);
+    const gf = gf64_encode_f64(-0.0);
+    assert(gf == GF64_ZERO_NEG);
 }
 
 test "gf64_encode_f64_one" {
-    given gf = gf64_encode_f64(1.0)
-    try std.testing.expect(decoded = gf64_decode_f64(gf));
-    try std.testing.expect(abs(decoded - 1.0) < 0.0001);
+    const gf = gf64_encode_f64(1.0);
+    const decoded = gf64_decode_f64(gf);
+    assert(abs(decoded - 1.0) < 0.0001);
 }
 
 test "gf64_encode_f64_negative_one" {
-    given gf = gf64_encode_f64(-1.0)
-    try std.testing.expect(decoded = gf64_decode_f64(gf));
-    try std.testing.expect(abs(decoded + 1.0) < 0.0001);
+    const gf = gf64_encode_f64(-1.0);
+    const decoded = gf64_decode_f64(gf);
+    assert(abs(decoded + 1.0) < 0.0001);
 }
 
 test "gf64_encode_f64_two_pow_ten" {
-    given gf = gf64_encode_f64(1024.0)
-    try std.testing.expect(decoded = gf64_decode_f64(gf));
-    try std.testing.expect(abs(decoded - 1024.0) < 1.0);
+    const gf = gf64_encode_f64(1024.0);
+    const decoded = gf64_decode_f64(gf);
+    assert(abs(decoded - 1024.0) < 1.0);
 }
 
 test "gf64_encode_f64_pi" {
-    given gf = gf64_encode_f64(std.math.pi)
-    try std.testing.expect(decoded = gf64_decode_f64(gf));
-    try std.testing.expect(abs(decoded - std.math.pi) < 0.001);
+    const gf = gf64_encode_f64(std.math.pi);
+    const decoded = gf64_decode_f64(gf);
+    assert(abs(decoded - std.math.pi) < 0.001);
 }
 
 test "gf64_decode_f64_roundtrip_positive" {
-    given original = 42.5
-    try std.testing.expect(gf = gf64_encode_f64(original));
-    try std.testing.expect(decoded = gf64_decode_f64(gf));
-    try std.testing.expect(abs(decoded - original) < 0.001);
+    const original = 42.5;
+    const gf = gf64_encode_f64(original);
+    const decoded = gf64_decode_f64(gf);
+    assert(abs(decoded - original) < 0.001);
 }
 
 test "gf64_decode_f64_roundtrip_negative" {
-    given original = -17.75
-    try std.testing.expect(gf = gf64_encode_f64(original));
-    try std.testing.expect(decoded = gf64_decode_f64(gf));
-    try std.testing.expect(abs(decoded - original) < 0.001);
+    const original = -17.75;
+    const gf = gf64_encode_f64(original);
+    const decoded = gf64_decode_f64(gf);
+    assert(abs(decoded - original) < 0.001);
 }
 
 test "gf64_add_simple" {
-    given a = gf64_encode_f64(1.0)
-    try std.testing.expect(b = gf64_encode_f64(2.0));
-    try std.testing.expect(result = gf64_add(a, b));
-    try std.testing.expect(decoded = gf64_decode_f64(result));
-    try std.testing.expect(abs(decoded - 3.0) < 0.01);
+    const a = gf64_encode_f64(1.0);
+    const b = gf64_encode_f64(2.0);
+    const result = gf64_add(a, b);
+    const decoded = gf64_decode_f64(result);
+    assert(abs(decoded - 3.0) < 0.01);
 }
 
 test "gf64_sub_simple" {
-    given a = gf64_encode_f64(5.0)
-    try std.testing.expect(b = gf64_encode_f64(3.0));
-    try std.testing.expect(result = gf64_sub(a, b));
-    try std.testing.expect(decoded = gf64_decode_f64(result));
-    try std.testing.expect(abs(decoded - 2.0) < 0.01);
+    const a = gf64_encode_f64(5.0);
+    const b = gf64_encode_f64(3.0);
+    const result = gf64_sub(a, b);
+    const decoded = gf64_decode_f64(result);
+    assert(abs(decoded - 2.0) < 0.01);
 }
 
 test "gf64_mul_simple" {
-    given a = gf64_encode_f64(3.0)
-    try std.testing.expect(b = gf64_encode_f64(4.0));
-    try std.testing.expect(result = gf64_mul(a, b));
-    try std.testing.expect(decoded = gf64_decode_f64(result));
-    try std.testing.expect(abs(decoded - 12.0) < 0.01);
+    const a = gf64_encode_f64(3.0);
+    const b = gf64_encode_f64(4.0);
+    const result = gf64_mul(a, b);
+    const decoded = gf64_decode_f64(result);
+    assert(abs(decoded - 12.0) < 0.01);
 }
 
 test "gf64_div_simple" {
-    given a = gf64_encode_f64(12.0)
-    try std.testing.expect(b = gf64_encode_f64(4.0));
-    try std.testing.expect(result = gf64_div(a, b));
-    try std.testing.expect(decoded = gf64_decode_f64(result));
-    try std.testing.expect(abs(decoded - 3.0) < 0.01);
+    const a = gf64_encode_f64(12.0);
+    const b = gf64_encode_f64(4.0);
+    const result = gf64_div(a, b);
+    const decoded = gf64_decode_f64(result);
+    assert(abs(decoded - 3.0) < 0.01);
 }
 
 test "gf64_abs_positive" {
-    given value = gf64_encode_f64(5.0)
-    try std.testing.expect(abs_val = gf64_abs(value));
-    try std.testing.expect(abs_val == value);
+    const value = gf64_encode_f64(5.0);
+    const abs_val = gf64_abs(value);
+    assert(abs_val == value);
 }
 
 test "gf64_abs_negative" {
-    given value = gf64_encode_f64(-5.0)
-    try std.testing.expect(abs_val = gf64_abs(value));
-    try std.testing.expect(decoded = gf64_decode_f64(abs_val));
-    try std.testing.expect(decoded > 0.0);
+    const value = gf64_encode_f64(-5.0);
+    const abs_val = gf64_abs(value);
+    const decoded = gf64_decode_f64(abs_val);
+    assert(decoded > 0.0);
 }
 
 test "gf64_neg" {
-    given value = gf64_encode_f64(5.0)
-    try std.testing.expect(neg_val = gf64_neg(value));
-    try std.testing.expect(decoded = gf64_decode_f64(neg_val));
-    try std.testing.expect(abs(decoded + 5.0) < 0.01);
+    const value = gf64_encode_f64(5.0);
+    const neg_val = gf64_neg(value);
+    const decoded = gf64_decode_f64(neg_val);
+    assert(abs(decoded + 5.0) < 0.01);
 }
 
 test "gf64_is_equal_same" {
-    given value = gf64_encode_f64(1.0)
-    try std.testing.expect(gf64_is_equal(value, value) == true);
+    const value = gf64_encode_f64(1.0);
+    assert(gf64_is_equal(value, value) == true);
 }
 
 test "gf64_is_equal_different" {
-    given a = gf64_encode_f64(1.0)
-    try std.testing.expect(b = gf64_encode_f64(2.0));
-    try std.testing.expect(gf64_is_equal(a, b) == false);
+    const a = gf64_encode_f64(1.0);
+    const b = gf64_encode_f64(2.0);
+    assert(gf64_is_equal(a, b) == false);
 }
 
 test "gf64_is_equal_nan" {
-    try std.testing.expect(gf64_is_equal(GF64_NAN, GF64_NAN) == false);
+    assert(gf64_is_equal(GF64_NAN, GF64_NAN) == false);
 }
 
 test "gf64_is_equal_zero" {
-    try std.testing.expect(gf64_is_equal(GF64_ZERO_POS, GF64_ZERO_NEG) == true);
+    assert(gf64_is_equal(GF64_ZERO_POS, GF64_ZERO_NEG) == true);
 }
 
 test "gf64_is_greater_positive" {
-    given a = gf64_encode_f64(5.0)
-    try std.testing.expect(b = gf64_encode_f64(3.0));
-    try std.testing.expect(gf64_is_greater(a, b) == true);
+    const a = gf64_encode_f64(5.0);
+    const b = gf64_encode_f64(3.0);
+    assert(gf64_is_greater(a, b) == true);
 }
 
 test "gf64_is_greater_negative" {
-    given a = gf64_encode_f64(-3.0)
-    try std.testing.expect(b = gf64_encode_f64(-5.0));
-    try std.testing.expect(gf64_is_greater(a, b) == true);
+    const a = gf64_encode_f64(-3.0);
+    const b = gf64_encode_f64(-5.0);
+    assert(gf64_is_greater(a, b) == true);
 }
 
 test "gf64_is_greater_positive_vs_negative" {
-    given a = gf64_encode_f64(1.0)
-    try std.testing.expect(b = gf64_encode_f64(-1.0));
-    try std.testing.expect(gf64_is_greater(a, b) == true);
+    const a = gf64_encode_f64(1.0);
+    const b = gf64_encode_f64(-1.0);
+    assert(gf64_is_greater(a, b) == true);
 }
 
 test "gf64_max_returns_larger" {
-    given a = gf64_encode_f64(3.0)
-    try std.testing.expect(b = gf64_encode_f64(5.0));
-    try std.testing.expect(result = gf64_max(a, b));
-    try std.testing.expect(decoded = gf64_decode_f64(result));
-    try std.testing.expect(decoded >= 4.0);
+    const a = gf64_encode_f64(3.0);
+    const b = gf64_encode_f64(5.0);
+    const result = gf64_max(a, b);
+    const decoded = gf64_decode_f64(result);
+    assert(decoded >= 4.0);
 }
 
 test "gf64_min_returns_smaller" {
-    given a = gf64_encode_f64(3.0)
-    try std.testing.expect(b = gf64_encode_f64(5.0));
-    try std.testing.expect(result = gf64_min(a, b));
-    try std.testing.expect(decoded = gf64_decode_f64(result));
-    try std.testing.expect(decoded <= 4.0);
+    const a = gf64_encode_f64(3.0);
+    const b = gf64_encode_f64(5.0);
+    const result = gf64_min(a, b);
+    const decoded = gf64_decode_f64(result);
+    assert(decoded <= 4.0);
 }
 
 test "gf64_clamp_within_range" {
-    given value = gf64_encode_f64(3.0)
-    try std.testing.expect(min = gf64_encode_f64(0.0));
-    try std.testing.expect(max = gf64_encode_f64(10.0));
-    try std.testing.expect(result = gf64_clamp(value, min, max));
-    try std.testing.expect(result == value);
+    const value = gf64_encode_f64(3.0);
+    const min = gf64_encode_f64(0.0);
+    const max = gf64_encode_f64(10.0);
+    const result = gf64_clamp(value, min, max);
+    assert(result == value);
 }
 
 test "gf64_clamp_below_min" {
-    given value = gf64_encode_f64(-5.0)
-    try std.testing.expect(min = gf64_encode_f64(0.0));
-    try std.testing.expect(max = gf64_encode_f64(10.0));
-    try std.testing.expect(result = gf64_clamp(value, min, max));
-    try std.testing.expect(decoded = gf64_decode_f64(result));
-    try std.testing.expect(decoded >= 0.0);
+    const value = gf64_encode_f64(-5.0);
+    const min = gf64_encode_f64(0.0);
+    const max = gf64_encode_f64(10.0);
+    const result = gf64_clamp(value, min, max);
+    const decoded = gf64_decode_f64(result);
+    assert(decoded >= 0.0);
 }
 
 test "gf64_clamp_above_max" {
-    given value = gf64_encode_f64(15.0)
-    try std.testing.expect(min = gf64_encode_f64(0.0));
-    try std.testing.expect(max = gf64_encode_f64(10.0));
-    try std.testing.expect(result = gf64_clamp(value, min, max));
-    try std.testing.expect(decoded = gf64_decode_f64(result));
-    try std.testing.expect(decoded <= 10.0);
+    const value = gf64_encode_f64(15.0);
+    const min = gf64_encode_f64(0.0);
+    const max = gf64_encode_f64(10.0);
+    const result = gf64_clamp(value, min, max);
+    const decoded = gf64_decode_f64(result);
+    assert(decoded <= 10.0);
 }
 
 test "gf64_lerp_zero" {
-    given a = gf64_encode_f64(1.0)
-    try std.testing.expect(b = gf64_encode_f64(5.0));
-    try std.testing.expect(t = gf64_encode_f64(0.0));
-    try std.testing.expect(result = gf64_lerp(a, b, t));
-    try std.testing.expect(gf64_is_equal(result, a) == true);
+    const a = gf64_encode_f64(1.0);
+    const b = gf64_encode_f64(5.0);
+    const t = gf64_encode_f64(0.0);
+    const result = gf64_lerp(a, b, t);
+    assert(gf64_is_equal(result, a) == true);
 }
 
 test "gf64_lerp_one" {
-    given a = gf64_encode_f64(1.0)
-    try std.testing.expect(b = gf64_encode_f64(5.0));
-    try std.testing.expect(t = gf64_encode_f64(1.0));
-    try std.testing.expect(result = gf64_lerp(a, b, t));
-    try std.testing.expect(gf64_is_equal(result, b) == true);
+    const a = gf64_encode_f64(1.0);
+    const b = gf64_encode_f64(5.0);
+    const t = gf64_encode_f64(1.0);
+    const result = gf64_lerp(a, b, t);
+    assert(gf64_is_equal(result, b) == true);
 }
 
 test "gf64_lerp_half" {
-    given a = gf64_encode_f64(1.0)
-    try std.testing.expect(b = gf64_encode_f64(5.0));
-    try std.testing.expect(t = gf64_encode_f64(0.5));
-    try std.testing.expect(result = gf64_lerp(a, b, t));
-    try std.testing.expect(decoded = gf64_decode_f64(result));
-    try std.testing.expect(abs(decoded - 3.0) < 0.1);
+    const a = gf64_encode_f64(1.0);
+    const b = gf64_encode_f64(5.0);
+    const t = gf64_encode_f64(0.5);
+    const result = gf64_lerp(a, b, t);
+    const decoded = gf64_decode_f64(result);
+    assert(abs(decoded - 3.0) < 0.1);
 }
 
 test "gf64_from_u32_zero" {
-    given value = 0
-    try std.testing.expect(gf = gf64_from_u32(value));
-    try std.testing.expect(gf == GF64_ZERO_POS);
+    const value = 0;
+    const gf = gf64_from_u32(value);
+    assert(gf == GF64_ZERO_POS);
 }
 
 test "gf64_from_u32_max" {
-    given value = std.math.maxInt(u32)
-    try std.testing.expect(gf = gf64_from_u32(value));
-    try std.testing.expect(decoded = gf64_to_u32(gf));
-    try std.testing.expect(decoded.? == value);
+    const value = std.math.maxInt(u32);
+    const gf = gf64_from_u32(value);
+    const decoded = gf64_to_u32(gf);
+    assert(decoded.? == value);
 }
 
 test "gf64_to_u32_success" {
-    given gf = gf64_encode_f64(123.0)
-    try std.testing.expect(result = gf64_to_u32(gf));
-    try std.testing.expect(result.? == 123);
+    const gf = gf64_encode_f64(123.0);
+    const result = gf64_to_u32(gf);
+    assert(result.? == 123);
 }
 
 test "gf64_to_u32_negative" {
-    given gf = gf64_encode_f64(-1.0)
-    try std.testing.expect(result = gf64_to_u32(gf));
-    try std.testing.expect(result == null);
+    const gf = gf64_encode_f64(-1.0);
+    const result = gf64_to_u32(gf);
+    assert(result == null);
 }
 
 test "gf64_to_u32_nan" {
-    given result = gf64_to_u32(GF64_NAN)
-    try std.testing.expect(result == null);
+    const result = gf64_to_u32(GF64_NAN);
+    assert(result == null);
 }
 
 test "gf64_from_i32_zero" {
-    given value = 0
-    try std.testing.expect(gf = gf64_from_i32(value));
-    try std.testing.expect(gf == GF64_ZERO_POS);
+    const value = 0;
+    const gf = gf64_from_i32(value);
+    assert(gf == GF64_ZERO_POS);
 }
 
 test "gf64_from_i32_negative" {
-    given value = -42
-    try std.testing.expect(gf = gf64_from_i32(value));
-    try std.testing.expect(decoded = gf64_to_i32(gf));
-    try std.testing.expect(decoded.? == value);
+    const value = -42;
+    const gf = gf64_from_i32(value);
+    const decoded = gf64_to_i32(gf);
+    assert(decoded.? == value);
 }
 
 test "gf64_to_i32_positive" {
-    given gf = gf64_encode_f64(123.0)
-    try std.testing.expect(result = gf64_to_i32(gf));
-    try std.testing.expect(result.? == 123);
+    const gf = gf64_encode_f64(123.0);
+    const result = gf64_to_i32(gf);
+    assert(result.? == 123);
 }
 
 test "gf64_to_i32_negative" {
-    given gf = gf64_encode_f64(-123.0)
-    try std.testing.expect(result = gf64_to_i32(gf));
-    try std.testing.expect(result.? == -123);
+    const gf = gf64_encode_f64(-123.0);
+    const result = gf64_to_i32(gf);
+    assert(result.? == -123);
 }
 
 test "gf64_from_components_roundtrip" {
-    given sign = -1
-    try std.testing.expect(exp = 131072);
-    try std.testing.expect(mant = 0x0000000000000800);
-    try std.testing.expect(gf = gf64_from_components(sign, exp, mant));
-    try std.testing.expect(extracted_sign = gf64_extract_sign(gf));
-    try std.testing.expect(extracted_exp = gf64_extract_exponent(gf));
-    try std.testing.expect(extracted_mant = gf64_extract_mantissa(gf));
-    try std.testing.expect(extracted_sign == sign and extracted_exp == exp and extracted_mant == mant);
+    const sign = -1;
+    const exp = 131072;
+    const mant = 0x0000000000000800;
+    const gf = gf64_from_components(sign, exp, mant);
+    const extracted_sign = gf64_extract_sign(gf);
+    const extracted_exp = gf64_extract_exponent(gf);
+    const extracted_mant = gf64_extract_mantissa(gf);
+    assert(extracted_sign == sign and extracted_exp == exp and extracted_mant == mant);
 }
 
 // ============================================================================
 // Invariants
 // ============================================================================
 
-}
 invariant gf64_sign_mask_single_bit
     assert (SIGN_MASK & (SIGN_MASK - 1)) == 0
 

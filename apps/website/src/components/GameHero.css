@@ -2,7 +2,7 @@
    viewport — there is nothing here that needs a breakpoint to decide. */
 .game-hero {
   background: #020605;
-  color: var(--text, #e7f7fa);
+  color: var(--text, #FFFFFF);
 }
 
 .game-hero-inner {
@@ -24,7 +24,7 @@
    name outranks the sentence describing it on the screen that introduces both.
    (It was the other way round, and the note here still said so for a while.) */
 .game-hero-wordmark {
-  color: var(--text, #e7f7fa);
+  color: var(--text, #FFFFFF);
   font-size: clamp(1.9rem, 6.4vw, 4rem);
   font-weight: 700;
   letter-spacing: clamp(0.04em, 0.3vw, 0.1em);

@@ -48,14 +48,14 @@ export const MODULES = [
     en: {
       name: 'SPECS',
       hint: 'The corpus she is generated from',
-      body: 'The Spec Explorer, embedded whole: search the corpus, read a spec, and watch it become tokens, an AST, types, HIR, and five target languages — Zig, Verilog, C, Rust and a chip. Editing here is a draft, not an accepted spec.',
-      play: 'Where you write. The real compiler runs on what you type here, so you can watch your spec become Zig, Verilog, C and Rust before you send a line of it anywhere.',
+      body: 'The Spec Explorer, embedded whole: search the corpus, read a spec, and watch it become tokens, an AST, types, HIR, and every target it reaches — Zig, Verilog, C, Rust, JavaScript, TypeScript and a chip. Editing here is a draft, not an accepted spec.',
+      play: 'Where you write. The real compiler runs on what you type here, so you can watch your spec become Zig, Verilog, C, Rust, JavaScript and TypeScript before you send a line of it anywhere.',
     },
     ru: {
       name: 'СПЕКИ',
       hint: 'Корпус, из которого она порождена',
-      body: 'Обозреватель спек целиком: поиск по корпусу, чтение спеки и её превращение в токены, AST, типы, HIR и пять целевых языков — Zig, Verilog, C, Rust и чип. Правка здесь — черновик, а не принятая спека.',
-      play: 'Место письма. Здесь на ваш текст работает настоящий компилятор, и спеку можно увидеть на Zig, Verilog, C и Rust ещё до того, как вы куда-то её отправите.',
+      body: 'Обозреватель спек целиком: поиск по корпусу, чтение спеки и её превращение в токены, AST, типы, HIR и все цели, до которых она доходит, — Zig, Verilog, C, Rust, JavaScript, TypeScript и чип. Правка здесь — черновик, а не принятая спека.',
+      play: 'Место письма. Здесь на ваш текст работает настоящий компилятор, и спеку можно увидеть на Zig, Verilog, C, Rust, JavaScript и TypeScript ещё до того, как вы куда-то её отправите.',
     },
   },
   {
@@ -116,14 +116,14 @@ export const MODULES = [
     en: {
       name: 'TECH TREE',
       hint: 'How the .t27 language got here',
-      body: 'The evolution of the .t27 language as a graph with prerequisites: the seed compiler, the constructs the corpus actually uses, the checks each spec passes, the five backends it generates to, the repositories that have adopted it, and the silicon path — every node carrying the count it rests on, read from the corpus index the site ships.',
-      play: 'Where a claim has to show its evidence before it is drawn at all. Read it to see how far the language has got, measured on 1407 specs rather than asserted.',
+      body: 'The evolution of the .t27 language as a graph with prerequisites: the seed compiler, the constructs the corpus actually uses, the checks each spec passes, the backends it generates to, the repositories that have adopted it, and the silicon path — every node carrying the count it rests on, read from the corpus index the site ships.',
+      play: 'Where a claim has to show its evidence before it is drawn at all. Read it to see how far the language has got, counted off the corpus index on the page rather than asserted here.',
     },
     ru: {
       name: 'ТЕХ-ДЕРЕВО',
       hint: 'Как язык .t27 дошёл до этого места',
-      body: 'Эволюция языка .t27 как граф с предпосылками: компилятор-семя, конструкции, которые корпус действительно использует, проверки, которые проходит каждая спека, пять бэкендов, в которые она порождается, репозитории, принявшие язык, и путь к кремнию — у каждого узла стоит число, на котором он держится, прочитанное из индекса корпуса, который сайт отдаёт вместе со страницей.',
-      play: 'Место, где утверждение обязано предъявить свидетельство, прежде чем его вообще нарисуют. Здесь видно, как далеко ушёл язык — измеренно на 1407 спеках, а не заявлено.',
+      body: 'Эволюция языка .t27 как граф с предпосылками: компилятор-семя, конструкции, которые корпус действительно использует, проверки, которые проходит каждая спека, бэкенды, в которые она порождается, репозитории, принявшие язык, и путь к кремнию — у каждого узла стоит число, на котором он держится, прочитанное из индекса корпуса, который сайт отдаёт вместе со страницей.',
+      play: 'Место, где утверждение обязано предъявить свидетельство, прежде чем его вообще нарисуют. Здесь видно, как далеко ушёл язык — число посчитано по индексу корпуса на самой странице, а не вписано сюда руками.',
     },
   },
   {
@@ -260,6 +260,74 @@ export const MODULES = [
       hint: 'Что обязано ехать вместе с результатом (клавиша b)',
       body: 'Запись, которую обязан нести опубликованный результат, чтобы читатель, у которого нет ни микросхемы, ни нагрузки, мог понять: два числа расходятся потому, что различаются системы, — или потому, что различались условия. Четырнадцать полей, поданных на рассмотрение рабочей группы OCP по нейроморфным вычислениям 16 сентября 2026 года, и поданных — это всё: включить их никто пока не согласился. Пять полей помечены †: за них платит наш собственный измеренный промах — один набор весов, прочитанный как две модели в 4.44 стандартной ошибки друг от друга; два артефакта, различающиеся в 43,70 процента параметров за метрикой, сдвинувшейся на 0.084 стандартной ошибки; и одна функция, чьи две реализации разошлись в 5,4 раза по LUT из-за ширин полей, а не из-за алгоритма. Шестое несёт ‡ — оно стоит только на случае, который этот документ сам и отозвал, и считается отдельно, а не тихо вместе со всеми; в версии, отправленной рабочей группе, стоит «четыре», и это просто неверно — по ней причитается поправка. Случаи не нейроморфные, и кремния не существует; и то и другое сказано на странице, а не сглажено. С тех пор запись заполнена по семи результатам, опубликованным другими: 98 клеток, 5 раскрыто, 65 частично, 28 отсутствует, — и контроль, взятый из организации, которая уже применяет правила раскрытия, единственная колонка вообще без пробелов. Открывается буквой b.',
       play: 'Место, где интерес сообщества выходит за пределы этого репозитория. Запись о раскрытии, поданная в отраслевую рабочую группу и пока никем не принятая: её разбор — или её заполнение по вашему собственному опубликованному результату — это вклад, не трогающий код.',
+    },
+  },
+  {
+    tab: 'browser',
+    key: 'w',
+    glyph: '◍',
+    en: {
+      name: 'BROWSER',
+      hint: 'Your own browser, the one your agent drives (key w)',
+      body: 'Your own real browser, running on a server: your profile, your logins, your cookies. It is the same browser the app\'s Browser tab shows and your agent drives -- not a copy -- so every click the agent makes happens here in front of you, and you can take the wheel at any moment. Passwords are typed by you inside the window and go straight into it. Opening it starts a machine, so this view only reads its state until you press Open. Works when signed in to the app at app.t27.ai. Opens on the letter w.',
+      play: 'Where you watch your agent work and take over. Open it, sign in to a site yourself, then let the agent carry on in the same window.',
+    },
+    ru: {
+      name: 'БРАУЗЕР',
+      hint: 'Ваш собственный браузер, которым водит ваш агент (клавиша w)',
+      body: 'Ваш собственный настоящий браузер на сервере: ваш профиль, ваши входы, ваши cookies. Это тот же браузер, что во вкладке «Браузер» приложения и которым водит ваш агент, — не копия, поэтому каждое нажатие агента происходит здесь у вас на глазах, и руль можно взять в любой момент. Пароли вы вводите сами внутри окна, и они уходят прямо в него. Открытие запускает машину, поэтому до нажатия «Открыть» этот вид только читает состояние. Работает, когда вы вошли в приложение на app.t27.ai. Открывается буквой w.',
+      play: 'Место, где видно, как работает агент, и где его можно подменить. Откройте, войдите на сайт сами — и пусть агент продолжает в том же окне.',
+    },
+  },
+  {
+    tab: 'roadmap',
+    key: 'm',
+    glyph: '⇶',
+    en: {
+      name: 'ROADMAP',
+      hint: 'The game: the whole stack rewritten in .t27 (key m)',
+      body: 'The goal of the game, measured. Everything below the interface is to be written once in .t27 and generated to its target, with one exception: the seed, t27c, stays hand-written Rust. This view counts what the code that runs app.t27.ai is written in today -- every repository behind it, by language, from the files git tracks at a named commit -- and lays out the rewrite as stages, each one a goal issue labelled roadmap whose state is read live. Opens on the letter m.',
+      play: 'Where the whole swarm\'s work adds up to one number: the share of the stack in .t27. Pick a stage, port its files, and watch the dial move.',
+    },
+    ru: {
+      name: 'ДОРОЖНАЯ КАРТА',
+      hint: 'Игра: весь стек переписать на .t27 (клавиша m)',
+      body: 'Цель игры в цифрах. Всё ниже интерфейса должно быть написано один раз на .t27 и сгенерировано в свою цель, с одним исключением: зерно, t27c, остаётся рукописным Rust. Этот вид считает, на чём сегодня написан код, который держит app.t27.ai, — каждый репозиторий за ним, по языкам, по файлам, которые отслеживает git, на названном коммите, — и раскладывает переписывание на этапы, каждый из которых — задача-цель с меткой roadmap, чьё состояние читается вживую. Открывается буквой m.',
+      play: 'Место, где работа всего роя сходится в одно число: доля стека на .t27. Возьмите этап, перенесите его файлы — и смотрите, как сдвигается стрелка.',
+    },
+  },
+  {
+    tab: 'leaderboard',
+    key: 'l',
+    glyph: '\u2699',
+    en: {
+      name: 'LEADERBOARD',
+      hint: 'Who lends the swarm a lane, and what it did (key l)',
+      body: 'Every bee runs on somebody\u2019s provider token, and each lane records what it did: the issues the Queen accepted on it and the hours her bees spent there. This view ranks the lenders by that work -- 100 XP for an accepted issue, 10 XP for an hour -- and nothing is stored: the numbers are summed from the swarm\u2019s own dispatch rows on every read, so anyone can recompute them. A lane nobody has claimed is shown as its number rather than hidden. Opens on the letter l.',
+      play: 'Lend the swarm a key and watch your bees work: the board shows whose lanes carried the hive this month.',
+    },
+    ru: {
+      name: 'ЛИДЕРБОРД',
+      hint: 'Кто даёт рою полосу и что она сделала (клавиша l)',
+      body: 'Каждая пчела работает на чьём-то токене провайдера, и по каждой полосе видно, что она сделала: задачи, которые Королева приняла на ней, и часы, которые провели на ней пчёлы. Этот вид выстраивает тех, кто дал полосу, по этой работе — 100 XP за принятую задачу и 10 XP за час — и ничего не хранит: числа складываются из собственных записей роя при каждом чтении, так что их может пересчитать любой. Полоса, которую никто не назвал своей, показана номером, а не спрятана. Открывается буквой l.',
+      play: 'Дайте рою ключ и смотрите, как на нём работают пчёлы: доска показывает, чьи полосы вынесли улей в этом месяце.',
+    },
+  },
+  {
+    tab: 'wars',
+    key: 'x',
+    glyph: '⚔',
+    en: {
+      name: 'WARS',
+      hint: 'Real-task agent benchmarks generated from one .t27 ledger (key x)',
+      body: 'The controlled arena for Bees, TRI-assisted decisions (the compiler judge; JEV remains only as a comparison arm), IGLA CODER and IGLA RACE. Every experiment pins a real GitHub issue, base commit, prompt, tools, budget and acceptance gates in specs/queen/wars.t27; missing runs remain unknown rather than becoming zero, and the interface is only a generated projection of that ledger.',
+      play: 'Where an agent configuration earns its place. Compare witnessed work under equal conditions, keep one accepted patch, and carry every losing or blocked arm forward as evidence rather than erasing it.',
+    },
+    ru: {
+      name: 'ВОЙНЫ',
+      hint: 'Бенчмарки агентов на реальных задачах из единого журнала .t27 (клавиша x)',
+      body: 'Контролируемая арена для Bees, решений с TRI (судья-компилятор; JEV остался только сравнительным плечом), IGLA CODER и IGLA RACE. Каждый эксперимент закрепляет реальную GitHub issue, базовый commit, prompt, инструменты, бюджет и ворота приёмки в specs/queen/wars.t27; отсутствующие запуски остаются неизвестными, а не превращаются в нули, а интерфейс служит только порождённой проекцией этого журнала.',
+      play: 'Место, где конфигурация агента заслуживает своё место. Сравнивайте подтверждённую работу в равных условиях, принимайте только один patch и сохраняйте проигравшие или заблокированные руки как свидетельство.',
     },
   },
 ] as const

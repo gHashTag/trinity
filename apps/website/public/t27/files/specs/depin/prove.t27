@@ -10,34 +10,37 @@ module depin.prove;
 // Types
 // ============================================================================
 
+// Rust types written in t27 form: `[u8; N]` is `[N]u8`, and the growable
+// `Vec<T>` is the slice `[]T` (t27 has no heap vector; the length travels
+// with the slice).
 pub struct ProveRequest {
-    node_id : [u8; 32],
+    node_id : [32]u8,
     epoch : u64,
-    phi_response : Vec<u8>,
+    phi_response : []u8,
     merkle_proof : MerkleProof,
     merkle_leaf_index : usize,
-    peer_sample_sig : [u8; 64],
+    peer_sample_sig : [64]u8,
     version : u8,
 }
 
 pub struct MerkleProof {
-    root : [u8; 32],
-    leaf : [u8; 32],
-    siblings : Vec<[u8; 32]>,
+    root : [32]u8,
+    leaf : [32]u8,
+    siblings : [][32]u8,
 }
 
 pub struct ProveResponse {
     valid : bool,
     reward_lamports : u64,
-    epoch_hash : [u8; 32],
-    next_challenge : [u8; 16],
+    epoch_hash : [32]u8,
+    next_challenge : [16]u8,
     tokens_count : u64,
     reason : ?[]const u8,
 }
 
 pub struct MiningEpoch {
     epoch_id : u64,
-    phi_seed : [u8; 16],
+    phi_seed : [16]u8,
     start_ts : u64,
     block_reward : u64,
 }
@@ -46,7 +49,7 @@ pub struct MiningEpoch {
 // Functions
 // ============================================================================
 
-pub fn derive_phi_challenge(epoch: u64, node_id: &[u8; 32]) [u8; 16] {
+pub fn derive_phi_challenge(epoch: u64, node_id: [32]u8) [16]u8 {
     // SHA256("TRI_PHI_CHALLENGE_V1" || epoch_le || node_id)[..16]
     var hasher = TriSha256.init();
     _ = hasher.update("TRI_PHI_CHALLENGE_V1");
@@ -57,11 +60,11 @@ pub fn derive_phi_challenge(epoch: u64, node_id: &[u8; 32]) [u8; 16] {
     return hash[0..16];
 }
 
-pub fn verify_phi_response(challenge: &[u8; 16], response: &[u8; 4], node_id: &[u8; 32]) bool {
+pub fn verify_phi_response(challenge: [16]u8, response: [4]u8, node_id: [32]u8) bool {
     // gf16_dot4(challenge[..4], node_id[..4]) == response
     var challenge_prefix: [4]u8 = [_]u8{ challenge[0], challenge[1], challenge[2], challenge[3] };
     var node_id_prefix: [4]u8 = [_]u8{ node_id[0], node_id[1], node_id[2], node_id[3] };
-    var dot = gf16_dot4(&challenge_prefix, &node_id_prefix);
+    var dot = gf16_dot4(challenge_prefix, node_id_prefix);
     var i: usize = 0;
     while (i < 4) {
         if (dot[i] != response[i]) return false;
@@ -89,7 +92,7 @@ pub fn gf16_mul(a: u8, b: u8) u8 {
     return result & 0xF;
 }
 
-pub fn gf16_dot4(w: &[u8; 4], x: &[u8; 4]) [u8; 4] {
+pub fn gf16_dot4(w: [4]u8, x: [4]u8) [4]u8 {
     // Element-wise GF16 multiplication of 4-element vectors
     var result: [4]u8 = [_]u8{0, 0, 0, 0};
     var i: usize = 0;
@@ -100,9 +103,14 @@ pub fn gf16_dot4(w: &[u8; 4], x: &[u8; 4]) [u8; 4] {
     return result;
 }
 
-fn compute_champion_weights() [[u8; 16]; 16] {
+// The spec defined `compute_champion_weights` twice. Both drafts compute the
+// same table -- SHA256 over 32 bytes (the 24-byte seed prefix + i as 8 LE
+// bytes; i < 16, so only byte 24 is non-zero) -- and a name may be declared
+// once, so this first, byte-by-byte draft keeps its body under its own name.
+// compute_phi_response_v2 uses the second definition below.
+fn compute_champion_weights_bytewise() [16][16]u8 {
     // CHAMPION_WEIGHTS[i][j] = SHA256("TRI_PHI_CHAMPION_SEED_V1" || i_le8)[j*2] >> 4
-    var weights: [[u8; 16]; 16] = [_][[u8; 16]; 16]{ [_]u8{0} ** 16 } ** 16;
+    var weights: [16][16]u8 = [_][16]u8{ [_]u8{0} ** 16 } ** 16;
     var i: usize = 0;
     while (i < 16) {
         var data: [40]u8 = [_]u8{0} ** 40; // "TRI_PHI_CHAMPION_SEED_V1" (24) + i_le8 (8) + padding
@@ -136,9 +144,9 @@ fn compute_champion_weights() [[u8; 16]; 16] {
     return weights;
 }
 
-pub fn derive_phi_challenge_v2(epoch: u64, node_id: &[u8; 32]) [[u8; 16]; 16] {
+pub fn derive_phi_challenge_v2(epoch: u64, node_id: [32]u8) [16][16]u8 {
     // 16 rows, each = SHA256("TRI_PHI_CHALLENGE_V2" || epoch_le8 || node_id || row_index)[j*2] >> 4
-    var result: [[u8; 16]; 16] = [_][[u8; 16]; 16]{ [_]u8{0} ** 16 } ** 16;
+    var result: [16][16]u8 = [_][16]u8{ [_]u8{0} ** 16 } ** 16;
     var i: usize = 0;
     while (i < 16) {
         var data: [72]u8 = [_]u8{0} ** 72; // "TRI_PHI_CHALLENGE_V2" (22) + epoch_le8 (8) + node_id (32) + i_le8 (8) + padding
@@ -187,9 +195,9 @@ pub fn derive_phi_challenge_v2(epoch: u64, node_id: &[u8; 32]) [[u8; 16]; 16] {
     return result;
 }
 
-fn compute_champion_weights() [[u8; 16]; 16] {
+fn compute_champion_weights() [16][16]u8 {
     // CHAMPION_WEIGHTS[i][j] = SHA256("TRI_PHI_CHAMPION_SEED_V1" || i_le8)[j*2] >> 4
-    var result: [[u8; 16]; 16] = [_][[u8; 16]; 16]{ [_]u8{0} ** 16 } ** 16;
+    var result: [16][16]u8 = [_][16]u8{ [_]u8{0} ** 16 } ** 16;
     var seed_prefix: [32]u8 = [_]u8{0} ** 32;
     // "TRI_PHI_CHAMPION_SEED_V1" is 24 bytes
     @memcpy(&seed_prefix[0], "TRI_PHI_CHAMPION_SEED_V1", 24);
@@ -218,10 +226,10 @@ fn compute_champion_weights() [[u8; 16]; 16] {
     return result;
 }
 
-pub fn compute_phi_response_v2(challenge: &[[u8; 16]; 16]) [u8; 32] {
+pub fn compute_phi_response_v2(challenge: [16][16]u8) [32]u8 {
     // SHA256(pack(gf16_matmul(CHAMPION_WEIGHTS, challenge)))
     var weights = compute_champion_weights();
-    var mat = gf16_matmul(&weights, challenge);
+    var mat = gf16_matmul(weights, challenge);
     // Pack the 16x16 matrix of 4-bit values into 128 bytes (16*16*4 bits = 128 bytes)
     var packed: [128]u8 = [_]u8{0} ** 128;
     var idx: usize = 0;
@@ -243,7 +251,7 @@ pub fn compute_phi_response_v2(challenge: &[[u8; 16]; 16]) [u8; 32] {
     return TriSha256.hash(&packed);
 }
 
-pub fn verify_phi_response_v2(challenge: &[[u8; 16]; 16], response: &[u8; 32]) bool {
+pub fn verify_phi_response_v2(challenge: [16][16]u8, response: [32]u8) bool {
     // compute_phi_response_v2(challenge) == response
     var computed = compute_phi_response_v2(challenge);
     var i: usize = 0;
@@ -254,9 +262,9 @@ pub fn verify_phi_response_v2(challenge: &[[u8; 16]; 16], response: &[u8; 32]) b
     return true;
 }
 
-pub fn gf16_matmul(a: &[[u8; 16]; 16], b: &[[u8; 16]; 16]) [[u8; 16]; 16] {
+pub fn gf16_matmul(a: [16][16]u8, b: [16][16]u8) [16][16]u8 {
     // 16x16 GF(2^4) matrix multiplication
-    var result: [[u8; 16]; 16] = [_][[u8; 16]; 16]{ [_]u8{0} ** 16 } ** 16;
+    var result: [16][16]u8 = [_][16]u8{ [_]u8{0} ** 16 } ** 16;
     var i: usize = 0;
     while (i < 16) {
         var j: usize = 0;
@@ -275,15 +283,15 @@ pub fn gf16_matmul(a: &[[u8; 16]; 16], b: &[[u8; 16]; 16]) [[u8; 16]; 16] {
     return result;
 }
 
-pub fn pack_gf16_matrix(m: &[[u8; 16]; 16]) [u8; 128] {
+pub fn pack_gf16_matrix(m: [16][16]u8) [128]u8 {
     // Pack 16x16 nibble matrix into 128 bytes (2 nibbles per byte)
 }
 
-pub fn merkle_root(leaves: &Vec<[u8; 32]>) [u8; 32] {
+pub fn merkle_root(leaves: [][32]u8) [32]u8 {
     // Binary Merkle tree root computation
 }
 
-pub fn verify_merkle(root: &[u8; 32], leaf: &[u8; 32], siblings: &Vec<[u8; 32]>, index: usize) bool {
+pub fn verify_merkle(root: [32]u8, leaf: [32]u8, siblings: [][32]u8, index: usize) bool {
     // Merkle inclusion proof verification
 }
 
@@ -466,17 +474,18 @@ bench "bench_derive_phi_challenge" {
     // Measure: SHA256 challenge derivation latency
     // Target: < 500ns on commodity CPU
     @setEvalBranchQuota(10000);
-    var node_id = [1u8; 32];
-    _ = derive_phi_challenge(1, &node_id);
+    // Rust `[1u8; 32]` (32 copies of 1) in the file's own repeat form.
+    var node_id: [32]u8 = [_]u8{1} ** 32;
+    _ = derive_phi_challenge(1, node_id);
 }
 
 bench "bench_gf16_dot4" {
     // Measure: GF16 dot product of 4-element vectors
     // Target: < 20ns on commodity CPU, < 5 cycles on FPGA
     @setEvalBranchQuota(10000);
-    var w = [1u8, 2, 3, 4];
-    var x = [5u8, 6, 7, 8];
-    _ = gf16_dot4(&w, &x);
+    var w: [4]u8 = [_]u8{1, 2, 3, 4};
+    var x: [4]u8 = [_]u8{5, 6, 7, 8};
+    _ = gf16_dot4(w, x);
 }
 
 bench "bench_merkle_verify_8_leaves" {

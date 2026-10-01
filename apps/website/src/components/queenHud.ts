@@ -7,7 +7,7 @@
 // derivable from these types, the number does not exist yet and the panel
 // must say so rather than invent it.
 
-export type HudView = "comb" | "specs" | "kanban" | "map" | "factory" | "research" | "skills" | "crons" | "agents" | "functions" | "tools" | "project" | "tri" | "passport";
+export type HudView = "comb" | "specs" | "kanban" | "map" | "factory" | "research" | "skills" | "crons" | "agents" | "functions" | "tools" | "project" | "tri" | "passport" | "browser" | "roadmap" | "leaderboard" | "wars";
 // In command-panel order: the key that opens a view is HUD_KEYS at the same
 // position, and `?tab=` accepts exactly these names. Kept identical to
 // lib/queenModules (qa/agents-spec-contract.mjs checks the two lists agree), so
@@ -35,17 +35,32 @@ export const HUD_VIEWS: readonly HudView[] = [
   // of our own that pay for it. (The digits are spent; t is TOOLS, p is PROJECT,
   // r is TRI.)
   "passport",
+  // Fifteenth, on the letter w (web): the person's own remote browser -- the
+  // same pod the app's Browser tab shows and the agent drives, framed here
+  // because the board and the app share one origin (lib/queenBrowser.ts).
+  "browser",
+  // Sixteenth, on the letter m (map of the road): the ROADMAP -- the game's goal,
+  // the whole stack rewritten in .t27, measured by language and repository, with
+  // one goal issue per stage. (Digits spent; t, p, r, b, w taken.)
+  "roadmap",
+  // Seventeenth, on the letter l: the LEADERBOARD -- who lends the swarm a
+  // lane, and what its bees did there (owner, 2026-09-23).
+  "leaderboard",
+  // Eighteenth, on x (the crossed blades): WARS compares agent configurations
+  // on pinned real issues. Its protocol, entrants and results are generated from
+  // specs/queen/wars.t27; the view never invents a score for an absent run.
+  "wars",
 ] as const;
 // The keyboard shortcut per view, by position: the digits 1-9, then 0, then
 // letters once the digits are spent. The rail prints HUD_KEYS[i] on button i and
 // the shell binds exactly these keys; a tenth or eleventh view takes the next
 // entry here and nothing else changes.
-export const HUD_KEYS: readonly string[] = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "t", "p", "r", "b"] as const;
+export const HUD_KEYS: readonly string[] = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "t", "p", "r", "b", "w", "m", "l", "x"] as const;
 export const hudKeyOf = (view: HudView): string => HUD_KEYS[HUD_VIEWS.indexOf(view)] ?? "";
 // The physical key behind each HUD_KEYS entry (KeyboardEvent.code), for a
 // character that is not a Latin letter or digit: on a Russian layout the r key
 // reports key "к" and code "KeyR".
-export const HUD_CODES: readonly string[] = ["Digit1", "Digit2", "Digit3", "Digit4", "Digit5", "Digit6", "Digit7", "Digit8", "Digit9", "Digit0", "KeyT", "KeyP", "KeyR", "KeyB"] as const;
+export const HUD_CODES: readonly string[] = ["Digit1", "Digit2", "Digit3", "Digit4", "Digit5", "Digit6", "Digit7", "Digit8", "Digit9", "Digit0", "KeyT", "KeyP", "KeyR", "KeyB", "KeyW", "KeyM", "KeyL", "KeyX"] as const;
 /** The HUD_KEYS index a key event means, or -1. A typed Latin letter or digit
  *  decides, as the rail's badge says (Dvorak and Colemak put them on other
  *  keys); anything else (another script, a shifted digit, a keypad key with Num
@@ -87,10 +102,20 @@ export const isSpecLayer = (value: string): value is SpecLayer =>
 //
 // Order is the board's own -- columns, then ground, then production -- and it
 // is what the sub-navigation draws.
-export const BOARD_VIEWS = ["kanban", "map", "factory"] as const;
+// TECH TREE joined the board on the owner's word, 2026-09-21: it is read
+// beside the columns, not as a rail button of its own.
+export const BOARD_VIEWS = ["kanban", "map", "factory", "research"] as const;
 export type BoardView = (typeof BOARD_VIEWS)[number];
 export const isBoardView = (value: string): value is BoardView =>
   (BOARD_VIEWS as readonly string[]).includes(value);
+
+// The project, and the record beside it. PASSPORT moved inside PROJECT on the
+// owner's word, 2026-09-21: the disclosure record is part of how the project
+// describes itself, not an instrument of its own. Same shape as the board.
+export const PROJECT_VIEWS = ["project", "passport"] as const;
+export type ProjectView = (typeof PROJECT_VIEWS)[number];
+export const isProjectView = (value: string): value is ProjectView =>
+  (PROJECT_VIEWS as readonly string[]).includes(value);
 
 /**
  * A view the rail does not draw, because another module holds it: every rung
@@ -100,7 +125,8 @@ export const isBoardView = (value: string): value is BoardView =>
  */
 const isFolded = (view: HudView): boolean =>
   (isSpecLayer(view) && view !== SPEC_LAYERS[0]) ||
-  (isBoardView(view) && view !== BOARD_VIEWS[0]);
+  (isBoardView(view) && view !== BOARD_VIEWS[0]) ||
+  (isProjectView(view) && view !== PROJECT_VIEWS[0]);
 
 // The rail: the modules that hold no other, plus SPECS and KANBAN, which are
 // the doors of the two that do. Every one of the fourteen names stays a valid
@@ -110,7 +136,7 @@ const isFolded = (view: HudView): boolean =>
 export const RAIL_VIEWS: readonly HudView[] = HUD_VIEWS.filter((view) => !isFolded(view));
 /** The rail button a view lights: a ladder layer lights SPECS, a board view KANBAN. */
 export const railViewOf = (view: HudView): HudView =>
-  isSpecLayer(view) ? SPEC_LAYERS[0] : isBoardView(view) ? BOARD_VIEWS[0] : view;
+  isSpecLayer(view) ? SPEC_LAYERS[0] : isBoardView(view) ? BOARD_VIEWS[0] : isProjectView(view) ? PROJECT_VIEWS[0] : view;
 
 export type Territory = "held" | "neutral" | "fog";
 
@@ -1212,27 +1238,6 @@ export function alertSpan(observedFrom: string | null, nowMs: number, windowMs =
   if (!Number.isFinite(from)) return null;
   const observed = Math.max(0, nowMs - from);
   return observed < windowMs ? { seconds: Math.round(observed / 1000), clipped: true } : { seconds: Math.round(windowMs / 1000), clipped: false };
-}
-
-/**
- * What the feed holds (P1-27): its row count and the span between its
- * oldest and newest rows, from the rows themselves. The span is null with
- * fewer than two datable rows; the header then prints the count alone and
- * never a fabricated "0 s".
- */
-export function feedCoverage(events: Array<{ at: string }>): { rows: number; spanSeconds: number | null; oldestAt: string | null; newestAt: string | null } {
-  let oldest: number | null = null;
-  let newest: number | null = null;
-  let oldestAt: string | null = null;
-  let newestAt: string | null = null;
-  for (const event of events) {
-    const t = Date.parse(event.at);
-    if (!Number.isFinite(t)) continue;
-    if (oldest === null || t < oldest) { oldest = t; oldestAt = event.at; }
-    if (newest === null || t > newest) { newest = t; newestAt = event.at; }
-  }
-  const spanSeconds = oldest !== null && newest !== null && oldestAt !== newestAt ? Math.round((newest - oldest) / 1000) : null;
-  return { rows: events.length, spanSeconds, oldestAt, newestAt };
 }
 
 /**

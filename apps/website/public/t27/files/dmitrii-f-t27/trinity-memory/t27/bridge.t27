@@ -20,6 +20,8 @@ struct TMBridgeState {
     json_tokens: []TMJsonToken, token_capacity: usize,
     json_arena: []u8, arena_capacity: usize,
     tensor_work: *TMTPJSONWorkspace,
+    backend: u32, transport: u32, evidence: u32,
+    ev_idcode: u32, ev_dna: u64, ev_bitstream: []u8, ev_capture: []u8,
 }
 
 fn tm_bridge_put(w: *TMJsonWriter, byte: u8) -> void { tm_json_write_byte(w, byte); }
@@ -126,6 +128,12 @@ fn tm_bridge_init(s: *TMBridgeState) -> i32 {
         || s.max_storage_bytes == 0 || s.max_trits == 0
         || s.max_trits > s.value_capacity || s.temporary_capacity < s.object_capacity
         || s.object_capacity > s.pool_capacity / s.slot_capacity) { return -1; }
+    // The backend seam of issue #64: the emulator (0, in-process, no evidence) is
+    // the default; the device backend (1) requires the UART transport, the whole
+    // evidence block (specs/memory/bridge.t27 10) and a nonzero IDCODE.
+    if (s.backend > 1) { return -1; }
+    if (s.backend == 0 && (s.transport != 0 || s.evidence != 0)) { return -1; }
+    if (s.backend == 1 && (s.transport != 1 || s.evidence != 15 || s.ev_idcode == 0)) { return -1; }
     var i: usize = 0;
     while (i < s.slot_capacity) { s.slots[i].active = false; s.slots[i].size = 0; i = i + 1; }
     s.stored_bytes = 0; s.object_count = 0;
@@ -138,6 +146,40 @@ fn tm_bridge_codec_name(codec: i32) -> str {
     if (codec == 3) { return "dense22"; }
     if (codec == 4) { return "sparse41"; }
     return "sparse82";
+}
+
+// Backend and identity text of the seam (specs/memory/bridge.t27 10): the emulator
+// fields are exactly the v1 strings; the device fields add transport and evidence.
+fn tm_bridge_backend_name(s: *TMBridgeState, w: *TMJsonWriter) -> void {
+    tm_bridge_text(w, "\"backend\":\"");
+    tm_bridge_text(w, tm_backend_name(s.backend));
+    tm_bridge_put(w, 34);
+}
+fn tm_backend_name(backend: u32) -> str {
+    if (backend == 1) { return "fpga"; }
+    return "emulator";
+}
+fn tm_bridge_backend_fields(s: *TMBridgeState, w: *TMJsonWriter) -> void {
+    if (s.backend == 0) {
+        tm_bridge_text(w, "\"backend\":\"emulator\",\"hardware\":false");
+        return;
+    }
+    tm_bridge_text(w, "\"backend\":\"fpga\",\"hardware\":true,\"transport\":\"uart\"");
+}
+fn tm_bridge_evidence_block(s: *TMBridgeState, w: *TMJsonWriter) -> void {
+    tm_bridge_text(w, "{\"bitstream_sha256\":\"");
+    tm_bridge_hex(w, s.ev_bitstream, 32);
+    tm_bridge_text(w, "\",\"capture_sha256\":\"");
+    tm_bridge_hex(w, s.ev_capture, 32);
+    tm_bridge_text(w, "\",\"idcode\":"); tm_bridge_unsigned(w, s.ev_idcode as u64);
+    // DNA prints as sixteen big-endian hex digits, the order of the board records.
+    tm_bridge_text(w, ",\"dna\":\"");
+    var d: u32 = 0;
+    while (d < 16) {
+        tm_bridge_put(w, tm_bridge_hex_digit(((s.ev_dna >> ((15 - d) << 2)) & 15) as u8));
+        d = d + 1;
+    }
+    tm_bridge_text(w, "\"}");
 }
 
 struct TMBridgeError { code: i32, message: str, }
@@ -236,22 +278,35 @@ fn tm_bridge_inspect(s: *TMBridgeState, data: []u8, size: usize, e: *TMBridgeErr
     tm_bridge_error(e, -32602, "upload must contain a valid TMEM or TensorPack container"); return -1;
 }
 fn tm_bridge_capabilities(s: *TMBridgeState, w: *TMJsonWriter) -> void {
-    tm_bridge_text(w, "{\"protocol\":\"trinity-memory-bridge\",\"version\":1,\"backend\":\"emulator\",\"hardware\":false,\"persistence\":\"process-memory\",\"authentication\":\"none-loopback-only\",\"formats\":[\"TMEM/1\",\"TensorPack/1\"],\"codecs\":[\"baseline2\",\"dense5\",\"dense17\",\"dense22\",\"sparse41\",\"sparse82\"],\"methods\":[\"trinity.capabilities\",\"memory.upload\",\"memory.read\",\"memory.info\",\"memory.delete\",\"compute.dot\",\"chip_info\",\"trinity_chipInfo\"],\"limits\":{\"max_request_bytes\":");
+    tm_bridge_text(w, "{\"protocol\":\"trinity-memory-bridge\",\"version\":1,");
+    tm_bridge_backend_fields(s, w);
+    tm_bridge_text(w, ",\"persistence\":\"process-memory\",\"authentication\":\"none-loopback-only\",\"formats\":[\"TMEM/1\",\"TensorPack/1\"],\"codecs\":[\"baseline2\",\"dense5\",\"dense17\",\"dense22\",\"sparse41\",\"sparse82\"],\"methods\":[\"trinity.capabilities\",\"memory.upload\",\"memory.read\",\"memory.info\",\"memory.delete\",\"compute.dot\",\"chip_info\",\"trinity_chipInfo\"],\"limits\":{\"max_request_bytes\":");
     tm_bridge_unsigned(w, s.max_request_bytes as u64);
     tm_bridge_text(w, ",\"max_object_bytes\":"); tm_bridge_unsigned(w, s.object_capacity as u64);
     tm_bridge_text(w, ",\"max_storage_bytes\":"); tm_bridge_unsigned(w, s.max_storage_bytes as u64);
     tm_bridge_text(w, ",\"max_objects\":"); tm_bridge_unsigned(w, s.slot_capacity as u64);
     tm_bridge_text(w, ",\"max_trits\":"); tm_bridge_unsigned(w, s.max_trits as u64);
-    tm_bridge_text(w, "}}");
+    tm_bridge_text(w, "}");
+    if (s.backend == 1) {
+        tm_bridge_text(w, ",\"evidence\":");
+        tm_bridge_evidence_block(s, w);
+    }
+    tm_bridge_text(w, "}");
 }
-fn tm_bridge_identity(w: *TMJsonWriter, old_name: bool) -> void {
+fn tm_bridge_identity(s: *TMBridgeState, w: *TMJsonWriter, old_name: bool) -> void {
     // These public constants are SHA256("trinity-memory-emulator-v1:"+part)[:16].
     if (old_name) {
         tm_bridge_text(w, "{\"phi\":\"7f2a2badfec845842e9d0890f06b68ad\",\"euler\":\"753ddc8a3afc49c2d25fb1e66391c65f\",\"gamma\":\"71f69df85da14b24f17e187e95bbd35b\",\"anchor\":\"0x47C0\"");
     } else {
         tm_bridge_text(w, "{\"phi_id\":\"7f2a2badfec845842e9d0890f06b68ad\",\"euler_id\":\"753ddc8a3afc49c2d25fb1e66391c65f\",\"gamma_id\":\"71f69df85da14b24f17e187e95bbd35b\",\"anchor\":18368");
     }
-    tm_bridge_text(w, ",\"backend\":\"emulator\",\"hardware\":false,\"identity_kind\":\"synthetic-public-16-byte\",\"status\":\"memory emulator\"}");
+    if (s.backend == 0) {
+        tm_bridge_text(w, ",\"backend\":\"emulator\",\"hardware\":false,\"identity_kind\":\"synthetic-public-16-byte\",\"status\":\"memory emulator\"}");
+        return;
+    }
+    tm_bridge_text(w, ",\"backend\":\"fpga\",\"hardware\":true,\"transport\":\"uart\",\"identity_kind\":\"device-evidence\",\"status\":\"memory device\",\"evidence\":");
+    tm_bridge_evidence_block(s, w);
+    tm_bridge_put(w, 125);
 }
 
 fn tm_bridge_u64_array(w: *TMJsonWriter, values: []u64, count: usize) -> void {
@@ -393,7 +448,9 @@ fn tm_bridge_dot(s: *TMBridgeState, slot: usize, name: i64, activations: i64,
         var scale: usize = 0; if (scale_axis == 0) { scale = row; }
         tm_bridge_float(w, scales[scale]); row = row + 1;
     }
-    tm_bridge_text(w, "],\"backend\":\"emulator\",\"arithmetic\":\"exact-integer\",\"tensor_name\":");
+    tm_bridge_text(w, "],");
+    tm_bridge_backend_name(s, w);
+    tm_bridge_text(w, ",\"arithmetic\":\"exact-integer\",\"tensor_name\":");
     tm_bridge_string(w, tokens[name].text, tokens[name].text_size);
     tm_bridge_text(w, ",\"input_shape\":"); tm_bridge_u64_array(w, shape, rank);
     tm_bridge_text(w, ",\"output_shape\":["); tm_bridge_unsigned(w, rows as u64);
@@ -438,7 +495,7 @@ fn tm_bridge_upload(s: *TMBridgeState, data_token: i64, w: *TMJsonWriter, e: *TM
     if (!unique) { return tm_bridge_error(e, -32603, "internal RPC error"); }
     tm_bridge_text(w, "{\"handle\":"); tm_bridge_handle(w, &candidate);
     tm_bridge_text(w, ",\"bytes\":"); tm_bridge_unsigned(w, size as u64);
-    tm_bridge_text(w, ",\"backend\":\"emulator\"}");
+    tm_bridge_put(w, 44); tm_bridge_backend_name(s, w); tm_bridge_put(w, 125);
     // Reserve the final response-envelope byte before committing any mutation.
     if (w.error != 0 || w.used >= w.capacity) { return tm_bridge_error(e, -32603, "internal RPC error"); }
     var offset: usize = target * s.object_capacity; var i: usize = 0;
@@ -454,10 +511,11 @@ fn tm_bridge_dispatch(s: *TMBridgeState, method: i64, params: i64, w: *TMJsonWri
     }
     if (tm_bridge_token_equal(tokens, method, "chip_info") || tm_bridge_token_equal(tokens, method, "trinity_chipInfo")) {
         if (!tm_bridge_fields(tokens, params, 0, 0)) { return tm_bridge_error(e, -32602, "invalid method parameters"); }
-        tm_bridge_identity(w, tm_bridge_token_equal(tokens, method, "chip_info")); return 0;
+        tm_bridge_identity(s, w, tm_bridge_token_equal(tokens, method, "chip_info")); return 0;
     }
     if (tm_bridge_token_equal(tokens, method, "memory.upload")) {
         if (!tm_bridge_fields(tokens, params, 1, 1)) { return tm_bridge_error(e, -32602, "invalid method parameters"); }
+        if (s.backend == 1) { return tm_bridge_error(e, -32000, "device transport not linked in this process"); }
         return tm_bridge_upload(s, tm_bridge_field(tokens, params, "data"), w, e);
     }
     var reading: bool = tm_bridge_token_equal(tokens, method, "memory.read");
@@ -469,6 +527,7 @@ fn tm_bridge_dispatch(s: *TMBridgeState, method: i64, params: i64, w: *TMJsonWri
         if (reading) { allowed = 14; }
         if (dot) { required = 50; allowed = 50; }
         if (!tm_bridge_fields(tokens, params, required, allowed)) { return tm_bridge_error(e, -32602, "invalid method parameters"); }
+        if (s.backend == 1) { return tm_bridge_error(e, -32000, "device transport not linked in this process"); }
         var found: i64 = tm_bridge_find_slot(s, tm_bridge_field(tokens, params, "handle"), e);
         if (found < 0) { return e.code; }
         var slot: usize = found as usize; var size: usize = s.slots[slot].size;
@@ -490,7 +549,7 @@ fn tm_bridge_dispatch(s: *TMBridgeState, method: i64, params: i64, w: *TMJsonWri
             tm_bridge_text(w, "\",\"offset\":"); tm_bridge_unsigned(w, offset as u64);
             tm_bridge_text(w, ",\"length\":"); tm_bridge_unsigned(w, length as u64);
             tm_bridge_text(w, ",\"total_bytes\":"); tm_bridge_unsigned(w, size as u64);
-            tm_bridge_text(w, ",\"backend\":\"emulator\"}"); return 0;
+            tm_bridge_put(w, 44); tm_bridge_backend_name(s, w); tm_bridge_put(w, 125); return 0;
         }
         if (info) {
             var count: i64 = tm_bridge_inspect(s, data, size, e);
@@ -501,10 +560,12 @@ fn tm_bridge_dispatch(s: *TMBridgeState, method: i64, params: i64, w: *TMJsonWri
             else { tm_bridge_tp_info(s, w, data, size, count as u64); }
             tm_bridge_text(w, ",\"handle\":"); tm_bridge_handle(w, &s.slots[slot]);
             tm_bridge_text(w, ",\"sha256\":\""); tm_bridge_hex(w, digest, 32);
-            tm_bridge_text(w, "\",\"backend\":\"emulator\"}"); return 0;
+            tm_bridge_text(w, "\","); tm_bridge_backend_name(s, w); tm_bridge_put(w, 125); return 0;
         }
         if (deleting) {
-            tm_bridge_text(w, "{\"deleted\":true,\"backend\":\"emulator\"}");
+            tm_bridge_text(w, "{\"deleted\":true,");
+            tm_bridge_backend_name(s, w);
+            tm_bridge_put(w, 125);
             if (w.error != 0 || w.used >= w.capacity) { return tm_bridge_error(e, -32603, "internal RPC error"); }
             s.slots[slot].active = false; s.slots[slot].size = 0;
             s.object_count = s.object_count - 1; s.stored_bytes = s.stored_bytes - size;

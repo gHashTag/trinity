@@ -3,7 +3,9 @@ import {useSearchParams} from 'react-router-dom';
 import {QueenCombBabylon} from './QueenCombBabylon';
 import {catalogUniverse,catalogFocus,catalogFocusHash,catalogLabelField,catalogPortalSize,catalogSpecSelection,type CatalogController} from './queenCatalogData';
 import {QueenCatalogSpec} from './QueenCatalogSpec';
+import {QueenEvidence} from './QueenEvidence';
 import QueenCellStage,{type CellSpecLink} from './QueenCellStage';
+import {SELECTION_KEY,validSelection} from '../lib/queenEmbed';
 import {atlasAgentPacket,type UniverseAtlas,type AtlasIssue} from '../lib/queenUniverseAtlas';
 import type {CombHandle} from './queenHud';
 import type {HiveDisplayProjection,HiveDisplay} from './queenHiveDisplay';
@@ -74,6 +76,9 @@ export function QueenCatalogHive({atlas,lang,handleRef,foundationVisible=true,fi
   function enter(nextRepo:string,number:number|null=null){setSpecPath(null);setPacket('');setCopied(false);if(nextRepo===repo&&number===focus?.number)return;setParams(p=>{const next=new URLSearchParams(p);next.set('world',nextRepo);if(number===null)next.delete('task');else next.set('task',String(number));return next;},{replace:nextRepo===repo});onInspect?.();}
   function home(){setSpecPath(null);setPacket('');setCopied(false);setParams(p=>{const next=new URLSearchParams(p);next.delete('world');next.delete('task');return next;});}
   function openIssue(row:HiveDisplay){enter(row.repo,row.number);}
+  // A spec opened here is the corpus's selected spec: it goes into the Queen
+  // address, which a tab switch keeps, so SPECS opens the Explorer on it.
+  function openSpec(path:string){setSpecPath(path);const id=validSelection('specs',path);if(id)setParams(p=>{const next=new URLSearchParams(p);next.set(SELECTION_KEY.specs,id);return next;},{replace:true});}
   // The cell, opened: the stage takes the whole display, so everything it needs
   // that only this component holds -- the atlas -- is handed to it as data. The
   // snapshot is the catalog's own row; the live GitHub read happens inside the
@@ -109,6 +114,7 @@ export function QueenCatalogHive({atlas,lang,handleRef,foundationVisible=true,fi
       <span>{repo??'TRI-27 · S³AI DNA'}</span><span>{repo?issueRows.length:world.displays.filter(Boolean).length} issues</span><span>{atlas.specs.length} .t27</span><span>{map.regions?.length} {ru?'репозиториев':'repositories'}</span>
       <small>{ru?'Публичный снимок, не live · золото = спека, не закрытая issue':'Public snapshot, not live · gold = spec, not a resolved issue'}</small>
     </div>
+    <QueenEvidence lang={lang}/>
     <button className="queen-catalog-search-toggle" aria-controls="queen-catalog-search-controls" aria-expanded={toolsOpen} onClick={()=>setToolsOpen(v=>!v)}>{toolsOpen?(ru?'Скрыть поиск':'Hide search'):(ru?'Поиск сот':'Find cells')}</button>
     <div className="queen-hive-inspect-tools queen-catalog-tools" id="queen-catalog-search-controls">
       <input aria-label={ru?'Найти спеку, репозиторий или задачу':'Find spec, repository or issue'} placeholder=".t27 / repo / #issue" value={query} onChange={e=>setQuery(e.target.value)}/>
@@ -125,7 +131,7 @@ export function QueenCatalogHive({atlas,lang,handleRef,foundationVisible=true,fi
     {!specPath&&resource&&(!repo||!focus?.number)&&<aside className="queen-catalog-detail" aria-label={ru?'Выбранная сота':'Selected cell'}>
       <button className="queen-catalog-close" aria-label={ru?'Закрыть детали':'Close details'} onClick={()=>control.current?.overview()}>×</button>
       <h3>{resource.title}</h3>
-      {resource.kind==='repo'?<><button className="queen-catalog-enter" onClick={()=>{if(selected!==null)control.current?.inspect(selected,true);}}>{ru?'Рассмотреть задачи репозитория':'Inspect repository issues'} →</button><button onClick={copyGameLink}>{ru?'Копировать ссылку':'Copy game link'}</button><p>{resource.count} .t27 · {resource.open??'?'} {ru?'открытых задач':'open issues'}</p></>:<><p>{ru?'Одна спека: общее ядро ↔ репозиторий-источник. Золотая линия связывает её соты.':'One spec: shared core ↔ source repository. The gold line connects its cells.'}</p><div className="queen-catalog-spec-links"><button onClick={()=>{if(selected!==null)control.current?.inspect(selected);}}>{ru?'Показать связь':'Show connection'}</button>{selection.indices.map(index=>{const cell=map.cells[index];return cell?.kind==='spec'?<button key={cell.key} data-spec-jump={cell.placement} onClick={()=>control.current?.inspect(index,true)}>{cell.placement==='core'?(ru?'Ядро':'Core'):cell.sourceRepo}</button>:null;})}</div>{spec?.sources.map(s=><div key={`${s.repo}:${s.path}`}><button onClick={()=>enter(s.repo)}>{s.repo}</button><br/><button onClick={()=>setSpecPath(s.path)}>{s.path}</button></div>)}</>}
+      {resource.kind==='repo'?<><button className="queen-catalog-enter" onClick={()=>{if(selected!==null)control.current?.inspect(selected,true);}}>{ru?'Рассмотреть задачи репозитория':'Inspect repository issues'} →</button><button onClick={copyGameLink}>{ru?'Копировать ссылку':'Copy game link'}</button><p>{resource.count} .t27 · {resource.open??'?'} {ru?'открытых задач':'open issues'}</p></>:<><p>{ru?'Одна спека: общее ядро ↔ репозиторий-источник. Золотая линия связывает её соты.':'One spec: shared core ↔ source repository. The gold line connects its cells.'}</p><div className="queen-catalog-spec-links"><button onClick={()=>{if(selected!==null)control.current?.inspect(selected);}}>{ru?'Показать связь':'Show connection'}</button>{selection.indices.map(index=>{const cell=map.cells[index];return cell?.kind==='spec'?<button key={cell.key} data-spec-jump={cell.placement} onClick={()=>control.current?.inspect(index,true)}>{cell.placement==='core'?(ru?'Ядро':'Core'):cell.sourceRepo}</button>:null;})}</div>{spec?.sources.map(s=><div key={`${s.repo}:${s.path}`}><button onClick={()=>enter(s.repo)}>{s.repo}</button><br/><button onClick={()=>openSpec(s.path)}>{s.path}</button></div>)}</>}
       <p>{ru?'Совпадение со спекой не закрывает issue. Нужны генерация, тесты и ревью.':'A spec match does not close an issue. Generation, tests and review are required.'}</p>
       <h4>{ru?'Связанные задачи':'Related issues'} · {linked.length}</h4>
       {linked.slice(0,limit).map(i=><div className="queen-catalog-issue" key={i.key}><button data-lang-exempt="github-title" onClick={()=>enter(i.repo,i.number)}>{i.repo} #{i.number} · {i.title}</button><small>{i.hits.some(h=>h.relation==='reference'&&(!spec||h.specId===spec.id))?(ru?'Ссылка / символ · не подтверждено':'Path / symbol · unverified'):(ru?'Кандидат / связь не подтверждена':'Candidate / relation unverified')}</small><button className="queen-catalog-copy" onClick={()=>void copy(i)}>COPY TO AGENT</button></div>)}
@@ -133,7 +139,7 @@ export function QueenCatalogHive({atlas,lang,handleRef,foundationVisible=true,fi
       {packet&&<><p role="status">{copied?(ru?'Скопировано':'Copied'):(ru?'Скопируйте пакет ниже':'Copy the packet below')}</p><textarea readOnly aria-label="Agent packet" value={packet}/></>}
       <small>{ru?'Наблюдение':'Observed'}: {new Date(atlas.at).toLocaleString(lang)} · {ru?'не live':'not live'}</small>
     </aside>}
-    {!specPath&&repo&&focus?.number&&<QueenCellStage key={issueKey} repo={repo} number={focus.number} title={snapshot?.title} lang={lang} onClose={()=>enter(repo)} cellHref={new URL(catalogFocusHash({repo,number:focus.number}),location.href).href} specs={cellSpecs} onSpec={setSpecPath} packet={cellPacket} onObserved={row=>setObserved(prev=>prev[row.key]===row?prev:{...prev,[row.key]:row})}/>}
+    {!specPath&&repo&&focus?.number&&<QueenCellStage key={issueKey} repo={repo} number={focus.number} title={snapshot?.title} lang={lang} onClose={()=>enter(repo)} cellHref={new URL(catalogFocusHash({repo,number:focus.number}),location.href).href} specs={cellSpecs} onSpec={openSpec} packet={cellPacket} onObserved={row=>setObserved(prev=>prev[row.key]===row?prev:{...prev,[row.key]:row})}/>}
     {specPath&&<QueenCatalogSpec key={specPath} atlas={atlas} path={specPath} lang={lang} onClose={()=>setSpecPath(null)}/>}
   </div>;
 }

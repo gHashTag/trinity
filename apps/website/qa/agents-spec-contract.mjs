@@ -21,7 +21,7 @@ import { join } from 'node:path'
 import { generate, SKILLS_OUT, CRONS_OUT, AGENTS_OUT, FUNCTIONS_OUT, TOOLS_OUT, FUNCTIONS_MANIFEST, EXPERIENCE_PATH, AGENT_COUNT, AGENT_LAYERS, HOSTS, CONTROLS, ON_FAILURE, FN_TRIGGERS, FN_ON_FAILURE, FN_SIDE_EFFECTS, FN_PROBE_RESULTS, FN_CONTROLS, functionDifferences, I18N_SPEC_DIR, I18N_FIELD_SOURCE, REPO_ROOT } from '../scripts/agents-from-specs.mjs'
 import { canonicalSpecEditUrl, vendoredSpecUrl, specSlug } from '../src/lib/agentSpecs.ts'
 import { MODULES } from '../src/lib/queenModules.ts'
-import { HUD_VIEWS, HUD_KEYS, RAIL_VIEWS, SPEC_LAYERS, BOARD_VIEWS, railViewOf } from '../src/components/queenHud.ts'
+import { HUD_VIEWS, HUD_KEYS, RAIL_VIEWS, SPEC_LAYERS, BOARD_VIEWS, PROJECT_VIEWS, railViewOf } from '../src/components/queenHud.ts'
 
 const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex')
 const skills = JSON.parse(readFileSync(SKILLS_OUT, 'utf8'))
@@ -397,15 +397,18 @@ for (const tab of shown) {
   assert.ok(tab !== 'comb' && tab !== 'specs', `'${tab}' has a block of its own; showcasing it would render it twice`)
 }
 assert.match(app, /<ModulesBlock \/>/, 'the homepage does not mount the index, so every module the showcase leaves out is unreachable')
-// The index draws three groups -- the rail's buttons, the ladder inside SPECS,
-// the board inside KANBAN -- and they have to stay a partition of MODULES or the
-// homepage silently drops a module. The predicates are asked of the shell's own
+// The index draws four groups -- the rail's buttons, the ladder inside SPECS,
+// the board inside KANBAN, the record inside PROJECT -- and they have to stay a
+// partition of MODULES or the homepage silently drops a module. The fourth came
+// with PASSPORT's move inside PROJECT (2026-09-21): until the index learned it,
+// PASSPORT was a module with no card anywhere. The predicates are asked of the shell's own
 // lists, so this is checkable here rather than only readable there.
 const modulesBlock = src('components/ModulesBlock.tsx')
 assert.match(modulesBlock, /RAIL_VIEWS as readonly string\[\]\)\.includes\(tab\)/, 'the index no longer reads the rail from RAIL_VIEWS, so its groups can drift from the buttons')
 assert.match(modulesBlock, /MODULES\.filter\(\(m\) => isRailModule\(m\.tab\)\)/, 'the rail group is no longer MODULES on the rail, so a module can fall off the homepage')
 assert.match(modulesBlock, /MODULES\.filter\(\(m\) => isLadderRung\(m\.tab\)\)/, 'the ladder group is no longer the spec layers the rail does not draw')
 assert.match(modulesBlock, /MODULES\.filter\(\(m\) => isBoardReading\(m\.tab\)\)/, 'the board group is no longer the board views the rail does not draw')
+assert.match(modulesBlock, /MODULES\.filter\(\(m\) => isProjectRecord\(m\.tab\)\)/, 'the project group is no longer the project views the rail does not draw')
 for (const m of MODULES) {
   const group = RAIL_VIEWS.includes(m.tab)
     ? 'rail'
@@ -413,8 +416,10 @@ for (const m of MODULES) {
       ? 'ladder'
       : BOARD_VIEWS.includes(m.tab)
         ? 'board'
-        : null
-  assert.ok(group, `module '${m.tab}' is in none of the index's three groups, so its card is drawn nowhere`)
+        : PROJECT_VIEWS.includes(m.tab)
+          ? 'project'
+          : null
+  assert.ok(group, `module '${m.tab}' is in none of the index's four groups, so its card is drawn nowhere`)
 }
 assert.match(modulesBlock, /modules\.map\(\(module\)/, 'the index no longer draws a card for every module in a group')
 // lib/queenModules opens by calling itself "the only place their identity is
@@ -504,7 +509,12 @@ assert.ok(passportModule && HUD_VIEWS.includes('passport'), 'PASSPORT (the recor
 assert.equal(passportModule.key, 'b', 'PASSPORT opens on b: digits spent, t is TOOLS, p is PROJECT, r is TRI')
 assert.ok(passportModule.en.hint.includes('(key b)') && passportModule.ru.hint.includes('(клавиша b)'), 'PASSPORT names its letter key in both hints')
 for (const lang of ['en', 'ru']) assert.ok(passportModule[lang].name && passportModule[lang].body.length > 40, `passport: ${lang} copy missing`)
-assert.equal(HUD_KEYS.slice(0, HUD_VIEWS.length).join(''), '1234567890tprb', 'the rail keys are 1-9, 0, t, p, r, b in that order')
+const warsModule = MODULES.find((m) => m.tab === 'wars')
+assert.ok(warsModule && HUD_VIEWS.includes('wars'), 'WARS (the real-task agent arena) is a module and a view')
+assert.equal(warsModule.key, 'x', 'WARS opens on x: the crossed-blades key')
+assert.ok(warsModule.en.hint.includes('(key x)') && warsModule.ru.hint.includes('(клавиша x)'), 'WARS names its letter key in both hints')
+for (const lang of ['en', 'ru']) assert.ok(warsModule[lang].name && warsModule[lang].body.length > 40, `wars: ${lang} copy missing`)
+assert.equal(HUD_KEYS.slice(0, HUD_VIEWS.length).join(''), '1234567890tprbwmlx', 'the rail keys are 1-9, 0, t, p, r, b, w, m, l, x in that order')
 
 // The rail is no longer the whole vocabulary. HUD_VIEWS stays the fourteen
 // addresses -- every ?tab=, every key, every module card -- while the rail draws
@@ -515,9 +525,11 @@ assert.equal(HUD_KEYS.slice(0, HUD_VIEWS.length).join(''), '1234567890tprb', 'th
 // member on both its family's list and the rail is drawn twice.
 assert.ok(SPEC_LAYERS.every((layer) => HUD_VIEWS.includes(layer)), 'a ladder layer is not a view, so it has no address and no key')
 assert.ok(BOARD_VIEWS.every((view) => HUD_VIEWS.includes(view)), 'a board view is not a view, so it has no address and no key')
+assert.ok(PROJECT_VIEWS.every((view) => HUD_VIEWS.includes(view)), 'a project view is not a view, so it has no address and no key')
 assert.ok(RAIL_VIEWS.every((view) => HUD_VIEWS.includes(view)), 'the rail draws a button for something that is not a view')
 assert.equal(SPEC_LAYERS[0], 'specs', 'SPECS is the first rung: it is the module the rail opens and the ladder stands in')
 assert.equal(BOARD_VIEWS[0], 'kanban', 'KANBAN is the board the rail opens and the row stands in')
+assert.equal(PROJECT_VIEWS[0], 'project', 'PROJECT is the module the rail opens and PASSPORT stands inside (2026-09-21)')
 assert.deepEqual(
   [...SPEC_LAYERS],
   ['specs', 'skills', 'crons', 'agents', 'tools', 'functions'],
@@ -525,13 +537,13 @@ assert.deepEqual(
 )
 assert.deepEqual(
   [...BOARD_VIEWS],
-  ['kanban', 'map', 'factory'],
-  'the board is kanban, mission map, factory -- the order of their keys, 3/4/5',
+  ['kanban', 'map', 'factory', 'research'],
+  'the board is kanban, mission map, factory, tech tree -- the order of their keys, 3/4/5/6',
 )
 assert.deepEqual(
-  [...new Set([...RAIL_VIEWS, ...SPEC_LAYERS, ...BOARD_VIEWS])].sort(),
+  [...new Set([...RAIL_VIEWS, ...SPEC_LAYERS, ...BOARD_VIEWS, ...PROJECT_VIEWS])].sort(),
   [...HUD_VIEWS].sort(),
-  'rail plus ladder plus board is no longer every view: something is unreachable',
+  'rail plus ladder plus board plus project is no longer every view: something is unreachable',
 )
 assert.deepEqual(
   RAIL_VIEWS.filter((view) => SPEC_LAYERS.includes(view)),
@@ -543,10 +555,15 @@ assert.deepEqual(
   ['kanban'],
   'only KANBAN may be on the rail and in the board row; another reading on both is drawn twice',
 )
+assert.deepEqual(
+  RAIL_VIEWS.filter((view) => PROJECT_VIEWS.includes(view)),
+  ['project'],
+  'only PROJECT may be on the rail and in the project family; PASSPORT on both is drawn twice',
+)
 assert.equal(
   RAIL_VIEWS.length,
-  HUD_VIEWS.length - (SPEC_LAYERS.length - 1) - (BOARD_VIEWS.length - 1),
-  'the rail is the views less the five layers folded into SPECS and the two readings folded into KANBAN',
+  HUD_VIEWS.length - (SPEC_LAYERS.length - 1) - (BOARD_VIEWS.length - 1) - (PROJECT_VIEWS.length - 1),
+  'the rail is the views less the layers folded into SPECS, the readings folded into KANBAN and the record folded into PROJECT',
 )
 // Every view still answers railViewOf, and answers with a button the rail draws
 // -- that is what lights the rail while a folded member is open.

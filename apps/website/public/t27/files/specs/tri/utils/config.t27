@@ -39,7 +39,7 @@ module TriConfig;
         
         var lines = std.mem.tokenizeScalar(u8, content, '\n');
         
-        while (lines.next()) |line| {
+        for (lines) |line| {
             var trimmed = std.mem.trim(u8, line, " \t\r");
             if (trimmed.len == 0 or trimmed[0] == '#') {
                 continue;
@@ -65,11 +65,11 @@ module TriConfig;
                 
                 try entries.append(ConfigEntry{ .key = key, .value = value });
             } else {
-                return Config{ .entries = entries.toOwnedSlice(), .@"error" = "Malformed config line: no = found" };
+                return Config{ .entries = entries.toOwnedSlice(), .error = "Malformed config line: no = found" };
             }
         }
         
-        return Config{ .entries = entries.toOwnedSlice(), .@"error" = null };
+        return Config{ .entries = entries.toOwnedSlice(), .error = null };
     }
 
     // get_string(config: Config, key: []const u8, default: []const u8) → []const u8
@@ -156,12 +156,12 @@ module TriConfig;
         and result.entries[3].value.is_null == true
 
     test get_string_returns_default_for_missing_key
-        given config = Config{ .entries = &[_]ConfigEntry{.key="test", .value=ConfigValue{.string="found"}}, .@"error" = null }
+        given config = Config{ .entries = &[_]ConfigEntry{.key="test", .value=ConfigValue{.string="found"}}, .error = null }
         when result = get_string(config, "missing", "default")
         then result == "default"
 
     test get_number_returns_default_for_wrong_type
-        given config = Config{ .entries = &[_]ConfigEntry{.key="test", .value=ConfigValue{.string="not a number"}}, .@"error" = null }
+        given config = Config{ .entries = &[_]ConfigEntry{.key="test", .value=ConfigValue{.string="not a number"}}, .error = null }
         when result = get_number(config, "test", 99.0)
         then result == 99.0
 

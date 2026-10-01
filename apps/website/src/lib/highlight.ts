@@ -6,10 +6,10 @@
 //                    already told us exactly what every span is, so there is no
 //                    reason to re-guess it with regexes and no way for the
 //                    colours to disagree with the compiler.
-//   generated code -- Zig/Verilog/C/Rust/JavaScript output has no token stream
-//                    coming back from us, so this falls back to a small regex
-//                    pass. It is presentation only; nothing downstream depends
-//                    on it.
+//   generated code -- Zig/Verilog/C/Rust/JavaScript/TypeScript output has no
+//                    token stream coming back from us, so this falls back to a
+//                    small regex pass. It is presentation only; nothing
+//                    downstream depends on it.
 
 import type { T27Token } from './t27Compiler'
 
@@ -93,16 +93,26 @@ export function highlightSource(source: string, tokens: T27Token[]): Span[][] {
   })
 }
 
+// `gen-js` emits declarations only -- const, export, and the two frozen order
+// arrays -- so most of this list will never appear in the output. It is the
+// language's keyword set rather than the backend's, because the day the backend
+// lowers a body the colours should already be right.
+const JS_KEYWORDS = ['export', 'import', 'from', 'default', 'const', 'let', 'var', 'function', 'class', 'extends', 'new', 'return', 'if', 'else', 'for', 'while', 'do', 'switch', 'case', 'break', 'continue', 'try', 'catch', 'finally', 'throw', 'typeof', 'instanceof', 'in', 'of', 'this', 'null', 'undefined', 'true', 'false', 'async', 'await', 'yield', 'delete', 'void']
+
+// What TypeScript adds, and nothing TypeScript already shares. Written as a
+// difference rather than a second full list for the same reason `codegen_ts`
+// shares `codegen_js`'s value layer upstream: a copy is where the two drift.
+// `interface`, `readonly`, `satisfies`, `as` and the predefined type names are
+// the ones `gen-ts` can actually print; the rest is the language's surface.
+const TS_ONLY = ['interface', 'type', 'namespace', 'declare', 'abstract', 'implements', 'readonly', 'satisfies', 'as', 'is', 'asserts', 'keyof', 'infer', 'enum', 'public', 'private', 'protected', 'override', 'unique', 'any', 'unknown', 'never', 'number', 'string', 'boolean', 'object', 'symbol', 'bigint']
+
 const KEYWORDS: Record<string, string[]> = {
   zig: ['const', 'var', 'fn', 'pub', 'return', 'if', 'else', 'while', 'for', 'switch', 'struct', 'enum', 'union', 'try', 'catch', 'defer', 'errdefer', 'comptime', 'inline', 'test', 'and', 'or', 'orelse', 'unreachable', 'break', 'continue', 'export', 'extern', 'usingnamespace'],
   verilog: ['module', 'endmodule', 'input', 'output', 'inout', 'wire', 'reg', 'logic', 'always', 'always_ff', 'always_comb', 'assign', 'begin', 'end', 'if', 'else', 'case', 'endcase', 'for', 'while', 'function', 'endfunction', 'task', 'endtask', 'parameter', 'localparam', 'integer', 'genvar', 'generate', 'endgenerate', 'posedge', 'negedge', 'default', 'initial'],
   c: ['int', 'char', 'void', 'return', 'if', 'else', 'while', 'for', 'switch', 'case', 'break', 'continue', 'struct', 'enum', 'union', 'typedef', 'const', 'static', 'unsigned', 'signed', 'long', 'short', 'float', 'double', 'sizeof', 'include', 'define', 'ifndef', 'endif'],
   rust: ['fn', 'let', 'mut', 'const', 'pub', 'struct', 'enum', 'impl', 'trait', 'use', 'mod', 'return', 'if', 'else', 'while', 'for', 'loop', 'match', 'break', 'continue', 'where', 'type', 'self', 'Self', 'crate', 'unsafe', 'as', 'in', 'ref', 'move'],
-  // `gen-js` emits declarations only -- const, export, and the two frozen
-  // order arrays -- so most of this list will never appear in the output. It is
-  // the language's keyword set rather than the backend's, because the day the
-  // backend lowers a body the colours should already be right.
-  js: ['export', 'import', 'from', 'default', 'const', 'let', 'var', 'function', 'class', 'extends', 'new', 'return', 'if', 'else', 'for', 'while', 'do', 'switch', 'case', 'break', 'continue', 'try', 'catch', 'finally', 'throw', 'typeof', 'instanceof', 'in', 'of', 'this', 'null', 'undefined', 'true', 'false', 'async', 'await', 'yield', 'delete', 'void'],
+  js: JS_KEYWORDS,
+  ts: [...JS_KEYWORDS, ...TS_ONLY],
 }
 
 /** Cheap regex highlighter for generated output. Presentation only. */

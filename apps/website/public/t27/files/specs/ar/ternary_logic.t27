@@ -52,7 +52,7 @@ spec TernaryLogic {
 
     // Backward chaining: find support for goal from rules
     fn backward_chain(goal: Trit, rules: [Rule]) -> Trit {
-        let result = K_UNKNOWN;
+        let mut result = K_UNKNOWN;
         for rule in rules {
             let consequent_matches = k3_equiv(rule.consequent, goal);
             let support = k3_and(consequent_matches, rule.antecedent);
@@ -241,7 +241,7 @@ spec TernaryLogic {
         for a in [K_TRUE, K_UNKNOWN, K_FALSE] {
             let result = k3_or(a, k3_not(a));
             if result != K_UNKNOWN {
-                assert false, "Should not have tautology in K3";
+                assert false;
             }
         }
     }
@@ -261,7 +261,7 @@ spec TernaryLogic {
                 has_tautology = true;
             }
         }
-        assert !has_tautology, "Restraint should not trigger on tautologies";
+        assert !has_tautology;
     }
 
     test k3_implication_ex_falso {

@@ -197,7 +197,9 @@ module skill_registry {
                 .title = "",
                 .author = "",
                 .priority = "P1",
-                .tags = &[_][]const u8{},
+                // empty tag list (was `&[_][]const u8{}`: the parser does not
+                // take `const` inside an array-literal element type)
+                .tags = &[_][]u8{},
             },
         };
     }
@@ -219,94 +221,122 @@ module skill_registry {
 // TDD-Inside-Spec: Tests and Invariants for Skill Registry
 // ═══════════════════════════════════════════════════════════════════════════════════════════
 
-test skill_status_active_value
-    const status = skill_registry.SkillStatus.Active;
-    try std.testing.expect(@intFromEnum(status) == 0);
+// (Blocks were keyword-style with Zig statements; now brace form:
+// `try std.testing.expect(x)` -> `assert x`,
+// `try std.testing.expectEqualStrings(a, b)` -> `assert b == a`,
+// `try std.testing.expectEqual(@as(usize, a), b)` -> `assert b == a`,
+// `skill_registry.f` -> `f` (same module), and each bench's `target:` line
+// is kept as a comment.)
 
-test skill_status_sealed_value
-    const status = skill_registry.SkillStatus.Sealed;
-    try std.testing.expect(@intFromEnum(status) == 1);
+test skill_status_active_value {
+    const status = SkillStatus.Active;
+    assert @intFromEnum(status) == 0;
+}
 
-test skill_kind_feature_value
-    const kind = skill_registry.SkillKind.Feature;
-    try std.testing.expect(@intFromEnum(kind) == 0);
+test skill_status_sealed_value {
+    const status = SkillStatus.Sealed;
+    assert @intFromEnum(status) == 1;
+}
 
-test skill_verdict_not_toxic_value
-    const verdict = skill_registry.SkillVerdict.NotToxic;
-    try std.testing.expect(@intFromEnum(verdict) == 0);
+test skill_kind_feature_value {
+    const kind = SkillKind.Feature;
+    assert @intFromEnum(kind) == 0;
+}
 
-test skill_registry_has_version_field
-    const registry = skill_registry.create_registry();
-    try std.testing.expectEqualStrings("1.0", registry.version);
+test skill_verdict_not_toxic_value {
+    const verdict = SkillVerdict.NotToxic;
+    assert @intFromEnum(verdict) == 0;
+}
 
-test skill_registry_has_skills_array
-    const registry = skill_registry.create_registry();
-    try std.testing.expectEqual(@as(usize, 0), registry.skills.len);
+test skill_registry_has_version_field {
+    const registry = create_registry();
+    assert registry.version == "1.0";
+}
 
-test skill_has_required_id_field
-    const skill = skill_registry.create_skill("skill-001", skill_registry.SkillKind.Feature, "main");
-    try std.testing.expectEqualStrings("skill-001", skill.id);
+test skill_registry_has_skills_array {
+    const registry = create_registry();
+    assert registry.skills.len == 0;
+}
 
-test skill_metadata_priority_valid
-    const metadata = skill_registry.SkillMetadata{
+test skill_has_required_id_field {
+    const skill = create_skill("skill-001", SkillKind.Feature, "main");
+    assert skill.id == "skill-001";
+}
+
+test skill_metadata_priority_valid {
+    const metadata = SkillMetadata{
         .title = "Test",
         .author = "test",
         .priority = "P1",
-        .tags = &[_][]const u8{},
+        .tags = &[_][]u8{},  // was `&[_][]const u8{}`, see create_skill
     };
-    try std.testing.expectEqualStrings("P1", metadata.priority);
+    assert metadata.priority == "P1";
+}
 
-test skill_status_enum_count
+test skill_status_enum_count {
     // Active, Sealed, Paused, Blocked, Completed = 5
-    try std.testing.expectEqual(@as(usize, 5), 5);
+    assert 5 == 5;
+}
 
-test skill_kind_enum_count
+test skill_kind_enum_count {
     // Feature, Bugfix, Hotfix, Recovery, Refactor = 5
-    try std.testing.expectEqual(@as(usize, 5), 5);
+    assert 5 == 5;
+}
 
-invariant skill_status_active_is_zero
-    assert @intFromEnum(skill_registry.SkillStatus.Active) == 0;
+invariant skill_status_active_is_zero {
+    assert @intFromEnum(SkillStatus.Active) == 0;
+}
 
-invariant skill_status_sealed_is_one
-    assert @intFromEnum(skill_registry.SkillStatus.Sealed) == 1;
+invariant skill_status_sealed_is_one {
+    assert @intFromEnum(SkillStatus.Sealed) == 1;
+}
 
-invariant skill_kind_feature_is_zero
-    assert @intFromEnum(skill_registry.SkillKind.Feature) == 0;
+invariant skill_kind_feature_is_zero {
+    assert @intFromEnum(SkillKind.Feature) == 0;
+}
 
-invariant skill_verdict_not_toxic_is_zero
-    assert @intFromEnum(skill_registry.SkillVerdict.NotToxic) == 0;
+invariant skill_verdict_not_toxic_is_zero {
+    assert @intFromEnum(SkillVerdict.NotToxic) == 0;
+}
 
-invariant skill_verdict_toxic_is_one
-    assert @intFromEnum(skill_registry.SkillVerdict.Toxic) == 1;
+invariant skill_verdict_toxic_is_one {
+    assert @intFromEnum(SkillVerdict.Toxic) == 1;
+}
 
-invariant skill_metadata_has_priority_field
+invariant skill_metadata_has_priority_field {
     // Valid priorities are P0, P1, P2, P3
     assert true;
+}
 
-invariant skill_registry_version_is_string
+invariant skill_registry_version_is_string {
     // version field must be string type
     assert true;
+}
 
-invariant skill_id_format_matches_pattern
+invariant skill_id_format_matches_pattern {
     // Skill ID must match pattern "skill-\d+"
     assert true;
+}
 
-invariant skill_commit_hash_is_40_hex_chars
+invariant skill_commit_hash_is_40_hex_chars {
     // Commit hash must be 40 hexadecimal characters
     assert true;
+}
 
-bench skill_registry_create_latency
-    target: < 100ns
+bench skill_registry_create_latency {
+    // target: < 100ns
     const start = std.time.nanoTimestamp();
-    _ = skill_registry.create_registry();
+    _ = create_registry();
     const end = std.time.nanoTimestamp();
     const elapsed = end - start;
-    try std.testing.expect(elapsed < 100);
+    assert elapsed < 100;
+}
 
-bench skill_create_latency
-    target: < 200ns
+bench skill_create_latency {
+    // target: < 200ns
     const start = std.time.nanoTimestamp();
-    _ = skill_registry.create_skill("skill-001", skill_registry.SkillKind.Feature, "main");
+    _ = create_skill("skill-001", SkillKind.Feature, "main");
     const end = std.time.nanoTimestamp();
     const elapsed = end - start;
-    try std.testing.expect(elapsed < 200);
+    assert elapsed < 200;
+}

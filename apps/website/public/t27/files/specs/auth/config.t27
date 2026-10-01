@@ -176,6 +176,17 @@ module AuthConfig {
     // to_well_known converts Info to WellKnown if type matches
     fn to_well_known(info: Info) -> Result<WellKnown, AuthConfigError> {
         // Implementation: Cast if type is WellKnown
+        if (info.type_tag != 2) {
+            return Err(AuthConfigError {
+                message = "Cannot convert to WellKnown: type mismatch",
+                provider_id = null,
+            });
+        }
+        return WellKnown {
+            type = AuthType::WellKnown,
+            key = "",
+            token = "",
+        }; // Placeholder implementation
     }
 
     // from_oauth creates Info from Oauth
@@ -458,6 +469,23 @@ module AuthConfig {
         assert(result.is_err());
         var err = result.unwrap_err();
         assert(err.message == "Cannot convert to Api: type mismatch");
+        assert(err.provider_id == null);
+    }
+
+    test "to_well_known_with_correct_type" {
+        var info = Info { type_tag: 2 }; // WellKnown type
+        var result = to_well_known(info);
+        assert(result.is_ok());
+        var wk = result.unwrap();
+        assert(wk.type == AuthType::WellKnown);
+    }
+
+    test "to_well_known_with_wrong_type" {
+        var info = Info { type_tag: 0 }; // Oauth type
+        var result = to_well_known(info);
+        assert(result.is_err());
+        var err = result.unwrap_err();
+        assert(err.message == "Cannot convert to WellKnown: type mismatch");
         assert(err.provider_id == null);
     }
 }

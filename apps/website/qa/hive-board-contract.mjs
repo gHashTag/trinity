@@ -143,7 +143,7 @@ try {
   EQ(all.shown, 3, 'unnarrowed, the lane shows what arrived')
   EQ(one.shown, 2, 'narrowed, the lane shows a subset of what arrived')
   A(one.shown <= all.shown, 'a narrowing narrows: there is no key that adds a row')
-  EQ(invented.narrow, null, 'a key the hive never offered is not a narrowing')
+  EQ(invented.narrow, [], 'a key the hive never offered is not a narrowing')
   EQ(invented.shown, all.shown, 'and an unoffered key shows what already arrived, never more')
   EQ(afterHandshake(world).length, 1, 'narrowing three times asked the hive nothing')
   A(all.groups.some((group) => group.column.key === 'sleeping'), 'a stage this build has never met still gets a column')

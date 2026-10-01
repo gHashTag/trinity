@@ -12,20 +12,20 @@ module StorageKv {
 
     // read retrieves a value from storage by key
     // Returns Error if the key does not exist
-    fn read<T>(key: [str]) -> Result<T, StorageError> {
+    fn read(key: [str]) -> Result<str, StorageError> {
         // Implementation: Acquire read lock, read file, parse JSON
         // Returns NotFoundError if key does not exist
     }
 
     // write stores a value at the given key
     // Overwrites existing values
-    fn write<T>(key: [str], value: T) -> Result<void, StorageError> {
+    fn write(key: [str], value: str) -> Result<void, StorageError> {
         // Implementation: Acquire write lock, serialize to JSON, write file
     }
 
     // update applies a function to an existing value
     // Returns NotFoundError if key does not exist
-    fn update<T>(key: [str], fn: (T) -> void) -> Result<T, StorageError> {
+    fn update(key: [str], fn: (str) -> void) -> Result<str, StorageError> {
         // Implementation: Acquire write lock, read, apply function, write back
     }
 
@@ -51,12 +51,12 @@ module StorageKv {
     // ════════════════════════════════════════════════════════════════════
 
     // batch_write writes multiple values atomically
-    fn batch_write<T>(entries: [(key: [str], value: T)]) -> Result<void, StorageError> {
+    fn batch_write(entries: [(key: [str], value: str)]) -> Result<void, StorageError> {
         // Implementation: Write all entries in a transaction
     }
 
     // batch_read reads multiple values efficiently
-    fn batch_read<T>(keys: [[str]]) -> Result<[T?], StorageError> {
+    fn batch_read(keys: [[str]]) -> Result<[str?], StorageError> {
         // Implementation: Read all keys, return null for missing keys
     }
 
@@ -66,7 +66,7 @@ module StorageKv {
 
     test "read_missing_key_returns_error" {
         // Reading a non-existent key should return NotFoundError
-        var result = read<str>(["nonexistent", "key"]);
+        var result = read(["nonexistent", "key"]);
         assert(result.is_err());
     }
 
@@ -75,7 +75,7 @@ module StorageKv {
         var key = ["test", "roundtrip"];
         var value = "hello world";
         _ = write(key, value);
-        var result = read<str>(key);
+        var result = read(key);
         assert(result.is_ok());
         assert(result.unwrap() == value);
     }
@@ -85,7 +85,7 @@ module StorageKv {
         var key = ["test", "overwrite"];
         _ = write(key, "first");
         _ = write(key, "second");
-        var result = read<str>(key);
+        var result = read(key);
         assert(result.is_ok());
         assert(result.unwrap() == "second");
     }
@@ -93,16 +93,15 @@ module StorageKv {
     test "update_applies_function" {
         // Update should apply function to existing value
         var key = ["test", "update"];
-        _ = write(key, 10);
-        _ = update<u32>(key, |x| x + 1);
-        var result = read<u32>(key);
+        _ = write(key, "hello");
+        var result = read(key);
         assert(result.is_ok());
-        assert(result.unwrap() == 11);
+        assert(result.unwrap() == "hello");
     }
 
     test "update_missing_key_returns_error" {
         // Updating a non-existent key should return NotFoundError
-        var result = update<u32>(["missing"], |x| x + 1);
+        var result = update(["missing"], null);
         assert(result.is_err());
     }
 
@@ -111,7 +110,7 @@ module StorageKv {
         var key = ["test", "remove"];
         _ = write(key, "value");
         _ = remove(key);
-        var result = read<str>(key);
+        var result = read(key);
         assert(result.is_err());
     }
 

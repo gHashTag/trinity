@@ -8,10 +8,12 @@
 // A key never appears here. VITE_ values are compiled into the bundle and are
 // readable by anyone who opens the site, so a hosted model is reached through a
 // proxy that holds the key, never from this file.
-import { sendMessage, checkHealth, type ChatResponse } from './chatApi'
+import { sendMessage, checkHealth, NotSignedIn, type ChatResponse } from './chatApi.ts'
+import { AgentSignedOut, askBrowserAgent, type AgentAnswer, type ChatTurn, sayToAgent } from '../lib/queenBrowser.ts'
+import { appSessionFromWindow, type AppSessionVerdict } from '../lib/appSessionIdentity.ts'
 
-const OLLAMA_URL = import.meta.env.VITE_QUEEN_OLLAMA_URL || 'http://localhost:11434'
-const OLLAMA_MODEL = import.meta.env.VITE_QUEEN_OLLAMA_MODEL || ''
+const OLLAMA_URL = import.meta.env?.VITE_QUEEN_OLLAMA_URL || 'http://localhost:11434'
+const OLLAMA_MODEL = import.meta.env?.VITE_QUEEN_OLLAMA_MODEL || ''
 
 export type QueenSource = 'trinity' | 'ollama'
 
@@ -72,6 +74,103 @@ export function queenHealth(): Promise<boolean> {
   return queenSource() === 'ollama' ? ollamaHealth() : checkHealth()
 }
 
+/**
+ * WHO IS ASKING.
+ *
+ * The owner's rule, 2026-09-20: only registered people write in this chat.
+ * The gate that enforces it is the proxy's (apps/queen-proxy/caller.mjs) --
+ * anything in a public bundle is a suggestion, and this file is compiled into
+ * one. What happens here is the other half: the panel knows before it asks, so
+ * a signed-out visitor reads a sentence with somewhere to go instead of typing
+ * a question and being refused by a server.
+ *
+ * `bridge` means this document is not the app's own copy of the board. Off
+ * app.t27.ai the session token is deliberately unreadable -- that is the whole
+ * design of triIdentity.ts, where the token acts and never travels -- so there
+ * is no bearer to send and the honest answer is the same sentence. In practice
+ * the board's live home IS app.t27.ai/queen/ and t27.ai/#/queen redirects
+ * there; what this costs is the chat on a localhost dev build, which is a price
+ * the rule is worth.
+ */
+export type QueenCaller =
+  | { signedIn: true; authorization: string }
+  | { signedIn: false; why: 'no_session' | 'expired' | 'no_storage' | 'elsewhere' }
+
+export function queenCaller(verdict: AppSessionVerdict = appSessionFromWindow()): QueenCaller {
+  if (verdict.source === 'bridge') return { signedIn: false, why: 'elsewhere' }
+  if (verdict.state === 'signed-out') return { signedIn: false, why: verdict.code }
+  // The token is carried, not kept: it is read at the moment of the question
+  // and handed straight to the one call that needs it. Nothing here stores it,
+  // and no component ever receives it.
+  return { signedIn: true, authorization: `Bearer ${verdict.token}` }
+}
+
 export function askQueen(message: string): Promise<ChatResponse> {
-  return queenSource() === 'ollama' ? ollamaSend(message) : sendMessage({ message })
+  if (queenSource() === 'ollama') return ollamaSend(message)
+  const caller = queenCaller()
+  if (!caller.signedIn) return Promise.reject(new NotSignedIn())
+  return sendMessage({ message }, caller.authorization)
+}
+
+/**
+ * On the BROWSER tab: the question goes to the person's own agent, which
+ * holds the browser tools (lib/queenBrowser.ts says why). The token is read
+ * here, at the moment of the question, exactly as askQueen reads it -- the
+ * panel is handed an answer, never the credential.
+ */
+export async function askQueenInBrowser(
+  history: readonly ChatTurn[],
+  question: string,
+  lang: 'ru' | 'en',
+  onProgress?: (soFar: AgentAnswer) => void,
+): Promise<ChatResponse> {
+  const caller = queenCaller()
+  if (!caller.signedIn) throw new NotSignedIn()
+  const bearer = caller.authorization.replace(/^Bearer /, '')
+  const started = Date.now()
+  try {
+    const a = await askBrowserAgent(
+      { fetch: (url, init) => fetch(url, init), token: () => bearer },
+      history,
+      question,
+      lang,
+      onProgress,
+    )
+    return {
+      response: a.text,
+      // The tools she used ride under the answer: the person watched the
+      // clicks happen, and this names them.
+      source: [a.model ?? 'agent', ...(a.tools.length > 0 ? [[...new Set(a.tools)].join(', ')] : [])].join(' · '),
+      confidence: 0,
+      latency_us: Math.round((Date.now() - started) * 1000),
+    }
+  } catch (error) {
+    if (error instanceof AgentSignedOut) throw new NotSignedIn()
+    throw error
+  }
+}
+
+/**
+ * The AGENT tab: a message the Queen drafted and the person approved, sent to
+ * their agent as them. Same token discipline as askQueenInBrowser: read at the
+ * moment of sending, handed to one call, kept nowhere.
+ */
+export async function sendToAgentAsMe(
+  text: string,
+  onProgress?: (soFar: AgentAnswer) => void,
+): Promise<string> {
+  const caller = queenCaller()
+  if (!caller.signedIn) throw new NotSignedIn()
+  const bearer = caller.authorization.replace(/^Bearer /, '')
+  try {
+    const answer = await sayToAgent(
+      { fetch: (url, init) => fetch(url, init), token: () => bearer },
+      text,
+      onProgress,
+    )
+    return answer.text
+  } catch (error) {
+    if (error instanceof AgentSignedOut) throw new NotSignedIn()
+    throw error
+  }
 }

@@ -175,7 +175,8 @@ module GF128 {
         // Lower 64 bits of mantissa
         const normalized = value / pow2_128(exp as f64);
         const frac = normalized - 1.0;
-        const mant_full = (frac * 633825300114114700748351602689.0) as u128;
+        // `x as u128` is spelled @as(u128, x): the t27 `as` cast has no u128 target
+        const mant_full = @as(u128, frac * 633825300114114700748351602689.0);
         return (mant_full & 0xFFFFFFFFFFFFFFFF) as u64;
     }
 
@@ -183,12 +184,14 @@ module GF128 {
         // Upper 35 bits of mantissa
         const normalized = value / pow2_128(exp as f64);
         const frac = normalized - 1.0;
-        const mant_full = (frac * 633825300114114700748351602689.0) as u128;
+        // `x as u128` is spelled @as(u128, x): the t27 `as` cast has no u128 target
+        const mant_full = @as(u128, frac * 633825300114114700748351602689.0);
         return ((mant_full >> 64) & 0x7FFFFFFFF) as u64;
     }
 
     fn mant_to_f64_128(low: u64, high: u64) -> f64 {
-        const mant_u128 = ((high as u128) << 64) | (low as u128);
+        // `x as u128` is spelled @as(u128, x): the t27 `as` cast has no u128 target
+        const mant_u128 = (@as(u128, high) << 64) | @as(u128, low);
         return mant_u128 as f64;
     }
 

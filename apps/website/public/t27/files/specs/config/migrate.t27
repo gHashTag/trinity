@@ -161,12 +161,15 @@ pub fn step_with_description(step: MigrationStep, desc: []u8) MigrationStep {
     };
 }
 
+// Slice literals: Zig `&[_]T{}` / `&[_]T{x}` are the t27 array literals `[]` /
+// `[x]` (the empty Zig form lowered to a one-element `.{ _ }`).
+
 /// Create migration result
 pub fn result_success(from: u16, to: u16, steps: []MigrationStep) MigrationResult {
     return MigrationResult{
         .result_type = .success,
         .steps = steps,
-        .errors = &[_]MigrationError{},
+        .errors = [],
         .from_version = from,
         .to_version = to,
         .backup_path = null,
@@ -177,7 +180,7 @@ pub fn result_success(from: u16, to: u16, steps: []MigrationStep) MigrationResul
 pub fn result_failure(from: u16, to: u16, errors: []MigrationError) MigrationResult {
     return MigrationResult{
         .result_type = .failed,
-        .steps = &[_]MigrationStep{},
+        .steps = [],
         .errors = errors,
         .from_version = from,
         .to_version = to,
@@ -213,16 +216,16 @@ pub fn migrate(config_data: *u8, rules: []MigrationRule, context: MigrationConte
     if (!needs_migration(current_version, target_version)) {
         return MigrationResult{
             .result_type = .skipped,
-            .steps = &[_]MigrationStep{},
-            .errors = &[_]MigrationError{},
+            .steps = [],
+            .errors = [],
             .from_version = current_version,
             .to_version = target_version,
             .backup_path = null,
         };
     }
 
-    var steps : []MigrationStep = &[_]MigrationStep{};
-    var errors : []MigrationError = &[_]MigrationError{};
+    var steps : []MigrationStep = [];
+    var errors : []MigrationError = [];
 
     for (rules) |rule| {
         const step = apply_rule(rule, config_data);
@@ -305,7 +308,7 @@ pub fn context_verbose() MigrationContext {
 /// Append step to slice
 pub fn append_steps(slice: []MigrationStep, item: MigrationStep) []MigrationStep {
     var result : []MigrationStep = slice;
-    var new_slice : []MigrationStep = &[_]MigrationStep{item};
+    var new_slice : []MigrationStep = [item];
     for (result) |_| {
         new_slice = append_steps_slice(new_slice, _);
     }
@@ -322,7 +325,7 @@ pub fn append_steps_slice(slice: []MigrationStep, item: MigrationStep) []Migrati
 /// Concatenate steps
 pub fn concat_steps(a: []MigrationStep, b: MigrationStep) []MigrationStep {
     var result : []MigrationStep = a;
-    var new_slice : []MigrationStep = &[_]MigrationStep{b};
+    var new_slice : []MigrationStep = [b];
     for (result) |_| {
         new_slice = append_steps_slice(new_slice, _);
     }
@@ -341,14 +344,14 @@ pub fn concat_steps_string(a: []u8, b: []u8) []u8 {
 /// Append byte to steps
 pub fn append_byte_steps(slice: []MigrationStep, byte: u8) []MigrationStep {
     var result : []MigrationStep = slice;
-    result = concat_steps_string(result, &[_]u8{byte});
+    result = concat_steps_string(result, [byte]);
     return result;
 }
 
 /// Append errors to slice
 pub fn append_errors(slice: []MigrationError, item: MigrationError) []MigrationError {
     var result : []MigrationError = slice;
-    var new_slice : []MigrationError = &[_]MigrationError{item};
+    var new_slice : []MigrationError = [item];
     for (result) |_| {
         new_slice = append_errors_slice(new_slice, _);
     }
@@ -365,7 +368,7 @@ pub fn append_errors_slice(slice: []MigrationError, item: MigrationError) []Migr
 /// Concatenate errors
 pub fn concat_errors(a: []MigrationError, b: MigrationError) []MigrationError {
     var result : []MigrationError = a;
-    var new_slice : []MigrationError = &[_]MigrationError{b};
+    var new_slice : []MigrationError = [b];
     for (result) |_| {
         new_slice = append_errors_slice(new_slice, _);
     }
@@ -384,7 +387,7 @@ pub fn concat_errors_string(a: []u8, b: []u8) []u8 {
 /// Append byte to errors
 pub fn append_byte_errors(slice: []MigrationError, byte: u8) []MigrationError {
     var result : []MigrationError = slice;
-    result = concat_errors_string(result, &[_]u8{byte});
+    result = concat_errors_string(result, [byte]);
     return result;
 }
 
@@ -392,79 +395,82 @@ pub fn append_byte_errors(slice: []MigrationError, byte: u8) []MigrationError {
 // TDD - Tests
 // ============================================================================
 
+// Zig `try std.testing.expect(c)` is written as the t27 `assert(c)` throughout.
 test "migrate_detect_version" {
-    const version = detect_version(@ptrFrom([]u8{"version":1}));
-    try std.testing.expect(version >= MIN_SUPPORTED_VERSION);
+    // The config bytes `{"version":1}` were written as `[]u8{"version":1}`,
+    // which is not a literal; they are passed as the JSON text they denote.
+    const version = detect_version(@ptrFrom("{\"version\":1}"));
+    assert(version >= MIN_SUPPORTED_VERSION);
 }
 
 test "migrate_is_version_supported" {
-    try std.testing.expect(is_version_supported(MIN_SUPPORTED_VERSION));
+    assert(is_version_supported(MIN_SUPPORTED_VERSION));
 }
 
 test "migrate_needs_migration_true" {
-    try std.testing.expect(needs_migration(1, 2));
+    assert(needs_migration(1, 2));
 }
 
 test "migrate_needs_migration_false" {
-    try std.testing.expect(!needs_migration(2, 2));
+    assert(!needs_migration(2, 2));
 }
 
 test "migrate_step_create" {
     const step = step_create(1, 2, .set_default, "key", "old", "new");
-    try std.testing.expect(step.from_version == 1);
+    assert(step.from_version == 1);
 }
 
 test "migrate_step_with_description" {
     const base = step_create(1, 2, .set_default, "key", "old", "new");
     const step = step_with_description(base, "Migrate key field");
-    try std.testing.expect(step.description.len > 0);
+    assert(step.description.len > 0);
 }
 
 test "migrate_result_success" {
-    const steps = &[_]MigrationStep{};
+    const steps : []MigrationStep = [];
     const result = result_success(1, 2, steps);
-    try std.testing.expect(result.result_type == .success);
+    assert(result.result_type == .success);
 }
 
 test "migrate_result_failure" {
-    const errors = &[_]MigrationError{error_info("test error")};
+    const errors : []MigrationError = [error_info("test error")];
     const result = result_failure(1, 2, errors);
-    try std.testing.expect(result.result_type == .failed);
+    assert(result.result_type == .failed);
 }
 
 test "migrate_error_create" {
     const error = error_create(0, "field", "message", .error);
-    try std.testing.expect(error.step == 0);
+    assert(error.step == 0);
 }
 
 test "migrate_error_info" {
     const error = error_info("test message");
-    try std.testing.expect(error.severity == .error);
+    assert(error.severity == .error);
 }
 
 test "migrate_error_warning" {
     const error = error_warning("test warning");
-    try std.testing.expect(error.severity == .warning);
+    assert(error.severity == .warning);
 }
 
 test "migrate_backup_path_create" {
     const path = backup_path_create("/path/to/config.json");
-    try std.testing.expect(std.mem.indexOf(path, BACKUP_SUFFIX) < path.len);
+    assert(std.mem.indexOf(path, BACKUP_SUFFIX) < path.len);
 }
 
 test "migrate_context_default" {
     const context = context_default();
-    try std.testing.expect(context.backup_enabled);
+    assert(context.backup_enabled);
 }
 
 test "migrate_context_dry_run" {
     const context = context_dry_run();
-    try std.testing.expect(context.dry_run);
+    assert(context.dry_run);
 }
 
 test "migrate_context_force" {
     const context = context_force();
-    try std.testing.expect(context.force_migration);
+    assert(context.force_migration);
 }
 
 // ============================================================================
@@ -609,7 +615,7 @@ bench "migrate_detect_version_latency" {
     // Measure: cycles for version detection
     // Target: < 50 cycles
     @setEvalBranchQuota(10000);
-    const config = @ptrFrom([]u8{"version":1});
+    const config = @ptrFrom("{\"version\":1}"); // config bytes {"version":1}
     var result : u16 = undefined;
     for (0..1000) |_| {
         result = detect_version(config);
@@ -634,7 +640,7 @@ bench "migrate_result_create_latency" {
     @setEvalBranchQuota(10000);
     var result : MigrationResult = undefined;
     for (0..1000) |_| {
-        result = result_success(1, 2, &[_]MigrationStep{});
+        result = result_success(1, 2, []);
     }
     _ = result.result_type;
 }

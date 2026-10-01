@@ -26,6 +26,8 @@ import { SpecShare } from '../components/SpecShare'
 import { SpecContribute } from '../components/SpecContribute'
 import {resolveManifestSpec,specExplorerHash} from '../lib/specCatalog'
 import { reportExplorerAddress } from '../lib/queenFrame'
+import { loadCorpus, type ManifestPart } from '../lib/queenCorpus'
+import { specWorld, worldParam } from '../lib/queenCorpusCheck'
 import { HealthBar, HealthDot, PipelineRibbon, HEALTH_COLOR } from '../components/SpecGraphics'
 import { SpecSkillChips } from '../components/SpecChips'
 import { highlightCode, highlightSource, type Span } from '../lib/highlight'
@@ -34,7 +36,6 @@ import {
   analyzeEdited,
   cachedAnalysis,
   loadCompiler,
-  loadManifest,
   loadSpecSource,
   prefetchSpec,
   type Health,
@@ -54,10 +55,12 @@ const UI = {
     subtitle: 'Every .t27 spec, layer by layer',
     metaTitle: 'Spec Explorer',
     metaDescription:
-      'Browse the whole t27 spec corpus and watch each spec through the real compiler: tokens, AST, HIR and five codegen backends.',
+      'Browse the whole t27 spec corpus and watch each spec through the real compiler: tokens, AST, HIR and every codegen backend.',
     search: 'Search specs',
     allCategories: 'All categories',
     specs: 'specs',
+    world: 'World',
+    worldClear: 'Show every world',
     loading: 'Loading compiler…',
     compiling: 'Analysing…',
     back: '← Home',
@@ -154,10 +157,12 @@ const UI = {
     subtitle: 'Каждая .t27-спека, слой за слоем',
     metaTitle: 'Обозреватель спек',
     metaDescription:
-      'Просмотр всего корпуса спек t27 и каждой спеки через настоящий компилятор: токены, AST, HIR и пять бэкендов кодогенерации.',
+      'Просмотр всего корпуса спек t27 и каждой спеки через настоящий компилятор: токены, AST, HIR и все бэкенды кодогенерации.',
     search: 'Поиск по спекам',
     allCategories: 'Все категории',
     specs: 'спек',
+    world: 'Мир',
+    worldClear: 'Показать все миры',
     loading: 'Загрузка компилятора…',
     compiling: 'Анализ…',
     back: '← На главную',
@@ -297,6 +302,7 @@ const LAYERS = [
   { id: 'c', kind: 'target' },
   { id: 'rust', kind: 'target' },
   { id: 'js', kind: 'target' },
+  { id: 'ts', kind: 'target' },
   { id: 'chip', kind: 'chip' },
 ] as const
 
@@ -322,6 +328,7 @@ const LAYER_LABEL: Record<LayerId, string> = {
   c: 'C',
   rust: 'Rust',
   js: 'JavaScript',
+  ts: 'TypeScript',
   chip: 'Chip',
 }
 
@@ -424,6 +431,11 @@ export default function SpecExplorer() {
   const [verifiedHash,setVerifiedHash]=useState<string|null>(null)
 
   const [manifest, setManifest] = useState<SpecManifest | null>(null)
+  // The store's part, for the corpus identity this frame prints on its root.
+  const [corpus, setCorpus] = useState<ManifestPart | null>(null)
+  // The world the address names (#/specs?world=ghashtag/t27): in the Queen, the one
+  // its header has chosen. The list shows that repository's specs only.
+  const [world, setWorld] = useState<string | null>(() => worldParam(new URLSearchParams(window.location.hash.split('?')[1] || '').get('world')))
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState<string>('')
   // The course first, by default. Someone arriving here has no way to know
@@ -493,13 +505,16 @@ export default function SpecExplorer() {
     // dominates a cold compile, and paying it here makes the first selection
     // as fast as every later one.
     void loadCompiler().catch(()=>{/* The selected spec surfaces compiler failures. */})
-    loadManifest()
-      .then((m) => {
+    loadCorpus('manifest')
+      .then((part) => {
+        const m = part.data
+        setCorpus(part)
         setManifest(m)
         // A shared link names its spec; honour it before falling back to the
         // teaching spec. Without this a share would only ever say "the
         // explorer, go find it yourself".
-        const wanted = new URLSearchParams(window.location.hash.split('?')[1] || '').get('spec')
+        const named = new URLSearchParams(window.location.hash.split('?')[1] || '')
+        const wanted = named.get('spec')
         const target = resolveManifestSpec(m,wanted)
         if (target) {
           // An address that names a spec is someone asking for the corpus at
@@ -508,7 +523,7 @@ export default function SpecExplorer() {
           // the homepage frame opens hello_world -- lesson 0 -- so it kept the
           // course chip on and read "9 specs" beside a map saying 856. The
           // course default is for an arrival that names nothing.
-          if (wanted) setHealthFilter('all')
+          if (wanted || worldParam(named.get('world'))) setHealthFilter('all')
           // A shared link names a spec on purpose, so on a phone it opens that
           // spec. The featured-spec fallback does not: nobody asked for it, and
           // the library is the honest landing view.
@@ -540,6 +555,27 @@ export default function SpecExplorer() {
     window.addEventListener('hashchange', onHash)
     return () => window.removeEventListener('hashchange', onHash)
   }, [manifest, selected, embedded])
+
+  // The world follows the address on every page, in a frame or not: the Queen moves
+  // its frame's fragment when the header picks a world, and nothing else would tell
+  // this page. A world narrows the list, so the course default would leave it empty.
+  useEffect(() => {
+    const onHash = () => {
+      const next = worldParam(new URLSearchParams(window.location.hash.split('?')[1] || '').get('world'))
+      setWorld(next)
+      if (next) setHealthFilter('all')
+    }
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [])
+  const inWorld = useCallback((s: SpecEntry) => !world || specWorld(s.repo) === world, [world])
+  /** On its own page the chip clears the world; in the Queen the header owns it. */
+  const clearWorld = useCallback(() => {
+    setWorld(null)
+    const p = new URLSearchParams(window.location.hash.split('?')[1] || '')
+    p.delete('world')
+    window.history.replaceState(null, '', `#/specs?${p}`)
+  }, [])
 
   // Inline styles cannot carry media queries, and the header has three pieces
   // of text that will happily overlap rather than wrap. Track the width and
@@ -586,6 +622,7 @@ export default function SpecExplorer() {
     if (!manifest) return []
     const q = query.trim().toLowerCase()
     return manifest.specs.filter((s) => {
+      if (!inWorld(s)) return false
       if (healthFilter === 'course') {
         if (!s.tutorial) return false
       } else if (healthFilter !== 'all' && s.health !== healthFilter) return false
@@ -599,7 +636,7 @@ export default function SpecExplorer() {
         (s.description ? s.description.toLowerCase().includes(q) : false)
       )
     })
-  }, [manifest, query, category, healthFilter, tagSel])
+  }, [manifest, query, category, healthFilter, tagSel, inWorld])
 
   /**
    * Counts for each tag *given the rest of the filter*, so a facet never
@@ -612,6 +649,7 @@ export default function SpecExplorer() {
     if (!manifest) return {}
     const q = query.trim().toLowerCase()
     const base = manifest.specs.filter((s) => {
+      if (!inWorld(s)) return false
       if (healthFilter === 'course') { if (!s.tutorial) return false }
       else if (healthFilter !== 'all' && s.health !== healthFilter) return false
       if (category && s.category !== category) return false
@@ -633,7 +671,7 @@ export default function SpecExplorer() {
       }
     }
     return out
-  }, [manifest, query, category, healthFilter, tagSel])
+  }, [manifest, query, category, healthFilter, tagSel, inWorld])
 
   const toggleTag = useCallback((t: string) => {
     setTagSel((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]))
@@ -655,7 +693,7 @@ export default function SpecExplorer() {
     const expectedSha256=spec.path===viewContext.path?viewContext.sha256:undefined
     setBusy(true)
     try {
-      const address=specExplorerHash(spec.path,{embedded,sha256:expectedSha256})
+      const address=specExplorerHash(spec.path,{embedded,sha256:expectedSha256,world})
       window.history.replaceState(null,'',address)
       reportExplorerAddress(address)
       const text = await loadSpecSource(spec.path,expectedSha256)
@@ -682,7 +720,7 @@ export default function SpecExplorer() {
     } finally {
       if(request===requestRef.current)setBusy(false)
     }
-  }, [embedded,viewContext])
+  }, [embedded,viewContext,world])
 
   pickRef.current = pick
 
@@ -815,7 +853,7 @@ export default function SpecExplorer() {
     if (layer === 'hir' && result?.hir.ok && result.hir.text) return highlightCode(result.hir.text, 'verilog')
     if (activeTarget?.ok && activeTarget.code) {
       const langOf: Record<string, string> = {
-        zig: 'zig', verilog: 'verilog', verilog_hir: 'verilog', c: 'c', rust: 'rust', js: 'js',
+        zig: 'zig', verilog: 'verilog', verilog_hir: 'verilog', c: 'c', rust: 'rust', js: 'js', ts: 'ts',
       }
       return highlightCode(activeTarget.code, langOf[layer] || 'plain')
     }
@@ -843,6 +881,12 @@ export default function SpecExplorer() {
   return (
     <div
       className="spec-x" data-tier={viewport.tier} data-embedded={embedded ? "1" : undefined}
+      // The corpus on show, from the store the Queen shell reads: the shell's root
+      // carries the same three, and qa/queen-spec-sync-contract.mjs compares them.
+      data-spec-count={corpus?.identity.specCount}
+      data-corpus-version={corpus?.version}
+      data-corpus-source={corpus?.source}
+      data-spec-world={world ?? undefined}
       style={{
         height: '100dvh',
         display: 'flex',
@@ -1153,7 +1197,16 @@ export default function SpecExplorer() {
                 )}
               </div>
             )}
-            <div style={{ fontSize: 11, color: C.muted, fontFamily: C.mono }}>
+            {world && (
+              <div className="spec-x-world" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11.5, color: C.text, fontFamily: C.mono }}>
+                <span style={{ color: C.muted }}>◈ {ui.world}</span>
+                <span data-lang-exempt="live" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{world}</span>
+                {!embedded && (
+                  <button type="button" onClick={clearWorld} aria-label={ui.worldClear} title={ui.worldClear} style={{ background: 'none', border: 0, color: C.muted, cursor: 'pointer', padding: '0 4px', fontSize: 13 }}>✕</button>
+                )}
+              </div>
+            )}
+            <div className="spec-x-listed" data-spec-listed={manifest ? filtered.length : undefined} style={{ fontSize: 11, color: C.muted, fontFamily: C.mono }}>
               {filtered.length} {ui.specs}
             </div>
           </div>

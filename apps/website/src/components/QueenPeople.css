@@ -1,0 +1,107 @@
+/* PEOPLE: the contributors half of the leaderboard. Grounds are veiled and
+   blurred, the way the contrast contract requires of anything carrying text
+   over the lit hive (qa/queen-contrast-contract.mjs). */
+.qp {
+  margin-top: 28px;
+}
+.qp-title {
+  margin: 0 0 6px;
+  font-size: clamp(16px, 1.8vw, 20px);
+  letter-spacing: 0.02em;
+  color: var(--hud-gold, #ffd700);
+}
+.qp-lead,
+.qp-counted {
+  margin: 0 0 10px;
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
+  line-height: 1.5;
+}
+.qp-counted {
+  margin: 12px 0 0;
+  font-size: 12px;
+}
+.qp-note {
+  padding: 24px 16px;
+  text-align: center;
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
+}
+.qp-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.qp-row {
+  display: grid;
+  grid-template-columns: 28px 36px minmax(120px, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--hud-line, rgba(0, 255, 136, 0.22));
+  border-radius: 10px;
+  background: var(--hud-veil, rgba(2, 8, 6, 0.72));
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+/* Automation is shown rather than hidden, and marked rather than blended in. */
+.qp-row.is-bot {
+  border-style: dashed;
+  opacity: 0.85;
+}
+.qp-rank {
+  font-variant-numeric: tabular-nums;
+  color: var(--hud-gold, #ffd700);
+  font-weight: 700;
+}
+.qp-face {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--hud-line, rgba(0, 255, 136, 0.22));
+  background: rgba(255, 255, 255, 0.04);
+}
+.qp-who {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-wrap: anywhere;
+}
+.qp-who a {
+  color: var(--hud-green, #00ff88);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(0, 255, 136, 0.35);
+}
+.qp-who a:hover,
+.qp-who a:focus-visible {
+  border-bottom-color: var(--hud-green, #00ff88);
+}
+.qp-repos {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
+}
+.qp-commits {
+  font-size: 12px;
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
+  white-space: nowrap;
+  text-align: right;
+}
+.qp-commits b {
+  display: block;
+  font-size: 15px;
+  color: #e8f5ee;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 760px) {
+  .qp-row {
+    grid-template-columns: 22px 32px 1fr auto;
+    gap: 10px;
+  }
+  .qp-face {
+    width: 32px;
+    height: 32px;
+  }
+}

@@ -56,7 +56,7 @@
 // contract drives the same code with fakes.
 
 import { mcpPayload } from './mcpAnswer.ts'
-import { appSessionFromWindow, type AppSessionVerdict } from './appSessionIdentity.ts'
+import { APP_ORIGIN as BOARD_APP_ORIGIN, BOARD_PATH, appSessionFromWindow, onAppBoard, type AppSessionVerdict } from './appSessionIdentity.ts'
 
 export const GAME_ORIGIN = 'https://t27.ai'
 export const APP_ORIGIN = 'https://app.t27.ai'
@@ -348,40 +348,55 @@ export function whoamiProfile(body: unknown): Pick<Identity, 'name' | 'avatar' |
 }
 
 /**
- * The views the PLAYER will follow a return to -- QUEEN_VIEWS in
- * gHashTag/999-multibots-telegraf apps/vibee-editor/player/src/lib/returnTarget.ts,
- * on its `main`, which is what is deployed.
+ * THE PLAYER NO LONGER KEEPS A LIST, SO NEITHER DOES THIS FILE.
  *
- * This is a list in another repository, and the two go out of step the moment a
- * view is added here: the player refuses a `?tab=` it does not know, and
- * `returnTargetOf` answers null -- not the comb, NOTHING. The person signs in
- * and is left in the player, never returned to the game at all.
+ * A sign-in leaves the game and comes back through the player, which used to
+ * refuse a `?tab=` it had not been told about and answer the comb instead. So
+ * this file carried `PLAYER_VIEWS`: a transcription, in one repository, of what
+ * a file in another repository would accept. It went stale exactly as often as
+ * a view was added - PASSPORT and BROWSER each cost a person their place after
+ * signing in, and the fix each time was an edit in a repo nobody was working
+ * in.
  *
- * So the gate is the player's list, not ours. A view the player has not been
- * told about returns to the comb, which every version of the player accepts.
- * Worse than landing back on the page you left, better than not landing.
+ * The player was changed instead (999-multibots-telegraf, returnTarget.ts): its
+ * own shape check already limits a tab to sixteen lowercase letters inside a
+ * URL rebuilt from constants, which is what made the return safe. Whether the
+ * BOARD has such a view is the board's question, and the board answers it by
+ * showing the comb. So the player now carries any well-shaped view through, and
+ * this list has nothing left to mirror.
  *
- * PASSPORT is the first view in this position: it was added here as the
- * fourteenth HUD view and the player's list still ends at `tri`. Adding
- * 'passport' there and deploying the player is what restores its exact return.
+ * What remains is the shape, checked here too, because this is where the
+ * address is built.
  */
-export const PLAYER_VIEWS: readonly string[] = [
-  'comb', 'specs', 'kanban', 'map', 'factory', 'research', 'skills',
-  'crons', 'agents', 'functions', 'tools', 'project', 'tri',
-] as const
+const VIEW_SHAPE = /^[a-z]{1,16}$/
+
+/**
+ * Where a sign-in comes back to: the board this document IS. The board moved to
+ * app.t27.ai/queen/, but this link kept sending the return to t27.ai -- another
+ * site, where the app's frame is a guest and cannot read the session just made
+ * (seen 2026-09-21: signed in, then "a signature or an agent key is required"
+ * on the profile and the club). The player accepts both homes
+ * (999-multibots-telegraf player/src/lib/returnTarget.ts APP_BOARD).
+ */
+export const APP_BOARD_HOME = `${BOARD_APP_ORIGIN}${BOARD_PATH}`
+export function signInHome(): string {
+  if (typeof window === 'undefined') return `${GAME_ORIGIN}/`
+  return onAppBoard(window.location.origin, window.location.pathname) ? APP_BOARD_HOME : `${GAME_ORIGIN}/`
+}
 
 /**
  * The top-level sign-in link: the player's login, with a return to a fixed
- * Queen route. The player (gHashTag/999-multibots-telegraf
+ * Queen route on this board's home (signInHome). The player (gHashTag/999-multibots-telegraf
  * apps/vibee-editor/player/src/lib/returnTarget.ts) accepts exactly
  * https://t27.ai/#/queen, ?tab=<view> and ?tab=tri&screen=<screen>. So: one
  * route per view it knows, and on the TRI tab its screen (none for its first
  * screen, the way the Queen's own address carries none). No ids, no path, no
  * embed.
  */
-export function signInHref(view: string, views: readonly string[], screen?: string | null, screens: readonly string[] = []): string {
-  const tab = view !== 'comb' && views.includes(view) && PLAYER_VIEWS.includes(view) && /^[a-z]+$/.test(view) ? view : null
-  let route = tab ? `${GAME_ORIGIN}/#/queen?tab=${tab}` : `${GAME_ORIGIN}/#/queen`
+export function signInHref(view: string, views: readonly string[], screen?: string | null, screens: readonly string[] = [], home: string = signInHome()): string {
+  const base = home === APP_BOARD_HOME ? APP_BOARD_HOME : `${GAME_ORIGIN}/`
+  const tab = view !== 'comb' && views.includes(view) && VIEW_SHAPE.test(view) ? view : null
+  let route = tab ? `${base}#/queen?tab=${tab}` : `${base}#/queen`
   if (tab === 'tri' && typeof screen === 'string' && screen !== screens[0] && screens.includes(screen) && /^[a-z]{1,16}$/.test(screen)) route += `&screen=${screen}`
   return `${APP_ORIGIN}/?return=${encodeURIComponent(route)}`
 }

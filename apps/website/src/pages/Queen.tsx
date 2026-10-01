@@ -11,10 +11,10 @@ import { motion } from "framer-motion";
 import { Link, useSearchParams } from "react-router-dom";
 import { QueenSpecs } from "../components/QueenSpecs";
 import { QueenAgents } from "../components/QueenAgents";
-import { SELECTION_KEY, isExplorerTab } from "../lib/queenEmbed";
+import { SELECTION_KEY, isExplorerTab, leaveTabSelections } from "../lib/queenEmbed";
 import { hiveFeedHealth, hiveDisplayRecords, hiveSameRepositorySnapshot, placeHiveDisplays, type HiveDisplay } from "../components/queenHiveDisplay";
 import { QueenComb } from "../components/QueenComb";
-import { QueenCommandPanel } from "../components/QueenCommand";
+import { QueenCommandPanel, type CommandItem } from "../components/QueenCommand";
 import { QueenContext } from "../components/QueenContext";
 import { QueenFactory } from "../components/QueenFactory";
 import { QueenSectors } from "../components/QueenIntel";
@@ -29,6 +29,7 @@ import {
   RAIL_VIEWS,
   SPEC_LAYERS,
   BOARD_VIEWS,
+  PROJECT_VIEWS,
   railViewOf,
   isSpecLayer,
   decisionDetail,
@@ -56,7 +57,6 @@ import {
   spiralOrder,
   hexCellSummaries,
   HEX_HOME,
-  type FoundationIssue,
   FIELD_LAYERS,
   layersFromSearch,
   type FieldLayer,
@@ -69,6 +69,14 @@ import {
   verifyHardwareEnvelope,
   type VerifiedHardwareRegistry,
 } from "../components/queenHardwareRegistry";
+import {
+  directionColor,
+  directionCounts,
+  directionLabel,
+  directionOf,
+  narrowByDirection,
+  type DirectionKey,
+} from "../lib/queenDirection";
 import { TrinityLogo } from "../components/TrinityLogo";
 import type {UniverseAtlas} from '../lib/queenUniverseAtlas';
 const QueenCatalogHive=lazy(()=>import('../components/QueenCatalogHive').then(m=>({default:m.QueenCatalogHive})));
@@ -86,9 +94,15 @@ const ENGINE_FLAG =
 const KEY_SHORTCUTS_STORAGE = "queen.hud.key-shortcuts";
 import { useI18n } from "../i18n/context";
 import { QueenTri } from "../components/QueenTri";
+import QueenRoadmap from "../components/QueenRoadmap";
+import QueenLeaderboard from "../components/QueenLeaderboard";
+import { QueenWars } from "../components/QueenWars";
 import Passport from "./Passport";
+import { QueenBrowser } from "../components/QueenBrowser";
 import { QueenIdentity } from "../components/QueenIdentity";
-import { hashParamsOf, tabAddress } from "../lib/triScreens";
+import { TRI_BUTTONS, hashParamsOf, tabAddress, triAddress, triGroupOf, triScreenOf } from "../lib/triScreens";
+import { OPEN_TARGETS, screenExcerpt } from "../lib/queenDirectives";
+import { sendToAgentAsMe } from "../services/queenModel";
 import { triIdentity } from "../lib/triIdentity";
 import { clientsLane, loadHiveBoard, type ClientsLane, type HiveBoard, type HiveBoardReason } from "../lib/hiveBoard";
 import {
@@ -116,6 +130,8 @@ import "./queen-phone.css";
 // The address moved to lib/queenApi so the homepage can ask the same server
 // this page asks, rather than carry a second copy of the literal.
 import { BOUNDARY_EXAMPLE_ISSUE, QUEEN_API } from "../lib/queenApi";
+import { worldParam } from "../lib/queenCorpusCheck";
+import { useCorpus, type CorpusSource, type FoundationSnapshot, type ManifestPart, type ModulesSnapshot } from "../lib/queenCorpus";
 import { deriveT27Evolution } from "../lib/t27Evolution";
 const LIVE_POLL_MS = 5_000;
 // The clients lane is asked far less often than the public board. It is one
@@ -178,10 +194,16 @@ interface ResearchGraph {
 
 interface QueenStatus {
   status: "ok";
+  /** Lane occupancy as the swarm reports it. Occupancy, not throughput: a
+      refused turn holds a lane exactly like a working one (see QueenLanes). */
+  workers?: {
+    capacity: number;
+    active: number;
+    idle: number;
+    utilization: number;
+  } | null;
   /** The swarm's own word for its state on the wire (working, idle, …). */
   swarmState?: string | null;
-  /** Paid worker slots: configured capacity and the started, unfinished bees. */
-  workers?: { capacity: number; active: number; idle: number } | null;
   scheduler: {
     enabled: boolean;
     intervalSeconds: number;
@@ -383,8 +405,36 @@ const COPY = {
     triHint: "The app inside the game: feed, agent, AI generation, profile and CRM (key r)",
     // The fourteenth view: the record proposed to the OCP neuromorphic working
     // group, and the three measured cases of ours that pay for it.
+    roadmapView: "ROADMAP",
+    roadmapHint: "The game: the whole stack rewritten in .t27, by language and stage (key m)",
+    // The fifteenth view: every bee runs on somebody's provider token, and this
+    // is the work each of those lanes did. The score is derived from the
+    // dispatches on every read, so it can be checked against the board.
+    leaderboardView: "LEADERBOARD",
+    leaderboardHint: "Who lends the swarm a lane, and the XP its bees earned there (key l)",
+    warsView: "WARS",
+    warsHint: "Real-task agent benchmarks generated from one .t27 ledger (key x)",
     passportView: "PASSPORT",
     passportHint: "What must travel with a result: the record proposed to the OCP working group (key b)",
+    // The fifteenth view: the person's own remote browser, the one the agent drives.
+    browserView: "BROWSER",
+    browserHint: "Your own browser, the one your agent drives (key w)",
+    browserPreview: "Your own browser on a server, the one your agent drives. It opens on the board itself, never in a preview.",
+    browserNested: "You are already inside the app, and the app has its own Browser tab.",
+    browserSignin: "Your browser belongs to your account. Sign in to the app, then come back to this tab.",
+    browserOpenInApp: "Open in the app",
+    browserNone: "Your browser is closed. Opening it starts a machine for you; your logins are kept between openings.",
+    browserOpen: "Open browser",
+    browserStarting: "Starting your browser...",
+    browserUnavailable: "Browsers are not running on this server right now.",
+    browserClose: "Close (logins kept)",
+    browserFailed: "The browser service did not answer.",
+    browserRetry: "Try again",
+    browserFrameTitle: "Your browser",
+    browserPasswords: "Type passwords yourself, inside the window. Nobody else sees them, the agent included.",
+    browserJournal: "What the agent did here",
+    browserDriving: "You are driving. The agent watches and waits.",
+    browserHandBack: "Hand back to the agent",
     triScreens: "App screens",
     triFeed: "Feed",
     triAgent: "Agent",
@@ -504,16 +554,31 @@ const COPY = {
     empty: "Nothing here",
     criteria: "criteria",
     missing: "needs",
-    // The two lanes of the kanban. TASKS is the public board and is the same
-    // for everybody, signed in or not; CLIENTS appears only for a signed-in
-    // person and holds only what the hive answered for them. The lane words
-    // below are drawn ONLY when the second lane exists — signed out, the page
-    // is the board it always was, with no heading announcing an absence.
+    // The number beside it is what is STILL HIDDEN, not the size of the next
+    // page. "more 539" is a fact about the column; "more 30" would be a fact
+    // about this button, and the reader is asking about the column.
+    showMore: "show more",
+    // The two boards of the kanban, one at a time. TASKS is the public board
+    // and is the same for everybody, signed in or not; CLIENTS appears only for
+    // a signed-in person, holds only what the hive answered for them, and is
+    // never the board that happens to be on screen — it is reached by pressing
+    // for it. The words below are drawn ONLY when the second board exists —
+    // signed out, the page is the board it always was, with no switch
+    // announcing an absence.
     laneTasks: "TASKS",
+    laneSwitchAria: "Which board",
+    lanePrivate: "private",
+    lanePrivateHint: "names and payments — only you were shown this",
+    // The direction chips. The names of the directions themselves are not
+    // here: they travel with the rules that decide them, in
+    // lib/queenDirection.ts, so a new direction cannot arrive without both.
+    tasksDirection: "Direction",
+    tasksDirectionAll: "All",
     laneClients: "CLIENTS",
     clientsLaneAria: "Clients board",
     clientsNarrow: "Narrow to",
     clientsNarrowAll: "All",
+    clientsNarrowSearch: "find a person",
     clientsNarrowed: "the hive already narrowed this board",
     clientsPending: "Asking the hive…",
     clientsRefused: "The hive did not open this board to you.",
@@ -601,14 +666,10 @@ const COPY = {
     hudViews: "VIEWS",
     hudIntel: "INTEL FEED",
     hudLive: "LIVE",
-    hudRows: "rows",
     unitS: "s",
     unitMin: "min",
     unitH: "h",
-    hudSpanTitle: "rows from",
     hudOffline: "OFFLINE",
-    hudViewAll: "VIEW ALL",
-    hudCollapseFeed: "COLLAPSE",
     hudOverview: "OVERVIEW",
     hudSectors: "SECTORS",
     hudContext: "CONTEXT DETAILS",
@@ -636,7 +697,6 @@ const COPY = {
     hudCopyLink: "COPY LINK",
     hudLinkCopied: "LINK COPIED",
     hudClose: "Close",
-    hudOpenPanel: "CONTEXT",
     hudActiveSector: "ACTIVE SECTOR",
     hudProduction: "PRODUCTION",
     hudCards: "CARDS",
@@ -765,8 +825,32 @@ const COPY = {
     projectSources: "источников закреплено",
     triView: "TRI",
     triHint: "Приложение внутри игры: лента, агент, ИИ-генерация, профиль и CRM (клавиша r)",
+    roadmapView: "ДОРОЖНАЯ КАРТА",
+    roadmapHint: "Игра: весь стек на .t27 — по языкам и этапам (клавиша m)",
+    leaderboardView: "ЛИДЕРБОРД",
+    leaderboardHint: "Кто дал рою полосу и сколько XP на ней заработали пчёлы (клавиша l)",
+    warsView: "ВОЙНЫ",
+    warsHint: "Бенчмарки агентов на реальных задачах из единого журнала .t27 (клавиша x)",
     passportView: "ПАСПОРТ",
     passportHint: "Что обязано ехать вместе с результатом: запись, поданная в рабочую группу OCP (клавиша b)",
+    browserView: "БРАУЗЕР",
+    browserHint: "Ваш собственный браузер, которым водит ваш агент (клавиша w)",
+    browserPreview: "Ваш собственный браузер на сервере, которым водит ваш агент. Открывается на самой доске, никогда в превью.",
+    browserNested: "Вы уже внутри приложения, а у приложения есть своя вкладка «Браузер».",
+    browserSignin: "Браузер принадлежит вашему аккаунту. Войдите в приложение и вернитесь на эту вкладку.",
+    browserOpenInApp: "Открыть в приложении",
+    browserNone: "Браузер закрыт. Открытие запускает для вас машину; входы сохраняются между открытиями.",
+    browserOpen: "Открыть браузер",
+    browserStarting: "Запускаю ваш браузер...",
+    browserUnavailable: "Браузеры на этом сервере сейчас не запущены.",
+    browserClose: "Закрыть (входы сохранятся)",
+    browserFailed: "Сервис браузера не ответил.",
+    browserRetry: "Ещё раз",
+    browserFrameTitle: "Ваш браузер",
+    browserPasswords: "Пароли вводите сами, внутри окна. Их не видит никто, включая агента.",
+    browserJournal: "Что здесь делал агент",
+    browserDriving: "Руль у вас. Агент смотрит и ждёт.",
+    browserHandBack: "Вернуть агенту",
     triScreens: "Экраны приложения",
     triFeed: "Лента",
     triAgent: "Агент",
@@ -886,15 +970,24 @@ const COPY = {
     empty: "Здесь пусто",
     criteria: "критерия",
     missing: "нужно",
-    // Две полосы канбана. ЗАДАЧИ — публичная доска, одна для всех; КЛИЕНТЫ
-    // появляются только у вошедшего и показывают только то, что улей ответил
-    // именно ему. Слова ниже рисуются ТОЛЬКО когда вторая полоса есть: без
-    // входа страница остаётся той же доской, и заголовок не объявляет пустоту.
+    showMore: "ещё",
+    // The same two boards, in Russian. The warning is deliberately blunter here
+    // than a label would be: it is the sentence a person reads a half-second
+    // before deciding whether to open a stranger's pipeline on a screen that
+    // may not be theirs alone.
     laneTasks: "ЗАДАЧИ",
+    laneSwitchAria: "Какая доска",
+    lanePrivate: "приватно",
+    lanePrivateHint: "имена и оплаты — это показали только вам",
+    // The Russian names of the directions are not here either: they sit on the
+    // same entries as the rules, in lib/queenDirection.ts.
+    tasksDirection: "Направление",
+    tasksDirectionAll: "Все",
     laneClients: "КЛИЕНТЫ",
     clientsLaneAria: "Доска клиентов",
     clientsNarrow: "Сузить до",
     clientsNarrowAll: "Все",
+    clientsNarrowSearch: "найти человека",
     clientsNarrowed: "улей уже сузил эту доску",
     clientsPending: "Спрашиваем улей…",
     clientsRefused: "Улей не открыл вам эту доску.",
@@ -980,14 +1073,10 @@ const COPY = {
     hudViews: "ВИДЫ",
     hudIntel: "ЛЕНТА РАЗВЕДКИ",
     hudLive: "В СЕТИ",
-    hudRows: "строк",
     unitS: "с",
     unitMin: "мин",
     unitH: "ч",
-    hudSpanTitle: "строки с",
     hudOffline: "НЕ В СЕТИ",
-    hudViewAll: "ПОКАЗАТЬ ВСЁ",
-    hudCollapseFeed: "СВЕРНУТЬ",
     hudOverview: "ОБЗОР",
     hudSectors: "СЕКТОРА",
     hudContext: "ДЕТАЛИ КОНТЕКСТА",
@@ -1015,7 +1104,6 @@ const COPY = {
     hudCopyLink: "КОПИРОВАТЬ ССЫЛКУ",
     hudLinkCopied: "ССЫЛКА СКОПИРОВАНА",
     hudClose: "Закрыть",
-    hudOpenPanel: "КОНТЕКСТ",
     hudActiveSector: "АКТИВНЫЙ СЕКТОР",
     hudProduction: "PRODUCTION",
     hudCards: "КАРТОЧЕК",
@@ -1094,78 +1182,26 @@ function useQueenStatus(): LoadState {
 }
 
 /**
- * The repository's modules (M-2): public/queen/modules.json, a scan stamped
- * with its commit, until /queen/public-modules exists on the server (M-1).
+ * The repository's modules (M-2): the server's scan (/queen/public-modules,
+ * M-1) first, public/queen/modules.json -- a scan stamped with its commit --
+ * when the wire has none. Read through the corpus store like every other part.
  */
-function useQueenModules(): { data: { repo?: string; commit: string | null; generatedAt: string; modules: HudModule[]; source: "wire" | "file" } | null; error: string | null } {
-  const [data, setData] = useState<{ repo?: string; commit: string | null; generatedAt: string; modules: HudModule[]; source: "wire" | "file" } | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  useEffect(() => {
-    let active = true;
-    // The server's scan first (/queen/public-modules, M-1); the loop's
-    // snapshot in public/queen/modules.json only when the wire has none.
-    const readFrom = async (url: string, source: "wire" | "file") => {
-      const response = await fetch(url, { headers: { Accept: "application/json" }, cache: "no-store" });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const next = (await response.json()) as { commit: string | null; generatedAt: string; modules: HudModule[] };
-      if (!Array.isArray(next.modules) || next.modules.length === 0) throw new Error("no modules");
-      return { ...next, source };
-    };
-    const read = () =>
-      readFrom(`${QUEEN_API}/queen/public-modules`, "wire")
-        .catch(() => readFrom("./queen/modules.json", "file"))
-        .then((next) => { if (active) { setData(next); setError(null); } })
-        .catch((nextError: unknown) => { if (active) setError(nextError instanceof Error ? nextError.message : String(nextError)); });
-    void read();
-    const timer = window.setInterval(read, MODULES_POLL_MS);
-    return () => { active = false; window.clearInterval(timer); };
-  }, []);
+function useQueenModules(): { data: (ModulesSnapshot & { source: CorpusSource }) | null; error: string | null } {
+  const { part, error } = useCorpus("modules", { wire: `${QUEEN_API}/queen/public-modules`, pollMs: MODULES_POLL_MS });
+  const data = useMemo(() => (part ? { ...part.data, source: part.source } : null), [part]);
   return { data, error };
 }
 
 /**
- * The vendored corpus index, fetched once for the whole page.
- *
- * It is 1.4 MB, and two different parts of this page read it: the hive's
- * coverage and the tech tree's evolution. Asking for it twice would put two
- * concurrent requests for the same megabyte on the wire, because the HTTP cache
- * can only serve the second one after the first has finished. The promise is
- * module-level rather than component-level for the same reason: a remount must
- * not start a third.
- *
- * A failed read stays null, and every caller must read null as "unknown".
+ * The corpus index, from the store every tab and the Explorer frame share
+ * (src/lib/queenCorpus.ts): 1.8 MB, read once per window tree. Its failure is
+ * reported separately from the supervisor's: the TECH TREE is drawn from this
+ * file, so a tree with no index is offline even while the wire is healthy, and
+ * a tree with an index is complete even while the wire is down.
  */
-let t27ManifestPromise: Promise<unknown> | null = null;
-
-/**
- * The corpus index, fetched once for the whole page. Its failure is reported
- * separately from the supervisor's: the TECH TREE is drawn from this file, so
- * a tree with no index is offline even while the wire is healthy, and a tree
- * with an index is complete even while the wire is down.
- */
-function useT27Manifest(): { manifest: unknown; error: string | null } {
-  const [manifest, setManifest] = useState<unknown>(null);
-  const [error, setError] = useState<string | null>(null);
-  useEffect(() => {
-    let active = true;
-    t27ManifestPromise ??= fetch("t27/manifest.json", {
-      headers: { Accept: "application/json" },
-      cache: "default",
-    }).then((response) => {
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      return response.json() as Promise<unknown>;
-    });
-    t27ManifestPromise
-      .then((next) => { if (active) { setManifest(next); setError(null); } })
-      .catch((nextError: unknown) => {
-        t27ManifestPromise = null;
-        if (active) {
-          setError(nextError instanceof Error ? nextError.message : String(nextError));
-        }
-      });
-    return () => { active = false; };
-  }, []);
-  return { manifest, error };
+function useT27Manifest(): { manifest: unknown; part: ManifestPart | null; error: string | null } {
+  const { part, error } = useCorpus("manifest");
+  return { manifest: part?.data ?? null, part, error };
 }
 
 /**
@@ -1178,16 +1214,6 @@ function useT27Coverage(repository: string | null): ReadonlySet<string> | null {
   return useMemo(() => hiveCoverageFromManifest(manifest, repository), [manifest, repository]);
 }
 
-/** The loop's GitHub snapshot: closed issues (the foundation), epics (the castle), rings, releases. */
-interface FoundationSnapshot {
-  generatedAt: string;
-  repo: string;
-  rings: string[];
-  closedIssues: FoundationIssue[];
-  epics: Array<{ number: number; title: string; state: string; closedAt: string | null; labels: string[]; ring: string | null; ringBy: string | null; children: Array<{ number: number; title: string; state: string; closedAt: string | null }> }>;
-  releases: Array<{ tag: string; name: string; publishedAt: string | null; prerelease: boolean }>;
-}
-
 /**
  * The honeycomb's facts from GitHub: the server's route first
  * (/queen/public-foundation, when it exists), the loop's dated snapshot in
@@ -1195,27 +1221,9 @@ interface FoundationSnapshot {
  * labels or epics, so this is the only honest source; absent, the layers
  * read a dash and draw nothing.
  */
-function useQueenFoundation(): { data: (FoundationSnapshot & { source: "wire" | "file" }) | null; error: string | null } {
-  const [data, setData] = useState<(FoundationSnapshot & { source: "wire" | "file" }) | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  useEffect(() => {
-    let active = true;
-    const readFrom = async (url: string, source: "wire" | "file") => {
-      const response = await fetch(url, { headers: { Accept: "application/json" }, cache: "no-cache" });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const next = (await response.json()) as FoundationSnapshot;
-      if (!Array.isArray(next.closedIssues) || typeof next.generatedAt !== "string") throw new Error("no snapshot");
-      return { ...next, rings: Array.isArray(next.rings) ? next.rings : [], epics: Array.isArray(next.epics) ? next.epics : [], releases: Array.isArray(next.releases) ? next.releases : [], source };
-    };
-    const read = () =>
-      readFrom(`${QUEEN_API}/queen/public-foundation`, "wire")
-        .catch(() => readFrom("./queen/foundation.json", "file"))
-        .then((next) => { if (active) { setData(next); setError(null); } })
-        .catch((nextError: unknown) => { if (active) setError(nextError instanceof Error ? nextError.message : String(nextError)); });
-    void read();
-    const timer = window.setInterval(read, FOUNDATION_POLL_MS);
-    return () => { active = false; window.clearInterval(timer); };
-  }, []);
+function useQueenFoundation(): { data: (FoundationSnapshot & { source: CorpusSource }) | null; error: string | null } {
+  const { part, error } = useCorpus("foundation", { wire: `${QUEEN_API}/queen/public-foundation`, pollMs: FOUNDATION_POLL_MS });
+  const data = useMemo(() => (part ? { ...part.data, source: part.source } : null), [part]);
   return { data, error };
 }
 
@@ -2159,6 +2167,14 @@ function clientsReasonSentence(reason: HiveBoardReason | null, c: Copy): string 
 // it and nothing after it. That is deliberate twice over: a visitor cannot be
 // shown a board they are not on, and an empty lane is itself a statement
 // ("you have no clients") that we have no right to make about a stranger.
+//
+// HOW MUCH OF A COLUMN IS DRAWN AT ONCE. Sized from the board, not from taste:
+// a clamped card is about 110px tall inside a scroller measured at 581px, so 30
+// is roughly six screens of a column — past the fold by a long way for anybody
+// scanning, and short enough that the reader who wants more presses once rather
+// than being handed 569 cards they did not ask for.
+const CARD_PAGE = 30;
+
 function KanbanView({
   columns,
   cards,
@@ -2169,6 +2185,8 @@ function KanbanView({
   lang,
   clients,
   onNarrow,
+  search,
+  onSearch,
 }: {
   columns: QueenColumn[];
   cards: QueenCard[];
@@ -2180,9 +2198,68 @@ function KanbanView({
   lang: string;
   /** The signed-in visitor's own pipeline. Null is signed out: see above. */
   clients: ClientsPanel | null;
-  /** The view's own narrowing. It never reaches the hive; see lib/hiveBoard.ts. */
-  onNarrow: (key: string | null) => void;
+  /**
+   * The view's own narrowing: the clients being watched, empty for all of
+   * them. It never reaches the hive; see lib/hiveBoard.ts.
+   */
+  onNarrow: (keys: string[]) => void;
+  /** What has been typed into the find box. Also never leaves this page. */
+  search: string;
+  onSearch: (text: string) => void;
 }) {
+  // Which directions the reader is looking at, empty for all of them. It lives
+  // here and nowhere else: it is a property of this screen, not of the visitor,
+  // not of the URL, and above all not of the request — lib/queenDirection.ts
+  // says why a chip that can only hide is a chip that cannot be made to ask.
+  const [directions, setDirections] = useState<DirectionKey[]>([]);
+  // The chips count the WHOLE board, not the narrowed one, so the numbers stay
+  // still while the reader clicks. A count that changed on every click would be
+  // counting the click rather than the work.
+  const tally = useMemo(() => directionCounts(cards), [cards]);
+  const shownCards = useMemo(
+    () => narrowByDirection(cards, directions),
+    [cards, directions],
+  );
+  const toggleDirection = useCallback((key: DirectionKey) => {
+    setDirections((current) =>
+      current.includes(key)
+        ? current.filter((other) => other !== key)
+        : [...current, key],
+    );
+  }, []);
+  // WHICH BOARD IS ON SCREEN, AND WHY IT STARTS ON THE PUBLIC ONE.
+  //
+  // The two lanes used to be drawn one under the other, and that was wrong in
+  // both directions at once.
+  //
+  // It was wrong about privacy. This page has a public address. The task board
+  // is meant to be read by anybody; the clients lane is people's names, whether
+  // they paid, and how long they have been ignored. Stacking them meant the
+  // moment somebody signed in, a screen they might be sharing, projecting or
+  // walking away from painted a stranger's pipeline underneath the public work
+  // — with nobody having asked to see it. Private things are not private
+  // because the server refuses a stranger's request, which it does; they are
+  // private because they are not put on a screen unbidden.
+  //
+  // It was wrong about the board as a board. Two lanes inside one viewport
+  // height left each column about 150px tall: one and a half cards, two
+  // scrollbars, and a title cut mid-word. A kanban whose column shows one card
+  // is a list pretending to be a board.
+  //
+  // So: one lane at a time, and 'tasks' first. The private board is one press
+  // away and is never the thing that happens to be on screen.
+  const [board, setBoard] = useState<"tasks" | "clients">("tasks");
+  // Signing out takes the lane with it, and a view pointing at a board that no
+  // longer exists would render as an empty screen with no way back. The switch
+  // itself disappears at the same moment, so nothing else could return it.
+  useEffect(() => {
+    if (!clients) setBoard("tasks");
+  }, [clients]);
+  const showTasks = board === "tasks" || !clients;
+  // How deep into each column the reader has asked to go. Per column, because
+  // BACKLOG holding 569 and REVIEW holding 9 are not one question: opening the
+  // long one should not silently build the short one's tail as well.
+  const [shownDepth, setShownDepth] = useState<Record<string, number>>({});
   const lane = clients?.lane ?? null;
   const sentence = clientsReasonSentence(clients?.reason ?? null, c);
   // With a board on screen the reason goes in the tooltip, exactly where the
@@ -2219,12 +2296,87 @@ function KanbanView({
   return (
     <>
       {clients && (
-        // The lane heads only exist when there are two lanes to tell apart. One
-        // lane needs no label, and adding one for a signed-out reader would put
-        // a word about clients on a page that has no clients on it.
-        <div className="queen27-lane-head">
-          <h3>{c.laneTasks}</h3>
-          <span title={error ?? undefined}>{loaded ? cards.length : "—"}</span>
+        // The switch only exists when there are two boards to tell apart. One
+        // board needs no label, and offering a signed-out reader a way to reach
+        // a clients board would put a word about clients on a page that has
+        // none — and name a screen they cannot open, which is its own small
+        // statement about what exists behind the sign-in.
+        <div
+          className="queen27-lane-switch"
+          role="group"
+          aria-label={c.laneSwitchAria}
+        >
+          <button
+            type="button"
+            className="queen27-chip"
+            aria-pressed={showTasks}
+            onClick={() => setBoard("tasks")}
+          >
+            {c.laneTasks} <small>{loaded ? shownCards.length : "—"}</small>
+          </button>
+          <button
+            type="button"
+            className="queen27-chip queen27-lane-private-chip"
+            aria-pressed={board === "clients"}
+            onClick={() => setBoard("clients")}
+          >
+            {c.laneClients} <small>{lane ? lane.shown : "—"}</small>
+            {/* The word rides on the control that opens the board, not only on
+                the board itself: the reader decides whether to show it before
+                it is drawn, and that decision is worth one word of warning. */}
+            <em>{c.lanePrivate}</em>
+          </button>
+        </div>
+      )}
+      {showTasks && (
+      <>
+      {tally.length > 1 && (
+        // The direction chips, and unlike the clients lane they are here for
+        // EVERYONE — signed in or not. Nothing about them describes a person:
+        // they sort the public board by what its cards are about, so there is
+        // no reader for whom they would be a statement about somebody else.
+        //
+        // One chip per direction the board actually contains, never one per
+        // direction the table knows about, and the row disappears entirely if
+        // everything on screen is the same thing. A chip that can only ever
+        // show the same board is a control that lies about having an effect.
+        //
+        // Its own class and not the clients row's, though they are drawn alike:
+        // that class is counted by qa/clients-filter-contract.mjs to prove the
+        // ONE clients filter sits inside the sign-in check, and a second
+        // element wearing it would read as one that escaped.
+        //
+        // The count on each chip is the point of the design: the reader is not
+        // told "there is a CONTENT direction", they are told it holds four
+        // cards. That is what makes the distribution visible instead of
+        // decorative.
+        <div
+          className="queen27-dir-filter"
+          role="group"
+          aria-label={c.tasksDirection}
+        >
+          <span>{c.tasksDirection}</span>
+          <button
+            type="button"
+            className="queen27-chip"
+            aria-pressed={directions.length === 0}
+            onClick={() => setDirections([])}
+          >
+            {c.tasksDirectionAll} <small>{cards.length}</small>
+          </button>
+          {tally.map(({ key, count }) => (
+            <button
+              key={key}
+              type="button"
+              className="queen27-chip queen27-dir-chip"
+              style={{ "--queen-dir": directionColor(key) } as CSSProperties}
+              aria-pressed={directions.includes(key)}
+              onClick={() => toggleDirection(key)}
+            >
+              <i aria-hidden="true" />
+              {directionLabel(key, lang)} <small>{count}</small>
+            </button>
+          ))}
         </div>
       )}
       <motion.div
@@ -2236,7 +2388,30 @@ function KanbanView({
         animate={{ opacity: 1 }}
       >
       {columns.map((column) => {
-        const columnCards = cards.filter((card) => card.column === column.key);
+        // Narrowed first, then split by column, so a column header counts what
+        // is under it rather than what would have been there without the chips.
+        const columnCards = shownCards.filter(
+          (card) => card.column === column.key,
+        );
+        // AND THEN ONLY THE TOP OF IT IS DRAWN.
+        //
+        // Measured on the live board at 1512x949: BACKLOG holds 569 cards and
+        // DONE 431, every one of them built, and a column's scroller was
+        // 163182px long inside a 581px window. That is 280 screens in one
+        // column. Nobody scrolls that; they give up, which is what the owner
+        // reported as the board being hard to use.
+        //
+        // The count in the header is still the true one — it counts
+        // columnCards, above, not what survived this line — so the page never
+        // pretends the rest is not there. It says how many are left and offers
+        // to draw them.
+        //
+        // It is also why the board was slow. 1100 cards is 1100 motion
+        // elements, each with a layout animation measuring itself on every
+        // change; a filter press re-laid out the lot.
+        const depth = shownDepth[column.key] ?? CARD_PAGE;
+        const drawn = columnCards.slice(0, depth);
+        const rest = columnCards.length - drawn.length;
         return (
           <motion.article
             className={`queen27-column is-${column.key}`}
@@ -2249,12 +2424,28 @@ function KanbanView({
             </header>
             <small>{column.blurb}</small>
             <div className="queen27-cards">
-              {columnCards.map((card) => (
+              {drawn.map((card) => {
+                const direction = directionOf(card.title);
+                return (
                 <motion.a
                   className="queen27-card"
+                  // The colour rides on an attribute and a custom property, and
+                  // the left border is deliberately untouched: that border
+                  // already says which column the card is in, and two meanings
+                  // on one edge is one meaning lost. Direction gets the tint,
+                  // the right-hand rule and the dot — its own channel.
+                  data-dir={direction}
+                  style={{ "--queen-dir": directionColor(direction) } as CSSProperties}
                   href={`https://github.com/${repo}/issues/${card.number}`}
                   target="_blank"
                   rel="noreferrer"
+                  // The title is clamped to three lines in a 126px column —
+                  // measured, one card's title was nine lines and 147px of a
+                  // 222px card. Clamping without this would be losing the
+                  // sentence; with it the card is short and the whole of it is
+                  // still one hover away, and the link behind it was always the
+                  // full answer.
+                  title={publicIssueTitle(card.title, card.number, lang)}
                   key={card.number}
                   layout
                   layoutId={`queen-card-${card.number}`}
@@ -2266,6 +2457,14 @@ function KanbanView({
                 >
                   <div className="queen27-card-topline">
                     <b>#{card.number}</b>
+                    {/* The name in words, next to the dot, on every card. A
+                        reader who cannot tell this orange from this red loses
+                        nothing: the colour is a shortcut for people who have
+                        it, never the only way to know. */}
+                    <span className="queen27-dir-tag">
+                      <i aria-hidden="true" />
+                      {directionLabel(direction, lang)}
+                    </span>
                     {(column.key === "running" ||
                       column.key === "review") && (
                       <span className="queen27-card-signal">
@@ -2288,7 +2487,26 @@ function KanbanView({
                     </span>
                   )}
                 </motion.a>
-              ))}
+                );
+              })}
+              {rest > 0 && (
+                // Says the number it is hiding, and adds the same page again
+                // rather than dropping all 569 in at once — the reader who
+                // wants the whole column can have it, one press at a time,
+                // and the reader who wanted the top of it never paid for it.
+                <button
+                  type="button"
+                  className="queen27-cards-more"
+                  onClick={() =>
+                    setShownDepth((at) => ({
+                      ...at,
+                      [column.key]: depth + CARD_PAGE,
+                    }))
+                  }
+                >
+                  {c.showMore} <small>{rest}</small>
+                </button>
+              )}
               {columnCards.length === 0 && (
                 <em title={error ?? undefined}>{loaded ? c.empty : "—"}</em>
               )}
@@ -2297,10 +2515,25 @@ function KanbanView({
         );
       })}
       </motion.div>
-      {clients && (
+      </>
+      )}
+      {clients && board === "clients" && (
         <>
-          <div className="queen27-lane-head" title={lane?.howToRead ?? undefined}>
+          <div
+            className="queen27-lane-head is-private"
+            title={lane?.howToRead ?? undefined}
+          >
             <h3>{c.laneClients}</h3>
+            {/* Said on the board as well as on the control that opened it. The
+                two are not a duplicate of each other: one is a warning before
+                the names are drawn, this one is a label on a screen somebody
+                may have left open, arrived at by a back button, or be showing
+                to a room. It carries the sentence rather than a tooltip
+                because a tooltip is a fact you have to already suspect. */}
+            <b className="queen27-lane-private">
+              {c.lanePrivate}
+              <em>{c.lanePrivateHint}</em>
+            </b>
             {/* A count of the cards on this screen, and never anything else. The
                 hive sends a count on every column and every filter option and
                 this page throws all of them away (lib/hiveBoard.ts says why):
@@ -2313,26 +2546,65 @@ function KanbanView({
             <span title={stale ?? undefined}>{lane ? lane.shown : "—"}</span>
             {scopeLine && <small>{scopeLine}</small>}
             {lane && lane.options.length > 0 && (
-              // Narrowing happens HERE, on what already arrived, and the chosen
-              // key never goes back to the hive. The server has already decided
-              // what this person may see; a control that re-asks with a name in
-              // its hand is a control that can be made to ask for a different
-              // name. A filter that can only ever hide is a filter that cannot
-              // be turned into a question.
-              <label className="queen27-lane-filter">
+              // Narrowing happens HERE, on what already arrived, and no key and
+              // no typed character goes back to the hive. The server has
+              // already decided what this person may see; a control that
+              // re-asks with a name in its hand is a control that can be made
+              // to ask for a different name. A filter that can only ever hide
+              // is a filter that cannot be turned into a question.
+              //
+              // Toggles rather than a dropdown because the question is "these
+              // three clients" and a dropdown can only answer "this one". They
+              // are buttons with aria-pressed, not checkboxes dressed as chips:
+              // the state a screen reader reads is the state the styling shows,
+              // because they are the same attribute.
+              <div
+                className="queen27-lane-filter"
+                role="group"
+                aria-label={c.clientsNarrow}
+              >
                 <span>{c.clientsNarrow}</span>
-                <select
-                  value={lane.narrow ?? ""}
-                  onChange={(event) => onNarrow(event.target.value || null)}
+                <button
+                  type="button"
+                  className="queen27-chip"
+                  aria-pressed={lane.narrow.length === 0}
+                  onClick={() => onNarrow([])}
                 >
-                  <option value="">{c.clientsNarrowAll}</option>
-                  {lane.options.map((option) => (
-                    <option key={option.key} value={option.key}>
+                  {c.clientsNarrowAll}
+                </button>
+                {lane.options.map((option) => {
+                  const on = lane.narrow.includes(option.key);
+                  return (
+                    <button
+                      key={option.key}
+                      type="button"
+                      className="queen27-chip"
+                      aria-pressed={on}
+                      onClick={() =>
+                        onNarrow(
+                          on
+                            ? lane.narrow.filter((key) => key !== option.key)
+                            : [...lane.narrow, option.key],
+                        )
+                      }
+                    >
                       {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
+                    </button>
+                  );
+                })}
+                {/* A keeper is sent the whole platform, and no row of chips
+                    finds one person in it. This types over the cards already in
+                    hand — name, bot, id — and is the same kind of hiding the
+                    chips do. */}
+                <input
+                  className="queen27-lane-search"
+                  type="search"
+                  value={search}
+                  placeholder={c.clientsNarrowSearch}
+                  aria-label={c.clientsNarrowSearch}
+                  onChange={(event) => onSearch(event.target.value)}
+                />
+              </div>
             )}
             {lane?.applied && (
               // The hive's own narrowing, which nothing on this page can widen.
@@ -2606,9 +2878,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
       setHashParams(() => {
         const leaving = (hashParamsOf(window.location.hash).get("tab") ?? "comb") !== next;
         const params = tabAddress(window.location.hash, next);
-        if (leaving) {
-          for (const key of Object.values(SELECTION_KEY)) params.delete(key);
-        }
+        if (leaving) leaveTabSelections(params);
         if (card && isExplorerTab(next)) params.set(SELECTION_KEY[next], card);
         return params;
       }, { replace: true });
@@ -2730,13 +3000,20 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
   // forget separately. The narrowing is this page's own state and stays here:
   // it never becomes an argument to the hive (src/lib/hiveBoard.ts).
   const hive = useHiveBoard(boardView === "kanban");
-  const [clientsNarrow, setClientsNarrow] = useState<string | null>(null);
+  // Empty is ALL of them, which is why the initial state is an empty array and
+  // not a list of everything: a board that started by listing the clients it
+  // was watching would be one refresh away from silently watching fewer.
+  const [clientsNarrow, setClientsNarrow] = useState<string[]>([]);
+  const [clientsSearch, setClientsSearch] = useState("");
   const clientsPanel = useMemo<ClientsPanel | null>(
     () =>
       hive.showing
-        ? { lane: clientsLane(hive.board, clientsNarrow, lang), reason: hive.reason }
+        ? {
+            lane: clientsLane(hive.board, clientsNarrow, lang, clientsSearch),
+            reason: hive.reason,
+          }
         : null,
-    [hive.showing, hive.board, hive.reason, clientsNarrow, lang],
+    [hive.showing, hive.board, hive.reason, clientsNarrow, clientsSearch, lang],
   );
   const runningCards = useMemo(
     () => cards.filter((card) => card.column === "running"),
@@ -2967,6 +3244,14 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
     );
     return () => { live = false; };
   }, []);
+  // The SPECS rung is the corpus store's count, the number the Explorer frame
+  // prints from the same part; the catalogs' generated ladder is the fallback
+  // until the manifest arrives. qa/queen-spec-sync-contract.mjs holds them equal.
+  const corpus = useT27Manifest().part;
+  const rungCounts = useMemo<LadderCounts | null>(
+    () => (ladderCounts && corpus ? { ...ladderCounts, specs: corpus.identity.specCount } : ladderCounts),
+    [ladderCounts, corpus],
+  );
 
   useEffect(
     () => () => {
@@ -3066,10 +3351,49 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
     // app.t27.ai inside the game, one screen per address.
     { view: "tri" as const, glyph: "△", label: c.triView, hint: c.triHint },
     { view: "passport" as const, glyph: "▤", label: c.passportView, hint: c.passportHint },
+    { view: "browser" as const, glyph: "◍", label: c.browserView, hint: c.browserHint },
+    { view: "roadmap" as const, glyph: "⇶", label: c.roadmapView, hint: c.roadmapHint },
+    // On the letter l: whose token each bee ran on, and what that lane earned.
+    { view: "leaderboard" as const, glyph: "⚙", label: c.leaderboardView, hint: c.leaderboardHint },
+    { view: "wars" as const, glyph: "⚔", label: c.warsView, hint: c.warsHint },
   ].map((item) => ({ ...item, hotkey: hudKeyOf(item.view) }));
-  const commandItems = viewItems.filter((item) =>
-    (RAIL_VIEWS as readonly string[]).includes(item.view),
-  );
+  // TRI is drawn as one button per screen, owner's word 2026-09-21: every
+  // screen of the app its own tab. The first keeps TRI's key; the rest are
+  // reached by the rail. The address underneath is still ?tab=tri&screen=.
+  const triGroupNow = triGroupOf(triScreenOf(hashParams.get("screen")));
+  const triRail: Record<string, { glyph: string; label: string }> = {
+    feed: { glyph: "▣", label: c.triFeed },
+    chat: { glyph: "✦", label: c.triAgent },
+    script: { glyph: "✧", label: c.triAi },
+    profile: { glyph: "◐", label: c.triProfile },
+    crm: { glyph: "☰", label: c.triCrm },
+  };
+  const railItems: CommandItem[] = viewItems
+    .filter((item) => (RAIL_VIEWS as readonly string[]).includes(item.view))
+    .flatMap((item): CommandItem[] =>
+      item.view !== "tri"
+        ? [item]
+        : TRI_BUTTONS.map((screen, i): CommandItem => ({
+            ...item,
+            glyph: triRail[screen]?.glyph ?? item.glyph,
+            label: (triRail[screen]?.label ?? screen).toUpperCase(),
+            hint: `TRI · ${triRail[screen]?.label ?? screen}`,
+            hotkey: i === 0 ? item.hotkey : "",
+            screen,
+            current: triGroupOf(screen) === triGroupNow,
+          })),
+    );
+  // PROFILE last, after every other tab: the owner's word, 2026-09-21. The
+  // person's own page closes the rail rather than sitting between the AI
+  // pipeline and the CRM.
+  const commandItems: CommandItem[] = [
+    ...railItems.filter((item) => item.screen !== "profile"),
+    ...railItems.filter((item) => item.screen === "profile"),
+  ];
+  const selectTriScreen = (screen: string) => {
+    setBoardView("tri");
+    setHashParams(() => triAddress(window.location.hash, triScreenOf(screen), null), { replace: true });
+  };
   // The ladder's rungs, in the ladder's own order (queenHud.SPEC_LAYERS) rather
   // than the rail's — Tools is the fifth layer and Functions the sixth, which
   // the rail's key order had the other way round — with the labels the rail used
@@ -3095,11 +3419,19 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
       current={view}
       onSelect={setView}
       aria={c.ladderAria}
-      counts={ladderCounts}
+      counts={rungCounts}
     />
   );
   const boardNav = (
     <QueenLadder layers={boardItems} current={view} onSelect={setView} aria={c.boardAria} family="board" />
+  );
+  // PROJECT and the PASSPORT beside it, drawn exactly as the board's row is.
+  const projectItems: LadderLayer[] = PROJECT_VIEWS.map((member) => {
+    const item = viewItems.find((entry) => entry.view === member)!;
+    return { layer: member, glyph: item.glyph, label: item.label, hint: item.hint };
+  });
+  const projectNav = (
+    <QueenLadder layers={projectItems} current={view} onSelect={setView} aria={c.projectView} family="project" />
   );
   const doctrine = [
     { n: "01", title: c.spec, copy: c.specCopy, tone: "" },
@@ -3135,14 +3467,69 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
   // to work in. The events go to her; the column keeps the overview below.
   // The same Queen in both shapes of the column: the wide aside and the phone
   // drawer. Defined once so the drawer cannot quietly lose her.
+  // WHERE THE PERSON IS, AND WHAT THEY SEE (owner, 2026-09-22): the rail's
+  // own name for the tab, the TRI screen, and the screen's text read at the
+  // moment of a question. The app frame is this origin on app.t27.ai/queen,
+  // so its document is readable; on t27.ai it is another origin and the read
+  // throws, which leaves the Queen with the tab name alone.
+  const triScreenNow = triScreenOf(hashParams.get("screen"));
+  const railLabelNow = (
+    boardView === "tri"
+      ? triRail[triGroupOf(triScreenNow)]?.label ?? c.triView
+      : viewItems.find((item) => item.view === railViewOf(boardView))?.label ?? boardView
+  ).toUpperCase();
+  const screenNow = (): string => {
+    if (boardView === "tri") {
+      const frame = document.querySelector<HTMLIFrameElement>(".queen27-tri-frame");
+      try {
+        const body = frame?.contentDocument?.body;
+        if (body) return screenExcerpt(body.innerText, triScreenNow === "chat");
+      } catch {
+        /* another origin: nothing to read, and nothing to claim */
+      }
+      return "";
+    }
+    const main = document.querySelector<HTMLElement>(".queen27-hud-vp-body");
+    return main ? screenExcerpt(main.innerText, false) : "";
+  };
+  // She shows her work by opening the tab it is on ([[open:NAME]]), through
+  // the same two calls the rail makes.
+  const openForQueen = (name: string): string | null => {
+    const target = Object.hasOwn(OPEN_TARGETS, name) ? OPEN_TARGETS[name] : null;
+    if (!target) return null;
+    if (target.screen) selectTriScreen(target.screen);
+    else setView(target.view as HudView);
+    return name.toUpperCase();
+  };
+  // A draft the person approved goes to their agent as them; the AGENT tab
+  // is reloaded after, so its own thread shows the exchange.
+  const sendForPerson = async (text: string): Promise<string> => {
+    const reply = await sendToAgentAsMe(text);
+    window.dispatchEvent(new CustomEvent("queen:tri-reload"));
+    return reply;
+  };
   const queenChat = (
     <Suspense fallback={null}>
       <QueenChat
         lang={lang === "ru" ? "ru" : "en"}
-        context={{ view: boardView, repo, spec: boardView === "specs" ? "specs/demos/hello_world.t27" : null }}
+        context={{
+          view: boardView,
+          repo,
+          spec: boardView === "specs" ? "specs/demos/hello_world.t27" : null,
+          label: railLabelNow,
+          screen: boardView === "tri" ? triScreenNow : null,
+          sees: screenNow,
+        }}
+        onOpen={openForQueen}
+        onSendToAgent={sendForPerson}
         events={events}
         describe={describe}
         issueHref={(event) => (event.issue && repo ? `https://github.com/${repo}/issues/${event.issue}` : null)}
+        // The A2A tab counts links out of the feed; how many slots are actually
+        // busy is the swarm's own number and is never inferred from events.
+        // Same fallback the factory strip uses: /queen/status first, the
+        // research graph's copy when status has not answered yet.
+        workers={data?.workers ?? workers}
       />
     </Suspense>
   );
@@ -3248,6 +3635,10 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                   signalHealth={{board:hiveFeedHealth(boardState.data!==null,boardState.error),activity:hiveFeedHealth(activityState.data!==null,activityState.error)}}
                   displays={hiveCells}
                   lang={lang === 'ru' ? 'ru' : 'en'}
+                  /* Inspecting a hive display zooms the scene onto it and the
+                     display draws over the whole field, so the card steps
+                     aside. It used to leave a collapsed chip behind; now it
+                     leaves nothing, and FIT VIEW below brings it back. */
                   onInspect={() => setContextOpen(false)}
                   cards={placedCards}
                   modules={modulesById}
@@ -3305,6 +3696,12 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
       // not data-view, which said "specs" on one of the six and left the other
       // five reserving 66px for a row that is not rendered on any of them.
       data-rail-view={railViewOf(view)}
+      // The corpus every tab is reading, from the one store: the Explorer frame
+      // stamps the same three on its root, and qa/queen-spec-sync-contract.mjs
+      // reads both on every tab and requires them equal.
+      data-spec-count={corpus?.identity.specCount}
+      data-corpus-version={corpus?.version}
+      data-corpus-source={corpus?.source}
     >
       <section
         className="queen27-hud-viewport"
@@ -3359,10 +3756,17 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                     <span className="queen27-hud-vp-word">{c[LAYER_COPY[k]]}</span>
                   </button>
                 ))}
+                {/* FIT VIEW is the way home, and the inspector is part of home:
+                    it undoes the roam, the zoom and the display that took the
+                    field, so the CONTEXT card comes back with them. That is
+                    what reopens it now that the collapsed chip is gone — a
+                    labelled control in the toolbar instead of a green button
+                    floating over the hive. Not on the catalog board and not on
+                    a phone: the card does not belong to either. */}
                 <button
                   type="button"
                   data-tool="fit"
-                  onClick={() => combRef.current?.fit()}
+                  onClick={() => { combRef.current?.fit(); setContextOpen(!isPhone && !sharedCatalog); }}
                   title={c.hudFitView}
                 >
                   {c.hudFitView}
@@ -3493,6 +3897,8 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                 lang={lang}
                 clients={clientsPanel}
                 onNarrow={setClientsNarrow}
+                search={clientsSearch}
+                onSearch={setClientsSearch}
               />
             </div>
           ) : boardView === "map" ? (
@@ -3512,6 +3918,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
             <QueenSpecs
               showDirective={isNarrow}
               onNavigate={setView}
+              world={sharedCatalog ? worldParam(hashParams.get("world")) : null}
               ladder={ladderNav}
               c={{
                 directive: c.specsDirective,
@@ -3530,7 +3937,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
               onNavigate={setView}
               // PROJECT is the system documentation, not a layer of the ladder:
               // it keeps its own rail button and gets no rung row.
-              ladder={isSpecLayer(boardView) ? ladderNav : undefined}
+              ladder={isSpecLayer(boardView) ? ladderNav : boardView === "project" ? projectNav : undefined}
               c={{
                 directive: boardView === "skills" ? c.skillsDirective : boardView === "crons" ? c.cronsDirective : boardView === "functions" ? c.functionsDirective : boardView === "tools" ? c.toolsDirective : boardView === "project" ? c.projectDirective : c.agentsDirective,
                 directiveBody: boardView === "skills" ? c.skillsDirectiveBody : boardView === "crons" ? c.cronsDirectiveBody : boardView === "functions" ? c.functionsDirectiveBody : boardView === "tools" ? c.toolsDirectiveBody : boardView === "project" ? c.projectDirectiveBody : c.agentsDirectiveBody,
@@ -3569,20 +3976,55 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                 preview: c.triPreview,
               }}
             />
+          ) : boardView === "wars" ? (
+            <QueenWars lang={lang === "ru" ? "ru" : "en"} />
+          ) : boardView === "roadmap" ? (
+            <QueenRoadmap lang={lang === "ru" ? "ru" : "en"} />
+          ) : boardView === "leaderboard" ? (
+            <QueenLeaderboard lang={lang === "ru" ? "ru" : "en"} />
           ) : boardView === "passport" ? (
             // The record itself, not a frame of it: the page and this view read
             // one content module, so the working group and the map cannot drift.
-            <Passport face={hashParams.get("face") === "research" ? "research" : "record"} />
+            <div className="queen27-board-stack">
+              {projectNav}
+              <Passport face={hashParams.get("face") === "research" ? "research" : "record"} />
+            </div>
+          ) : boardView === "browser" ? (
+            <QueenBrowser
+              embedded={embedded}
+              lang={lang === 'ru' ? 'ru' : 'en'}
+              c={{
+                preview: c.browserPreview,
+                nested: c.browserNested,
+                signin: c.browserSignin,
+                openInApp: c.browserOpenInApp,
+                none: c.browserNone,
+                open: c.browserOpen,
+                starting: c.browserStarting,
+                unavailable: c.browserUnavailable,
+                close: c.browserClose,
+                failed: c.browserFailed,
+                retry: c.browserRetry,
+                frameTitle: c.browserFrameTitle,
+                passwords: c.browserPasswords,
+                journal: c.browserJournal,
+                driving: c.browserDriving,
+                handBack: c.browserHandBack,
+              }}
+            />
           ) : boardView === "comb" ? (
             null
           ) : boardView === "research" ? (
-            <TechnologyTree
-              c={c}
-              graph={researchState.tree}
-              error={researchState.sourceError}
-              lang={lang}
-              embedded
-            />
+            <div className="queen27-board-stack">
+              {boardNav}
+              <TechnologyTree
+                c={c}
+                graph={researchState.tree}
+                error={researchState.sourceError}
+                lang={lang}
+                embedded
+              />
+            </div>
           ) : (
             <div className="queen27-board-stack">
               {boardNav}
@@ -3638,10 +4080,16 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
           )}
         </div>
 
-        {!(sharedCatalog && boardView === "comb") && <QueenContext
+        {/* The legacy CONTEXT panel belongs to the comb it describes, and only
+            the old comb: the shared catalog has its own inspector. Drawn on
+            every other view, its collapsed chip floated over FEED, AI, PROFILE
+            and ROADMAP with nothing to show (owner, 2026-09-22: "remove the
+            phantom button of the old design"). Closing it now removes it
+            outright - there is no chip left behind, and FIT VIEW brings the
+            card back. */}
+        {boardView === "comb" && !sharedCatalog && <QueenContext
           open={contextOpen}
           onClose={() => setContextOpen(false)}
-          onOpen={() => setContextOpen(true)}
           lang={lang}
           repo={repo}
           columns={boardColumns}
@@ -3704,7 +4152,6 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
             copyLink: c.hudCopyLink,
             linkCopied: c.hudLinkCopied,
             close: c.hudClose,
-            openPanel: c.hudOpenPanel,
           }}
         />}
 
@@ -3985,6 +4432,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
           // inside the module the rail's second button opens.
           view={railViewOf(view)}
           onSelect={setView}
+          onSelectScreen={selectTriScreen}
           collapsed={commandCollapsed}
           onToggleCollapsed={() => setCommandCollapsed((collapsed) => !collapsed)}
           labels={{ aria: c.hudViews, collapse: c.hudCollapse, expand: c.hudExpand }}
@@ -4050,6 +4498,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
               // which is the button that now holds it.
               view={railViewOf(view)}
               onSelect={setView}
+              onSelectScreen={selectTriScreen}
               collapsed={false}
               onToggleCollapsed={() => undefined}
               compact

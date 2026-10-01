@@ -29,9 +29,12 @@ module Int4 {
     fn encode(value: i8) -> Int4 {
         const clamped = if (value > 7) { 7 } else if (value < -8) { -8 } else { value };
         // Two's complement: negative values are stored as 2^4 + value
-        let raw = clamped as u4;
+        // t27 has no `as u4` cast form. This is a value-level approximation: raw is
+        // always 0..15 here, but no backend narrows (the Zig backend rejects the
+        // implicit i8 -> u4 assignment) until t27 gains a narrow-cast form.
+        var raw : u4 = clamped;
         if (clamped < 0) {
-            raw = (16 + clamped) as u4;
+            raw = 16 + clamped;
         }
         return Int4{ raw = raw };
     }
@@ -149,21 +152,37 @@ module Int4 {
         and   decoded = decode(encoded)
         then decoded == original
 
-    test int4_encode_positive_values
-        for (vals) |vals|
-        then encode(vals[i]).raw == vals[i] for vals[i] in {0, 1, 2, 3, 4, 5, 6, 7}
+    test int4_encode_positive_values {
+        const vals : [8]i8 = [0, 1, 2, 3, 4, 5, 6, 7];
+        for i in 0..8 {
+            const v = vals[i];
+            assert(encode(v).raw == v);
+        }
+    }
 
-    test int4_decode_positive_values
-        for (vals) |vals|
-        then decode(Int4{ raw = vals[i] }) == vals[i] for vals[i] in {0, 1, 2, 3, 4, 5, 6, 7}
+    test int4_decode_positive_values {
+        const vals : [8]i8 = [0, 1, 2, 3, 4, 5, 6, 7];
+        for i in 0..8 {
+            const v = vals[i];
+            assert(decode(Int4{ raw = v }) == v);
+        }
+    }
 
-    test int4_encode_negative_values
-        given vals = [-1, -2, -3, -4, -5, -6, -7, -8]
-        then encode(vals[i]).raw == (16 + vals[i]) for vals[i] in vals
+    test int4_encode_negative_values {
+        const vals : [8]i8 = [-1, -2, -3, -4, -5, -6, -7, -8];
+        for i in 0..8 {
+            const v = vals[i];
+            assert(encode(v).raw == (16 + v));
+        }
+    }
 
-    test int4_decode_negative_values
-        given enc = [15, 14, 13, 12, 11, 10, 9, 8]
-        then decode(Int4{ raw = enc[i] }) == enc[i] - 16 for enc[i] in enc
+    test int4_decode_negative_values {
+        const enc : [8]i8 = [15, 14, 13, 12, 11, 10, 9, 8];
+        for i in 0..8 {
+            const e = enc[i];
+            assert(decode(Int4{ raw = e }) == e - 16);
+        }
+    }
 
     test int4_bits_constant
         then BITS == 4
@@ -308,9 +327,15 @@ module Int4 {
         given x = 5
         then decode(mul(encode(x), encode(-1))) == -x
 
-    invariant int4_abs_is_non_negative
-        for (vals) |vals|
-        then decode(abs(encode(vals[i]))) >= 0 for vals[i] in vals
+    invariant int4_abs_is_non_negative {
+        // The original quantified over `vals` without binding it; the domain is
+        // every Int4 value, min_value() .. max_value() (-8 .. 7, see section 1).
+        const vals : [16]i8 = [-8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7];
+        for i in 0..16 {
+            const v = vals[i];
+            assert(decode(abs(encode(v))) >= 0);
+        }
+    }
 
     bench int4_encode_latency
         measure: nanoseconds to encode(5)

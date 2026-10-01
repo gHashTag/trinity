@@ -313,6 +313,13 @@ test bench_proxy_compute_pass_at_1_none_match
     when p = compute_pass_at_1(template, problems)
     then p == 0.0
 
+test run_full_baseline_inner_singleton
+    given templates = ["adder"]
+    given problems = verilog_eval_problems()
+    when scores = run_full_baseline_inner(templates, problems, 0)
+    then len(scores) == 1 && scores[0] >= 0.0 && scores[0] <= 1.0
+
+
 // ============================================================================
 // 5. Invariants
 // ============================================================================

@@ -56,7 +56,17 @@ export default function GameHero() {
           <a className="game-hero-primary" href="#/queen">
             {t.map}
           </a>
-          <a className="game-hero-secondary" href="#play">
+          {/* "How to play" was an anchor to the section below, which is a
+              description of playing rather than playing. It now opens the spec
+              the corpus starts with, in the real editor, compiled by the real
+              compiler: 98 lines that carry a constant, a type, a function, a
+              test and an invariant. Relative on purpose - the same address
+              works on t27.ai and on app.t27.ai/queen/, so nobody is sent to
+              another host to read one file. */}
+          <a
+            className="game-hero-secondary"
+            href="#/specs?spec=specs%2Fdemos%2Fhello_world.t27"
+          >
             {t.play}
           </a>
           <a className="game-hero-quiet" href="#/trinity">

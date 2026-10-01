@@ -112,6 +112,17 @@ test "ring_validation_accepts_trinity_multiples" {
     assert validate_ring_number(32) == true;
 }
 
+test "on_comb_delegates_to_ring_validation" {
+    assert on_comb(0) == true;
+    assert on_comb(3) == true;
+    assert on_comb(6) == true;
+    assert on_comb(32) == true;
+    assert on_comb(1) == false;
+    assert on_comb(2) == false;
+    assert on_comb(4) == false;
+    assert on_comb(5) == false;
+}
+
 // ============================================================================
 // TDD: INVARIANTS
 // ============================================================================

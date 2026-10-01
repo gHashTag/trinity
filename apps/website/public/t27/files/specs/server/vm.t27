@@ -177,117 +177,99 @@ module VM {
         var result = vm;
         result.cycle_count += 1;
 
-        switch (instruction.opcode) {
-            .v_load => {
-                // Load from immediate to dst
-                result.registers.v0 = hybrid_arithmetic::create_unpacked(
-                    [_]i8{ 1 },
-                    1,
-                    hybrid_arithmetic::unpacked_mode
-                );
-            },
-            .v_store => {
-                // Store dst to memory (not implemented in spec)
-                result.cycle_count += 1;
-            },
-            .v_bind => {
-                const src1_vec = vm_get_vreg(result, instruction.src1);
-                const src2_vec = vm_get_vreg(result, instruction.src2);
-                const binded = core::bind(src1_vec, src2_vec);
-                result = vm_set_vreg(result, instruction.dst, binded);
-            },
-            .v_unbind => {
-                const src1_vec = vm_get_vreg(result, instruction.src1);
-                const src2_vec = vm_get_vreg(result, instruction.src2);
-                const unbound = core::unbind(src1_vec, src2_vec);
-                result = vm_set_vreg(result, instruction.dst, unbound);
-            },
-            .v_bundle2 => {
-                const src1_vec = vm_get_vreg(result, instruction.src1);
-                const src2_vec = vm_get_vreg(result, instruction.src2);
-                const bundled = core::bundle2(src1_vec, src2_vec);
-                result = vm_set_vreg(result, instruction.dst, bundled);
-            },
-            .v_bundle3 => {
-                const src1_vec = vm_get_vreg(result, instruction.src1);
-                const src2_vec = vm_get_vreg(result, instruction.src2);
-                const src3_vec = vm_get_vreg(result, instruction.dst);
-                const bundled = core::bundle3(src1_vec, src2_vec, src3_vec);
-                result = vm_set_vreg(result, instruction.dst, bundled);
-            },
-            .v_dot => {
-                const src1_vec = vm_get_vreg(result, instruction.src1);
-                const src2_vec = vm_get_vreg(result, instruction.src2);
-                const result_scalar = core::dot_product(src1_vec, src2_vec);
-                result.registers.s0 = result_scalar;
-            },
-            .v_cosine => {
-                const src1_vec = vm_get_vreg(result, instruction.src1);
-                const src2_vec = vm_get_vreg(result, instruction.src2);
-                const result_scalar = core::cosine_similarity(src1_vec, src2_vec);
-                result.registers.f0 = result_scalar;
-            },
-            .v_hamming => {
-                const src1_vec = vm_get_vreg(result, instruction.src1);
-                const src2_vec = vm_get_vreg(result, instruction.src2);
-                const result_scalar = core::hamming_distance(src1_vec, src2_vec);
-                result.registers.s1 = @as(i64, @intCast(result_scalar));
-            },
-            .v_add => {
-                const src1_vec = vm_get_vreg(result, instruction.src1);
-                const src2_vec = vm_get_vreg(result, instruction.src2);
-                const added = hybrid_arithmetic::add(src1_vec, src2_vec);
-                result = vm_set_vreg(result, instruction.dst, added);
-            },
-            v_neg => {
-                const src1_vec = vm_get_vreg(result, instruction.src1);
-                const negated = src1_vec.negate();
-                result = vm_set_vreg(result, instruction.dst, negated);
-            },
-            v_mul => {
-                const src1_vec = vm_get_vreg(result, instruction.src1);
-                const src2_vec = vm_get_vreg(result, instruction.src2);
-                const multiplied = core::mul(src1_vec, src2_vec);
-                result = vm_set_vreg(result, instruction.dst, multiplied);
-            },
-            .v_mov => {
-                const src_vec = vm_get_vreg(result, instruction.src1);
-                result = vm_set_vreg(result, instruction.dst, src_vec);
-            },
-            v_pack => {
-                const dst_vec = vm_get_vreg(result, instruction.dst);
-                const packed = dst_vec.pack();
-                result = vm_set_vreg(result, instruction.dst, packed);
-            },
-            v_unpack => {
-                const dst_vec = vm_get_vreg(result, instruction.dst);
-                const unpacked = dst_vec.unpack();
-                result = vm_set_vreg(result, instruction.dst, unpacked);
-            },
-            .v_cmp => {
-                const src1_vec = vm_get_vreg(result, instruction.src1);
-                const src2_vec = vm_get_vreg(result, instruction.src2);
-                const distance = core::hamming_distance(src1_vec, src2_vec);
-                result.registers.cc_zero = (distance == 0);
-                // Update neg/pos based on comparison
-                // Implementation-specific
-            },
-            .v_permute => {
-                const src_vec = vm_get_vreg(result, instruction.src1);
-                const permuted = core::permute(src_vec, instruction.imm);
-                result = vm_set_vreg(result, instruction.dst, permuted);
-            },
-            .v_ipermute => {
-                const src_vec = vm_get_vreg(result, instruction.src1);
-                const permuted = core::inverse_permute(src_vec, instruction.imm);
-                result = vm_set_vreg(result, instruction.dst, permuted);
-            },
-            .nop => {
-                result.cycle_count += 1;
-            },
-            .halt => {
-                result.halted = true;
-            },
+        // Block-bodied switch arms have no t27 form; the switch is spelled
+        // as an equivalent if / else-if chain over the opcode, one branch
+        // per original arm, in the original order.
+        if (instruction.opcode == .v_load) {
+            // Load from immediate to dst
+            result.registers.v0 = hybrid_arithmetic::create_unpacked(
+                [_]i8{ 1 },
+                1,
+                hybrid_arithmetic::unpacked_mode
+            );
+        } else if (instruction.opcode == .v_store) {
+            // Store dst to memory (not implemented in spec)
+            result.cycle_count += 1;
+        } else if (instruction.opcode == .v_bind) {
+            const src1_vec = vm_get_vreg(result, instruction.src1);
+            const src2_vec = vm_get_vreg(result, instruction.src2);
+            const binded = core::bind(src1_vec, src2_vec);
+            result = vm_set_vreg(result, instruction.dst, binded);
+        } else if (instruction.opcode == .v_unbind) {
+            const src1_vec = vm_get_vreg(result, instruction.src1);
+            const src2_vec = vm_get_vreg(result, instruction.src2);
+            const unbound = core::unbind(src1_vec, src2_vec);
+            result = vm_set_vreg(result, instruction.dst, unbound);
+        } else if (instruction.opcode == .v_bundle2) {
+            const src1_vec = vm_get_vreg(result, instruction.src1);
+            const src2_vec = vm_get_vreg(result, instruction.src2);
+            const bundled = core::bundle2(src1_vec, src2_vec);
+            result = vm_set_vreg(result, instruction.dst, bundled);
+        } else if (instruction.opcode == .v_bundle3) {
+            const src1_vec = vm_get_vreg(result, instruction.src1);
+            const src2_vec = vm_get_vreg(result, instruction.src2);
+            const src3_vec = vm_get_vreg(result, instruction.dst);
+            const bundled = core::bundle3(src1_vec, src2_vec, src3_vec);
+            result = vm_set_vreg(result, instruction.dst, bundled);
+        } else if (instruction.opcode == .v_dot) {
+            const src1_vec = vm_get_vreg(result, instruction.src1);
+            const src2_vec = vm_get_vreg(result, instruction.src2);
+            const result_scalar = core::dot_product(src1_vec, src2_vec);
+            result.registers.s0 = result_scalar;
+        } else if (instruction.opcode == .v_cosine) {
+            const src1_vec = vm_get_vreg(result, instruction.src1);
+            const src2_vec = vm_get_vreg(result, instruction.src2);
+            const result_scalar = core::cosine_similarity(src1_vec, src2_vec);
+            result.registers.f0 = result_scalar;
+        } else if (instruction.opcode == .v_hamming) {
+            const src1_vec = vm_get_vreg(result, instruction.src1);
+            const src2_vec = vm_get_vreg(result, instruction.src2);
+            const result_scalar = core::hamming_distance(src1_vec, src2_vec);
+            result.registers.s1 = @as(i64, @intCast(result_scalar));
+        } else if (instruction.opcode == .v_add) {
+            const src1_vec = vm_get_vreg(result, instruction.src1);
+            const src2_vec = vm_get_vreg(result, instruction.src2);
+            const added = hybrid_arithmetic::add(src1_vec, src2_vec);
+            result = vm_set_vreg(result, instruction.dst, added);
+        } else if (instruction.opcode == .v_neg) {  // original arm spelled without the leading dot
+            const src1_vec = vm_get_vreg(result, instruction.src1);
+            const negated = src1_vec.negate();
+            result = vm_set_vreg(result, instruction.dst, negated);
+        } else if (instruction.opcode == .v_mul) {  // original arm spelled without the leading dot
+            const src1_vec = vm_get_vreg(result, instruction.src1);
+            const src2_vec = vm_get_vreg(result, instruction.src2);
+            const multiplied = core::mul(src1_vec, src2_vec);
+            result = vm_set_vreg(result, instruction.dst, multiplied);
+        } else if (instruction.opcode == .v_mov) {
+            const src_vec = vm_get_vreg(result, instruction.src1);
+            result = vm_set_vreg(result, instruction.dst, src_vec);
+        } else if (instruction.opcode == .v_pack) {  // original arm spelled without the leading dot
+            const dst_vec = vm_get_vreg(result, instruction.dst);
+            const packed = dst_vec.pack();
+            result = vm_set_vreg(result, instruction.dst, packed);
+        } else if (instruction.opcode == .v_unpack) {  // original arm spelled without the leading dot
+            const dst_vec = vm_get_vreg(result, instruction.dst);
+            const unpacked = dst_vec.unpack();
+            result = vm_set_vreg(result, instruction.dst, unpacked);
+        } else if (instruction.opcode == .v_cmp) {
+            const src1_vec = vm_get_vreg(result, instruction.src1);
+            const src2_vec = vm_get_vreg(result, instruction.src2);
+            const distance = core::hamming_distance(src1_vec, src2_vec);
+            result.registers.cc_zero = (distance == 0);
+            // Update neg/pos based on comparison
+            // Implementation-specific
+        } else if (instruction.opcode == .v_permute) {
+            const src_vec = vm_get_vreg(result, instruction.src1);
+            const permuted = core::permute(src_vec, instruction.imm);
+            result = vm_set_vreg(result, instruction.dst, permuted);
+        } else if (instruction.opcode == .v_ipermute) {
+            const src_vec = vm_get_vreg(result, instruction.src1);
+            const permuted = core::inverse_permute(src_vec, instruction.imm);
+            result = vm_set_vreg(result, instruction.dst, permuted);
+        } else if (instruction.opcode == .nop) {
+            result.cycle_count += 1;
+        } else if (instruction.opcode == .halt) {
+            result.halted = true;
         }
 
         return result;
@@ -319,12 +301,17 @@ module VM {
     // ========================================================================
     pub fn vm_set_vreg(vm: VSAVM, reg: u8, value: hybrid_arithmetic::HybridBigInt) VSAVM {
         var result = vm;
-        switch (reg) {
-            0 => { result.registers.v0 = value; },
-            1 => { result.registers.v1 = value; },
-            2 => { result.registers.v2 = value; },
-            3 => { result.registers.v3 = value; },
-            else => {},
+        // Block-bodied switch arms have no t27 form; spelled as an if /
+        // else-if chain. The original `else => {}` arm (any other index
+        // leaves the VM unchanged) is the implicit fall-through.
+        if (reg == 0) {
+            result.registers.v0 = value;
+        } else if (reg == 1) {
+            result.registers.v1 = value;
+        } else if (reg == 2) {
+            result.registers.v2 = value;
+        } else if (reg == 3) {
+            result.registers.v3 = value;
         }
         return result;
     }

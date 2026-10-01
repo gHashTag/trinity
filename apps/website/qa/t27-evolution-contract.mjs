@@ -229,6 +229,42 @@ if (errors.length === 0) {
       fail('Queen must derive the tree in the language the page is rendered in')
     }
   }
+
+  // The target list is written twice and nothing used to join the two halves.
+  //
+  // `TARGET_IDS` in src/lib/t27Compiler.ts is what the bundle imports; scripts/
+  // t27-corpus.mjs cannot import it -- node runs that file directly -- so it
+  // keeps a parallel `TARGET_LABEL`. The comment above that literal conceded the
+  // gap in as many words: the two "can disagree about a name". Adding gen-ts
+  // walked straight through it, because a seventh id with no label is not a
+  // crash. It is a backend that emits, is counted, and renders as a blank tab.
+  //
+  // So bind both to the thing that cannot be typed by hand: the manifest, whose
+  // backend names are whatever the vendored compiler actually emitted over the
+  // corpus. Three lists, one measured source, and the next backend is added in
+  // one place or the gate says where the other one is.
+  const { TARGET_IDS } = await import(
+    `data:text/javascript;base64,${Buffer.from(
+      (await build({
+        entryPoints: [`${root}/src/lib/t27Compiler.ts`],
+        bundle: true, format: 'esm', platform: 'node', write: false, logLevel: 'silent',
+      })).outputFiles[0].text,
+    ).toString('base64')}`
+  )
+  const { TARGET_LABEL } = await import(`${root}/scripts/t27-corpus.mjs`)
+  const emitted = [...new Set(manifest.specs.flatMap((s) => Object.keys(s.outBytes ?? {})))].sort()
+
+  const ids = [...TARGET_IDS].sort()
+  if (ids.join() !== emitted.join()) {
+    fail(`TARGET_IDS is [${ids}], the corpus index emits [${emitted}]`)
+  }
+  const labelled = Object.keys(TARGET_LABEL).sort()
+  if (labelled.join() !== emitted.join()) {
+    fail(`TARGET_LABEL covers [${labelled}], the corpus index emits [${emitted}]`)
+  }
+  for (const [id, label] of Object.entries(TARGET_LABEL)) {
+    if (typeof label !== 'string' || !label.trim()) fail(`TARGET_LABEL.${id} has no name to draw`)
+  }
 }
 
 if (errors.length) {
