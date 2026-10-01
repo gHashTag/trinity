@@ -89,7 +89,7 @@ pub const JS_TS_DIVERGENCES : u16 = 0;
 pub const REQUIRES_RUNNING_OUR_CODE : bool = false;
 
 ; --- The corpus on the day this was written --------------------------------------------------
-pub const MEASURED_AT : str = "2026-09-24";
+pub const MEASURED_AT : str = "2026-10-01";
 pub const SPEC_COUNT : u16 = 1737;
 pub const SPEC_LINES : u32 = 483876;
 ; Health as the manifest reports it. The three add up to SPEC_COUNT, and the test below says so.
@@ -101,6 +101,9 @@ pub const SPEC_LINES : u32 = 483876;
 ; They moved again on 2026-09-24, and this time the corpus did: specs written in Zig or Rust
 ; idioms, the older test style or with typos were translated to t27 -- 62 in gHashTag/t27
 ; (t27#4793) and 54 in four other repositories -- and two more worlds joined the scan.
+; On 2026-10-01 it grew: 160 more specs and two more worlds (trinity#1176). That refresh moved
+; the manifest and not these numbers, and the publish of t27.ai failed on this file until they
+; were written; the scan now runs this check before it commits a refresh.
 pub const HEALTH_OK : u16 = 1308;
 pub const HEALTH_WARN : u16 = 254;
 pub const HEALTH_FAIL : u16 = 175;
@@ -120,7 +123,8 @@ pub const HEALTH_FAIL_NOTE : str = "health=fail covers both a spec that did not 
 pub const HEALTH_FAIL_UNPARSED : u16 = 169;
 ; What is left once the unparsed are set aside was seven specs on 2026-09-21 that parsed,
 ; typechecked and emitted six of seven languages -- the honest size of "broken and readable".
-; On 2026-09-24 it is none: those seven were repaired, so every remaining fail never parsed.
+; On 2026-09-24 it was none: those seven were repaired. On 2026-10-01 it is six again, and all
+; six are the same fault -- they parse, typecheck and emit every language except Verilog.
 ; The largest class used to be a different one. js and ts are declarations-only backends, and
 ; a const whose initialiser they had no spelling for failed the WHOLE module -- costing every
 ; declaration that was fine to refuse the one that was not, on files the other five backends

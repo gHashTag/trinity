@@ -93,6 +93,12 @@ jobs:
           npm run check:agents
           npm run check:tools
           npm run check:docs
+          # onboarding.t27 states the corpus counts and the publish refuses them when they
+          # disagree with the manifest. #1176 refreshed the manifest without this check and
+          # t27.ai stopped publishing; a refresh that moves the counts now stops here instead.
+          npm run check:onboarding
+          # #1176 also vendored two gf16 ports that check:silicon requires to be classified.
+          npm run check:silicon
 
       # Ruleset 23148303 ("T27 mandatory work report") requires the status check
       # "T27 work report" on refs/heads/main and lists no bypass actors, so the
