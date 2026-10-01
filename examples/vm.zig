@@ -30,6 +30,7 @@ pub fn main() !void {
     std.debug.print("  v2 = bind(v0, v1)\n", .{});
     std.debug.print("  v3 = unbind(v2, v1)\n", .{});
     std.debug.print("  f0 = cosine(v0, v3)\n\n", .{});
-    std.debug.print("Result: f0 = {d:.4} (expected ~1.0)\n", .{vm.registers.f0});
+    // unbind recovers v0 wherever v1 is non-zero, two thirds of the trits: sqrt(2/3).
+    std.debug.print("Result: f0 = {d:.4} (expected ~0.82)\n", .{vm.registers.f0});
     std.debug.print("Cycles: {}\n\n", .{vm.cycle_count});
 }
