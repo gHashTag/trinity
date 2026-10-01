@@ -30,6 +30,8 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  # To start pr-blog-report.yml for the pull request this job opens (below).
+  actions: write
 
 jobs:
   scan:
@@ -138,6 +140,15 @@ jobs:
             PR=$(gh pr list --head "$BRANCH" --base main --state open --json number --jq '.[0].number // empty')
           fi
           echo "- pushed $BRANCH and opened/updated PR #$PR: $N" >> "$GITHUB_STEP_SUMMARY"
+          # The one required check, "T27 work report", is posted by
+          # pr-blog-report.yml on pull_request_target -- and an event caused by
+          # this job's GITHUB_TOKEN starts no workflow, so the refresh it opened
+          # sat BLOCKED with no report ever posted (PR #1176: 1737 specs, open
+          # while the site went on serving 1577). workflow_dispatch is the one
+          # event the token may start; the report job validates the body above
+          # against the head it reads from the API, as it would for a person.
+          gh workflow run pr-blog-report.yml --ref main -f pr="$PR"
+          echo "- started the work-report check for PR #$PR" >> "$GITHUB_STEP_SUMMARY"
           # Auto-merge lands it once "T27 work report" goes green. Without the
           # repository setting it stays an open pull request for a person to
           # merge, which is a worse outcome but not a failed run.

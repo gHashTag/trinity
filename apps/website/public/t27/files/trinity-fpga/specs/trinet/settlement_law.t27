@@ -18,9 +18,17 @@ identity passes the protocol — its tag is valid for the identity it claims —
 and must be refused by the ledger. A tag can never adjudicate whose account a
 credit belongs in.
 
-TRI as recorded here is a non-transferable internal work credit. Nothing in the
-artefact mints a chain asset or issues a transferable instrument, and the
-reasoning for that scoping is recorded under finding ISSUANCE_AT_SMALL_N.
+TRI is the network's unit of payment for verified work, and it is real,
+transferable money. The settlement law below -- what earns a credit and what is
+refused -- is exactly what backs its value: a TRI is worth something only
+because it is paid for work a verifier accepted, never for a promise. TRI is
+issued on-chain, on both TON and Solana (owner decision 2026-09-24). One hundred
+percent of the supply is mined this way and only this way: the mint at genesis is
+zero, there is no pre-mine, no founder allocation and no sale, and every TRI up to
+the 3^21 cap enters circulation when a verifier accepts a spec or a job. The
+earlier scoping of TRI as a non-transferable internal credit, and the reasons it
+held at a handful of nodes, are kept under finding ISSUANCE_AT_SMALL_N, now
+superseded.
 """
 
 constants {
@@ -185,14 +193,15 @@ lemma THREE_STEPS_STAY_SEPARATE {
 }
 
 // ---------------------------------------------------------------------------
-// Why the credit is not a token
+// Why TRI was scoped as a credit until 2026-09-24, and what the override needs
 // ---------------------------------------------------------------------------
 
 finding ISSUANCE_AT_SMALL_N {
   severity HIGH
   resolved true
-  resolution "TRI is recorded as a non-transferable internal work credit"
-  reasoning """
+  superseded_by "owner decision 2026-09-24 -- TRI is a real, transferable token issued on TON and Solana; work is paid in money, not in a non-transferable credit"
+  original_resolution "TRI was recorded as a non-transferable internal work credit until 2026-09-24"
+  why_it_was_scoped_small """
     At n = 1..3 nodes the developers hold every node, every key and every vote.
     Any issuance in that configuration is, after the fact, indistinguishable
     from a founder allocation. The exemptions that look applicable do not reach
@@ -201,7 +210,19 @@ finding ISSUANCE_AT_SMALL_N {
     4(3)(b) exempts rewards for ledger maintenance and transaction validation.
     Separately, emission-funded development is currently punished by markets.
   """
-  what_this_does_not_claim "this is not legal advice and no counsel reviewed it; it is a scoping decision that avoids the question rather than answering it"
+  what_the_override_requires """
+    Issuing a transferable token answers the question the credit scoping avoided
+    rather than settling it, so the answer now has to be built. Two things must
+    be true for the override to be safe: a compliant issuance path (a foundation
+    entity in a VASP jurisdiction, reviewed by crypto counsel), and a
+    distribution that is PAYMENT for verifiable work, not a sale of a promise --
+    the failure mode is SEC v. Telegram, where a single company selling its own
+    token to fund itself was the whole defect. The settlement law is the utility
+    argument: TRI is only ever paid for work a verifier accepted, backed by a
+    receipt anyone can recompute. No counsel has reviewed this yet; that review
+    is the first task the override creates.
+  """
+  status "[owner-decided; compliance path OPEN]"
 }
 
 finding EFFICIENCY_IS_NOT_DEMAND {

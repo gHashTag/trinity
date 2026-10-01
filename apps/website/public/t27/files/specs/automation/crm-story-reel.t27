@@ -1,0 +1,976 @@
+// SPDX-License-Identifier: Apache-2.0
+// specs/automation/crm-story-reel.t27 -- the CRM lead magnet #2: a short story reel about the
+// client's own business, made from the client's own avatar (the face) and a clone of the
+// client's own voice notes (the voice): three scenes, a new setting in each, one line per
+// scene in that voice, lip-synced, cut together, and a pause with the call to action. The
+// finished reel reaches the client's group or DM only by ONE press of the owner.
+// Host: 999-multibots-telegraf apps/vibee-editor/render/src/agent/
+//       story-template.ts (the job: table story_jobs, heartbeat, sweep, who pays),
+//       story-reel-tool.ts (story_reel: stills -> voices -> lip-syncs -> StoryReel),
+//       story-card.ts (the send card for the group or the DM),
+//       crm-story-tool.ts (crm_story_reel for the seller, my_story_reel for the client),
+//       lead-voice.ts (the clone), and src/render-feed-entry.ts (a render asked for with the
+//       service key waits for approval in the feed), src/compositions/StoryReel.tsx.
+// Generated: `t27c gen-ts` of this file is vendored into the host as
+//       apps/vibee-editor/render/src/spec/crm-story-reel.gen.ts. The host imports the
+//       numbers below from there and never restates them; a host test fails when the
+//       vendored copy and this file disagree.
+// Why a reel WITH THEM: a generic lead magnet is content the person has already seen. Their
+// face, their voice and their business in one vertical story is posted, kept and forwarded.
+// This spec fixes what qualifies a client, what each step costs, how the job survives a
+// redeploy, and that nothing reaches a client's chat without the owner's press.
+// Claim status: implemented and unit-tested in the host (#3069, #3074, #3080, #3081, #3082,
+// #3084, #3085, #3087, #3089; v4 in the host PR that vendors it).
+// v4 (2026-09-27, owner: "our Kie is paid"): the voice needs no clone. With no clone, a reel the
+// seller asks for speaks her OWN voice notes -- the ones she sent the seller -- cut at pauses,
+// one piece per scene, lip-synced on Kie. Nothing is put in her mouth: the words are hers,
+// and neither Replicate nor ElevenLabs is on the path.
+// v5 (2026-09-27): a client WITH a clone whose provider refuses (402, no credit) is no dead end
+// for the seller: the same run speaks her voice notes instead, on the stills it already paid
+// for. A client pressing for herself still gets her clone; nothing else is put in her mouth.
+// v6 (2026-09-27): the day's generation cap is asked BEFORE anything is spent. Measured live: a
+// reel's stills and voice were paid, its three lip-syncs met the payer's daily cap, and the sweep
+// burned all three attempts in six minutes; the job failed with the paid parts orphaned. Now a
+// reel whose slots the day cannot cover is refused in words before a still is drawn, and a job
+// that meets the cap mid-way waits -- its attempts kept -- and is told once.
+// v7 (2026-09-27): her visual at the end comes from the seller too. One client's profile has no
+// visual, so her reel ended on the held last frame while the seller knew her palette and had
+// nowhere to say it. crm_story_reel takes end_card, the job keeps it, and a resume after a
+// redeploy renders the same card. Field by field the seller's word wins over the profile, the
+// profile over the composition's default. A palette whose call or button cannot be read on its
+// background is refused in words before anything is spent when the seller gave it; a profile
+// palette is only reported, so a client who has one keeps the reel she had. A colour is #hex of
+// 3, 4, 6 or 8 digits: v6's host took 5 and 7 too, which CSS drops without a word; a colour the
+// seller gives that is not #hex is named back to him, not dropped in silence.
+// v8 (2026-09-27, owner: "why does the agent not understand the video made of three frames -- it
+// keeps doing it the old way"): measured in one client's workspace, the Queen set "build D5
+// (plan 72) in LeelaPlanReel style" and the agent answered "silent, with subtitles, like plans 6
+// and 68". Nothing in code sent them there, only words: the gift line said "then the package"
+// once both gifts were given, the package's reel_template was shown with nothing over it,
+// leela_plan's hint said "render with LeelaPlanReel", and the Queen's block never named the reel
+// tool. Every reel for a CRM client is the story reel; a plan item is its topic; the silent plan
+// reel is made only when the owner names it.
+// v9 (2026-09-27): a fifth place still pointed the old way. crm_client_plan answered with the
+// plan's items and their template_id -- LeelaPlanReel for one client's twelve items -- and not a
+// word of the route, so an agent reading "D5, template LeelaPlanReel" had every reason to render
+// it. The plan read now carries the route beside the items.
+// v10 (2026-09-27): her palette is kept once, for every next reel. v7 took the seller's end_card
+// for ONE reel; the next reel for the same client ended in the defaults again unless he said it
+// again. crm_story_reel {save_end_card: true} keeps the checked palette for this seller and this
+// client -- the brand kit a video tool keeps per brand -- and every later reel, her own press
+// included, ends in it. Field by field: the seller's word for this reel, then the kept palette,
+// then her profile's visual, then the default. It is checked before it is kept, as before a
+// start: a colour that is not #hex, or a call or button that cannot be read, is refused in words
+// and nothing is kept. An empty card with save takes the kept one off. It is NOT written into
+// her profile's story_reel block: that block is what turns her own presses on (the template
+// finds her seller by it), and keeping a palette must not start charging her for reels she
+// never set up.
+// v11 (2026-09-27): the seller sees and keeps it on the client's card, not only in words to the
+// agent. The card's story panel read the tool's answer and dropped the palette in it: the
+// seller could not see what the next reel ends on. The panel now shows the card field by
+// field and where each field comes from (kept, her profile, the default); a check is the
+// tool's read without start (free) and the verdict is the server's words -- the panel computes
+// no contrast of its own; "keep" is a press, and it is offered only for the very card the last
+// check passed, so an edit after the check has to be checked again. The panel sends nothing.
+// v12 (2026-09-27): a refusal for contrast names the colour that reads. v7 said "the call in
+// #d4b04c on #f5efe0 reads badly: 1,9:1, needs 4,5:1" and stopped there: the seller had to
+// guess a colour and check again, and the card had nothing to press. The answer now carries,
+// for each field that does not read, the least change of HER OWN colour that does: her colour
+// mixed toward white, or toward black, in SUGGEST_STEPS equal steps -- the first step that
+// reads, whichever way needs fewer steps (a tie goes to the extreme that reads better on that
+// background). The last step is pure white or pure black, and on any background one of the
+// two reads (EXTREME_MIN_CONTRAST_X10), so a shade always exists. It is a suggestion: the
+// card's "take" is a press that fills the fields and checks them again, and keeping stays its
+// own press. A colour that is not #hex gets no shade -- there is nothing of hers to shade --
+// and is named back as before.
+// v13 (2026-09-27): the shade is one option of three, as a contrast tool offers them. A seller
+// who refused a gold call wants to see it gold, and one who loves the gold wants the ground to
+// move instead. Beside the shade the answer names HER OWN colour that reads there -- one of the
+// colours already on her card, never an invented one, the nearest to the refused colour -- and
+// her BACKGROUND shaded until every line on the card reads. The ground is not always there: a
+// dark call and a light button cannot both read on one ground, and then nothing is offered for
+// it rather than a ground that fixes one line and breaks the other. The shade itself is finer:
+// 64 steps, at most 4 of 255 per channel, below what the eye tells apart on a phone; ten steps
+// could darken a gold a tenth of the way when a sixtieth read. Every option is taken by a press
+// and checked again.
+// v14 (2026-09-27): the shade keeps her hue. v12 and v13 mixed her colour with white or black
+// in sRGB: gold stayed gold but lost a third of its saturation, and a dark blue on a navy
+// ground turned lavender -- its hue moved 19.8 degrees (measured over a sweep of colours and
+// grounds). The shade now moves only the LIGHTNESS of her colour in OKLCH, the space a
+// contrast-based generator like Adobe Leonardo works in; her hue and chroma stay, chroma cut
+// back only as far as sRGB can show it. After rounding to 8 bits a colour with chroma of at
+// least 0.05 keeps its hue within 3 degrees (measured worst 2.5); below that chroma a colour is
+// near grey and its hue is noise, not hers. The last step is still pure white or pure black --
+// lightness 1 or 0 holds no chroma -- so a shade still always exists. The ground walks the same
+// path, and "the nearest of her colours" is measured in OKLab, by the difference the eye sees,
+// not by distance in RGB.
+// v15 (2026-09-27): the card says one reason at a time. Shot on a phone (390 px, real Chromium,
+// answers from the host's own functions), the refusal stood on the card twice, word for word:
+// the load's reason above and the check's verdict below, both about the very same card. The
+// load's reason is on screen while the editor is closed, or open with nothing checked yet; once
+// a check has spoken for the fields, the load's reason steps aside -- as its three options
+// already did (v13). VERSION had stayed 11 through v12-v14; it now says what this header says.
+// v16 (2026-09-27): the price stands above the button, on both screens. PRICE_ESTIMATE_TOKENS
+// was "named to the client BEFORE the press" -- a comment nothing checked. Shot on a phone, her
+// own page named it BELOW "make a reel": read top to bottom, the press came first. And the
+// seller's card named no price at all, though the seller's own press is paid from the seller's
+// balance (story_payer: not the client's press -- the one who pressed). Her page names the
+// price or that it is a gift above her button; the seller's card names its price above his.
+// Delivered live on 2026-09-26 (two reels for one client, forwarded by the owner). On
+// 2026-09-27 the voice provider answered HTTP 402 (no credit): the voice leg is BLOCKED by
+// money, not by code, and Kie has no voice cloning to fall back to.
+// phi^2 + 1/phi^2 = 3 | TRINITY
+
+module automation::crm_story_reel {
+
+    pub const KIND : str = "automation";
+    pub const ID : str = "crm-story-reel";
+    pub const REPO : str = "999-multibots-telegraf";
+    pub const VERSION : u8 = 16;
+
+    // ---- Who qualifies ------------------------------------------------------------------
+    // Both halves, nothing else. A profile only overrides the look, the call and who pays.
+    pub const FACE_REQUIRED : bool = true;  // crm_people.avatar_url (crm_client_face)
+    pub const VOICE_REQUIRED : bool = true;  // lead_voices (crm_voice_clone)
+    pub const VOICE_SOURCE : str = "own-voice-notes-in-owner-dm";  // never a URL argument
+    pub const CLONE_PER_SELLER : bool = true;  // another seller holds no voice of this client
+    pub const CLONE_MODEL : str = "minimax/voice-cloning";
+    pub const CLONE_COST_USD : str = "3";  // once per client, public model page 2026-09-26
+    pub const CLONE_MIN_SECONDS : u16 = 5;
+    pub const CLONE_GOOD_SECONDS : u16 = 15;
+    pub const CLONE_MAX_SECONDS : u16 = 180;
+
+    // ---- What is made -------------------------------------------------------------------
+    pub const SCENES_DEFAULT : u16 = 3;
+    pub const SCENES_MIN : u16 = 1;
+    pub const SCENES_MAX : u16 = 4;
+    pub const NEW_SETTING_EACH_SCENE : bool = true;  // the source photo's background never repeats
+    pub const PAUSE_SEC : u16 = 3;
+    pub const PAUSE_SEC_MIN : u16 = 1;
+    pub const PAUSE_SEC_MAX : u16 = 4;
+    pub const BREATH_MS : u16 = 250;  // between scenes
+    pub const REEL_MAX_SEC : u16 = 15;  // a story
+    pub const COMPOSITION : str = "StoryReel";
+    pub const ASPECT_RATIO : str = "9:16";
+    pub const TOPIC_MAX : u16 = 200;
+    pub const BOT_SPOKEN_AS : str = "Trinity";  // one word, no letters or digits after it
+
+    // ---- Who does each step, and what the caller is charged ---------------------------
+    pub const STILL_MODEL : str = "google/nano-banana-edit";  // Kie img2img
+    pub const VOICE_MODEL : str = "minimax/speech-02-turbo";  // the clone speaks here only
+    pub const VOICE_PROVIDER : str = "replicate";
+    pub const VOICE_ON_KIE : bool = false;  // Kie offers preset voices, no cloning
+    pub const LIPSYNC_MODEL : str = "kie/kling/ai-avatar-standard";  // the owner's pick
+    pub const TOKENS_PER_STILL : u16 = 8;
+    pub const TOKENS_PER_LINE : u16 = 12;
+    pub const TOKENS_PER_LIPSYNC_SEC : u16 = 16;
+    pub const TOKENS_PER_ASSEMBLY : u16 = 2;
+    pub const BILLED_SECONDS : u16 = 13;  // three lines of 2-4 s, rounded up per clip
+    pub const PRICE_ESTIMATE_TOKENS : u16 = 270;  // named to the client BEFORE the press
+    pub const REFUND_ON_PROVIDER_FAILURE : bool = true;
+
+    // ---- The job ------------------------------------------------------------------------
+    // A row, not a call: the scenes, then every still and clip the moment it exists. A
+    // redeploy in the middle leaves a row the sweep claims and continues from what is made.
+    pub const JOB_TABLE : str = "story_jobs";
+    pub const RUNNING_JOBS_PER_CLIENT : u16 = 1;
+    pub const JOB_ATTEMPTS : u16 = 3;
+    pub const BEAT_MS : u32 = 30000;
+    pub const DEAD_MS : u32 = 100000;  // silent this long: its process is gone
+    pub const SWEEP_MS : u32 = 120000;
+    pub const SWEEP_CLAIM_BATCH : u16 = 5;
+    pub const ABANDON_MINUTES : u16 = 120;
+    pub const STILL_WAIT_MS : u32 = 360000;
+    pub const PAID_WORK_REDONE_ON_RESUME : bool = false;
+    pub const PLAN_CARD_RETURNED_ON_FAILURE : bool = true;
+    // v2: a job is never left running. Dead again after its last attempt, or silent past
+    // ABANDON_MINUTES, it is failed and closed like any failure: the plan card goes back and
+    // whoever asked is told. Before, the sweep reclaimed a job that killed its process every
+    // time (each claim refreshed its clock), and an abandoned job told nobody.
+    pub const EXHAUSTED_JOB_CLOSED : bool = true;
+    pub const ABANDONED_JOB_CLOSED : bool = true;
+    // v2: "nothing was charged" is said only when nothing was made. Every still and clip is
+    // charged the moment it is made; a failure after them names them as paid for and kept.
+    pub const FAILURE_NAMES_PAID_PARTS : bool = true;
+    // v3: a still that is still drawing is paid ONCE. Its task id is kept on the row the
+    // moment the provider accepts it (before the wait), with what its charge took. A resume
+    // asks the provider about that task and never orders the still again while it can still
+    // come. Before, a redeploy during the wait took the only copy of the id, and a still
+    // slower than STILL_WAIT_MS was drawn and charged a second time; a job whose every still
+    // was still drawing was failed on the spot as "nothing was charged".
+    pub const STILL_TASK_KEPT_AT_ACCEPT : bool = true;
+    pub const STILL_TASK_FROM_MODEL : bool = false;  // only the job's row names a task
+    pub const STILL_POLL_MS : u32 = 15000;
+    pub const STILL_GIVE_UP_MS : u32 = 1200000;  // image_edit's own watch bound (LATE_WATCH_MS)
+    pub const LATE_REFUND_ONCE_PER_TASK : bool = true;
+    pub const LATE_REFUND_REF_PREFIX : str = "late-image:";  // token_ledger.ref, kind refund
+    pub const PENDING_STILL_KEEPS_JOB : bool = true;  // released for the sweep, not failed
+    pub const FAILED_JOB_RETURNS_PENDING_STILLS : bool = true;
+    // What a resume does with a still whose task is known.
+    pub const RESUME_USE : u8 = 0;  // the picture exists: take it, charge nothing
+    pub const RESUME_WAIT : u8 = 1;  // still drawing: wait, order nothing
+    pub const RESUME_REDRAW : u8 = 2;  // refused or given up: its charge back once, draw anew
+
+    // ---- The seller reaches the template (v3) ---------------------------------------------
+    // Asked for "a reel in her voice", the CRM agent read the health page's "voice
+    // (ElevenLabs) broken", told the owner to fix a key the client's voice never uses, asked
+    // her for a voice note while two of hers sat in the chat, and assembled a talking clip by
+    // hand. A talking reel in a client's voice IS this job, asked first without start; her
+    // voice is Replicate; the voice notes she already sent are tried before a new one is asked;
+    // and the voice's health is the last real call, since Replicate's account check answers
+    // 200 with no credit at all.
+    pub const SELLER_TOOL : str = "crm_story_reel";
+    pub const CLONE_TOOL : str = "crm_voice_clone";
+    pub const HAND_ASSEMBLY_IN_CHAT : bool = false;
+    pub const VOICE_NEEDS_ELEVENLABS : bool = false;
+    pub const SENT_VOICE_NOTES_TRIED_FIRST : bool = true;
+    pub const VOICE_HEALTH_FROM_REAL_CALLS : bool = true;
+
+    // ---- Her own voice notes, no clone (v4) ---------------------------------------------
+    pub const VOICE_NONE : u8 = 0;
+    pub const VOICE_CLONE : u8 = 1;  // new lines, spoken by her clone (Replicate MiniMax)
+    pub const VOICE_NOTES : u8 = 2;  // her own recorded words, lip-synced on Kie
+    pub const NOTES_NEED_REPLICATE : bool = false;
+    pub const NOTES_WORDS_ARE_HERS : bool = true;  // the audio is hers, uncut words, never a synthesis
+    pub const NOTES_FROM_SELLER_DM_ONLY : bool = true;  // read with the seller's own session
+    pub const NOTES_MIN_SEC : u16 = 5;  // less than this is not a story
+    pub const NOTES_MAX_SEC : u16 = 12;  // REEL_MAX_SEC minus the pause
+    pub const NOTES_CUT_WINDOW_MS : u32 = 1500;  // a pause this near the even cut wins
+    pub const NOTES_PART_MIN_MS : u32 = 1500;  // no scene shorter than this
+    // ---- Her clone refused by its provider (v5) -----------------------------------------
+    pub const CLONE_DOWN_FALLS_TO_NOTES : bool = true;  // the seller's reel, not the client's own
+    pub const CLONE_DOWN_SAME_RUN : bool = true;  // no wait for the sweep, no second job
+    pub const CLONE_DOWN_KEEPS_STILLS : bool = true;  // the stills already paid for are carried
+    pub const CLONE_DOWN_ONLY_ON_PROVIDER : bool = true;  // 401/402/403/429, balance, key; not a bad line
+    // ---- The day's generation cap, asked before spending (v6) ---------------------------
+    pub const CAP_ASKED_BEFORE_SPEND : bool = true;  // start and every resume count the slots first
+    pub const CAP_SLOT_PER_RENDER : u16 = 1;  // the assembly is counted, to be safe
+    pub const CAP_WAIT_KEEPS_ATTEMPTS : bool = true;  // waiting for the day is not a failed attempt
+    pub const CAP_WAIT_TOLD_ONCE : bool = true;  // the seller hears it once, not every sweep
+
+    // ---- Her visual at the end (v7) -----------------------------------------------------
+    pub const END_CARD_ARG : str = "end_card";  // crm_story_reel and story_reel
+    pub const END_CARD_KEPT_IN_JOB : bool = true;  // story_jobs.end_card: a resume renders the same card
+    pub const END_CARD_BUTTON_MAX : u16 = 60;
+    pub const END_CARD_DEFAULT_BG : str = "#000000";  // StoryReel.tsx takes its defaults from here
+    pub const END_CARD_DEFAULT_TITLE : str = "#FFD700";
+    pub const END_CARD_DEFAULT_TEXT : str = "#FFFFFF";
+    pub const END_CARD_DEFAULT_ACCENT : str = "#00FF88";
+    pub const FIELD_FROM_DEFAULT : u8 = 0;
+    pub const FIELD_FROM_PROFILE : u8 = 1;
+    pub const FIELD_FROM_SELLER : u8 = 2;
+    pub const FIELD_FROM_KEPT : u8 = 3;  // v10: the palette kept for this seller and client
+    // WCAG contrast, times ten. 4.5:1 is the rule for ordinary text: a 1080-wide reel on a phone
+    // is about 2.7 times smaller, so the 44 px button line reads as 16 px text. The call (66 px,
+    // title colour) and the button line (accent) are each held against the background; the
+    // divider in the text colour is not text.
+    pub const END_CARD_CONTRAST_MIN_X10 : u16 = 45;
+    pub const SELLER_PALETTE_UNREADABLE_REFUSED : bool = true;  // before anything is spent
+    pub const PROFILE_PALETTE_UNREADABLE_REFUSED : bool = false;  // reported in the answer only
+    pub const SELLER_BAD_COLOUR_REFUSED : bool = true;  // "black" is named back, not dropped in silence
+    pub const PROFILE_BAD_COLOUR_DROPPED : bool = true;  // her profile keeps working; the default fills in
+
+    // ---- Her palette, kept (v10) ---------------------------------------------------------
+    pub const END_CARD_SAVE_ARG : str = "save_end_card";  // crm_story_reel
+    pub const KEPT_PER_SELLER_AND_CLIENT : bool = true;  // one seller's kit is never another's
+    pub const KEPT_CHECKED_BEFORE_KEEPING : bool = true;  // #hex and contrast, as before a start
+    pub const KEPT_EMPTY_CARD_CLEARS : bool = true;
+    pub const KEPT_FOR_HER_OWN_PRESS : bool = true;  // her press ends in the kit her seller kept
+    pub const KEPT_IN_PROFILE_STORY_BLOCK : bool = false;  // that block turns her own paid presses on
+    pub const KEEP_NONE : u8 = 0;
+    pub const KEEP_SAVE : u8 = 1;
+    pub const KEEP_CLEAR : u8 = 2;
+    pub const KEEP_REFUSED : u8 = 3;
+
+    // ---- Her palette on the client's card (v11) -------------------------------------------
+    pub const PANEL_SHOWS_END_CARD : bool = true;  // field by field, with where it comes from
+    pub const PANEL_CHECK_IS_READ : bool = true;  // crm_story_reel without start: nothing spent
+    pub const PANEL_VERDICT_FROM_SERVER : bool = true;  // no contrast computed in the player
+    pub const PANEL_KEEP_IS_PRESS : bool = true;
+
+    // ---- The colour that reads, named on a refusal (v12) ---------------------------------
+    pub const SUGGEST_FIX_ARG : str = "end_card_fix";  // crm_story_reel's answer, field by field
+    // v13: 64 steps -- at most 4 of 255 per channel, below what the eye tells apart on a phone.
+    pub const SUGGEST_STEPS : u16 = 64;  // her colour to white or to black in equal steps
+    pub const SUGGEST_NEVER : u16 = 65;  // this way never reads
+    // Over every background, the better of white and black contrasts at least sqrt(21) = 4.58:1
+    // -- times ten, rounded down, 45 -- so the last step always reads.
+    pub const EXTREME_MIN_CONTRAST_X10 : u16 = 45;
+    pub const WAY_LIGHT : u8 = 1;
+    pub const WAY_DARK : u8 = 2;
+    pub const SUGGEST_KEEPS_HER_COLOUR : bool = true;  // a shade of hers, not a stock white
+    pub const SUGGEST_FOR_PROFILE_PALETTE : bool = true;  // named with its fix, still never refused
+    pub const SUGGEST_FOR_BAD_HEX : bool = false;  // "black" is named back: no colour to shade
+    pub const SUGGEST_TAKEN_BY_PRESS : bool = true;  // the card fills the fields and checks again
+    pub const SUGGEST_KEPT_BY_ITSELF : bool = false;  // taking is not keeping
+
+    // ---- Her own colour and her ground, beside the shade (v13) ---------------------------
+    pub const SUGGEST_PALETTE_ARG : str = "end_card_fix_palette";  // her own card colour that reads
+    pub const SUGGEST_BG_ARG : str = "end_card_fix_bg";  // her background, shaded until all reads
+    pub const PALETTE_FROM_HER_CARD : bool = true;  // the card's own colours -- never an invented one
+    pub const PALETTE_NEAREST_FIRST : bool = true;  // of hers that read, the nearest to the one refused
+    pub const BG_FIX_ALWAYS_EXISTS : bool = false;  // a dark call and a light button share no ground
+    pub const OPTIONS_TAKEN_BY_PRESS : bool = true;  // each option: a press, then a check again
+
+    // ---- The shade keeps her hue (v14) ------------------------------------------------------
+    pub const SHADE_SPACE : str = "oklch";  // only lightness moves; hue and chroma are hers
+    pub const SHADE_CHROMA_CUT_TO_SRGB : bool = true;  // as far as a screen can show it, no further
+    pub const HUE_DRIFT_MAX_DEG : u16 = 3;  // after rounding to 8 bits; measured worst 2.5
+    pub const HUE_CHECKED_MIN_CHROMA_X1000 : u16 = 50;  // below it a colour is near grey: hue is noise
+    pub const SRGB_MIX_DRIFT_DEG : u16 = 20;  // what the v13 mix did to a dark blue (19.8, measured)
+    pub const NEAREST_BY : str = "oklab";  // her nearest colour by the difference the eye sees
+
+    // ---- One reason on the card at a time (v15) ---------------------------------------------
+    pub const PANEL_ONE_REASON_AT_A_TIME : bool = true;  // the load's words or the check's, never both
+
+    // ---- The price above the button, on both screens (v16) ----------------------------------
+    pub const PRICE_BEFORE_PRESS : bool = true;  // above the button, read before it -- not below
+    pub const SELLER_SEES_PRICE : bool = true;  // the seller's press is paid by the seller: named too
+
+    // ---- Every reel for a client is a story reel (v8) -----------------------------------
+    pub const OLD_PLAN_REEL : str = "LeelaPlanReel";  // silent, subtitled, made from the plan's canon
+    pub const ROUTE_STORY : u8 = 1;
+    pub const ROUTE_OLD_PLAN_REEL : u8 = 2;
+    pub const REEL_TOOL_IN_CLIENT_BRIEF : bool = true;  // the brief names SELLER_TOOL above the package
+    pub const REEL_TOOL_IN_QUEEN_BLOCK : bool = true;  // her tasks name SELLER_TOOL, not the old template
+    pub const REEL_TOOL_IN_PLAN_HINT : bool = true;  // leela_plan's hint for a client reel
+    pub const REEL_TOOL_IN_PLAN_READ : bool = true;  // crm_client_plan answers with the route (v9)
+    pub const PLAN_ITEM_IS_TOPIC : bool = true;  // "D5, plan 72" is the topic of a story reel
+    pub const REELS_STAY_STORY_AFTER_GIFTS : bool = true;  // after both gifts: paid story reels, not the package's
+
+    // ---- Who asks, who pays -------------------------------------------------------------
+    pub const START_PARAM : str = "reel";  // t.me/<bot>?start=reel, the client's own press
+    pub const PAGE_ROUTE : str = "story";  // t.me/<bot>?start=app_story, "my reels"
+    pub const SELLER_SCRIPT_ACCEPTED : bool = true;  // scenes/style/cta made exactly as given
+
+    // ---- Where the finished reel goes ---------------------------------------------------
+    pub const DELIVER_DM : str = "dm";  // a gift to the client herself
+    pub const DELIVER_NONE : str = "none";  // to the seller only, to forward by hand
+    pub const SENT_WITHOUT_PRESS : bool = false;
+    pub const CLIENT_PRESS_SENDS_TO_GROUP : bool = false;
+    pub const GROUP_MUST_BE_READ_BY_CRM : bool = true;  // a typo is not "her group"
+    pub const PRESSABLE_CARDS_PER_PERSON : u16 = 1;
+    pub const CARD_DISPLACES_UNANSWERED : bool = false;  // it waits; the sweep offers it later
+    pub const CARD_TURN_PREFIX : str = "story:";
+    pub const CARD_TEXT_MAX : u16 = 1000;
+    pub const CAPTION_MAX : u16 = 900;
+    pub const CALLBACK_BYTES_MAX : u16 = 64;  // Telegram's callback_data limit
+    pub const WAITING_CARD_WINDOW_HOURS : u16 = 24;
+    pub const DM_SEND_RECORDED_AS_GIFT : bool = true;
+    pub const AUTOPILOT_SENDS_CARD : bool = false;  // not wired: the budget is taken in the bot
+    pub const SERVICE_RENDER_FEED_PUBLIC : bool = false;  // waits in "awaiting approval"
+
+    // ---- What was seen live -------------------------------------------------------------
+    pub const LIVE_RUN_STATUS : str = "delivered-2026-09-26";
+    pub const VOICE_LEG_STATUS : str = "clone-402-falls-to-notes-on-kie-2026-09-27";
+    pub const CAP_LEG_STATUS : str = "lipsync-met-daily-cap-attempts-burned-2026-09-27";
+
+    struct Job {
+        has_face: bool,
+        has_voice: bool,
+        asked_by_client: bool,
+        vip_gift: bool,
+    }
+
+    // A client with both halves qualifies; either missing refuses before anything is spent.
+    fn qualifies(j: Job) -> bool {
+        return j.has_face && j.has_voice;
+    }
+
+    // Who pays: the seller who asked; the client who pressed, unless her profile makes the
+    // reels the seller's gift.
+    fn seller_pays(j: Job) -> bool {
+        return !j.asked_by_client || j.vip_gift;
+    }
+
+    // The estimate named before the press.
+    fn price_estimate(scenes: u16, billed_seconds: u16) -> u16 {
+        return scenes * TOKENS_PER_STILL + scenes * TOKENS_PER_LINE + billed_seconds * TOKENS_PER_LIPSYNC_SEC + TOKENS_PER_ASSEMBLY;
+    }
+
+    // A script is 1..4 scenes; anything else is refused before anything is spent.
+    fn scenes_ok(n: u16) -> bool {
+        return n >= SCENES_MIN && n <= SCENES_MAX;
+    }
+
+    // The pause the template renders, whatever was asked.
+    fn pause_of(asked: u16) -> u16 {
+        if asked < PAUSE_SEC_MIN {
+            return PAUSE_SEC_MIN;
+        }
+        if asked > PAUSE_SEC_MAX {
+            return PAUSE_SEC_MAX;
+        }
+        return asked;
+    }
+
+    // Whether a running job whose row has been silent `silent_ms` is claimed by the sweep.
+    fn sweep_claims(silent_ms: u32) -> bool {
+        return silent_ms > DEAD_MS;
+    }
+
+    // Whether the sweep gives a running job up instead of claiming it again.
+    fn sweep_gives_up(attempts: u16, silent_ms: u32) -> bool {
+        return attempts >= JOB_ATTEMPTS && silent_ms > DEAD_MS;
+    }
+
+    // Whether a failure may say "nothing was charged".
+    fn nothing_charged_may_be_said(stills_made: u16, clips_made: u16) -> bool {
+        return stills_made == 0 && clips_made == 0;
+    }
+
+    // What a resume does with a still whose provider task is known.
+    fn still_resume(ready: bool, refused: bool, age_ms: u32) -> u8 {
+        if ready {
+            return RESUME_USE;
+        }
+        if refused {
+            return RESUME_REDRAW;
+        }
+        if age_ms >= STILL_GIVE_UP_MS {
+            return RESUME_REDRAW;
+        }
+        return RESUME_WAIT;
+    }
+
+    // Which voice a reel speaks: her clone when she has one and its provider answers; otherwise,
+    // for a reel the seller asked for, her own voice notes. A client pressing for herself speaks
+    // her clone or nothing: her notes are read only for the seller.
+    fn voice_mode(has_clone: bool, clone_down: bool, seller_asked: bool) -> u8 {
+        if has_clone && !clone_down {
+            return VOICE_CLONE;
+        }
+        if seller_asked {
+            return VOICE_NOTES;
+        }
+        if has_clone {
+            return VOICE_CLONE;
+        }
+        return VOICE_NONE;
+    }
+
+    // Generations a reel still needs: the missing stills, a clone's line per missing clip, the
+    // missing lip-syncs and the assembly. Her own notes are cut on our shelf and cost no slot.
+    fn slots_needed(scenes: u16, stills_have: u16, clips_have: u16, clone: bool) -> u16 {
+        const stills = scenes - stills_have;
+        const clips = scenes - clips_have;
+        if clone {
+            return stills + clips + clips + CAP_SLOT_PER_RENDER;
+        }
+        return stills + clips + CAP_SLOT_PER_RENDER;
+    }
+
+    // Whether the day's generations cover what the reel still needs.
+    fn day_covers(left: u16, needed: u16) -> bool {
+        return left >= needed;
+    }
+
+    // Where one cut falls: on a pause near the even cut, or on the even cut itself.
+    fn cut_at(even_ms: u32, pause_ms: u32) -> u32 {
+        if pause_ms >= even_ms && pause_ms - even_ms <= NOTES_CUT_WINDOW_MS {
+            return pause_ms;
+        }
+        if pause_ms < even_ms && even_ms - pause_ms <= NOTES_CUT_WINDOW_MS {
+            return pause_ms;
+        }
+        return even_ms;
+    }
+
+    // The estimate of a reel in her own voice: no clone, no synthesis, only stills, the
+    // lip-sync of her seconds, and the cut.
+    fn price_estimate_notes(scenes: u16, seconds: u16) -> u16 {
+        return scenes * TOKENS_PER_STILL + seconds * TOKENS_PER_LIPSYNC_SEC + TOKENS_PER_ASSEMBLY;
+    }
+
+    // Whether a job whose last call made nothing new is released for the sweep instead of
+    // failed: anything made, or any still still drawing, keeps it.
+    fn job_kept(stills_made: u16, clips_made: u16, stills_drawing: u16) -> bool {
+        return stills_made > 0 || clips_made > 0 || stills_drawing > 0;
+    }
+
+    // Where one end-card colour comes from: the seller's word for this reel, else the palette
+    // kept for her (v10), else her profile, else the default.
+    fn end_card_field(seller_gave: bool, kept_has: bool, profile_has: bool) -> u8 {
+        if seller_gave {
+            return FIELD_FROM_SELLER;
+        }
+        if kept_has {
+            return FIELD_FROM_KEPT;
+        }
+        if profile_has {
+            return FIELD_FROM_PROFILE;
+        }
+        return FIELD_FROM_DEFAULT;
+    }
+
+    // Whether a #hex colour has a length CSS reads: #rgb, #rgba, #rrggbb, #rrggbbaa.
+    fn hex_digits_ok(n: u8) -> bool {
+        return n == 3 || n == 4 || n == 6 || n == 8;
+    }
+
+    // Whether text in one colour reads on a background, given their WCAG contrast times ten.
+    fn end_card_readable(contrast_x10: u16) -> bool {
+        return contrast_x10 >= END_CARD_CONTRAST_MIN_X10;
+    }
+
+    // Whether a reel is refused before anything is spent for its end card: only the seller's own
+    // palette, and only when the call or the button cannot be read.
+    fn end_card_refused(seller_gave_card: bool, readable: bool) -> bool {
+        if readable {
+            return false;
+        }
+        if seller_gave_card {
+            return SELLER_PALETTE_UNREADABLE_REFUSED;
+        }
+        return PROFILE_PALETTE_UNREADABLE_REFUSED;
+    }
+
+    // What a call does to the kept palette: nothing unless asked; asked with no card, it clears;
+    // asked with a card, it keeps it only when the card passed the checks a start makes.
+    fn keep_action(save_asked: bool, card_given: bool, card_ok: bool) -> u8 {
+        if !save_asked {
+            return KEEP_NONE;
+        }
+        if !card_given {
+            return KEEP_CLEAR;
+        }
+        if card_ok {
+            return KEEP_SAVE;
+        }
+        return KEEP_REFUSED;
+    }
+
+    // Whether the panel offers "keep": only for the card the last check passed, unedited since.
+    fn panel_keep_offered(checked: bool, edited_since_check: bool, verdict_clean: bool) -> bool {
+        return checked && !edited_since_check && verdict_clean;
+    }
+
+    // Which way her colour is shaded: the way that reads in fewer steps (SUGGEST_NEVER loses to
+    // any step); on a tie, toward the extreme that reads better on this background.
+    fn shade_way(light_step: u16, dark_step: u16, light_reads_better: bool) -> u8 {
+        if light_step < dark_step {
+            return WAY_LIGHT;
+        }
+        if dark_step < light_step {
+            return WAY_DARK;
+        }
+        if light_reads_better {
+            return WAY_LIGHT;
+        }
+        return WAY_DARK;
+    }
+
+    // Whether a shade is named for a field: only for a #hex colour that does not read.
+    fn suggest_offered(colour_ok: bool, readable: bool) -> bool {
+        if !colour_ok {
+            return SUGGEST_FOR_BAD_HEX;
+        }
+        return !readable;
+    }
+
+    // Whether her own colour is offered for a field: one of her card's colours reads there, and
+    // it is not the shade already named.
+    fn palette_offered(reads: bool, same_as_shade: bool) -> bool {
+        return reads && !same_as_shade;
+    }
+
+    // Whether her ground is offered: the card does not read, and some shade of her background
+    // makes every line on it read at once.
+    fn bg_offered(unreadable: bool, all_read_at_some_step: bool) -> bool {
+        return unreadable && all_read_at_some_step;
+    }
+
+    // Whether a colour's hue is hers to keep: near grey, the hue is rounding noise.
+    fn hue_checked(chroma_x1000: u16) -> bool {
+        return chroma_x1000 >= HUE_CHECKED_MIN_CHROMA_X1000;
+    }
+
+    // Whether a shade kept her hue: it moved no more than rounding to 8 bits moves it.
+    fn hue_kept(drift_deg: u16) -> bool {
+        return drift_deg <= HUE_DRIFT_MAX_DEG;
+    }
+
+    // Whether the card offers "take": only beside the verdict on the card still on screen.
+    fn panel_take_offered(checked: bool, edited_since_check: bool, has_fix: bool) -> bool {
+        return checked && !edited_since_check && has_fix;
+    }
+
+    // Whether the card shows the load's reason: until a check has spoken for the fields.
+    fn panel_why_shown(editor_open: bool, checked_since_open: bool) -> bool {
+        return !editor_open || !checked_since_open;
+    }
+
+    // Which reel is made for a CRM client: the story reel, unless the owner named the old one.
+    fn reel_route(owner_named_old_template: bool) -> u8 {
+        if owner_named_old_template {
+            return ROUTE_OLD_PLAN_REEL;
+        }
+        return ROUTE_STORY;
+    }
+
+    // Whether the reel's card may be shown now: only when nothing else waits for the owner.
+    fn card_may_show(pending_for_owner: u16) -> bool {
+        return pending_for_owner == 0;
+    }
+
+    // Whether a group is ever the destination: never for a client pressing for herself.
+    fn may_go_to_group(asked_by_client: bool, group_bound: bool) -> bool {
+        return !asked_by_client && group_bound;
+    }
+
+    // Whether the reel leaves for a client chat: the owner's press, and nothing else.
+    fn leaves_for_client(owner_pressed: bool) -> bool {
+        return owner_pressed && !SENT_WITHOUT_PRESS;
+    }
+
+    test "a client qualifies with a face and a voice, and with nothing less" {
+        assert(FACE_REQUIRED);
+        assert(VOICE_REQUIRED);
+        assert(qualifies(Job { has_face: true, has_voice: true, asked_by_client: false, vip_gift: false }));
+        assert(!qualifies(Job { has_face: true, has_voice: false, asked_by_client: false, vip_gift: false }));
+        assert(!qualifies(Job { has_face: false, has_voice: true, asked_by_client: false, vip_gift: false }));
+    }
+
+    test "the voice is her own, cloned once per seller, and only Replicate can speak it" {
+        assert(VOICE_SOURCE == "own-voice-notes-in-owner-dm");
+        assert(CLONE_PER_SELLER);
+        assert(CLONE_MIN_SECONDS < CLONE_GOOD_SECONDS);
+        assert(CLONE_GOOD_SECONDS < CLONE_MAX_SECONDS);
+        assert(VOICE_PROVIDER == "replicate");
+        assert(!VOICE_ON_KIE);
+    }
+
+    test "the seller pays for what the seller asked; the client pays unless it is a gift" {
+        assert(seller_pays(Job { has_face: true, has_voice: true, asked_by_client: false, vip_gift: false }));
+        assert(!seller_pays(Job { has_face: true, has_voice: true, asked_by_client: true, vip_gift: false }));
+        assert(seller_pays(Job { has_face: true, has_voice: true, asked_by_client: true, vip_gift: true }));
+    }
+
+    test "the estimate is three stills, three lines, thirteen seconds of lip-sync and one cut" {
+        assert(price_estimate(SCENES_DEFAULT, BILLED_SECONDS) == PRICE_ESTIMATE_TOKENS);
+        assert(price_estimate(3, 13) == 270);
+        assert(price_estimate(1, 4) == 86);
+        assert(REFUND_ON_PROVIDER_FAILURE);
+    }
+
+    test "a script of one to four scenes is made as given; five is refused" {
+        assert(SELLER_SCRIPT_ACCEPTED);
+        assert(scenes_ok(SCENES_DEFAULT));
+        assert(scenes_ok(1));
+        assert(scenes_ok(4));
+        assert(!scenes_ok(0));
+        assert(!scenes_ok(5));
+        assert(NEW_SETTING_EACH_SCENE);
+    }
+
+    test "the pause stays between one and four seconds, three by default" {
+        assert(pause_of(PAUSE_SEC) == 3);
+        assert(pause_of(0) == 1);
+        assert(pause_of(9) == 4);
+        assert(REEL_MAX_SEC == 15);
+    }
+
+    test "a job whose process died is claimed by the sweep and continued, not redone" {
+        assert(!sweep_claims(BEAT_MS));
+        assert(!sweep_claims(DEAD_MS));
+        assert(sweep_claims(DEAD_MS + 1));
+        assert(BEAT_MS < DEAD_MS);
+        assert(DEAD_MS < SWEEP_MS);
+        assert(!PAID_WORK_REDONE_ON_RESUME);
+        assert(RUNNING_JOBS_PER_CLIENT == 1);
+        assert(JOB_ATTEMPTS == 3);
+    }
+
+    test "a job that keeps dying is given up after its last attempt and closed like any failure" {
+        assert(!sweep_gives_up(JOB_ATTEMPTS - 1, DEAD_MS + 1));
+        assert(sweep_gives_up(JOB_ATTEMPTS, DEAD_MS + 1));
+        assert(!sweep_gives_up(JOB_ATTEMPTS, DEAD_MS));
+        assert(EXHAUSTED_JOB_CLOSED);
+        assert(ABANDONED_JOB_CLOSED);
+        assert(PLAN_CARD_RETURNED_ON_FAILURE);
+    }
+
+    test "a failure says nothing was charged only when nothing was made" {
+        assert(nothing_charged_may_be_said(0, 0));
+        assert(!nothing_charged_may_be_said(2, 0));
+        assert(!nothing_charged_may_be_said(0, 1));
+        assert(FAILURE_NAMES_PAID_PARTS);
+    }
+
+    test "a still that is still drawing is paid once: a resume waits for it and never orders it again" {
+        assert(STILL_TASK_KEPT_AT_ACCEPT);
+        assert(!STILL_TASK_FROM_MODEL);
+        assert(still_resume(true, false, 0) == RESUME_USE);
+        assert(still_resume(true, false, STILL_GIVE_UP_MS) == RESUME_USE);
+        assert(still_resume(false, false, 0) == RESUME_WAIT);
+        assert(still_resume(false, false, STILL_GIVE_UP_MS - 1) == RESUME_WAIT);
+        assert(still_resume(false, false, STILL_GIVE_UP_MS) == RESUME_REDRAW);
+        assert(still_resume(false, true, 0) == RESUME_REDRAW);
+        assert(STILL_POLL_MS < STILL_WAIT_MS);
+        assert(STILL_WAIT_MS < STILL_GIVE_UP_MS);
+        assert(!PAID_WORK_REDONE_ON_RESUME);
+    }
+
+    test "a charge for a still that never came is given back once, whoever notices" {
+        assert(LATE_REFUND_ONCE_PER_TASK);
+        assert(LATE_REFUND_REF_PREFIX == "late-image:");
+        assert(FAILED_JOB_RETURNS_PENDING_STILLS);
+        assert(REFUND_ON_PROVIDER_FAILURE);
+    }
+
+    test "a job waiting only for a still is released for the sweep, not failed" {
+        assert(PENDING_STILL_KEEPS_JOB);
+        assert(job_kept(0, 0, 1));
+        assert(job_kept(1, 0, 0));
+        assert(job_kept(0, 1, 0));
+        assert(!job_kept(0, 0, 0));
+    }
+
+    test "the seller reaches the template, and a broken ElevenLabs key never stops a client's voice" {
+        assert(SELLER_TOOL == "crm_story_reel");
+        assert(CLONE_TOOL == "crm_voice_clone");
+        assert(!HAND_ASSEMBLY_IN_CHAT);
+        assert(VOICE_PROVIDER == "replicate");
+        assert(!VOICE_NEEDS_ELEVENLABS);
+        assert(SENT_VOICE_NOTES_TRIED_FIRST);
+        assert(VOICE_HEALTH_FROM_REAL_CALLS);
+    }
+
+    test "with no clone, a seller's reel speaks her own voice notes on Kie, and nothing else does" {
+        assert(voice_mode(true, false, true) == VOICE_CLONE);
+        assert(voice_mode(true, false, false) == VOICE_CLONE);
+        assert(voice_mode(false, false, true) == VOICE_NOTES);
+        assert(voice_mode(false, false, false) == VOICE_NONE);
+        assert(!NOTES_NEED_REPLICATE);
+        assert(NOTES_WORDS_ARE_HERS);
+        assert(NOTES_FROM_SELLER_DM_ONLY);
+        assert(NOTES_MAX_SEC + PAUSE_SEC == REEL_MAX_SEC);
+        assert(NOTES_MIN_SEC <= NOTES_MAX_SEC);
+    }
+
+    test "a seller's reel whose clone its provider refuses speaks her notes in the same run, on the stills it paid for" {
+        assert(voice_mode(true, true, true) == VOICE_NOTES);
+        assert(voice_mode(true, true, false) == VOICE_CLONE);
+        assert(voice_mode(false, true, true) == VOICE_NOTES);
+        assert(voice_mode(false, true, false) == VOICE_NONE);
+        assert(CLONE_DOWN_FALLS_TO_NOTES);
+        assert(CLONE_DOWN_SAME_RUN);
+        assert(CLONE_DOWN_KEEPS_STILLS);
+        assert(CLONE_DOWN_ONLY_ON_PROVIDER);
+    }
+
+    test "the day's generations are counted before anything is spent, and a waiting job keeps its attempts" {
+        assert(slots_needed(3, 0, 0, true) == 10);
+        assert(slots_needed(3, 0, 0, false) == 7);
+        assert(slots_needed(3, 3, 0, false) == 4);
+        assert(slots_needed(3, 3, 2, true) == 3);
+        assert(slots_needed(3, 3, 3, true) == CAP_SLOT_PER_RENDER);
+        assert(!day_covers(9, 10));
+        assert(day_covers(10, 10));
+        assert(CAP_ASKED_BEFORE_SPEND);
+        assert(CAP_WAIT_KEEPS_ATTEMPTS);
+        assert(CAP_WAIT_TOLD_ONCE);
+    }
+
+    test "her notes are cut at a pause near the even cut, or at the even cut" {
+        assert(cut_at(4000, 4600) == 4600);
+        assert(cut_at(4000, 3000) == 3000);
+        assert(cut_at(4000, 4000 + NOTES_CUT_WINDOW_MS) == 4000 + NOTES_CUT_WINDOW_MS);
+        assert(cut_at(4000, 4000 + NOTES_CUT_WINDOW_MS + 1) == 4000);
+        assert(cut_at(4000, 1000) == 4000);
+        assert(NOTES_PART_MIN_MS <= NOTES_CUT_WINDOW_MS);
+    }
+
+    test "a reel in her own voice costs its stills, her seconds of lip-sync and the cut" {
+        assert(price_estimate_notes(3, 12) == 218);
+        assert(price_estimate_notes(3, NOTES_MAX_SEC) < PRICE_ESTIMATE_TOKENS);
+        assert(price_estimate_notes(1, 5) == 90);
+    }
+
+    test "the card never displaces one the owner has not answered" {
+        assert(PRESSABLE_CARDS_PER_PERSON == 1);
+        assert(!CARD_DISPLACES_UNANSWERED);
+        assert(card_may_show(0));
+        assert(!card_may_show(1));
+        assert(CALLBACK_BYTES_MAX == 64);
+    }
+
+    test "nothing reaches a client chat without the owner's press, and a client press never reaches a group" {
+        assert(!SENT_WITHOUT_PRESS);
+        assert(leaves_for_client(true));
+        assert(!leaves_for_client(false));
+        assert(!CLIENT_PRESS_SENDS_TO_GROUP);
+        assert(!may_go_to_group(true, true));
+        assert(may_go_to_group(false, true));
+        assert(!may_go_to_group(false, false));
+        assert(GROUP_MUST_BE_READ_BY_CRM);
+        assert(DM_SEND_RECORDED_AS_GIFT);
+    }
+
+    test "her visual at the end: the seller's word, then her profile, then the default, kept in the job" {
+        assert(END_CARD_ARG == "end_card");
+        assert(END_CARD_KEPT_IN_JOB);
+        assert(end_card_field(true, true, true) == FIELD_FROM_SELLER);
+        assert(end_card_field(true, false, false) == FIELD_FROM_SELLER);
+        assert(end_card_field(false, false, true) == FIELD_FROM_PROFILE);
+        assert(end_card_field(false, false, false) == FIELD_FROM_DEFAULT);
+        assert(END_CARD_BUTTON_MAX == 60);
+        assert(END_CARD_DEFAULT_BG == "#000000");
+        assert(END_CARD_DEFAULT_TITLE == "#FFD700");
+        assert(END_CARD_DEFAULT_TEXT == "#FFFFFF");
+        assert(END_CARD_DEFAULT_ACCENT == "#00FF88");
+    }
+
+    test "a colour is #hex that CSS reads, and an unreadable palette of the seller's is refused before spending" {
+        assert(hex_digits_ok(3));
+        assert(hex_digits_ok(4));
+        assert(hex_digits_ok(6));
+        assert(hex_digits_ok(8));
+        assert(!hex_digits_ok(5));
+        assert(!hex_digits_ok(7));
+        assert(!hex_digits_ok(9));
+        assert(END_CARD_CONTRAST_MIN_X10 == 45);
+        assert(end_card_readable(45));
+        assert(!end_card_readable(44));
+        assert(end_card_readable(210));
+        assert(end_card_refused(true, false));
+        assert(!end_card_refused(true, true));
+        assert(!end_card_refused(false, false));
+        assert(!end_card_refused(false, true));
+        assert(SELLER_BAD_COLOUR_REFUSED);
+        assert(PROFILE_BAD_COLOUR_DROPPED);
+    }
+
+    test "her palette is kept once for every next reel, checked first, and never turns her presses on" {
+        assert(END_CARD_SAVE_ARG == "save_end_card");
+        assert(end_card_field(false, true, true) == FIELD_FROM_KEPT);  // kept over her profile
+        assert(end_card_field(false, true, false) == FIELD_FROM_KEPT);
+        assert(end_card_field(true, true, false) == FIELD_FROM_SELLER);  // this reel's word over the kit
+        assert(KEPT_PER_SELLER_AND_CLIENT);
+        assert(KEPT_CHECKED_BEFORE_KEEPING);
+        assert(keep_action(false, true, true) == KEEP_NONE);
+        assert(keep_action(true, true, true) == KEEP_SAVE);
+        assert(keep_action(true, true, false) == KEEP_REFUSED);
+        assert(keep_action(true, false, false) == KEEP_CLEAR);
+        assert(KEPT_EMPTY_CARD_CLEARS);
+        assert(KEPT_FOR_HER_OWN_PRESS);
+        assert(!KEPT_IN_PROFILE_STORY_BLOCK);
+    }
+
+    test "the card shows her palette and keeps it by a press, for the card the last check passed" {
+        assert(PANEL_SHOWS_END_CARD);
+        assert(PANEL_CHECK_IS_READ);
+        assert(PANEL_VERDICT_FROM_SERVER);
+        assert(PANEL_KEEP_IS_PRESS);
+        assert(panel_keep_offered(true, false, true));
+        assert(!panel_keep_offered(false, false, true));  // never checked
+        assert(!panel_keep_offered(true, true, true));  // edited after the check
+        assert(!panel_keep_offered(true, false, false));  // the server named a problem
+    }
+
+    test "a refusal for contrast names the least shade of her own colour that reads" {
+        assert(SUGGEST_FIX_ARG == "end_card_fix");
+        assert(SUGGEST_STEPS == 64);
+        assert(SUGGEST_NEVER == SUGGEST_STEPS + 1);
+        assert(end_card_readable(EXTREME_MIN_CONTRAST_X10));  // the last step always reads
+        assert(shade_way(3, 7, false) == WAY_LIGHT);  // fewer steps wins
+        assert(shade_way(7, 3, true) == WAY_DARK);
+        assert(shade_way(SUGGEST_NEVER, 10, true) == WAY_DARK);  // a way that never reads loses
+        assert(shade_way(4, SUGGEST_NEVER, false) == WAY_LIGHT);
+        assert(shade_way(5, 5, true) == WAY_LIGHT);  // a tie: the extreme that reads better
+        assert(shade_way(5, 5, false) == WAY_DARK);
+        assert(suggest_offered(true, false));
+        assert(!suggest_offered(true, true));
+        assert(!suggest_offered(false, false));  // not #hex: named back, nothing to shade
+        assert(SUGGEST_KEEPS_HER_COLOUR);
+        assert(SUGGEST_FOR_PROFILE_PALETTE);
+        assert(!end_card_refused(false, false));  // her profile's shade is named, the reel still goes
+    }
+
+    test "the card takes the named shade by a press and checks it again before keeping" {
+        assert(SUGGEST_TAKEN_BY_PRESS);
+        assert(!SUGGEST_KEPT_BY_ITSELF);
+        assert(panel_take_offered(true, false, true));
+        assert(!panel_take_offered(false, false, true));  // never checked
+        assert(!panel_take_offered(true, true, true));  // the fix was for the card before the edit
+        assert(!panel_take_offered(true, false, false));  // nothing to take
+        assert(!panel_keep_offered(true, true, true));  // taking edits the fields: keep waits
+    }
+
+    test "her own colour and her ground are offered beside the shade, each by a press" {
+        assert(SUGGEST_PALETTE_ARG == "end_card_fix_palette");
+        assert(SUGGEST_BG_ARG == "end_card_fix_bg");
+        assert(palette_offered(true, false));
+        assert(!palette_offered(false, false));  // none of her colours reads there
+        assert(!palette_offered(true, true));  // the shade already is that colour: named once
+        assert(bg_offered(true, true));
+        assert(!bg_offered(true, false));  // no ground makes every line read: nothing offered
+        assert(!bg_offered(false, true));  // it reads already
+        assert(!BG_FIX_ALWAYS_EXISTS);
+        assert(PALETTE_FROM_HER_CARD);
+        assert(PALETTE_NEAREST_FIRST);
+        assert(OPTIONS_TAKEN_BY_PRESS);
+        assert(panel_take_offered(true, false, true));  // one rule for every option
+        assert(SUGGEST_NEVER == SUGGEST_STEPS + 1);
+    }
+
+    test "the shade moves only her lightness: her hue stays within rounding" {
+        assert(SHADE_SPACE == "oklch");
+        assert(SHADE_CHROMA_CUT_TO_SRGB);
+        assert(NEAREST_BY == "oklab");
+        assert(hue_kept(0));
+        assert(hue_kept(HUE_DRIFT_MAX_DEG));
+        assert(!hue_kept(HUE_DRIFT_MAX_DEG + 1));
+        assert(!hue_kept(SRGB_MIX_DRIFT_DEG));  // the v13 mix breaks the law it replaces
+        assert(hue_checked(HUE_CHECKED_MIN_CHROMA_X1000));
+        assert(!hue_checked(HUE_CHECKED_MIN_CHROMA_X1000 - 1));  // near grey: not judged
+        assert(end_card_readable(EXTREME_MIN_CONTRAST_X10));  // the last step is still white or black
+    }
+
+    test "the card says one reason at a time" {
+        assert(PANEL_ONE_REASON_AT_A_TIME);
+        assert(panel_why_shown(false, false));  // closed: the load's reason
+        assert(panel_why_shown(false, true));  // closed after a keep: the fresh load's reason
+        assert(panel_why_shown(true, false));  // open, nothing checked yet: still the only reason
+        assert(!panel_why_shown(true, true));  // a check has spoken: its verdict is the one
+        assert(!panel_take_offered(true, true, true));  // the load's options stepped aside the same way
+    }
+
+    test "the price stands above the button on both screens" {
+        assert(PRICE_BEFORE_PRESS);
+        assert(SELLER_SEES_PRICE);
+        assert(price_estimate(SCENES_DEFAULT, BILLED_SECONDS) == PRICE_ESTIMATE_TOKENS);  // her press
+        assert(price_estimate_notes(3, 12) == 218);  // the seller's press in her own notes
+        assert(price_estimate_notes(3, NOTES_MAX_SEC) < PRICE_ESTIMATE_TOKENS);
+    }
+
+    test "VERSION says what the header's last note says" {
+        assert(VERSION == 16);
+    }
+
+    test "every reel for a client is a story reel; the silent plan reel only when the owner names it" {
+        assert(reel_route(false) == ROUTE_STORY);
+        assert(reel_route(true) == ROUTE_OLD_PLAN_REEL);
+        assert(OLD_PLAN_REEL == "LeelaPlanReel");
+        assert(SELLER_TOOL == "crm_story_reel");
+        assert(REEL_TOOL_IN_CLIENT_BRIEF);
+        assert(REEL_TOOL_IN_QUEEN_BLOCK);
+        assert(REEL_TOOL_IN_PLAN_HINT);
+        assert(REEL_TOOL_IN_PLAN_READ);
+        assert(PLAN_ITEM_IS_TOPIC);
+        assert(REELS_STAY_STORY_AFTER_GIFTS);
+    }
+
+    test "a render asked for by the service waits for approval in the feed" {
+        assert(!SERVICE_RENDER_FEED_PUBLIC);
+        assert(!AUTOPILOT_SENDS_CARD);
+    }
+
+    test "what was seen live is kept apart from what is blocked" {
+        assert(LIVE_RUN_STATUS == "delivered-2026-09-26");
+        assert(VOICE_LEG_STATUS == "clone-402-falls-to-notes-on-kie-2026-09-27");
+        assert(CAP_LEG_STATUS == "lipsync-met-daily-cap-attempts-burned-2026-09-27");
+    }
+}
+
+// phi^2 + 1/phi^2 = 3 | TRINITY
