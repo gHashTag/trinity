@@ -261,8 +261,8 @@ pub const ABSENT_WINDOW_MAY_RENDER_A_DEFAULT : bool = false;
 ; --- The shipped configuration gap ------------------------------------------------------------------
 ; The headline measurement. Reader keys: src/api/happy_hour.rs:38-43. Shipped keys:
 ; migrations/001_initial.sql:98-101, embedded and executed at src/db/mod.rs:32. The admin write
-; path replaces the whole blob (src/api/loyalty.rs:751-763) after validating four unrelated flat
-; keys (src/api/loyalty.rs:696-711), and the canonical defaults for the blob carry no happy-hour
+; path replaces the whole blob (src/api/loyalty.rs:772-784) after validating four unrelated flat
+; keys (src/api/loyalty.rs:717-732), and the canonical defaults for the blob carry no happy-hour
 ; key (src/trios/loyalty.rs:34-46), so no surface in this repository produces the nested shape.
 ; The two arrays are ordered to face each other key for key, not in file order: reader key i and
 ; seeded key i are the same setting spelled two ways. Reader order is src/api/happy_hour.rs:39,

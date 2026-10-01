@@ -1,0 +1,214 @@
+// SPDX-License-Identifier: Apache-2.0
+// specs/automation/ball-board.t27 -- ONE board of everything the owner is in the middle
+// of, grouped by CLIENT, and for every card: whose move it is (where the ball is).
+// Host: 999-multibots-telegraf apps/vibee-editor/render/src/agent/ball-board.ts (the tools
+//       ball_board, ball_work_push, ball_link), registered in src/agent/tools.ts.
+// Feeders: the CRM (the render's own crm_waiting, called, never re-derived); the mailbox
+//       (jcrm's crm_matter_digest, the table automation/mail-push already receives); the
+//       code work (open PRs and bugs of the owner's repositories, pushed by `tri ball push`
+//       from the owner's machine through the render's own door -- the mail digest's
+//       pattern, so no GitHub token has to live in production).
+// Owner, 2026-10-01: "compare my CRM tasks with my mail contacts so the tasks are tied
+//       by client, with the status of where the ball is, and everything in work and
+//       every bug on the board, so I see the status of all tasks in the project;
+//       orchestration through .t27".
+// Law lineage: automation/mail-push (a stale digest is refused, not shown; the digest
+//       lands through the render's own door, not a second database); the hive board
+//       (the refusal comes BEFORE the read; a filter can narrow and never widen).
+// What this spec decides: the ball vocabulary and its order, the mail mapping, the
+//       code-work ball rules, how a card finds its client, and when a source is
+//       reported instead of shown. What it does NOT decide: the CRM's own "whose turn"
+//       -- that is crm-stages.ts waitingOn, and restating its numbers here would make
+//       two boards that disagree about when a silence starts to matter.
+// Claim status: designed and bound by tests; RUN_LIVE flips when the board answers
+//       the owner on app.t27.ai with all three sources fresh.
+// phi^2 + 1/phi^2 = 3 | TRINITY
+
+module automation::ball_board {
+
+    pub const KIND : str = "automation";
+    pub const ID : str = "ball-board";
+    pub const REPO : str = "999-multibots-telegraf";
+    pub const VERSION : u8 = 1;
+
+    // ---- The doors ------------------------------------------------------------------
+    pub const TOOL : str = "ball_board";  // read: the whole board, grouped by client
+    pub const PUSH_TOOL : str = "ball_work_push";  // write: the code-work snapshot, owner only
+    pub const LINK_TOOL : str = "ball_link";  // write: "this address / repo is that client"
+    pub const DOOR : str = "/mcp";  // tools/call, X-Api-Key -- the mail digest's own door
+
+    // ---- The sources ----------------------------------------------------------------
+    pub const SOURCE_CRM : str = "crm";  // people in Telegram: crm_waiting, as it is
+    pub const SOURCE_MAIL : str = "mail";  // matters in the mailbox: crm_matter_digest
+    pub const SOURCE_WORK : str = "github";  // open PRs and bugs: ball_work_digest
+    pub const CRM_TOOL : str = "crm_waiting";  // CALLED with the caller's context: its
+                                               // scope gate and its waitingOn are the
+                                               // only ones; this board adds none
+    pub const MAIL_TABLE : str = "crm_matter_digest";  // automation/mail-push DIGEST_TABLE
+    pub const WORK_TABLE : str = "ball_work_digest";  // one row per open PR or issue
+    pub const LINK_TABLE : str = "ball_client_links";  // owner, client, kind, value
+
+    // ---- The ball -------------------------------------------------------------------
+    // Columns in the order a day should be spent: what is on us, what is past its date,
+    // what waits on somebody else, and what nobody has a move on.
+    pub const BALL_OURS : str = "ours";
+    pub const BALL_DUE : str = "due";
+    pub const BALL_THEIRS : str = "theirs";
+    pub const BALL_NONE : str = "none";  // a matter the mailbox knows but owes nothing on
+    pub const WAITING_LABEL : str = "waiting";  // an issue label containing this word puts
+                                                // the move on somebody else
+    pub const BUG_LABEL : str = "bug";  // the push carries every open issue labelled so
+
+    // ---- Freshness ------------------------------------------------------------------
+    pub const STALE_H : u8 = 26;  // the mail digest's law, for both pushed sources: a
+                                  // snapshot older than a day and a bit is REPORTED as
+                                  // stale with its age, and its cards are not shown
+    pub const SNAPSHOT_REPLACES : bool = true;  // a push is the whole truth of its repos:
+                                                // a PR merged since the last push leaves
+                                                // the board, it does not linger as open
+                                                // (upsert the snapshot, then prune the
+                                                // rest -- a pool is not one connection,
+                                                // so there is no BEGIN to lean on)
+    pub const CARDS_MAX : u16 = 300;  // one answer; counts are taken over everything
+
+    // ---- Who may read what ----------------------------------------------------------
+    pub const MAIL_OWNER_ONLY : bool = true;  // the mailbox is one person's
+    pub const WORK_OWNER_ONLY : bool = true;  // a private repository's titles are too
+    pub const REFUSE_BEFORE_READ : bool = true;  // a source the caller may not see is
+                                                 // reported as not theirs; it is never
+                                                 // read and then filtered
+
+    // ---- Where a card's client comes from -------------------------------------------
+    pub const LINK_EMAIL : str = "email";  // a counterparty address of a mail matter
+    pub const LINK_DOMAIN : str = "domain";  // every address at that domain
+    pub const LINK_REPO : str = "repo";  // owner/name: all its work is that client's
+    pub const LINK_LABEL : str = "label";  // an issue label, e.g. client:acme
+    pub const PROJECT_CLIENT : str = "project";  // code work no client claims: the
+                                                 // project's own row, never dropped
+    pub const UNLINKED_MAIL_IS_ITS_OWN_ROW : bool = true;  // a matter nobody linked stays
+                                                           // visible under its own name
+
+    // ---- Not claimed ----------------------------------------------------------------
+    pub const RUN_LIVE : bool = false;
+
+    // The mailbox's "who owes the reply" in the board's words. jcrm decides the matter;
+    // this side only translates it, and anything it does not recognise owes nothing.
+    fn mail_ball(owes_reply: str) -> str {
+        if owes_reply == "us" {
+            return BALL_OURS;
+        }
+        if owes_reply == "them" {
+            return BALL_THEIRS;
+        }
+        return BALL_NONE;
+    }
+
+    // Code work. A repository the owner merges alone has nobody else to wait on, so an
+    // open PR is on us unless a review was asked of somebody else and is still open; a
+    // bug is on us until it is closed; an issue is on somebody else only when it is
+    // labelled as waiting for them.
+    fn work_ball(is_pr: bool, review_asked_of_others: bool, waiting_label: bool) -> str {
+        if is_pr && review_asked_of_others {
+            return BALL_THEIRS;
+        }
+        if !is_pr && waiting_label {
+            return BALL_THEIRS;
+        }
+        return BALL_OURS;
+    }
+
+    // The column's rank on the board: lower comes first.
+    fn ball_rank(ball: str) -> u8 {
+        if ball == BALL_OURS {
+            return 0;
+        }
+        if ball == BALL_DUE {
+            return 1;
+        }
+        if ball == BALL_THEIRS {
+            return 2;
+        }
+        return 3;
+    }
+
+    // A pushed snapshot is shown only while it is fresh.
+    fn fresh(age_h: u8) -> bool {
+        return age_h <= STALE_H;
+    }
+
+    // A source is read only for a caller who may see it.
+    fn may_read(owner_only: bool, caller_is_owner: bool) -> bool {
+        return !owner_only || caller_is_owner;
+    }
+
+    test "the mailbox's owes_reply becomes the ball, and nothing else is invented" {
+        assert(mail_ball("us") == BALL_OURS);
+        assert(mail_ball("them") == BALL_THEIRS);
+        assert(mail_ball("") == BALL_NONE);
+        assert(mail_ball("both") == BALL_NONE);
+        assert(MAIL_TABLE == "crm_matter_digest");
+    }
+
+    test "an open PR is ours unless a review is asked of somebody else" {
+        assert(work_ball(true, false, false) == BALL_OURS);
+        assert(work_ball(true, true, false) == BALL_THEIRS);
+        assert(work_ball(true, false, true) == BALL_OURS);
+    }
+
+    test "a bug is ours until it is closed, an issue is theirs only when labelled so" {
+        assert(work_ball(false, false, false) == BALL_OURS);
+        assert(work_ball(false, true, false) == BALL_OURS);
+        assert(work_ball(false, false, true) == BALL_THEIRS);
+        assert(WAITING_LABEL == "waiting");
+        assert(BUG_LABEL == "bug");
+    }
+
+    test "the columns run ours, due, theirs, none" {
+        assert(ball_rank(BALL_OURS) == 0);
+        assert(ball_rank(BALL_DUE) == 1);
+        assert(ball_rank(BALL_THEIRS) == 2);
+        assert(ball_rank(BALL_NONE) == 3);
+        assert(ball_rank("anything") == 3);
+    }
+
+    test "a stale snapshot is reported, not shown" {
+        assert(fresh(0));
+        assert(fresh(26));
+        assert(!fresh(27));
+        assert(STALE_H == 26);
+        assert(SNAPSHOT_REPLACES);
+    }
+
+    test "the mailbox and the private repos are the owner's, refused before the read" {
+        assert(may_read(MAIL_OWNER_ONLY, true));
+        assert(!may_read(MAIL_OWNER_ONLY, false));
+        assert(!may_read(WORK_OWNER_ONLY, false));
+        assert(may_read(false, false));
+        assert(REFUSE_BEFORE_READ);
+    }
+
+    test "the CRM is called, not re-derived" {
+        assert(CRM_TOOL == "crm_waiting");
+        assert(SOURCE_CRM == "crm");
+        assert(SOURCE_MAIL == "mail");
+        assert(SOURCE_WORK == "github");
+    }
+
+    test "every card has a client, and nothing unclaimed is dropped" {
+        assert(PROJECT_CLIENT == "project");
+        assert(UNLINKED_MAIL_IS_ITS_OWN_ROW);
+        assert(LINK_EMAIL != LINK_DOMAIN);
+        assert(LINK_REPO != LINK_LABEL);
+        assert(CARDS_MAX >= 100);
+    }
+
+    test "the board is designed, not yet live" {
+        assert(!RUN_LIVE);
+        assert(TOOL == "ball_board");
+        assert(PUSH_TOOL == "ball_work_push");
+        assert(LINK_TOOL == "ball_link");
+        assert(DOOR == "/mcp");
+    }
+}
+
+// phi^2 + 1/phi^2 = 3 | TRINITY

@@ -38,7 +38,7 @@ pub const EVIDENCE : str = "measured";
 pub const EVIDENCE_SOURCE : str = "https://github.com/gHashTag/trinity/actions/runs/34672754026 -- Website checks on gHashTag/trinity#990 (merged as 79ffb034): typecheck ratchet, catalog contracts, language and mobile audits and the render check, all green.";
 ; The work package of gHashTag/trinity#988 that owns this capability's contract.
 pub const WORK_PACKAGE : str = "S10";
-pub const NOTE : str = "At the pinned revision the manifest holds 856 distinct specs from 8 repositories and the atlas 1030 open issues; the 1044 mirrored .t27 files are copies and are never counted as canonical (tools/trinity_manifest.py).";
+pub const NOTE : str = "At the pinned revision the manifest holds 856 distinct specs from 8 repositories and the atlas 1030 open issues; the 1044 mirrored .t27 files are copies and are never counted as canonical (tools/trinity_manifest.py). S10 (gHashTag/t27#4829) measured it again at afc9d384: 1577 specs from 12 repositories, the atlas of 2026-09-24T17:24:32Z with 1238 issues frozen open (132 closed on GitHub by 2026-10-01), no sha256 or revision on any manifest entry, and the mirror byte-identical to gHashTag/t27 at the revision the manifest names; the contract of the views over it is specs/queen/views.t27.";
 pub const ENABLED : bool = true;
 
 test card_is_bound_to_its_package {

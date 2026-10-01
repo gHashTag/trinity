@@ -38,7 +38,7 @@ pub const EVIDENCE : str = "declared";
 pub const EVIDENCE_SOURCE : str = "Not built by zig build -Dci=true (the step is not installed by default) and not exercised by any CI step at the pinned revision; the tree declares it.";
 ; The work package of gHashTag/trinity#988 that owns this capability's contract.
 pub const WORK_PACKAGE : str = "S09";
-pub const NOTE : str = "The repository describes more than one Queen phase cycle; S09 keeps one canonical state machine and names the runtimes as adapters.";
+pub const NOTE : str = "S09 (gHashTag/t27#4828): the canonical task lifecycle is specs/queen/dispatch.t27, taken from the trios supervisor that chooses, leases, reviews and releases work; specs/queen/lotus.t27, this card's spec, is the design of the lotus-policy adapter and does not compile in C at master; the Zig lotus cycle passes its 29 tests and no build step builds it.";
 pub const ENABLED : bool = true;
 
 test card_is_bound_to_its_package {

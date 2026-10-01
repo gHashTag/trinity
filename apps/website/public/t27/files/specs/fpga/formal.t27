@@ -54,21 +54,23 @@ module Formal {
 
     // === Cover point ===
 
-    pub struct CoverPoint {
-        name : &str,
-        condition : &str,
-        clock : &str,
-        description : &str,
-    }
+pub struct CoverPoint {
+    name : &str,
+    condition : &str,
+    clock : &str,
+    description : &str,
+    _dummy : u32,
+}
 
     // === Assumption ===
 
-    pub struct FormalAssume {
-        name : &str,
-        condition : &str,
-        clock : &str,
-        description : &str,
-    }
+pub struct FormalAssume {
+    name : &str,
+    condition : &str,
+    clock : &str,
+    description : &str,
+    _dummy : u32,
+}
 
     // === Formal verification config ===
 

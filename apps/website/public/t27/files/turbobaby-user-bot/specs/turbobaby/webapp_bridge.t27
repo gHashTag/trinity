@@ -17,8 +17,9 @@
 ; -- tests/money_is_never_invented.rs:10-16 says exactly that in its own words, and adds that the
 ; only other compiler, the wasm clippy gate, "has no opinion about unwrap_or(0.0)". The size of
 ; the blind spot is countable: src/ui holds FIVE `#[cfg(test)]` modules (src/ui/api/local_client.rs:181,
-; src/ui/lang.rs:135, src/ui/screens/bike_detail.rs:570 (:600 until the 2026-09-24 rental-only
-; edit removed the buy-out block above it), src/ui/screens/catalog_screen.rs:954
+; src/ui/lang.rs:135, src/ui/screens/bike_detail.rs:572 (:570 until the 2026-09-25 edit that
+; removed the all-taken line above it, and :600 until the 2026-09-24 rental-only edit removed the
+; buy-out block above it), src/ui/screens/catalog_screen.rs:953 (:954 until the 2026-09-26 Book-control edit)
 ; (:599 and :966 until the 2026-09-24 availability edit, re-verified that day),
 ; src/ui/share.rs:409) containing THIRTY-TWO `#[test]` functions, and not one of the thirty-two is
 ; ever compiled, let alone run. The instrument that does exist is a text scan for four literal
@@ -343,10 +344,14 @@ pub const UNLABELLED_SITES : [2]str = ["src/ui/api/http.rs:368", "src/ui/api/cli
 ; src/ui/screens/admin_screen.rs 34, src/ui/screens/profile_screen.rs 4,
 ; src/ui/screens/order_detail_screen.rs 3, src/ui/screens/orders_screen.rs 1,
 ; src/ui/pages/referrals.rs 1 and src/ui/game/shop_game.rs 1 -- plus two spellings that are not a
-; .header( call, a JS fetch headers object at admin_screen.rs:638 and a header tuple at :4615. None
+; .header( call, a JS fetch headers object at admin_screen.rs:638 and a header tuple at :4623. None
 ; of them sends the label: in src/ui the label literal occurs only in src/ui/api/http.rs, seven
 ; times. The three counts above are true of their stated scope; read as a census of the whole
 ; client they would understate how many call sites send the proof without the label.
+; RE-PINNED 2026-09-26: the header tuple :4615 -> :4623, when the Loyalty tab grew its referral
+; sub-tab (R3) eight lines above it. Re-counted the same day: admin_screen.rs still makes 34
+; calls, and the referral credit's panel and page reach the server through src/ui/api/http.rs
+; (AdminAuth, fetch_text_authed_full, post_json_authed), so no count above moved.
 pub const IDENTITY_HEADER_CALLS_OUTSIDE_THE_TRANSPORT : u8 = 44;
 pub const OTHER_IDENTITY_HEADER_SPELLINGS_OUTSIDE_THE_TRANSPORT : u8 = 2;
 pub const LABEL_SITES_OUTSIDE_THE_TRANSPORT : u8 = 0;

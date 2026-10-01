@@ -38,7 +38,7 @@ pub const EVIDENCE : str = "measured";
 pub const EVIDENCE_SOURCE : str = "https://github.com/gHashTag/trinity/actions/runs/34672754026 -- Website checks on gHashTag/trinity#990 (merged as 79ffb034): typecheck ratchet, catalog contracts, language and mobile audits and the render check, all green.";
 ; The work package of gHashTag/trinity#988 that owns this capability's contract.
 pub const WORK_PACKAGE : str = "S10";
-pub const NOTE : str = "TypeScript retained explicitly until generation is demonstrated; viewport, docs, tools, agents, skills, crons and the world-scan contract are generated from vendored t27 specs through the compiler wasm.";
+pub const NOTE : str = "TypeScript retained explicitly until generation is demonstrated; viewport, docs, tools, agents, skills, crons and the world-scan contract are generated from vendored t27 specs through the compiler wasm. The contract of its project views (identity, the five evidence axes, snapshot and live, counting once) is specs/queen/views.t27 (S10), measured at afc9d384 by tools/trinity_queen_views.py.";
 pub const ENABLED : bool = true;
 
 test card_is_bound_to_its_package {

@@ -12,12 +12,14 @@
 ;    bonus_transactions the "append-only ledger of every bonus credit / debit", and
 ;    src/api/loyalty.rs:530-531 writes the equation out: the sum of one account's amounts equals
 ;    its stored balance. Cycle #161 added the missing debit row to make it true again. It is not
-;    true. Ten statements in src/ perform arithmetic on loyalty_profiles.bonus_balance; SIX pair
+;    true. Ten statements in src/ performed arithmetic on loyalty_profiles.bonus_balance; SIX paired
 ;    with a ledger insert (src/api/loyalty.rs:353 behind :342, src/api/loyalty.rs:508 behind :554,
-;    src/db/orders.rs:382 behind :377, src/db/referrals.rs:429 behind :419, :489 behind :481, and
-;    :855 behind :847) and FOUR do not (src/api/orders.rs:1418 debits at checkout,
+;    src/db/orders.rs:375 behind :370, and the referral domain's three, src/db/referrals.rs:429
+;    behind :419, :489 behind :481 and :855 behind :847, those three at e39221e) and FOUR do not.
+;    R3 (2026-09-26) deleted the referral domain's three with its bonus points, so SEVEN remain,
+;    THREE of them paired, and the same FOUR do not (src/api/orders.rs:1418 debits at checkout,
 ;    src/api/orders.rs:2139 refunds on reject, src/api/orders.rs:2373 refunds on cancel, and
-;    src/bot/callbacks.rs:760 refunds on reject from the bot, all four with zero occurrences of
+;    src/bot/callbacks.rs:687 refunds on reject from the bot, all four with zero occurrences of
 ;    BonusTx or bonus_transaction as a WRITE in their modules -- src/api/orders.rs holds exactly
 ;    one mention, the read-only import at :16 used at :1962-1964, and src/bot/callbacks.rs holds
 ;    none). The audit trail is therefore missing the single largest category of movement, the
@@ -59,7 +61,7 @@
 ;    this into add_bonus / use_bonus" and "this entity is intentionally unreferenced -- see the
 ;    loyalty_idempotency_key entry in ALLOWED_UNWIRED_ENTITIES". Both halves are stale. The entity
 ;    is imported and used at src/api/loyalty.rs:262 and :458, and ALLOWED_UNWIRED_ENTITIES at
-;    src/db/mod.rs:1937-1959 lists exactly two names, quest_place and event_photo. A reader who
+;    src/db/mod.rs:1941-1963 lists exactly two names, quest_place and event_photo. A reader who
 ;    trusted that comment would contract for protection that is wired, or skip the file believing
 ;    nothing runs. migrations/033_loyalty_idempotency_keys.sql:1 is stale in the same way: it names
 ;    the route add-bonus, and the registration at src/api/loyalty.rs:25 is /bonus.
@@ -221,14 +223,29 @@ pub fn a_snapshot_figure_may_be_quoted_flatly(measured_at: str, quoted_at: str, 
 
 ; --- Who may move the money ----------------------------------------------------------------------
 ; src/api/loyalty.rs:21-34. Eight registrations over seven paths, and the gate is not uniform:
-; three carry none (:23 tiers, :31 leaderboard, :32 config read), two carry the owner gate
-; (:24 profile via src/api/loyalty.rs:87, :27-30 bonus history via :605), and three carry the admin
-; gate (:25 via :230, :26 via :418, :33 via :742).
+; one carries none (:23 tiers), two carry the owner gate (:24 profile via src/api/loyalty.rs:87,
+; :27-30 bonus history via :605), four carry the admin gate (:25 via :230, :26 via :418, :31 the
+; leaderboard via get_leaderboard's first line since R1, :33 via :763), and one is a CLOSED READ
+; (:32, the config GET), which answers a caller without admin proof exactly as an unmatched /api
+; path does (crate::api::admin_or_missing_route, R2). Until 2026-09-26 three carried none (:23
+; tiers, :31 leaderboard, :32 config read) and three the admin gate.
+; R1 and R2, the owner's answers of 2026-09-26 (verbatim in DECISIONS.md, "R1-R3, the owner's
+; answers of 2026-09-26"): of the leaderboard (first names, total spend, tier, to anyone), "only
+; for the admin"; of the config read no mounted screen uses, "close it to customers". The config
+; GET stays registered because the admin POST shares its path, and an unregistered GET would
+; answer 405 rather than the missing-route 404.
 pub const ROUTE_REGISTRATION_COUNT : u8 = 8;
 pub const DISTINCT_PATH_COUNT : u8 = 7;
-pub const UNGATED_ROUTE_COUNT : u8 = 3;
+pub const UNGATED_ROUTE_COUNT : u8 = 1;
 pub const OWNER_GATED_ROUTE_COUNT : u8 = 2;
-pub const ADMIN_GATED_ROUTE_COUNT : u8 = 3;
+pub const ADMIN_GATED_ROUTE_COUNT : u8 = 4;
+pub const CLOSED_READ_ROUTE_COUNT : u8 = 1;
+pub const UNGATED_ROUTE_COUNT_BEFORE_2026_09_26 : u8 = 3;
+pub const ADMIN_GATED_ROUTE_COUNT_BEFORE_2026_09_26 : u8 = 3;
+pub const OWNER_R1_DECIDED_AT : str = "2026-09-26";
+pub const OWNER_R2_DECIDED_AT : str = "2026-09-26";
+; Bound by gate 3: get_leaderboard's first statement is the admin gate.
+pub const LEADERBOARD_GATE_SITES : u8 = 1;
 
 pub const GATE_NONE : u8 = 0;
 pub const GATE_OWNER : u8 = 1;
@@ -485,14 +502,18 @@ pub fn tx_type_is_legal(length: u16) bool {
 ; The equation and the four statements that break it. The count is of arithmetic writes to
 ; loyalty_profiles.bonus_balance in src/, excluding the seeding writes that set a fresh row to zero.
 pub const BOOKKEEPING_EQUATION : str = "the sum of one account's bonus_transactions.amount equals its loyalty_profiles.bonus_balance";
-pub const BALANCE_WRITE_SITE_COUNT : u8 = 10;
-pub const BALANCE_WRITES_WITH_A_LEDGER_ROW : u8 = 6;
+; Re-measured 2026-09-26 after R3 deleted the referral domain's three paired credits: 10 -> 7 and
+; 6 -> 3; the four bypasses are untouched. The earlier readings keep their _BEFORE_2026_09_26 names.
+pub const BALANCE_WRITE_SITE_COUNT : u8 = 7;
+pub const BALANCE_WRITES_WITH_A_LEDGER_ROW : u8 = 3;
 pub const BALANCE_WRITES_WITHOUT_A_LEDGER_ROW : u8 = 4;
+pub const BALANCE_WRITE_SITE_COUNT_BEFORE_2026_09_26 : u8 = 10;
+pub const BALANCE_WRITES_WITH_A_LEDGER_ROW_BEFORE_2026_09_26 : u8 = 6;
 pub const LEDGER_BYPASS_SITES : [4]str = [
   "src/api/orders.rs:1418",
   "src/api/orders.rs:2139",
   "src/api/orders.rs:2373",
-  "src/bot/callbacks.rs:760",
+  "src/bot/callbacks.rs:687",
 ];
 pub const THE_LEDGER_SUMS_TO_THE_BALANCE_TODAY : bool = false;
 
@@ -500,10 +521,14 @@ pub fn ledger_sums_to_the_balance(bypass_site_count: u8) bool {
   return bypass_site_count == 0;
 }
 
-; --- Who writes three of the six paired rows, and the fact we co-declare -----------------------------
-; Added 2026-09-21. Three of the six paired movements above are the referral domain's
-; (src/db/referrals.rs:429 behind :419, :489 behind :481, :855 behind :847) and that domain has a
-; contract: turbobaby/referral-program owns the edge those credits pay on. It already names this
+; --- Who wrote three of the six paired rows, and the fact we co-declare -----------------------------
+; Added 2026-09-21. Three of the six paired movements above were the referral domain's
+; (src/db/referrals.rs:429 behind :419, :489 behind :481, :855 behind :847, at e39221e) and that
+; domain has a contract: turbobaby/referral-program owns the edge those credits paid on. Since
+; 2026-09-26 (R3) that domain writes no balance: its three credits are deleted, and what a referral
+; earns is turbobaby/referral-credit's THB ledger, which is NOT this ledger -- it never touches
+; loyalty_profiles.bonus_balance or bonus_transactions (bound by gate 3 there), and a points
+; balance never reaches a referral payout. It already names this
 ; file by ID in its own LOYALTY_LEDGER_SUPPLIES and reads the same six-of-ten split from its side,
 ; so the citation runs both ways by ID and by declaration name, and in neither direction by line.
 ; Checked 2026-09-21 and the two agree: it claims all three of its credits sit inside the paired
@@ -511,7 +536,10 @@ pub fn ledger_sums_to_the_balance(bypass_site_count: u8) bool {
 ; bot callback site. This is a co-declared fact and not a decision this file consumes, so it is
 ; deliberately outside REUSE_EDGE_COUNT above.
 pub const REFERRAL_PROGRAM_ID : str = "turbobaby/referral-program";
-pub const REFERRAL_CREDIT_SITES_INSIDE_THE_PAIRED_SIX : u8 = 3;
+pub const REFERRAL_CREDIT_SITES_INSIDE_THE_PAIRED_SIX : u8 = 0;
+pub const REFERRAL_CREDIT_SITES_INSIDE_THE_PAIRED_SIX_BEFORE_2026_09_26 : u8 = 3;
+pub const REFERRAL_CREDIT_ID : str = "turbobaby/referral-credit";
+pub const REFERRAL_CREDIT_IS_THIS_LEDGER : bool = false;
 pub const REFERRAL_CREDIT_SITES_AMONG_THE_BYPASSES : u8 = 0;
 pub const LEDGER_ORDERING_AGREES_WITH_THE_REFERRAL_CONTRACT : bool = true;
 pub const LEDGER_ORDERING_AGREEMENT_CHECKED_AT : str = "2026-09-21";
@@ -597,7 +625,12 @@ pub fn a_bonus_expires(expiry_is_published: bool) bool {
 test the_route_table_is_eight_registrations_over_seven_paths {
   assert ROUTE_REGISTRATION_COUNT == 8;
   assert DISTINCT_PATH_COUNT == 7;
-  assert UNGATED_ROUTE_COUNT + OWNER_GATED_ROUTE_COUNT + ADMIN_GATED_ROUTE_COUNT == ROUTE_REGISTRATION_COUNT;
+  assert UNGATED_ROUTE_COUNT + OWNER_GATED_ROUTE_COUNT + ADMIN_GATED_ROUTE_COUNT + CLOSED_READ_ROUTE_COUNT == ROUTE_REGISTRATION_COUNT;
+  assert 1 + 2 + 4 + 1 == ROUTE_REGISTRATION_COUNT;
+  assert UNGATED_ROUTE_COUNT_BEFORE_2026_09_26 + OWNER_GATED_ROUTE_COUNT + ADMIN_GATED_ROUTE_COUNT_BEFORE_2026_09_26 == ROUTE_REGISTRATION_COUNT;
+  assert LEADERBOARD_GATE_SITES == 1;
+  assert OWNER_R1_DECIDED_AT == "2026-09-26";
+  assert OWNER_R2_DECIDED_AT == OWNER_R1_DECIDED_AT;
   assert MONEY_ROUTE_COUNT == 2;
   assert MONEY_ROUTES.len == MONEY_ROUTE_COUNT;
 }
@@ -756,9 +789,12 @@ test the_category_column_has_no_closed_vocabulary {
 }
 
 test the_ledger_does_not_sum_to_the_balance {
-  assert BALANCE_WRITE_SITE_COUNT == 10;
-  assert BALANCE_WRITES_WITH_A_LEDGER_ROW == 6;
+  assert BALANCE_WRITE_SITE_COUNT == 7;
+  assert BALANCE_WRITES_WITH_A_LEDGER_ROW == 3;
   assert BALANCE_WRITES_WITHOUT_A_LEDGER_ROW == 4;
+  assert BALANCE_WRITE_SITE_COUNT_BEFORE_2026_09_26 == 10;
+  assert BALANCE_WRITES_WITH_A_LEDGER_ROW_BEFORE_2026_09_26 == 6;
+  assert BALANCE_WRITES_WITH_A_LEDGER_ROW_BEFORE_2026_09_26 + BALANCE_WRITES_WITHOUT_A_LEDGER_ROW == BALANCE_WRITE_SITE_COUNT_BEFORE_2026_09_26;
   assert BALANCE_WRITES_WITH_A_LEDGER_ROW + BALANCE_WRITES_WITHOUT_A_LEDGER_ROW == BALANCE_WRITE_SITE_COUNT;
   assert LEDGER_BYPASS_SITES.len == BALANCE_WRITES_WITHOUT_A_LEDGER_ROW;
   assert ledger_sums_to_the_balance(BALANCE_WRITES_WITHOUT_A_LEDGER_ROW) == false;
@@ -862,9 +898,13 @@ test the_identity_snapshot_moved_under_this_file_and_the_date_is_what_saved_it {
 
 test the_referral_contract_is_named_by_id_and_the_two_agree {
   assert REFERRAL_PROGRAM_ID == "turbobaby/referral-program";
-  assert REFERRAL_CREDIT_SITES_INSIDE_THE_PAIRED_SIX == 3;
+  assert REFERRAL_CREDIT_SITES_INSIDE_THE_PAIRED_SIX == 0;
+  assert REFERRAL_CREDIT_SITES_INSIDE_THE_PAIRED_SIX_BEFORE_2026_09_26 == 3;
   assert REFERRAL_CREDIT_SITES_AMONG_THE_BYPASSES == 0;
   assert REFERRAL_CREDIT_SITES_INSIDE_THE_PAIRED_SIX < BALANCE_WRITES_WITH_A_LEDGER_ROW;
+  assert BALANCE_WRITES_WITH_A_LEDGER_ROW_BEFORE_2026_09_26 - REFERRAL_CREDIT_SITES_INSIDE_THE_PAIRED_SIX_BEFORE_2026_09_26 == BALANCE_WRITES_WITH_A_LEDGER_ROW;
+  assert REFERRAL_CREDIT_ID == "turbobaby/referral-credit";
+  assert REFERRAL_CREDIT_IS_THIS_LEDGER == false;
   assert LEDGER_ORDERING_AGREES_WITH_THE_REFERRAL_CONTRACT == true;
   assert LEDGER_ORDERING_AGREEMENT_CHECKED_AT == "2026-09-21";
   assert the_two_ledger_contracts_agree(REFERRAL_CREDIT_SITES_INSIDE_THE_PAIRED_SIX, REFERRAL_CREDIT_SITES_AMONG_THE_BYPASSES, BALANCE_WRITES_WITH_A_LEDGER_ROW) == true;
@@ -943,3 +983,9 @@ invariant no_referral_credit_is_a_ledger_bypass
 
 invariant the_grant_ceiling_bounds_one_call_and_not_the_balance
   assert BALANCE_HAS_NO_CEILING == true and credit_is_admitted(100000001, true, 100000000) == false and balance_after_credit(100000000000, 100000000, true, 100000000) == 100100000000
+
+invariant the_referral_credit_is_not_this_ledger
+  assert REFERRAL_CREDIT_IS_THIS_LEDGER == false and REFERRAL_CREDIT_SITES_INSIDE_THE_PAIRED_SIX == 0
+
+invariant the_leaderboard_answers_an_admin_only_and_the_config_read_is_closed
+  assert LEADERBOARD_GATE_SITES == 1 and CLOSED_READ_ROUTE_COUNT == 1 and UNGATED_ROUTE_COUNT == 1

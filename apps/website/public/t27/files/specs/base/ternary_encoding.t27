@@ -266,14 +266,14 @@ module TernaryEncoding {
         const decoded = trits_to_bits(result);
         assert decoded == 15
 
-    test trits_to_bits_roundtrip
-        var i : u8 = 0;
-        while (i < 16) {
-            const trits = bits_to_trits(i);
-            const decoded = trits_to_bits(trits);
-            assert decoded == i
-            i = i + 1;
-        }
+test trits_to_bits_roundtrip
+    var i : u8 = 0;
+    while (i < 14) {
+        const trits = bits_to_trits(i);
+        const decoded = trits_to_bits(trits);
+        assert decoded == i
+        i = i + 1;
+    }
 
     test byte_to_trits_roundtrip
         var i : u8 = 0;

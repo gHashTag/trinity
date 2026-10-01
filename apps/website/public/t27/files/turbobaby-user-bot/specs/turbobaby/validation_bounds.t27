@@ -26,14 +26,14 @@
 ; rewrites or substitutes a bad input, so the three-way split and its subject are unchanged; the
 ; census constants below carry the correction.)
 ; clamp_finite_in_range has exactly four live call sites, all four in src/api/quest.rs
-; (:83, :84, :254, :260), all four on a coordinate, and all four pass a fallback of 0.0 that sits
+; (:95, :96, :276, :282), all four on a coordinate, and all four pass a fallback of 0.0 that sits
 ; INSIDE the range they just checked. So a NaN latitude, an out-of-range latitude and a genuine
 ; reading of zero leave that function as the same f64, and the consumer of the JSON at
-; src/api/quest.rs:90-98 -- a customer's quest map -- cannot tell which it got. The doc comment
+; src/api/quest.rs:102-110 -- a customer's quest map -- cannot tell which it got. The doc comment
 ; at src/trios/validation.rs:162-165 names that exact outcome as the bug the WRITE path was fixed
 ; to stop: a typo routed to "(0, 0) - Gulf of Guinea". The read path still ships it, for a
 ; different reason, through a helper whose name says it is safe. And the input is already zeroed
-; once before the clamp is asked: src/api/quest.rs:83 reads the column with
+; once before the clamp is asked: src/api/quest.rs:95 reads the column with
 ; .unwrap_or(0.0), so a renamed or missing column reaches the clamp as a finite, in-range,
 ; perfectly publishable zero and the clamp passes it through untouched.
 ; --
@@ -65,9 +65,9 @@
 ; QrToken slot. The validation is the only barrier, which makes the next correction matter.
 ; (3) The brief asks which other modules import the clamp. Measured: none. clamp_finite_in_range
 ; has one importer (src/api/quest.rs:2) and four call sites; clamp_finite_non_negative has one
-; caller anywhere (src/db/orders.rs:1256) and it guards an admin revenue figure. The eight
+; caller anywhere (src/db/orders.rs:1186) and it guards an admin revenue figure. The eight
 ; unreached exports include validate_qr_token itself: the live QR scan path builds its own
-; grammar at src/api/quest.rs:595-604, which requires only 1..=200 characters, checks no alphabet
+; grammar at src/api/quest.rs:617-626, which requires only 1..=200 characters, checks no alphabet
 ; at all, and accepts the token under either of two body keys. The strict 16-character
 ; alphanumeric grammar is shipped, tested, and enforced on nothing. Both grammars are pinned
 ; below and their disagreement is a named function, because a reader who greps for
@@ -191,12 +191,12 @@ pub const REWRITER_HAS_A_REFUSING_BRANCH : bool = false;
 ; three, and the two clamps are still the only reached items that manufacture a quantity.
 pub const REACHED_ITEMS_OUTSIDE_THE_SPLIT : u8 = 2;
 
-; src/api/quest.rs:83, :84, :254, :260 -- one importer, four call sites, every one a coordinate
+; src/api/quest.rs:95, :96, :276, :282 -- one importer, four call sites, every one a coordinate
 ; that is serialised into a client response.
 pub const READ_CLAMP_IMPORTERS : u8 = 1;
 pub const READ_CLAMP_CALL_SITES : u8 = 4;
 pub const READ_CLAMP_CALL_SITES_ON_A_PUBLISHED_FIELD : u8 = 4;
-; src/db/orders.rs:1256 -- the only caller of the non-negative companion, guarding a revenue
+; src/db/orders.rs:1186 -- the only caller of the non-negative companion, guarding a revenue
 ; figure that the admin panel renders.
 pub const MONEY_CLAMP_CALL_SITES : u8 = 1;
 
@@ -241,7 +241,7 @@ pub const LAT_MIN_CENTI : i32 = -9000;
 pub const LAT_MAX_CENTI : i32 = 9000;
 pub const LON_MIN_CENTI : i32 = -18000;
 pub const LON_MAX_CENTI : i32 = 18000;
-; The fallback every live call site passes (src/api/quest.rs:83, :84, :254, :260).
+; The fallback every live call site passes (src/api/quest.rs:95, :96, :276, :282).
 pub const READ_PATH_FALLBACK_CENTI : i32 = 0;
 ; From the shipped regression tests. src/trios/validation.rs:495-504 uses a capital city to prove
 ; the cycle #147 fix -- a legitimately negative coordinate must survive -- and :486 uses the first
@@ -311,7 +311,7 @@ pub fn substitution_is_undetectable(finite: bool, value: i32, min: i32, max: i32
 }
 
 ; --- The non-negative companion ---------------------------------------------------------------
-; src/trios/validation.rs:225-231, one caller, at src/db/orders.rs:1256, on revenue. Its floor is
+; src/trios/validation.rs:225-231, one caller, at src/db/orders.rs:1186, on revenue. Its floor is
 ; a true clamp for a negative input and a substitution for a non-finite one, and in both cases
 ; the output is zero, which for a revenue figure is an ordinary quiet day. Same trap, money slot.
 pub const NON_NEGATIVE_FLOOR : i32 = 0;
@@ -449,8 +449,8 @@ pub fn shared_token_admits(char_count: u16, all_ascii_alphanumeric: bool) bool {
     return char_count == SHARED_TOKEN_EXACT_CHARS and all_ascii_alphanumeric;
 }
 
-; src/api/quest.rs:595-604 -- the grammar the live scan endpoint actually applies before the token
-; reaches a parameterised lookup at :622-626. Non-empty, at most two hundred characters, no
+; src/api/quest.rs:617-626 -- the grammar the live scan endpoint actually applies before the token
+; reaches a parameterised lookup at :644-648. Non-empty, at most two hundred characters, no
 ; alphabet check of any kind, and two accepted body keys with a fixed precedence.
 pub const LIVE_TOKEN_MIN_CHARS : u16 = 1;
 pub const LIVE_TOKEN_MAX_CHARS : u16 = 200;
@@ -460,7 +460,7 @@ pub const LIVE_TOKEN_BODY_KEYS : [2]str = ["qr_token", "code"];
 pub const LIVE_TOKEN_KEY_PRECEDENCE_IS_TESTED : bool = true;
 pub const SHARED_GRAMMAR_IS_ENFORCED_ON_THE_LIVE_PATH : bool = false;
 pub const SHARED_TOKEN_VALIDATOR_CALL_SITES : u8 = 0;
-; src/api/quest.rs:600 is token.len() > 200, so the live ceiling is 200 BYTES, and with no
+; src/api/quest.rs:622 is token.len() > 200, so the live ceiling is 200 BYTES, and with no
 ; alphabet check anywhere on this path a multibyte token reaches it. A 200-CHARACTER token of
 ; two-byte characters is 400 bytes and is refused, although live_token_admits(200) below says
 ; admitted. That function is therefore a model of the byte length; this pair of booleans states

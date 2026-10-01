@@ -33,7 +33,7 @@
 ; --
 ; The second half of this file is one structural law rather than a count, because the repository
 ; paid for it once already. Issue #48: an unmatched /api path inherited the outer SPA fallback
-; and answered 200 with index.html. src/api/mod.rs:107-120 and tests/api_miss_is_not_html.rs:1-25
+; and answered 200 with index.html. src/api/mod.rs:108-120 and tests/api_miss_is_not_html.rs:1-25
 ; both record what that cost -- nine calls in the fleet admin screen (src/api/mod.rs:116) went to
 ; endpoints nobody had written, the client parsed HTML as JSON, and because the writes are
 ; optimistic-first a success toast painted over a row that had never been saved. THE FIX IS IN
@@ -42,7 +42,7 @@
 ; --
 ; WHERE THE BRIEF IS REFUTED. Five corrections, each measured on 2026-09-21, each with its line.
 ;   1. The obvious merge count is wrong by six. grep for .merge( over src/api/mod.rs returns 24
-;      lines; eighteen are calls in api_routes (seventeen at :84-100, plus upload at :105) and
+;      lines; eighteen are calls in api_routes (seventeen at :84-101, plus upload at :106) and
 ;      six are the route-wiring test module's own needles and prose (:301, :323, :445, :463,
 ;      :464, :482). A count taken from the grep total overstates the router by a third.
 ;   2. The obvious path count is wrong by twenty-four, in the other direction. A single-line
@@ -116,9 +116,14 @@ pub const DOCUMENT_SOURCE : str = "src/api/openapi.rs";
 pub const DOCUMENT_ENDPOINT_SOURCE : str = "src/main.rs";
 pub const MISS_WITNESS : str = "tests/api_miss_is_not_html.rs";
 pub const WIRING_GATE_SITE : str = "src/api/mod.rs:304-494";
-; wc -l over the tracked sources, 2026-09-21.
-pub const ROUTER_SOURCE_LINES : u16 = 494;
-pub const DOCUMENT_SOURCE_LINES : u16 = 239;
+; wc -l over the tracked sources, 2026-09-21; DOCUMENT_SOURCE_LINES re-measured 2026-09-25 (239 before).
+; Re-measured 2026-09-26 (gate 3 binds both): the referral credit's module, its merge and R2's
+; missing-route helpers grew the router file; six referral-credit stubs and the R1/R2 responses
+; grew the document. The readings before keep their _BEFORE_2026_09_26 names.
+pub const ROUTER_SOURCE_LINES : u16 = 565;
+pub const DOCUMENT_SOURCE_LINES : u16 = 411;
+pub const ROUTER_SOURCE_LINES_BEFORE_2026_09_26 : u16 = 494;
+pub const DOCUMENT_SOURCE_LINES_BEFORE_2026_09_26 : u16 = 260;
 
 ; --- Ownership edges ------------------------------------------------------------------------
 ; The pinned compiler lowers an import to nothing the gate will accept, so a cross-contract edge
@@ -163,32 +168,42 @@ pub const SHARED_CENSUS_CONSTANT_NAMES : u8 = 2;
 pub const FILES_DECLARING_THOSE_NAMES : u8 = 2;
 
 ; --- The router, measured ---------------------------------------------------------------------
-; api_routes (src/api/mod.rs:81-121) builds one Router, merges eighteen module routers into it,
-; and src/api/mod.rs:77 nests the result under a single prefix. Seventeen merges are chained at
-; :84-100; upload is merged separately at :105 so it lands AFTER the general body limit set at
-; :104 and keeps its own larger one. That is a body-limit decision and not a routing one, and the
+; api_routes (src/api/mod.rs:81-121) builds one Router, merges nineteen module routers into it
+; (eighteen until 2026-09-26, when src/api/referral_credit.rs joined, R3), and src/api/mod.rs:77
+; nests the result under a single prefix. Eighteen merges are chained at :84-101; upload is merged
+; separately at :106 so it lands AFTER the general body limit set at :105 and keeps its own larger
+; one. That is a body-limit decision and not a routing one, and the
 ; limit itself is turbobaby/client-errors' number: it is named here and not restated.
 pub const NEST_PREFIX : str = "/api";
-pub const MERGED_MODULE_COUNT : u8 = 18;
-pub const MODULES_DECLARING_A_ROUTES_FN : u8 = 18;
+pub const MERGED_MODULE_COUNT : u8 = 19;
+pub const MODULES_DECLARING_A_ROUTES_FN : u8 = 19;
+pub const MERGED_MODULE_COUNT_BEFORE_2026_09_26 : u8 = 18;
 pub const ROUTE_MODULES_NOT_MERGED : u8 = 0;
 pub const GENERAL_BODY_LIMIT_IS_RESTATED_HERE : bool = false;
-pub const MERGE_COMMAND : str = "grep -n for .merge( over src/api/mod.rs on 2026-09-21 returns 24 lines: eighteen calls in api_routes at :84-100 and :105, and six inside the route-wiring test module at :301, :323, :445, :463, :464 and :482.";
+pub const MERGE_COMMAND : str = "grep -n for .merge( over src/api/mod.rs on 2026-09-26 returns 25 lines: nineteen calls in api_routes at :84-101 and :106, and six inside the route-wiring test module at :301, :323, :445, :463, :464 and :482. On 2026-09-21 it returned 24, eighteen of them in api_routes.";
 
 ; Every .route call whose byte offset precedes its file's first cfg(test), with the first string
 ; literal taken as the path and a line break between .route( and that literal tolerated. One
 ; registration may carry several verbs, which is why the pair count exceeds the call count.
 pub const PATH_COMMAND : str = "A python pass over src/api/*.rs on 2026-09-21 collecting the first string literal of every .route call before the first cfg(test) marker: 124 registrations, 103 distinct paths, 140 distinct verb-and-path pairs. The one route in src/api/observability.rs is inside that file's test module and is excluded. The same pass earlier that day read 125, 104 and 141; the difference is the single unreachable registration removed from src/api/quest.rs, and tests/api_document_pairing.rs replays this pass in Rust on every test run.";
-pub const ROUTE_REGISTRATION_COUNT : u16 = 124;
-pub const DISTINCT_PATH_COUNT : u16 = 103;
-pub const VERB_PATH_PAIR_COUNT : u16 = 140;
+; RE-MEASURED 2026-09-26 with the same pass: 130 registrations, 109 distinct paths, 146 pairs --
+; the six referral-credit routes, each a new path with one verb. R1 and R2 added no route: the
+; leaderboard and the three closed reads keep their registrations.
+pub const ROUTE_REGISTRATION_COUNT : u16 = 130;
+pub const DISTINCT_PATH_COUNT : u16 = 109;
+pub const VERB_PATH_PAIR_COUNT : u16 = 146;
+pub const ROUTE_REGISTRATION_COUNT_BEFORE_2026_09_26 : u16 = 124;
+pub const DISTINCT_PATH_COUNT_BEFORE_2026_09_26 : u16 = 103;
+pub const VERB_PATH_PAIR_COUNT_BEFORE_2026_09_26 : u16 = 140;
+pub const ROUTES_ADDED_2026_09_26 : u16 = 6;
 pub const ROUTE_REGISTRATION_COUNT_BEFORE_REPAIR : u16 = 125;
 pub const DISTINCT_PATH_COUNT_BEFORE_REPAIR : u16 = 104;
 ; /health is registered on the outer router at src/api/mod.rs:76 and is the only path of the 103
 ; that does not sit under the nest. /ping at :83 does sit under it.
 pub const PATHS_OUTSIDE_THE_NEST : u16 = 1;
-pub const API_PATH_COUNT : u16 = 102;
-pub const API_VERB_PATH_PAIR_COUNT : u16 = 139;
+pub const API_PATH_COUNT : u16 = 108;
+pub const API_VERB_PATH_PAIR_COUNT : u16 = 145;
+pub const API_PATH_COUNT_BEFORE_2026_09_26 : u16 = 102;
 pub const API_PATH_COUNT_BEFORE_REPAIR : u16 = 103;
 ; A single-line grep is the wrong instrument here and the difference is not noise. It is wrong in
 ; BOTH directions, which is the part this file used to get wrong about itself.
@@ -203,20 +218,27 @@ pub const API_PATH_COUNT_BEFORE_REPAIR : u16 = 103;
 ; and the census now closes in both directions: naive, minus the one hit outside the careful
 ; pass's scope, plus the 24 it cannot see, is the router.
 pub const SINGLE_LINE_GREP_COMMAND : str = "grep -rho for the seven-character route-and-quote opener over src/api/*.rs, counted with wc -l, and the same pattern extended to the closing quote and passed through sort -u for the paths; measured 2026-09-21";
-pub const SINGLE_LINE_GREP_REGISTRATIONS : u16 = 101;
-pub const SINGLE_LINE_GREP_DISTINCT_PATHS : u16 = 80;
+; Re-measured 2026-09-26: 104 and 83. Three of the six new registrations fit on one line and
+; three were wrapped by rustfmt, so the grep's blind spot grew from 24 to 27.
+pub const SINGLE_LINE_GREP_REGISTRATIONS : u16 = 104;
+pub const SINGLE_LINE_GREP_DISTINCT_PATHS : u16 = 83;
+pub const SINGLE_LINE_GREP_REGISTRATIONS_BEFORE_2026_09_26 : u16 = 101;
 pub const SINGLE_LINE_GREP_REGISTRATIONS_BEFORE_REPAIR : u16 = 102;
 ; The hit the grep has and the census does not: one route registered inside a cfg(test) module.
 pub const GREP_HITS_OUTSIDE_THE_CENSUS_SCOPE : u16 = 1;
 pub const GREP_HIT_OUTSIDE_THE_CENSUS_SCOPE_SITE : str = "src/api/observability.rs:172";
-pub const REGISTRATIONS_A_SINGLE_LINE_GREP_MISSES : u16 = 24;
+pub const REGISTRATIONS_A_SINGLE_LINE_GREP_MISSES : u16 = 27;
+pub const REGISTRATIONS_A_SINGLE_LINE_GREP_MISSES_BEFORE_2026_09_26 : u16 = 24;
 
 ; --- The document, measured -------------------------------------------------------------------
-; src/api/openapi.rs:135-179 derives the served document; its paths list at :153-163 has nine
-; entries and nine stub functions exist to be listed. Each documents exactly one verb.
-pub const DOCUMENTED_PATH_COUNT : u16 = 9;
-pub const DOCUMENTED_VERB_PATH_PAIR_COUNT : u16 = 9;
-pub const DOCUMENT_STUB_COUNT : u16 = 9;
+; src/api/openapi.rs:279-330 derives the served document; its paths list at :297-313 has fifteen
+; entries and fifteen stub functions exist to be listed (nine until 2026-09-26, when the six
+; referral-credit routes were documented as they landed, so the gap below did not grow). Each
+; documents exactly one verb.
+pub const DOCUMENTED_PATH_COUNT : u16 = 15;
+pub const DOCUMENTED_VERB_PATH_PAIR_COUNT : u16 = 15;
+pub const DOCUMENT_STUB_COUNT : u16 = 15;
+pub const DOCUMENTED_PATH_COUNT_BEFORE_2026_09_26 : u16 = 9;
 pub const DOCUMENT_STUBS_NOT_LISTED : u16 = 0;
 ; Cross-check of the nine against the registrations, by path shape with the parameter name
 ; normalized away, on 2026-09-21.
@@ -234,10 +256,12 @@ pub const ROUTED_API_PATHS_NOT_DOCUMENTED_BEFORE_REPAIR : u16 = 94;
 ; growing shows up as a number moving.
 pub const EXEMPT_PATH_COUNT : u16 = 2;
 pub const UNDISCLOSED_PATH_COUNT : u16 = 91;
-; The nine documented paths carry fourteen shipped verb-and-path pairs between them, so five
+; The fifteen documented paths carry twenty shipped verb-and-path pairs between them (nine and
+; fourteen until 2026-09-26; each new path has one verb, and it is documented), so five
 ; shipped verbs sit on a path the document names while going unmentioned themselves. A
 ; path-level reading calls those five documented; they are not.
-pub const PAIRS_ON_DOCUMENTED_PATHS : u16 = 14;
+pub const PAIRS_ON_DOCUMENTED_PATHS : u16 = 20;
+pub const PAIRS_ON_DOCUMENTED_PATHS_BEFORE_2026_09_26 : u16 = 14;
 pub const UNDOCUMENTED_VERBS_ON_DOCUMENTED_PATHS : u16 = 5;
 
 ; --- Nothing gates the two together -----------------------------------------------------------
@@ -250,12 +274,16 @@ pub const WIRING_GATE_SUBJECT_IS_THE_MODULE : bool = true;
 pub const WIRING_GATE_SUBJECT_IS_THE_PATH : bool = false;
 pub const WIRING_GATE_READS_THE_DOCUMENT : bool = false;
 pub const WIRING_GATE_FLOOR : u8 = 10;
-pub const WIRING_GATE_SUBJECTS_TODAY : u8 = 18;
+pub const WIRING_GATE_SUBJECTS_TODAY : u8 = 19;
+pub const WIRING_GATE_SUBJECTS_BEFORE_2026_09_26 : u8 = 18;
 ; The floor's own comment at src/api/mod.rs:391 calls the real count 19. Replaying the
-; recogniser at :369-374 over src/api/*.rs on 2026-09-21 finds 18, all merged. The claim is one
-; high, the floor is unaffected, and the allowlist at :313 is empty as its comment says.
+; recogniser at :369-374 over src/api/*.rs on 2026-09-21 found 18, all merged: the claim was one
+; high. On 2026-09-26 the referral credit's module became the nineteenth, so the claim is now
+; right -- by arrival, not by correction. The floor is unaffected either way, and the allowlist at
+; :313 is empty as its comment says.
 pub const WIRING_GATE_COMMENT_CLAIMS_SUBJECTS : u8 = 19;
-pub const WIRING_GATE_COMMENT_IS_CORRECT : bool = false;
+pub const WIRING_GATE_COMMENT_IS_CORRECT : bool = true;
+pub const WIRING_GATE_COMMENT_WAS_CORRECT_BEFORE_2026_09_26 : bool = false;
 ; Both of these read 0 and false until 2026-09-21. The gate that changed them is
 ; tests/api_document_pairing.rs: seven checks over the two sides as text -- two anti-vacuity
 ; floors (D16), the phantom direction, the prefix-doubling class, the per-module ratchet, the
@@ -266,7 +294,7 @@ pub const PAIRING_GATE_SITE : str = "tests/api_document_pairing.rs";
 pub const PAIRING_GATE_CHECKS : u8 = 7;
 pub const PAIRING_GATE_RATCHET_ROWS : u8 = 17;
 pub const PREFIX_DOUBLING_IS_GATED : bool = true;
-; src/api/openapi.rs:195-239 does gate the document, on vocabulary: it asserts the served text
+; src/api/openapi.rs published_document_tests gates the document on vocabulary: the served text
 ; carries no retired word and does name the product. That is a rebrand gate, and it would pass
 ; unchanged on a document describing nine paths that do not exist.
 pub const DOCUMENT_HAS_A_VOCABULARY_GATE : bool = true;
@@ -368,7 +396,9 @@ pub fn a_miss_can_render_as_success(answer: u8) bool {
 }
 
 ; The bare miss is honest but mute. Naming the path it could not find is what turns a wrong
-; guess into a diagnosis, and it is what src/api/mod.rs:133 does.
+; guess into a diagnosis, and it is what the detail line of missing_route does (src/api/mod.rs:512;
+; :133 inside api_not_found until 2026-09-26, when the answer moved into that one builder so R2's
+; closed reads give it byte for byte).
 pub fn answer_names_the_missing_path(answer: u8) bool {
   return answer == ANSWER_JSON_MISS;
 }
@@ -444,7 +474,7 @@ pub fn wiring_gate_is_awake(subjects_found: u8, floor: u8) bool {
 pub const THIS_FILE_ENUMERATES_THE_PATHS : bool = false;
 pub const NO_ROUTE_TABLE_NOTE : str = "102 path strings would make this file a second router, wrong on the first route anyone adds, and wrong silently. Reading a list here instead of the code is the failure this contract describes, so the counts are dated and the command that produced each is recorded beside it.";
 pub const THIS_FILE_CARRIES_A_SCHEMA_FRAGMENT : bool = false;
-pub const NO_SCHEMA_NOTE : str = "No body shape, parameter or tag from src/api/openapi.rs is copied here, and there is less to copy than the word OpenAPI suggests: all nine stubs declare their success body as serde_json::Value (:9, :24, :42, :58, :70, :82, :99, :114, :128) and the single request body is the same (:94), so the document fixes no field of any response it names. That is a fact about the document and not a licence to invent one here.";
+pub const NO_SCHEMA_NOTE : str = "No body shape, parameter or tag from src/api/openapi.rs is copied here, and there is less to copy than the word OpenAPI suggests: all fifteen stubs declare their success body as serde_json::Value, and so does every request body (the order POST's and, since 2026-09-26, the four referral-credit POSTs'), so the document fixes no field of any response it names. The wire types of the referral credit are src/trios/referral_credit.rs's, and turbobaby/referral-credit owns them. That is a fact about the document and not a licence to invent one here. (On 2026-09-21 the nine stubs' success bodies sat at :9, :24, :42, :58, :70, :82, :99, :114 and :128 and the one request body at :94.)";
 pub const EXEMPTION_REGISTER_EXISTS : bool = true;
 pub const EXEMPTION_REGISTER_SITE : str = "tests/api_document_pairing.rs";
 pub const EXEMPTION_NOTE : str = "Until 2026-09-21 the exempt argument had no shipped source: nothing in the repository recorded that a routed path was deliberately undocumented, so all 94 were undisclosed. DOCUMENTATION_EXEMPT in the gate is that source now, and it is deliberately the smallest thing that can be called one -- two entries, each naming the file and line where the source itself says the path is not a client surface. The warning the earlier reading carried stands and is the reason the register is kept small and re-checked: a default of exempt, or a register that grows by assertion rather than by citation, turns the whole gap green while the count of undocumented paths never moves. The gate re-derives both halves on every run and fails on an entry whose path has stopped being routed or has started being documented.";
@@ -488,7 +518,14 @@ test api_surface_identity_is_its_own {
 }
 
 test api_surface_router_census_is_internally_consistent {
-  assert MERGED_MODULE_COUNT == 18;
+  assert MERGED_MODULE_COUNT == 19;
+  assert MERGED_MODULE_COUNT_BEFORE_2026_09_26 + 1 == MERGED_MODULE_COUNT;
+  assert ROUTE_REGISTRATION_COUNT_BEFORE_2026_09_26 + ROUTES_ADDED_2026_09_26 == ROUTE_REGISTRATION_COUNT;
+  assert DISTINCT_PATH_COUNT_BEFORE_2026_09_26 + ROUTES_ADDED_2026_09_26 == DISTINCT_PATH_COUNT;
+  assert VERB_PATH_PAIR_COUNT_BEFORE_2026_09_26 + ROUTES_ADDED_2026_09_26 == VERB_PATH_PAIR_COUNT;
+  assert API_PATH_COUNT_BEFORE_2026_09_26 + ROUTES_ADDED_2026_09_26 == API_PATH_COUNT;
+  assert ROUTER_SOURCE_LINES > ROUTER_SOURCE_LINES_BEFORE_2026_09_26;
+  assert DOCUMENT_SOURCE_LINES > DOCUMENT_SOURCE_LINES_BEFORE_2026_09_26;
   assert MODULES_DECLARING_A_ROUTES_FN == MERGED_MODULE_COUNT;
   assert ROUTE_MODULES_NOT_MERGED == 0;
   assert API_PATH_COUNT + PATHS_OUTSIDE_THE_NEST == DISTINCT_PATH_COUNT;
@@ -505,7 +542,8 @@ test api_surface_a_single_line_grep_miscounts_the_router_in_both_directions {
   assert GREP_HITS_OUTSIDE_THE_CENSUS_SCOPE == 1;
   assert GREP_HIT_OUTSIDE_THE_CENSUS_SCOPE_SITE == "src/api/observability.rs:172";
   ; The removal of the unreachable registration moved the grep by exactly one too.
-  assert SINGLE_LINE_GREP_REGISTRATIONS + 1 == SINGLE_LINE_GREP_REGISTRATIONS_BEFORE_REPAIR;
+  assert SINGLE_LINE_GREP_REGISTRATIONS_BEFORE_2026_09_26 + 1 == SINGLE_LINE_GREP_REGISTRATIONS_BEFORE_REPAIR;
+  assert SINGLE_LINE_GREP_REGISTRATIONS_BEFORE_2026_09_26 - GREP_HITS_OUTSIDE_THE_CENSUS_SCOPE + REGISTRATIONS_A_SINGLE_LINE_GREP_MISSES_BEFORE_2026_09_26 == ROUTE_REGISTRATION_COUNT_BEFORE_2026_09_26;
 }
 
 test api_surface_document_census_closes_against_the_router {
@@ -569,12 +607,15 @@ test api_surface_the_repair_moved_exactly_one_path {
   assert DISTINCT_PATH_COUNT_BEFORE_REPAIR == 104;
   assert API_PATH_COUNT_BEFORE_REPAIR == 103;
   assert ROUTED_API_PATHS_NOT_DOCUMENTED_BEFORE_REPAIR == 94;
-  assert ROUTE_REGISTRATION_COUNT + 1 == ROUTE_REGISTRATION_COUNT_BEFORE_REPAIR;
-  assert DISTINCT_PATH_COUNT + 1 == DISTINCT_PATH_COUNT_BEFORE_REPAIR;
-  assert API_PATH_COUNT + 1 == API_PATH_COUNT_BEFORE_REPAIR;
+  assert ROUTE_REGISTRATION_COUNT_BEFORE_2026_09_26 + 1 == ROUTE_REGISTRATION_COUNT_BEFORE_REPAIR;
+  assert DISTINCT_PATH_COUNT_BEFORE_2026_09_26 + 1 == DISTINCT_PATH_COUNT_BEFORE_REPAIR;
+  assert API_PATH_COUNT_BEFORE_2026_09_26 + 1 == API_PATH_COUNT_BEFORE_REPAIR;
   assert ROUTED_API_PATHS_NOT_DOCUMENTED + 1 == ROUTED_API_PATHS_NOT_DOCUMENTED_BEFORE_REPAIR;
-  assert DOCUMENTED_PATH_COUNT == 9;
-  assert census_closes(API_PATH_COUNT_BEFORE_REPAIR, DOCUMENTED_PATH_COUNT, DOCUMENTED_PATHS_NOT_ROUTED, ROUTED_API_PATHS_NOT_DOCUMENTED_BEFORE_REPAIR) == true;
+  assert DOCUMENTED_PATH_COUNT_BEFORE_2026_09_26 == 9;
+  assert census_closes(API_PATH_COUNT_BEFORE_REPAIR, DOCUMENTED_PATH_COUNT_BEFORE_2026_09_26, DOCUMENTED_PATHS_NOT_ROUTED, ROUTED_API_PATHS_NOT_DOCUMENTED_BEFORE_REPAIR) == true;
+  ; 2026-09-26: six routes and six stubs arrived together, so the undocumented count held still.
+  assert DOCUMENTED_PATH_COUNT - DOCUMENTED_PATH_COUNT_BEFORE_2026_09_26 == ROUTES_ADDED_2026_09_26;
+  assert PAIRS_ON_DOCUMENTED_PATHS - PAIRS_ON_DOCUMENTED_PATHS_BEFORE_2026_09_26 == ROUTES_ADDED_2026_09_26;
 }
 
 test api_surface_drift_was_silent_here_until_the_gate_existed {
@@ -594,8 +635,10 @@ test api_surface_the_wiring_gate_is_awake_but_looking_elsewhere {
   assert WIRING_GATE_SUBJECT_IS_THE_MODULE == true;
   assert WIRING_GATE_SUBJECT_IS_THE_PATH == false;
   assert WIRING_GATE_READS_THE_DOCUMENT == false;
-  assert WIRING_GATE_COMMENT_CLAIMS_SUBJECTS != WIRING_GATE_SUBJECTS_TODAY;
-  assert WIRING_GATE_COMMENT_IS_CORRECT == false;
+  assert WIRING_GATE_COMMENT_CLAIMS_SUBJECTS == WIRING_GATE_SUBJECTS_TODAY;
+  assert WIRING_GATE_COMMENT_IS_CORRECT == true;
+  assert WIRING_GATE_COMMENT_CLAIMS_SUBJECTS != WIRING_GATE_SUBJECTS_BEFORE_2026_09_26;
+  assert WIRING_GATE_COMMENT_WAS_CORRECT_BEFORE_2026_09_26 == false;
 }
 
 test api_surface_the_vocabulary_gate_is_still_not_a_pairing_gate {

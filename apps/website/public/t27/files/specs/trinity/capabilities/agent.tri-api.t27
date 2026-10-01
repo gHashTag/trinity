@@ -22,8 +22,8 @@ pub const DISPOSITION : str = "executable";
 pub const PROFILE : str = "headless";
 ; The canonical spec: a path in this repository, trinity:<path> for a spec authored in the
 ; consumer, <repo>:<path> elsewhere, "" while none exists. Never a mirrored copy.
-pub const CANONICAL_SPEC : str = "";
-pub const DIALECT : str = "none";
+pub const CANONICAL_SPEC : str = "specs/api/tri_api_loop.t27";
+pub const DIALECT : str = "t27";
 ; Implementation and generated paths of the pinned tree (trinity: prefix), checked to exist.
 pub const IMPLEMENTATION : [1]str = ["trinity:src/tri-api"];
 pub const GENERATED : [0]str = [];
@@ -38,7 +38,7 @@ pub const EVIDENCE : str = "measured";
 pub const EVIDENCE_SOURCE : str = "https://github.com/gHashTag/trinity/actions/runs/34678824282 -- Build & Test on ubuntu-latest with zig 0.15.2 at 79ffb034 (the pinned 976df517 differs from it only in apps/website/src/data/signalHealth.json): zig build -Dci=true succeeded. zig build test is piped through tee there, so its exit code is not measured (gHashTag/trinity#616).";
 ; The work package of gHashTag/trinity#988 that owns this capability's contract.
 pub const WORK_PACKAGE : str = "S07";
-pub const NOTE : str = "S07 makes its request/stream/tool cycle and permission decisions an executable contract; credentials never enter specs or evidence.";
+pub const NOTE : str = "S07: specs/api/tri_api_loop.t27, tri_api_permissions.t27 and tri_api_context.t27 state the request/tool cycle, the permission boundary and the context budget as the pinned source and the binary built from it behave, with twenty-nine findings; tools/trinity_tri_api.py runs the pinned tests in four optimize modes and drives the real binary against a scripted provider. Credentials never enter specs or evidence: the harness sends a fake key to a local server.";
 pub const ENABLED : bool = true;
 
 test card_is_bound_to_its_package {

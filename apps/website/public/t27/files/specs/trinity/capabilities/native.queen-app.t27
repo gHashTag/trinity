@@ -38,7 +38,7 @@ pub const EVIDENCE : str = "declared";
 pub const EVIDENCE_SOURCE : str = "Present in the pinned tree; no CI step builds it.";
 ; The work package of gHashTag/trinity#988 that owns this capability's contract.
 pub const WORK_PACKAGE : str = "S10";
-pub const NOTE : str = "";
+pub const NOTE : str = "S10 (gHashTag/t27#4829) measured it at gHashTag/trinity afc9d384, past this card's pin: swift build passes (Swift 6.4, 0 errors) and swift test passes 60 tests in 10 suites, and none of its 204 sources reads the catalog, the atlas, GitHub or a public Queen endpoint, so it has no project view; conformance/trinity/queen_views_native.json. Still no CI step builds it.";
 pub const ENABLED : bool = true;
 
 test card_is_bound_to_its_package {
