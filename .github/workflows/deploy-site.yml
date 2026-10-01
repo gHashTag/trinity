@@ -39,7 +39,13 @@ jobs:
         run: |
           npm ci
           npm run check:queen-evidence
-          npx vite build
+          # `npm run build`, not `npx vite build`: npm fires the `prebuild` hook (the spec
+          # generators, onboarding-from-spec among them) and npx does not. The apex's own
+          # publisher (ghashtag.github.io publish-website.yml) runs `npm run build`, and on
+          # 2026-10-01 16:38Z that hook refused trinity#1176's stale onboarding counts. This
+          # job, the second door to the same domain, would have shipped them: two writers
+          # to one site must answer to one predicate.
+          npm run build
 
       # The same three checks the PR runs, against the tree being published.
       # A deploy that skips them is how a broken build reaches the domain.
