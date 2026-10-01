@@ -261,7 +261,9 @@ const origin = `http://127.0.0.1:${server.address().port}`;
 
 const profile = mkdtempSync(join(tmpdir(), 'queen-spec-sync-chrome-'));
 const chrome = spawn(CHROME, ['--headless=new', '--remote-debugging-port=0', `--user-data-dir=${profile}`, '--no-first-run', '--no-default-browser-check',
-  '--disable-extensions', '--window-size=1440,900', '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', 'about:blank'], { stdio: ['ignore', 'ignore', 'pipe'] });
+  '--disable-extensions', '--window-size=1440,900', '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader',
+  // A CI runner's Chrome cannot start its sandbox, and /dev/shm there is small.
+  ...(process.platform === 'linux' ? ['--no-sandbox', '--disable-dev-shm-usage'] : []), 'about:blank'], { stdio: ['ignore', 'ignore', 'pipe'] });
 process.on('exit', () => { try { chrome.kill('SIGKILL'); } catch { /* gone */ } try { rmSync(profile, { recursive: true, force: true }); } catch { /* gone */ } server.close(); });
 const deadline = setTimeout(() => report(2, 'deadline 15 min'), 15 * 60000);
 
