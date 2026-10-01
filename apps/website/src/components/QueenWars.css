@@ -604,14 +604,10 @@
    the row head spans the card. No sideways scrolling below 860px. */
 @media (max-width: 860px) {
   .queen-wars table[data-stack] { min-width: 0; }
-  .queen-wars table[data-stack] thead {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
+  /* display:none, not a 1px clip: a clipped thead still holds its grid
+     rows, and the viewport contract reads that as an undeclared scroller.
+     Every cell already says its column through data-label. */
+  .queen-wars table[data-stack] thead { display: none; }
   .queen-wars table[data-stack],
   .queen-wars table[data-stack] tbody { display: block; width: 100%; }
   .queen-wars table[data-stack] tr {
