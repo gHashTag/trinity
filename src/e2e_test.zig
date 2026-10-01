@@ -18,7 +18,6 @@ const vsa = @import("vsa.zig");
 const vm = @import("vm.zig");
 const sdk = @import("sdk.zig");
 const hybrid = @import("hybrid.zig");
-const packed_trit = @import("packed_trit.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // E2E TEST 1: VSA → VM → SDK Full Pipeline
@@ -224,10 +223,10 @@ test "E2E: VM program — random → bind → cosine pipeline" {
     });
     try machine.run();
 
-    // unbind(bind(v0,v1), v1) should be similar to v0
-    // Note: JIT engine may return negative cosine (known sign issue),
-    // and at MAX_TRITS dim with ~1/3 zeros, recovery is approximate
-    try std.testing.expect(@abs(machine.registers.f0) > 0.3);
+    // unbind(bind(v0,v1), v1) is v0 wherever v1 is non-zero -- two thirds of the trits -- so
+    // cos(v3, v0) is sqrt(2/3), about 0.82. This test used to accept |f0| > 0.3, because the
+    // ARM64 JIT returned -1.0 here ("known sign issue"); the kernel is fixed and the sign counts.
+    try std.testing.expect(machine.registers.f0 > 0.7);
     try std.testing.expectEqual(@as(u64, 6), machine.cycle_count);
 }
 
@@ -505,8 +504,8 @@ fn runVerdict(allocator: std.mem.Allocator) !VerdictResult {
         if (vsa.countNonZero(&machine.registers.v2) > 0) vm_passed += 1;
     }
 
-    // Check 4: VM cosine self-similarity
-    // Note: JIT engine has known sign issue on cosine, so test absolute value
+    // Check 4: VM cosine self-similarity (it used to take the absolute value, to pass the
+    // ARM64 JIT's -1.0; that kernel is fixed)
     {
         var machine = vm.VSAVM.init(allocator);
         defer machine.deinit();
@@ -516,7 +515,7 @@ fn runVerdict(allocator: std.mem.Allocator) !VerdictResult {
             .{ .opcode = .halt },
         });
         try machine.run();
-        if (@abs(machine.registers.f0) > 0.99) vm_passed += 1;
+        if (machine.registers.f0 > 0.99) vm_passed += 1;
     }
 
     // Check 5: VM cycle count tracking

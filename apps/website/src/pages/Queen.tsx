@@ -11,7 +11,7 @@ import { motion } from "framer-motion";
 import { Link, useSearchParams } from "react-router-dom";
 import { QueenSpecs } from "../components/QueenSpecs";
 import { QueenAgents } from "../components/QueenAgents";
-import { SELECTION_KEY, isExplorerTab } from "../lib/queenEmbed";
+import { SELECTION_KEY, isExplorerTab, leaveTabSelections } from "../lib/queenEmbed";
 import { hiveFeedHealth, hiveDisplayRecords, hiveSameRepositorySnapshot, placeHiveDisplays, type HiveDisplay } from "../components/queenHiveDisplay";
 import { QueenComb } from "../components/QueenComb";
 import { QueenCommandPanel, type CommandItem } from "../components/QueenCommand";
@@ -57,7 +57,6 @@ import {
   spiralOrder,
   hexCellSummaries,
   HEX_HOME,
-  type FoundationIssue,
   FIELD_LAYERS,
   layersFromSearch,
   type FieldLayer,
@@ -131,6 +130,8 @@ import "./queen-phone.css";
 // The address moved to lib/queenApi so the homepage can ask the same server
 // this page asks, rather than carry a second copy of the literal.
 import { BOUNDARY_EXAMPLE_ISSUE, QUEEN_API } from "../lib/queenApi";
+import { worldParam } from "../lib/queenCorpusCheck";
+import { useCorpus, type CorpusSource, type FoundationSnapshot, type ManifestPart, type ModulesSnapshot } from "../lib/queenCorpus";
 import { deriveT27Evolution } from "../lib/t27Evolution";
 const LIVE_POLL_MS = 5_000;
 // The clients lane is asked far less often than the public board. It is one
@@ -1181,78 +1182,26 @@ function useQueenStatus(): LoadState {
 }
 
 /**
- * The repository's modules (M-2): public/queen/modules.json, a scan stamped
- * with its commit, until /queen/public-modules exists on the server (M-1).
+ * The repository's modules (M-2): the server's scan (/queen/public-modules,
+ * M-1) first, public/queen/modules.json -- a scan stamped with its commit --
+ * when the wire has none. Read through the corpus store like every other part.
  */
-function useQueenModules(): { data: { repo?: string; commit: string | null; generatedAt: string; modules: HudModule[]; source: "wire" | "file" } | null; error: string | null } {
-  const [data, setData] = useState<{ repo?: string; commit: string | null; generatedAt: string; modules: HudModule[]; source: "wire" | "file" } | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  useEffect(() => {
-    let active = true;
-    // The server's scan first (/queen/public-modules, M-1); the loop's
-    // snapshot in public/queen/modules.json only when the wire has none.
-    const readFrom = async (url: string, source: "wire" | "file") => {
-      const response = await fetch(url, { headers: { Accept: "application/json" }, cache: "no-store" });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const next = (await response.json()) as { commit: string | null; generatedAt: string; modules: HudModule[] };
-      if (!Array.isArray(next.modules) || next.modules.length === 0) throw new Error("no modules");
-      return { ...next, source };
-    };
-    const read = () =>
-      readFrom(`${QUEEN_API}/queen/public-modules`, "wire")
-        .catch(() => readFrom("./queen/modules.json", "file"))
-        .then((next) => { if (active) { setData(next); setError(null); } })
-        .catch((nextError: unknown) => { if (active) setError(nextError instanceof Error ? nextError.message : String(nextError)); });
-    void read();
-    const timer = window.setInterval(read, MODULES_POLL_MS);
-    return () => { active = false; window.clearInterval(timer); };
-  }, []);
+function useQueenModules(): { data: (ModulesSnapshot & { source: CorpusSource }) | null; error: string | null } {
+  const { part, error } = useCorpus("modules", { wire: `${QUEEN_API}/queen/public-modules`, pollMs: MODULES_POLL_MS });
+  const data = useMemo(() => (part ? { ...part.data, source: part.source } : null), [part]);
   return { data, error };
 }
 
 /**
- * The vendored corpus index, fetched once for the whole page.
- *
- * It is 1.4 MB, and two different parts of this page read it: the hive's
- * coverage and the tech tree's evolution. Asking for it twice would put two
- * concurrent requests for the same megabyte on the wire, because the HTTP cache
- * can only serve the second one after the first has finished. The promise is
- * module-level rather than component-level for the same reason: a remount must
- * not start a third.
- *
- * A failed read stays null, and every caller must read null as "unknown".
+ * The corpus index, from the store every tab and the Explorer frame share
+ * (src/lib/queenCorpus.ts): 1.8 MB, read once per window tree. Its failure is
+ * reported separately from the supervisor's: the TECH TREE is drawn from this
+ * file, so a tree with no index is offline even while the wire is healthy, and
+ * a tree with an index is complete even while the wire is down.
  */
-let t27ManifestPromise: Promise<unknown> | null = null;
-
-/**
- * The corpus index, fetched once for the whole page. Its failure is reported
- * separately from the supervisor's: the TECH TREE is drawn from this file, so
- * a tree with no index is offline even while the wire is healthy, and a tree
- * with an index is complete even while the wire is down.
- */
-function useT27Manifest(): { manifest: unknown; error: string | null } {
-  const [manifest, setManifest] = useState<unknown>(null);
-  const [error, setError] = useState<string | null>(null);
-  useEffect(() => {
-    let active = true;
-    t27ManifestPromise ??= fetch("t27/manifest.json", {
-      headers: { Accept: "application/json" },
-      cache: "default",
-    }).then((response) => {
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      return response.json() as Promise<unknown>;
-    });
-    t27ManifestPromise
-      .then((next) => { if (active) { setManifest(next); setError(null); } })
-      .catch((nextError: unknown) => {
-        t27ManifestPromise = null;
-        if (active) {
-          setError(nextError instanceof Error ? nextError.message : String(nextError));
-        }
-      });
-    return () => { active = false; };
-  }, []);
-  return { manifest, error };
+function useT27Manifest(): { manifest: unknown; part: ManifestPart | null; error: string | null } {
+  const { part, error } = useCorpus("manifest");
+  return { manifest: part?.data ?? null, part, error };
 }
 
 /**
@@ -1265,16 +1214,6 @@ function useT27Coverage(repository: string | null): ReadonlySet<string> | null {
   return useMemo(() => hiveCoverageFromManifest(manifest, repository), [manifest, repository]);
 }
 
-/** The loop's GitHub snapshot: closed issues (the foundation), epics (the castle), rings, releases. */
-interface FoundationSnapshot {
-  generatedAt: string;
-  repo: string;
-  rings: string[];
-  closedIssues: FoundationIssue[];
-  epics: Array<{ number: number; title: string; state: string; closedAt: string | null; labels: string[]; ring: string | null; ringBy: string | null; children: Array<{ number: number; title: string; state: string; closedAt: string | null }> }>;
-  releases: Array<{ tag: string; name: string; publishedAt: string | null; prerelease: boolean }>;
-}
-
 /**
  * The honeycomb's facts from GitHub: the server's route first
  * (/queen/public-foundation, when it exists), the loop's dated snapshot in
@@ -1282,27 +1221,9 @@ interface FoundationSnapshot {
  * labels or epics, so this is the only honest source; absent, the layers
  * read a dash and draw nothing.
  */
-function useQueenFoundation(): { data: (FoundationSnapshot & { source: "wire" | "file" }) | null; error: string | null } {
-  const [data, setData] = useState<(FoundationSnapshot & { source: "wire" | "file" }) | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  useEffect(() => {
-    let active = true;
-    const readFrom = async (url: string, source: "wire" | "file") => {
-      const response = await fetch(url, { headers: { Accept: "application/json" }, cache: "no-cache" });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const next = (await response.json()) as FoundationSnapshot;
-      if (!Array.isArray(next.closedIssues) || typeof next.generatedAt !== "string") throw new Error("no snapshot");
-      return { ...next, rings: Array.isArray(next.rings) ? next.rings : [], epics: Array.isArray(next.epics) ? next.epics : [], releases: Array.isArray(next.releases) ? next.releases : [], source };
-    };
-    const read = () =>
-      readFrom(`${QUEEN_API}/queen/public-foundation`, "wire")
-        .catch(() => readFrom("./queen/foundation.json", "file"))
-        .then((next) => { if (active) { setData(next); setError(null); } })
-        .catch((nextError: unknown) => { if (active) setError(nextError instanceof Error ? nextError.message : String(nextError)); });
-    void read();
-    const timer = window.setInterval(read, FOUNDATION_POLL_MS);
-    return () => { active = false; window.clearInterval(timer); };
-  }, []);
+function useQueenFoundation(): { data: (FoundationSnapshot & { source: CorpusSource }) | null; error: string | null } {
+  const { part, error } = useCorpus("foundation", { wire: `${QUEEN_API}/queen/public-foundation`, pollMs: FOUNDATION_POLL_MS });
+  const data = useMemo(() => (part ? { ...part.data, source: part.source } : null), [part]);
   return { data, error };
 }
 
@@ -2957,9 +2878,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
       setHashParams(() => {
         const leaving = (hashParamsOf(window.location.hash).get("tab") ?? "comb") !== next;
         const params = tabAddress(window.location.hash, next);
-        if (leaving) {
-          for (const key of Object.values(SELECTION_KEY)) params.delete(key);
-        }
+        if (leaving) leaveTabSelections(params);
         if (card && isExplorerTab(next)) params.set(SELECTION_KEY[next], card);
         return params;
       }, { replace: true });
@@ -3325,6 +3244,14 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
     );
     return () => { live = false; };
   }, []);
+  // The SPECS rung is the corpus store's count, the number the Explorer frame
+  // prints from the same part; the catalogs' generated ladder is the fallback
+  // until the manifest arrives. qa/queen-spec-sync-contract.mjs holds them equal.
+  const corpus = useT27Manifest().part;
+  const rungCounts = useMemo<LadderCounts | null>(
+    () => (ladderCounts && corpus ? { ...ladderCounts, specs: corpus.identity.specCount } : ladderCounts),
+    [ladderCounts, corpus],
+  );
 
   useEffect(
     () => () => {
@@ -3492,7 +3419,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
       current={view}
       onSelect={setView}
       aria={c.ladderAria}
-      counts={ladderCounts}
+      counts={rungCounts}
     />
   );
   const boardNav = (
@@ -3769,6 +3696,12 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
       // not data-view, which said "specs" on one of the six and left the other
       // five reserving 66px for a row that is not rendered on any of them.
       data-rail-view={railViewOf(view)}
+      // The corpus every tab is reading, from the one store: the Explorer frame
+      // stamps the same three on its root, and qa/queen-spec-sync-contract.mjs
+      // reads both on every tab and requires them equal.
+      data-spec-count={corpus?.identity.specCount}
+      data-corpus-version={corpus?.version}
+      data-corpus-source={corpus?.source}
     >
       <section
         className="queen27-hud-viewport"
@@ -3985,6 +3918,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
             <QueenSpecs
               showDirective={isNarrow}
               onNavigate={setView}
+              world={sharedCatalog ? worldParam(hashParams.get("world")) : null}
               ladder={ladderNav}
               c={{
                 directive: c.specsDirective,

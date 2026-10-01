@@ -88,10 +88,11 @@ module Placement {
 
     // === Floorplan ===
 
-    pub struct Floorplan {
-        name : &str,
-        device : &str,
-    }
+pub struct Floorplan {
+    name : &str,
+    device : &str,
+    _dummy : u32,
+}
 
     fn floorplan(name: &str, device: &str) -> Floorplan {
         return Floorplan{

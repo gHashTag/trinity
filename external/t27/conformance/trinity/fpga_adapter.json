@@ -1,0 +1,218 @@
+{
+ "schema": "trinity.fpga-adapter-conformance.v1",
+ "spec": "specs/fpga/adapter.t27",
+ "tool": "tools/trinity_fpga_adapter.py",
+ "upstream": {
+  "issue": "gHashTag/t27#3573",
+  "epic": "gHashTag/trinity#988",
+  "work_package": "S11",
+  "local": "dmitrii-f-t27/trinity-memory#66"
+ },
+ "receipts": [
+  {
+   "id": "stage2-golden-dense5",
+   "schema": "trinity.fpga-receipt.v1",
+   "contract_version": "1",
+   "kind": "device",
+   "hardware": true,
+   "bitstream": {
+    "sha256": "074dfd927406f17dae29386b055f04fd6ef65f552bea1c6f3dcbb6c4977414b9",
+    "bytes": 9730805,
+    "path_resolved": null
+   },
+   "provenance": {
+    "bitstream_sha256": "074dfd927406f17dae29386b055f04fd6ef65f552bea1c6f3dcbb6c4977414b9",
+    "commit": "57627bee",
+    "routed_fmax_mhz": 64.32,
+    "verdict": "PASS"
+   },
+   "config": {
+    "flasher": "openFPGALoader",
+    "cable": "digilent_hs2",
+    "target": "sram",
+    "board": "alinx_ax7203"
+   },
+   "board": {
+    "idcode_full": "0x13636093",
+    "idcode_printed": "0x3636093",
+    "part": "xc7a200tfbg484-2"
+   },
+   "transcript_sha256": "185d397f390e9575b14fd16edd1fea3e002b3474f17f92315df12df5ffd1c3d4",
+   "result_line": "HW RESULT: 320/320 bit-exact",
+   "note": "BitNet b1.58 2B4T layer-0 q_proj rows 0-319 (819,200 weights, dense5), every Y line equal to the t27/C reference",
+   "captured_utc": "2026-09-27"
+  },
+  {
+   "id": "stage2-golden-baseline2",
+   "schema": "trinity.fpga-receipt.v1",
+   "contract_version": "1",
+   "kind": "device",
+   "hardware": true,
+   "bitstream": {
+    "sha256": "5ec788254c3da818e904151bf26f4216601f5a25b1bd8d6288df8e90ba589f55",
+    "bytes": 9730808,
+    "path_resolved": null
+   },
+   "provenance": {
+    "bitstream_sha256": "5ec788254c3da818e904151bf26f4216601f5a25b1bd8d6288df8e90ba589f55",
+    "commit": "31005e28",
+    "routed_fmax_mhz": 61.14,
+    "verdict": "PASS"
+   },
+   "config": {
+    "flasher": "openFPGALoader",
+    "cable": "digilent_hs2",
+    "target": "sram",
+    "board": "alinx_ax7203"
+   },
+   "board": {
+    "idcode_full": "0x13636093",
+    "idcode_printed": "0x3636093",
+    "part": "xc7a200tfbg484-2"
+   },
+   "transcript_sha256": "886da7ef0657cd05b176ae42263ff722fb11183e76d78bdf49e2093a714f2e41",
+   "result_line": "HW RESULT: 320/320 bit-exact",
+   "note": "the same chunk in baseline2 (fmt 0), 320/320 bit-exact",
+   "captured_utc": "2026-09-27"
+  },
+  {
+   "id": "stage2-measure-dense5",
+   "schema": "trinity.fpga-receipt.v1",
+   "contract_version": "1",
+   "kind": "device",
+   "hardware": true,
+   "bitstream": {
+    "sha256": "074dfd927406f17dae29386b055f04fd6ef65f552bea1c6f3dcbb6c4977414b9",
+    "bytes": 9730805,
+    "path_resolved": null
+   },
+   "provenance": {
+    "bitstream_sha256": "074dfd927406f17dae29386b055f04fd6ef65f552bea1c6f3dcbb6c4977414b9",
+    "commit": "57627bee",
+    "routed_fmax_mhz": 64.32,
+    "verdict": "PASS"
+   },
+   "config": {
+    "flasher": "openFPGALoader",
+    "cable": "digilent_hs2",
+    "target": "sram",
+    "board": "alinx_ax7203"
+   },
+   "board": {
+    "idcode_full": "0x13636093",
+    "idcode_printed": "0x3636093",
+    "part": "xc7a200tfbg484-2"
+   },
+   "transcript_sha256": "3243d252d6efbea136edb22ea7325ac777dd733343e86da2248cb338207423f6",
+   "result_line": "HW RESULT: 12/12 runs bit-exact",
+   "note": "weights/s, consumer B: 1,478,697 +- 65 (12 runs, #65)",
+   "captured_utc": "2026-09-27"
+  },
+  {
+   "id": "stage2-measure-baseline2",
+   "schema": "trinity.fpga-receipt.v1",
+   "contract_version": "1",
+   "kind": "device",
+   "hardware": true,
+   "bitstream": {
+    "sha256": "5ec788254c3da818e904151bf26f4216601f5a25b1bd8d6288df8e90ba589f55",
+    "bytes": 9730808,
+    "path_resolved": null
+   },
+   "provenance": {
+    "bitstream_sha256": "5ec788254c3da818e904151bf26f4216601f5a25b1bd8d6288df8e90ba589f55",
+    "commit": "31005e28",
+    "routed_fmax_mhz": 61.14,
+    "verdict": "PASS"
+   },
+   "config": {
+    "flasher": "openFPGALoader",
+    "cable": "digilent_hs2",
+    "target": "sram",
+    "board": "alinx_ax7203"
+   },
+   "board": {
+    "idcode_full": "0x13636093",
+    "idcode_printed": "0x3636093",
+    "part": "xc7a200tfbg484-2"
+   },
+   "transcript_sha256": "2eb8566633aef898c0dee704366d44baf4128767895ba9ef1c9551c6881df004",
+   "result_line": "HW RESULT: 12/12 runs bit-exact",
+   "note": "weights/s, consumer B: 1,478,726 +- 97 (12 runs, #65)",
+   "captured_utc": "2026-09-27"
+  },
+  {
+   "id": "stage2-build-record-only",
+   "schema": "trinity.fpga-receipt.v1",
+   "contract_version": "1",
+   "kind": "dry_run",
+   "hardware": false,
+   "bitstream": {
+    "sha256": "074dfd927406f17dae29386b055f04fd6ef65f552bea1c6f3dcbb6c4977414b9",
+    "bytes": 9730805,
+    "path_resolved": null
+   },
+   "provenance": {
+    "bitstream_sha256": "074dfd927406f17dae29386b055f04fd6ef65f552bea1c6f3dcbb6c4977414b9",
+    "commit": "57627bee",
+    "routed_fmax_mhz": 64.32,
+    "verdict": "PASS"
+   },
+   "config": {
+    "flasher": "openFPGALoader",
+    "cable": "digilent_hs2",
+    "target": "sram"
+   },
+   "note": "synthesis and routed reports only; no device was touched (#3573's law)"
+  }
+ ],
+ "negatives": [],
+ "last_check": {
+  "schema": "trinity.fpga-receipt.v1",
+  "checked_at": "2026-09-27T09:33:41Z",
+  "contract": {
+   "version": "1",
+   "spec": "specs/fpga/adapter.t27",
+   "idcode_full": "0x13636093",
+   "errors": [
+    "wrong_version",
+    "hash_mismatch",
+    "bitstream_absent",
+    "bitstream_empty",
+    "placeholder_command",
+    "idcode_mismatch",
+    "transcript_missing",
+    "dry_run_as_device"
+   ]
+  },
+  "receipts": [
+   {
+    "id": "stage2-golden-dense5",
+    "kind": "device",
+    "status": "pass"
+   },
+   {
+    "id": "stage2-golden-baseline2",
+    "kind": "device",
+    "status": "pass"
+   },
+   {
+    "id": "stage2-measure-dense5",
+    "kind": "device",
+    "status": "pass"
+   },
+   {
+    "id": "stage2-measure-baseline2",
+    "kind": "device",
+    "status": "pass"
+   },
+   {
+    "id": "stage2-build-record-only",
+    "kind": "dry_run",
+    "status": "pass"
+   }
+  ],
+  "negatives": [],
+  "pass": true
+ }
+}

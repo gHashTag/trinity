@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // specs/formats/hf_bitnet.t27 -- Hugging Face transformers BitNet packed weights
-// Restates upstream huggingface/transformers@2c4914fb939fe9de0d8e7a798af4684d552f18b4
+// Restates upstream huggingface/transformers@07338b6c74a578868368e6e549dea83414e4b8cb
 // src/transformers/integrations/bitnet.py: :14 (VALUES_PER_ITEM 4), :17-53
 // (pack_weights: T + 1 shifted by 2i into row r of a [ceil(rows/4), cols]
 // uint8 tensor), :56-121 (unpack_weights: slot i of packed row r is row

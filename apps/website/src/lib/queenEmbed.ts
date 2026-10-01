@@ -45,6 +45,17 @@ export const SELECTION_KEY: Readonly<Record<ExplorerTab, string>> = {
   project: 'chapter',
 }
 
+/**
+ * A tab switch: drop every Explorer tab's card except the spec. The comb and
+ * SPECS show one corpus, so its selected spec is the corpus's, not a tab's --
+ * a spec opened on the comb is the one SPECS opens. The other cards are their
+ * own tab's and would name nothing on the next one.
+ */
+export function leaveTabSelections(params: URLSearchParams): URLSearchParams {
+  for (const [tab, key] of Object.entries(SELECTION_KEY)) if (tab !== 'specs') params.delete(key)
+  return params
+}
+
 export function isExplorerTab(value: string): value is ExplorerTab {
   return Object.prototype.hasOwnProperty.call(SELECTION_KEY, value)
 }
@@ -81,11 +92,15 @@ export function validSelection(tab: ExplorerTab, id: string | null): string | nu
   }
 }
 
-/** The frame's route for a tab: the named card, or the Explorer's default when the id is missing or refused. */
-export function explorerFrameHash(tab: ExplorerTab, id: string | null): string {
+/**
+ * The frame's route for a tab: the named card, or the Explorer's default when the id
+ * is missing or refused. `world` is the Queen's chosen world (lib/queenCorpusCheck
+ * worldParam); SPECS narrows its list to it, every other Explorer has no worlds.
+ */
+export function explorerFrameHash(tab: ExplorerTab, id: string | null, world: string | null = null): string {
   const valid = validSelection(tab, id)
+  if (tab === 'specs') return specExplorerHash(valid ?? FEATURED_SPEC, { embedded: true, world })
   if (valid) return cardHash(tab, valid)
-  if (tab === 'specs') return specExplorerHash(FEATURED_SPEC, { embedded: true })
   if (tab === 'project') return systemDocsHash(FIRST_CHAPTER, { embedded: true })
   return `#/${tab}?embed=1`
 }

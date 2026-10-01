@@ -224,6 +224,7 @@ module ISAMemoryOps {
 
     // mem_copy(dst: []TernaryWord, dst_addr: u32, src: []TernaryWord, src_addr: u32, count: usize) -> bool
     // Copy count words from source to destination
+    // NOT LOWERED BY THIS BACKEND: Rust borrowing conflict prevents same-array dst/src calls
     fn mem_copy(dst: []TernaryWord, dst_addr: u32, src: []TernaryWord, src_addr: u32, count: usize) -> bool {
         // Check bounds
         if (dst_addr + count > dst.len() or src_addr + count > src.len()) {

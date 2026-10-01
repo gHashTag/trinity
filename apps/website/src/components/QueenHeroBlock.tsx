@@ -1,7 +1,8 @@
-import { Suspense, lazy, useEffect, useRef, useState } from 'react'
+import { Suspense, lazy, useRef } from 'react'
 import { useI18n } from '../i18n/context'
 import { MODULES } from '../lib/queenModules'
-import { validateAtlas, type UniverseAtlas } from '../lib/queenUniverseAtlas'
+import type { UniverseAtlas } from '../lib/queenUniverseAtlas'
+import { useCorpus } from '../lib/queenCorpus'
 import PlayLine from './PlayLine'
 import type { CombHandle } from './queenHud'
 import './QueenHeroBlock.css'
@@ -45,17 +46,9 @@ export default function QueenHeroBlock() {
   const { lang: rawLang } = useI18n()
   const lang = rawLang === 'ru' ? 'ru' : 'en'
   const t = copy[lang]
-  const [atlas, setAtlas] = useState<UniverseAtlas | null>(null)
+  // The atlas the comb draws, from the corpus store the Queen reads (lib/queenCorpus).
+  const atlas: UniverseAtlas | null = useCorpus('atlas').part?.data ?? null
   const comb = useRef<CombHandle>(null)
-
-  useEffect(() => {
-    const controller = new AbortController()
-    fetch('t27/universe-atlas.json', { signal: controller.signal, credentials: 'omit' })
-      .then((response) => response.ok ? response.json() : Promise.reject(new Error('atlas')))
-      .then((value) => setAtlas(validateAtlas(value)))
-      .catch(() => { if (!controller.signal.aborted) setAtlas(null) })
-    return () => controller.abort()
-  }, [])
 
   const repositories = atlas?.worlds.filter((world) => world.specCount > 0).length ?? 0
   const issues = atlas?.issues.length ?? 0

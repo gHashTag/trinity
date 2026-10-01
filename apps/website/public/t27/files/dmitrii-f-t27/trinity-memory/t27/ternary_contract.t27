@@ -11,6 +11,9 @@
 module TrinityMemoryTernaryContract {
     // Outcome of one vector (tk_verdict).
     const TK_MATCH: i32 = 0;             // decoded; values, scales and flags equal
+    const TK_ERR_HADAMARD_BLOCK: i32 = -63;         // rotate BLOCK not 16/64/256/1024 (v1.1)
+    const TK_ERR_HADAMARD_SIGN_VALUE: i32 = -64;    // a sign neither +1 nor -1
+    const TK_ERR_HADAMARD_SIGNS_LENGTH: i32 = -65;  // SIGNS not exactly BLOCK signs
     const TK_REJECTED: i32 = 1;          // refused a reject vector with its class
     const TK_MATCH_UNFLAGGED: i32 = 2;   // values and scales equal, expected flags not reported
     const TK_MISMATCH: i32 = 3;          // values, scale words, stored bytes or reported flags differ
@@ -62,6 +65,9 @@ module TrinityMemoryTernaryContract {
         if (status == TF_ERR_LAYOUT_UNSUPPORTED) { return "layout_unsupported"; }
         if (status == TF_ERR_MISALIGNED) { return "misaligned"; }
         if (status == TF_ERR_EXTENT) { return "extent"; }
+        if (status == TK_ERR_HADAMARD_BLOCK) { return "hadamard_block"; }
+        if (status == TK_ERR_HADAMARD_SIGN_VALUE) { return "hadamard_sign_value"; }
+        if (status == TK_ERR_HADAMARD_SIGNS_LENGTH) { return "hadamard_signs_length"; }
         return "";
     }
 
@@ -130,7 +136,7 @@ module TrinityMemoryTernaryContract {
         var n: usize = size;
         while (n > 0 && tk_space(text[n - 1])) { n = n - 1; }
         var status: i32 = TF_ERR_FORMAT;
-        while (status >= TF_ERR_EXTENT) {
+        while (status >= TK_ERR_HADAMARD_SIGNS_LENGTH) {
             if (tk_is_name(text, 0, n, tk_error_name(status))) { return status; }
             status = status - 1;
         }

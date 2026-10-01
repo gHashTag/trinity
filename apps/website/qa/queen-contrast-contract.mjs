@@ -194,6 +194,9 @@ const REACHED = {
     'src/components/QueenCombEmbedded.css',
     'src/components/QueenContext.css',
     'src/components/QueenEvidence.css',
+    /* The IGLA board section inside WARS (feat/wars-igla-board): black field,
+       measured by the same census as every other board sheet. */
+    'src/components/IglaBoard.css',
     'src/components/QueenIntel.css',
     'src/components/QueenLoading.css',
     'src/components/QueenMcp.css',

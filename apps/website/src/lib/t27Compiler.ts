@@ -15,6 +15,7 @@
 // lives at `bindings/wasm-explorer/` in t27 and both numbers are zero.
 
 import {resolveManifestSpec,specExplorerHash} from './specCatalog.ts'
+import {loadCorpus} from './queenCorpus.ts'
 
 export interface T27Node {
   kind: string
@@ -294,13 +295,9 @@ export async function prefetchSpec(path: string): Promise<void> {
   }
 }
 
-let manifestPromise:Promise<SpecManifest>|null=null
+/** The corpus index, from the one store every Queen tab reads (src/lib/queenCorpus.ts). */
 export function loadManifest(): Promise<SpecManifest> {
-  if(!manifestPromise)manifestPromise=fetch('t27/manifest.json',{credentials:'omit'}).then(async res=>{
-    if (!res.ok) throw new Error(`could not fetch spec manifest (${res.status})`)
-    return res.json() as Promise<SpecManifest>
-  }).catch(error=>{manifestPromise=null;throw error})
-  return manifestPromise
+  return loadCorpus('manifest').then(part=>part.data)
 }
 
 export async function loadSpecSource(path: string,expectedSha256?:string): Promise<string> {

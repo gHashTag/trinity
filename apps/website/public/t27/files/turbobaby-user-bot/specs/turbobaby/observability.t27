@@ -264,12 +264,17 @@ pub const LOG_RENDERING_NOTE : str = "src/main.rs:394-405 installs a JSON subscr
 ; src/. 29 is the dashboard name guard's view: declared_metrics in src/main.rs searches for the
 ; markers `counter!("` and `gauge!("`, so the twelve literals opened as `counter!(` with the name
 ; on the next line -- src/metrics.rs:21, :35, :127, :141, :150, :159, :168, :233, :242, :256, :295
-; and :303 -- are invisible to it, and this count copied what it sees. "What both guards below do"
+; and :303 -- are invisible to it, and this count copied what it sees. (RE-MEASURED 2026-09-26:
+; eleven. :168 was milestone_awarded's referral_milestone_awarded_total, deleted when its one
+; caller, the milestone award, stopped with R3; the file keeps its length, so :330 and every other
+; line cited here is unmoved. 40 names are emitted, the guard still reads 29, and the count is
+; kept under EMITTED_METRIC_NAME_COUNT_BEFORE_2026_09_26.) "What both guards below do"
 ; is therefore too strong for the name guard: it reads 29 of the 41 names. None of the twelve is
 ; referenced by any of the four PromQL artifacts today, so no finding below moves; a panel that
 ; used one would be refused by that guard as undeclared. The count is now held to src/metrics.rs
 ; by scripts/verify_t27_against_source.py.
-pub const EMITTED_METRIC_NAME_COUNT : u16 = 41;
+pub const EMITTED_METRIC_NAME_COUNT : u16 = 40;
+pub const EMITTED_METRIC_NAME_COUNT_BEFORE_2026_09_26 : u16 = 41;
 pub const METRIC_NAME_IS_A_STRING_LITERAL : bool = true;
 pub const METRIC_NAME_IS_COMPOSED_AT_RUNTIME : bool = false;
 ; src/metrics.rs:508, every_metric_helper_is_wired: a declared helper with zero call sites fails
@@ -327,6 +332,20 @@ pub const RECORDING_RULES_DEAD_NAMES : u8 = 0;
 ; still true -- there are two Grafana dashboards and one of them is read -- but its NAME records
 ; the three-artifact reading this block has since corrected to four. The constants are the
 ; measurement; the name is a birthmark, and it is left standing rather than quietly rewritten.
+; CORRECTED 2026-09-25: the two greps quoted above, grep -rn "prometheus-alerts" --include=*.rs .
+; and grep -rn "prometheus-recording-rules" --include=*.rs ., now return 1 each outside target/,
+; and "which no Rust test in this repository reads at all" in the header is no longer literally
+; true. The owner's ruling of that day (#12, nothing cannabis-related anywhere) rebranded the
+; three unguarded artifacts -- the alert names, the dashboard title and the file headers -- and
+; tests/legacy_vocabulary_wiring.rs (the_dev_and_ops_files_carry_neither_the_old_name_nor_the_vocabulary,
+; its DEV_OPS_FILES list) now reads docs/grafana-dashboard.json, docs/prometheus-alerts.yaml and
+; docs/prometheus-recording-rules.yaml whole, for the old shop's name and the retired vocabulary
+; and for nothing else. It compares no metric name against the emitted set, so none of the three
+; is guarded in this contract's sense (reference_failure_is_silent), and every _READ_BY_A_TEST
+; constant here keeps its value: they count reads that compare names. The rename was one line for
+; one line, so every line of those files cited in this contract still carries the same expression;
+; the wwb: recording-rule prefix was not renamed, because it is the stored series name that the
+; alert expressions and any recorded history select.
 
 ; The five names referenced by a published artifact and emitted by nothing. The first was a real
 ; helper until cycle #108 removed it with its pool (src/metrics.rs:320-328); the other four were
@@ -597,8 +616,10 @@ test a_metric_name_exists_only_where_a_literal_and_a_call_site_do {
   assert METRIC_NAME_IS_COMPOSED_AT_RUNTIME == false;
   assert DECLARED_TO_WIRED_IS_GUARDED == true;
   assert UNWIRED_HELPER_EXEMPTIONS == 0;
-  // 29 until 2026-09-22: the name guard's view, blind to the twelve multi-line literals.
-  assert EMITTED_METRIC_NAME_COUNT == 41;
+  // 29 until 2026-09-22: the name guard's view, blind to the twelve multi-line literals;
+  // 40 since 2026-09-26, when one of those twelve left with the milestone award (R3).
+  assert EMITTED_METRIC_NAME_COUNT == 40;
+  assert EMITTED_METRIC_NAME_COUNT_BEFORE_2026_09_26 - EMITTED_METRIC_NAME_COUNT == 1;
 }
 
 test a_reference_resolves_only_when_name_key_and_value_all_exist {
