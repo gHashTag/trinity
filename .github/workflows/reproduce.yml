@@ -55,5 +55,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: reproduce-headless
-          path: reproduce-headless.json
+          # The record and, beside it, the whole output of each command.
+          path: |
+            reproduce-headless.json
+            reproduce-headless.*.log
           if-no-files-found: error
