@@ -142,8 +142,10 @@ def parse_run_steps(text: str) -> dict:
 
 
 def parse_failed_tests(text: str) -> list:
-    """"error: 'a.test.a fails' failed: expected 1, found -1" -- the test, and the first line of why."""
-    return [{"test": m.group(1), "why": m.group(2).strip()[:200]} for m in re.finditer(r"^error: '([^']+)' failed:(.*)$", text, re.M)]
+    """"error: 'a.test.a fails' failed: expected 1, found -1" -- the test, and the first line of its
+    report. That line is whatever the test wrote first, which for a test that prints is its own
+    output and not the reason; the whole report is in the printed output and the log."""
+    return [{"test": m.group(1), "first_line": m.group(2).strip()[:200]} for m in re.finditer(r"^error: '([^']+)' failed:(.*)$", text, re.M)]
 
 
 def rel(path: str, workspace: str) -> str:
@@ -295,8 +297,7 @@ def judge(sp: dict, doc: dict) -> list:
         bad("UNNAMED_FAILURE", "a compile failure whose root the output does not name")
     if s.get("found"):
         if s["tests_failed"] or rs["with_failures"]:
-            names = [f"{x['test']} ({x['why']})" for x in t.get("failed_tests", [])]
-            bad("TEST_FAILED", f"{s['line']}; {names[:8]}")
+            bad("TEST_FAILED", f"{s['line']}; {[x['test'] for x in t.get('failed_tests', [])][:8]}")
         if s["tests_leaked"] or t["leak_lines"]:
             bad("LEAK", f"{s['tests_leaked']} leaked; {t['leak_lines'][:2]}")
         if s["steps_failed"] != len(t["compile_failures"]) + rs["with_failures"]:
@@ -481,7 +482,7 @@ def main() -> int:
     print(f"  test:  exit {t['rc']}, {t['summary'].get('line', 'no summary')}")
     print(f"         compile failures {[f['root'] for f in t['compile_failures']]}, run steps {t['run_steps']}")
     for x in t["failed_tests"]:
-        print(f"         failed: {x['test']}: {x['why']}")
+        print(f"         failed: {x['test']} (first line of its report: {x['first_line']})")
     for x in doc["violations"]:
         print("VIOLATION:", x)
     print(f"  evidence: {out}")

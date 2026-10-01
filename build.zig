@@ -301,6 +301,14 @@ pub fn build(b: *std.Build) void {
 
     // E2E + Benchmarks + Verdict tests (Phase 4)
     const e2e_tests = b.addTest(.{
+        // This root asserts wall-clock thresholds (1 ms per 1024-trit operation, and a
+        // VERDICT that scores them). Zig 0.15 builds Debug for x86_64 with its own backend,
+        // which compiles the VSA kernels of zig-golden-float -- 71 KB HybridBigInt values
+        // made and returned by value -- into code 185 to 1680 times slower than LLVM's
+        // Debug output on aarch64 (cosine 19.4 ms against 11.6 us per op on CI), so the
+        // thresholds measured the backend. Built with LLVM on every target, they measure
+        // the same code everywhere; the other roots keep the default backend.
+        .use_llvm = true,
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/e2e_test.zig"),
             .target = target,
