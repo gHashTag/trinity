@@ -17,6 +17,7 @@ import {
   cabinetOf,
   callRunners,
   runnerOf,
+  RUNNER_SCRIPT_URL,
   setupLines,
 } from '../src/lib/queenRunners.ts'
 
@@ -132,6 +133,11 @@ const env = (fetch, token = 'session-token') => ({ base: BASE, fetch, token: () 
   const lines = setupLines(TOKEN, 'https://queen.invalid').join('\n')
   assert.ok(lines.includes(TOKEN))
   assert.ok(!/API_KEY|sk-|provider/i.test(lines))
+  // ...and they run the runner, which pushes to the person's own public fork.
+  assert.ok(lines.includes('TRIOS_RUNNER_REMOTE=https://github.com/'))
+  assert.ok(lines.includes('node queen-runner.mjs'))
+  assert.ok(RUNNER_SCRIPT_URL.startsWith('https://raw.githubusercontent.com/gHashTag/BrowserOS/'))
+  assert.ok(RUNNER_SCRIPT_URL.endsWith('/queen-runner.mjs'))
   assert.ok(CABINET_HOME.startsWith('https://app.t27.ai/queen/'))
 }
 
