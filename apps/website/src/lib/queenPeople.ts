@@ -7,23 +7,31 @@
 // somebody with no connection to it. Owner's word, 2026-09-23: only the people
 // who made the specs belong here.
 //
-// The counting moved to `scripts/spec-authors.mjs`, which walks commits under
-// each repository's spec directory with a token and publishes
+// The counting moved to `scripts/spec-authors.mjs`, which finds every public
+// repository with `.t27` files, walks the commits under them with a token,
+// credits each to a GitHub account, and publishes
 // `public/roadmap/spec-authors.json`. The page reads that file: an honest
 // answer needs dozens of GitHub pages and anonymous GitHub allows sixty
 // requests an hour, so a live read could only ever have been a partial one.
 
+/** How a commit reached its account; see `attribute` in the script. */
+export type CreditedVia = 'author' | 'pr' | 'committer' | 'name'
+
+/** One row: a GitHub account. Since 2026-10-02 nothing else is ever a row. */
 export interface SpecAuthor {
-  /** The GitHub login, when the commit's email belongs to an account. */
-  login: string | null
-  /** The name on the commit, which is all there is when it does not. */
-  name: string | null
+  login: string
   avatar: string | null
   commits: number
+  /** How many of `commits` came by each route, so the page can say so. */
+  via: Partial<Record<CreditedVia, number>>
   repos: string[]
-  bot: boolean
-  /** Whether GitHub resolved this author to an account at all. */
-  linked: boolean
+}
+
+/** Commits no GitHub account answers for: a number, never a person. */
+export interface Unattributed {
+  commits: number
+  /** The names on those commits, for the reader who wants to know whose. */
+  names: Record<string, number>
 }
 
 export interface SpecAuthors {
@@ -31,8 +39,9 @@ export interface SpecAuthors {
   /** What was counted, in the file's own words, so the page states it. */
   method: string
   sources: Array<{ repo: string; path: string }>
-  /** Repositories whose history was longer than the script would walk. */
+  /** Repositories or paths whose history was longer than the script would walk. */
   truncated: string[]
+  unattributed: Unattributed
   people: SpecAuthor[]
 }
 
@@ -45,12 +54,10 @@ export interface SpecAuthors {
 const GITHUB_LOGIN = /^[a-zA-Z\d](?:[a-zA-Z\d]|-(?=[a-zA-Z\d])){0,38}$/
 
 export function loginOf(person: SpecAuthor): string | null {
-  return person.linked && person.login && GITHUB_LOGIN.test(person.login)
-    ? person.login
-    : null
+  return GITHUB_LOGIN.test(person.login) ? person.login : null
 }
 
-/** What to call somebody: their login, else the name on their commits. */
-export function nameOf(person: SpecAuthor): string {
-  return person.login ?? person.name ?? 'unknown'
+/** The repositories the counted specs live in, each once, in file order. */
+export function sourceRepos(data: SpecAuthors): string[] {
+  return [...new Set(data.sources.map((s) => s.repo.replace(/^gHashTag\//, '')))]
 }
