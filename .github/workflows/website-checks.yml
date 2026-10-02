@@ -262,7 +262,7 @@ jobs:
       # the four consent constants from being edited into an instruction
       # addressed at somebody else's agent.
       - name: Agent onboarding spec
-        run: npm run check:onboarding
+        run: npm run check:onboarding && npm run test:onboarding-spec
       # The world scan's contract (specs/catalog/discovery.t27 through the compiler),
       # its pure decisions, and the manifest merge that must never touch a founding
       # source. The scan itself runs against GitHub in t27-world-scan.yml.
