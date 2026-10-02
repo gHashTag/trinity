@@ -27,7 +27,11 @@ const ROOT = new URL('..', import.meta.url).pathname;
 const DIST = join(ROOT, 'dist');
 const ROUTE = '#/queen';
 const SHOTS = '/tmp/hud-shots';
-const SIZES = [[1920, 1080], [1440, 900], [1272, 806], [1280, 700], [1280, 600], [390, 844]];
+// 390x640 and 390x560 are the board as a phone shows it: framed by /game on
+// app.t27.ai, under the player's own header and tab bar, it gets 560-640px,
+// not the 844 of a bare phone. The kanban bug of 2026-10-01 (a 14px card box)
+// passed at 390x844 and failed at both of these.
+const SIZES = [[1920, 1080], [1440, 900], [1272, 806], [1280, 700], [1280, 600], [390, 844], [390, 640], [390, 560]];
 // Scoped to the view PR #1155 adds. The other tabs rotted under the HUD's
 // growth on main — the comb renders nine levels deep so the probe counts
 // zero views, the head row overflows at 1272-1280, the comb's hive display
@@ -36,7 +40,11 @@ const SIZES = [[1920, 1080], [1440, 900], [1272, 806], [1280, 700], [1280, 600],
 // rots that fire on every view are answered here (#stat-alerts is no longer
 // drawn, the tri rail door stands for several buttons); put the tab list
 // back to the whole shell when the HUD is re-laid-out.
-const VIEWS = ['wars'];
+// KANBAN joined 2026-10-02, with the readable-card check (11 in the probe):
+// on a phone the board drew six 160px columns whose card boxes were 67px tall
+// round 204px cards, so no column showed a single whole card, and every check
+// above still passed (#1221 fixed it; nothing here would have caught it).
+const VIEWS = ['wars', 'kanban'];
 // The rail used to draw one button per view, so this counted HUD_VIEWS and
 // compared. That stopped being the shape of the thing: SPECS has long stood for
 // six layers behind one button, and KANBAN now stands for itself, MAP and
@@ -264,7 +272,9 @@ const CLIPPERS = [
   '.queen27-hud-orbit', '.queen27-tech-node', '.queen27-factory-bus', '.queen27-factory-machine',
   '.queen27-context-portrait', '.queen27-city-canvas', '.queen27-comb-field',
 ].join(', ');
-const PHONE_DECLARED = '.queen27-hud-top';
+// The direction chips are one sideways row on a phone shorter than 600px
+// (queen-phone.css 9b), so the card box keeps the height of a card.
+const PHONE_DECLARED = '.queen27-hud-top, .queen27-dir-filter';
 
 const PROBE = (phone) => `(() => {
   const de = document.documentElement;
@@ -404,6 +414,31 @@ const PROBE = (phone) => `(() => {
     const text = (n.textContent || '').replace(/\\s+/g, ' ').trim();
     if (/fetch|http[s ]|TypeError|NetworkError|Load failed|ECONN|status \\d{3}/i.test(text)) rawErrors.push((n.className || n.tagName) + '=' + text.slice(0, 60));
   }
+  // 11. A column that has cards shows at least one of them whole. The card box
+  // scrolls, so a card cut by it is reachable -- but a box shorter than its
+  // first card shows a slice of every card and a whole one never, and that is
+  // a board nobody can read. Measured per column, not per screen: the phone
+  // shows one column at a time and the first one may be empty. Asserted on
+  // every size; counted so a board with no cards is not a clean pass.
+  const columns = [...shell.querySelectorAll('.queen27-kanban .queen27-column')];
+  let cards = 0;
+  columns.forEach(col => {
+    const box = col.querySelector('.queen27-cards');
+    const all = box ? [...box.querySelectorAll('.queen27-card')] : [];
+    if (!box || all.length === 0) return;
+    cards += all.length;
+    const b = box.getBoundingClientRect();
+    const whole = all.filter(c => {
+      const r = c.getBoundingClientRect();
+      return r.height > 0 && r.top >= b.top - 0.5 && r.bottom <= b.bottom + 0.5;
+    });
+    const first = all[0].getBoundingClientRect();
+    A(whole.length > 0, 'NO WHOLE CARD IN A COLUMN',
+      (col.querySelector('header')?.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 24),
+      'box ' + Math.round(b.height) + 'px, first card ' + Math.round(first.height) + 'px');
+    A(b.top >= -0.5 && b.top < de.clientHeight - 40, 'CARD BOX OFF SCREEN', Math.round(b.top), de.clientHeight);
+  });
+  counts.cards = cards;
   return { fail, counts, zeros, live, rawErrors, round: (document.getElementById('stat-round') || {}).textContent || '' };
 })()`;
 
@@ -464,6 +499,17 @@ for (const [w, h] of (DEAD ? SIZES.filter(([w]) => w === 1440 || w === 390) : SI
       continue;
     }
     await wait(SETTLE_MS);
+    // The kanban's cards come from their own endpoint, after the readiness
+    // signals above: on a phone the board answered with zero cards one run in
+    // two. Wait for a card the way the loop above waits for the sectors.
+    if (view === 'kanban' && !DEAD) {
+      const since = Date.now();
+      while (Date.now() - since < DATA_WAIT_MS &&
+        !(await evaluate(`document.querySelectorAll('.queen27-kanban .queen27-card').length > 0`))) {
+        await wait(250);
+      }
+      await wait(SETTLE_MS);
+    }
     // A tab is addressable in both directions, so the click must have written
     // it into the address (the comb, the default, carries no tab). Before this
     // the view changed and the address kept naming the tab you had left.
@@ -495,6 +541,7 @@ for (const [w, h] of (DEAD ? SIZES.filter(([w]) => w === 1440 || w === 390) : SI
     if (DEAD) for (const z of result.zeros) fail.push('BARE ZERO ' + z);
     if (DEAD) for (const r of result.rawErrors || []) fail.push('RAW ERROR AS CONTENT ' + r);
     if (counts.view !== 1) zero.push(`views=${counts.view}`);
+    if (!DEAD && view === 'kanban' && counts.cards < 1) zero.push('cards=0');
     const problems = [...fail, ...zero.map(z => 'COUNT ' + z)];
     if (view === 'comb' || (w === 1440 && h === 900)) {
       const shot = await call('Page.captureScreenshot', { format: 'png' });
@@ -504,7 +551,7 @@ for (const [w, h] of (DEAD ? SIZES.filter(([w]) => w === 1440 || w === 390) : SI
       failures++;
       console.log(`  ${w}x${h} ${view.padEnd(8)} FAIL  ${problems.join(' ; ')}`);
     } else {
-      console.log(`  ${w}x${h} ${view.padEnd(8)} PASS  round=${result.round} cmd=${counts.commands} res=${counts.resources} sectors=${counts.sectors}`);
+      console.log(`  ${w}x${h} ${view.padEnd(8)} PASS  round=${result.round} cmd=${counts.commands} res=${counts.resources} sectors=${counts.sectors}${view === 'kanban' ? ` cards=${counts.cards}` : ''}`);
     }
   }
   // The other direction: an address changed from outside (Back, a link, a

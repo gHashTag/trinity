@@ -7112,6 +7112,14 @@ body.queen-shell .phi-starfield {
   font-size: 0.56rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  /* One line each, the rest an ellipsis and the whole list on hover. At
+     1280x600 the "missing:" list wrapped to six lines in a 97px card: the
+     first card was 204px in a 194px box and the column showed no card whole
+     (qa/queen-viewport-contract.mjs, check 11). The phone made the same cut
+     in queen-phone.css. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* A card is as wide as its column, not as its longest word. The list's implicit

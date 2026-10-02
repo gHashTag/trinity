@@ -333,6 +333,24 @@
     display: none;
   }
 
+  /* 9b. ON A SHORT PHONE THE CHIPS ARE ONE ROW. Two rows of direction chips
+         are 60px, and below 600px of height that is the card box: at 390x560
+         the box was 80px round a 93px card and no column showed a card whole
+         (qa/queen-viewport-contract.mjs, check 11). One row that scrolls
+         sideways gives the board back a row; the chips still name
+         themselves, and the row is declared as a scroller in the gate. */
+  @media (max-height: 600px) {
+    .queen27-page.is-shell .queen27-dir-filter {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .queen27-page.is-shell .queen27-dir-filter > * {
+      flex: 0 0 auto;
+    }
+  }
+
   .queen27-page.is-shell .queen27-hud-vp-tools > .queen27-identity:is([data-identity="off-site"], [data-identity="web-only"]) {
     display: none;
   }
