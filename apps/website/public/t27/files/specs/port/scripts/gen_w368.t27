@@ -1,6 +1,6 @@
 module port::scripts::gen_w368;
 
-const Path = struct{};
+const W368Path = struct{};
 
 /// Check if we should append W368 block: need a match and the last wave must be 367.
 pub fn should_append_w368(has_match: bool, wave: i32) -> bool {
@@ -64,7 +64,7 @@ pub fn apply_w368_replacements(block: []u8) -> void {
 
 /// Main function: append W368 block to the spec file.
 /// File I/O is plumbing - left undefined. Tests cover the pure decision helpers above.
-pub fn append_w368(path: Path) -> void {
+pub fn append_w368(path: W368Path) -> void {
     undefined;
 }
 

@@ -31,21 +31,28 @@ pub const DISPOSITIONS : [8]str = ["executable", "declared", "adapter", "externa
 pub const EVIDENCE_TAGS : [5]str = ["measured", "declared", "specified", "external", "not-claimed"];
 ; The three spec dialects the consumer carries; only t27 is compiled by t27c.
 pub const DIALECTS : [4]str = ["t27", "tri", "vibee", "none"];
-; Counted by the inventory over tracked files; the website mirror is never canonical.
+; Counted by the inventory over tracked files. Neither the website mirror nor the consumer's
+; vendored copies of this repository's contracts (external/t27/, none at the pinned revision)
+; is ever canonical; each is counted apart.
 pub const T27_CANONICAL_FILES : u16 = 31;
 pub const T27_MIRROR_FILES : u16 = 1044;
+pub const T27_VENDORED_FILES : u16 = 0;
 pub const TRI_FILES : u16 = 764;
 pub const VIBEE_FILES : u16 = 1981;
 pub const ZIG_FILES : u16 = 2830;
-; .zig files no file named by build.zig reaches through a relative @import.
-pub const ZIG_UNREACHABLE_FILES : u16 = 2081;
-; build.zig at the pinned revision: artifacts, steps, and what zig build -Dci=true installs.
+; .zig files no file named by build.zig reaches through a relative @import; an @import in a
+; comment reaches nothing (until 2026-10-01 one did, and this read 2081).
+pub const ZIG_UNREACHABLE_FILES : u16 = 2082;
+; build.zig at the pinned revision, read from its code and not from its comments: artifacts,
+; steps, and what zig build -Dci=true installs. The steps needle-mcp and trinity-mcp and the
+; installs of trinity-canvas and trinity-canvas-wasm-check exist only in commented-out lines;
+; until 2026-10-01 they were counted, and these read 68 steps and 5 guarded installs.
 pub const BUILD_EXECUTABLES : u8 = 51;
 pub const BUILD_LIBRARIES : u8 = 6;
 pub const BUILD_TESTS : u8 = 73;
-pub const BUILD_STEPS : u8 = 68;
+pub const BUILD_STEPS : u8 = 66;
 pub const INSTALLED_BY_DEFAULT : u8 = 46;
-pub const INSTALLED_GUARDED : u8 = 5;
+pub const INSTALLED_GUARDED : u8 = 3;
 ; build.zig.zon dependencies and their pins, in the order the file declares them; .gitmodules paths.
 pub const DEPENDENCIES : [4]str = ["emsdk", "raylib", "zig_hdc", "zig_golden_float"];
 pub const DEPENDENCY_PINS : [4]str = ["git+https://github.com/emscripten-core/emsdk?ref=4.0.9#3bcf1dcd01f040f370e10fe673a092d9ed79ebb5", "git+https://github.com/raylib-zig/raylib-zig#cd71c85d571027ac8033357f83b124ee051825b3", "https://github.com/gHashTag/zig-hdc/archive/b73b2fa29874f4e30297f167a6ea8a3c2ded9d32.tar.gz", "https://github.com/gHashTag/zig-golden-float/archive/e7ce32885de2a8c50b7b6a3030d0592202145dd1.tar.gz"];
@@ -82,7 +89,7 @@ test most_of_the_zig_tree_is_not_reached_by_the_build_graph {
 
 test the_default_install_set_is_a_subset_of_the_artifacts {
     assert INSTALLED_BY_DEFAULT + INSTALLED_GUARDED <= BUILD_EXECUTABLES + BUILD_LIBRARIES;
-    assert INSTALLED_GUARDED == 5;
+    assert INSTALLED_GUARDED == 3;
 }
 
 test the_epic_has_twelve_packages_and_two_pinned_numeric_packages {

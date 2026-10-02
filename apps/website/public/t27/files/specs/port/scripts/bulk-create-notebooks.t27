@@ -1,14 +1,14 @@
 module port::scripts::bulk_create_notebooks;
 
-// Define the Issue struct
-pub struct Issue {
+// Define the NotebookIssue struct
+pub struct NotebookIssue {
     number: i32,
     title: []const u8,
 }
 
 // Define the result of getting open issues
 pub struct OpenIssuesResult {
-    issues: [100]Issue,
+    issues: [100]NotebookIssue,
     len: usize,
 }
 

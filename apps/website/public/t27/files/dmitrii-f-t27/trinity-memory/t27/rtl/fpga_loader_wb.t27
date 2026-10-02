@@ -61,6 +61,9 @@ var buf_hi: u64 = 0;
 var flush: bool = false;
 
 var outst: u32 = 0;
+// Equivalent to outst<CAP on every cycle. Register its lookahead to keep
+// the outstanding comparator off the high-fanout buffer/command enables.
+var credit_available: bool = true;
 var rd_wait: bool = false;
 var rd_drop: bool = false;
 var rd_word: u32 = 0;
@@ -127,6 +130,7 @@ fn out_sel(taken: bool, ack: bool, n: u32, inc: u32, dec: u32) -> u32 {
 
 // Module-level (combinational) values; see t27c-rtl-traps: on_clock locals are
 // declared where they appear in the generated Verilog.
+var credit_next: bool;
 var taken: bool;
 var w_word: u32;
 var w_lane: u32;
@@ -161,7 +165,7 @@ w_lane = wr_addr & 15;
 r_word = rd_addr >> 4;
 r_lane = rd_addr & 15;
 port_busy = wb_stb || flush || rd_wait;
-wr_ready = !port_busy && outst < CAP;
+wr_ready = !port_busy && credit_available;
 wr_idle = !port_busy && !buf_valid && outst == 0;
 rd_ready = wr_idle;
 accept_w = wr_valid && wr_ready;
@@ -175,11 +179,15 @@ m_lo = merge_half(base_lo, 0, w_lane, wr_data);
 m_hi = merge_half(base_hi, 1, w_lane, wr_data);
 hit = kept_valid && kept_addr == r_word;
 read_ack = ack && rd_wait && outst != 0;
-flush_now = !wb_stb && buf_valid && (flush || rd_req) && outst < CAP && !give_up;
+flush_now = !wb_stb && buf_valid && (flush || rd_req) && credit_available && !give_up;
 ack_counted = ack && outst != 0;
 out_inc = outst + 1;
 out_dec = outst - 1;
 out_next = out_sel(taken, ack_counted, outst, out_inc, out_dec);
+// Comparisons precede the late stall/ACK choice, as with out_sel itself.
+credit_next = (taken && !ack_counted && out_inc < CAP) ||
+              (!taken && ack_counted && out_dec < CAP) ||
+              (taken == ack_counted && outst < CAP);
 ack_byte = byte_of(rdata_lo, rdata_hi, rd_lane);
 kept_byte = byte_of(kept_lo, kept_hi, r_lane);
 drop_now = rd_drop || rd_req || give_up;
@@ -194,7 +202,7 @@ fn on_clock(wr_valid: bool, wr_addr: u32, wr_data: u32, wr_last: bool, rd_req: b
     }
     if (ack && outst == 0) { stray = stray + 1; }
     if (outst > max_outst) { max_outst = outst; }
-    outst = out_next;
+    outst = out_next; credit_available = credit_next;
 
     if (accept_w) {
         if (new_word) {

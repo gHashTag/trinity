@@ -1,6 +1,6 @@
 module port::trinity::src::tri::gen_rect;
 
-pub const Point = struct {
+pub const RectPoint = struct {
     x: f64,
     y: f64,
 };
@@ -16,7 +16,7 @@ pub fn Rect_init(x: f64, y: f64, width: f64, height: f64) Rect {
     return .{ .x = x, .y = y, .width = width, .height = height };
 }
 
-pub fn Rect_contains(rect: *const Rect, point: Point) bool {
+pub fn Rect_contains(rect: *const Rect, point: RectPoint) bool {
     return point.x >= rect.x and point.x <= rect.x + rect.width and
         point.y >= rect.y and point.y <= rect.y + rect.height;
 }
@@ -35,24 +35,24 @@ test rect_init_basic {
 
 test rect_contains_inside {
     const rect = Rect_init(0, 0, 10, 10);
-    const p = Point{ .x = 5, .y = 5 };
+    const p = RectPoint{ .x = 5, .y = 5 };
     assert(Rect_contains(&rect, p));
 }
 
 test rect_contains_edge {
     const rect = Rect_init(0, 0, 10, 10);
-    const p1 = Point{ .x = 0, .y = 0 };
-    const p2 = Point{ .x = 10, .y = 10 };
+    const p1 = RectPoint{ .x = 0, .y = 0 };
+    const p2 = RectPoint{ .x = 10, .y = 10 };
     assert(Rect_contains(&rect, p1));
     assert(Rect_contains(&rect, p2));
 }
 
 test rect_contains_outside {
     const rect = Rect_init(0, 0, 10, 10);
-    const p1 = Point{ .x = -1, .y = 5 };
-    const p2 = Point{ .x = 5, .y = -1 };
-    const p3 = Point{ .x = 11, .y = 5 };
-    const p4 = Point{ .x = 5, .y = 11 };
+    const p1 = RectPoint{ .x = -1, .y = 5 };
+    const p2 = RectPoint{ .x = 5, .y = -1 };
+    const p3 = RectPoint{ .x = 11, .y = 5 };
+    const p4 = RectPoint{ .x = 5, .y = 11 };
     assert(!Rect_contains(&rect, p1));
     assert(!Rect_contains(&rect, p2));
     assert(!Rect_contains(&rect, p3));

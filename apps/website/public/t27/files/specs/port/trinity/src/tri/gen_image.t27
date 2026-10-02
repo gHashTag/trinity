@@ -1,0 +1,70 @@
+module port::trinity.src.tri.gen_image;
+
+pub const ImageColor = struct {
+    r: u8,
+    g: u8,
+    b: u8,
+};
+
+pub const Image = struct {
+    width: usize,
+    height: usize,
+    pixels: []ImageColor,
+
+    pub const Color = struct {
+        r: u8,
+        g: u8,
+        b: u8,
+    };
+};
+
+pub fn Image_init(allocator: *std.mem.Allocator, width: usize, height: usize) !Image {
+    undefined;
+}
+
+pub fn Image_setPixel(img: *Image, x: usize, y: usize, color: Image.Color) void {
+    undefined;
+}
+
+pub fn Image_deinit(img: *Image, allocator: *std.mem.Allocator) void {
+    undefined;
+}
+
+fn bounds_check(x: usize, y: usize, width: usize, height: usize) -> bool {
+    if (x < width) {
+        if (y < height) {
+            return true;
+        }
+    }
+    return false;
+}
+
+fn alloc_size(width: usize, height: usize) -> usize {
+    return width * height;
+}
+
+fn always_true() -> bool {
+    return true;
+}
+
+test bounds_check_true {
+    assert(bounds_check(5, 5, 10, 10) == true);
+}
+
+test bounds_check_false_x {
+    assert(bounds_check(15, 5, 10, 10) == false);
+}
+
+test bounds_check_false_y {
+    assert(bounds_check(5, 15, 10, 10) == false);
+}
+
+test alloc_size {
+    assert(alloc_size(10, 10) == 100);
+    assert(alloc_size(0, 0) == 0);
+    assert(alloc_size(1, 1) == 1);
+}
+
+test always_true {
+    assert(always_true() == true);
+}

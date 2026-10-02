@@ -1,14 +1,14 @@
 module port::trinity::src::tri::gen_bezier;
 
-pub struct BezierCurve {
+pub struct CubicBezier {
     p0: [2]f64,
     p1: [2]f64,
     p2: [2]f64,
     p3: [2]f64,
 }
 
-// Port of: pub fn eval(curve: BezierCurve, t: f64) [2]f64 {
-pub fn BezierCurve_eval(curve: BezierCurve, t: f64) [2]f64 {
+// Port of: pub fn eval(curve: CubicBezier, t: f64) [2]f64 {
+pub fn BezierCurve_eval(curve: CubicBezier, t: f64) [2]f64 {
     const u = 1.0 - t;
     const uu = u * u;
     const uuu = uu * u;
@@ -22,7 +22,7 @@ pub fn BezierCurve_eval(curve: BezierCurve, t: f64) [2]f64 {
 }
 
 test "bezier_at_t0" {
-    const curve = BezierCurve{
+    const curve = CubicBezier{
         .p0 = [2]f64{0.0, 0.0},
         .p1 = [2]f64{1.0, 0.0},
         .p2 = [2]f64{0.0, 1.0},
@@ -34,7 +34,7 @@ test "bezier_at_t0" {
 }
 
 test "bezier_at_t1" {
-    const curve = BezierCurve{
+    const curve = CubicBezier{
         .p0 = [2]f64{0.0, 0.0},
         .p1 = [2]f64{1.0, 0.0},
         .p2 = [2]f64{0.0, 1.0},
@@ -46,7 +46,7 @@ test "bezier_at_t1" {
 }
 
 test "bezier_at_t05" {
-    const curve = BezierCurve{
+    const curve = CubicBezier{
         .p0 = [2]f64{0.0, 0.0},
         .p1 = [2]f64{1.0, 0.0},
         .p2 = [2]f64{0.0, 1.0},
