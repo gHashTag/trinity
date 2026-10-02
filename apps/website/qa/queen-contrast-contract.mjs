@@ -225,6 +225,9 @@ const REACHED = {
     /* PEOPLE, the contributors half of that tab: the fourth sheet the list has
        caught on its first run, which is four for four. */
     'src/components/QueenPeople.css',
+    /* TOKEN, TRI and who earned it: the facts strip and the testnet label
+       are veiled and blurred like the rows, which reuse QueenPeople.css. */
+    'src/components/QueenToken.css',
     /* MY RUNNERS, the cabinet inside that tab: a veil over the hive, blurred,
        like the leaderboard rows it sits beside. */
     'src/components/QueenRunners.css',

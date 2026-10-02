@@ -189,7 +189,7 @@ assert.equal(HUD_KEYS[at], 'r', 'TRI opens on r')
 // and r are TOOLS, PROJECT and TRI. Then w: BROWSER, m: ROADMAP, and l:
 // LEADERBOARD, whose lane the bees ran on. The eighteenth is x (the crossed
 // blades): WARS.
-assert.equal(HUD_KEYS.slice(0, HUD_VIEWS.length).join(''), '1234567890tprbwmlx')
+assert.equal(HUD_KEYS.slice(0, HUD_VIEWS.length).join(''), '1234567890tprbwmlxk')
 // The typed Latin letter or digit decides, as the rail's badge says; the
 // physical key (KeyboardEvent.code) only when the character is not one, so r
 // opens TRI on a Russian layout too.
@@ -207,7 +207,8 @@ for (const [layout, key, code, view] of [
   ['Dvorak', 'r', 'KeyO', 'tri'], ['Dvorak', 'p', 'KeyR', 'project'], ['Dvorak', 't', 'KeyK', 'tools'], ['Dvorak', 'y', 'KeyT', null],
   ['Colemak', 'p', 'KeyR', 'project'], ['Colemak', 't', 'KeyG', 'tools'], ['Colemak', 'f', 'KeyT', null], ['Colemak', 'R', 'KeyS', 'tri'],
 ]) assert.equal(hudKeyIndex({ code, key }), view ? HUD_VIEWS.indexOf(view) : -1, `${layout}: typing ${key} (physical ${code}) opens ${view ?? 'nothing'}`)
-assert.equal(hudKeyIndex({ code: 'KeyK', key: 'к' }), -1)
+assert.equal(hudKeyIndex({ code: 'KeyQ', key: 'й' }), -1, 'Russian layout: an unbound physical key opens nothing')
+assert.equal(hudKeyIndex({ code: 'KeyK', key: 'л' }), HUD_VIEWS.indexOf('token'), 'Russian layout: code KeyK, key л opens TOKEN')
 assert.equal(hudKeyIndex({ code: '', key: 'r' }), at, 'no code (a scripted event): the character decides')
 assert.equal(hudKeyIndex({ code: '', key: 'к' }), -1)
 assert.equal(hudKeyIndex({ key: 'R' }), at)
