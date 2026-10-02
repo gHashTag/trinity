@@ -2482,7 +2482,8 @@ function KanbanView({
                     </span>
                   )}
                   {card.needs && card.needs.length > 0 && (
-                    <span>
+                    // Cut to one line by the shell; the whole list is here.
+                    <span title={`${c.missing}: ${card.needs.join(", ")}`}>
                       {c.missing}: {card.needs.join(", ")}
                     </span>
                   )}
