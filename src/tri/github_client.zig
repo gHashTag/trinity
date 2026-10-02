@@ -60,9 +60,9 @@ pub const BeeGate = struct {
 pub fn beeGateReason(has_label: bool, approved: bool, head_at: ?[]const u8, labeled_at: ?[]const u8) ?[]const u8 {
     if (!has_label) return "no `bee-reviewed` label";
     if (!approved) return "no APPROVED review";
-    const h = head_at orelse return "head commit date unreadable";
+    const h = head_at orelse return "head arrival time unreadable";
     const l = labeled_at orelse return "no `bee-reviewed` label event found";
-    if (std.mem.order(u8, l, h) == .lt) return "`bee-reviewed` predates the head commit (a push after review is unreviewed code)";
+    if (std.mem.order(u8, l, h) == .lt) return "`bee-reviewed` predates the head's arrival (a push after review is unreviewed code)";
     return null;
 }
 
@@ -155,6 +155,72 @@ pub fn latestLabeledAt(allocator: std.mem.Allocator, events_json: []const u8, la
     if (b.len > buf.len) return null;
     @memcpy(buf[0..b.len], b);
     return buf[0..b.len];
+}
+
+/// A GitHub timestamp (`YYYY-MM-DDTHH:MM:SSZ`) held in a fixed buffer, so
+/// it outlives the JSON it was read from. Empty means "none seen".
+pub const Stamp = struct {
+    buf: [32]u8 = undefined,
+    len: usize = 0,
+
+    pub fn get(self: *const Stamp) ?[]const u8 {
+        return if (self.len == 0) null else self.buf[0..self.len];
+    }
+
+    fn set(self: *Stamp, at: []const u8) void {
+        @memcpy(self.buf[0..at.len], at);
+        self.len = at.len;
+    }
+
+    /// Keep the later of the held stamp and `at`.
+    pub fn keepLater(self: *Stamp, at: []const u8) void {
+        if (at.len == 0 or at.len > self.buf.len) return;
+        if (self.len != 0 and std.mem.order(u8, at, self.buf[0..self.len]) != .gt) return;
+        self.set(at);
+    }
+
+    /// Keep the earlier of the held stamp and `at`.
+    pub fn keepEarlier(self: *Stamp, at: []const u8) void {
+        if (at.len == 0 or at.len > self.buf.len) return;
+        if (self.len != 0 and std.mem.order(u8, at, self.buf[0..self.len]) != .lt) return;
+        self.set(at);
+    }
+};
+
+/// One page of REST issue events: raise `labeled` to the latest `labeled`
+/// event for `label`, and `force_pushed` to the latest `head_ref_force_pushed`.
+/// Returns how many events the page held (to know whether another page
+/// follows), or null when the page is not an events array.
+pub fn scanEventsPage(allocator: std.mem.Allocator, events_json: []const u8, label: []const u8, labeled: *Stamp, force_pushed: *Stamp) ?usize {
+    const parsed = parseValue(allocator, events_json) orelse return null;
+    defer parsed.deinit();
+    if (parsed.value != .array) return null;
+    for (parsed.value.array.items) |e| {
+        const ev = strOf(objGet(e, "event")) orelse continue;
+        const at = strOf(objGet(e, "created_at")) orelse continue;
+        if (std.mem.eql(u8, ev, "head_ref_force_pushed")) {
+            force_pushed.keepLater(at);
+        } else if (std.mem.eql(u8, ev, "labeled")) {
+            const l = objGet(e, "label") orelse continue;
+            const name = strOf(objGet(l, "name")) orelse continue;
+            if (std.mem.eql(u8, name, label)) labeled.keepLater(at);
+        }
+    }
+    return parsed.value.array.items.len;
+}
+
+/// The earliest `started_at` in a REST check-runs response (a push starts
+/// them, so this is when the head reached GitHub). False when the response
+/// carries no `check_runs` array; true with `out` empty when none has run.
+pub fn earliestCheckRunStart(allocator: std.mem.Allocator, runs_json: []const u8, out: *Stamp) bool {
+    const parsed = parseValue(allocator, runs_json) orelse return false;
+    defer parsed.deinit();
+    const runs = objGet(parsed.value, "check_runs") orelse return false;
+    if (runs != .array) return false;
+    for (runs.array.items) |r| {
+        if (strOf(objGet(r, "started_at"))) |at| out.keepEarlier(at);
+    }
+    return true;
 }
 
 pub const CheckRunResult = struct {
@@ -609,7 +675,8 @@ pub const GitHubClient = struct {
     /// Queen only manages!" and "take the merge right away from the board
     /// merger too". No automation merges on its own verdict. A merge happens
     /// only after a reviewer bee's review: at least one APPROVED review AND
-    /// the `bee-reviewed` label applied no earlier than the head commit (a
+    /// the `bee-reviewed` label applied after the head ARRIVED -- the latest of
+    /// its committer date, its first check run and the last force-push (a
     /// push after the review is unreviewed code). Same gate as
     /// gHashTag/t27#5526. The merge is pinned to the head sha the gate
     /// checked, so a commit landing in between makes GitHub refuse it.
@@ -674,8 +741,26 @@ pub const GitHubClient = struct {
         defer self.allocator.free(commit_path);
         const commit_json = self.apiGet(commit_path) catch return BeeGate.refuse("cannot read the head commit");
         defer self.allocator.free(commit_json);
-        var head_at_buf: [32]u8 = undefined;
-        const head_at = commitDate(self.allocator, commit_json, &head_at_buf);
+        // WHEN THE HEAD ARRIVED, not when it was committed. A commit made at
+        // 10:00 and pushed at 10:10 carries 10:00, so a label put on at 10:05
+        // would pass it unreviewed; a force-push back to an older SHA carries
+        // an older date still. The head's time is the latest of: its committer
+        // date, the first check run GitHub started on it (a push starts them),
+        // and the last force-push of the branch. Same hardening as
+        // gHashTag/t27#5526 (f9a6c9b). Every read fails closed.
+        var head_at = Stamp{};
+        var commit_at_buf: [32]u8 = undefined;
+        head_at.keepLater(commitDate(self.allocator, commit_json, &commit_at_buf) orelse
+            return BeeGate.refuse("cannot read the head commit date"));
+
+        const runs_path = try std.fmt.allocPrint(self.allocator, "/repos/{s}/{s}/commits/{s}/check-runs?per_page=100", .{ self.owner, self.repo, gate.headSha() });
+        defer self.allocator.free(runs_path);
+        const runs_json = self.apiGet(runs_path) catch return BeeGate.refuse("cannot read the head's check runs");
+        defer self.allocator.free(runs_json);
+        var first_run = Stamp{};
+        if (!earliestCheckRunStart(self.allocator, runs_json, &first_run)) return BeeGate.refuse("cannot read the head's check runs");
+        // Reading only the first 100 runs can only make this later: stricter.
+        if (first_run.get()) |at| head_at.keepLater(at);
 
         const reviews_path = try std.fmt.allocPrint(self.allocator, "/repos/{s}/{s}/pulls/{d}/reviews?per_page=100", .{ self.owner, self.repo, number });
         defer self.allocator.free(reviews_path);
@@ -683,16 +768,25 @@ pub const GitHubClient = struct {
         defer self.allocator.free(reviews_json);
         const approved = jsonHasApproval(self.allocator, reviews_json);
 
-        // Only the first 100 events are read. A later label event that this
-        // misses makes the gate refuse, never pass: fail closed.
-        const events_path = try std.fmt.allocPrint(self.allocator, "/repos/{s}/{s}/issues/{d}/events?per_page=100", .{ self.owner, self.repo, number });
-        defer self.allocator.free(events_path);
-        const events_json = self.apiGet(events_path) catch return BeeGate.refuse("cannot read the label events");
-        defer self.allocator.free(events_json);
-        var labeled_at_buf: [32]u8 = undefined;
-        const labeled_at = latestLabeledAt(self.allocator, events_json, BEE_REVIEWED_LABEL, &labeled_at_buf);
+        // EVERY page of events: a force-push on a page left unread would make
+        // the head look older than it is, and that fails open. A history too
+        // long to read is refused.
+        var labeled_at = Stamp{};
+        var force_pushed_at = Stamp{};
+        var page: u32 = 1;
+        while (true) : (page += 1) {
+            if (page > 30) return BeeGate.refuse("too many events to read");
+            const events_path = try std.fmt.allocPrint(self.allocator, "/repos/{s}/{s}/issues/{d}/events?per_page=100&page={d}", .{ self.owner, self.repo, number, page });
+            defer self.allocator.free(events_path);
+            const events_json = self.apiGet(events_path) catch return BeeGate.refuse("cannot read the label events");
+            defer self.allocator.free(events_json);
+            const n = scanEventsPage(self.allocator, events_json, BEE_REVIEWED_LABEL, &labeled_at, &force_pushed_at) orelse
+                return BeeGate.refuse("cannot read the label events");
+            if (n < 100) break;
+        }
+        if (force_pushed_at.get()) |at| head_at.keepLater(at);
 
-        gate.reason = beeGateReason(has_label, approved, head_at, labeled_at) orelse {
+        gate.reason = beeGateReason(has_label, approved, head_at.get(), labeled_at.get()) orelse {
             gate.ok = true;
             gate.reason = "reviewer bee passed";
             return gate;
@@ -1544,4 +1638,59 @@ test "bee gate: JSON readers" {
     var lb: [32]u8 = undefined;
     try std.testing.expectEqualStrings("2026-10-02T13:00:00Z", latestLabeledAt(a, events, BEE_REVIEWED_LABEL, &lb).?);
     try std.testing.expect(latestLabeledAt(a, "[]", BEE_REVIEWED_LABEL, &lb) == null);
+}
+
+test "bee gate: head time is its arrival, not its commit date" {
+    const a = std.testing.allocator;
+    var head = Stamp{};
+    head.keepLater("2026-10-02T10:00:00Z"); // committer date
+
+    var first_run = Stamp{};
+    try std.testing.expect(earliestCheckRunStart(a,
+        \\{"total_count":2,"check_runs":[{"started_at":"2026-10-02T10:12:00Z"},{"started_at":"2026-10-02T10:10:00Z"},{"started_at":null}]}
+    , &first_run));
+    try std.testing.expectEqualStrings("2026-10-02T10:10:00Z", first_run.get().?);
+    head.keepLater(first_run.get().?);
+
+    // Late push: committed 10:00, pushed 10:10, labeled 10:05 -> refused.
+    try std.testing.expect(beeGateReason(true, true, head.get(), "2026-10-02T10:05:00Z") != null);
+    try std.testing.expect(beeGateReason(true, true, head.get(), "2026-10-02T10:11:00Z") == null);
+
+    // Force-push back to an older SHA after the label -> refused.
+    var labeled = Stamp{};
+    var pushed = Stamp{};
+    const events =
+        \\[{"event":"labeled","label":{"name":"bee-reviewed"},"created_at":"2026-10-02T11:00:00Z"},
+        \\ {"event":"head_ref_force_pushed","created_at":"2026-10-02T11:30:00Z"},
+        \\ {"event":"head_ref_force_pushed","created_at":"2026-10-02T09:00:00Z"},
+        \\ {"event":"labeled","label":{"name":"other"},"created_at":"2026-10-02T12:00:00Z"}]
+    ;
+    try std.testing.expectEqual(@as(?usize, 4), scanEventsPage(a, events, BEE_REVIEWED_LABEL, &labeled, &pushed));
+    try std.testing.expectEqualStrings("2026-10-02T11:00:00Z", labeled.get().?);
+    try std.testing.expectEqualStrings("2026-10-02T11:30:00Z", pushed.get().?);
+    head.keepLater(pushed.get().?);
+    try std.testing.expect(beeGateReason(true, true, head.get(), labeled.get()) != null);
+}
+
+test "bee gate: unreadable responses fail closed" {
+    const a = std.testing.allocator;
+    var s = Stamp{};
+    var t = Stamp{};
+    try std.testing.expect(!earliestCheckRunStart(a, "{\"message\":\"Not Found\"}", &s));
+    try std.testing.expect(!earliestCheckRunStart(a, "not json", &s));
+    try std.testing.expect(earliestCheckRunStart(a, "{\"check_runs\":[]}", &s));
+    try std.testing.expect(s.get() == null);
+    try std.testing.expect(scanEventsPage(a, "{\"message\":\"Not Found\"}", BEE_REVIEWED_LABEL, &s, &t) == null);
+    try std.testing.expect(beeGateReason(true, true, s.get(), "2026-10-02T11:00:00Z") != null);
+}
+
+test "bee gate: Stamp keeps the right end" {
+    var s = Stamp{};
+    s.keepEarlier("2026-10-02T10:00:00Z");
+    s.keepEarlier("2026-10-02T11:00:00Z");
+    try std.testing.expectEqualStrings("2026-10-02T10:00:00Z", s.get().?);
+    s.keepLater("2026-10-02T09:00:00Z");
+    try std.testing.expectEqualStrings("2026-10-02T10:00:00Z", s.get().?);
+    s.keepLater("2026-10-02T12:00:00Z");
+    try std.testing.expectEqualStrings("2026-10-02T12:00:00Z", s.get().?);
 }
