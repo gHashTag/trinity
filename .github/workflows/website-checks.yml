@@ -358,6 +358,16 @@ jobs:
           CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
         run: npm run check:render -- --no-build
 
+      # The landing in a browser that cannot create a WebGL context, and in one
+      # whose engine is refused after the probe: the page must render whole and
+      # only the scene may go. On 2026-10-03 a GPU-less Chromium got a blank
+      # t27.ai/ from one uncaught "WebGL not supported". Skips itself without
+      # Chrome.
+      - name: Landing without WebGL
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
+        run: npm run check:home-no-webgl -- --no-build
+
       # The five explorers and the spec explorer at every size in the spec's
       # matrix: one pane on a phone, two above, the deep-linked card open and
       # on screen, 44px controls where a finger is the pointer, one scroller
