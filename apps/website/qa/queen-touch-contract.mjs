@@ -45,9 +45,25 @@ await call('Page.enable');
 await call('Emulation.setDeviceMetricsOverride', { width: 1272, height: 806, deviceScaleFactor: 1, mobile: true });
 await call('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 1 });
 await call('Page.navigate', { url: `${ORIGIN}/?touch=1${process.env.QUEEN_ENGINE ? '&engine=' + process.env.QUEEN_ENGINE : ''}#/queen` });
-let ready = false;
-for (let i = 0; i < 60 && !ready; i++) { await wait(500); ready = await evaluate(`document.querySelectorAll('.queen27-sectors-row').length === 6 && !!document.querySelector('.queen27-comb-field canvas') && !!document.querySelector('.queen27-context-unit-text')`); }
-if (!ready) { console.log('  Queen touch contract: FAIL (page never became ready - board or comb missing)'); cleanup(); process.exit(1); }
+// Readiness names its parts, and a page that does not ANSWER is not a page
+// that is not ready. 2026-10-02: with swap full (load average 560), one
+// Runtime.evaluate on the comb took minutes, and the old one-line FAIL read as
+// "the board lost an element" -- it had not; it was never asked. A probe that
+// gets no answer in 20 s ends the run as NOT MEASURED (rc 2), with the load.
+const READY = `({ rows: document.querySelectorAll('.queen27-sectors-row').length, canvas: !!document.querySelector('.queen27-comb-field canvas'), unit: !!document.querySelector('.queen27-context-unit-text') })`;
+const answered = expr => Promise.race([evaluate(expr), wait(20000).then(() => { throw new Error('starved'); })]);
+let ready = false, parts = null;
+for (let i = 0; i < 60 && !ready; i++) {
+  await wait(500);
+  try { parts = await answered(READY); } catch (error) {
+    if (error.message !== 'starved') throw error;
+    const { loadavg } = await import('node:os');
+    console.log(`  Queen touch contract: NOT MEASURED (the page did not answer a probe in 20 s; load average ${loadavg().map(n => n.toFixed(0)).join(' ')})`);
+    cleanup(); process.exit(2);
+  }
+  ready = parts.rows === 6 && parts.canvas && parts.unit;
+}
+if (!ready) { console.log(`  Queen touch contract: FAIL (page never became ready - sectors ${parts?.rows ?? '?'}/6, comb canvas ${parts?.canvas ? 'yes' : 'NO'}, selected unit ${parts?.unit ? 'yes' : 'NO'})`); cleanup(); process.exit(1); }
 await wait(1500);
 const rect = await evaluate(`(() => { const r = document.querySelector('.queen27-comb-field canvas').getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height }; })()`);
 const selected = () => evaluate(`(() => { const u = document.querySelector('.queen27-context-unit-text'); const dd = document.querySelector('.queen27-context-stats dd'); return ((u && u.textContent) || '').replace(/\\s+/g, ' ').trim().slice(0, 80) + ' | ' + ((dd && dd.textContent) || '').trim(); })()`);
