@@ -4310,6 +4310,12 @@ main:where(.queen27-page.is-shell) section {
    later in the file and wins where both apply. The phone's icon row is not this
    rail. */
 @media (max-height: 919px) {
+  /* Nineteen commands (TOKEN, 2026-10-02) at 6 px gaps put the last one 4 px
+     under COLLAPSE at 1272x806 (measured by the viewport contract); 4 px gaps
+     give back 36 px. */
+  .queen27-page.is-shell .queen27-hud-command:not(.is-compact) {
+    gap: 4px;
+  }
   .queen27-page.is-shell .queen27-hud-command:not(.is-compact) > .queen27-hud-cmd {
     padding: 0.35rem 0.65rem;
   }

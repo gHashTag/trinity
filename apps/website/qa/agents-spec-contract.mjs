@@ -514,7 +514,17 @@ assert.ok(warsModule && HUD_VIEWS.includes('wars'), 'WARS (the real-task agent a
 assert.equal(warsModule.key, 'x', 'WARS opens on x: the crossed-blades key')
 assert.ok(warsModule.en.hint.includes('(key x)') && warsModule.ru.hint.includes('(клавиша x)'), 'WARS names its letter key in both hints')
 for (const lang of ['en', 'ru']) assert.ok(warsModule[lang].name && warsModule[lang].body.length > 40, `wars: ${lang} copy missing`)
-assert.equal(HUD_KEYS.slice(0, HUD_VIEWS.length).join(''), '1234567890tprbwmlx', 'the rail keys are 1-9, 0, t, p, r, b, w, m, l, x in that order')
+const tokenModule = MODULES.find((m) => m.tab === 'token')
+assert.ok(tokenModule && HUD_VIEWS.includes('token'), 'TOKEN (TRI and who earned it) is a module and a view')
+assert.equal(tokenModule.key, 'k', 'TOKEN opens on k: the coin key')
+assert.ok(tokenModule.en.hint.includes('(key k)') && tokenModule.ru.hint.includes('(клавиша k)'), 'TOKEN names its letter key in both hints')
+for (const lang of ['en', 'ru']) assert.ok(tokenModule[lang].name && /testnet/i.test(tokenModule[lang].body), `token: ${lang} copy must say testnet`)
+// The jetton metadata wallets read must agree with the unit the page divides by.
+const jetton = JSON.parse(readFileSync('public/tri/jetton.json', 'utf8'))
+const MTRI_PER_TRI = Number(readFileSync('src/lib/triToken.ts', 'utf8').match(/export const MTRI_PER_TRI = (\d+)/)?.[1])
+assert.equal(10 ** Number(jetton.decimals), MTRI_PER_TRI, 'public/tri/jetton.json decimals and MTRI_PER_TRI must agree')
+assert.match(jetton.description, /^TESTNET ONLY\./, 'the jetton metadata leads with TESTNET ONLY')
+assert.equal(HUD_KEYS.slice(0, HUD_VIEWS.length).join(''), '1234567890tprbwmlxk', 'the rail keys are 1-9, 0, t, p, r, b, w, m, l, x, k in that order')
 
 // The rail is no longer the whole vocabulary. HUD_VIEWS stays the fourteen
 // addresses -- every ?tab=, every key, every module card -- while the rail draws

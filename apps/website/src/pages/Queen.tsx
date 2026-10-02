@@ -97,6 +97,7 @@ import { QueenTri } from "../components/QueenTri";
 import QueenRoadmap from "../components/QueenRoadmap";
 import QueenLeaderboard from "../components/QueenLeaderboard";
 import { QueenWars } from "../components/QueenWars";
+import QueenToken from "../components/QueenToken";
 import Passport from "./Passport";
 import { QueenBrowser } from "../components/QueenBrowser";
 import { QueenIdentity } from "../components/QueenIdentity";
@@ -414,6 +415,8 @@ const COPY = {
     leaderboardHint: "Who lends the swarm a lane, and the XP its bees earned there (key l)",
     warsView: "WARS",
     warsHint: "Real-task agent benchmarks generated from one .t27 ledger (key x)",
+    tokenView: "TOKEN",
+    tokenHint: "TRI on TON testnet, and who earned it, by GitHub account (key k)",
     passportView: "PASSPORT",
     passportHint: "What must travel with a result: the record proposed to the OCP working group (key b)",
     // The fifteenth view: the person's own remote browser, the one the agent drives.
@@ -833,6 +836,8 @@ const COPY = {
     leaderboardHint: "Кто дал рою полосу и сколько XP на ней заработали пчёлы (клавиша l)",
     warsView: "ВОЙНЫ",
     warsHint: "Бенчмарки агентов на реальных задачах из единого журнала .t27 (клавиша x)",
+    tokenView: "ТОКЕН",
+    tokenHint: "TRI в TON testnet и кто его заработал, по аккаунтам GitHub (клавиша k)",
     passportView: "ПАСПОРТ",
     passportHint: "Что обязано ехать вместе с результатом: запись, поданная в рабочую группу OCP (клавиша b)",
     browserView: "БРАУЗЕР",
@@ -3412,6 +3417,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
     // On the letter l: whose token each bee ran on, and what that lane earned.
     { view: "leaderboard" as const, glyph: "⚙", label: c.leaderboardView, hint: c.leaderboardHint },
     { view: "wars" as const, glyph: "⚔", label: c.warsView, hint: c.warsHint },
+    { view: "token" as const, glyph: "¤", label: c.tokenView, hint: c.tokenHint },
   ].map((item) => ({ ...item, hotkey: hudKeyOf(item.view) }));
   // TRI is drawn as one button per screen, owner's word 2026-09-21: every
   // screen of the app its own tab. The first keeps TRI's key; the rest are
@@ -4046,6 +4052,8 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
             />
           ) : boardView === "wars" ? (
             <QueenWars lang={lang === "ru" ? "ru" : "en"} />
+          ) : boardView === "token" ? (
+            <QueenToken lang={lang === "ru" ? "ru" : "en"} />
           ) : boardView === "roadmap" ? (
             <QueenRoadmap lang={lang === "ru" ? "ru" : "en"} />
           ) : boardView === "leaderboard" ? (

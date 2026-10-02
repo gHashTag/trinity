@@ -1,0 +1,67 @@
+/* TOKEN: the facts strip and the testnet label. Rows reuse QueenPeople.css;
+   grounds are veiled and blurred as qa/queen-contrast-contract.mjs requires. */
+.qt {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 16px;
+}
+.qt-head h2 {
+  margin: 0 0 6px;
+  color: var(--hud-gold, #ffd700);
+  letter-spacing: 0.04em;
+}
+.qt-head p {
+  margin: 0 0 10px;
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
+  line-height: 1.5;
+}
+.qt-status {
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 170, 0, 0.55);
+  border-radius: 10px;
+  background: var(--hud-veil, rgba(2, 8, 6, 0.72));
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  color: #ffcc66 !important;
+}
+.qt-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 8px;
+  margin: 16px 0 0;
+}
+.qt-facts > div {
+  padding: 10px 12px;
+  border: 1px solid var(--hud-line, rgba(0, 255, 136, 0.22));
+  border-radius: 10px;
+  background: var(--hud-veil, rgba(2, 8, 6, 0.72));
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+.qt-facts dt {
+  font-size: 11px;
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
+}
+.qt-facts dd {
+  margin: 4px 0 0;
+  font-variant-numeric: tabular-nums;
+  color: var(--hud-green, #00ff88);
+  overflow-wrap: anywhere;
+}
+.qt-facts a {
+  color: inherit;
+}
+.qt-facts small {
+  display: block;
+  font-size: 11px;
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
+}
+.qt-withdraw {
+  margin: 20px 0 0;
+  font-size: 13px;
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
+  line-height: 1.5;
+}
+.qt-withdraw a {
+  color: var(--hud-green, #00ff88);
+}
