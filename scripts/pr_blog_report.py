@@ -2,8 +2,16 @@
 """Validate a PR's data-only work report and create unpublished blog artifacts.
 
 Usage: pr_blog_report.py validate --event "$GITHUB_EVENT_PATH" --output out
+           [--files files.jsonl --commits commits.jsonl]
 The trusted caller supplies a GitHub pull_request event. No PR code, command,
 template, URL, or instruction is ever executed or fetched by this program.
+
+One narrow exemption: a Dependabot PR whose body has no report block, whose
+every commit is Dependabot's own GitHub-signed commit and whose every changed
+file is a dependency manifest or lockfile is its own report. The trusted caller
+supplies the changed files and commits as JSON lines; the bump is recorded as a
+`dependency-bump` report.json and no blog draft is produced. A PR that carries a
+report block is always validated normally, Dependabot or not.
 """
 
 from __future__ import annotations
@@ -30,6 +38,17 @@ REPOSITORY = re.compile(r"[A-Za-z0-9][A-Za-z0-9-]{0,38}/[A-Za-z0-9][A-Za-z0-9._-
 PLACEHOLDER = re.compile(r"\b(?:TODO|TBD|FIXME)\b", re.IGNORECASE)
 EMPTY_VALUE = re.compile(r"(?:none|n/?a|not applicable|placeholder|replace(?: me| this)?|example|test|pending|\.\.\.|…|[-_]+)[.! ]*\Z", re.IGNORECASE)
 TEMPLATE_VALUE = re.compile(r"(?:replace (?:this|me|with)\b.*|(?:insert|write|enter|your)\b.*\bhere[.! ]*|<[^>]+>|\[[^\]]+\])\Z", re.IGNORECASE)
+
+
+DEPENDABOT = "dependabot[bot]"
+# Basenames only. Workflow files are deliberately absent: a bump of a GitHub
+# Action changes what runs with this repository's token, so it needs a report.
+DEPENDENCY_FILE = re.compile(
+    r"(?:package\.json|package-lock\.json|npm-shrinkwrap\.json|yarn\.lock|pnpm-lock\.yaml"
+    r"|bun\.lockb?|Cargo\.toml|Cargo\.lock|go\.mod|go\.sum|requirements[A-Za-z0-9._-]*\.(?:txt|in)"
+    r"|poetry\.lock|uv\.lock|pyproject\.toml|Pipfile(?:\.lock)?|Gemfile(?:\.lock)?"
+    r"|composer\.(?:json|lock)|build\.zig\.zon)\Z")
+DEPENDENCY_FILE_STATUS = {"modified", "added", "changed"}
 
 
 class ReportError(ValueError):
@@ -117,7 +136,8 @@ def timestamp(value: Any, name: str) -> str:
         fail(f"{name} must be an ISO 8601 timestamp with a timezone")
 
 
-def validate_event(event: Any) -> dict[str, Any]:
+def validate_event_identity(event: Any) -> tuple[dict[str, Any], dict[str, Any], str, int, str, str]:
+    """Check which repository, PR and head commit the event names."""
     event = mapping(event, "event")
     repository = mapping(event.get("repository"), "event.repository").get("full_name")
     if not isinstance(repository, str) or not REPOSITORY.fullmatch(repository) or repository.split("/")[1] in {".", ".."}:
@@ -136,6 +156,11 @@ def validate_event(event: Any) -> dict[str, Any]:
     if "html_url" in pr and pr["html_url"] != pr_url:
         fail("pull_request.html_url does not match repository and PR number")
     head_sha = sha(mapping(pr.get("head"), "pull_request.head").get("sha"), "pull_request.head.sha")
+    return event, pr, repository, number, pr_url, head_sha
+
+
+def validate_event(event: Any) -> dict[str, Any]:
+    event, pr, repository, number, pr_url, head_sha = validate_event_identity(event)
     state = pr.get("state")
     merged = pr.get("merged")
     if state not in ("open", "closed") or type(merged) is not bool:
@@ -216,6 +241,71 @@ def validate_event(event: Any) -> dict[str, Any]:
             "summary": text(blog["summary"], "work report.blog.summary", 40, 600, words=6),
             "outline": text_list(blog["outline"], "work report.blog.outline", 3, 20, 80, 12),
         },
+    }
+
+
+def json_lines(raw: str, context: str) -> list[dict[str, Any]]:
+    return [mapping(decode_json(line, f"{context} line {index + 1}"), f"{context} line {index + 1}")
+            for index, line in enumerate(raw.splitlines()) if line.strip()]
+
+
+def dependency_bump_refusal(event: Any, files: list[dict[str, Any]],
+                            commits: list[dict[str, Any]]) -> str | None:
+    """Return why the PR is NOT a pure Dependabot dependency bump, or None if it is."""
+    pr = event.get("pull_request") if isinstance(event, dict) else None
+    if not isinstance(pr, dict):
+        return "event has no pull_request"
+    user = pr.get("user") if isinstance(pr.get("user"), dict) else {}
+    if user.get("login") != DEPENDABOT or user.get("type") != "Bot":
+        return "author is not dependabot[bot]"
+    head = pr.get("head") if isinstance(pr.get("head"), dict) else {}
+    base = pr.get("base") if isinstance(pr.get("base"), dict) else {}
+    head_repo = head.get("repo") if isinstance(head.get("repo"), dict) else {}
+    base_repo = base.get("repo") if isinstance(base.get("repo"), dict) else {}
+    if not base_repo.get("full_name") or head_repo.get("full_name") != base_repo.get("full_name"):
+        return "head branch is not in the base repository"
+    if not isinstance(head.get("ref"), str) or not head["ref"].startswith("dependabot/"):
+        return "head branch is not a dependabot/ branch"
+    if not files or type(pr.get("changed_files")) is not int or len(files) != pr["changed_files"]:
+        return "changed-file list is missing or incomplete"
+    for item in files:
+        name, status = item.get("filename"), item.get("status")
+        if not isinstance(name, str) or not DEPENDENCY_FILE.fullmatch(name.rsplit("/", 1)[-1]):
+            return f"changes a file that is not a dependency manifest or lockfile: {name!r}"
+        if status not in DEPENDENCY_FILE_STATUS:
+            return f"{status!r} change to {name!r} is not a version bump"
+    if not commits or type(pr.get("commits")) is not int or len(commits) != pr["commits"]:
+        return "commit list is missing or incomplete"
+    for item in commits:
+        # Dependabot's commits are authored by it and signed by GitHub (web-flow).
+        # A pushed commit with a forged author email is not web-flow verified.
+        if (item.get("author") != DEPENDABOT or item.get("committer") != "web-flow"
+                or item.get("verified") is not True):
+            return f"commit {str(item.get('sha'))[:12]} is not a GitHub-signed Dependabot commit"
+    if commits[-1].get("sha") != head.get("sha"):
+        return "commit list does not end at the PR head"
+    return None
+
+
+def dependency_bump_report(event: dict[str, Any], files: list[dict[str, Any]],
+                           commits: list[dict[str, Any]]) -> dict[str, Any]:
+    """Build the bump's own report. Claims only what the API data shows."""
+    pr = event["pull_request"]
+    repository = event["repository"]["full_name"]
+    title = pr.get("title")
+    return {
+        "version": 1,
+        "kind": "dependency-bump",
+        "repository": repository,
+        "number": pr["number"],
+        "pr_url": f"https://github.com/{repository}/pull/{pr['number']}",
+        "head_sha": sha(pr["head"]["sha"], "pull_request.head.sha"),
+        "title": text(title, "pull_request.title", 1, 300),
+        "files": [{"filename": item["filename"], "status": item["status"]} for item in files],
+        "commits": [sha(item.get("sha"), "commit.sha") for item in commits],
+        "note": ("Dependabot dependency bump: manifests and lockfiles only, every commit "
+                 "GitHub-signed by Dependabot. No tests are claimed by this report; CI on the "
+                 "PR is the only verification. No blog draft is generated."),
     }
 
 
@@ -308,17 +398,24 @@ def encode_json(value: Any) -> str:
 
 
 def write_artifacts(report: dict[str, Any], output: Path) -> None:
+    if report.get("kind") == "dependency-bump":
+        artifacts = {"report.json": encode_json(report)}
+    else:
+        post = make_post(report)
+        artifacts = {
+            "report.json": encode_json(report),
+            "post.json": encode_json(post),
+            "draft.md": make_markdown(report, post),
+        }
+    write_files(artifacts, output)
+
+
+def write_files(artifacts: dict[str, str], output: Path) -> None:
     if output.is_symlink():
         fail("output directory must not be a symlink")
     output.mkdir(parents=True, exist_ok=True)
     if not output.is_dir():
         fail("output must be a directory")
-    post = make_post(report)
-    artifacts = {
-        "report.json": encode_json(report),
-        "post.json": encode_json(post),
-        "draft.md": make_markdown(report, post),
-    }
     for name in artifacts:
         path = output / name
         if path.is_symlink() or (path.exists() and not path.is_file()):
@@ -345,6 +442,9 @@ def main(argv: list[str] | None = None) -> int:
     validate = commands.add_parser("validate", help="validate the current PR report and emit drafts")
     validate.add_argument("--event", type=Path, required=True)
     validate.add_argument("--output", type=Path, required=True)
+    validate.add_argument("--files", type=Path, help="changed files as JSON lines {filename,status}")
+    validate.add_argument("--commits", type=Path,
+                          help="PR commits as JSON lines {sha,author,committer,verified}")
     args = parser.parse_args(argv)
     try:
         with args.event.open("rb") as stream:
@@ -352,6 +452,22 @@ def main(argv: list[str] | None = None) -> int:
         if len(raw) > MAX_EVENT_BYTES:
             fail("event JSON exceeds the 2 MiB limit")
         event = decode_json(raw.decode("utf-8"), "event")
+        pr = event.get("pull_request") if isinstance(event, dict) else None
+        body = pr.get("body") if isinstance(pr, dict) else None
+        if args.files and args.commits and not (isinstance(body, str) and START in body):
+            files = json_lines(args.files.read_text(encoding="utf-8"), "files")
+            commits = json_lines(args.commits.read_text(encoding="utf-8"), "commits")
+            refusal = dependency_bump_refusal(event, files, commits)
+            if refusal is None:
+                validate_event_identity(event)
+                report = dependency_bump_report(event, files, commits)
+                write_artifacts(report, args.output)
+                print(f"Dependency bump {report['repository']}#{report['number']} at "
+                      f"{report['head_sha']}: {len(files)} manifest/lockfile change(s) by Dependabot; "
+                      f"the bump is its own report; artifacts written to {args.output}")
+                return 0
+            if isinstance(pr, dict) and isinstance(pr.get("user"), dict) and pr["user"].get("login") == DEPENDABOT:
+                print(f"Dependency-bump exemption does not apply: {refusal}", file=sys.stderr)
         report = validate_event(event)
         write_artifacts(report, args.output)
         print(f"Validated {report['repository']}#{report['number']} at {report['head_sha']}: "
