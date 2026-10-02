@@ -1,4 +1,40 @@
 // SPDX-License-Identifier: MIT
+//
+// ============================================================================
+// SUPERSEDED -- DO NOT DEPLOY.
+//
+// Superseded on 2026-09-24 by the mint-on-acceptance design in
+// gHashTag/trinity-fpga @ d7e9718e9:
+//   specs/trinet/mint_on_acceptance.t27   (protocol of record)
+//   contracts/README.md                   (reference minters, TON + Solana)
+//   docs/docs/depin/tokenomics.md         (100% mined, zero pre-mine)
+//   docs/docs/depin/principles.md         (owner decision, 2026-09-24)
+// Current design: 100% of TRI is mined by accepted work; genesis supply is
+// zero; no pre-mine, no allocation, no sale; cap 3^21 = 10,460,353,203 TRI;
+// chains TON and Solana; trust model V1 M-of-N attestor quorum -> V2
+// optimistic challenge -> V3 zk receipt. Nothing is deployed.
+//
+// Why this contract is wrong under that design:
+//   * It pre-mines (10% liquidity at construction) and reserves 80% more as
+//     founder / node / community / treasury vesting allocations. That
+//     contradicts "100% mined by accepted work".
+//
+// The Sepolia deployment 0xef368e29FA3aB2eaf02BccD05438ED3bafE9f469
+// (deployment-sepolia.json, 2026-02-16) is a historical testnet artefact.
+// In it all five allocation addresses equal the deployer
+// (0xb7183E9D4176F3Fa6F56190d677626a9c87a9f87), because script/Deploy.s.sol
+// and scripts/deploy.js fall back to the deployer when an *_ADDRESS env var
+// is unset. _setupVesting() writes per-beneficiary mappings, so each of the
+// four calls in the constructor overwrote the previous one for that single
+// address; only the last (treasury: 10%, 60 months, 6-month cliff)
+// survives. The maximum that can ever exist on that deployment is therefore
+// 10% liquidity + 10% vesting = 20% of the cap; 80% (founder 20 + node
+// rewards 40 + community 20) can never be minted. Checked on-chain via
+// eth_call on 2026-10-01: totalSupply() = totalVested(deployer) =
+// 1,046,035,320.3 TRI (10% each), vestingDuration(deployer) = 155,520,000 s.
+//
+// Kept as history. Do not change the code below; do not deploy it.
+// ============================================================================
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";

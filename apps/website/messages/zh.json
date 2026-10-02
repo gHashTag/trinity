@@ -1353,39 +1353,29 @@
       ]
     },
     "distribution": {
-      "title": "代币分配",
+      "title": "代币分配：100% 由工作挖出",
       "items": [
         {
-          "name": "节点奖励",
-          "percent": "40%",
-          "amount": "4,184,141,281"
+          "name": "由被接受的工作挖出",
+          "percent": "100%",
+          "amount": "≤ 10,460,353,203"
         },
         {
-          "name": "创始人",
-          "percent": "20%",
-          "amount": "2,092,070,640"
+          "name": "预挖 / 创始人 / 团队",
+          "percent": "0%",
+          "amount": "0"
         },
         {
-          "name": "国库",
-          "percent": "15%",
-          "amount": "1,569,052,980"
-        },
-        {
-          "name": "公开发售",
-          "percent": "15%",
-          "amount": "1,569,052,980"
-        },
-        {
-          "name": "生态系统",
-          "percent": "10%",
-          "amount": "1,046,035,320"
+          "name": "发售 / 国库 / 流动性",
+          "percent": "0%",
+          "amount": "0"
         }
       ],
-      "total": "总计：3²¹ = 10,460,353,203 $TRI"
+      "total": "上限：3²¹ = 10,460,353,203 $TRI · 创世铸造：0 · 尚未部署"
     },
     "quote": "\"宇宙的数学偏爱Trinity。\"",
     "cta": "查看完整代币经济学",
-    "ctaUrl": "https://github.com/gHashTag/trinity/blob/main/docs/docs/depin/tokenomics.md"
+    "ctaUrl": "https://github.com/gHashTag/trinity-fpga/blob/main/docs/docs/depin/tokenomics.md"
   },
   "mysticism": {
     "title": "数学基础",

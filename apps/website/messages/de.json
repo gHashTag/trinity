@@ -1353,39 +1353,29 @@
       ]
     },
     "distribution": {
-      "title": "Token-Verteilung",
+      "title": "Token-Verteilung: 100% geschürft",
       "items": [
         {
-          "name": "Node-Belohnungen",
-          "percent": "40%",
-          "amount": "4,184,141,281"
+          "name": "Durch akzeptierte Arbeit geschürft",
+          "percent": "100%",
+          "amount": "≤ 10,460,353,203"
         },
         {
-          "name": "Gründer",
-          "percent": "20%",
-          "amount": "2,092,070,640"
+          "name": "Pre-Mine / Gründer / Team",
+          "percent": "0%",
+          "amount": "0"
         },
         {
-          "name": "Treasury",
-          "percent": "15%",
-          "amount": "1,569,052,980"
-        },
-        {
-          "name": "Öffentlicher Verkauf",
-          "percent": "15%",
-          "amount": "1,569,052,980"
-        },
-        {
-          "name": "Ökosystem",
-          "percent": "10%",
-          "amount": "1,046,035,320"
+          "name": "Verkauf / Treasury / Liquidität",
+          "percent": "0%",
+          "amount": "0"
         }
       ],
-      "total": "GESAMT: 3²¹ = 10,460,353,203 $TRI"
+      "total": "OBERGRENZE: 3²¹ = 10,460,353,203 $TRI · bei Genesis geprägt: 0 · nicht deployt"
     },
     "quote": "\"Die Mathematik des Universums begünstigt die Trinität.\"",
     "cta": "Vollständige Tokenomics ansehen",
-    "ctaUrl": "https://github.com/gHashTag/trinity/blob/main/docs/docs/depin/tokenomics.md"
+    "ctaUrl": "https://github.com/gHashTag/trinity-fpga/blob/main/docs/docs/depin/tokenomics.md"
   },
   "mysticism": {
     "title": "Mathematische Grundlagen",
