@@ -18,6 +18,7 @@ import { body as body_a_small_agent_needs_an_exact_judge, ruBody as ruBody_a_sma
 import type { Post, PostBody } from './types'
 import { body as body_mask_over_scale_ternary_drafts_that_compile, ruBody as ruBody_mask_over_scale_ternary_drafts_that_compile } from './bodies/mask-over-scale-ternary-drafts-that-compile'
 import { body as body_the_seed_moved_it_the_pins_moved_it_more, ruBody as ruBody_the_seed_moved_it_the_pins_moved_it_more } from './bodies/the-seed-moved-it-the-pins-moved-it-more'
+import { body as body_one_regional_clock_twelve_pull_requests, ruBody as ruBody_one_regional_clock_twelve_pull_requests } from './bodies/one-regional-clock-twelve-pull-requests'
 import { body as body_tri_mined_not_sold, ruBody as ruBody_tri_mined_not_sold } from './bodies/tri-mined-not-sold'
 import { body as body_trained_weights_ran_receipts_were_not_checked, ruBody as ruBody_trained_weights_ran_receipts_were_not_checked } from './bodies/trained-weights-ran-receipts-were-not-checked'
 import { body as body_golden_ratio_weights_ran_on_the_board, ruBody as ruBody_golden_ratio_weights_ran_on_the_board } from './bodies/golden-ratio-weights-ran-on-the-board'
@@ -156,6 +157,7 @@ const bodies: Record<string, PostBody> = {
   'golden-ratio-weights-ran-on-the-board': { body: body_golden_ratio_weights_ran_on_the_board, ruBody: ruBody_golden_ratio_weights_ran_on_the_board },
   'mask-over-scale-ternary-drafts-that-compile': { body: body_mask_over_scale_ternary_drafts_that_compile, ruBody: ruBody_mask_over_scale_ternary_drafts_that_compile },
   'the-seed-moved-it-the-pins-moved-it-more': { body: body_the_seed_moved_it_the_pins_moved_it_more, ruBody: ruBody_the_seed_moved_it_the_pins_moved_it_more },
+  'one-regional-clock-twelve-pull-requests': { body: body_one_regional_clock_twelve_pull_requests, ruBody: ruBody_one_regional_clock_twelve_pull_requests },
 }
 
 export type { Block, Post } from './types'
