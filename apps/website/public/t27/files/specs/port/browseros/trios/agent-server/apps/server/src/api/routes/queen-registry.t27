@@ -132,16 +132,16 @@ pub struct GetResponse {
 }
 
 // Plumbing functions - undefined bodies, not called from tests
-pub fn createQueenPool(url: []const u8) -> Pool { undefined; }
+pub fn createQueenPool(url: []const u8) -> RegistryPool { undefined; }
 
-pub struct Pool {
+pub struct RegistryPool {
     // Opaque handle
     _dummy: u8,
 }
 
-pub fn Pool_query(pool: Pool, sql: []const u8, params: [][]const u8) -> QueryResult { undefined; }
+pub fn Pool_query(pool: RegistryPool, sql: []const u8, params: [][]const u8) -> QueryResult { undefined; }
 
-pub fn Pool_end(pool: Pool) -> void { undefined; }
+pub fn Pool_end(pool: RegistryPool) -> void { undefined; }
 
 pub struct QueryResult {
     rowCount: usize,

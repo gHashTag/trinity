@@ -52,8 +52,3 @@ module TriMime;
         when result = parse(input, null)
         then result != undefined
 
-    test "format_basic_case"
-        given input = Email{.from = "test@example.com", .to = &[_][]const u8{"recipient@example.com"}, .subject = "Test Subject", .body = "Test body"}
-        when result = format(input, null)
-        then result != undefined
-

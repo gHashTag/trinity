@@ -188,29 +188,27 @@ module TriLogging;
         when result = level_from_string(input)
         then result == LogLevel.warn
 
-    test level_to_string_roundtrip_debug
-        given original = LogLevel.debug
-        when converted = level_to_string(original)
-        then parsed = level_from_string(converted)
-        then parsed == original
+    test level_to_string_roundtrip_debug {
+        var converted = level_to_string(LogLevel.debug);
+        var parsed = level_from_string(converted);
+        assert(parsed == LogLevel.debug);
+    }
 
-    test level_to_string_roundtrip_error
-        given original = LogLevel.error
-        when converted = level_to_string(original)
-        then parsed = level_from_string(converted)
-        then parsed == original
+    test level_to_string_roundtrip_error {
+        var converted = level_to_string(LogLevel.error);
+        var parsed = level_from_string(converted);
+        assert(parsed == LogLevel.error);
+    }
 
-    test should_log_threshold_logging
-        given msg_level = LogLevel.warn
-        when min_level = LogLevel.warn
-        then result = should_log(msg_level, min_level)
-        then result == true
+    test should_log_threshold_logging {
+        var result = should_log(LogLevel.warn, LogLevel.warn);
+        assert(result == true);
+    }
 
-    test should_log_debug_below_error
-        given msg_level = LogLevel.debug
-        when min_level = LogLevel.error
-        then result = should_log(msg_level, min_level)
-        then result == false
+    test should_log_debug_below_error {
+        var result = should_log(LogLevel.debug, LogLevel.error);
+        assert(result == false);
+    }
 
     test level_color_debug_returns_cyan
         given level = LogLevel.debug

@@ -333,4 +333,3 @@ module TriVersion;
         assert(result.prerelease.len == 0);
         assert(result.build.len == 0);
     }
-}

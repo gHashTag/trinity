@@ -2907,9 +2907,4 @@ invariant igla_coder_pipeline_w392_depth: true
 // result, judged by t27c, not a hardware or deployed-network one.
 // ============================================================================
 
-test igla_coder_pilot_checkpoint_measured_2026_09_24 {
-    // a trained checkpoint and a t27c-judged benchmark now exist for this pipeline
-    assert true
-}
-
 invariant igla_coder_pilot_checkpoint_measured: true

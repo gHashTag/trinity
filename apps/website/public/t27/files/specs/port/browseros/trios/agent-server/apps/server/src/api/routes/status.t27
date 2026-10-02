@@ -15,7 +15,7 @@ pub fn createStatusRoute(deps: StatusDeps) -> undefined {
 }
 
 // Define the response structure for the status endpoint.
-struct StatusResponse {
+struct ServerStatusResponse {
     status: []const u8,
     cdpConnected: ?bool
 }
@@ -23,11 +23,11 @@ struct StatusResponse {
 // getStatusResponse extracts the decision from the original route handler.
 // It takes an optional boolean representing the result of
 // `deps.browser?.isCdpConnected()` (null if browser is undefined).
-// It returns a StatusResponse that will be serialized to JSON.
+// It returns a ServerStatusResponse that will be serialized to JSON.
 // The JSON serializer should omit the cdpConnected field when it is null,
 // matching the original behavior where the field is omitted when undefined.
-pub fn getStatusResponse(cdpConnected: ?bool) -> StatusResponse {
-    return StatusResponse { .status = "ok", .cdpConnected = cdpConnected };
+pub fn getStatusResponse(cdpConnected: ?bool) -> ServerStatusResponse {
+    return ServerStatusResponse { .status = "ok", .cdpConnected = cdpConnected };
 }
 
 // Test cases for getStatusResponse, asserting on the behavior of the original function.

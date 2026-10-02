@@ -3,17 +3,17 @@ module port::trios::crates::trios_cli::src::metrics;
 const MAX_PARAMS: u64 = 1_000_000;
 const MAX_TIME_SEC: f64 = 3600.0;
 
-struct Gate {
+struct MetricGate {
     name: []const u8,
     threshold: f64,
 }
 
-const GATES: [5]Gate = [
-    Gate { .name = "G-BGH", .threshold = 1.50 },
-    Gate { .name = "G-ORTH", .threshold = 1.20 },
-    Gate { .name = "G-SWA", .threshold = 1.15 },
-    Gate { .name = "G-STACK", .threshold = 1.12 },
-    Gate { .name = "G-NEEDLE", .threshold = 1.00 },
+const GATES: [5]MetricGate = [
+    MetricGate { .name = "G-BGH", .threshold = 1.50 },
+    MetricGate { .name = "G-ORTH", .threshold = 1.20 },
+    MetricGate { .name = "G-SWA", .threshold = 1.15 },
+    MetricGate { .name = "G-STACK", .threshold = 1.12 },
+    MetricGate { .name = "G-NEEDLE", .threshold = 1.00 },
 ];
 
 struct ValidateBPBResult {
