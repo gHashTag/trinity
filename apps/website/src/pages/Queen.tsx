@@ -3336,6 +3336,11 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
   // (999-multibots-telegraf, AppWebView.swift boardFullscreen) injects its own
   // calm rules, which hide the head's tools with !important unless the root
   // carries this class. Setting it keeps the board's own "more" working there.
+  // The shim left the app in 999-multibots-telegraf#3351 (bf9edb835), so the
+  // first build without it is CFBundleVersion 8033 cut from main (the build
+  // number is the commit count). TestFlight testers can still run older ones,
+  // and the app's web view does not say its build, so "none older is
+  // installed" cannot be measured from here yet: until it can, keep this.
   useEffect(() => {
     document.documentElement.classList.toggle("vibee-board-tools", toolsShown);
   }, [toolsShown]);
