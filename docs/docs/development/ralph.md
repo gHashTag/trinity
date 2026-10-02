@@ -473,7 +473,7 @@ Ralph behavior is configured through `.ralphrc` file.
 
 ```bash
 # API Fallback
-FALLBACK_API_KEY="ce8a4b21d9134c2988b3667d032bf88f.1votRIKGtIM99Du"
+FALLBACK_API_KEY="<your-api-key>"  # read the real value from Railway or Infisical; never commit it
 FALLBACK_API_BASE="https://api.z.ai/api/paas/v4"
 FALLBACK_MODEL="glm-5"
 
