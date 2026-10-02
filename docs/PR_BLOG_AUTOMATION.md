@@ -44,6 +44,21 @@ Report measured results as measured, simulation as simulation, and PR-author
 claims as reported unless independently reproduced. Do not include secrets,
 customer data, private URLs or unpublished security details in public reports.
 
+## The one exemption: a pure Dependabot bump
+
+Dependabot cannot write a report, so a dependency bump is its own report when
+ALL of these hold (checked from GitHub API data, never from the PR's own code):
+the author is `dependabot[bot]` (type `Bot`); the head branch is a
+`dependabot/` branch in this repository; every changed file is a dependency
+manifest or lockfile (`package.json`, `package-lock.json`, `yarn.lock`,
+`Cargo.lock`, `go.sum`, ... -- see `DEPENDENCY_FILE` in
+`scripts/pr_blog_report.py`; workflow files are excluded on purpose); and every
+commit is authored by Dependabot and GitHub-signed (`web-flow`, verified), so a
+human push to the branch ends the exemption. The bump writes a
+`dependency-bump` `report.json`, claims no tests, and gets no blog draft or
+publication task. A body that carries a report block is validated normally,
+Dependabot or not. Humans and agents have no exemption.
+
 ## Automation and safety
 
 `pr-blog-report.yml` uses `pull_request_target` and checks out only trusted

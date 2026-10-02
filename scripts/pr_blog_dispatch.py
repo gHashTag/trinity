@@ -35,6 +35,10 @@ def find_outbox(marker):
 def dispatch(pr, draft_dir):
     if pr.get("base", {}).get("repo", {}).get("full_name") != REPO:
         raise ValueError("Unexpected source repository")
+    report = draft_dir / "report.json"
+    if report.is_file() and not report.is_symlink() and json.loads(report.read_text()).get("kind") == "dependency-bump":
+        print("Dependency bump: no blog draft and no publication task")
+        return
     if not pr.get("merged_at") or not pr.get("merged"):
         print("Draft saved; unmerged PR is not sent for publication")
         return
