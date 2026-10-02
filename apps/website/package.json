@@ -57,6 +57,7 @@
     "check:queen-dead-api": "node qa/queen-viewport-contract.mjs --dead-api",
     "check:queen-touch": "node qa/queen-touch-contract.mjs",
     "check:queen-round": "node qa/queen-round-contract.mjs",
+    "check:home-no-webgl": "node qa/home-no-webgl-contract.mjs",
     "check:queen-pick": "node qa/queen-pick-contract.mjs",
     "check:queen-placement": "node qa/queen-placement-contract.mjs",
     "check:queen-stale": "node qa/queen-stale-contract.mjs",

@@ -1,8 +1,10 @@
-import { Suspense, lazy, useRef } from 'react'
+import { Suspense, lazy, useRef, useState } from 'react'
 import { useI18n } from '../i18n/context'
 import { MODULES } from '../lib/queenModules'
 import type { UniverseAtlas } from '../lib/queenUniverseAtlas'
 import { useCorpus } from '../lib/queenCorpus'
+import { webglAvailable } from '../lib/webgl'
+import { SceneBoundary } from './SceneBoundary'
 import PlayLine from './PlayLine'
 import type { CombHandle } from './queenHud'
 import './QueenHeroBlock.css'
@@ -49,6 +51,14 @@ export default function QueenHeroBlock() {
   // The atlas the comb draws, from the corpus store the Queen reads (lib/queenCorpus).
   const atlas: UniverseAtlas | null = useCorpus('atlas').part?.data ?? null
   const comb = useRef<CombHandle>(null)
+  // Whether the live scene is drawn here at all. Without WebGL the chunk is not
+  // even fetched: the block's words, its links and the counts below are the
+  // content, and they stand on a dark frame instead of a lattice. A scene that
+  // throws anyway (a context refused after the probe, a build that fails) is
+  // caught by the boundary and leaves the same frame, never a blank page --
+  // which is what one uncaught throw here made of the whole landing on
+  // 2026-10-03 (lib/webgl.ts).
+  const [scene, setScene] = useState<'webgl' | 'none' | 'failed'>(() => (webglAvailable() ? 'webgl' : 'none'))
 
   const repositories = atlas?.worlds.filter((world) => world.specCount > 0).length ?? 0
   const issues = atlas?.issues.length ?? 0
@@ -71,11 +81,13 @@ export default function QueenHeroBlock() {
             <a className="queen-hero-block-secondary" href="#/queen?view=core">{t.core}</a>
           </div>
         </div>
-        <div className="queen-hero-block-atlas" aria-label={atlas ? t.snapshot : t.loading}>
-          {atlas && (
-            <Suspense fallback={null}>
-              <QueenCatalogHive atlas={atlas} lang={lang} handleRef={comb} foundationVisible fitInset={0} />
-            </Suspense>
+        <div className="queen-hero-block-atlas" aria-label={atlas ? t.snapshot : t.loading} data-scene={scene}>
+          {atlas && scene === 'webgl' && (
+            <SceneBoundary lang={lang} fallback={null} onError={() => setScene('failed')}>
+              <Suspense fallback={null}>
+                <QueenCatalogHive atlas={atlas} lang={lang} handleRef={comb} foundationVisible fitInset={0} />
+              </Suspense>
+            </SceneBoundary>
           )}
           <div className="queen-hero-block-stats">
             <strong>{atlas ? specs : '—'}</strong><span>{t.specsCount}</span>
