@@ -79,6 +79,7 @@
     "check:queen-tri": "node qa/queen-tri-contract.mjs",
     "check:tri-identity": "node --experimental-strip-types qa/tri-identity-contract.mjs",
     "check:hive-board": "node --experimental-strip-types qa/hive-board-contract.mjs",
+    "check:ball-board": "node --experimental-strip-types qa/ball-board-contract.mjs",
     "check:clients-filter": "node --experimental-strip-types qa/clients-filter-contract.mjs",
     "check:queen-direction": "node --experimental-strip-types qa/queen-direction-contract.mjs",
     "check:queen-identity": "node qa/queen-identity-contract.mjs",

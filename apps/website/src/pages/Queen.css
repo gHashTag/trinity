@@ -7461,18 +7461,21 @@ body.queen-shell .queen-starfield-source {
    automatic -- as many as arrive, each no narrower than a card needs to be
    legible, and the lane scrolls sideways when they do not fit, which is what
    the six fixed ones already do. */
-.queen27-clients-lane {
+.queen27-clients-lane,
+.queen27-ball-lane {
   grid-template-columns: none;
   grid-auto-flow: column;
   grid-auto-columns: minmax(210px, 1fr);
 }
 
-.queen27-page.is-shell .queen27-clients-lane {
+.queen27-page.is-shell .queen27-clients-lane,
+.queen27-page.is-shell .queen27-ball-lane {
   grid-auto-columns: minmax(160px, 1fr);
 }
 
 @media (max-width: 760px) {
-  .queen27-clients-lane {
+  .queen27-clients-lane,
+  .queen27-ball-lane {
     grid-auto-columns: minmax(78vw, 1fr);
   }
 }

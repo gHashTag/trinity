@@ -137,6 +137,14 @@ jobs:
       # the page parsed with the real parser. Pure, no browser.
       - name: Hive board is per person
         run: npm run check:hive-board
+      # The third lane is the owner's MAIL by client, whose move it is. Who
+      # may see it is the render service's decision (the owner, and whoever
+      # the owner granted it to); this holds that the page sends no argument
+      # to widen it, reads no count, draws NO lane when the mail was not sent,
+      # keeps only github links, and puts the lane, its heading and its chip
+      # behind `{ball && …}`.
+      - name: The mail lane is the owner's, or granted
+        run: npm run check:ball-board
       # The lane's filter can watch several clients at once and search within
       # them, which is two more ways for a control to describe rows the server
       # did not send. One property over every hostile input anyone has thought

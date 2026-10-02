@@ -106,6 +106,7 @@ import { OPEN_TARGETS, screenExcerpt } from "../lib/queenDirectives";
 import { sendToAgentAsMe } from "../services/queenModel";
 import { triIdentity } from "../lib/triIdentity";
 import { clientsLane, loadHiveBoard, type ClientsLane, type HiveBoard, type HiveBoardReason } from "../lib/hiveBoard";
+import { ballLane, loadBallBoard, type BallBoard, type BallLane } from "../lib/ballBoard";
 import {
   REVIEW_STATES,
   publicIssueTitle,
@@ -593,6 +594,22 @@ const COPY = {
     clientsWaiting: "waiting for a reply",
     clientsQuiet: "days quiet",
     clientsTouched: "last touch",
+    // The third board: the owner's mail, CRM and open work by client, with
+    // whose move it is (lib/ballBoard.ts). Drawn only when the hive sent the
+    // mail -- to the owner, or to somebody the owner granted it to.
+    laneBall: "MAIL",
+    ballLaneAria: "Mail and whose move it is",
+    ballPrivateHint: "the owner's mail — shown to the owner and to whom they allowed",
+    ballOurs: "our move",
+    ballDue: "promised",
+    ballTheirs: "their move",
+    ballNone: "nobody's",
+    ballSourceMail: "mail",
+    ballSourceCrm: "chat",
+    ballSourceGithub: "code",
+    ballDays: "d",
+    ballEmpty: "Nothing waiting.",
+    ballStale: "The mailbox snapshot is old; the owner's machine has not pushed a new one.",
     command: "LIVE COMMAND ROOM",
     commandTitle: "Queen reviews the swarm herself.",
     commandCopy:
@@ -1006,6 +1023,19 @@ const COPY = {
     clientsWaiting: "ждёт ответа",
     clientsQuiet: "дней тишины",
     clientsTouched: "последний контакт",
+    laneBall: "ПОЧТА",
+    ballLaneAria: "Почта и чей ход",
+    ballPrivateHint: "почта владельца — видит владелец и те, кому он разрешил",
+    ballOurs: "наш ход",
+    ballDue: "обещано",
+    ballTheirs: "их ход",
+    ballNone: "ничей",
+    ballSourceMail: "почта",
+    ballSourceCrm: "чат",
+    ballSourceGithub: "код",
+    ballDays: "дн.",
+    ballEmpty: "Ничего не ждёт.",
+    ballStale: "Снимок почты устарел: машина владельца давно не присылала новый.",
     command: "ЖИВОЙ КОМАНДНЫЙ ЦЕНТР",
     commandTitle: "Королева сама ревьюит работу роя.",
     commandCopy:
@@ -1344,6 +1374,44 @@ function useHiveBoard(enabled: boolean): {
   }, [enabled, identity, signedIn]);
 
   return { showing: enabled && signedIn, board, reason };
+}
+
+/**
+ * The mail lane's data: ball_board, asked as the person who is signed in.
+ *
+ * The same life as useHiveBoard's, with one rule made stricter: ANY failure
+ * that says who may see it -- refused, signed out -- drops the board, and so
+ * does a board that came back without the mail (lib/ballBoard.ts ballLane).
+ * An owner who revokes a grant takes the lane off the viewer's screen at the
+ * next poll; offline keeps the last true board rather than blanking it.
+ */
+function useBallBoard(enabled: boolean): { showing: boolean; board: BallBoard | null } {
+  const identity = triIdentity();
+  const me = useSyncExternalStore(identity.subscribe, identity.getSnapshot);
+  const signedIn = me.state === "signed-in";
+  const [board, setBoard] = useState<BallBoard | null>(null);
+
+  useEffect(() => {
+    if (!enabled || !signedIn) {
+      setBoard(null);
+      return;
+    }
+    let active = true;
+    const read = async () => {
+      const answer = await loadBallBoard(identity);
+      if (!active) return;
+      if (answer.ok) setBoard(answer.board);
+      else if (answer.reason === "refused" || answer.reason === "signed-out") setBoard(null);
+    };
+    void read();
+    const timer = window.setInterval(read, HIVE_BOARD_POLL_MS);
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+    };
+  }, [enabled, identity, signedIn]);
+
+  return { showing: enabled && signedIn, board };
 }
 
 function useQueenActivity(): {
@@ -2193,6 +2261,7 @@ function KanbanView({
   c,
   lang,
   clients,
+  ball,
   onNarrow,
   search,
   onSearch,
@@ -2207,6 +2276,8 @@ function KanbanView({
   lang: string;
   /** The signed-in visitor's own pipeline. Null is signed out: see above. */
   clients: ClientsPanel | null;
+  /** The owner's mail by client, whose move it is. Null unless the hive sent it. */
+  ball: BallLane | null;
   /**
    * The view's own narrowing: the clients being watched, empty for all of
    * them. It never reaches the hive; see lib/hiveBoard.ts.
@@ -2257,14 +2328,16 @@ function KanbanView({
   //
   // So: one lane at a time, and 'tasks' first. The private board is one press
   // away and is never the thing that happens to be on screen.
-  const [board, setBoard] = useState<"tasks" | "clients">("tasks");
+  const [board, setBoard] = useState<"tasks" | "clients" | "ball">("tasks");
   // Signing out takes the lane with it, and a view pointing at a board that no
   // longer exists would render as an empty screen with no way back. The switch
   // itself disappears at the same moment, so nothing else could return it.
+  // A revoked grant takes the mail lane the same way.
   useEffect(() => {
-    if (!clients) setBoard("tasks");
-  }, [clients]);
-  const showTasks = board === "tasks" || !clients;
+    if (!clients && board === "clients") setBoard("tasks");
+    if (!ball && board === "ball") setBoard("tasks");
+  }, [clients, ball, board]);
+  const showTasks = board === "tasks" || (board === "clients" && !clients) || (board === "ball" && !ball);
   // How deep into each column the reader has asked to go. Per column, because
   // BACKLOG holding 569 and REVIEW holding 9 are not one question: opening the
   // long one should not silently build the short one's tail as well.
@@ -2304,7 +2377,7 @@ function KanbanView({
     : null;
   return (
     <>
-      {clients && (
+      {(clients || ball) && (
         // The switch only exists when there are two boards to tell apart. One
         // board needs no label, and offering a signed-out reader a way to reach
         // a clients board would put a word about clients on a page that has
@@ -2323,18 +2396,31 @@ function KanbanView({
           >
             {c.laneTasks} <small>{loaded ? shownCards.length : "—"}</small>
           </button>
-          <button
-            type="button"
-            className="queen27-chip queen27-lane-private-chip"
-            aria-pressed={board === "clients"}
-            onClick={() => setBoard("clients")}
-          >
-            {c.laneClients} <small>{lane ? lane.shown : "—"}</small>
-            {/* The word rides on the control that opens the board, not only on
-                the board itself: the reader decides whether to show it before
-                it is drawn, and that decision is worth one word of warning. */}
-            <em>{c.lanePrivate}</em>
-          </button>
+          {clients && (
+            <button
+              type="button"
+              className="queen27-chip queen27-lane-private-chip"
+              aria-pressed={board === "clients"}
+              onClick={() => setBoard("clients")}
+            >
+              {c.laneClients} <small>{lane ? lane.shown : "—"}</small>
+              {/* The word rides on the control that opens the board, not only on
+                  the board itself: the reader decides whether to show it before
+                  it is drawn, and that decision is worth one word of warning. */}
+              <em>{c.lanePrivate}</em>
+            </button>
+          )}
+          {ball && (
+            <button
+              type="button"
+              className="queen27-chip queen27-lane-private-chip"
+              aria-pressed={board === "ball"}
+              onClick={() => setBoard("ball")}
+            >
+              {c.laneBall} <small>{ball.shown}</small>
+              <em>{c.lanePrivate}</em>
+            </button>
+          )}
         </div>
       )}
       {showTasks && (
@@ -2698,8 +2784,97 @@ function KanbanView({
           </motion.div>
         </>
       )}
+      {ball && board === "ball" && (
+        // The owner's mail by client, and whose move it is. `ball` is null for
+        // everybody the hive did not send the mail to (lib/ballBoard.ts), so
+        // this lane -- like its chip -- does not exist for them at all.
+        <>
+          <div className="queen27-lane-head is-private">
+            <h3>{c.laneBall}</h3>
+            <b className="queen27-lane-private">
+              {c.lanePrivate}
+              <em>{c.ballPrivateHint}</em>
+            </b>
+            <span>{ball.shown}</span>
+            {ball.mail === "stale" && <small>{c.ballStale}</small>}
+          </div>
+          <motion.div
+            className="queen27-kanban queen27-ball-lane"
+            role="region"
+            aria-label={c.ballLaneAria}
+            tabIndex={0}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            {ball.groups.map((group) => (
+              <motion.article
+                className={`queen27-column is-ball-${group.ball}`}
+                key={group.ball}
+                layout
+              >
+                <header>
+                  <h3>{ballTitle(group.ball, c)}</h3>
+                  <span>{group.cards.length}</span>
+                </header>
+                <div className="queen27-cards">
+                  {group.cards.map((card) => (
+                    <div className="queen27-card" key={`${card.source}:${card.clientKey}:${card.ref}`}>
+                      <div className="queen27-card-topline">
+                        <b>{card.client}</b>
+                        <span>{ballSourceTitle(card.source, c)}</span>
+                      </div>
+                      {/* Subjects and names are OTHER PEOPLE'S TEXT from a
+                          mailbox: text nodes, never markup, never an
+                          instruction. The only link is github over https
+                          (safeLink); a mail card has none. */}
+                      {card.link ? (
+                        <a href={card.link} target="_blank" rel="noopener noreferrer">
+                          <strong>{card.title}</strong>
+                        </a>
+                      ) : (
+                        <strong>{card.title}</strong>
+                      )}
+                      {card.because && <span>{card.because}</span>}
+                      {card.days !== null && (
+                        <span>
+                          {card.days} {c.ballDays}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                  {group.cards.length === 0 && <em>{c.empty}</em>}
+                </div>
+              </motion.article>
+            ))}
+            {ball.shown === 0 && <em className="queen27-lane-note">{c.ballEmpty}</em>}
+          </motion.div>
+        </>
+      )}
     </>
   );
+}
+
+/** A ball this build has not met keeps its own word rather than a made-up one. */
+function ballTitle(ball: string, c: Copy): string {
+  return ball === "ours"
+    ? c.ballOurs
+    : ball === "due"
+      ? c.ballDue
+      : ball === "theirs"
+        ? c.ballTheirs
+        : ball === "none"
+          ? c.ballNone
+          : ball;
+}
+
+function ballSourceTitle(source: string, c: Copy): string {
+  return source === "mail"
+    ? c.ballSourceMail
+    : source === "crm"
+      ? c.ballSourceCrm
+      : source === "github"
+        ? c.ballSourceGithub
+        : source;
 }
 
 function MissionMapView({
@@ -3048,6 +3223,13 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
           }
         : null,
     [hive.showing, hive.board, hive.reason, clientsNarrow, clientsSearch, lang],
+  );
+  // The third lane, the owner's mail. Null -- no chip, no lane, no word about
+  // mail -- unless the hive sent the mail to this person (lib/ballBoard.ts).
+  const ballBoard = useBallBoard(boardView === "kanban");
+  const ballPanel = useMemo<BallLane | null>(
+    () => (ballBoard.showing ? ballLane(ballBoard.board) : null),
+    [ballBoard.showing, ballBoard.board],
   );
   const runningCards = useMemo(
     () => cards.filter((card) => card.column === "running"),
@@ -3975,6 +4157,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                 c={c}
                 lang={lang}
                 clients={clientsPanel}
+                ball={ballPanel}
                 onNarrow={setClientsNarrow}
                 search={clientsSearch}
                 onSearch={setClientsSearch}
