@@ -194,63 +194,56 @@ module Attention;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test forward_basic_case
-        given query = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0]
-        given key = [1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0, 3.0]
-        given value = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2]
-        given config = AttentionConfig{ .d_model = 4, .num_heads = 2, .dropout = 0.0, .causal = false }
-        var output = [0.0] * 12
-        var weights = [0.0] * 9
-        when result = forward(query, key, value, output, weights, config)
-        then result == void
-        then output.len == 12
-        then weights.len == 9
-        then output[0] + output[1] + output[2] + output[3] > 0.0  // Should have computed meaningful output
+    test forward_basic_case {
+        var query: [12]f32 = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0];
+        var key: [12]f32 = [1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0, 3.0];
+        var value: [12]f32 = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2];
+        var config = AttentionConfig{ .d_model = 4, .num_heads = 2, .dropout = 0.0, .causal = false };
+        var output: [12]f32 = [0.0] ** 12;
+        var weights: [9]f32 = [0.0] ** 9;
+        forward(&query, &key, &value, &output, &weights, config);
+        assert(output[0] + output[1] + output[2] + output[3] > 0.0);  // computed a meaningful output
+    }
 
-    test backward_basic_case
-        given grad_output = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2]
-        given query = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0]
-        given key = [1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0, 3.0]
-        given value = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2]
-        given attn_weights = [0.3, 0.3, 0.4, 0.3, 0.3, 0.4, 0.4, 0.4, 0.2]
-        given config = AttentionConfig{ .d_model = 4, .num_heads = 2, .dropout = 0.0, .causal = false }
-        var grad_query = [0.0] * 12
-        var grad_key = [0.0] * 12
-        var grad_value = [0.0] * 12
-        when result = backward(grad_output, query, key, value, attn_weights, grad_query, grad_key, grad_value, config)
-        then result == void
-        then grad_query.len == 12
-        then grad_key.len == 12
-        then grad_value.len == 12
-        then grad_query[0] + grad_query[1] + grad_query[2] + grad_query[3] != 0.0  // Should have computed gradients
+    test backward_basic_case {
+        var grad_output: [12]f32 = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2];
+        var query: [12]f32 = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0];
+        var key: [12]f32 = [1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0, 3.0];
+        var value: [12]f32 = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2];
+        var attn_weights: [9]f32 = [0.3, 0.3, 0.4, 0.3, 0.3, 0.4, 0.4, 0.4, 0.2];
+        var config = AttentionConfig{ .d_model = 4, .num_heads = 2, .dropout = 0.0, .causal = false };
+        var grad_query: [12]f32 = [0.0] ** 12;
+        var grad_key: [12]f32 = [0.0] ** 12;
+        var grad_value: [12]f32 = [0.0] ** 12;
+        backward(&grad_output, &query, &key, &value, &attn_weights, &grad_query, &grad_key, &grad_value, config);
+        assert(grad_query[0] + grad_query[1] + grad_query[2] + grad_query[3] != 0.0);  // computed gradients
+    }
 
-    test forward_causal_masking
-        given query = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0]
-        given key = [1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0, 3.0]
-        given value = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2]
-        given config = AttentionConfig{ .d_model = 4, .num_heads = 2, .dropout = 0.0, .causal = true }
-        var output = [0.0] * 12
-        var weights = [0.0] * 9
-        when result = forward(query, key, value, output, weights, config)
-        then result == void
-        // Check that weights for positions j > i are effectively zero due to causal masking
-        then weights[1 * 3 + 2] < 0.999  // Should be close to zero due to masking
+    test forward_causal_masking {
+        var query: [12]f32 = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0];
+        var key: [12]f32 = [1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0, 3.0];
+        var value: [12]f32 = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2];
+        var config = AttentionConfig{ .d_model = 4, .num_heads = 2, .dropout = 0.0, .causal = true };
+        var output: [12]f32 = [0.0] ** 12;
+        var weights: [9]f32 = [0.0] ** 9;
+        forward(&query, &key, &value, &output, &weights, config);
+        // A position may not attend to a later one, so its weight there stays far below 1.
+        assert(weights[1 * 3 + 2] < 0.999);
+    }
 
-    test backward_dropout
-        given grad_output = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2]
-        given query = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0]
-        given key = [1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0, 3.0]
-        given value = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2]
-        given attn_weights = [0.3, 0.3, 0.4, 0.3, 0.3, 0.4, 0.4, 0.4, 0.2]
-        given config = AttentionConfig{ .d_model = 4, .num_heads = 2, .dropout = 0.5, .causal = false }
-        var grad_query = [0.0] * 12
-        var grad_key = [0.0] * 12
-        var grad_value = [0.0] * 12
-        when result = backward(grad_output, query, key, value, attn_weights, grad_query, grad_key, grad_value, config)
-        then result == void
-        then grad_query.len == 12
-        then grad_key.len == 12
-        then grad_value.len == 12
+    test backward_dropout {
+        var grad_output: [12]f32 = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2];
+        var query: [12]f32 = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0];
+        var key: [12]f32 = [1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0, 3.0];
+        var value: [12]f32 = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2];
+        var attn_weights: [9]f32 = [0.3, 0.3, 0.4, 0.3, 0.3, 0.4, 0.4, 0.4, 0.2];
+        var config = AttentionConfig{ .d_model = 4, .num_heads = 2, .dropout = 0.5, .causal = false };
+        var grad_query: [12]f32 = [0.0] ** 12;
+        var grad_key: [12]f32 = [0.0] ** 12;
+        var grad_value: [12]f32 = [0.0] ** 12;
+        backward(&grad_output, &query, &key, &value, &attn_weights, &grad_query, &grad_key, &grad_value, config);
+        assert(grad_value.len == 12);
+    }
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Invariants (from .tri constraints)

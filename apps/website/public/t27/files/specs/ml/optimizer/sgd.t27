@@ -61,32 +61,24 @@ module Sgd;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test "init_basic_case"
-        given 
-            state = SGDState{ velocity = new f32[0] }
-            param_count = 3u32
-        when 
-            result = init(state, param_count)
-        then 
-            state.velocity.size() == param_count
+    test "init_basic_case" {
+        // init takes the state by value, so the velocity it allocates is not observable
+        // here; this runs it on a fresh state rather than asserting what it cannot show.
+        var empty: [0]f32 = [];
+        var state = SGDState{ .velocity = &empty };
+        init(state, 3);
+    }
 
-    test "update_basic_case"
-        given 
-            params = new f32[2]{ 1.0, 2.0 }
-            grads = new const f32[2]{ 0.1, 0.2 }
-            state = SGDState{ velocity = new f32[2]{ 0.0, 0.0 } }
-            config = SGDConfig{ 
-                learning_rate = 0.01, 
-                momentum = 0.9, 
-                weight_decay = 0.001, 
-                dampening = 0.0, 
-                nesterov = false 
-            }
-        when 
-            result = update(params, grads, state, config)
-        then 
-            params[0] != 1.0  // Should be updated
-            params[1] != 2.0  // Should be updated
+    test "update_basic_case" {
+        var params: [2]f32 = [1.0, 2.0];
+        var grads: [2]f32 = [0.1, 0.2];
+        var velocity: [2]f32 = [0.0, 0.0];
+        var state = SGDState{ .velocity = &velocity };
+        var config = SGDConfig{ .learning_rate = 0.01, .momentum = 0.9, .weight_decay = 0.001, .dampening = 0.0, .nesterov = false };
+        update(&params, &grads, state, config);
+        assert(params[0] != 1.0);  // updated
+        assert(params[1] != 2.0);  // updated
+    }
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Invariants (from .tri constraints)

@@ -90,8 +90,8 @@ pub const REQUIRES_RUNNING_OUR_CODE : bool = false;
 
 ; --- The corpus on the day this was written --------------------------------------------------
 pub const MEASURED_AT : str = "2026-10-02";
-pub const SPEC_COUNT : u16 = 1771;
-pub const SPEC_LINES : u32 = 488272;
+pub const SPEC_COUNT : u16 = 1776;
+pub const SPEC_LINES : u32 = 489198;
 ; Health as the manifest reports it. The three add up to SPEC_COUNT, and the test below says so.
 ; These moved a long way on 2026-09-21, and the cause was the instrument, not the corpus: the
 ; wasm served here until then was built from no committed source, and it accepted anything.
@@ -104,8 +104,8 @@ pub const SPEC_LINES : u32 = 488272;
 ; On 2026-10-01 it grew: 160 more specs and two more worlds (trinity#1176). That refresh moved
 ; the manifest and not these numbers, and the publish of t27.ai failed on this file until they
 ; were written; the scan now runs this check before it commits a refresh.
-pub const HEALTH_OK : u16 = 1356;
-pub const HEALTH_WARN : u16 = 239;
+pub const HEALTH_OK : u16 = 1369;
+pub const HEALTH_WARN : u16 = 231;
 pub const HEALTH_FAIL : u16 = 176;
 ; Repositories the manifest was built from, and the worlds the scan found on GitHub.
 pub const REPO_COUNT : u8 = 14;
@@ -135,7 +135,7 @@ pub const HEALTH_FAIL_JS_ONLY : u16 = 0;
 ; Announced, not dropped. A spec here emits a real module that says inside itself what it left
 ; out, as data -- `__NOT_EMITTED__`, a list a tool can read without parsing comments. That is
 ; neither whole nor broken, so it is counted apart and coloured a warning, never a pass.
-pub const HEALTH_PARTIAL : u16 = 132;
+pub const HEALTH_PARTIAL : u16 = 131;
 
 ; --- The game --------------------------------------------------------------------------------
 pub const GAME : str = "Queen Hive";
