@@ -12,7 +12,7 @@ from pathlib import Path
 from kaggle_benchmarks import benchmark, model
 
 # Try to use token from env or default
-kaggle_token = os.getenv("KAGGLE_API_TOKEN", "KGAT_2ea86c02d9642bed9a4a7b713f5b9a62")
+kaggle_token = os.getenv("KAGGLE_API_TOKEN", "")
 
 # Get API with token
 api = model.KaggleApi(token=kaggle_token)

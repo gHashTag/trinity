@@ -461,3 +461,7 @@ fpga-flash
 # the commit carries. Directories first: a file under an excluded directory cannot be re-included.
 !external/t27/**/
 !external/t27/**
+
+# Local credential files: never commit (values come from Railway/Infisical)
+.trinity/ralph/queue/.creds
+ralph/queue/.creds

@@ -10,7 +10,7 @@ import json
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-DEEPSEEK_API_KEY = "sk-045135746e63422daac74a1a9f74e31f"
+DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
 DEEPSEEK_URL = "https://api.deepseek.com/v1/chat/completions"
 OUTPUT_DIR = "/workspaces/vibee-lang/book/output/translations"
 
