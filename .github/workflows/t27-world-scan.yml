@@ -161,9 +161,13 @@ jobs:
           # against the head it reads from the API, as it would for a person.
           gh workflow run pr-blog-report.yml --ref main -f pr="$PR"
           echo "- started the work-report check for PR #$PR" >> "$GITHUB_STEP_SUMMARY"
-          # Auto-merge lands it once "T27 work report" goes green. Without the
-          # repository setting it stays an open pull request for a person to
-          # merge, which is a worse outcome but not a failed run.
-          if ! gh pr merge "$PR" --squash --auto; then
-            echo "- auto-merge unavailable; PR #$PR is open and waiting" >> "$GITHUB_STEP_SUMMARY"
-          fi
+          # NO SELF-ARMED MERGE. Owner's rule, 2026-10-02: "the Queen must not
+          # merge by herself!! the Queen only manages!" -- no automation merges
+          # on its own verdict. This job used to arm `gh pr merge --squash
+          # --auto` on the pull request it had just opened, so its own green
+          # check was the merge. Now the refresh stays open for a reviewer bee:
+          # an APPROVED review plus the `bee-reviewed` label added after the
+          # head commit (the gate of gHashTag/t27#5526). If an earlier run left
+          # auto-merge armed, take it back -- a new head is unreviewed code.
+          gh pr merge "$PR" --disable-auto >/dev/null 2>&1 || true
+          echo "- PR #$PR is open and waits for a reviewer bee (bee-reviewed); this job does not merge it" >> "$GITHUB_STEP_SUMMARY"
