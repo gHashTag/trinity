@@ -814,6 +814,22 @@ test('a function the manifest does not list is spec-only (warn); a manifest id w
   assert.equal(r.functions.counts.deployUnknown, 1)
 })
 
+test('a withdrawn function: CONTROL code-only/unregistered is in the vocabulary, and agrees with a manifest control of the same value (ok, no distance)', () => {
+  // t27 specs/functions/README.md, 2026-09-17: five functions left registerFunctions.ts;
+  // the spec and the bot manifest both say code-only/unregistered, so the card is ok.
+  const src = fnSrc('neuro-image-generate').replace('"spec+code"', '"code-only/unregistered"')
+  const r = withFunctions(fnFiles(['neuro-image-generate', src]), [{ ...fnManifestEntry('neuro-image-generate'), control: 'code-only/unregistered' }])
+  assert.deepEqual(r.problems, [])
+  const f = r.functions.functions[0]
+  assert.equal(f.fields.CONTROL, 'code-only/unregistered')
+  assert.equal(f.code.control, 'code-only/unregistered')
+  assert.deepEqual(f.differences, [])
+  assert.equal(f.health, 'ok')
+  // and a value outside the vocabulary is still a build problem
+  const bad = withFunctions(fnFiles(['neuro-image-generate', fnSrc('neuro-image-generate').replace('"spec+code"', '"withdrawn"')]), [fnManifestEntry('neuro-image-generate')])
+  assert.ok(bad.problems.some((p) => p.includes('CONTROL "withdrawn"')))
+})
+
 test('no manifest at all: every function is spec-only and nothing is invented', () => {
   const r = withFunctions(fnFiles(['neuro-image-generate', fnSrc('neuro-image-generate')]), null)
   assert.deepEqual(r.problems, [])
