@@ -236,6 +236,12 @@ export const EXCLUDED: Record<string, string> = {
   // Vivado ports brought in by the 1737-spec catalog refresh (#1176).
   'specs/port/fpga/vivado/gf16_dot4.t27': 'a dot-product unit that consumes GF16, not a declaration of the format',
   'specs/port/fpga/vivado/gf16_matmul_top.t27': 'a board top (LED counter around gf16_dot4), not a declaration of the format',
+  // dmitrii-f-t27/trinity-memory RTL (issues #103-#113 there), vendored by the first scan
+  // after those merged. Each says in its own header what it is; none declares the format.
+  'dmitrii-f-t27/trinity-memory/t27/rtl/gf16_codec.t27': 'an RNE converter between FP32 and GF16 bit patterns, not a declaration of the format',
+  'dmitrii-f-t27/trinity-memory/t27/rtl/gf16_ffn.t27': 'an FFN controller that computes in GF16, not a declaration of the format',
+  'dmitrii-f-t27/trinity-memory/t27/rtl/gf16_scalar.t27': 'clocked scalar arithmetic on GF16 operands, not a declaration of the format',
+  'dmitrii-f-t27/trinity-memory/t27/rtl/gf16_wide_norm.t27': 'a wide product and normalization unit over GF16, not a declaration of the format',
 }
 
 /**
