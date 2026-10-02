@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // specs/automation/engage-desk.t27 -- the engage desk: the owner's signed-in browser
-// searches X, LinkedIn and Reddit for recent posts on the topics of his research
-// (the topics come from his own blog feed), drafts one substantive comment tied to
-// his work, and asks him. A comment is posted only after his yes, per item.
+// searches X, LinkedIn, Reddit, Threads, Habr, Facebook and Telegram for recent posts
+// on the topics of his research (the topics come from his own blog feed), drafts one
+// substantive comment tied to his work, and asks him. A comment is posted only after his yes, per item.
 // Host: 999-multibots-telegraf apps/vibee-editor/render/src/agent/engage-desk.ts (the
 //       tick: open questions first, then at most one proposal per network per search;
 //       the caps, the dedupe, the claim and mention guards, the receipt) beside
@@ -22,6 +22,22 @@
 // UI words (the owner reads Russian) stay in the host; the spec holds the rules.
 // Claim status: the desk is built behind ENGAGE_DESK_ENABLED=1 on the render service;
 //       no comment has been posted through it yet.
+// v2 (2026-10-02): scaled up. As many desk tabs as the pod has room for, up to eight,
+//       measured on the owner's pod: the PID ceiling binds, not memory or CPU
+//       (pids.max 1000; memory.max 24 GB with about 2 GB used; 24 vCPU). Baseline 645-707
+//       PIDs with the owner's 11 pages open; a heavy search tab (Reddit, X, LinkedIn,
+//       Threads) adds about 44 PIDs and 220 MB, and all of it comes back on close.
+//       The wedge history agrees: 27 restored pages exhausted the PIDs, and a fifteenth
+//       page once stopped the browser. So the room is counted from the pages open now,
+//       and the desk's own tabs live in their own windows placed outside the 1280-wide
+//       screen the owner watches: never in his tab strip, never frozen as a hidden
+//       tab, closed when the read is done, and never counted or closed by the tab sweep.
+//       Readers added: Facebook (its search page, when its login cookie is seen) and
+//       Telegram (public channels through the t.me/s web preview, read-only; a comment
+//       only where the owner's own account may write in the post's discussion group,
+//       never by joining one). Habr's login is what Habr says, not a cookie: measured,
+//       the profile held connect_sid, habrsession_id and PHPSESSID while Habr's own
+//       /kek/v2/me answered empty and its page showed the sign-in button.
 // phi^2 + 1/phi^2 = 3 | TRINITY
 
 module automation::engage_desk {
@@ -29,7 +45,7 @@ module automation::engage_desk {
     pub const KIND : str = "automation";
     pub const ID : str = "engage-desk";
     pub const REPO : str = "999-multibots-telegraf";
-    pub const VERSION : u8 = 1;
+    pub const VERSION : u8 = 2;
 
     // ---- The pace -------------------------------------------------------------------
     pub const TICK_MS : u32 = 300000;  // render-server.ts: every five minutes, so a yes
@@ -56,10 +72,25 @@ module automation::engage_desk {
     pub const CLAIM_GUARD_REQUIRED : bool = true;  // the draft passes the claim guard
 
     // ---- Many networks, many tabs ---------------------------------------------------
-    // Searched when the browser is SEEN signed in: x, linkedin, reddit, threads, habr.
-    // Facebook and Telegram have no reader yet and are reported, never guessed at.
-    pub const READER_NETWORKS : u8 = 5;
-    pub const PARALLEL_TABS_MAX : u8 = 3;  // searches run side by side, three tabs at most
+    // Searched when the owner is SEEN signed in: x, linkedin, reddit, threads, habr,
+    // facebook, telegram. A network he is not signed into is reported, never guessed at.
+    pub const READER_NETWORKS : u8 = 7;
+    pub const PARALLEL_TABS_MAX : u8 = 8;  // the desk's tabs at once, when the pod has room
+
+    // ---- The pod's room, measured 2026-10-02 ----------------------------------------
+    pub const PIDS_MAX : u16 = 1000;  // the pod's pids.max (Railway's cgroup, not ours)
+    pub const PIDS_BROWSER_BASE : u16 = 250;  // Chromium itself before any page
+    pub const PIDS_PER_TAB : u16 = 44;  // one heavy search tab, measured under load
+    pub const PIDS_MARGIN : u16 = 100;  // kept free: a page that spawns more than measured
+    pub const PAGE_CEILING : u8 = 14;  // every page open at once, the owner's and the desk's
+    pub const POD_SCREEN_WIDTH : u16 = 1280;  // the screen the owner watches over neko
+    pub const DESK_WINDOW_LEFT : u16 = 6000;  // the desk's windows sit off that screen
+    pub const DESK_TABS_CLOSED : bool = true;  // every desk tab is closed when its read ends
+    pub const SWEEP_SKIPS_DESK_TABS : bool = true;  // the tab sweep neither counts nor closes them
+
+    // ---- Telegram -------------------------------------------------------------------
+    pub const TELEGRAM_READS_PREVIEW : bool = true;  // t.me/s/<channel>?q=, public, read-only
+    pub const TELEGRAM_JOINS : bool = false;  // never joins a group to be allowed to comment
 
     // ---- Each network's own rules (the per-network table) ---------------------------
     // Reddit: the 9:1 guideline -- at most one in ten of the owner's comments there may
@@ -72,6 +103,9 @@ module automation::engage_desk {
     // LinkedIn: no automated commenting or engagement pods; a person approves each one;
     //   no link in a comment.
     // Threads, Habr: no link in a comment; Habr bans advertising in comments.
+    // Facebook: no automated engagement; a person approves each comment; no link.
+    // Telegram: a comment goes to the post's discussion group as a reply to the post;
+    //   no link, and only where the owner's account may already write there.
     pub const PROMO_SHARE_MAX_PERCENT : u8 = 10;  // Reddit 9:1
     pub const PROMO_WINDOW_MS : u32 = 2592000000;  // the share counted over 30 days
     pub const RULES_READ_FIRST : bool = true;  // a subreddit's rules before a proposal
@@ -152,6 +186,31 @@ module automation::engage_desk {
         return thread_read;
     }
 
+    // How many desk tabs may open now, from the pages already open: the room under
+    // the ceiling, never more than the cap, none when the pod is at the ceiling.
+    fn tabs_room(open_pages: u8) -> u8 {
+        if open_pages >= PAGE_CEILING {
+            return 0;
+        }
+        if PAGE_CEILING - open_pages > PARALLEL_TABS_MAX {
+            return PARALLEL_TABS_MAX;
+        }
+        return PAGE_CEILING - open_pages;
+    }
+
+    // Signed in is what the site says where the cookie lies (Habr), the login cookie
+    // elsewhere.
+    fn signed_in(network: str, cookie_seen: bool, site_says: bool) -> bool {
+        return (network == "habr" && site_says) || (network != "habr" && cookie_seen);
+    }
+
+    // A Telegram post takes the owner's comment only through its discussion group,
+    // where his account may write without joining anything.
+    fn telegram_may_comment(has_discussion: bool, write_forbidden: bool, must_join: bool,
+                            is_member: bool) -> bool {
+        return has_discussion && !write_forbidden && (!must_join || is_member);
+    }
+
     // A posted comment is looked at for replies between a day and a week after.
     fn lead_check_due(posted_age_ms: u32, since_check_ms: u32, ever_checked: bool) -> bool {
         return posted_age_ms >= LEAD_CHECK_AFTER_MS && posted_age_ms < LEAD_CHECK_LAST_MS
@@ -182,6 +241,9 @@ module automation::engage_desk {
         assert(!fits("linkedin", 79));
         assert(!fits("x", 0));
         assert(!fits("threads", 281));
+        assert(fits("facebook", 1000));
+        assert(fits("telegram", 1000));
+        assert(!fits("telegram", 1001));
     }
 
     test "at most three proposals a day per network" {
@@ -240,10 +302,48 @@ module automation::engage_desk {
         assert(RECEIPT_SNIPPET_CHARS == 40);
     }
 
-    test "many networks side by side, three tabs at a time" {
-        assert(READER_NETWORKS == 5);
-        assert(PARALLEL_TABS_MAX == 3);
-        assert(PARALLEL_TABS_MAX < READER_NETWORKS);
+    test "many networks side by side, as many tabs as the pod has room for" {
+        assert(READER_NETWORKS == 7);
+        assert(PARALLEL_TABS_MAX == 8);
+        assert(tabs_room(0) == 8);
+        assert(tabs_room(6) == 8);
+        assert(tabs_room(7) == 7);
+        assert(tabs_room(11) == 3);
+        assert(tabs_room(13) == 1);
+        assert(tabs_room(14) == 0);
+        assert(tabs_room(27) == 0);
+    }
+
+    test "the page ceiling is the PID ceiling, measured" {
+        assert(PIDS_MAX == 1000);
+        assert(PIDS_PER_TAB == 44);
+        assert(PAGE_CEILING == 14);
+        assert(PAGE_CEILING * PIDS_PER_TAB <= PIDS_MAX - PIDS_MARGIN - PIDS_BROWSER_BASE);
+        assert((PAGE_CEILING + 1) * PIDS_PER_TAB > PIDS_MAX - PIDS_MARGIN - PIDS_BROWSER_BASE);
+    }
+
+    test "the desk's tabs are its own, off the owner's screen, and closed" {
+        assert(DESK_WINDOW_LEFT > POD_SCREEN_WIDTH);
+        assert(DESK_TABS_CLOSED);
+        assert(SWEEP_SKIPS_DESK_TABS);
+    }
+
+    test "a login is what the site says where the cookie lies" {
+        assert(!signed_in("habr", true, false));
+        assert(signed_in("habr", false, true));
+        assert(signed_in("x", true, false));
+        assert(!signed_in("x", false, true));
+        assert(!signed_in("facebook", false, false));
+    }
+
+    test "Telegram is read from the public preview and commented only where allowed" {
+        assert(TELEGRAM_READS_PREVIEW);
+        assert(!TELEGRAM_JOINS);
+        assert(telegram_may_comment(true, false, false, false));
+        assert(telegram_may_comment(true, false, true, true));
+        assert(!telegram_may_comment(false, false, false, true));
+        assert(!telegram_may_comment(true, true, false, true));
+        assert(!telegram_may_comment(true, false, true, false));
     }
 
     test "a link only on Reddit, only under nine to one" {
@@ -252,6 +352,8 @@ module automation::engage_desk {
         assert(!link_allowed("reddit", false, false));
         assert(!link_allowed("x", false, true));
         assert(!link_allowed("linkedin", false, true));
+        assert(!link_allowed("telegram", false, true));
+        assert(!link_allowed("facebook", false, true));
         assert(promo_ok(0, 9));
         assert(!promo_ok(0, 0));
         assert(!promo_ok(1, 10));
@@ -285,7 +387,7 @@ module automation::engage_desk {
 
     test "the desk is built, a confirmed comment is not yet" {
         assert(!RUN_LIVE);
-        assert(VERSION == 1);
+        assert(VERSION == 2);
     }
 }
 

@@ -22,8 +22,10 @@ attestation. The cap is 3^21 and is enforced on-chain.
 """
 
 constants {
-  CAP_TRI 10460353203          // 3^21, the Trinity identity; enforced on-chain
-  DECIMALS 18
+  CAP_TRI 10460353203          // 3^21 WHOLE TRI, the Trinity identity
+  MTRI_PER_TRI 1000            // every amount on the wire and on-chain is mTRI
+  DECIMALS 3                   // the jetton / SPL base unit IS the ledger's mTRI
+  CAP_MTRI 10460353203000      // the cap as enforced on-chain; fits u64
   GENESIS_MINTED 0             // no pre-mine, no allocation, no sale
   CHAINS "TON, Solana"        // one canonical supply, mirrored (see BRIDGE)
 }
@@ -111,7 +113,7 @@ open_question KEY_CUSTODY_AND_ATTESTOR_SET {
 open_question CROSS_CHAIN_DOUBLE_MINT {
   do_not_guess true
   owner author
-  question "the exact mechanism by which the TON and Solana minters share one spent-nonce view in real time. A naive per-chain nonce set double-mints across chains."
+  question "the exact mechanism by which the TON and Solana minters share ONE ledger (spent nonces AND minted total) in real time. A naive per-chain nonce set double-mints across chains; a per-chain minted total lets the chains together mint up to 2x the cap. Until this is answered exactly one minter is deployed (TON, the chain of record)."
 }
 
 scope_limits {
