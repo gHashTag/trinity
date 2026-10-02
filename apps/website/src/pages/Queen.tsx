@@ -720,6 +720,8 @@ const COPY = {
     hudZoomOut: "ZOOM OUT",
     hudFullscreen: "FULLSCREEN",
     hudExitFullscreen: "EXIT FULLSCREEN",
+    hudTools: "Map tools",
+    hudToolsClose: "Hide map tools",
     hudCollapse: "COLLAPSE",
     hudExpand: "EXPAND",
     hudNoEvents: "No recorded Bee event yet.",
@@ -1127,6 +1129,8 @@ const COPY = {
     hudZoomOut: "ОТДАЛИТЬ",
     hudFullscreen: "ВО ВЕСЬ ЭКРАН",
     hudExitFullscreen: "ВЫЙТИ ИЗ ПОЛНОГО ЭКРАНА",
+    hudTools: "Инструменты карты",
+    hudToolsClose: "Скрыть инструменты карты",
     hudCollapse: "СВЕРНУТЬ",
     hudExpand: "РАЗВЕРНУТЬ",
     hudNoEvents: "Записанных событий Bee пока нет.",
@@ -2916,6 +2920,30 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
   const [doctrineOpen, setDoctrineOpen] = useState(false);
   const [roundOpen, setRoundOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  // CALM BY DEFAULT IN THE APP'S FRAME (owner, 2026-10-02: "make the interface
+  // more minimal so the map is visible"). Bare mode rode on the Fullscreen API,
+  // which the Telegram Mini App's WebView does not have and a phone browser
+  // only grants on a tap -- so in the app's Game tab the map stayed 499px of
+  // 812 under a 176px head. The page keeps a bare state of its own: on by
+  // default when this board is framed (app.t27.ai/game; a top-level /queen/ is
+  // sent there by its nginx) at phone width, and set by the FULLSCREEN button
+  // wherever the API is missing. The iOS app shimmed the API to get the same
+  // effect; this is that behaviour, owned here, on every platform.
+  const framed = useMemo(() => {
+    try {
+      return window.self !== window.top;
+    } catch {
+      return true;
+    }
+  }, []);
+  const [pageBare, setPageBare] = useState(
+    () => framed && !embedded && window.matchMedia("(max-width: 900px)").matches,
+  );
+  const bare = isFullscreen || pageBare;
+  // In bare mode the head shows the sector name and nothing else until "more"
+  // opens it; every tool, EXIT FULLSCREEN included, is one tap away.
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const toolsShown = bare && toolsOpen;
   const [activeSector, setActiveSector] = useState<string | null>(null);
   const [pick, setPick] = useState<HudPick | null>(null);
   const [agentCopy, setAgentCopy] = useState<"idle" | "copied" | "error">(
@@ -3225,7 +3253,12 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
   }, [setView, keyShortcuts]);
 
   useEffect(() => {
-    const onChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    const onChange = () => {
+      const on = Boolean(document.fullscreenElement);
+      setIsFullscreen(on);
+      // Leaving from the tools closes them, so the next entry starts calm.
+      if (!on) setToolsOpen(false);
+    };
     document.addEventListener("fullscreenchange", onChange);
     return () => document.removeEventListener("fullscreenchange", onChange);
   }, []);
@@ -3273,12 +3306,34 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
   }, []);
 
   const toggleFullscreen = () => {
-    if (document.fullscreenElement) {
-      void document.exitFullscreen();
+    if (bare) {
+      setPageBare(false);
+      setToolsOpen(false);
+      if (document.fullscreenElement) void document.exitFullscreen();
+    } else if ((framed && isPhone) || !document.fullscreenEnabled) {
+      setPageBare(true);
     } else {
       void viewportRef.current?.requestFullscreen?.();
     }
   };
+
+  // The scene measures itself on resize. Entering or leaving bare mode changes
+  // the viewport's box without one, and the map stayed fitted to the old box.
+  // Twice: the layout settles over a frame or two after the class lands.
+  useEffect(() => {
+    const timers = [60, 400].map((ms) =>
+      window.setTimeout(() => window.dispatchEvent(new Event("resize")), ms),
+    );
+    return () => timers.forEach((t) => window.clearTimeout(t));
+  }, [bare]);
+
+  // COMPAT, REMOVE ONCE NO INSTALLED iOS BUILD PREDATES THIS: the Vibee iOS app
+  // (999-multibots-telegraf, AppWebView.swift boardFullscreen) injects its own
+  // calm rules, which hide the head's tools with !important unless the root
+  // carries this class. Setting it keeps the board's own "more" working there.
+  useEffect(() => {
+    document.documentElement.classList.toggle("vibee-board-tools", toolsShown);
+  }, [toolsShown]);
 
   // The address says the language too, as the header's LanguageSwitcher already
   // makes it: measured before this, /?lang=ru stayed in the address after the toggle
@@ -3688,7 +3743,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
 
   return (
     <main
-      className={`queen27-page is-shell${commandCollapsed ? " is-command-collapsed" : ""}${isFullscreen ? " is-bare" : ""}${embedded ? " is-embed" : ""}`}
+      className={`queen27-page is-shell${commandCollapsed ? " is-command-collapsed" : ""}${bare ? " is-bare" : ""}${toolsShown ? " is-tools" : ""}${embedded ? " is-embed" : ""}`}
       data-view={view}
       // Which module the reader is in, as against which layer of it: for the
       // six layers of the ladder this is "specs" for all six. A rule that
@@ -3858,13 +3913,25 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
               type="button"
               data-tool="full"
               onClick={toggleFullscreen}
-              aria-pressed={isFullscreen}
-              title={isFullscreen ? c.hudExitFullscreen : c.hudFullscreen}
+              aria-pressed={bare}
+              title={bare ? c.hudExitFullscreen : c.hudFullscreen}
             >
-              {isFullscreen ? c.hudExitFullscreen : c.hudFullscreen}
+              {bare ? c.hudExitFullscreen : c.hudFullscreen}
             </button>
           </div>
         </header>
+        {bare && (
+          <button
+            type="button"
+            className="queen27-hud-more"
+            onClick={() => setToolsOpen((open) => !open)}
+            aria-expanded={toolsOpen}
+            aria-label={toolsOpen ? c.hudToolsClose : c.hudTools}
+            title={toolsOpen ? c.hudToolsClose : c.hudTools}
+          >
+            <span aria-hidden="true">{toolsOpen ? "\u00d7" : "\u22ef"}</span>
+          </button>
+        )}
 
         {/* Why free bees are idle used to be a line floating here, over the top
             of the map. It is a notification about the round, and the round's tile
