@@ -18,4 +18,12 @@ const page=readFileSync('src/pages/Queen.tsx','utf8'),hive=readFileSync('src/com
 assert.match(page,/boardView\s*===\s*"comb"\s*&&\s*!sharedCatalog\s*&&\s*<QueenContext/,'Legacy context lives only on the old comb: not over the catalog, not over any other view');
 assert.match(hive,/!specPath&&resource/);assert.match(hive,/!specPath&&repo&&focus\?\.number/);
 assert(!hive.includes('className="queen-catalog-share"'),'Copy feedback stays in the current card');
-console.log('Responsive contract: PASS (pointer state machine, flow layout, readable controls, single context)');
+// Calm bare mode does not ride on the Fullscreen API: the Telegram Mini App's
+// WebView has none, and that is where the map stayed 499px of 812.
+assert.match(page,/framed\s*&&\s*!embedded\s*&&\s*window\.matchMedia\("\(max-width: 900px\)"\)/,'A framed phone board starts bare');
+assert.match(page,/\$\{bare \? " is-bare" : ""\}/,'Bare follows the page state, not only document.fullscreenElement');
+assert.match(page,/className="queen27-hud-more"/,'The board owns its "more" button');
+const pageCss=readFileSync('src/pages/Queen.css','utf8');
+assert.match(pageCss,/\.is-bare \.queen27-hud-viewport > :is\(\.queen27-hud-top,/,'Bare hides the panels that live inside the viewport');
+assert.match(pageCss,/\.is-bare:not\(\.is-tools\) \.queen27-hud-vp-head > :not\(\.queen27-hud-vp-title\)/,'A calm head shows the sector name only');
+console.log('Responsive contract: PASS (pointer state machine, flow layout, readable controls, single context, calm bare mode)');

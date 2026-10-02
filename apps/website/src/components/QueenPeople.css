@@ -44,11 +44,6 @@
   -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
 }
-/* Automation is shown rather than hidden, and marked rather than blended in. */
-.qp-row.is-bot {
-  border-style: dashed;
-  opacity: 0.85;
-}
 .qp-rank {
   font-variant-numeric: tabular-nums;
   color: var(--hud-gold, #ffd700);
@@ -93,6 +88,13 @@
   font-size: 15px;
   color: #e8f5ee;
   font-variant-numeric: tabular-nums;
+}
+/* How much of the count reached this account through its pull requests:
+   the swarm's and the agents' commits, said rather than blended in. */
+.qp-via {
+  display: block;
+  font-size: 11px;
+  white-space: normal;
 }
 
 @media (max-width: 760px) {

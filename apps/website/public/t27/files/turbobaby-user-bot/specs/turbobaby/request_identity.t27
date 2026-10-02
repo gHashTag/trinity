@@ -141,15 +141,19 @@ pub const MEASURED_AT : str = "2026-09-20";
 ; the constant they named.
 pub const IS_OWNERSHIP_ROOT : bool = true;
 pub const REUSE_EDGE_COUNT : u8 = 0;
-pub const CONSUMER_COUNT : u8 = 22;
-pub const CONSUMERS_DECLARING_THE_EDGE : u8 = 18;
+; Re-measured 2026-09-26: 23, with turbobaby/referral-credit (the referral credit of R3, which
+; declares the edge) appended at position 22 so that no earlier index moves.
+pub const CONSUMER_COUNT : u8 = 23;
+pub const CONSUMERS_DECLARING_THE_EDGE : u8 = 19;
+pub const CONSUMER_COUNT_BEFORE_2026_09_26 : u8 = 22;
+pub const CONSUMERS_ADDED_2026_09_26 : u8 = 1;
 pub const CONSUMERS_MEASURED_ONLY : u8 = 4;
 pub const CONSUMER_CENSUS_MEASURED_AT : str = "2026-09-21";
 pub const CONSUMER_CENSUS_GREP : str = "grep -rlE \"^pub const REUSES_REQUEST_IDENTITY_ID\" specs/";
 pub const THE_CENSUS_COUNTS_DECLARATIONS_NOT_MENTIONS : bool = true;
 pub const EDGE_DECLARATION_NAME : str = "REUSES_REQUEST_IDENTITY_ID";
 pub const CONSUMER_COUNT_BEFORE_THE_RE_MEASUREMENT : u8 = 8;
-pub const CONSUMERS : [22]str = [
+pub const CONSUMERS : [23]str = [
     "turbobaby/catalog-write",
     "turbobaby/game-score",
     "turbobaby/star-award",
@@ -172,10 +176,12 @@ pub const CONSUMERS : [22]str = [
     "turbobaby/upload-media",
     "turbobaby/validation-bounds",
     "turbobaby/webapp-bridge",
+    "turbobaby/referral-credit",
 ];
 
 ; Which positions carry which strength, stated as numbers so a test can hold them. The declaring
-; set is positions 0-3 and 8-21; the measured-only set is positions 4-7 and nothing else.
+; set is positions 0-3, 8-21 and, since 2026-09-26, 22; the measured-only set is positions 4-7 and
+; nothing else.
 pub const FIRST_MEASURED_ONLY_INDEX : u8 = 4;
 pub const LAST_MEASURED_ONLY_INDEX : u8 = 7;
 pub const FIRST_LATE_DECLARER_INDEX : u8 = 8;
@@ -308,15 +314,32 @@ pub fn identity_of_request(proof_ok: bool, user_field_parsed: bool) u8 {
 ; The counts are call sites, measured on 2026-09-20 by grep over src/ excluding the definitions.
 ; They are recorded to say why no endpoint-to-gate table lives here: 113 sites over 18 modules
 ; -- 17 under src/api and src/main.rs:1181, which is the one that is not -- have no single owner,
-; and a table that drifts is worse than no table.
+; and a table that drifts is worse than no table. RE-MEASURED 2026-09-26 (gate 3 binds all four):
+; 121 sites over 20 modules. The eight new sites: check_admin in the first line of
+; get_leaderboard (src/api/loyalty.rs, R1), in crate::api::admin_or_missing_route (src/api/mod.rs,
+; R2), and in the four admin
+; routes of src/api/referral_credit.rs (R3); check_owner in its two customer routes. The two new
+; modules are those two files. The readings of 2026-09-20 keep their _BEFORE_2026_09_26 names.
 pub const GATE_NAME_COUNT : u8 = 3;
 pub const GATE_NAMES : [3]str = ["check_admin", "check_owner", "check_owner_lenient"];
-pub const GATE_CALL_SITES_ADMIN : u8 = 84;
-pub const GATE_CALL_SITES_OWNER : u8 = 23;
+pub const GATE_CALL_SITES_ADMIN : u8 = 91;
+pub const GATE_CALL_SITES_OWNER : u8 = 25;
 pub const GATE_CALL_SITES_OWNER_LENIENT : u8 = 6;
-pub const GATE_CALL_SITES_TOTAL : u8 = 113;
-pub const GATE_CALL_SITE_MODULES : u8 = 18;
+pub const GATE_CALL_SITES_TOTAL : u8 = 122;
+pub const GATE_CALL_SITE_MODULES : u8 = 20;
+pub const GATE_CALL_SITES_ADMIN_BEFORE_2026_09_26 : u8 = 84;
+pub const GATE_CALL_SITES_OWNER_BEFORE_2026_09_26 : u8 = 23;
+pub const GATE_CALL_SITES_TOTAL_BEFORE_2026_09_26 : u8 = 113;
+pub const GATE_CALL_SITE_MODULES_BEFORE_2026_09_26 : u8 = 18;
 pub const ENDPOINT_TO_GATE_MAP_IS_NOT_OWNED_HERE : bool = true;
+; RE-MEASURED AGAIN 2026-09-26, after the owner's answer on the referral top list ("remove the top
+; and close the address"; turbobaby/referral-program, OWNER_TOP_LIST_ANSWER_*): 122 sites over 20
+; modules. The one new site is check_admin in the first line of get_leaderboard in
+; src/api/referrals.rs, a module the census already counted for its four check_owner calls. The
+; readings after R1-R3, 90 and 121, are kept under _AFTER_R1_R3 names; the paragraph above is theirs.
+pub const GATE_CALL_SITES_ADMIN_AFTER_R1_R3 : u8 = 90;
+pub const GATE_CALL_SITES_TOTAL_AFTER_R1_R3 : u8 = 121;
+pub const GATE_CALL_SITES_ADDED_BY_THE_TOP_LIST_ANSWER : u8 = 1;
 
 ; Precedence inside check_admin (:437). initData is tried first (:448-461). A valid proof of a
 ; non-admin id does NOT end the gate: the code says "Don't return here" and falls through to the
@@ -512,8 +535,8 @@ test this_contract_is_a_root_and_names_its_consumers_instead {
     assert IS_OWNERSHIP_ROOT == true;
     assert REUSE_EDGE_COUNT == 0;
     assert CONSUMERS.len == CONSUMER_COUNT;
-    ; Re-measured 2026-09-21: 18 of the 22, not the 4 of the first writing.
-    assert CONSUMERS_DECLARING_THE_EDGE == 18;
+    ; Re-measured 2026-09-21: 18 of the 22, not the 4 of the first writing; 19 of 23 since 2026-09-26.
+    assert CONSUMERS_DECLARING_THE_EDGE == 19;
     assert CONSUMERS_DECLARING_THE_EDGE < CONSUMER_COUNT;
     assert CONSUMERS_DECLARING_THE_EDGE + CONSUMERS_MEASURED_ONLY == CONSUMER_COUNT;
     assert CONSUMER_COUNT > CONSUMER_COUNT_BEFORE_THE_RE_MEASUREMENT;
@@ -577,16 +600,19 @@ test the_fourteen_later_declarers_are_pinned_by_their_own_ids {
 ; The shape of the array, kept honest against the counts that describe it. This is the assertion
 ; that fails the day a fifteenth declarer is appended without the count being touched.
 test the_consumer_census_and_the_array_describe_the_same_list {
-    assert CONSUMERS.len == 22;
-    assert CONSUMER_COUNT == 22;
+    assert CONSUMERS.len == 23;
+    assert CONSUMER_COUNT == 23;
+    assert CONSUMER_COUNT_BEFORE_2026_09_26 + CONSUMERS_ADDED_2026_09_26 == CONSUMER_COUNT;
+    assert CONSUMERS[22] == "turbobaby/referral-credit";
+    assert CONSUMERS[22] != ID;
     assert CONSUMER_COUNT_BEFORE_THE_RE_MEASUREMENT == 8;
     assert CONSUMERS_MEASURED_ONLY == 4;
     assert FIRST_MEASURED_ONLY_INDEX == 4;
     assert LAST_MEASURED_ONLY_INDEX == 7;
     assert LAST_MEASURED_ONLY_INDEX - FIRST_MEASURED_ONLY_INDEX + 1 == CONSUMERS_MEASURED_ONLY;
     assert LAST_LATE_DECLARER_INDEX - FIRST_LATE_DECLARER_INDEX + 1 == LATE_DECLARER_COUNT;
-    assert LATE_DECLARER_COUNT + CONSUMER_COUNT_BEFORE_THE_RE_MEASUREMENT == CONSUMER_COUNT;
-    assert FIRST_MEASURED_ONLY_INDEX + LATE_DECLARER_COUNT == CONSUMERS_DECLARING_THE_EDGE;
+    assert LATE_DECLARER_COUNT + CONSUMER_COUNT_BEFORE_THE_RE_MEASUREMENT + CONSUMERS_ADDED_2026_09_26 == CONSUMER_COUNT;
+    assert FIRST_MEASURED_ONLY_INDEX + LATE_DECLARER_COUNT + CONSUMERS_ADDED_2026_09_26 == CONSUMERS_DECLARING_THE_EDGE;
     ; The four measured-only entries are exactly the four positions the census says they are.
     assert CONSUMERS[4] == "turbobaby/commerce";
     assert CONSUMERS[5] == "turbobaby/bike-catalog";
@@ -742,11 +768,18 @@ test refusals_keep_their_two_distinct_meanings {
 }
 
 test the_gate_census_explains_why_no_endpoint_table_lives_here {
-    assert GATE_CALL_SITES_ADMIN == 84;
-    assert GATE_CALL_SITES_OWNER == 23;
+    assert GATE_CALL_SITES_ADMIN == 91;
+    assert GATE_CALL_SITES_OWNER == 25;
     assert GATE_CALL_SITES_OWNER_LENIENT == 6;
     assert GATE_CALL_SITES_ADMIN + GATE_CALL_SITES_OWNER + GATE_CALL_SITES_OWNER_LENIENT == GATE_CALL_SITES_TOTAL;
-    assert GATE_CALL_SITE_MODULES == 18;
+    assert GATE_CALL_SITE_MODULES == 20;
+    assert GATE_CALL_SITES_ADMIN_BEFORE_2026_09_26 + GATE_CALL_SITES_OWNER_BEFORE_2026_09_26 + GATE_CALL_SITES_OWNER_LENIENT == GATE_CALL_SITES_TOTAL_BEFORE_2026_09_26;
+    assert GATE_CALL_SITES_ADMIN_AFTER_R1_R3 - GATE_CALL_SITES_ADMIN_BEFORE_2026_09_26 == 6;
+    assert GATE_CALL_SITES_ADMIN - GATE_CALL_SITES_ADMIN_AFTER_R1_R3 == GATE_CALL_SITES_ADDED_BY_THE_TOP_LIST_ANSWER;
+    assert GATE_CALL_SITES_TOTAL - GATE_CALL_SITES_TOTAL_AFTER_R1_R3 == GATE_CALL_SITES_ADDED_BY_THE_TOP_LIST_ANSWER;
+    assert GATE_CALL_SITES_ADDED_BY_THE_TOP_LIST_ANSWER == 1;
+    assert GATE_CALL_SITES_OWNER - GATE_CALL_SITES_OWNER_BEFORE_2026_09_26 == 2;
+    assert GATE_CALL_SITE_MODULES - GATE_CALL_SITE_MODULES_BEFORE_2026_09_26 == 2;
     assert ENDPOINT_TO_GATE_MAP_IS_NOT_OWNED_HERE == true;
 }
 

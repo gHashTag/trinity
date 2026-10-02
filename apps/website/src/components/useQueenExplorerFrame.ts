@@ -14,6 +14,10 @@
 // The card is read from the address itself, not from the router's copy: HashRouter
 // applies a navigation inside a transition that the hive's long tasks can hold for
 // seconds, while the address is written at once.
+//
+// The world the Queen's header has chosen rides along on SPECS: the frame narrows its
+// list to it. The header writes world= with the router, which fires no hashchange, so
+// the caller passes the world in and a change of it moves the frame by its fragment.
 
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react'
 import { useI18n } from '../i18n/context'
@@ -37,25 +41,28 @@ export function useQueenExplorerFrame(
   tab: ExplorerTab,
   navigate: (tab: ExplorerTab, card: string | null) => void,
   frameRef: RefObject<HTMLIFrameElement | null>,
+  world: string | null = null,
 ) {
   const { lang } = useI18n()
   const identity = `${tab}:${lang}`
-  const [boot, setBoot] = useState(() => ({ identity, card: addressFor(tab).card }))
+  // The world is part of the boot route, not of the frame's identity: a new world
+  // moves the loaded frame (below) rather than booting another one.
+  const [boot, setBoot] = useState(() => ({ identity, card: addressFor(tab).card, world }))
   const [card, setCard] = useState(boot.card)
   if (boot.identity !== identity) {
     const next = addressFor(tab).card
-    setBoot({ identity, card: next })
+    setBoot({ identity, card: next, world })
     setCard(next)
   }
   // ?lang= rides in the search, where the i18n provider reads it, so the frame follows
   // the shell's language instead of whatever localStorage held.
-  const src = `${window.location.pathname}?lang=${lang}${explorerFrameHash(tab, boot.card)}`
+  const src = `${window.location.pathname}?lang=${lang}${explorerFrameHash(tab, boot.card, boot.world)}`
   // The frame whose load event has been handled, by identity. Until then the frame is
   // booting, and its load event, not its reports, brings it in line with the address.
   const loaded = useRef<string | null>(null)
 
-  /** The frame's location and the card of this tab its address names; null while it is still about:blank. */
-  const frameAddress = useCallback((): { here: Location; id: string | null } | null => {
+  /** The frame's location, the card of this tab and the world its address names; null while it is still about:blank. */
+  const frameAddress = useCallback((): { here: Location; id: string | null; world: string | null } | null => {
     let here: Location | undefined
     try {
       here = frameRef.current?.contentWindow?.location
@@ -64,19 +71,28 @@ export function useQueenExplorerFrame(
     }
     if (!here || here.pathname !== window.location.pathname) return null
     const shown = explorerRouteOf(here.hash)
-    return { here, id: shown?.tab === tab ? shown.id : null }
+    return { here, id: shown?.tab === tab ? shown.id : null, world: new URLSearchParams(here.hash.split('?')[1] ?? '').get('world') }
   }, [tab, frameRef])
 
   // Replace the frame's fragment rather than assign it: an assignment adds an entry to
   // the joint session history, and Back would then step the frame, not the Queen.
+  const frameWorld = tab === 'specs' ? world : null
   const moveFrame = useCallback(
-    (wanted: string) => {
+    (wanted: string | null) => {
       const frame = frameAddress()
-      if (!frame || frame.id === wanted) return
-      frame.here.replace(`${frame.here.href.split('#')[0]}${explorerFrameHash(tab, wanted)}`)
+      if (!frame || (frame.id === wanted && frame.world === frameWorld)) return
+      frame.here.replace(`${frame.here.href.split('#')[0]}${explorerFrameHash(tab, wanted, frameWorld)}`)
     },
-    [tab, frameAddress],
+    [tab, frameAddress, frameWorld],
   )
+
+  // A world chosen in the header after the frame loaded: keep the card on show, narrow
+  // the list. Before the load the frame's own load event brings it in line (below).
+  useEffect(() => {
+    if (loaded.current !== identity) return
+    const frame = frameAddress()
+    if (frame) moveFrame(frame.id)
+  }, [frameWorld, identity, frameAddress, moveFrame])
 
   // An address changed from outside (Back, a link, a script), or a frame that has just
   // loaded. The Queen's own writes use replaceState, which fires neither event, so a
@@ -91,11 +107,13 @@ export function useQueenExplorerFrame(
     }
     // No card named: the address takes the frame's. The Explorers keep the open card
     // on a hash that names none, so moving the frame would change nothing on screen.
-    const shown = frameAddress()?.id
+    const shown = frameAddress()?.id ?? null
     if (shown) {
       setCard(shown)
       navigate(tab, shown)
     }
+    // The card stays; a world chosen while the frame booted still has to reach it.
+    moveFrame(shown)
   }, [tab, moveFrame, frameAddress, navigate])
 
   useEffect(() => {

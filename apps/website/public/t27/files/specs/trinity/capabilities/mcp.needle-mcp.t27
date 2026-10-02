@@ -30,12 +30,12 @@ pub const GENERATED : [0]str = [];
 ; zig | c | rust | verilog | wasm | ts | swift | python | none; only executable, adapter and research cards claim one.
 pub const BACKEND : str = "zig";
 ; build.zig targets this card owns: exe:<name>, lib:<name>, test:<root path>, step:<name>; patterns allowed.
-pub const TARGETS : [4]str = ["exe:needle-mcp", "step:needle-mcp", "step:needle-test", "test:src/needle/mod.zig"];
+pub const TARGETS : [3]str = ["exe:needle-mcp", "step:needle-test", "test:src/needle/mod.zig"];
 ; The command whose success is the acceptance of this capability; "" when nothing is claimed.
-pub const ACCEPTANCE : str = "zig build needle-mcp";
+pub const ACCEPTANCE : str = "zig build -Dci=true && test -x zig-out/bin/needle-mcp";
 ; measured | declared | specified | external | not-claimed, as docs/system/project.md defines them.
 pub const EVIDENCE : str = "measured";
-pub const EVIDENCE_SOURCE : str = "https://github.com/gHashTag/trinity/actions/runs/34678824282 -- Build & Test on ubuntu-latest with zig 0.15.2 at 79ffb034 (the pinned 976df517 differs from it only in apps/website/src/data/signalHealth.json): zig build -Dci=true succeeded. zig build test is piped through tee there, so its exit code is not measured (gHashTag/trinity#616).";
+pub const EVIDENCE_SOURCE : str = "https://github.com/gHashTag/trinity/actions/runs/34678824282 -- Build & Test on ubuntu-latest with zig 0.15.2 at 79ffb034 (the pinned 976df517 differs from it only in apps/website/src/data/signalHealth.json): zig build -Dci=true succeeded, and that build installs zig-out/bin/needle-mcp. zig build test is piped through tee there, so its exit code is not measured (gHashTag/trinity#616). build.zig at the pin defines no step needle-mcp: its b.step line is commented out (lines 1481-1483, an interactive stdio service an MCP client starts), so zig build needle-mcp answers that no such step exists. Measured is the build of the server; no run of the server is.";
 ; The work package of gHashTag/trinity#988 that owns this capability's contract.
 pub const WORK_PACKAGE : str = "S06";
 pub const NOTE : str = "";

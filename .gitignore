@@ -273,6 +273,9 @@ bench_core
 *.wav
 *.trit
 
+# GIFs rendered from tapes/ (record-demos.yml uploads them as an artifact)
+/recordings/
+
 # Invalid filenames (shell artifact)
 --
 -language
@@ -451,3 +454,10 @@ fpga-flash
 # apps/website/docs: hand-written contracts for the website (e.g. the optional
 # agent control API), not generated reports; the *.md rule above would drop them.
 !apps/website/docs/**
+
+# external/t27 is a byte-for-byte copy of t27 files, locked by specs/reproduce/contracts.t27
+# and written only by `tools/contracts.py vendor`. Nothing in it may be ignored -- `*.md` and
+# `mcp/` above would drop four of its files -- or the copy the lock checks is not the copy
+# the commit carries. Directories first: a file under an excluded directory cannot be re-included.
+!external/t27/**/
+!external/t27/**

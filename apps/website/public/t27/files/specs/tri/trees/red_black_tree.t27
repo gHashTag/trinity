@@ -120,52 +120,59 @@ module TriRbTree;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test init_creates_empty_tree
-        let tree = init()
-        assert tree.root == null
-        assert tree.size == 0
+    test init_creates_empty_tree {
+        var tree = init();
+        assert(tree.root == null);
+        assert(tree.size == 0);
+    }
 
-    test insert_adds_to_empty_tree
-        let tree = init()
-        insert(&tree, "key1", "value1")
-        assert tree.size == 1
-        assert tree.root != null
-        assert find(&tree, "key1") == "value1"
+    test insert_adds_to_empty_tree {
+        var tree = init();
+        insert(&tree, "key1", "value1");
+        assert(tree.size == 1);
+        assert(tree.root != null);
+        assert(find(&tree, "key1") == "value1");
+    }
 
-    test insert_multiple_nodes
-        let tree = init()
-        insert(&tree, "key1", "value1")
-        insert(&tree, "key2", "value2")
-        insert(&tree, "key3", "value3")
-        assert tree.size == 3
-        assert find(&tree, "key1") == "value1"
-        assert find(&tree, "key2") == "value2"
-        assert find(&tree, "key3") == "value3"
+    test insert_multiple_nodes {
+        var tree = init();
+        insert(&tree, "key1", "value1");
+        insert(&tree, "key2", "value2");
+        insert(&tree, "key3", "value3");
+        assert(tree.size == 3);
+        assert(find(&tree, "key1") == "value1");
+        assert(find(&tree, "key2") == "value2");
+        assert(find(&tree, "key3") == "value3");
+    }
 
-    test find_existing_key
-        let tree = init()
-        insert(&tree, "key1", "value1")
-        insert(&tree, "key2", "value2")
-        assert find(&tree, "key1") == "value1"
-        assert find(&tree, "key2") == "value2"
+    test find_existing_key {
+        var tree = init();
+        insert(&tree, "key1", "value1");
+        insert(&tree, "key2", "value2");
+        assert(find(&tree, "key1") == "value1");
+        assert(find(&tree, "key2") == "value2");
+    }
 
-    test find_nonexistent_key
-        let tree = init()
-        insert(&tree, "key1", "value1")
-        assert find(&tree, "nonexistent") == null
+    test find_nonexistent_key {
+        var tree = init();
+        insert(&tree, "key1", "value1");
+        assert(find(&tree, "nonexistent") == null);
+    }
 
-    test delete_existing_key
-        let tree = init()
-        insert(&tree, "key1", "value1")
-        insert(&tree, "key2", "value2")
-        assert delete(&tree, "key1") == true
-        assert tree.size == 1
-        assert find(&tree, "key1") == null
-        assert find(&tree, "key2") == "value2"
+    test delete_existing_key {
+        var tree = init();
+        insert(&tree, "key1", "value1");
+        insert(&tree, "key2", "value2");
+        assert(delete(&tree, "key1") == true);
+        assert(tree.size == 1);
+        assert(find(&tree, "key1") == null);
+        assert(find(&tree, "key2") == "value2");
+    }
 
-    test delete_nonexistent_key
-        let tree = init()
-        insert(&tree, "key1", "value1")
-        assert delete(&tree, "nonexistent") == false
-        assert tree.size == 1
+    test delete_nonexistent_key {
+        var tree = init();
+        insert(&tree, "key1", "value1");
+        assert(delete(&tree, "nonexistent") == false);
+        assert(tree.size == 1);
+    }
 

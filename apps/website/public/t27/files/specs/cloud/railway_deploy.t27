@@ -359,5 +359,5 @@ bench init_sacred_env_vars_latency {
     for (0..1000) |_| {
         env_vars = init_sacred_env_vars();
     }
-    _ = env_vars;
 }
+// Note: the line "_ = env_vars;" has been removed as per the issue.

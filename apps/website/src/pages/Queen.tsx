@@ -11,7 +11,7 @@ import { motion } from "framer-motion";
 import { Link, useSearchParams } from "react-router-dom";
 import { QueenSpecs } from "../components/QueenSpecs";
 import { QueenAgents } from "../components/QueenAgents";
-import { SELECTION_KEY, isExplorerTab } from "../lib/queenEmbed";
+import { SELECTION_KEY, isExplorerTab, leaveTabSelections } from "../lib/queenEmbed";
 import { hiveFeedHealth, hiveDisplayRecords, hiveSameRepositorySnapshot, placeHiveDisplays, type HiveDisplay } from "../components/queenHiveDisplay";
 import { QueenComb } from "../components/QueenComb";
 import { QueenCommandPanel, type CommandItem } from "../components/QueenCommand";
@@ -57,7 +57,6 @@ import {
   spiralOrder,
   hexCellSummaries,
   HEX_HOME,
-  type FoundationIssue,
   FIELD_LAYERS,
   layersFromSearch,
   type FieldLayer,
@@ -98,6 +97,7 @@ import { QueenTri } from "../components/QueenTri";
 import QueenRoadmap from "../components/QueenRoadmap";
 import QueenLeaderboard from "../components/QueenLeaderboard";
 import { QueenWars } from "../components/QueenWars";
+import QueenToken from "../components/QueenToken";
 import Passport from "./Passport";
 import { QueenBrowser } from "../components/QueenBrowser";
 import { QueenIdentity } from "../components/QueenIdentity";
@@ -131,6 +131,8 @@ import "./queen-phone.css";
 // The address moved to lib/queenApi so the homepage can ask the same server
 // this page asks, rather than carry a second copy of the literal.
 import { BOUNDARY_EXAMPLE_ISSUE, QUEEN_API } from "../lib/queenApi";
+import { worldParam } from "../lib/queenCorpusCheck";
+import { useCorpus, type CorpusSource, type FoundationSnapshot, type ManifestPart, type ModulesSnapshot } from "../lib/queenCorpus";
 import { deriveT27Evolution } from "../lib/t27Evolution";
 const LIVE_POLL_MS = 5_000;
 // The clients lane is asked far less often than the public board. It is one
@@ -413,6 +415,8 @@ const COPY = {
     leaderboardHint: "Who lends the swarm a lane, and the XP its bees earned there (key l)",
     warsView: "WARS",
     warsHint: "Real-task agent benchmarks generated from one .t27 ledger (key x)",
+    tokenView: "TOKEN",
+    tokenHint: "TRI on TON testnet, and who earned it, by GitHub account (key k)",
     passportView: "PASSPORT",
     passportHint: "What must travel with a result: the record proposed to the OCP working group (key b)",
     // The fifteenth view: the person's own remote browser, the one the agent drives.
@@ -719,6 +723,8 @@ const COPY = {
     hudZoomOut: "ZOOM OUT",
     hudFullscreen: "FULLSCREEN",
     hudExitFullscreen: "EXIT FULLSCREEN",
+    hudTools: "Map tools",
+    hudToolsClose: "Hide map tools",
     hudCollapse: "COLLAPSE",
     hudExpand: "EXPAND",
     hudNoEvents: "No recorded Bee event yet.",
@@ -830,6 +836,8 @@ const COPY = {
     leaderboardHint: "Кто дал рою полосу и сколько XP на ней заработали пчёлы (клавиша l)",
     warsView: "ВОЙНЫ",
     warsHint: "Бенчмарки агентов на реальных задачах из единого журнала .t27 (клавиша x)",
+    tokenView: "ТОКЕН",
+    tokenHint: "TRI в TON testnet и кто его заработал, по аккаунтам GitHub (клавиша k)",
     passportView: "ПАСПОРТ",
     passportHint: "Что обязано ехать вместе с результатом: запись, поданная в рабочую группу OCP (клавиша b)",
     browserView: "БРАУЗЕР",
@@ -1126,6 +1134,8 @@ const COPY = {
     hudZoomOut: "ОТДАЛИТЬ",
     hudFullscreen: "ВО ВЕСЬ ЭКРАН",
     hudExitFullscreen: "ВЫЙТИ ИЗ ПОЛНОГО ЭКРАНА",
+    hudTools: "Инструменты карты",
+    hudToolsClose: "Скрыть инструменты карты",
     hudCollapse: "СВЕРНУТЬ",
     hudExpand: "РАЗВЕРНУТЬ",
     hudNoEvents: "Записанных событий Bee пока нет.",
@@ -1181,78 +1191,26 @@ function useQueenStatus(): LoadState {
 }
 
 /**
- * The repository's modules (M-2): public/queen/modules.json, a scan stamped
- * with its commit, until /queen/public-modules exists on the server (M-1).
+ * The repository's modules (M-2): the server's scan (/queen/public-modules,
+ * M-1) first, public/queen/modules.json -- a scan stamped with its commit --
+ * when the wire has none. Read through the corpus store like every other part.
  */
-function useQueenModules(): { data: { repo?: string; commit: string | null; generatedAt: string; modules: HudModule[]; source: "wire" | "file" } | null; error: string | null } {
-  const [data, setData] = useState<{ repo?: string; commit: string | null; generatedAt: string; modules: HudModule[]; source: "wire" | "file" } | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  useEffect(() => {
-    let active = true;
-    // The server's scan first (/queen/public-modules, M-1); the loop's
-    // snapshot in public/queen/modules.json only when the wire has none.
-    const readFrom = async (url: string, source: "wire" | "file") => {
-      const response = await fetch(url, { headers: { Accept: "application/json" }, cache: "no-store" });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const next = (await response.json()) as { commit: string | null; generatedAt: string; modules: HudModule[] };
-      if (!Array.isArray(next.modules) || next.modules.length === 0) throw new Error("no modules");
-      return { ...next, source };
-    };
-    const read = () =>
-      readFrom(`${QUEEN_API}/queen/public-modules`, "wire")
-        .catch(() => readFrom("./queen/modules.json", "file"))
-        .then((next) => { if (active) { setData(next); setError(null); } })
-        .catch((nextError: unknown) => { if (active) setError(nextError instanceof Error ? nextError.message : String(nextError)); });
-    void read();
-    const timer = window.setInterval(read, MODULES_POLL_MS);
-    return () => { active = false; window.clearInterval(timer); };
-  }, []);
+function useQueenModules(): { data: (ModulesSnapshot & { source: CorpusSource }) | null; error: string | null } {
+  const { part, error } = useCorpus("modules", { wire: `${QUEEN_API}/queen/public-modules`, pollMs: MODULES_POLL_MS });
+  const data = useMemo(() => (part ? { ...part.data, source: part.source } : null), [part]);
   return { data, error };
 }
 
 /**
- * The vendored corpus index, fetched once for the whole page.
- *
- * It is 1.4 MB, and two different parts of this page read it: the hive's
- * coverage and the tech tree's evolution. Asking for it twice would put two
- * concurrent requests for the same megabyte on the wire, because the HTTP cache
- * can only serve the second one after the first has finished. The promise is
- * module-level rather than component-level for the same reason: a remount must
- * not start a third.
- *
- * A failed read stays null, and every caller must read null as "unknown".
+ * The corpus index, from the store every tab and the Explorer frame share
+ * (src/lib/queenCorpus.ts): 1.8 MB, read once per window tree. Its failure is
+ * reported separately from the supervisor's: the TECH TREE is drawn from this
+ * file, so a tree with no index is offline even while the wire is healthy, and
+ * a tree with an index is complete even while the wire is down.
  */
-let t27ManifestPromise: Promise<unknown> | null = null;
-
-/**
- * The corpus index, fetched once for the whole page. Its failure is reported
- * separately from the supervisor's: the TECH TREE is drawn from this file, so
- * a tree with no index is offline even while the wire is healthy, and a tree
- * with an index is complete even while the wire is down.
- */
-function useT27Manifest(): { manifest: unknown; error: string | null } {
-  const [manifest, setManifest] = useState<unknown>(null);
-  const [error, setError] = useState<string | null>(null);
-  useEffect(() => {
-    let active = true;
-    t27ManifestPromise ??= fetch("t27/manifest.json", {
-      headers: { Accept: "application/json" },
-      cache: "default",
-    }).then((response) => {
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      return response.json() as Promise<unknown>;
-    });
-    t27ManifestPromise
-      .then((next) => { if (active) { setManifest(next); setError(null); } })
-      .catch((nextError: unknown) => {
-        t27ManifestPromise = null;
-        if (active) {
-          setError(nextError instanceof Error ? nextError.message : String(nextError));
-        }
-      });
-    return () => { active = false; };
-  }, []);
-  return { manifest, error };
+function useT27Manifest(): { manifest: unknown; part: ManifestPart | null; error: string | null } {
+  const { part, error } = useCorpus("manifest");
+  return { manifest: part?.data ?? null, part, error };
 }
 
 /**
@@ -1265,16 +1223,6 @@ function useT27Coverage(repository: string | null): ReadonlySet<string> | null {
   return useMemo(() => hiveCoverageFromManifest(manifest, repository), [manifest, repository]);
 }
 
-/** The loop's GitHub snapshot: closed issues (the foundation), epics (the castle), rings, releases. */
-interface FoundationSnapshot {
-  generatedAt: string;
-  repo: string;
-  rings: string[];
-  closedIssues: FoundationIssue[];
-  epics: Array<{ number: number; title: string; state: string; closedAt: string | null; labels: string[]; ring: string | null; ringBy: string | null; children: Array<{ number: number; title: string; state: string; closedAt: string | null }> }>;
-  releases: Array<{ tag: string; name: string; publishedAt: string | null; prerelease: boolean }>;
-}
-
 /**
  * The honeycomb's facts from GitHub: the server's route first
  * (/queen/public-foundation, when it exists), the loop's dated snapshot in
@@ -1282,27 +1230,9 @@ interface FoundationSnapshot {
  * labels or epics, so this is the only honest source; absent, the layers
  * read a dash and draw nothing.
  */
-function useQueenFoundation(): { data: (FoundationSnapshot & { source: "wire" | "file" }) | null; error: string | null } {
-  const [data, setData] = useState<(FoundationSnapshot & { source: "wire" | "file" }) | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  useEffect(() => {
-    let active = true;
-    const readFrom = async (url: string, source: "wire" | "file") => {
-      const response = await fetch(url, { headers: { Accept: "application/json" }, cache: "no-cache" });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const next = (await response.json()) as FoundationSnapshot;
-      if (!Array.isArray(next.closedIssues) || typeof next.generatedAt !== "string") throw new Error("no snapshot");
-      return { ...next, rings: Array.isArray(next.rings) ? next.rings : [], epics: Array.isArray(next.epics) ? next.epics : [], releases: Array.isArray(next.releases) ? next.releases : [], source };
-    };
-    const read = () =>
-      readFrom(`${QUEEN_API}/queen/public-foundation`, "wire")
-        .catch(() => readFrom("./queen/foundation.json", "file"))
-        .then((next) => { if (active) { setData(next); setError(null); } })
-        .catch((nextError: unknown) => { if (active) setError(nextError instanceof Error ? nextError.message : String(nextError)); });
-    void read();
-    const timer = window.setInterval(read, FOUNDATION_POLL_MS);
-    return () => { active = false; window.clearInterval(timer); };
-  }, []);
+function useQueenFoundation(): { data: (FoundationSnapshot & { source: CorpusSource }) | null; error: string | null } {
+  const { part, error } = useCorpus("foundation", { wire: `${QUEEN_API}/queen/public-foundation`, pollMs: FOUNDATION_POLL_MS });
+  const data = useMemo(() => (part ? { ...part.data, source: part.source } : null), [part]);
   return { data, error };
 }
 
@@ -2561,7 +2491,8 @@ function KanbanView({
                     </span>
                   )}
                   {card.needs && card.needs.length > 0 && (
-                    <span>
+                    // Cut to one line by the shell; the whole list is here.
+                    <span title={`${c.missing}: ${card.needs.join(", ")}`}>
                       {c.missing}: {card.needs.join(", ")}
                     </span>
                   )}
@@ -2957,9 +2888,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
       setHashParams(() => {
         const leaving = (hashParamsOf(window.location.hash).get("tab") ?? "comb") !== next;
         const params = tabAddress(window.location.hash, next);
-        if (leaving) {
-          for (const key of Object.values(SELECTION_KEY)) params.delete(key);
-        }
+        if (leaving) leaveTabSelections(params);
         if (card && isExplorerTab(next)) params.set(SELECTION_KEY[next], card);
         return params;
       }, { replace: true });
@@ -2996,6 +2925,30 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
   const [doctrineOpen, setDoctrineOpen] = useState(false);
   const [roundOpen, setRoundOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  // CALM BY DEFAULT IN THE APP'S FRAME (owner, 2026-10-02: "make the interface
+  // more minimal so the map is visible"). Bare mode rode on the Fullscreen API,
+  // which the Telegram Mini App's WebView does not have and a phone browser
+  // only grants on a tap -- so in the app's Game tab the map stayed 499px of
+  // 812 under a 176px head. The page keeps a bare state of its own: on by
+  // default when this board is framed (app.t27.ai/game; a top-level /queen/ is
+  // sent there by its nginx) at phone width, and set by the FULLSCREEN button
+  // wherever the API is missing. The iOS app shimmed the API to get the same
+  // effect; this is that behaviour, owned here, on every platform.
+  const framed = useMemo(() => {
+    try {
+      return window.self !== window.top;
+    } catch {
+      return true;
+    }
+  }, []);
+  const [pageBare, setPageBare] = useState(
+    () => framed && !embedded && window.matchMedia("(max-width: 900px)").matches,
+  );
+  const bare = isFullscreen || pageBare;
+  // In bare mode the head shows the sector name and nothing else until "more"
+  // opens it; every tool, EXIT FULLSCREEN included, is one tap away.
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const toolsShown = bare && toolsOpen;
   const [activeSector, setActiveSector] = useState<string | null>(null);
   const [pick, setPick] = useState<HudPick | null>(null);
   const [agentCopy, setAgentCopy] = useState<"idle" | "copied" | "error">(
@@ -3305,7 +3258,12 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
   }, [setView, keyShortcuts]);
 
   useEffect(() => {
-    const onChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    const onChange = () => {
+      const on = Boolean(document.fullscreenElement);
+      setIsFullscreen(on);
+      // Leaving from the tools closes them, so the next entry starts calm.
+      if (!on) setToolsOpen(false);
+    };
     document.addEventListener("fullscreenchange", onChange);
     return () => document.removeEventListener("fullscreenchange", onChange);
   }, []);
@@ -3325,6 +3283,14 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
     );
     return () => { live = false; };
   }, []);
+  // The SPECS rung is the corpus store's count, the number the Explorer frame
+  // prints from the same part; the catalogs' generated ladder is the fallback
+  // until the manifest arrives. qa/queen-spec-sync-contract.mjs holds them equal.
+  const corpus = useT27Manifest().part;
+  const rungCounts = useMemo<LadderCounts | null>(
+    () => (ladderCounts && corpus ? { ...ladderCounts, specs: corpus.identity.specCount } : ladderCounts),
+    [ladderCounts, corpus],
+  );
 
   useEffect(
     () => () => {
@@ -3345,12 +3311,34 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
   }, []);
 
   const toggleFullscreen = () => {
-    if (document.fullscreenElement) {
-      void document.exitFullscreen();
+    if (bare) {
+      setPageBare(false);
+      setToolsOpen(false);
+      if (document.fullscreenElement) void document.exitFullscreen();
+    } else if ((framed && isPhone) || !document.fullscreenEnabled) {
+      setPageBare(true);
     } else {
       void viewportRef.current?.requestFullscreen?.();
     }
   };
+
+  // The scene measures itself on resize. Entering or leaving bare mode changes
+  // the viewport's box without one, and the map stayed fitted to the old box.
+  // Twice: the layout settles over a frame or two after the class lands.
+  useEffect(() => {
+    const timers = [60, 400].map((ms) =>
+      window.setTimeout(() => window.dispatchEvent(new Event("resize")), ms),
+    );
+    return () => timers.forEach((t) => window.clearTimeout(t));
+  }, [bare]);
+
+  // COMPAT, REMOVE ONCE NO INSTALLED iOS BUILD PREDATES THIS: the Vibee iOS app
+  // (999-multibots-telegraf, AppWebView.swift boardFullscreen) injects its own
+  // calm rules, which hide the head's tools with !important unless the root
+  // carries this class. Setting it keeps the board's own "more" working there.
+  useEffect(() => {
+    document.documentElement.classList.toggle("vibee-board-tools", toolsShown);
+  }, [toolsShown]);
 
   // The address says the language too, as the header's LanguageSwitcher already
   // makes it: measured before this, /?lang=ru stayed in the address after the toggle
@@ -3429,6 +3417,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
     // On the letter l: whose token each bee ran on, and what that lane earned.
     { view: "leaderboard" as const, glyph: "⚙", label: c.leaderboardView, hint: c.leaderboardHint },
     { view: "wars" as const, glyph: "⚔", label: c.warsView, hint: c.warsHint },
+    { view: "token" as const, glyph: "¤", label: c.tokenView, hint: c.tokenHint },
   ].map((item) => ({ ...item, hotkey: hudKeyOf(item.view) }));
   // TRI is drawn as one button per screen, owner's word 2026-09-21: every
   // screen of the app its own tab. The first keeps TRI's key; the rest are
@@ -3492,7 +3481,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
       current={view}
       onSelect={setView}
       aria={c.ladderAria}
-      counts={ladderCounts}
+      counts={rungCounts}
     />
   );
   const boardNav = (
@@ -3760,7 +3749,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
 
   return (
     <main
-      className={`queen27-page is-shell${commandCollapsed ? " is-command-collapsed" : ""}${isFullscreen ? " is-bare" : ""}${embedded ? " is-embed" : ""}`}
+      className={`queen27-page is-shell${commandCollapsed ? " is-command-collapsed" : ""}${bare ? " is-bare" : ""}${toolsShown ? " is-tools" : ""}${embedded ? " is-embed" : ""}`}
       data-view={view}
       // Which module the reader is in, as against which layer of it: for the
       // six layers of the ladder this is "specs" for all six. A rule that
@@ -3769,6 +3758,12 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
       // not data-view, which said "specs" on one of the six and left the other
       // five reserving 66px for a row that is not rendered on any of them.
       data-rail-view={railViewOf(view)}
+      // The corpus every tab is reading, from the one store: the Explorer frame
+      // stamps the same three on its root, and qa/queen-spec-sync-contract.mjs
+      // reads both on every tab and requires them equal.
+      data-spec-count={corpus?.identity.specCount}
+      data-corpus-version={corpus?.version}
+      data-corpus-source={corpus?.source}
     >
       <section
         className="queen27-hud-viewport"
@@ -3924,13 +3919,25 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
               type="button"
               data-tool="full"
               onClick={toggleFullscreen}
-              aria-pressed={isFullscreen}
-              title={isFullscreen ? c.hudExitFullscreen : c.hudFullscreen}
+              aria-pressed={bare}
+              title={bare ? c.hudExitFullscreen : c.hudFullscreen}
             >
-              {isFullscreen ? c.hudExitFullscreen : c.hudFullscreen}
+              {bare ? c.hudExitFullscreen : c.hudFullscreen}
             </button>
           </div>
         </header>
+        {bare && (
+          <button
+            type="button"
+            className="queen27-hud-more"
+            onClick={() => setToolsOpen((open) => !open)}
+            aria-expanded={toolsOpen}
+            aria-label={toolsOpen ? c.hudToolsClose : c.hudTools}
+            title={toolsOpen ? c.hudToolsClose : c.hudTools}
+          >
+            <span aria-hidden="true">{toolsOpen ? "\u00d7" : "\u22ef"}</span>
+          </button>
+        )}
 
         {/* Why free bees are idle used to be a line floating here, over the top
             of the map. It is a notification about the round, and the round's tile
@@ -3985,6 +3992,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
             <QueenSpecs
               showDirective={isNarrow}
               onNavigate={setView}
+              world={sharedCatalog ? worldParam(hashParams.get("world")) : null}
               ladder={ladderNav}
               c={{
                 directive: c.specsDirective,
@@ -4044,6 +4052,8 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
             />
           ) : boardView === "wars" ? (
             <QueenWars lang={lang === "ru" ? "ru" : "en"} />
+          ) : boardView === "token" ? (
+            <QueenToken lang={lang === "ru" ? "ru" : "en"} />
           ) : boardView === "roadmap" ? (
             <QueenRoadmap lang={lang === "ru" ? "ru" : "en"} />
           ) : boardView === "leaderboard" ? (

@@ -35,7 +35,7 @@ pub const TARGETS : [0]str = [];
 pub const ACCEPTANCE : str = "";
 ; measured | declared | specified | external | not-claimed, as docs/system/project.md defines them.
 pub const EVIDENCE : str = "not-claimed";
-pub const EVIDENCE_SOURCE : str = "tools/trinity_manifest.py inventory: of 2830 tracked .zig files, 749 are reachable from the 173 files build.zig names and 2081 are not; the per-directory counts are in conformance/trinity/inventory.json (zig_reachability). S03 decides retire or attach.";
+pub const EVIDENCE_SOURCE : str = "tools/trinity_manifest.py inventory: of 2830 tracked .zig files, 748 are reachable from the 173 files build.zig names and 2082 are not (until 2026-10-01 the walk read comments and counted 749: src/background_agent/db/issue_bindings.zig is reached only through a commented-out @import); the per-directory counts are in conformance/trinity/inventory.json (zig_reachability). S03 decides retire or attach.";
 ; The work package of gHashTag/trinity#988 that owns this capability's contract.
 pub const WORK_PACKAGE : str = "S01";
 pub const NOTE : str = "";

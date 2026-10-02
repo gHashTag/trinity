@@ -26,7 +26,7 @@
 ; slot was re-read at its new address and carries the same claim). They
 ; select four keys declared at src/trios/i18n.rs:226-229. THREE of the four keys -- trust.gacp,
 ; trust.medical, trust.age -- are still named for the claim D20 retired, and all three now carry a
-; claim D20 permits: the rows at src/trios/i18n.rs:914-917 and :1513-1516 hold a legal entity with
+; claim D20 permits: the rows at src/trios/i18n.rs:917-920 and :1517-1520 hold a legal entity with
 ; a location, a helmet law and a licence requirement. A reader who classified these three rows
 ; from their key names would refuse all three and admit none, and would be wrong three times. The
 ; key name is not evidence and this contract never treats it as evidence.
@@ -255,14 +255,14 @@ pub fn screen_may_supply_its_own_number() bool {
 }
 
 ; --- The claim is read from content, never from the key name ---------------------------------
-; Measured at src/trios/i18n.rs:226-229 against :914-917 and :1513-1516. Four slots; three keys
+; Measured at src/trios/i18n.rs:226-229 against :917-920 and :1517-1520. Four slots; three keys
 ; named for a claim D20 retired and now carrying a claim D20 permits; one key named for what it
 ; carries. The drift is invisible to a customer -- nobody sees a key -- and lethal to a reader.
 pub const TRUST_SLOT_COUNT : u8 = 4;
 pub const TRUST_KEYS_NAMED_FOR_A_RETIRED_CLAIM : u8 = 3;
 pub const TRUST_KEYS_NAMED_FOR_WHAT_THEY_CARRY : u8 = 1;
 pub const TRUST_KEY_DECLARATION_SITE : str = "src/trios/i18n.rs:226-229";
-pub const TRUST_ROW_SITES : [2]str = ["src/trios/i18n.rs:914-917", "src/trios/i18n.rs:1513-1516"];
+pub const TRUST_ROW_SITES : [2]str = ["src/trios/i18n.rs:917-920", "src/trios/i18n.rs:1517-1520"];
 pub const TRUST_SLOT_SITES : [4]str = [
   "src/ui/screens/home_screen.rs:441",
   "src/ui/screens/home_screen.rs:442",
@@ -396,7 +396,14 @@ pub fn absence_from_the_bar_retires_a_route(route_is_absent_from_the_bar: bool) 
 ; five destinations at :110 and five retired route names at :118. It is a source-text scan because
 ; src/lib.rs:17-18 gates pub mod ui on target_arch = "wasm32" and cargo test therefore compiles no
 ; line of this surface -- so the scan is the only instrument, not the weaker of two.
-pub const WITNESS_LINES : u16 = 820;
+; CORRECTED 2026-09-25: 812 lines, not 820; still fifteen tests. The owner's ruling of that day (#12,
+; nothing cannabis-related anywhere) removed the six member-card images from assets/, whose artwork
+; was a cannabis bud, and the six constants in src/ui/assets.rs that named them. The witness's
+; asset-constant check kept those six on its decision list; the list is now empty and its parser floor
+; fell from seven constants to one, so the file shrank by eight lines and no test was added or
+; removed. The 820 of the 2026-09-21 reading is kept under a _BEFORE_ name.
+pub const WITNESS_LINES : u16 = 812;
+pub const WITNESS_LINES_BEFORE_2026_09_25 : u16 = 820;
 pub const WITNESS_TESTS : u8 = 15;
 ; RE-VERIFIED 2026-09-21, and a trap named while it is fresh. Both numbers above still hold --
 ; wc -l gives 820 and the witness declares fifteen test functions -- but the obvious re-measurement
@@ -677,7 +684,10 @@ test the_wave_census_is_measured_and_the_untimed_interval_is_refused {
 
 test the_witness_test_count_survives_its_own_naive_re_measurement {
   assert WITNESS_TESTS == 15;
-  assert WITNESS_LINES == 820;
+  // 820 until 2026-09-25, when the member-card constants left the witness's decision list.
+  assert WITNESS_LINES == 812;
+  assert WITNESS_LINES_BEFORE_2026_09_25 == 820;
+  assert WITNESS_LINES < WITNESS_LINES_BEFORE_2026_09_25;
   assert WITNESS_TESTS_BY_NAIVE_GREP == 19;
   assert WITNESS_TESTS_NAIVE_GREP_IS_CORRECT == false;
   assert WITNESS_TEST_TOKEN_NON_ATTRIBUTE_HITS == 4;

@@ -26,26 +26,26 @@ module LinkRelay {
     // The device handle. Opening it is the target runtime's job and not the
     // spec's, so every body below that touches hardware is `undefined` -- the
     // same shape read_user1.t27 uses for the same device in this directory.
-    pub struct Mpsse {
+    pub struct LinkRelayMpsse {
     }
 
-    pub fn mpsse_new(idx: u32) Mpsse {
+    pub fn mpsse_new(idx: u32) LinkRelayMpsse {
         undefined;
     }
 
-    pub fn mpsse_tms(m: Mpsse, bits: []u8) void {
+    pub fn mpsse_tms(m: LinkRelayMpsse, bits: []u8) void {
         undefined;
     }
 
-    pub fn mpsse_w(m: Mpsse, data: []u8) void {
+    pub fn mpsse_w(m: LinkRelayMpsse, data: []u8) void {
         undefined;
     }
 
-    pub fn mpsse_r(m: Mpsse, nbits: u32) []u8 {
+    pub fn mpsse_r(m: LinkRelayMpsse, nbits: u32) []u8 {
         undefined;
     }
 
-    pub fn mpsse_close(m: Mpsse) void {
+    pub fn mpsse_close(m: LinkRelayMpsse) void {
         undefined;
     }
 
@@ -70,7 +70,7 @@ module LinkRelay {
     // `val` is the whole chain's IR word, and only its low six bits are
     // shifted -- which is what the Python does too, by masking rather than by
     // narrowing the parameter.
-    pub fn shift_ir(m: Mpsse, val: u32) void {
+    pub fn shift_ir(m: LinkRelayMpsse, val: u32) void {
         // TMS 1,1,0,0 to enter Shift-IR from Run-Test/Idle.
         mpsse_tms(m, [1, 1, 0, 0]);
         // Five bits on the TCK falling edge, LSB first.
@@ -82,7 +82,7 @@ module LinkRelay {
     }
 
     // DR read/write: shift `nbits` out and the same count back.
-    pub fn shift_dr_rw(m: Mpsse, out_word: u32, nbits: u32) DrWord {
+    pub fn shift_dr_rw(m: LinkRelayMpsse, out_word: u32, nbits: u32) DrWord {
         if (nbits == 0) {
             return DrWord { ok: false, value: 0 };
         }

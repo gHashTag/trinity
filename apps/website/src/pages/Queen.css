@@ -4310,6 +4310,12 @@ main:where(.queen27-page.is-shell) section {
    later in the file and wins where both apply. The phone's icon row is not this
    rail. */
 @media (max-height: 919px) {
+  /* Nineteen commands (TOKEN, 2026-10-02) at 6 px gaps put the last one 4 px
+     under COLLAPSE at 1272x806 (measured by the viewport contract); 4 px gaps
+     give back 36 px. */
+  .queen27-page.is-shell .queen27-hud-command:not(.is-compact) {
+    gap: 4px;
+  }
   .queen27-page.is-shell .queen27-hud-command:not(.is-compact) > .queen27-hud-cmd {
     padding: 0.35rem 0.65rem;
   }
@@ -7112,6 +7118,14 @@ body.queen-shell .phi-starfield {
   font-size: 0.56rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  /* One line each, the rest an ellipsis and the whole list on hover. At
+     1280x600 the "missing:" list wrapped to six lines in a 97px card: the
+     first card was 204px in a 194px box and the column showed no card whole
+     (qa/queen-viewport-contract.mjs, check 11). The phone made the same cut
+     in queen-phone.css. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* A card is as wide as its column, not as its longest word. The list's implicit
@@ -7860,4 +7874,80 @@ body.queen-shell .queen-starfield-source {
   background: var(--hud-veil, rgba(2, 8, 6, 0.72));
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
+}
+
+/* CALM BARE MODE: THE MAP IS THE SCREEN (owner, 2026-10-02: "make the
+   interface more minimal so the map is visible").
+   The bare rules above hide panels that are children of the page, but the top
+   bar, the command rail, the Queen's column and the view rail are children of
+   the viewport -- so on a phone bare mode still drew all four, and the head
+   stayed in the flow (the phone head is `position: static !important` above).
+   Measured at 375x812 in the app's Game tab: head 176px, map 499px. Here the
+   head floats over the map and shows only the sector name until "more" opens
+   it, and the body takes the whole viewport. These selectors carry .is-bare,
+   one class more than every rule they override, so the order of this file and
+   of queen-phone.css after it does not decide them. */
+.queen27-page.is-shell.is-bare .queen27-hud-viewport > :is(.queen27-hud-top, .queen27-hud-command, .queen27-hud-intel, .queen27-hud-bottom, .queen27-hud-commands),
+.queen27-page.is-shell.is-bare .queen-catalog-toolbar {
+  display: none;
+}
+
+.queen27-page.is-shell.is-bare .queen27-hud-viewport {
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.queen27-page.is-shell.is-bare .queen27-hud-viewport > .queen27-hud-vp-head {
+  position: absolute !important;
+  z-index: 5;
+  top: 0;
+  right: 52px;
+  left: 0;
+  margin: 0;
+  min-height: 0;
+}
+
+.queen27-page.is-shell.is-bare .queen27-hud-viewport > .queen27-hud-vp-body {
+  grid-area: 1 / 1 / -1 / -1;
+  padding: 0;
+}
+
+.queen27-page.is-shell.is-bare:not(.is-tools) .queen27-hud-viewport > .queen27-hud-vp-head {
+  padding: 10px 12px;
+  border: 0;
+  background: none;
+  pointer-events: none;
+}
+
+.queen27-page.is-shell.is-bare:not(.is-tools) .queen27-hud-vp-head > :not(.queen27-hud-vp-title) {
+  display: none;
+}
+
+.queen27-page.is-shell.is-bare:not(.is-tools) .queen27-hud-vp-title {
+  opacity: 0.7;
+}
+
+.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-more {
+  position: absolute;
+  z-index: 6;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid #ffffff2e;
+  border-radius: 22px;
+  background: #0000008c;
+  color: #fff;
+  font: 600 20px/1 system-ui, sans-serif;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+/* The iOS app drew its own "more" before the board had one (see the COMPAT
+   note in Queen.tsx); two buttons in one corner is one too many. */
+.vibee-board-more {
+  display: none !important;
 }

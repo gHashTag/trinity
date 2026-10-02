@@ -24,12 +24,12 @@
 ; THE HEADER WAS VERIFIED RATHER THAN QUOTED, and it is out of date in the direction that matters.
 ; save_user_name has ZERO definitions in the tree today: grep -rn "fn save_user_name" over src/,
 ; tests/ and migrations/ returns nothing, and over that same scope the SIX surviving mentions are
-; all prose describing what was removed -- src/bot/mod.rs:95, src/db/mod.rs:947, src/db/users.rs:5,
+; all prose describing what was removed -- src/bot/mod.rs:95, src/db/mod.rs:951, src/db/users.rs:5,
 ; src/trios/person.rs:5, tests/integration_invitee_names.rs:5 and migrations/073_user_identity
 ; .sql:5. The count read FIVE until the review of 2026-09-21: the migration comment was missed by
 ; a sweep whose stated scope already included migrations/, which is the cheapest way a census goes
 ; wrong -- a grep narrower than the sentence describing it.
-; The writer that replaced it, save_user_identity at src/db/mod.rs:959, has ONE production caller
+; The writer that replaced it, save_user_identity at src/db/mod.rs:963, has ONE production caller
 ; -- remember_who at src/bot/mod.rs:111 -- and that caller is invoked from THREE places, one per
 ; kind of update Telegram delivers: src/bot/callbacks.rs:134, src/bot/commands.rs:169 and
 ; src/bot/handlers.rs:30. migrations/073_user_identity.sql added last_name and username and
@@ -104,7 +104,7 @@ pub const SIBLING_MODULE : str = "src/trios/attendees.rs";
 ; silent.
 pub const CONSUMING_QUERY : str = "src/db/referrals.rs get_invitees";
 pub const CONSUMING_SCREEN : str = "src/ui/pages/referrals.rs invitee_row";
-pub const WRITER : str = "src/db/mod.rs:959 save_user_identity";
+pub const WRITER : str = "src/db/mod.rs:963 save_user_identity";
 pub const WRITER_ENTRY_POINT : str = "src/bot/mod.rs:111 remember_who";
 pub const STORAGE_MIGRATION : str = "migrations/073_user_identity.sql";
 pub const STRING_TABLE_SOURCE : str = "src/trios/i18n.rs";
@@ -167,7 +167,7 @@ pub const THE_HEADERS_DEFECT_IS_LIVE_TODAY : bool = false;
 pub const THE_HEADER_STILL_READS_AS_PRESENT_TENSE : bool = true;
 pub const WRITER_CHAIN_MEASURED_AT : str = "2026-09-21";
 
-; The sentence src/db/mod.rs:949-950 states in prose, made executable. It is the whole diagnosis of
+; The sentence src/db/mod.rs:953-954 states in prose, made executable. It is the whole diagnosis of
 ; the original defect: the column was not mis-rendered, it was never written.
 pub fn a_writer_is_a_writer(caller_count: u8) bool {
   return caller_count >= 1;
@@ -352,6 +352,13 @@ pub fn identifiers_share_a_bucket(offset: u16) bool {
 pub const IDENTIFIER_MASK_KEY : str = "referral.id_mask";
 pub const IDENTIFIER_MASK_IS_LABELLED : bool = true;
 pub const LABELLED_IDENTIFIER_IS_ADMISSIBLE : bool = true;
+; RETIRED 2026-09-26. That row was the referral page's top-referrers list, and the owner had the list
+; removed that day and its address closed ("remove the top and close the address";
+; turbobaby/referral-program, OWNER_TOP_LIST_ANSWER_*). Its key went with it, one line for one line
+; (turbobaby/locale-policy counts the four keys the list used). The rule above stands; the Mini App
+; has no live example of it now, and IDENTIFIER_MASK_KEY keeps the name the key had.
+pub const IDENTIFIER_MASK_KEY_IS_DECLARED : bool = false;
+pub const IDENTIFIER_MASK_KEY_RETIRED_AT : str = "2026-09-26";
 
 pub fn identifier_may_occupy_the_name_slot(labelled_as_an_identifier: bool) bool {
   return labelled_as_an_identifier;
@@ -365,9 +372,18 @@ pub fn identifier_may_occupy_the_name_slot(labelled_as_an_identifier: bool) bool
 pub const SCREEN_SHOWS_IDENTIFIER_DIGITS : u8 = 4;
 pub const WIRE_CARRIES_THE_WHOLE_IDENTIFIER : bool = true;
 pub const MASK_IS_APPLIED_CLIENT_SIDE : bool = true;
-pub const LEADERBOARD_ENDPOINT_NAMES_AN_IDENTITY_GATE : bool = false;
+; The two readings above and the gate below are the 2026-09-21 measurement. SINCE 2026-09-26 the
+; leaderboard endpoint names the admin gate as its first statement (turbobaby/referral-program,
+; LEADERBOARD_GATE_SITES, bound by gate 3), and no screen shows its digits. The wire still carries
+; the whole identifier -- to an admin only -- so the finding stands as a rule: the mask never
+; withheld anything, and what closed the exposure is the gate, not a mask.
+pub const LEADERBOARD_ENDPOINT_NAMES_AN_IDENTITY_GATE : bool = true;
 pub const INVITEES_ENDPOINT_NAMES_AN_IDENTITY_GATE : bool = true;
-pub const GATED_ENDPOINTS_OF_THE_TWO : u8 = 1;
+pub const GATED_ENDPOINTS_OF_THE_TWO : u8 = 2;
+pub const LEADERBOARD_ENDPOINT_NAMES_AN_IDENTITY_GATE_BEFORE_THE_TOP_LIST_ANSWER : bool = false;
+pub const GATED_ENDPOINTS_OF_THE_TWO_BEFORE_THE_TOP_LIST_ANSWER : u8 = 1;
+pub const SCREENS_SHOWING_IDENTIFIER_DIGITS_SINCE_THE_TOP_LIST_ANSWER : u8 = 0;
+pub const TOP_LIST_ANSWER_AT : str = "2026-09-26";
 
 pub fn field_is_withheld(wire_omits_it: bool) bool {
   return wire_omits_it;
@@ -390,6 +406,11 @@ pub const SITES_WITH_A_DISTINGUISHABLE_FALLBACK : u8 = 1;
 pub const SITES_WITH_NO_FALLBACK_AT_ALL : u8 = 1;
 pub const SITES_PRINTING_A_LABELLED_IDENTIFIER : u8 = 1;
 pub const SITE_CENSUS_MEASURED_AT : str = "2026-09-21";
+; The census is the 2026-09-21 reading and was not re-taken. One of its sites was deleted on
+; 2026-09-26: the one that printed a labelled identifier, the referral top list's row (the section
+; above), so that column is empty since. The other thirteen were not re-read on that day.
+pub const NAMING_SITES_DELETED_WITH_THE_TOP_LIST : u8 = 1;
+pub const SITES_PRINTING_A_LABELLED_IDENTIFIER_SINCE_THE_TOP_LIST_ANSWER : u8 = 0;
 pub const CENSUS_FIRST_ATTEMPT : u8 = 7;
 pub const CENSUS_METHOD : str = "grep over src/ for every literal a missing person-name is replaced by in this tree, plus COALESCE over a name column, then reading every hit. Three hits of one of those literals turned out to be PRODUCT names in three order screens and were excluded; pass-through carriers that substitute nothing were excluded; the remainder was read one function at a time.";
 pub const PASS_THROUGH_CARRIERS_ARE_EXCLUDED : bool = true;
@@ -699,10 +720,27 @@ test a_mask_applied_after_delivery_withholds_nothing {
   assert SCREEN_SHOWS_IDENTIFIER_DIGITS == 4;
 }
 
+; The 2026-09-21 reading, kept; the test after it holds the one since 2026-09-26.
 test one_of_the_two_endpoints_names_a_gate {
   assert INVITEES_ENDPOINT_NAMES_AN_IDENTITY_GATE == true;
-  assert LEADERBOARD_ENDPOINT_NAMES_AN_IDENTITY_GATE == false;
-  assert GATED_ENDPOINTS_OF_THE_TWO == 1;
+  assert LEADERBOARD_ENDPOINT_NAMES_AN_IDENTITY_GATE_BEFORE_THE_TOP_LIST_ANSWER == false;
+  assert GATED_ENDPOINTS_OF_THE_TWO_BEFORE_THE_TOP_LIST_ANSWER == 1;
+}
+
+test both_endpoints_name_a_gate_and_no_screen_masks_an_identifier_since_the_top_list_answer {
+  assert TOP_LIST_ANSWER_AT == "2026-09-26";
+  assert IDENTIFIER_MASK_KEY_RETIRED_AT == TOP_LIST_ANSWER_AT;
+  assert LEADERBOARD_ENDPOINT_NAMES_AN_IDENTITY_GATE == true;
+  assert INVITEES_ENDPOINT_NAMES_AN_IDENTITY_GATE == true;
+  assert GATED_ENDPOINTS_OF_THE_TWO == 2;
+  assert GATED_ENDPOINTS_OF_THE_TWO - GATED_ENDPOINTS_OF_THE_TWO_BEFORE_THE_TOP_LIST_ANSWER == 1;
+  assert SCREENS_SHOWING_IDENTIFIER_DIGITS_SINCE_THE_TOP_LIST_ANSWER == 0;
+  assert IDENTIFIER_MASK_KEY_IS_DECLARED == false;
+  assert IDENTIFIER_MASK_KEY == "referral.id_mask";
+  assert client_side_mask_withholds_the_field(WIRE_CARRIES_THE_WHOLE_IDENTIFIER) == false;
+  assert NAMING_SITES_DELETED_WITH_THE_TOP_LIST == SITES_PRINTING_A_LABELLED_IDENTIFIER;
+  assert SITES_PRINTING_A_LABELLED_IDENTIFIER_SINCE_THE_TOP_LIST_ANSWER == 0;
+  assert identifier_may_occupy_the_name_slot(IDENTIFIER_MASK_IS_LABELLED) == true;
 }
 
 test the_census_adds_up_and_the_owner_owns_one_site_of_fourteen {

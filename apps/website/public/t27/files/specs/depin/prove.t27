@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
+// NOTE: This design is superseded by the mint-on-acceptance design in
+// specs/trinet/mint_on_acceptance.t27 and contracts/solana/tri_mint.rs.
+// Do not deploy. This file is kept for historical reference.
 // DePIN proof-of-useful-compute spec
 // Issue #40 — L-TRI-1: POST /prove endpoint
 // phi^2 + phi^-2 = 3 | TRINITY

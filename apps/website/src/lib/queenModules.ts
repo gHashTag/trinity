@@ -330,6 +330,23 @@ export const MODULES = [
       play: 'Место, где конфигурация агента заслуживает своё место. Сравнивайте подтверждённую работу в равных условиях, принимайте только один patch и сохраняйте проигравшие или заблокированные руки как свидетельство.',
     },
   },
+  {
+    tab: 'token',
+    key: 'k',
+    glyph: '¤',
+    en: {
+      name: 'TOKEN',
+      hint: 'TRI on TON testnet, and who earned it, by GitHub account (key k)',
+      body: 'TRI is minted for an accepted .t27 spec and for nothing else: no pre-mine, no sale. The view reads the minter on TON testnet for what has been minted, the cap, the epoch and the signer quorum, and the Queen\'s earnings ledger for who earned what. Every row is a GitHub account; work on a lane nobody has tied to one is counted, never drawn as a person. Testnet only, V1, signer quorum, not trustless. Opens on k.',
+      play: 'Write a spec the Queen accepts and its TRI is credited to your GitHub account; withdraw it from your profile with your own TON wallet.',
+    },
+    ru: {
+      name: 'ТОКЕН',
+      hint: 'TRI в TON testnet и кто его заработал, по аккаунтам GitHub (клавиша k)',
+      body: 'TRI выпускается за принятую спеку .t27 и ни за что другое: ни предварительного выпуска, ни продажи. Вид читает минтер в TON testnet — сколько выпущено, потолок, эпоху и кворум подписантов — и журнал заработка Королевы — кто сколько заработал. Каждая строка — аккаунт GitHub; работа на полосе, не привязанной к аккаунту, посчитана, но не нарисована человеком. Только testnet, V1, кворум подписантов, не trustless. Открывается клавишей k.',
+      play: 'Напишите спеку, которую примет Королева, и её TRI зачислится на ваш аккаунт GitHub; выведите его из профиля своим TON-кошельком.',
+    },
+  },
 ] as const
 
 export type QueenModule = (typeof MODULES)[number];

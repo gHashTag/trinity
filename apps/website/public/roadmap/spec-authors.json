@@ -1,118 +1,299 @@
 {
-  "measuredAt": "2026-09-25T07:56:18.749Z",
-  "method": "Commits touching a directory where this project keeps its .t27 specs, per repository, by author. A measure of work on the spec corpus: not every file under those directories is a spec, and a commit is not a file.",
+  "measuredAt": "2026-10-02T04:36:30.085Z",
+  "method": "Commits touching a directory that holds .t27 files, in every public gHashTag repository that has one (published mirrors and vendored copies excluded), each commit counted once. Credited to a GitHub account: the commit author, else whoever opened the merged pull request carrying it, else the committer. A measure of work on the spec corpus: not every file under those directories is a spec, and a commit is not a file.",
   "sources": [
+    {
+      "repo": "gHashTag/agent-mail-mcp",
+      "path": "spec"
+    },
+    {
+      "repo": "gHashTag/t27",
+      "path": "bootstrap/specs/physics"
+    },
+    {
+      "repo": "gHashTag/t27",
+      "path": "bootstrap/src"
+    },
+    {
+      "repo": "gHashTag/t27",
+      "path": "bootstrap/tests/fixtures/damage"
+    },
+    {
+      "repo": "gHashTag/t27",
+      "path": "bootstrap/tests/fixtures/damage_negative"
+    },
+    {
+      "repo": "gHashTag/t27",
+      "path": "bootstrap/tests/fixtures/generic_const"
+    },
+    {
+      "repo": "gHashTag/t27",
+      "path": "bootstrap/tests/fixtures/terminator"
+    },
+    {
+      "repo": "gHashTag/t27",
+      "path": "bootstrap/tests/fixtures/trinity_matrix"
+    },
+    {
+      "repo": "gHashTag/t27",
+      "path": "bootstrap/tests/goldring"
+    },
+    {
+      "repo": "gHashTag/t27",
+      "path": "compiler"
+    },
+    {
+      "repo": "gHashTag/t27",
+      "path": "contrib/backend/zig/legacy"
+    },
+    {
+      "repo": "gHashTag/t27",
+      "path": "examples/fpga/qmtech_minimal"
+    },
     {
       "repo": "gHashTag/t27",
       "path": "specs"
     },
     {
-      "repo": "gHashTag/trinity",
-      "path": "apps/website/specs"
+      "repo": "gHashTag/t27",
+      "path": "test_highlight.t27"
     },
     {
-      "repo": "gHashTag/BrowserOS",
-      "path": "trios"
+      "repo": "gHashTag/t27",
+      "path": "tests"
+    },
+    {
+      "repo": "gHashTag/tern-tc-9m-t27-verify",
+      "path": "ci_t27.t27"
+    },
+    {
+      "repo": "gHashTag/tern-tc-9m-verify",
+      "path": "ci.t27"
+    },
+    {
+      "repo": "gHashTag/tri-net",
+      "path": "specs"
+    },
+    {
+      "repo": "gHashTag/trinity",
+      "path": "apps/website/specs/catalog"
+    },
+    {
+      "repo": "gHashTag/trinity",
+      "path": "apps/website/specs/queen"
+    },
+    {
+      "repo": "gHashTag/trinity",
+      "path": "specs/physics"
+    },
+    {
+      "repo": "gHashTag/trinity",
+      "path": "specs/reproduce"
+    },
+    {
+      "repo": "gHashTag/trinity",
+      "path": "src/tri27"
+    },
+    {
+      "repo": "gHashTag/trinity",
+      "path": "t27/compiler"
+    },
+    {
+      "repo": "gHashTag/trinity",
+      "path": "t27/specs/base"
+    },
+    {
+      "repo": "gHashTag/trinity",
+      "path": "t27/specs/math"
+    },
+    {
+      "repo": "gHashTag/trinity",
+      "path": "t27/specs/numeric"
+    },
+    {
+      "repo": "gHashTag/trinity-fpga",
+      "path": "specs/boards"
+    },
+    {
+      "repo": "gHashTag/trinity-fpga",
+      "path": "specs/numeric"
+    },
+    {
+      "repo": "gHashTag/trinity-fpga",
+      "path": "specs/physics"
+    },
+    {
+      "repo": "gHashTag/trinity-fpga",
+      "path": "specs/trinet"
+    },
+    {
+      "repo": "gHashTag/trinity-fpga",
+      "path": "src/tri27"
+    },
+    {
+      "repo": "gHashTag/trinity-fpga",
+      "path": "t27/compiler"
+    },
+    {
+      "repo": "gHashTag/trinity-fpga",
+      "path": "t27/specs/base"
+    },
+    {
+      "repo": "gHashTag/trinity-fpga",
+      "path": "t27/specs/fpga"
+    },
+    {
+      "repo": "gHashTag/trinity-fpga",
+      "path": "t27/specs/isa"
+    },
+    {
+      "repo": "gHashTag/trinity-fpga",
+      "path": "t27/specs/math"
+    },
+    {
+      "repo": "gHashTag/trinity-fpga",
+      "path": "t27/specs/nn"
+    },
+    {
+      "repo": "gHashTag/trinity-fpga",
+      "path": "t27/specs/numeric"
+    },
+    {
+      "repo": "gHashTag/trinity-fpga",
+      "path": "t27/specs/queen"
+    },
+    {
+      "repo": "gHashTag/trinity-fpga",
+      "path": "t27/specs/vsa"
+    },
+    {
+      "repo": "gHashTag/trios",
+      "path": ".trinity/specs"
+    },
+    {
+      "repo": "gHashTag/trios",
+      "path": "apps/trios-macos/rings/RUST-13/trios-mesh/specs"
+    },
+    {
+      "repo": "gHashTag/trios",
+      "path": "policies"
+    },
+    {
+      "repo": "gHashTag/tt-trinity-corona",
+      "path": "specs/corona"
+    },
+    {
+      "repo": "gHashTag/tt-trinity-euler",
+      "path": "specs/fpga"
+    },
+    {
+      "repo": "gHashTag/tt-trinity-euler",
+      "path": "specs/numeric"
+    },
+    {
+      "repo": "gHashTag/tt-trinity-gamma",
+      "path": "specs/fpga"
+    },
+    {
+      "repo": "gHashTag/tt-trinity-gamma",
+      "path": "specs/numeric"
+    },
+    {
+      "repo": "gHashTag/tt-trinity-phi",
+      "path": "specs/fpga"
+    },
+    {
+      "repo": "gHashTag/tt-trinity-phi",
+      "path": "specs/numeric"
     },
     {
       "repo": "gHashTag/turbobaby-user-bot",
-      "path": "specs"
+      "path": "specs/agents"
+    },
+    {
+      "repo": "gHashTag/turbobaby-user-bot",
+      "path": "specs/turbobaby"
     }
   ],
   "truncated": [],
+  "unattributed": {
+    "commits": 47,
+    "names": {
+      "Dmitrii Vasilev": 1,
+      "Claude": 8,
+      "Claude Agent": 13,
+      "Trinity Agent": 1,
+      "t27-agent": 4,
+      "gh CLI": 3,
+      "agent": 2,
+      "trinity-bot": 12,
+      "t27-wave-bot": 2,
+      "T27 Agent": 1
+    }
+  },
   "people": [
     {
       "login": "gHashTag",
-      "name": "Vasilev Dmitrii",
       "avatar": "https://github.com/gHashTag.png?size=96",
-      "commits": 1066,
+      "commits": 3235,
+      "via": {
+        "author": 2605,
+        "pr": 624,
+        "name": 6
+      },
       "repos": [
         "t27",
+        "agent-mail-mcp",
+        "tri-net",
         "trinity",
-        "BrowserOS",
+        "trinity-fpga",
+        "trios",
+        "tt-trinity-corona",
+        "tt-trinity-euler",
+        "tt-trinity-gamma",
+        "tt-trinity-phi",
         "turbobaby-user-bot"
-      ],
-      "bot": false,
-      "linked": true
-    },
-    {
-      "login": null,
-      "name": "Trinity Bee",
-      "avatar": null,
-      "commits": 274,
-      "repos": [
-        "t27"
-      ],
-      "bot": false,
-      "linked": false
-    },
-    {
-      "login": null,
-      "name": "Claude Code (agent)",
-      "avatar": null,
-      "commits": 67,
-      "repos": [
-        "t27"
-      ],
-      "bot": false,
-      "linked": false
+      ]
     },
     {
       "login": "mxfill77",
-      "name": "Filipp",
       "avatar": "https://github.com/mxfill77.png?size=96",
-      "commits": 18,
+      "commits": 74,
+      "via": {
+        "author": 74
+      },
       "repos": [
         "turbobaby-user-bot"
-      ],
-      "bot": false,
-      "linked": true
+      ]
     },
     {
       "login": "dmitrii-f-t27",
-      "name": "Dmitrii Fedorov",
       "avatar": "https://github.com/dmitrii-f-t27.png?size=96",
-      "commits": 11,
+      "commits": 36,
+      "via": {
+        "author": 31,
+        "pr": 5
+      },
       "repos": [
         "t27",
+        "tri-net",
         "trinity",
+        "trios",
+        "tt-trinity-euler",
+        "tt-trinity-gamma",
         "turbobaby-user-bot"
-      ],
-      "bot": false,
-      "linked": true
+      ]
     },
     {
-      "login": null,
-      "name": "trios-consolidation",
-      "avatar": null,
-      "commits": 4,
-      "repos": [
-        "BrowserOS"
-      ],
-      "bot": false,
-      "linked": false
-    },
-    {
-      "login": null,
-      "name": "Claude Agent",
-      "avatar": null,
+      "login": "Karim13014",
+      "avatar": "https://github.com/Karim13014.png?size=96",
       "commits": 1,
+      "via": {
+        "author": 1
+      },
       "repos": [
         "t27"
-      ],
-      "bot": false,
-      "linked": false
-    },
-    {
-      "login": null,
-      "name": "T27 Agent",
-      "avatar": null,
-      "commits": 1,
-      "repos": [
-        "t27"
-      ],
-      "bot": false,
-      "linked": false
+      ]
     }
   ]
 }

@@ -71,12 +71,13 @@ module VcdTrace {
 
     // === VCD header config ===
 
-    pub struct VcdHeader {
-        date : &str,
-        version : &str,
-        timescale : &str,
-        comment : &str,
-    }
+pub struct VcdHeader {
+    date : &str,
+    version : &str,
+    timescale : &str,
+    comment : &str,
+    _dummy : u32,
+}
 
     fn vcd_header(version: &str, timescale: &str) -> VcdHeader {
         return VcdHeader{

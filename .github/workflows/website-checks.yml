@@ -178,6 +178,11 @@ jobs:
       # only our own /live/ is framed. Pure, no browser.
       - name: The BROWSER view
         run: npm run check:queen-browser
+      # The runner cabinet: the session token rides only in a header with
+      # credentials omitted, a runner token is shown once and kept nowhere, and
+      # the page has no field for a provider key. Pure, no browser.
+      - name: The runner cabinet
+        run: npm run check:queen-runners
       # What that identity is FOR. The owner's rule, 2026-09-20: only registered
       # people write to the Queen. The gate that holds it is the proxy's, not
       # this bundle's -- a rule shipped in a public bundle is a suggestion -- and
@@ -235,6 +240,14 @@ jobs:
       # the control is the only column with no absent field. Pure, no browser.
       - name: Passport figures
         run: npm run check:passport
+      # Every Queen tab shows one spec corpus: the manifest, the universe atlas,
+      # the shared core and the five spec-* ladders describe one scan; only
+      # src/lib/queenCorpus.ts reads the corpus files; the store fetches a part
+      # once for the whole window tree; a tab switch keeps spec= and world=.
+      # Each of those is also fed a broken fixture that must fail. Pure here;
+      # the same contract reads the built page below with --browser.
+      - name: Queen spec corpus is one corpus
+        run: npm run check:queen-spec-sync
       - name: Catalog generators
         run: npm run test:sync-skills && npm run test:sync-crons
       # The tiers, the touch minimum and the QA matrix come from
@@ -249,7 +262,7 @@ jobs:
       # the four consent constants from being edited into an instruction
       # addressed at somebody else's agent.
       - name: Agent onboarding spec
-        run: npm run check:onboarding
+        run: npm run check:onboarding && npm run test:onboarding-spec
       # The world scan's contract (specs/catalog/discovery.t27 through the compiler),
       # its pure decisions, and the manifest merge that must never touch a founding
       # source. The scan itself runs against GitHub in t27-world-scan.yml.
@@ -270,6 +283,13 @@ jobs:
       # are byte-for-byte current before Vite packages any of them.
       - name: Queen WARS experiment ledger
         run: npm run check:wars && npm run test:wars-spec
+
+      # The IGLA board on WARS: specs/queen/igla_board.t27 is generated in
+      # gHashTag/igla-coder-gpu from committed artifacts. The gate recompiles it,
+      # re-derives every McNemar p from its discordants, and proves the public
+      # .t27, JSON and TypeScript projections are current.
+      - name: IGLA board on WARS
+        run: npm run check:igla-board
 
       # LEVEL II on the ROADMAP tab: the raid, honey, bosses, cracks and the
       # round's pulse. The raid list is pinned here and in gHashTag/t27's
@@ -296,6 +316,15 @@ jobs:
         env:
           CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
         run: npm run check:queen-viewport -- --no-build
+
+      # The same contract on the built page: every Queen tab's root, the SPECS
+      # rung and the Explorer frame report one data-corpus-version, the manifest
+      # is fetched once between shell and frame, and world= in the shell's
+      # address narrows the frame to that world's count on the comb.
+      - name: Queen spec corpus, every tab
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
+        run: npm run check:queen-spec-sync -- --browser --no-build
 
       # Проверяет все маршруты в обеих локалях. Скрипты имеют собственные
       # самотесты и используют Chrome через CDP без новой зависимости npm.

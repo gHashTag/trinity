@@ -30,6 +30,8 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  # To start pr-blog-report.yml for the pull request this job opens (below).
+  actions: write
 
 jobs:
   scan:
@@ -73,6 +75,10 @@ jobs:
           node scripts/docs-from-specs.mjs
           npm run atlas -- scan --discovery "$RUNNER_TEMP/discovery.json" --out "$RUNNER_TEMP/atlas-report.json"
           npm run atlas -- build --report "$RUNNER_TEMP/atlas-report.json"
+          # onboarding.t27 states the corpus counts this refresh just moved. Write the manifest's
+          # into it, dated today, and regenerate /agents.t27 and /llms.txt from it, so the gate
+          # below compares a published document with the manifest it is published beside.
+          node scripts/onboarding-from-spec.mjs --sync
           node -e "const r=require('$RUNNER_TEMP/discovery.json');console.log('worlds: '+r.worlds.join(', ')+'; founding: '+r.founding.length+'; code search: '+r.codeSearch.status)" >> "$GITHUB_STEP_SUMMARY"
 
       # The same gates a PR runs on the catalog, against the tree about to be committed.
@@ -91,6 +97,14 @@ jobs:
           npm run check:agents
           npm run check:tools
           npm run check:docs
+          # onboarding.t27 states the corpus counts and the publish refuses them when they
+          # disagree with the manifest. #1176 refreshed the manifest without this check and
+          # t27.ai stopped publishing. The scan step now writes the counts (--sync), so this
+          # stops a refresh only for what the sync does not own: BACKENDS, a constant with no
+          # line to write, a value its declared type cannot hold.
+          npm run check:onboarding
+          # #1176 also vendored two gf16 ports that check:silicon requires to be classified.
+          npm run check:silicon
 
       # Ruleset 23148303 ("T27 mandatory work report") requires the status check
       # "T27 work report" on refs/heads/main and lists no bypass actors, so the
@@ -107,7 +121,7 @@ jobs:
           set -euo pipefail
           git config user.name  't27 world scan'
           git config user.email 'admin@t27.ai'
-          git add public/t27 public/skills public/crons public/agents public/tools public/functions public/docs qa/language-exceptions.json
+          git add public/t27 public/skills public/crons public/agents public/tools public/functions public/docs qa/language-exceptions.json specs/catalog/onboarding.t27 public/agents.t27 public/llms.txt
           if git diff --cached --quiet; then
             echo "- no change" >> "$GITHUB_STEP_SUMMARY"
             exit 0
@@ -138,6 +152,15 @@ jobs:
             PR=$(gh pr list --head "$BRANCH" --base main --state open --json number --jq '.[0].number // empty')
           fi
           echo "- pushed $BRANCH and opened/updated PR #$PR: $N" >> "$GITHUB_STEP_SUMMARY"
+          # The one required check, "T27 work report", is posted by
+          # pr-blog-report.yml on pull_request_target -- and an event caused by
+          # this job's GITHUB_TOKEN starts no workflow, so the refresh it opened
+          # sat BLOCKED with no report ever posted (PR #1176: 1737 specs, open
+          # while the site went on serving 1577). workflow_dispatch is the one
+          # event the token may start; the report job validates the body above
+          # against the head it reads from the API, as it would for a person.
+          gh workflow run pr-blog-report.yml --ref main -f pr="$PR"
+          echo "- started the work-report check for PR #$PR" >> "$GITHUB_STEP_SUMMARY"
           # Auto-merge lands it once "T27 work report" goes green. Without the
           # repository setting it stays an open pull request for a person to
           # merge, which is a worse outcome but not a failed run.
