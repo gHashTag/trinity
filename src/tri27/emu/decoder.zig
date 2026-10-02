@@ -131,7 +131,7 @@ pub fn decode(word: u32) Instruction {
 
     // Determine if instruction has immediate or src2
     const has_imm = switch (opcode) {
-        .LD, .ST, .LDI, .STI, .LD_IMM, .PHI_CONST, .PI_CONST, .E_CONST, .JMP, .JZ, .JNZ, .JGT, .JLT, .CALL, .RET, .SHL, .SHR, .STR_LOAD, .STR_CONCAT, .STR_PRINT, .FILE_READ, .FILE_WRITE, .FILE_EXISTS => true,
+        .LD, .ST, .LDI, .STI, .LD_IMM, .PHI_CONST, .PI_CONST, .E_CONST, .JMP, .JZ, .JNZ, .JGT, .JLT, .CALL, .RET, .SHL, .SHR, .SACR, .STR_LOAD, .STR_CONCAT, .STR_PRINT, .FILE_READ, .FILE_WRITE, .FILE_EXISTS => true,
         else => false,
     };
 
@@ -190,7 +190,7 @@ pub fn encode(inst: Instruction) u32 {
     };
 
     const has_imm = switch (inst.opcode) {
-        .LD, .ST, .LDI, .STI, .LD_IMM, .PHI_CONST, .PI_CONST, .E_CONST, .JMP, .JZ, .JNZ, .JGT, .JLT, .CALL, .RET, .SHL, .SHR, .STR_LOAD, .STR_CONCAT, .STR_PRINT, .FILE_READ, .FILE_WRITE, .FILE_EXISTS => true,
+        .LD, .ST, .LDI, .STI, .LD_IMM, .PHI_CONST, .PI_CONST, .E_CONST, .JMP, .JZ, .JNZ, .JGT, .JLT, .CALL, .RET, .SHL, .SHR, .SACR, .STR_LOAD, .STR_CONCAT, .STR_PRINT, .FILE_READ, .FILE_WRITE, .FILE_EXISTS => true,
         else => false,
     };
 
@@ -351,6 +351,27 @@ test "encoder: LDI roundtrip with positive 15-bit immediate" {
     try std.testing.expectEqual(@as(u8, 5), decoded.dst);
     try std.testing.expectEqual(@as(i16, 1000), decoded.immediate);
     try std.testing.expect(decoded.has_imm);
+}
+
+test "encoder: SACR roundtrip with every sacred operation mode" {
+    // The decoder must read the SACR mode from the immediate field, and the
+    // encoder must write it there; otherwise every decoded SACR runs mode 1.
+    for ([_]i16{ 1, 2, 3, 4 }) |mode| {
+        const inst = Instruction{
+            .opcode = .SACR,
+            .dst = 4,
+            .src1 = 1,
+            .immediate = mode,
+            .has_imm = true,
+        };
+        const word = encode(inst);
+        const decoded = decode(word);
+        try std.testing.expectEqual(Opcode.SACR, decoded.opcode);
+        try std.testing.expectEqual(@as(u8, 4), decoded.dst);
+        try std.testing.expectEqual(@as(u8, 1), decoded.src1);
+        try std.testing.expectEqual(mode, decoded.immediate);
+        try std.testing.expect(decoded.has_imm);
+    }
 }
 
 test "decoder: getOpcodeName" {

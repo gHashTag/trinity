@@ -125,11 +125,11 @@ pub fn runEmulator(tbin_path: []const u8, options: *const Options, allocator: st
     const Loader = @import("loader.zig");
     try Loader.load(&cpu, file_content, &[_]f64{});
 
-    const inst_count: u32 = @intCast((file_content.len - 10) / 4);
-    const code_sz: u32 = @intCast(file_content.len - 10);
+    const inst_count: u32 = @intCast((file_content.len - 12) / 4);
+    const code_sz: u32 = @intCast(file_content.len - 12);
 
     const load_result = .{
-        .entry_point = cpu.pc, // loader sets pc = 0
+        .entry_point = cpu.pc, // loader sets pc = 3 (word 3, the first instruction)
         .instruction_count = inst_count,
         .code_size = code_sz,
     };
