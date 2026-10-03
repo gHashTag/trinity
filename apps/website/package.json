@@ -96,6 +96,7 @@
     "test:sync-skills": "node --test scripts/sync-skills.test.mjs scripts/skills-core.test.mjs",
     "test:sync-crons": "node --test scripts/sync-crons.test.mjs",
     "check:agents": "node --experimental-strip-types qa/agents-spec-contract.mjs",
+    "check:providers": "node --experimental-strip-types qa/gonka-live-contract.mjs",
     "check:tools": "node --experimental-strip-types qa/tools-spec-contract.mjs",
     "check:tools-site": "node --experimental-strip-types qa/tools-site-contract.mjs",
     "check:tools-coverage": "node --experimental-strip-types qa/tools-coverage-contract.mjs",

@@ -93,6 +93,7 @@ const UI = {
     ladderAgents: 'Agents',
     ladderTools: 'Tools',
     ladderFunctions: 'Functions',
+    ladderProviders: 'Providers',
   },
   ru: {
     title: 'Обозреватель кронов',
@@ -159,6 +160,7 @@ const UI = {
     ladderAgents: 'Агенты',
     ladderTools: 'Инструменты',
     ladderFunctions: 'Функции',
+    ladderProviders: 'Провайдеры',
   },
 } as const
 
@@ -369,8 +371,9 @@ export default function CronExplorer() {
       { key: 'agents', label: ui.ladderAgents, count: l?.agents ?? null, href: `#/agents${embed}` },
       { key: 'tools', label: ui.ladderTools, count: l?.tools ?? null, href: `#/tools${embed}` },
       { key: 'functions', label: ui.ladderFunctions, count: l?.functions ?? null, href: `#/functions${embed}` },
+      { key: 'providers', label: ui.ladderProviders, count: l?.providers ?? null, href: `#/providers${embed}` },
     ]
-  }, [specs, embedded, ui.ladderSpecs, ui.ladderSkills, ui.ladderCrons, ui.ladderAgents, ui.ladderTools, ui.ladderFunctions])
+  }, [specs, embedded, ui.ladderSpecs, ui.ladderSkills, ui.ladderCrons, ui.ladderAgents, ui.ladderTools, ui.ladderFunctions, ui.ladderProviders])
 
   const box = panelBox(embedded)
   const showList = !phone || pane === 'list'
