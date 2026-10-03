@@ -17,7 +17,7 @@
 import { githubLogin } from './githubLogin.ts'
 
 /** How a commit reached its account; see `attribute` in the script. */
-export type CreditedVia = 'author' | 'pr' | 'committer' | 'name'
+export type CreditedVia = 'lane' | 'author' | 'pr' | 'committer' | 'name'
 
 /** One row: a GitHub account. Since 2026-10-02 nothing else is ever a row. */
 export interface SpecAuthor {
