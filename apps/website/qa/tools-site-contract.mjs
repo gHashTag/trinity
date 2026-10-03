@@ -19,11 +19,11 @@
 
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
-import { TOOLS_OUT, TOOL_WITNESSES } from '../scripts/agents-from-specs.mjs'
+import { readToolCatalog, TOOL_WITNESSES } from '../scripts/agents-from-specs.mjs'
 import { WITNESS_LABEL } from '../src/lib/agentSpecs.ts'
 import { normalizeToolId, resolveTool, toolExplorerHash } from '../src/lib/toolsCatalog.ts'
 
-const catalog = JSON.parse(readFileSync(TOOLS_OUT, 'utf8'))
+const catalog = readToolCatalog()
 assert.ok(catalog.tools.length > 0, 'the tools catalog is empty — nothing here would be checked')
 
 for (const w of TOOL_WITNESSES) {

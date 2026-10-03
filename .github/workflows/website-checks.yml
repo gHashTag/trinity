@@ -127,6 +127,16 @@ jobs:
       # memory only; whoami never carries X-Agent-Key. Pure, no browser.
       - name: TRI identity
         run: npm run check:tri-identity
+      # The TOKEN tab counts TRI by the leaderboard (owner, 2026-10-03): spec
+      # commits per author plus accepted .t27 specs per lane, times the
+      # ledger's rate, one row per GitHub account. Pure, no browser.
+      - name: TRI board
+        run: npm run check:tri-board
+      # MINE TRI on the landing: the "Copy to agent" prompt says testnet, no
+      # price, NOT trustless, asks the human before a PR and never prints a
+      # rate the ledger did not state; the block reads its figures. Pure.
+      - name: TRI mine
+        run: npm run check:tri-mine
       # The Queen's kanban grew a second lane, and it is the first thing on that
       # page that differs per person. Signed in, it asks the hive for the
       # clients this visitor answers for — on the game token, one identity
@@ -385,6 +395,14 @@ jobs:
           CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
         run: npm run check:explorer-viewport -- --no-build
 
+      # Real touch events through CDP on the built board: a tap selects a unit,
+      # a drag pans, two fingers zoom. It exits 2 (NOT MEASURED) when the page
+      # does not answer a probe in 20 s, which on a runner is a failure too.
+      - name: Queen touch contract
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
+        run: npm run check:queen-touch -- --no-build
+
       # A51: four PRs merged, every check green, and the live site changed
       # nothing -- this app deploys from a second repository that holds build
       # output only, copied there by hand. Every check above runs against the
@@ -397,3 +415,12 @@ jobs:
       - name: Is the live site this build?
         continue-on-error: true
         run: npm run check:deployed
+
+      # Last, because it rebuilds dist/ against an address that refuses every
+      # connection: with the API dead, no tile may show a bare number and the
+      # pill may never read LIVE. It went red on main and nobody saw,
+      # because only a person running it by hand on a laptop could.
+      - name: Queen with a dead API
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
+        run: npm run check:queen-dead-api

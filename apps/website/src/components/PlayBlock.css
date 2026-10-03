@@ -104,3 +104,109 @@
     line-height: 44px;
   }
 }
+
+/* MINE TRI (TriMineBlock.tsx): the token's live figures and the "Copy to
+   agent" button. It is the same section family as the four moves above it, so
+   it lives in this sheet and on the same ground. */
+.play-block-head .tri-mine-status {
+  color: #ffd45a;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+}
+
+.tri-mine-stats {
+  margin: 0;
+}
+
+.tri-mine-stats > div {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.tri-mine-stats dt {
+  color: #a8c1ba;
+  font-size: 0.82rem;
+}
+
+.tri-mine-stats dd {
+  margin: 0;
+  color: #00ff88;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: clamp(1.3rem, 2.6vw, 1.7rem);
+}
+
+.tri-mine-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.8rem 1.4rem;
+}
+
+.tri-mine-copy {
+  min-height: 44px;
+  padding: 0 1.3rem;
+  border: 1px solid #00ff88;
+  border-radius: 10px;
+  background: #00ff88;
+  color: #020605;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+
+.tri-mine-copy:hover,
+.tri-mine-copy:focus-visible {
+  background: #5dffb1;
+}
+
+.tri-mine-actions a {
+  color: #00ff88;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(0, 255, 136, 0.4);
+}
+
+.tri-mine-hint {
+  margin: 0;
+  color: #a8c1ba;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  max-width: 68ch;
+}
+
+.tri-mine-prompt summary {
+  color: #ffd45a;
+  cursor: pointer;
+  min-height: 44px;
+  line-height: 44px;
+}
+
+.tri-mine-prompt pre {
+  margin: 0.4rem 0 0;
+  padding: 1rem;
+  max-height: 22rem;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: #000;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  color: #d8e8e2;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  user-select: text;
+}
+
+@media (pointer: coarse) {
+  .tri-mine-actions a {
+    display: inline-block;
+    min-height: 44px;
+    line-height: 44px;
+  }
+}

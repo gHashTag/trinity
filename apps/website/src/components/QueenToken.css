@@ -1,9 +1,15 @@
 /* TOKEN: the facts strip and the testnet label. Rows reuse QueenPeople.css;
    grounds are veiled and blurred as qa/queen-contrast-contract.mjs requires. */
+/* The view owns its scroll and its ground, as .ql does: the body clips what
+   overflows it, so a .qt that only centred itself cut the board off below the
+   first screen on a phone (986px of content in 531px, no way to reach WHO
+   EARNED IT), and the hive's cells showed through the words above it. */
 .qt {
-  max-width: 880px;
-  margin: 0 auto;
-  padding: 16px;
+  height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 16px max(16px, calc((100% - 880px) / 2)) 48px;
+  background: radial-gradient(ellipse at top, #06140d 0%, #020806 70%);
 }
 .qt-head h2 {
   margin: 0 0 6px;

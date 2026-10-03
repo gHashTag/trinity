@@ -23,13 +23,13 @@ import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
-import { generate, TOOLS_OUT, AGENTS_OUT, SKILLS_OUT, TOOL_SPEC_DIR, TOOL_SPEC_SUBDIRS, TOOL_FAMILIES, TOOL_WITNESSES, TOOL_SCHEMA, TOOL_REPO_OF_SUBDIR, summarySourceOf } from '../scripts/agents-from-specs.mjs'
+import { generate, readToolCatalog, TOOLS_OUT, AGENTS_OUT, SKILLS_OUT, TOOL_SPEC_DIR, TOOL_SPEC_SUBDIRS, TOOL_FAMILIES, TOOL_WITNESSES, TOOL_SCHEMA, TOOL_REPO_OF_SUBDIR, summarySourceOf } from '../scripts/agents-from-specs.mjs'
 import { canonicalSpecEditUrl, vendoredSpecUrl } from '../src/lib/agentSpecs.ts'
 import { MODULES } from '../src/lib/queenModules.ts'
 import { HUD_VIEWS, HUD_KEYS } from '../src/components/queenHud.ts'
 
 const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex')
-const tools = JSON.parse(readFileSync(TOOLS_OUT, 'utf8'))
+const tools = readToolCatalog()
 const agents = JSON.parse(readFileSync(AGENTS_OUT, 'utf8'))
 const skills = JSON.parse(readFileSync(SKILLS_OUT, 'utf8'))
 const CYRILLIC = /[\u0400-\u04ff]/
@@ -43,7 +43,7 @@ assert.equal(tools.compilerWasmSha256, sha256(readFileSync('public/t27/t27_compi
 
 // 2. Exactly the vendored files, one card each; the three corpus specs at the top of specs/tools/ are not cards.
 const vendored = TOOL_SPEC_SUBDIRS.flatMap((sub) => readdirSync(join('public/t27/files', TOOL_SPEC_DIR, sub)).filter((f) => f.endsWith('.t27')).map((f) => `${TOOL_SPEC_DIR}/${sub}/${f}`)).sort()
-assert.deepEqual(tools.tools.map((t) => t.specPath).sort(), vendored, 'the catalog is exactly the vendored specs/tools/{tri,mcp,trinity/tri} files')
+assert.deepEqual(tools.tools.map((t) => t.specPath).sort(), vendored, 'the catalog is exactly the vendored specs/tools/{tri,mcp,trinity/tri,trios/tri} files')
 assert.ok(tools.tools.length >= 50, `${tools.tools.length} tool cards; the tri CLI alone has more than 50 commands`)
 const ids = new Set(tools.tools.map((t) => t.id))
 assert.equal(ids.size, tools.tools.length, 'duplicate tool ids')
@@ -64,7 +64,7 @@ for (const t of tools.tools) {
   assert.equal(t.discarded, 0)
   assert.equal(t.fields.KIND, 'tool')
   assert.equal(t.fields.ID, t.id)
-  const pm = new RegExp(`^${TOOL_SPEC_DIR}/(tri|mcp|trinity/tri)/([^/]+)\\.t27$`).exec(t.specPath)
+  const pm = new RegExp(`^${TOOL_SPEC_DIR}/(tri|mcp|trinity/tri|trios/tri)/([^/]+)\\.t27$`).exec(t.specPath)
   assert.ok(pm, `${t.id}: ${t.specPath} is not under a tools sub-directory`)
   const [, sub, base] = pm
   assert.equal(t.family, TOOL_FAMILIES[sub])
@@ -75,10 +75,11 @@ for (const t of tools.tools) {
   assert.equal(t.fields.SCHEMA, TOOL_SCHEMA)
   assert.equal(t.repo, sub === 'mcp' ? t.fields.REPO : TOOL_REPO_OF_SUBDIR[sub])
   assert.equal(t.fields.REPO, t.repo)
-  const shortId = `${sub === 'trinity/tri' ? 'tri' : sub}/${base}`
+  const qualifiedOnly = sub === 'trinity/tri' || sub === 'trios/tri'
+  const shortId = `${qualifiedOnly ? 'tri' : sub}/${base}`
   assert.equal(t.qualifiedId, `${t.repo}:${shortId}`)
   assert.equal(t.fields.QUALIFIED_ID, t.qualifiedId)
-  if (sub === 'trinity/tri') assert.equal(t.id, t.qualifiedId, `${t.id}: a Trinity card is qualified only`)
+  if (qualifiedOnly) assert.equal(t.id, t.qualifiedId, `${t.id}: a Trinity or trios card is qualified only`)
   else { assert.equal(t.id, shortId); assert.equal(tools.legacy[t.id], t.qualifiedId, `${t.id}: the legacy table must map it`) }
   assert.ok(TOOL_WITNESSES.includes(t.witness), `${t.id}: witness ${t.witness}`)
   assert.equal(t.witness, t.fields.WITNESS)
@@ -123,6 +124,20 @@ for (const t of tools.tools) {
     assert.deepEqual(t.skills, [], `${t.id}: skills name the t27 tri, never a Trinity command`)
     assert.equal(t.links.config, null)
     if (t.collidesWith) { assert.ok(ids.has(t.collidesWith.split(':')[1]), `${t.id}: COLLIDES_WITH ${t.collidesWith} names no t27 card`); assert.ok(tools.collisions.some((c) => c.trinity === t.id), `${t.id}: collision not in the table`) }
+  } else if (t.family === 'tri-cli' && sub === 'trios/tri') {
+    assert.equal(t.repo, 'gHashTag/BrowserOS')
+    assert.equal(t.command, `tri ${base}`)
+    assert.equal(t.fields.COMMAND, t.command)
+    assert.equal(t.fields.SOURCE, 'trios/bin/tri')
+    assert.equal(t.witness, 'source-parse', `${t.id}: a trios card is read from the source, not run`)
+    assert.match(t.links.pinnedAt, /^[0-9a-f]{40}$/, `${t.id}: a trios card pins a full commit`)
+    assert.ok(t.witnessSource.includes(t.links.pinnedAt), `${t.id}: WITNESS_SOURCE names the pinned commit`)
+    assert.ok(t.trios.dispatch.length > 0, `${t.id}: DISPATCH empty`)
+    assert.ok(!HOME_PATH.test(t.trios.dispatch), `${t.id}: DISPATCH carries a home path`)
+    assert.equal(t.trios.documented, t.trios.helpLine.length > 0, `${t.id}: DOCUMENTED must agree with HELP_LINE`)
+    assert.deepEqual(t.skills, [])
+    assert.equal(t.links.config, null)
+    assert.ok(t.whenToUse.length > 0, `${t.id}: WHEN_TO_USE empty`)
   } else if (t.family === 'tri-cli') {
     assert.equal(t.repo, 'gHashTag/t27')
     assert.equal(t.links.pinnedAt, tools.pin.ref, `${t.id}: t27 links pin to the catalog ref`)

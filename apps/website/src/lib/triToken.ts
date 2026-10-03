@@ -6,14 +6,19 @@
 // - the cap, what has been minted, the epoch and the signer quorum come from
 //   the minter's own `get_tri_state` get-method, so the page cannot disagree
 //   with the contract that enforces them;
-// - who has earned what comes from the Queen's `/queen/public-earnings`, the
-//   ledger the signers themselves check before they sign a mint.
+// - who has earned what is counted by the leaderboard (owner, 2026-10-03):
+//   its two reads, summed in lib/triBoard.ts, at the rate the Queen's
+//   `/queen/public-earnings` ledger states. `readTriCounts` is that one read,
+//   for the TOKEN tab and the landing alike.
 //
 // The one thing a chain cannot answer is how many base units make one TRI: the
 // jetton's metadata is where wallets read that, and it says 3 (t27.ai
 // /tri/jetton.json, the minter's `content`). It is written once, below.
 
 import { QUEEN_API } from './queenApi'
+import { readLeaderboard, type Leaderboard } from './leaderboard'
+import { readSpecAuthors, type SpecAuthors } from './queenPeople'
+import { triBoard, validRate, type TriBoard } from './triBoard'
 
 /** The only minter there is. TESTNET: there is no mainnet TRI. */
 export const TRI_MINTER = 'kQBtPS1btdHCml1vunIhNIBRRS-pfXggMWVbiLhrsvGjbX8X'
@@ -62,41 +67,6 @@ export interface TriEarnings {
   recent?: TriEarning[]
 }
 
-/** The same check the leaderboards make: a login becomes an `href`. */
-const GITHUB_LOGIN = /^[a-zA-Z\d](?:[a-zA-Z\d]|-(?=[a-zA-Z\d])){0,38}$/
-export const githubOf = (earner: TriEarner): string | null =>
-  earner.github && GITHUB_LOGIN.test(earner.github) ? earner.github : null
-
-/**
- * The board's ranking: one row per GitHub account, nothing else. Earnings on a
- * lane nobody has tied to an account are summed into `unclaimed` - counted,
- * never drawn as a person (owner, 2026-10-02: rank by GitHub names).
- */
-export function rankByGithub(earners: TriEarner[]): {
-  rows: Array<{ login: string; earned: number; revoked: number }>
-  unclaimed: { earned: number; revoked: number }
-} {
-  const byLogin = new Map<string, { login: string; earned: number; revoked: number }>()
-  const unclaimed = { earned: 0, revoked: 0 }
-  for (const earner of earners) {
-    const login = githubOf(earner)
-    if (!login) {
-      unclaimed.earned += earner.earned
-      unclaimed.revoked += earner.revoked
-      continue
-    }
-    const key = login.toLowerCase()
-    const row = byLogin.get(key) ?? { login, earned: 0, revoked: 0 }
-    row.earned += earner.earned
-    row.revoked += earner.revoked
-    byLogin.set(key, row)
-  }
-  const rows = [...byLogin.values()].sort(
-    (a, b) => b.earned - a.earned || b.revoked - a.revoked || a.login.localeCompare(b.login),
-  )
-  return { rows, unclaimed }
-}
-
 /** `27000n` mTRI -> `"27"`; `1500n` -> `"1.5"`. Exact, no float on the way. */
 export function formatTri(mtri: bigint): string {
   const unit = BigInt(MTRI_PER_TRI)
@@ -141,3 +111,36 @@ export async function readEarnings(signal?: AbortSignal): Promise<TriEarnings | 
   if (!res.ok) throw new Error(`queen ${res.status}`)
   return (await res.json()) as TriEarnings
 }
+
+/** What the TRI board is counted from: the leaderboard's two reads and the rate. */
+export interface TriCounts {
+  authors: SpecAuthors
+  lanes: Leaderboard
+  /** The ledger's rate; null when the ledger could not say, or said something
+   *  validRate refuses. Gated here, at the one read, so no caller can show it. */
+  triPerSpec: number | null
+}
+
+/**
+ * Both counts are required: a board built from half of them would rank the
+ * other road's people at zero. The rate is not: without it the units still
+ * stand, and the TRI is shown as unknown.
+ */
+export async function readTriCounts(signal?: AbortSignal): Promise<TriCounts> {
+  const [authors, lanes, triPerSpec] = await Promise.all([
+    readSpecAuthors(signal),
+    readLeaderboard(QUEEN_API, signal),
+    readEarnings(signal).then(
+      (e) => {
+        const rate: unknown = e?.triPerSpec
+        return validRate(rate) ? rate : null
+      },
+      () => null,
+    ),
+  ])
+  return { authors, lanes, triPerSpec }
+}
+
+/** The board those counts make: the one call both the tab and the landing use. */
+export const boardOf = ({ authors, lanes, triPerSpec }: TriCounts): TriBoard =>
+  triBoard(authors.people, lanes.contributors, triPerSpec, authors.unattributed?.commits ?? 0)

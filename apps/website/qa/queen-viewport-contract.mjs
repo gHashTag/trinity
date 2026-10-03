@@ -395,7 +395,10 @@ const PROBE = (phone) => `(() => {
   };
   // 9. Bare numbers where the feeding endpoint may be silent. Asserted only in
   // --dead-api mode; collected always so a live run can print them.
-  const ZERO_SEL = '#stat-bees,#stat-accepted,#stat-verdicts,#stat-research,#stat-foundry,' +
+  // #stat-research is not here: since #1058 it counts the .t27 corpus index,
+  // which ships with the page itself, so a dead API leaves it TRUE. Listing it
+  // made this probe fail on an honest number (52% with the API refused).
+  const ZERO_SEL = '#stat-bees,#stat-accepted,#stat-verdicts,#stat-foundry,' +
     '.queen27-sectors-count,.queen27-column > header > span,.queen27-map-sector header b,' +
     '.queen27-hud-sector-text dd,.queen27-context-stats dd';
   const zeros = [];

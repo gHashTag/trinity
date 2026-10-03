@@ -26,4 +26,17 @@ assert.match(page,/className="queen27-hud-more"/,'The board owns its "more" butt
 const pageCss=readFileSync('src/pages/Queen.css','utf8');
 assert.match(pageCss,/\.is-bare \.queen27-hud-viewport > :is\(\.queen27-hud-top,/,'Bare hides the panels that live inside the viewport');
 assert.match(pageCss,/\.is-bare:not\(\.is-tools\) \.queen27-hud-vp-head > :not\(\.queen27-hud-vp-title\)/,'A calm head shows the sector name only');
-console.log('Responsive contract: PASS (pointer state machine, flow layout, readable controls, single context, calm bare mode)');
+// The floating head may cover only the map: every other view's title sat under
+// "SECTOR: ..." on the phone (owner, 2026-10-03).
+assert.match(pageCss,/\.is-bare:not\(\[data-view="comb"\]\) \.queen27-hud-viewport > \.queen27-hud-vp-body \{\s*padding-top: 52px;/,'Off the map the body starts below the floating head and the "more" button');
+// On a phone a people row is two tiers: the count under the name, not a column
+// as wide as its longest line squeezing the name to one word.
+const peopleCss=readFileSync('src/components/QueenPeople.css','utf8');
+const phone=peopleCss.slice(peopleCss.indexOf('@media (max-width: 760px)'));
+assert.match(phone,/\.qp-row \{\s*grid-template-columns: 22px 32px minmax\(0, 1fr\);/,'A phone people row has three columns');
+assert.match(phone,/\.qp-commits \{\s*grid-column: 3;\s*white-space: normal;/,'The count wraps under the name');
+// TOKEN owns its scroll and its ground like LEADERBOARD: the body clips, so a
+// view without its own overflow cut WHO EARNED IT off below the first screen.
+const tokenCss=readFileSync('src/components/QueenToken.css','utf8');
+assert.match(tokenCss,/\.qt \{[^}]*height: 100%;[^}]*overflow-y: auto;[^}]*background:/,'The token view scrolls itself over a ground of its own');
+console.log('Responsive contract: PASS (pointer state machine, flow layout, readable controls, single context, calm bare mode, titles clear of the head)');

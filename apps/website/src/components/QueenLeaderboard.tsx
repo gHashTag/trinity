@@ -13,45 +13,10 @@
 
 import { useEffect, useState } from 'react'
 import { QUEEN_API } from '../lib/queenApi'
+import { laneLogin, readLeaderboard, type Leaderboard } from '../lib/leaderboard'
 import QueenPeople from './QueenPeople'
 import QueenRunners from './QueenRunners'
 import './QueenLeaderboard.css'
-
-interface Contributor {
-  name: string
-  claimed: boolean
-  /** Their GitHub login, when the operator signed the lane as `@login`. */
-  github?: string
-  /** The lanes ran on the lender's own machine: a runner, named by Telegram. */
-  runner?: boolean
-  keys: number[]
-  accepted: number
-  /** Accepted issues whose boundary named a .t27 file: the game's own goal. */
-  specs?: number
-  finished: number
-  hours: number
-  xp: number
-}
-
-/**
- * A GitHub login, checked again here rather than trusted from the wire.
- *
- * The server already refuses anything that is not one, and this is the second
- * lock on the same door: the value ends up in an `href` and an `<img src>`, and
- * a page that trusts a remote string to build a profile link is a page that can
- * be pointed at somebody else's account by whoever can write that string.
- */
-const GITHUB_LOGIN = /^[a-zA-Z\d](?:[a-zA-Z\d]|-(?=[a-zA-Z\d])){0,38}$/
-const loginOf = (row: Contributor) =>
-  row.github && GITHUB_LOGIN.test(row.github) ? row.github : null
-
-interface Board {
-  /** The window in days, or null for the whole record. */
-  days: number | null
-  measuredAt: string
-  scoring: { acceptedXp: number; specXp?: number; hourXp: number }
-  contributors: Contributor[]
-}
 
 export interface LeaderboardCopy {
   title: string
@@ -123,13 +88,12 @@ const fmt = (n: number) => n.toLocaleString('en-US')
 
 export default function QueenLeaderboard({ lang }: { lang: 'en' | 'ru' }) {
   const c = LEADERBOARD_COPY[lang === 'ru' ? 'ru' : 'en']
-  const [board, setBoard] = useState<Board | null | 'failed'>(null)
+  const [board, setBoard] = useState<Leaderboard | null | 'failed'>(null)
 
   useEffect(() => {
     let live = true
-    fetch(`${QUEEN_API}/queen/public-leaderboard`, { credentials: 'omit' })
-      .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
-      .then((data: Board) => {
+    readLeaderboard(QUEEN_API)
+      .then((data) => {
         if (live) setBoard(data)
       })
       .catch(() => live && setBoard('failed'))
@@ -178,7 +142,7 @@ export default function QueenLeaderboard({ lang }: { lang: 'en' | 'ru' }) {
       ) : (
         <ol className="ql-rows">
           {board.contributors.map((row, i) => {
-            const login = loginOf(row)
+            const login = laneLogin(row)
             return (
               <li key={`${row.runner ? 'r' : 'k'}${row.keys[0]}`} className={`ql-row${row.claimed ? '' : ' is-unclaimed'}`}>
                 <span className="ql-rank">{i + 1}</span>

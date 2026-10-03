@@ -81,19 +81,51 @@ export const AGENTS_OUT = 'public/agents/spec-agents.json'
 // Layer 5: the tri CLI and the MCP servers (specs/tools/tri/*.t27, specs/tools/mcp/*.t27).
 // The three corpus specs at the top of specs/tools/ are not tool cards and are not read.
 export const TOOL_SPEC_DIR = 'specs/tools'
-export const TOOL_SPEC_SUBDIRS = ['tri', 'mcp', 'trinity/tri']
+export const TOOL_SPEC_SUBDIRS = ['tri', 'mcp', 'trinity/tri', 'trios/tri']
 export const TOOLS_OUT = 'public/tools/spec-tools.json'
-export const TOOL_FAMILIES = { tri: 'tri-cli', mcp: 'mcp', 'trinity/tri': 'tri-cli' }
+// The trios loop tri has ~300 commands; their cards are written beside the catalog so that
+// neither file passes the repository's 1 MB commit limit. The catalog names each part with
+// the sha256 of its card list; readToolCatalog() (and loadToolSpecs() on the site) join them.
+export const TOOLS_PARTS = [{ repo: 'gHashTag/BrowserOS', path: 'public/tools/spec-tools-trios.json' }]
+
+export function splitToolCatalog(tools) {
+  const moved = new Set(TOOLS_PARTS.map((p) => p.repo))
+  const parts = TOOLS_PARTS.map(({ repo, path }) => {
+    const list = tools.tools.filter((t) => t.repo === repo)
+    return { path, body: { version: 1, repo, tools: list }, sha256: sha256(JSON.stringify(list)), count: list.length }
+  })
+  const main = { ...tools, tools: tools.tools.filter((t) => !moved.has(t.repo)), parts: parts.map(({ path, sha256: h, count }) => ({ path: path.replace(/^public\//, ''), sha256: h, count })) }
+  return { main, parts }
+}
+
+// main: the parsed spec-tools.json; bodyOf(path): the parsed part named by main.parts[i].path.
+export function joinToolCatalog(main, bodyOf) {
+  const { parts = [], ...rest } = main
+  const extra = parts.flatMap((p) => {
+    const list = bodyOf(p.path)?.tools
+    if (!Array.isArray(list) || list.length !== p.count || sha256(JSON.stringify(list)) !== p.sha256) throw new Error(`${p.path} does not match the part named by ${TOOLS_OUT}; run node scripts/agents-from-specs.mjs`)
+    return list
+  })
+  return { ...rest, tools: [...rest.tools, ...extra].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)) }
+}
+
+export function readToolCatalog(root = SITE) {
+  const read = (rel) => JSON.parse(readFileSync(join(root, rel), 'utf8'))
+  return joinToolCatalog(read(TOOLS_OUT), (path) => read(`public/${path}`))
+}
+export const TOOL_FAMILIES = { tri: 'tri-cli', mcp: 'mcp', 'trinity/tri': 'tri-cli', 'trios/tri': 'tri-cli' }
 // Witnesses (specs/tools/catalog.t27): source-parse (read from the source at a named commit),
 // registry-export (read from an artifact the binary itself exported and CI holds to the binary),
 // help-output (diffed against the binary's --help), runtime (an invocation recorded). The
 // generator never upgrades a witness.
 export const TOOL_WITNESSES = ['source-parse', 'registry-export', 'help-output', 'runtime']
-export const TOOL_REPOS = ['gHashTag/t27', 'gHashTag/trinity']
+export const TOOL_REPOS = ['gHashTag/t27', 'gHashTag/trinity', 'gHashTag/BrowserOS']
 // Schema 2 (specs/tools/catalog.t27): every card carries REPO, QUALIFIED_ID (<owner>/<repo>:<family>/<name>)
 // and SCHEMA = 2; a legacy card keeps its short ID, a card under trinity/tri has ID = QUALIFIED_ID.
 export const TOOL_SCHEMA = 2
-export const TOOL_REPO_OF_SUBDIR = { tri: 'gHashTag/t27', 'trinity/tri': 'gHashTag/trinity' }
+export const TOOL_REPO_OF_SUBDIR = { tri: 'gHashTag/t27', 'trinity/tri': 'gHashTag/trinity', 'trios/tri': 'gHashTag/BrowserOS' }
+// Subdirectories whose cards carry the repository-qualified ID only (another program also called tri).
+const QUALIFIED_ONLY = new Set(['trinity/tri', 'trios/tri'])
 export const CATALOG_SPEC_DIRS = new Set([SKILL_SPEC_DIR, CRON_SPEC_DIR, AGENT_SPEC_DIR, TOOL_SPEC_DIR])
 export const EXPERIENCE_PATH = 'public/agents/experience.json'
 export const AGENT_LAYERS = ['Archetypal', 'Spiritual', 'Physical']
@@ -273,6 +305,12 @@ const TOOL_TRINITY_TRI_REQUIRED = {
   ...TOOL_TRI_REQUIRED, REPO: 'str', QUALIFIED_ID: 'str', SCHEMA: 'u32', ROUTED: 'bool', ROUTE_KIND: 'str', ROUTE_NOTE: 'str',
   ALIASES: 'arr', NAMESPACE: 'str', MODE: 'str', STABILITY: 'str', CATEGORY: 'str', JOB_TIMEOUT: 'u32', SIDE_EFFECTS: 'arr', CAPABILITIES: 'arr',
   MCP_ENABLED: 'bool', MCP_NAME: 'str', MCP_DISPLAY_NAME: 'str', EXAMPLES: 'arr', EXIT_CODES: 'arr', RESULT: 'str', COLLIDES_WITH: 'str', WITNESS_SOURCE: 'str',
+}
+// A card of the trios loop CLI (specs/tools/trios/tri/<command>.t27), written by
+// scripts/tools-from-trios-tri.mjs from gHashTag/BrowserOS:trios/bin/tri at SOURCE_COMMIT.
+const TOOL_TRIOS_TRI_REQUIRED = {
+  ...TOOL_TRI_REQUIRED, REPO: 'str', QUALIFIED_ID: 'str', SCHEMA: 'u32', SOURCE_COMMIT: 'str', ROUTED: 'bool', DISPATCH: 'str',
+  DOCUMENTED: 'bool', HELP_LINE: 'str', CATEGORY: 'str', WITNESS_SOURCE: 'str',
 }
 const TOOL_ROUTE_KINDS = ['execute_map', 'parse_command', 'main_chain', 'cell_map', 'none']
 const INT_MAX = { u8: 0xff, u16: 0xffff, u32: 0xffffffff }
@@ -679,29 +717,35 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], func
   // is what the spec says it is (`source-parse` = read from the source, `help-output`
   // = diffed against `tri --help`); the generator does not upgrade it.
   const tools = []
+  // A trios/tri card's other constants are already lifted onto the entry (trios, args, actions,
+  // variant, entry, links.pinnedAt, witnessSource) and the .t27 itself is served at specPath;
+  // repeating them under fields for ~300 cards would push its part past the 1 MB commit limit.
+  const TRIOS_KEPT_FIELDS = ['ID', 'KIND', 'FAMILY', 'REPO', 'QUALIFIED_ID', 'SCHEMA', 'COMMAND', 'SOURCE', 'ABOUT', 'ABOUT_SOURCE', 'AGENTS', 'AGENTS_NOTE', 'WHEN_TO_USE', 'WITNESS', 'ENABLED']
+  const slimFields = (f) => Object.fromEntries(TRIOS_KEPT_FIELDS.filter((k) => k in f).map((k) => [k, f[k]]))
   const seenTool = new Map()
   const seenLetter = new Map(agents.map((a) => [a.letter, a]))
   for (const t of toolSpecs) {
     const file = t.path
-    const m = /^specs\/tools\/(tri|mcp|trinity\/tri)\/([^/]+)\.t27$/.exec(file)
-    if (!m) { problems.push(`${file}: a tool spec must live in specs/tools/tri/, specs/tools/mcp/ or specs/tools/trinity/tri/`); continue }
+    const m = /^specs\/tools\/(tri|mcp|trinity\/tri|trios\/tri)\/([^/]+)\.t27$/.exec(file)
+    if (!m) { problems.push(`${file}: a tool spec must live in specs/tools/tri/, specs/tools/mcp/, specs/tools/trinity/tri/ or specs/tools/trios/tri/`); continue }
     const [, sub, base] = m
     if (!t.verdict.typecheckOk || t.verdict.discarded > 0 || !t.verdict.hirOk) problems.push(`${file}: compiler verdict not clean (${JSON.stringify(t.verdict)})`)
-    const [required, optional] = sub === 'tri' ? [TOOL_TRI_REQUIRED, TOOL_TRI_SCHEMA2_OPTIONAL] : sub === 'mcp' ? [TOOL_MCP_REQUIRED, TOOL_MCP_SCHEMA2_OPTIONAL] : [TOOL_TRINITY_TRI_REQUIRED, {}]
+    const [required, optional] = sub === 'tri' ? [TOOL_TRI_REQUIRED, TOOL_TRI_SCHEMA2_OPTIONAL] : sub === 'mcp' ? [TOOL_MCP_REQUIRED, TOOL_MCP_SCHEMA2_OPTIONAL] : sub === 'trios/tri' ? [TOOL_TRIOS_TRI_REQUIRED, {}] : [TOOL_TRINITY_TRI_REQUIRED, {}]
     problems.push(...checkSchema(t.consts, required, optional, file))
     const f = plain(t.consts)
     if (f.KIND !== 'tool') problems.push(`${file}: KIND must be "tool"`)
     if (f.FAMILY !== TOOL_FAMILIES[sub]) problems.push(`${file}: FAMILY must be ${JSON.stringify(TOOL_FAMILIES[sub])} under ${sub}/, is ${JSON.stringify(f.FAMILY)}`)
     // Identity (specs/tools/catalog.t27): a legacy card keeps ID = <family>/<name> and, at schema 2,
     // QUALIFIED_ID = REPO:ID; a card under trinity/tri has ID = QUALIFIED_ID = gHashTag/trinity:tri/<name>.
-    const shortId = `${sub === 'trinity/tri' ? 'tri' : sub}/${base}`
+    const shortId = `${QUALIFIED_ONLY.has(sub) ? 'tri' : sub}/${base}`
     const repo = sub === 'mcp' ? f.REPO : (f.REPO ?? TOOL_REPO_OF_SUBDIR[sub])
     const qualifiedId = `${repo}:${shortId}`
-    const expectId = sub === 'trinity/tri' ? qualifiedId : shortId
+    const expectId = QUALIFIED_ONLY.has(sub) ? qualifiedId : shortId
     if (f.ID !== expectId) problems.push(`${file}: ID must be ${expectId}, is ${JSON.stringify(f.ID)}`)
     if (sub !== 'mcp' && f.REPO !== undefined && f.REPO !== TOOL_REPO_OF_SUBDIR[sub]) problems.push(`${file}: REPO must be ${TOOL_REPO_OF_SUBDIR[sub]} under ${sub}/, is ${JSON.stringify(f.REPO)}`)
     if (f.SCHEMA !== undefined && f.SCHEMA !== TOOL_SCHEMA) problems.push(`${file}: SCHEMA must be ${TOOL_SCHEMA}, is ${JSON.stringify(f.SCHEMA)}`)
     if (f.QUALIFIED_ID !== undefined && f.QUALIFIED_ID !== qualifiedId) problems.push(`${file}: QUALIFIED_ID must be ${qualifiedId} (REPO:ID), is ${JSON.stringify(f.QUALIFIED_ID)}`)
+    if (sub === 'trios/tri' && !/^[0-9a-f]{40}$/.test(f.SOURCE_COMMIT ?? '')) problems.push(`${file}: SOURCE_COMMIT must be a full 40-hex commit of ${TOOL_REPO_OF_SUBDIR[sub]}`)
     if (sub === 'trinity/tri') {
       if (f.SCHEMA === undefined || f.QUALIFIED_ID === undefined || f.REPO === undefined) problems.push(`${file}: a trinity/tri card must carry REPO, QUALIFIED_ID and SCHEMA`)
       if (!TOOL_ROUTE_KINDS.includes(f.ROUTE_KIND)) problems.push(`${file}: ROUTE_KIND ${JSON.stringify(f.ROUTE_KIND)} is not one of ${TOOL_ROUTE_KINDS.join('|')}`)
@@ -722,7 +766,7 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], func
     if (letters.length === 0 && !(typeof f.AGENTS_NOTE === 'string' && f.AGENTS_NOTE.trim())) problems.push(`${file}: empty AGENTS needs an AGENTS_NOTE`)
     const same = (a, b, na, nb) => { if (Array.isArray(f[a]) && Array.isArray(f[b]) && f[a].length !== f[b].length) problems.push(`${file}: ${na} has ${f[a].length} entries, ${nb} has ${f[b].length}`) }
     let card
-    if (sub === 'tri' || sub === 'trinity/tri') {
+    if (sub === 'tri' || QUALIFIED_ONLY.has(sub)) {
       if (f.COMMAND !== `tri ${base}`) problems.push(`${file}: COMMAND must be "tri ${base}", is ${JSON.stringify(f.COMMAND)}`)
       same('ACTIONS', 'ACTIONS_ABOUT', 'ACTIONS', 'ACTIONS_ABOUT')
       const actions = (Array.isArray(f.ACTIONS) ? f.ACTIONS : []).map((name, i) => ({ name, about: f.ACTIONS_ABOUT?.[i] ?? '' }))
@@ -736,6 +780,10 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], func
         return via.length ? [{ id: sk.id, via }] : []
       }).sort((x, y) => (x.id < y.id ? -1 : 1))
       card = { family: 'tri-cli', command: f.COMMAND, variant: f.VARIANT, actions, args, whenToUse: f.WHEN_TO_USE, skills: skillIds, aboutSource: f.ABOUT_SOURCE, repo, source: f.SOURCE, entry: f.ENTRY }
+      if (sub === 'trios/tri') {
+        card.trios = { documented: f.DOCUMENTED === true, category: f.CATEGORY, dispatch: f.DISPATCH, helpLine: f.HELP_LINE, routed: f.ROUTED === true }
+        card.witnessSource = f.WITNESS_SOURCE
+      }
       if (sub === 'trinity/tri') {
         card.registry = { aliases: f.ALIASES ?? [], namespace: f.NAMESPACE, mode: f.MODE, stability: f.STABILITY, category: f.CATEGORY, jobTimeout: f.JOB_TIMEOUT, sideEffects: f.SIDE_EFFECTS ?? [], capabilities: f.CAPABILITIES ?? [], mcpEnabled: f.MCP_ENABLED === true, mcpName: f.MCP_NAME, mcpDisplayName: f.MCP_DISPLAY_NAME, examples: f.EXAMPLES ?? [] }
         card.routing = { routed: f.ROUTED === true, kind: f.ROUTE_KIND, note: f.ROUTE_NOTE }
@@ -754,8 +802,8 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], func
       const resources = (Array.isArray(f.RESOURCES) ? f.RESOURCES : []).map((path, i) => ({ path, about: f.RESOURCES_ABOUT?.[i] ?? '' }))
       card = { family: 'mcp', server: f.SERVER, serverVersion: f.SERVER_VERSION, transport: f.TRANSPORT, launch: f.LAUNCH, env: f.ENV ?? [], config: f.CONFIG, tools: mcpTools, resources, toolsNote: f.TOOLS_NOTE, external: f.EXTERNAL === true, skills: [], aboutSource: f.ABOUT_SOURCE, repo: f.REPO, source: f.SOURCE }
     }
-    const repoUrl = card.repo === 'gHashTag/t27' ? T27_REPO_URL : 'https://github.com/gHashTag/trinity'
-    const ref = card.repo === 'gHashTag/t27' ? pin.ref : (experience?.sources ?? []).find((x) => x.repo === 'trinity' && /^[0-9a-f]{40}$/.test(x.commit ?? ''))?.commit ?? 'main'
+    const repoUrl = card.repo === 'gHashTag/t27' ? T27_REPO_URL : `https://github.com/${card.repo === 'gHashTag/BrowserOS' ? 'gHashTag/BrowserOS' : 'gHashTag/trinity'}`
+    const ref = card.repo === 'gHashTag/t27' ? pin.ref : sub === 'trios/tri' ? f.SOURCE_COMMIT : (experience?.sources ?? []).find((x) => x.repo === 'trinity' && /^[0-9a-f]{40}$/.test(x.commit ?? ''))?.commit ?? 'main'
     tools.push({
       id: f.ID,
       qualifiedId,
@@ -768,7 +816,7 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], func
       discarded: t.verdict.discarded,
       moduleName: t.moduleName,
       inSpecCorpus: corpusPaths.has(file),
-      fields: f,
+      fields: sub === 'trios/tri' ? slimFields(f) : f,
       ...card,
       agents: letters.map((l) => ({ letter: l, ok: seenLetter.has(l) })),
       links: {
@@ -911,8 +959,9 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], func
       mcpTools: mcpTools.reduce((n, x) => n + x.tools.length, 0),
       mcpExternal: mcpTools.filter((x) => x.external).length,
       byWitness: Object.fromEntries(TOOL_WITNESSES.map((w) => [w, tools.filter((x) => x.witness === w).length])),
-      byRepo: { 'gHashTag/t27': tools.filter((x) => x.repo === 'gHashTag/t27').length, 'gHashTag/trinity': tools.filter((x) => x.repo === 'gHashTag/trinity').length },
+      byRepo: Object.fromEntries(TOOL_REPOS.map((r) => [r, tools.filter((x) => x.repo === r).length])),
       trinityTri: triTools.filter((x) => x.repo === 'gHashTag/trinity').length,
+      triosTri: triTools.filter((x) => x.repo === 'gHashTag/BrowserOS').length,
       schema2: tools.filter((x) => x.schema === TOOL_SCHEMA).length,
       collisions: collisions.length,
     },
@@ -1183,6 +1232,7 @@ async function main(argv) {
     if (prior.agents?.contentSha256 !== agents.contentSha256) drift.push(AGENTS_OUT)
     if (prior.functions?.contentSha256 !== functions.contentSha256) drift.push(FUNCTIONS_OUT)
     if (prior.tools?.contentSha256 !== tools.contentSha256) drift.push(TOOLS_OUT)
+    for (const p of splitToolCatalog(tools).parts) if (sha256(JSON.stringify(readJson(p.path)?.tools ?? null)) !== p.sha256) drift.push(p.path)
     if (drift.length) {
       console.error(`agents-from-specs: committed output is stale: ${drift.join(', ')} -- run node scripts/agents-from-specs.mjs`)
       process.exit(1)
@@ -1194,7 +1244,9 @@ async function main(argv) {
   writeAtomic(CRONS_OUT, crons)
   writeAtomic(AGENTS_OUT, agents)
   writeAtomic(FUNCTIONS_OUT, functions)
-  writeAtomic(TOOLS_OUT, tools)
+  const split = splitToolCatalog(tools)
+  for (const p of split.parts) writeAtomic(p.path, p.body)
+  writeAtomic(TOOLS_OUT, split.main)
   const s = skills.counts, c = crons.counts, a = agents.counts, fn = functions.counts, t = tools.counts
   console.log(`agents-from-specs: skills ${s.specs} specs (typecheck ok ${s.typecheckOk}/${s.specs}; spec+code ${s.specPlusCode}, spec-only ${s.specOnly}, code-only ${s.codeOnly}) -> ${SKILLS_OUT}`)
   console.log(`agents-from-specs: crons  ${c.specs} specs (typecheck ok ${c.typecheckOk}/${c.specs}; spec+code ${c.specPlusCode}, spec-only ${c.specOnly}, code-only ${c.codeOnly}; with RUNS ${c.withRuns}) -> ${CRONS_OUT}`)

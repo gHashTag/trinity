@@ -97,10 +97,18 @@
   white-space: normal;
 }
 
+/* On a phone the count goes under the name. As a fourth column it took the
+   width of its longest line ("624 through their merged pull requests") and
+   left the name and its repositories a column one word wide. */
 @media (max-width: 760px) {
   .qp-row {
-    grid-template-columns: 22px 32px 1fr auto;
+    grid-template-columns: 22px 32px minmax(0, 1fr);
     gap: 10px;
+  }
+  .qp-commits {
+    grid-column: 3;
+    white-space: normal;
+    text-align: left;
   }
   .qp-face {
     width: 32px;

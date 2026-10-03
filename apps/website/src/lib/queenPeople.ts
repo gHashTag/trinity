@@ -14,6 +14,8 @@
 // answer needs dozens of GitHub pages and anonymous GitHub allows sixty
 // requests an hour, so a live read could only ever have been a partial one.
 
+import { githubLogin } from './githubLogin.ts'
+
 /** How a commit reached its account; see `attribute` in the script. */
 export type CreditedVia = 'author' | 'pr' | 'committer' | 'name'
 
@@ -45,16 +47,16 @@ export interface SpecAuthors {
   people: SpecAuthor[]
 }
 
-/**
- * A GitHub login, checked here rather than trusted from the file, because it
- * becomes an `href` and an `<img src>`. The file is ours, but the rule that a
- * page never builds a link to a person out of an unchecked string does not
- * become less true when the string is one we wrote.
- */
-const GITHUB_LOGIN = /^[a-zA-Z\d](?:[a-zA-Z\d]|-(?=[a-zA-Z\d])){0,38}$/
+/** A GitHub login, checked rather than trusted: it becomes an `href`. */
+export function loginOf(person: Pick<SpecAuthor, 'login'>): string | null {
+  return githubLogin(person.login)
+}
 
-export function loginOf(person: SpecAuthor): string | null {
-  return GITHUB_LOGIN.test(person.login) ? person.login : null
+/** The published answer. Relative, so it works under app.t27.ai/queen/ too. */
+export async function readSpecAuthors(signal?: AbortSignal): Promise<SpecAuthors> {
+  const r = await fetch('roadmap/spec-authors.json', { credentials: 'omit', signal })
+  if (!r.ok) throw new Error(`spec-authors.json ${r.status}`)
+  return (await r.json()) as SpecAuthors
 }
 
 /** The repositories the counted specs live in, each once, in file order. */

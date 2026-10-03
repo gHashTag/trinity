@@ -21,7 +21,7 @@ import { join, resolve } from 'node:path'
 import {
   CHAPTER_DIR, DIAGRAMS, DOCS_OUT, DOCS_SPEC, FORBIDDEN_EN, FORBIDDEN_RU, I18N_FIELDS, STATUS_TAGS, TABLES, generate, parseLawTable, parsePhases, t27CheckoutRoot,
 } from '../scripts/docs-from-specs.mjs'
-import { REPO_ROOT } from '../scripts/agents-from-specs.mjs'
+import { REPO_ROOT, readToolCatalog } from '../scripts/agents-from-specs.mjs'
 import { MODULES } from '../src/lib/queenModules.ts'
 import { HUD_VIEWS, HUD_KEYS } from '../src/components/queenHud.ts'
 
@@ -143,7 +143,7 @@ assert.deepEqual([...seenDiagrams].sort(), [...docs.document.diagrams].sort(), '
 
 // 4. Generated tables and figures carry the numbers the catalogs carry.
 const agents = JSON.parse(readFileSync('public/agents/spec-agents.json', 'utf8'))
-const tools = JSON.parse(readFileSync('public/tools/spec-tools.json', 'utf8'))
+const tools = readToolCatalog()
 const skills = JSON.parse(readFileSync('public/skills/spec-skills.json', 'utf8'))
 const crons = JSON.parse(readFileSync('public/crons/spec-crons.json', 'utf8'))
 const functions = JSON.parse(readFileSync('public/functions/spec-functions.json', 'utf8'))
