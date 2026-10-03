@@ -3,6 +3,69 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: "the-fpga-flow-layer-by-layer",
+    title: "The FPGA flow, layer by layer: what a rewrite from specs is worth",
+    summary: "[one design, one laptop at a load of 12.6 on 8 cpus; L1 and L2 figures are Amdahl ceilings, not results; hours a year rest on stated assumptions] We timed every layer of one real XC7A200T build through openXC7. Synthesis took 12.7 s, place and route 70.1 s, FASM to frames 33.9 s and frames to bitstream 0.2 s, 116.9 s in all. With the two layers already rebuilt from t27 specs, the flow takes 83.5 s, 1.40 times faster, and the bitstream is byte-identical. Place and route is now 60% of the build: if it took no time the flow would be 8.75 times faster, while an instant synthesis step caps out at 1.65 times. The numbers are in a recorded terminal session. The tools are not in a tri release yet.",
+    date: "2026-10-03",
+    readingMinutes: 5,
+    tags: ["FPGA", "Open toolchain", "t27"],
+    receipts: [
+      { label: "The recorded run: tri devkit flow and impact", href: "https://t27.ai/term/devkit-flow/" },
+      { label: "The layer calculator", href: "https://t27.ai/#/devkit" },
+      { label: "trinity#1272: tri devkit and bitwalk in a tri release (open)", href: "https://github.com/gHashTag/trinity/issues/1272" },
+      { label: "The back half of openXC7, from a spec (previous post)", href: "https://t27.ai/#/blog/the-back-half-of-openxc7-from-a-spec" },
+      { label: "t27#5609: bitwalk and the three specs (open)", href: "https://github.com/gHashTag/t27/pull/5609" },
+    ],
+    openQuestions: [
+      "One design on one laptop; a design that spends less of its build in fasm2frames gains less.",
+      "Place and route is the largest layer, and nothing here shows a spec-driven route to making it faster.",
+    ],
+    published: true,
+    ru: {
+      title: "FPGA-flow по слоям: сколько стоит переписать его из спеков",
+      summary: "[один дизайн, один ноутбук при нагрузке 12,6 на 8 ядрах; цифры L1 и L2 — потолки по Амдалу, а не результаты; часы в год опираются на названные допущения] Мы засекли каждый слой одной настоящей сборки XC7A200T через openXC7. Синтез занял 12,7 с, размещение и разводка 70,1 с, FASM в кадры 33,9 с, кадры в битстрим 0,2 с, всего 116,9 с. С двумя слоями, уже пересобранными из t27-спеков, flow занимает 83,5 с, в 1,40 раза быстрее, и битстрим совпадает байт в байт. Размещение и разводка теперь 60% сборки: если бы они не занимали времени, flow был бы в 8,75 раза быстрее, а мгновенный синтез упирается в 1,65 раза. Числа — в записанной терминальной сессии. В релизе tri этих инструментов пока нет.",
+      openQuestions: [
+        "Один дизайн на одном ноутбуке; дизайн, который тратит меньшую долю сборки в fasm2frames, выиграет меньше.",
+        "Размещение и разводка — самый большой слой, и ничто здесь не показывает пути из спеков, который сделал бы его быстрее.",
+      ],
+    },
+  },
+  {
+    slug: "the-back-half-of-openxc7-from-a-spec",
+    title: "The back half of openXC7, from a spec: FASM to frames to bitstream",
+    summary: "[one design on one board, equivalence not a better bitstream; timings on one busy laptop, ratios are rough; the fpga-assembler speed figure is its README's, not ours] openXC7 turns FASM into a Xilinx 7-series bitstream with two prjxray tools, fasm2frames in Python and xc7frames2bit in C++. We rebuilt that half so every bit position, frame address and packet word comes from three t27 specs. Against the two tools it matches byte for byte on 22 of 22 FASM files and 16 of 16 frame files, and it is about 6 to 14 times faster on small real designs, about 85 times on a 121,587-line one, and up to about 200 times on synthetic test files. The comparison found a silent bit-wrap in fasm2frames (f4pga/prjxray#2574), a missing part check in xc7frames2bit (#2573), and a bug of our own on kintex7. On an AX7203 board (XC7A200T), a .bit written this way for a 121,587-line design was byte-identical to openXC7's, loaded into SRAM, and returned 403,200 of 403,200 tagged receipts.",
+    date: "2026-10-03",
+    readingMinutes: 8,
+    tags: ["FPGA", "Open toolchain", "Verification", "t27"],
+    receipts: [
+      { label: "t27#5609: bitwalk and the three specs (open)", href: "https://github.com/gHashTag/t27/pull/5609" },
+      { label: "prjxray#2574: fasm2frames wraps or drops bits of a site a SING tile lacks", href: "https://github.com/f4pga/prjxray/issues/2574" },
+      { label: "prjxray#2573: xc7frames2bit accepts frames for the wrong part", href: "https://github.com/f4pga/prjxray/issues/2573" },
+      { label: "openXC7/prjxray#27: xc7frames2bit refuses frame addresses the part does not have (open)", href: "https://github.com/openXC7/prjxray/pull/27" },
+      { label: "openXC7/prjxray#28: xc7frames2bit exits 1 when the bitstream cannot be written (open)", href: "https://github.com/openXC7/prjxray/pull/28" },
+      { label: "trinity-fpga: the AX7203 run, logs and receipts", href: "https://github.com/gHashTag/trinity-fpga/blob/421ae920fb477c98505e4143df3cab7954c268a7/conformance/X7_BITWALK_ON_THE_BOARD.md" },
+      { label: "fpga-assembler#49: the reference-parity cases", href: "https://github.com/lromor/fpga-assembler/issues/49" },
+      { label: "fpga-assembler, a C++ FASM-to-bitstream tool", href: "https://github.com/lromor/fpga-assembler" },
+    ],
+    openQuestions: [
+      "One design, one board: the AX7203 run covers trinet node 0 only, and its .bit is byte-identical to openXC7's, so it cannot show a case where the two differ.",
+      "Apart from the board design, there is no xc7a200t FASM in the corpus, and there is no Vivado reference for xc7a100t or xc7a200t.",
+      "gHashTag/t27#5609 has no review yet. f4pga/prjxray#2573 and #2574 and openXC7/prjxray#27 and #28 have no maintainer reply yet.",
+      "fpga-assembler was not timed here, so the table carries its README's figure, not a measurement.",
+    ],
+    published: true,
+    ru: {
+      title: "Задняя половина openXC7 из спека: FASM в кадры и в битстрим",
+      summary: "[один дизайн на одной плате, эквивалентность, а не лучший битстрим; время на одном занятом ноутбуке, отношения грубые; скорость fpga-assembler — из его README, не наша] openXC7 превращает FASM в битстрим Xilinx 7-series двумя инструментами prjxray: fasm2frames на Python и xc7frames2bit на C++. Мы пересобрали эту половину так, что каждая позиция бита, адрес кадра и слово пакета берутся из трёх t27-спеков. Против двух инструментов она совпадает байт в байт на 22 из 22 файлов FASM и 16 из 16 файлов кадров и быстрее примерно в 6–14 раз на небольших настоящих дизайнах, примерно в 85 раз на дизайне в 121 587 строк и до примерно 200 раз на синтетических тестах. Сравнение нашло тихий заворот битов в fasm2frames (f4pga/prjxray#2574), отсутствующую проверку микросхемы в xc7frames2bit (#2573) и наш собственный баг на kintex7. На плате AX7203 (XC7A200T) .bit, записанный так для дизайна в 121 587 строк, совпал с openXC7 байт в байт, загрузился в SRAM и вернул 403 200 из 403 200 помеченных квитанций.",
+      openQuestions: [
+        "Один дизайн, одна плата: прогон на AX7203 покрывает только trinet node 0, и его .bit совпадает с openXC7 байт в байт, так что он не может показать случай, где они расходятся.",
+        "Кроме дизайна для платы, в корпусе нет FASM для xc7a200t, и нет эталона Vivado для xc7a100t и xc7a200t.",
+        "У gHashTag/t27#5609 ещё нет ревью. На f4pga/prjxray#2573 и #2574 и openXC7/prjxray#27 и #28 мейнтейнеры ещё не ответили.",
+        "fpga-assembler здесь не засекали, поэтому в таблице цифра из его README, а не измерение.",
+      ],
+    },
+  },
+  {
     slug: "one-regional-clock-twelve-pull-requests",
     title: "One regional clock, twelve pull requests, and a spec that found a compiler bug",
     summary: "[counts measured through the GitHub API on 2026-10-02; merged means merged by the openXC7 maintainer, not shipped in a release; bitstream checks are cavearr's Vivado bench and our XC7A200T board] Since 1 September we opened 12 pull requests in repositories we do not own: 11 in openXC7, the open toolchain for Xilinx 7-series, and 1 in inngest. 5 are merged and 7 are open. Most follow one thread: a design with a regional clock buffer (BUFR) on an XC7A200T did not build through the open flow, and fixing it took the placer, the router, the bitstream writer and the bit database. A t27 spec of the database rows then found a parser bug in the t27 compiler, which we fixed in our own repository.",

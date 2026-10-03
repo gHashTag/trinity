@@ -5,6 +5,8 @@ import { useI18n } from '../i18n/context'
 import Navigation from '../components/Navigation'
 import Footer from '../components/Footer'
 import QuantumBackground from '../components/QuantumBackground'
+import TerminalCast from '../components/TerminalCast'
+import { X7_BOARD } from '../data/casts'
 
 /**
  * Golden Foundry — платный клуб разработчиков на кремнии.
@@ -156,6 +158,14 @@ export default function Foundry() {
                 )
               })}
             </div>
+          </div>
+        </section>
+
+        {/* Как выглядит прогон на стенде: запись с платы, а не макет */}
+        <section className="section">
+          <div className="section-inner narrow">
+            <h2 style={{ marginTop: 0 }}>{ru ? 'Как выглядит прогон на стенде' : 'What a bench run looks like'}</h2>
+            <TerminalCast src={X7_BOARD.src} share={X7_BOARD.share} title={X7_BOARD.title} caption={ru ? X7_BOARD.caption.ru : X7_BOARD.caption.en} />
           </div>
         </section>
 
