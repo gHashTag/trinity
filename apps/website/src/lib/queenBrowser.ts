@@ -33,6 +33,7 @@
  */
 
 import type { AppSessionVerdict } from './appSessionIdentity.ts'
+import { AgentLaneRefused, laneField, laneOfStep, refusalOf } from './queenBrowserLanes.ts'
 
 /** The broker lives on the render server, like /mcp (triIdentity.RENDER_BASE). */
 export const BROKER_BASE = 'https://vibee-render-production.up.railway.app'
@@ -205,6 +206,8 @@ export interface AgentAnswer {
   tools: string[]
   model: string | null
   error: string | null
+  /** The lane the render confirmed on its first line; null from main or from a render before lanes. */
+  lane: string | null
 }
 
 /**
@@ -214,7 +217,7 @@ export interface AgentAnswer {
  * parse is skipped rather than failing the answer that surrounds it.
  */
 export function readAgentStream(raw: string): AgentAnswer {
-  const answer: AgentAnswer = { text: '', tools: [], model: null, error: null }
+  const answer: AgentAnswer = { text: '', tools: [], model: null, error: null, lane: null }
   for (const line of raw.split('\n')) readAgentLine(answer, line)
   answer.text = answer.text.trim()
   return answer
@@ -234,6 +237,7 @@ export function readAgentLine(answer: AgentAnswer, line: string): boolean {
   else if (kind === 'инструмент' && typeof e['имя'] === 'string') answer.tools.push(e['имя'])
   else if (kind === 'провайдер' && typeof e.id === 'string') answer.model = typeof e.model === 'string' ? `${e.id}/${e.model}` : e.id
   else if (kind === 'ошибка' && typeof e['текст'] === 'string') answer.error = e['текст']
+  else if (kind === 'lane' && typeof e.lane === 'string') answer.lane = e.lane
   else return false
   return true
 }
@@ -248,7 +252,7 @@ export async function readAgentBody(
   body: ReadableStream<Uint8Array>,
   onProgress?: (soFar: AgentAnswer) => void,
 ): Promise<AgentAnswer> {
-  const answer: AgentAnswer = { text: '', tools: [], model: null, error: null }
+  const answer: AgentAnswer = { text: '', tools: [], model: null, error: null, lane: null }
   const reader = body.getReader()
   const decoder = new TextDecoder()
   let rest = ''
@@ -283,6 +287,10 @@ export interface AgentEnv {
  * One question to the person's agent. The token goes in one header with
  * credentials omitted, as everywhere in this file. 401 is "signed out", not
  * a failure; any other refusal is thrown with the server's own words.
+ *
+ * `lane` runs the question in a lane of its own (lib/queenBrowserLanes.ts): left out,
+ * or `main`, the request is exactly what it was before lanes. A lane the
+ * render refuses -- the cap, or the shape -- is thrown as AgentLaneRefused.
  */
 export async function askBrowserAgent(
   env: AgentEnv,
@@ -290,6 +298,7 @@ export async function askBrowserAgent(
   question: string,
   lang: 'ru' | 'en',
   onProgress?: (soFar: AgentAnswer) => void,
+  lane?: string,
 ): Promise<AgentAnswer> {
   const token = env.token()
   if (!token) throw new AgentSignedOut()
@@ -297,11 +306,13 @@ export async function askBrowserAgent(
     method: 'POST',
     credentials: 'omit',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ messages: agentMessages(history, question, lang) }),
+    body: JSON.stringify({ messages: agentMessages(history, question, lang), ...laneField(lane) }),
   })
   if (res.status === 401) throw new AgentSignedOut()
   if (!res.ok) {
     const raw = await res.text().catch(() => '')
+    const refusal = lane === undefined ? null : refusalOf(res.status, raw)
+    if (refusal) throw new AgentLaneRefused(refusal, raw)
     throw new Error(`agent ${res.status}${raw ? `: ${raw.slice(0, 300)}` : ''}`)
   }
   const answer = res.body
@@ -471,7 +482,9 @@ export interface FoldedStep extends JournalStep {
 /**
  * Twenty identical looks in a row pushed every other step off a six-line
  * list. Consecutive steps with the same tool, outcome and line fold into one,
- * counted, keeping the newest time (the journal is newest first). Pure.
+ * counted, keeping the newest time (the journal is newest first). Steps from
+ * two lanes never fold: two tasks looking at the same page are two looks.
+ * Pure.
  */
 export function foldRepeats(steps: JournalStep[], lang: 'ru' | 'en', max = JOURNAL_SHOWN): FoldedStep[] {
   const out: FoldedStep[] = []
@@ -481,6 +494,7 @@ export function foldRepeats(steps: JournalStep[], lang: 'ru' | 'en', max = JOURN
       prev &&
       prev.tool === step.tool &&
       prev.ok === step.ok &&
+      laneOfStep(prev.detail) === laneOfStep(step.detail) &&
       journalLine(prev, lang).text === journalLine(step, lang).text
     ) {
       prev.times += 1
