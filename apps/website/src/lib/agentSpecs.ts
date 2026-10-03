@@ -294,10 +294,16 @@ interface ToolEntryBase {
   skills: { id: string; via: string[] }[]
   links: { source: string; config: string | null; pinnedAt: string }
   witness: ToolWitness
+  /** The recorded run the card ends with (CAST = term/<id>/session.cast), null when it names none.
+   *  scripts/agents-from-specs.mjs castProblems() holds it: the files exist, asciicast v2, every exit 0,
+   *  and `commands` are the recorded lines that run this card's command. It never upgrades the witness. */
+  cast: ToolCast | null
   health: Health
   messages: string[]
   searchText: string
 }
+
+export interface ToolCast { id: string; src: string; share: string; title: string; recorded: string | null; commands: string[] }
 
 export interface TriToolEntry extends ToolEntryBase {
   family: 'tri-cli'

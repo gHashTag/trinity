@@ -15,15 +15,17 @@
 // TOOLS_NOTE instead); does every AGENTS letter exist and does that agent name
 // the tool back; is every skill cross-link backed by the skill's own text; does
 // the witness stay one of the two honest labels; is the search index the card;
-// and does the Queen open the view on the promised key.
+// does every recorded run (CAST) a card names exist under public/term/, read as
+// asciicast v2 with every exit code 0, and actually run the card's command; and
+// does the Queen open the view on the promised key.
 //
 //   node --experimental-strip-types qa/tools-spec-contract.mjs
 
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
-import { join } from 'node:path'
-import { generate, readToolCatalog, TOOLS_OUT, AGENTS_OUT, SKILLS_OUT, TOOL_SPEC_DIR, TOOL_SPEC_SUBDIRS, TOOL_FAMILIES, TOOL_WITNESSES, TOOL_SCHEMA, TOOL_REPO_OF_SUBDIR, summarySourceOf } from '../scripts/agents-from-specs.mjs'
+import { join, relative } from 'node:path'
+import { generate, readToolCatalog, TOOLS_OUT, AGENTS_OUT, SKILLS_OUT, TOOL_SPEC_DIR, TOOL_SPEC_SUBDIRS, TOOL_FAMILIES, TOOL_WITNESSES, TOOL_SCHEMA, TOOL_REPO_OF_SUBDIR, summarySourceOf, CAST_RE, CAST_SHARE_BASE } from '../scripts/agents-from-specs.mjs'
 import { canonicalSpecEditUrl, vendoredSpecUrl } from '../src/lib/agentSpecs.ts'
 import { MODULES } from '../src/lib/queenModules.ts'
 import { HUD_VIEWS, HUD_KEYS } from '../src/components/queenHud.ts'
@@ -173,6 +175,50 @@ for (const t of tools.tools) {
   assert.equal(vendoredSpecUrl(t.specPath), `https://github.com/gHashTag/trinity/blob/main/apps/website/public/t27/files/${t.specPath}`)
 }
 
+// 3b. Recorded runs. Read from disk here, not through the generator's castProblems(), so a
+// generator that stopped checking would still be caught: the file and its meta.json exist, the
+// first line is an asciicast v2 header, every "x" (exit) event and meta.exit_codes is "0", and
+// the commands the card lists are recorded commands that run the card's own COMMAND.
+const runs = (line, command) => line === command || line.startsWith(`${command} `)
+for (const t of tools.tools) {
+  const hasCastField = Object.hasOwn(t.fields, 'CAST')
+  const hasCast = t.cast !== null && t.cast !== undefined
+  assert.equal(hasCast, hasCastField, `${t.id}: catalog cast and the spec's CAST disagree`)
+  const isMcp = t.family === 'mcp'
+  if (isMcp) assert.equal(hasCast, false, `${t.id}: an MCP card names no recorded run`)
+  const isRuntime = t.witness === 'runtime'
+  if (isRuntime) assert.ok(hasCast, `${t.id}: witness runtime without a CAST`)
+  if (!hasCast) continue
+  assert.equal(t.cast.src, t.fields.CAST)
+  const m = CAST_RE.exec(t.cast.src)
+  assert.ok(m, `${t.id}: CAST ${t.cast.src} is not term/<id>/session.cast`)
+  assert.equal(t.cast.id, m[1])
+  assert.equal(t.cast.share, `${CAST_SHARE_BASE}${m[1]}/`, `${t.id}: the share link is the recording's own page`)
+  const castFile = join('public', t.cast.src)
+  const metaFile = join('public/term', m[1], 'meta.json')
+  assert.ok(existsSync(castFile), `${t.id}: ${castFile} missing`)
+  assert.ok(existsSync(metaFile), `${t.id}: ${metaFile} missing`)
+  const [head, ...events] = readFileSync(castFile, 'utf8').split('\n').filter((l) => l.trim()).map((l) => JSON.parse(l))
+  assert.equal(head.version, 2, `${t.id}: ${castFile} is not asciicast v2`)
+  const exits = events.filter((e) => e[1] === 'x').map((e) => String(e[2]))
+  assert.ok(exits.every((x) => x === '0'), `${t.id}: ${castFile} records exit codes ${exits.join(',')}`)
+  const meta = JSON.parse(readFileSync(metaFile, 'utf8'))
+  assert.equal(meta.id, m[1])
+  assert.ok((meta.exit_codes ?? []).every((x) => String(x) === '0'), `${t.id}: ${metaFile} exit_codes ${meta.exit_codes}`)
+  assert.equal(t.cast.title, meta.title)
+  assert.ok(t.cast.commands.length > 0, `${t.id}: the recording runs no ${t.command}`)
+  for (const line of t.cast.commands) {
+    assert.ok(meta.commands.includes(line), `${t.id}: ${JSON.stringify(line)} is not a recorded command`)
+    assert.ok(runs(line, t.command), `${t.id}: ${JSON.stringify(line)} does not run ${t.command}`)
+  }
+}
+assert.equal(tools.counts.withCast, tools.tools.filter((t) => t.cast).length)
+// CAST is a tool-card constant: no other spec in the vendored corpus carries one.
+const castSpecs = []
+const walk = (dir) => { for (const e of readdirSync(dir, { withFileTypes: true })) { const p = join(dir, e.name); if (e.isDirectory()) walk(p); else if (e.name.endsWith('.t27') && /^pub const CAST\b/m.test(readFileSync(p, 'utf8'))) castSpecs.push(relative('public/t27/files', p)) } }
+walk('public/t27/files')
+assert.deepEqual(castSpecs.sort(), tools.tools.filter((t) => t.cast).map((t) => t.specPath).sort(), 'every spec with a CAST is a tool card the catalog plays')
+
 // 4. Counts are sums of the list; groups partition the families; the ladder is the catalogs.
 const tri = tools.tools.filter((t) => t.family === 'tri-cli'), mcp = tools.tools.filter((t) => t.family === 'mcp')
 assert.equal(tools.counts.specs, tools.tools.length)
@@ -234,7 +280,7 @@ for (const l of tools.i18n) {
 
 console.log(
   `tools-spec-contract: ${tools.tools.length} cards (tri ${tri.length} commands of which ${tools.counts.trinityTri} Trinity, ${tools.counts.triActions} actions; mcp ${mcp.length} servers, ${tools.counts.mcpTools} tools, ${tools.counts.mcpExternal} external; schema ${tools.schema}, ${Object.keys(tools.legacy).length} legacy ids, ${tools.collisions.length} collisions); ` +
-  `with agents ${tools.counts.withAgents}, with skills ${tools.counts.withSkills}; witness ${Object.entries(tools.counts.byWitness).map(([k, v]) => `${k} ${v}`).join(', ')}; ` +
+  `with agents ${tools.counts.withAgents}, with skills ${tools.counts.withSkills}, with a recorded run ${tools.counts.withCast} (${tools.tools.filter((t) => t.cast).map((t) => `${t.id} <- ${t.cast.id}`).join(', ')}); witness ${Object.entries(tools.counts.byWitness).map(([k, v]) => `${k} ${v}`).join(', ')}; ` +
   `links pinned at ${tools.pin.ref.slice(0, 7)}; Queen key ${m.key}; ` +
   `i18n [${tools.i18n.map((l) => `${l.locale} ${l.coverage.n}/${l.coverage.total}`).join('; ')}]`,
 )

@@ -18,6 +18,12 @@
 // Run:   node scripts/tools-from-trios-tri.mjs --src FILE --commit SHA          (write)
 //        node scripts/tools-from-trios-tri.mjs --src FILE --commit SHA --check  (exit 1 on drift)
 // FILE is trios/bin/tri at SHA, e.g. `git -C ~/BrowserOS show SHA:trios/bin/tri > /tmp/tri`.
+//
+// A card whose command a published recording ran (public/term/<id>/meta.json lists `tri <name> ...`,
+// and agents-from-specs.mjs castProblems() accepts it) ends with CAST = "term/<id>/session.cast".
+// The witness stays source-parse: the recording shows the command ran, not that the card's text
+// describes it. When several recordings ran a command, the most recently recorded one is named.
+import { castCommandRuns, castCommands, castProblems, readCasts } from './agents-from-specs.mjs'
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -140,7 +146,18 @@ const q = (s) => `"${s.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`
 const arr = (xs) => `[${xs.length}]str = [${xs.map(q).join(', ')}]`
 const modName = (base) => `tool_trios_tri_${base.replace(/[^A-Za-z0-9]+/g, '_')}`
 
-export function cards(src, commit) {
+// The recording a card names: the newest one (meta.recorded, then id) that runs `command` and passes castProblems().
+export function castFor(command, casts) {
+  const fits = [...casts.values()].filter((c) => {
+    const runsCommand = castCommands(c).some((line) => castCommandRuns(line, command))
+    const passes = runsCommand && castProblems('-', { cast: `term/${c.id}/session.cast`, witness: 'source-parse', command }, casts).length === 0
+    return passes
+  })
+  fits.sort((a, b) => String(b.meta?.recorded ?? '').localeCompare(String(a.meta?.recorded ?? '')) || (a.id < b.id ? -1 : 1))
+  return fits[0] ?? null
+}
+
+export function cards(src, commit, casts = new Map()) {
   if (!/^[0-9a-f]{40}$/.test(commit)) throw new Error(`--commit must be a full 40-hex SHA, is ${JSON.stringify(commit)}`)
   const entries = parseHelp(helpBlock(src))
   const arms = caseArms(src)
@@ -173,6 +190,12 @@ export function cards(src, commit) {
     const { actions, args } = splitUsage(d ? usageOf(d.e, name) : '')
     const dispatch = ascii(arm ? dispatchOf(arm.body) : '', where)
     const routed = Boolean(arm)
+    const recording = castFor(`tri ${name}`, casts)
+    const castLines = recording === null ? [] : [
+      `; public/term/${recording.id}/meta.json lists ${castCommands(recording).filter((line) => castCommandRuns(line, `tri ${name}`)).length} run(s) of \`tri ${name}\`; recorded with the live ~/.local/bin/tri,`,
+      `; not a build of SOURCE_COMMIT. The site plays it at the end of this card.`,
+      `pub const CAST : str = ${q(`term/${recording.id}/session.cast`)};`,
+    ]
     const lines = [
       '// SPDX-License-Identifier: Apache-2.0',
       `; specs/tools/trios/tri/${name}.t27 -- tool ${REPO}:tri/${name}, the \`tri ${name}\` command of the trios loop CLI`,
@@ -208,6 +231,7 @@ export function cards(src, commit) {
       'pub const AGENTS : [0]str = [];',
       `pub const AGENTS_NOTE : str = ${q('No source binds an agent letter to this command: the trios CLI is not named by docs/agents/AGENTS_ALPHABET.md or .claude/agents/*.md of gHashTag/t27.')};`,
       `pub const WHEN_TO_USE : str = ${q(about)};`,
+      ...castLines,
       'pub const WITNESS : str = "source-parse";',
       `pub const WITNESS_SOURCE : str = ${q(`${REPO}:${SOURCE} at ${commit}, read as text (the help heredoc and the top-level case arms); the CLI was not run`)};`,
       'pub const ENABLED : bool = true;',
@@ -223,20 +247,21 @@ function main() {
   const opt = (k) => { const i = argv.indexOf(k); return i === -1 ? null : argv[i + 1] }
   const srcPath = opt('--src'), commit = opt('--commit'), check = argv.includes('--check')
   if (!srcPath || !commit) { console.error('usage: tools-from-trios-tri.mjs --src FILE --commit SHA [--check]'); process.exit(2) }
-  const want = cards(readFileSync(srcPath, 'utf8'), commit)
+  const want = cards(readFileSync(srcPath, 'utf8'), commit, readCasts(SITE))
   const dir = join(SITE, OUT_DIR)
   const have = existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith('.t27')) : []
   const drift = [...[...want].filter(([f, t]) => !existsSync(join(dir, f)) || readFileSync(join(dir, f), 'utf8') !== t).map(([f]) => f), ...have.filter((f) => !want.has(f))]
   const undocumented = [...want.values()].filter((t) => t.includes('DOCUMENTED : bool = false')).length
+  const withCast = [...want.values()].filter((t) => t.includes('pub const CAST : str = ')).length
   if (check) {
     if (drift.length) { console.error(`trios tri cards: ${drift.length} drifted (${drift.slice(0, 8).join(', ')}${drift.length > 8 ? ', ...' : ''})`); process.exit(1) }
-    console.log(`trios tri cards: ${want.size} in step with ${commit.slice(0, 12)} (${undocumented} undocumented)`)
+    console.log(`trios tri cards: ${want.size} in step with ${commit.slice(0, 12)} (${undocumented} undocumented, ${withCast} with a recorded run)`)
     return
   }
   rmSync(dir, { recursive: true, force: true })
   mkdirSync(dir, { recursive: true })
   for (const [f, t] of want) writeFileSync(join(dir, f), t)
-  console.log(`trios tri cards: wrote ${want.size} to ${OUT_DIR} from ${commit.slice(0, 12)} (${undocumented} undocumented, ${drift.length} changed)`)
+  console.log(`trios tri cards: wrote ${want.size} to ${OUT_DIR} from ${commit.slice(0, 12)} (${undocumented} undocumented, ${withCast} with a recorded run, ${drift.length} changed)`)
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) main()
