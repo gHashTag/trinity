@@ -45,5 +45,5 @@ pub const PRICE_UNIT : str = "ngonka per token (Gonka docs; the endpoint itself 
 pub const API : str = "OpenAI-compatible POST /v1/chat/completions with model = MODEL_ID: signed by a funded Gonka account (gonka-openai SDK for Python, TypeScript and Go) or sent through a third-party broker with that broker's API key";
 pub const CALL : str = "needs-key";
 
-invariant a_retired_model_has_no_hosts { POC_MODEL or HOSTS == 0 }
-invariant the_threshold_is_a_fraction { VALIDATION_PERMILLE <= 1000 }
+invariant a_retired_model_has_no_hosts { assert POC_MODEL or HOSTS == 0; }
+invariant the_threshold_is_a_fraction { assert VALIDATION_PERMILLE <= 1000; }

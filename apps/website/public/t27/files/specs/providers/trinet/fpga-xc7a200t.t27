@@ -34,4 +34,4 @@ pub const MEASURED : [3]str = ["TRINET MAC32, a 32-wide balanced-ternary dot pro
 pub const GAPS : [4]str = ["the node keys are not on any host: no receipt from the three boards can be verified until they are re-keyed (ternary_hw_verification.t27 KEYS_NOT_ON_THIS_HOST)", "nobody buys ternary compute: settlement_law.t27 EFFICIENCY_IS_NOT_DEMAND is resolved false and WHO_BUYS_TERNARY_COMPUTE is open", "$TRI is on no mainnet: the site's jetton is on TON testnet", "the UART, not the cell, bounds throughput; a faster transport is not built"];
 pub const TOKEN : str = "$TRI: cap 3^21 = 10460353203, all of it mined on accepted work, no pre-mine and no sale (settlement_law.t27); issued on TON and Solana by owner decision 2026-09-24; today only a TON testnet jetton exists (gHashTag/trinity apps/website/src/lib/triToken.ts, TRI_NETWORK testnet)";
 
-invariant an_fpga_cannot_host_a_gonka_model { UNITS_PER_GONKA_NODE == 0 }
+invariant an_fpga_cannot_host_a_gonka_model { assert UNITS_PER_GONKA_NODE == 0; }

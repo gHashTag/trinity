@@ -75,8 +75,8 @@ pub fn per_mille(value: u32, scale: u32) -> u32 {
     return (value * 1000) / scale;
 }
 
-invariant four_statuses { STATUS_PLANNED == 3 }
-invariant one_schema { SCHEMA_VERSION == 1 }
+invariant four_statuses { assert STATUS_PLANNED == 3; }
+invariant one_schema { assert SCHEMA_VERSION == 1; }
 
 test a_model_is_serving_only_when_a_host_serves_it {
     assert model_status(26) == STATUS_SERVING;

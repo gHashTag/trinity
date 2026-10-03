@@ -33,5 +33,5 @@ pub const MEASURED : [0]str = [];
 pub const GAPS : [5]str = ["no GPU worker exists in any repository", "no GPU job format: the 24-byte ternary job is sized for the FPGA cell", "no sampling verifier for a second host", "nobody buys this compute yet (settlement_law.t27 EFFICIENCY_IS_NOT_DEMAND, resolved false)", "$TRI is on no mainnet: the site's jetton is on TON testnet"];
 pub const TOKEN : str = "$TRI: cap 3^21 = 10460353203, all of it mined on accepted work, no pre-mine and no sale (settlement_law.t27); issued on TON and Solana by owner decision 2026-09-24; today only a TON testnet jetton exists (gHashTag/trinity apps/website/src/lib/triToken.ts, TRI_NETWORK testnet)";
 
-invariant a_gonka_node_needs_fourteen_cards { UNITS_PER_GONKA_NODE * MEMORY_GB >= 320 }
-invariant thirteen_cards_are_not_enough { (UNITS_PER_GONKA_NODE - 1) * MEMORY_GB < 320 }
+invariant a_gonka_node_needs_fourteen_cards { assert UNITS_PER_GONKA_NODE * MEMORY_GB >= 320; }
+invariant thirteen_cards_are_not_enough { assert UNITS_PER_GONKA_NODE * MEMORY_GB - MEMORY_GB < 320; }
