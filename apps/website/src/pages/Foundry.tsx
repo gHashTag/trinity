@@ -7,7 +7,7 @@ import Footer from '../components/Footer'
 import QuantumBackground from '../components/QuantumBackground'
 import TerminalCast from '../components/TerminalCast'
 import { X7_BOARD } from '../data/casts'
-import { CLUB, clubPrice, clubPriceUsd } from '../data/club'
+import { CLUB, clubPrice } from '../data/club'
 import AgentShowcase from '../components/AgentShowcase'
 
 /**
@@ -31,16 +31,6 @@ const CONTACT = { email: 'admin@t27.ai', telegram: CLUB.telegram }
  * одна задача GitHub — один сервис на Railway — один автономный агент
  * Claude Code. Ничего сверх этого не обещать.
  */
-const DRAFT_TERMS = false
-
-const TIERS = [
-  {
-    ru: { name: 'TRI DEV · агент-разработчик', price: clubPrice(true), body: 'Свой агент TRI DEV: автономный агент Claude Code в отдельном сервисе, привязанный к одной вашей задаче на GitHub. Он идёт по конвейеру tri — спека, генерация, тесты, вердикт — отчитывается комментариями в задаче и приносит pull request, который сливаете вы. Плюс всё, что есть в клубе.' },
-    en: { name: 'TRI DEV · developer agent', price: clubPrice(false), body: 'Your own TRI DEV agent: an autonomous Claude Code agent in its own service, bound to one of your GitHub issues. It works the tri pipeline — spec, generate, test, verdict — reports each step as a comment on the issue, and delivers a pull request that you merge. Plus everything in the club.' },
-    featured: true,
-  },
-]
-
 const INSIDE = [
   { ru: ['Агент TRI DEV', 'Автономный агент-разработчик на одной вашей задаче: от спеки до pull request, каждый шаг — комментарием в задаче.'], en: ['A TRI DEV agent', 'An autonomous developer agent on one of your issues: from spec to pull request, every step a comment on the issue.'] },
   { ru: ['Разбор чужих замеров', 'Каждую неделю берём один опубликованный бенчмарк и проверяем, выдерживает ли он собственную методику.'], en: ['Teardowns of published numbers', 'Each week we take one published benchmark and check whether it survives its own methodology.'] },
@@ -78,10 +68,8 @@ const RU = {
   ctaAlt: 'Сначала блог',
   seatNote: 'Беру столько людей, скольким успеваю читать RTL лично. Оплата — в боте, картой или звёздами Telegram.',
   insideTitle: 'Что внутри',
-  tiersTitle: 'Участие',
   notTitle: 'Чем это не является',
   whoTitle: 'Кому подойдёт',
-  draftNote: 'Условия уточняются: суммы — черновик, окончательные будут подтверждены до открытия набора.',
   join: 'Вступить',
 }
 
@@ -93,10 +81,8 @@ const EN = {
   ctaAlt: 'Read the blog first',
   seatNote: 'I take as many people as I can personally read RTL for. Payment in the bot — card or Telegram Stars.',
   insideTitle: 'What is inside',
-  tiersTitle: 'Membership',
   notTitle: 'What this is not',
   whoTitle: 'Who it fits',
-  draftNote: 'Terms are being finalised: the figures are a draft and will be confirmed before intake opens.',
   join: 'Join',
 }
 
@@ -130,7 +116,7 @@ export default function Foundry() {
               <p style={{ fontSize: '1.05rem', lineHeight: 1.7, color: 'var(--muted)', maxWidth: 620, marginTop: '1.25rem' }}>
                 {c.lede}
               </p>
-              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1.75rem' }}>
+              <div className="foundry-cta" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center', marginTop: '1.75rem' }}>
                 <a className="btn" href={CONTACT.telegram}>{c.cta}</a>
                 <a className="btn secondary" href="#/blog">{c.ctaAlt}</a>
               </div>
@@ -165,41 +151,7 @@ export default function Foundry() {
           </div>
         </section>
 
-        <AgentShowcase ru={ru} />
-
-        {/* УРОВНИ */}
-        <section className="section">
-          <div className="section-inner">
-            <h2 style={{ marginTop: 0 }}>{c.tiersTitle}</h2>
-            {DRAFT_TERMS ? (
-              <p style={{ color: 'var(--golden)', fontSize: '0.85rem', marginTop: 0 }}>{c.draftNote}</p>
-            ) : null}
-            <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))' }}>
-              {TIERS.map(t => {
-                const loc = ru ? t.ru : t.en
-                return (
-                  <motion.div
-                    key={loc.name}
-                    className="premium-card"
-                    initial={{ opacity: 0, y: 16 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5 }}
-                    style={t.featured ? { borderColor: 'var(--accent)' } : undefined}
-                  >
-                    <div style={{ fontSize: '0.75rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--muted)' }}>{loc.name}</div>
-                    <div style={{ fontSize: '2rem', fontWeight: 700, margin: '0.5rem 0 0.25rem' }}>{loc.price}</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '0.75rem' }}>{clubPriceUsd(ru)}</div>
-                    <p style={{ margin: '0 0 1rem', color: 'var(--muted)', fontSize: '0.92rem', lineHeight: 1.6 }}>{loc.body}</p>
-                    <a className={t.featured ? 'btn' : 'btn secondary'} href={CONTACT.telegram} style={{ display: 'inline-block' }}>
-                      {c.join}
-                    </a>
-                  </motion.div>
-                )
-              })}
-            </div>
-          </div>
-        </section>
+        <AgentShowcase ru={ru} featured="tridev" />
 
         {/* КОМУ ПОДОЙДЁТ */}
         <section className="section">
