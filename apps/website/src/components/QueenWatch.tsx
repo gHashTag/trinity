@@ -57,29 +57,31 @@ export function QueenWatch({ c, lang, env }: { c: WatchCopy; lang: 'ru' | 'en'; 
     if (r.ok) setLinks(r.value)
   }, [env])
 
-  // Read once with the live window: the count on the button needs it even
-  // with the panel shut. After that, re-read only while the panel is open or
-  // something is live -- and only while the board is on screen.
+  // Read once with the live window, on screen or not: the count on the button
+  // needs it even with the panel shut. (First shipped gated on visibility: a
+  // board opened in a background tab skipped that one read, found nothing
+  // live, so never polled -- and showed no audience until the panel was
+  // pressed. Seen in a harness, 2026-10-04.) After that, re-read while the
+  // panel is open or something is live, only on screen, and once more
+  // whenever the tab comes back.
   const poll = open || shouldPollWatch(links, now)
   useEffect(() => {
     let stopped = false
-    const pull = async () => {
-      if (document.visibilityState !== 'visible') return
+    const pull = async (always: boolean) => {
+      if (!always && document.visibilityState !== 'visible') return
       const r = await listWatchLinks(env)
       if (stopped || !r.ok) return
       setLinks(r.value)
       setNow(Date.now())
     }
-    void pull()
-    if (!poll) {
-      return () => {
-        stopped = true
-      }
-    }
-    const timer = window.setInterval(() => void pull(), WATCH_POLL_MS)
+    void pull(true)
+    const onShow = () => void pull(false)
+    document.addEventListener('visibilitychange', onShow)
+    const timer = poll ? window.setInterval(() => void pull(false), WATCH_POLL_MS) : null
     return () => {
       stopped = true
-      window.clearInterval(timer)
+      document.removeEventListener('visibilitychange', onShow)
+      if (timer !== null) window.clearInterval(timer)
     }
   }, [poll, env])
 
@@ -135,8 +137,7 @@ export function QueenWatch({ c, lang, env }: { c: WatchCopy; lang: 'ru' | 'en'; 
         aria-expanded={open}
         onClick={() => (open ? shut() : setOpen(true))}
       >
-        {c.invite}
-        {watching > 0 ? <span className="queen27-watch-count"> · {watching} {c.watching}</span> : null}
+        {watching > 0 ? `${c.invite} · ${watching} ${c.watching}` : c.invite}
       </button>
       {open ? (
         <div className="queen27-watch-panel" role="dialog" aria-label={c.invite}>
