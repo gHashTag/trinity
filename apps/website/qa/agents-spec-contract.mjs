@@ -18,7 +18,7 @@ import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
-import { generate, SKILLS_OUT, CRONS_OUT, AGENTS_OUT, FUNCTIONS_OUT, TOOLS_OUT, FUNCTIONS_MANIFEST, EXPERIENCE_PATH, AGENT_COUNT, AGENT_LAYERS, HOSTS, CONTROLS, ON_FAILURE, FN_TRIGGERS, FN_ON_FAILURE, FN_SIDE_EFFECTS, FN_PROBE_RESULTS, FN_CONTROLS, functionDifferences, I18N_SPEC_DIR, I18N_FIELD_SOURCE, REPO_ROOT } from '../scripts/agents-from-specs.mjs'
+import { generate, SKILLS_OUT, CRONS_OUT, AGENTS_OUT, FUNCTIONS_OUT, TOOLS_OUT, readToolCatalog, FUNCTIONS_MANIFEST, EXPERIENCE_PATH, AGENT_COUNT, AGENT_LAYERS, HOSTS, CONTROLS, ON_FAILURE, FN_TRIGGERS, FN_ON_FAILURE, FN_SIDE_EFFECTS, FN_PROBE_RESULTS, FN_CONTROLS, functionDifferences, I18N_SPEC_DIR, I18N_FIELD_SOURCE, REPO_ROOT } from '../scripts/agents-from-specs.mjs'
 import { canonicalSpecEditUrl, vendoredSpecUrl, specSlug } from '../src/lib/agentSpecs.ts'
 import { MODULES } from '../src/lib/queenModules.ts'
 import { HUD_VIEWS, HUD_KEYS, RAIL_VIEWS, SPEC_LAYERS, BOARD_VIEWS, PROJECT_VIEWS, railViewOf } from '../src/components/queenHud.ts'
@@ -29,7 +29,7 @@ const crons = JSON.parse(readFileSync(CRONS_OUT, 'utf8'))
 const agents = JSON.parse(readFileSync(AGENTS_OUT, 'utf8'))
 const functions = JSON.parse(readFileSync(FUNCTIONS_OUT, 'utf8'))
 const functionsCode = JSON.parse(readFileSync(FUNCTIONS_MANIFEST, 'utf8'))
-const tools = JSON.parse(readFileSync(TOOLS_OUT, 'utf8'))
+const tools = readToolCatalog()
 const experience = JSON.parse(readFileSync(EXPERIENCE_PATH, 'utf8'))
 const skillsCode = JSON.parse(readFileSync('public/skills/manifest.json', 'utf8'))
 const cronsCode = JSON.parse(readFileSync('public/crons/manifest.json', 'utf8'))
