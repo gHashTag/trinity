@@ -4,7 +4,7 @@
    styles/card.css, shared with every other block on the page. */
 .play-block {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  background: #020605;
+  background: #000;
   color: var(--text, #FFFFFF);
 }
 

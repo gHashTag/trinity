@@ -64,13 +64,13 @@ export const MODULES = [
     glyph: '▦',
     en: {
       name: 'KANBAN',
-      hint: 'Operational columns',
+      hint: 'The board in six columns',
       body: 'The board as six columns — backlog, blocked, running, in review, done, dropped — with the issue cards themselves, each carrying its number and how many acceptance criteria it states.',
       play: 'Where you read the contract. The acceptance criteria a card states are what a review will hold you to; a card that states none is a card nobody can be judged against.',
     },
     ru: {
       name: 'КАНБАН',
-      hint: 'Операционные колонки',
+      hint: 'Доска в шесть колонок',
       body: 'Доска шестью колонками — бэклог, заблокировано, в работе, на ревью, готово, отложено — с самими карточками задач: номер и сколько критериев приёмки в ней заявлено.',
       play: 'Место, где читают договор. Критерии приёмки на карточке — это то, по чему вас будет судить ревью; карточка без них — карточка, по которой судить нечем.',
     },
@@ -166,13 +166,13 @@ export const MODULES = [
     glyph: 'Ω',
     en: {
       name: 'AGENTS',
-      hint: 'The 27-letter alphabet, each agent stated by a .t27 spec',
+      hint: 'Who holds the skills',
       body: 'The Agent Explorer, embedded whole. Level by level the system is built: Specs state what exists, Skills state what a run does, Crons state what starts a run, and Agents — the fourth layer — state who holds the skills, under which law (SOUL.md, AGENTS.md), with which entry and exit invariant. Twenty-seven letters, A to Z and the reserved Ti, each with its spec first, then its skills, its derived crons, and its experience joined from the episode log by evidence: an agent no episode names says so.',
       play: 'Where the players on the other side are named. Twenty-seven letters, each with the law it works under; an agent no episode names has no recorded experience yet, and says so itself.',
     },
     ru: {
       name: 'АГЕНТЫ',
-      hint: 'Алфавит из 27 букв, каждый агент заявлен спекой .t27',
+      hint: 'Кто держит скиллы',
       body: 'Обозреватель агентов целиком. Уровень за уровнем мы создаём систему: спеки говорят, что существует, скиллы — что делает запуск, кроны — что его запускает, а агенты — четвёртый слой — кто держит скиллы, под каким законом (SOUL.md, AGENTS.md), с каким входным и выходным инвариантом. Двадцать семь букв, от A до Z и зарезервированная Ti, у каждой сначала спека, затем её скиллы, выведенные кроны и опыт, присоединённый из журнала эпизодов по свидетельствам: агент, которого не называет ни один эпизод, говорит об этом сам.',
       play: 'Место, где названы игроки с той стороны. Двадцать семь букв, у каждой свой закон; агент, которого не называет ни один эпизод, ещё не имеет записанного опыта — и говорит об этом сам.',
     },

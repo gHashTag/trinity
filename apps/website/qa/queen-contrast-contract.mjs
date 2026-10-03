@@ -238,6 +238,8 @@ const REACHED = {
   ],
   'src/App.tsx': [
     'src/components/AgiGameBlock.css',
+    /* TRI DEV KIT on #/devkit: its panels are opaque over the page background. */
+    'src/components/DevKitBlock.css',
     'src/components/FaqBlock.css',
     'src/components/GameHero.css',
     'src/components/ModuleHeroBlock.css',
@@ -1092,24 +1094,6 @@ const UNREADABLE = new Map([
      gate measures them. */
   ['src/pages/Queen.css:.queen27-dir-chip > i', 'opaque var(--queen-dir), 6px dot'],
   ['src/pages/Queen.css:.queen27-dir-filter .queen27-dir-chip[aria-pressed="true"]', 'opaque var(--queen-dir) under #050505'],
-
-  /* The direction cards: `color-mix(in srgb, var(--queen-dir) N%, transparent)`
-     at 7% resting and 16% on hover. The alpha IS known and is written here
-     because it is the number a reader of the selector cannot work out; the hue
-     is not, and with a direction hue on one side the mix is a LIGHT translucent
-     fill, which `groundsIn` classifies as a tint laid on somebody else's ground
-     rather than as a ground -- the same answer it would give if the hue were
-     resolved. So this entry records an unreadable value that changes no verdict.
-
-     It does leave a real question open, and this is the honest place to say so
-     rather than in a commit message: `.queen27-card` paints `rgba(255, 255,
-     255, 0.018)` and the shell layer gives it a border and a clip-path and no
-     ground at all, so a card's text on this board sits on the live hive with
-     nothing but a 1.8% wash between. That is not a contrast failure this gate
-     can state -- there is no dark ground to measure and no ink is declared
-     against one -- it is the bare-text case, which nothing in qa/ checks for. */
-  ['src/pages/Queen.css:.queen27-card[data-dir], .queen27-page.is-shell .queen27-card[data-dir]', 'alpha 0.07, hue from JS'],
-  ['src/pages/Queen.css:.queen27-card[data-dir]:hover, .queen27-page.is-shell .queen27-card[data-dir]:hover', 'alpha 0.16, hue from JS'],
 
   /* `color-mix(in srgb, var(--tech-color) 8%, #020202)`. Unreadable for the
      hue, and decided by the OTHER side: #020202 is opaque, so 92% of the mix is

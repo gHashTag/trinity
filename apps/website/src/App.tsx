@@ -10,6 +10,7 @@ import TriMineBlock from './components/TriMineBlock'
 import AgiGameBlock from './components/AgiGameBlock'
 import FaqBlock from './components/FaqBlock'
 import ModulesBlock from './components/ModulesBlock'
+import DevKitBlock from './components/DevKitBlock'
 
 // Модулей на главной три, а не одиннадцать: доску, корпус и этот показ ведут
 // собственные блоки, остальные лежат указателем в конце.
@@ -81,6 +82,11 @@ export default function App() {
           straight after them rather than twenty screens later. */}
       <FaqBlock />
       <ServiceEntry />
+
+      {/* The newest measured work and the club, after the ask: the FPGA flow
+          timed layer by layer (#/devkit, the flow post) and the TRI DEV
+          developer agent at the club's one price. */}
+      <DevKitBlock />
 
       {/* Then the depth, for the reader still going: the corpus through the
           real compiler, three modules shown at full size, and an index of all

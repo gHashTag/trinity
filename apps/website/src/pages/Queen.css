@@ -817,8 +817,7 @@
 }
 
 .queen27-card:hover {
-  border-color: rgba(0, 255, 136, 0.5);
-  background: rgba(0, 255, 136, 0.04);
+  border-color: rgba(255, 255, 255, 0.22);
 }
 
 .is-running .queen27-card {
@@ -901,9 +900,11 @@
   box-shadow: none;
 }
 
-/* The tint is an inset shadow and not a border, so turning it on moves nothing:
-   a filter that reflows the board costs the reader the place they were looking
-   at. 7% keeps the card a dark card — this is a hue, not a highlight.
+/* The card is black. It carried a 7% wash of its direction colour, and on a
+   board that is mostly code that read as a green board: the owner asked for the
+   cards black again, 2026-10-03. Direction keeps three signs that are not a
+   surface — the dot, the tag in words, and the inset rule down the right edge,
+   which is a shadow and not a border, so it moves nothing.
 
    THE SECOND SELECTOR IS NOT A DUPLICATE. The shell layout states
    `.queen27-page.is-shell .queen27-card { background: transparent }` far below,
@@ -913,21 +914,17 @@
    and the right edge rendered and the colour did not. Measured in the browser,
    not guessed. Naming the shell explicitly wins the cascade whatever the source
    order, and qa/queen-direction-contract.mjs fails the build if this selector
-   goes missing again.
-
-   It also keeps the shell's argument intact. The mix is against `transparent`,
-   not against the old card's white: this adds ONE layer, the hue itself at 7%,
-   over whatever ground the layout chose. It is not a second veil. */
+   goes missing again, or if a direction colour comes back as a card surface. */
 .queen27-card[data-dir],
 .queen27-page.is-shell .queen27-card[data-dir] {
-  background: color-mix(in srgb, var(--queen-dir) 7%, transparent);
+  background: #000;
   box-shadow: inset -3px 0 0 var(--queen-dir);
 }
 
 .queen27-card[data-dir]:hover,
 .queen27-page.is-shell .queen27-card[data-dir]:hover {
   border-color: var(--queen-dir);
-  background: color-mix(in srgb, var(--queen-dir) 16%, transparent);
+  background: #000;
 }
 
 /* The topline was a one-line row with the issue number at the left and, on the
@@ -1232,7 +1229,7 @@
   align-items: center;
   padding: 1rem 1.25rem;
   border-bottom: 1px solid var(--border);
-  background: linear-gradient(90deg, rgba(0, 255, 136, 0.06), transparent 48%);
+  background: #000;
 }
 
 .queen27-factory-command > div {
@@ -2583,7 +2580,7 @@
 .queen27-worker-slots .is-busy {
   border-color: rgba(0, 255, 136, 0.52);
   color: var(--q-green);
-  background: rgba(0, 255, 136, 0.05);
+  background: #000;
 }
 
 .queen27-worker-slots .is-busy i {
@@ -7193,7 +7190,8 @@ body.queen-shell .queen-starfield-source {
 }
 
 .queen27-page.is-shell .queen27-card:hover {
-  background: rgba(0, 255, 136, 0.05);
+  background: #000;
+  border-color: rgba(255, 255, 255, 0.22);
 }
 
 /* And it speaks in the same hand: the titles were the page's proportional face

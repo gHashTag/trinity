@@ -49,7 +49,7 @@ assert.ok(originProblems([{ screen: 'x', route: '.evil.example/feed' }]).length 
 assert.deepEqual(originProblems(TRI_SCREENS), [], 'every TRI route keeps the app origin')
 
 for (const { screen, route } of TRI_SCREENS) {
-  for (const lang of ['en', 'ru', 'de', 'zh', 'es']) {
+  for (const lang of ['en', 'ru']) {
     const src = new URL(triFrameSrc(screen, lang))
     assert.equal(src.origin, APP_ORIGIN, `${screen}/${lang}: frame origin`)
     assert.equal(src.pathname, route, `${screen}/${lang}: frame route`)

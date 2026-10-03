@@ -384,7 +384,7 @@ const COPY = {
     cronsDirectiveBody:
       "A scheduled job exists when a .t27 spec under specs/crons states it: host, schedule, what it runs, what happens on failure, whether it is on. The workflow, Inngest function or timer the sync script found is the witness. “Run now” goes to the host that owns the job; a timer inside a process has no outside handle and the card says so. No live control plane is deployed.",
     agentsView: "AGENTS",
-    agentsHint: "The 27-letter alphabet, each agent stated by a .t27 spec",
+    agentsHint: "Who holds the skills",
     agentsDirective: "AGENTS ARE SPECS",
     agentsDirectiveBody:
       "Level by level the system is built: Specs → Skills → Crons → Agents. An agent exists when a .t27 spec under specs/agents states it — its letter, domain, archetype, the skills it holds, its entry and exit invariant — bound by SOUL.md and AGENTS.md at the repository root. Its crons are derived from the crons' RUNS, never listed by hand. Its experience is joined from the episode log only when an episode names its letter; an agent no episode names says so, and the episodes that name no one are counted as unattributed, not assigned.",
@@ -825,7 +825,7 @@ const COPY = {
     cronsDirectiveBody:
       "Задание по расписанию существует, когда его заявляет спека .t27 в specs/crons: хост, расписание, что запускает, что при сбое, включено ли. Workflow, функция Inngest или таймер, найденные скриптом синхронизации, — свидетель. «Запустить сейчас» ведёт к хосту, которому задание принадлежит; у таймера внутри процесса внешней ручки нет, и карточка так и говорит. Живой контур управления не развёрнут.",
     agentsView: "АГЕНТЫ",
-    agentsHint: "Алфавит из 27 букв, каждый агент заявлен спекой .t27",
+    agentsHint: "Кто держит скиллы",
     agentsDirective: "АГЕНТЫ — ЭТО СПЕКИ",
     agentsDirectiveBody:
       "Уровень за уровнем мы создаём систему: спеки → скиллы → кроны → агенты. Агент существует, когда его заявляет спека .t27 в specs/agents — буква, домен, архетип, скиллы, которые он держит, входной и выходной инвариант, — под законом SOUL.md и AGENTS.md в корне репозитория. Его кроны выводятся из RUNS кронов, а не пишутся руками. Его опыт присоединяется из журнала эпизодов только когда эпизод называет его букву; агент, которого не называет ни один эпизод, говорит об этом сам, а эпизоды без имени считаются неатрибутированными, а не приписываются.",

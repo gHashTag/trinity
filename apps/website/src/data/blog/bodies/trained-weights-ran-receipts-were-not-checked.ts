@@ -1,4 +1,5 @@
 import type { Block } from '../types'
+import { X7_BOARD } from '../../casts'
 
 export const body: Block[] = [
   {
@@ -126,6 +127,13 @@ export const body: Block[] = [
   {
     kind: 'p',
     text: "One side prediction missed. The slip at 30 came after 150,017 jobs, not within the first 20,000 as at 64, so the stalls that fill the buffer are rarer than a single fixed gap would explain. What stalls the bridge's USB transfers is not measured, and the hub is not excluded. The rule the harness follows now is to keep 19 x W under 512 bytes, which is why the default is 24 (456 bytes). It costs no measurable throughput: 4,716 answers/s, against about 4,660 to 4,750 at 64 before the slips.",
+  },
+  {
+    kind: 'terminal',
+    src: X7_BOARD.src,
+    share: X7_BOARD.share,
+    title: X7_BOARD.title,
+    caption: "A later recording of the same five-check receipt harness on the same board, made for the t27 back-half post. It ran a quick set on the trinet node, so its counts are not this post's run." + ' ' + X7_BOARD.caption.en,
   },
   {
     kind: 'h',
@@ -293,6 +301,13 @@ export const ruBody: Block[] = [
   {
     kind: 'p',
     text: 'Одно побочное предсказание не сбылось. Срыв при 30 пришёл после 150 017 задач, а не в первые 20 000, как при 64, так что задержки, заполняющие буфер, реже, чем объяснил бы один фиксированный простой. Что задерживает USB-передачи моста, не измерено, и хаб не исключён. Правило харнесса теперь — держать 19 x W меньше 512 байт, поэтому по умолчанию окно 24 (456 байт). Скорости это заметно не стоит: 4 716 ответов в секунду против примерно 4 660–4 750 при 64 до сбоев.',
+  },
+  {
+    kind: 'terminal',
+    src: X7_BOARD.src,
+    share: X7_BOARD.share,
+    title: X7_BOARD.title,
+    caption: 'Более поздняя запись того же харнесса квитанций с пятью проверками на той же плате, сделанная для поста о задней половине t27. Там прогнан короткий набор на узле trinet, так что её счёт — не прогон этого поста.' + ' ' + X7_BOARD.caption.ru,
   },
   {
     kind: 'h',
