@@ -147,11 +147,15 @@ export async function callRunners(env: RunnersEnv, call: RunnersCall, previous?:
   return { state: 'minted', cabinet, token: minted, runner }
 }
 
+/**
+ * The branch the Queen's production service is built from, so the script a
+ * person downloads is the one the server they connect to speaks.
+ */
+export const RUNNER_BRANCH = 'fix/queen-worker-provider-and-prompt-size'
+
 /** The runner script and its instructions, in the Queen's own repository. */
-export const RUNNER_SCRIPT_URL =
-  'https://raw.githubusercontent.com/gHashTag/BrowserOS/feat/queen-supervisor/trios/agent-server/tools/queen-runner/queen-runner.mjs'
-export const RUNNER_README_URL =
-  'https://github.com/gHashTag/BrowserOS/blob/feat/queen-supervisor/trios/agent-server/tools/queen-runner/README.md'
+export const RUNNER_SCRIPT_URL = `https://raw.githubusercontent.com/gHashTag/BrowserOS/${RUNNER_BRANCH}/trios/agent-server/tools/queen-runner/queen-runner.mjs`
+export const RUNNER_README_URL = `https://github.com/gHashTag/BrowserOS/blob/${RUNNER_BRANCH}/trios/agent-server/tools/queen-runner/README.md`
 
 /**
  * The lines a person pastes on their own machine. The provider key is never
