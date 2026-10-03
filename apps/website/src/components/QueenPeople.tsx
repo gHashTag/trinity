@@ -36,6 +36,7 @@ export interface PeopleCopy {
   commits: string
   repos: string
   viaPr: string
+  viaLane: string
   unattributed: string
   countedIn: string
   loading: string
@@ -50,6 +51,7 @@ export const PEOPLE_COPY: Record<'en' | 'ru', PeopleCopy> = {
     commits: 'spec commits',
     repos: 'repositories',
     viaPr: 'through their merged pull requests',
+    viaLane: 'by the swarm on their keys',
     unattributed: 'spec commits have no GitHub account behind them and no merged pull request, so they are counted here and credited to nobody',
     countedIn: 'Counted in',
     loading: 'Reading the count\u2026',
@@ -62,6 +64,7 @@ export const PEOPLE_COPY: Record<'en' | 'ru', PeopleCopy> = {
     commits: '\u043a\u043e\u043c\u043c\u0438\u0442\u043e\u0432 \u0432 \u0441\u043f\u0435\u043a\u0438',
     repos: '\u0440\u0435\u043f\u043e\u0437\u0438\u0442\u043e\u0440\u0438\u0438',
     viaPr: '\u0447\u0435\u0440\u0435\u0437 \u0441\u0432\u043e\u0438 \u0441\u043c\u0435\u0440\u0436\u0435\u043d\u043d\u044b\u0435 \u043f\u0443\u043b\u043b-\u0440\u0435\u043a\u0432\u0435\u0441\u0442\u044b',
+    viaLane: '\u0440\u043e\u0435\u043c \u043d\u0430 \u0438\u0445 \u043a\u043b\u044e\u0447\u0430\u0445',
     unattributed: '\u043a\u043e\u043c\u043c\u0438\u0442\u043e\u0432 \u0432 \u0441\u043f\u0435\u043a\u0438 \u043d\u0435 \u0441\u0432\u044f\u0437\u0430\u043d\u044b \u043d\u0438 \u0441 \u043e\u0434\u043d\u0438\u043c \u0430\u043a\u043a\u0430\u0443\u043d\u0442\u043e\u043c GitHub \u0438 \u043d\u0438 \u0441 \u043e\u0434\u043d\u0438\u043c \u0441\u043c\u0435\u0440\u0436\u0435\u043d\u043d\u044b\u043c \u043f\u0443\u043b\u043b-\u0440\u0435\u043a\u0432\u0435\u0441\u0442\u043e\u043c, \u043f\u043e\u044d\u0442\u043e\u043c\u0443 \u043e\u043d\u0438 \u043f\u043e\u0441\u0447\u0438\u0442\u0430\u043d\u044b \u0437\u0434\u0435\u0441\u044c \u0438 \u043d\u0435 \u043f\u0440\u0438\u043f\u0438\u0441\u0430\u043d\u044b \u043d\u0438\u043a\u043e\u043c\u0443',
     countedIn: '\u041f\u043e\u0441\u0447\u0438\u0442\u0430\u043d\u043e \u0432',
     loading: '\u0427\u0438\u0442\u0430\u044e \u043f\u043e\u0434\u0441\u0447\u0451\u0442\u2026',
@@ -103,6 +106,7 @@ export default function QueenPeople({ lang }: { lang: 'en' | 'ru' }) {
           const login = loginOf(person)
           if (!login) return null
           const viaPr = person.via.pr ?? 0
+          const viaLane = person.via.lane ?? 0
           return (
             <li key={login} className="qp-row">
               <span className="qp-rank">{i + 1}</span>
@@ -128,6 +132,11 @@ export default function QueenPeople({ lang }: { lang: 'en' | 'ru' }) {
               </span>
               <span className="qp-commits">
                 <b>{fmt(person.commits)}</b> {c.commits}
+                {viaLane > 0 && (
+                  <small className="qp-via">
+                    {fmt(viaLane)} {c.viaLane}
+                  </small>
+                )}
                 {viaPr > 0 && (
                   <small className="qp-via">
                     {fmt(viaPr)} {c.viaPr}
