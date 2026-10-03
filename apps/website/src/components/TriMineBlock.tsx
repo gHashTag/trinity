@@ -2,31 +2,32 @@ import { useEffect, useState } from 'react'
 import { useI18n } from '../i18n/context'
 import { QUEEN_API } from '../lib/queenApi'
 import { MINE_LINKS, minePrompt, type MineFacts, type MineRoads } from '../lib/triMine'
-import { formatTri, readEarnings, readMinterState, TRI_EXPLORER, TRI_NETWORK } from '../lib/triToken'
+import { boardOf, formatTri, readMinterState, readTriCounts, TRI_EXPLORER, TRI_NETWORK } from '../lib/triToken'
+import { TOKEN_COPY } from '../lib/triTokenCopy'
 
 // MINE TRI, on the front door. Owner's word, 2026-10-03: the landing says what
 // the token is right now, and one button hands a visitor's agent the work order
 // for mining it.
 //
-// The numbers are the token tab's two live reads, nothing typed in here: the
-// minter's `get_tri_state` (minted, cap) and the Queen's ledger (TRI per spec,
-// how many earned). A read that fails shows a dash, and the copied prompt then
+// The numbers are the token tab's own reads and its own count, nothing typed
+// in or recounted here: the minter's `get_tri_state` (minted, cap), and
+// readTriCounts + boardOf (the rate, and how many GitHub accounts earned by
+// the leaderboard). A read that fails shows a dash, and the copied prompt then
 // tells the agent where to read the number instead of carrying a stale one.
 //
-// The status line stays next to the numbers on purpose: a testnet token under a
-// signer quorum, shown without saying so, would be a claim about value that
-// nothing here backs.
+// The lead, the status and who earns are TOKEN_COPY's words, the same the
+// token tab shows (owner, 2026-10-03: "DRY"). The status stays next to the
+// numbers on purpose: a testnet token under a signer quorum, shown without
+// saying so, would be a claim about value that nothing here backs.
 
 const COPY = {
   en: {
     eyebrow: 'MINE TRI',
     title: 'TRI is mined by accepted work, not sold',
-    lede: 'A TRI is minted for a .t27 spec the Queen accepted and whose pull request merged, credited to its author by GitHub login — or earned by a lane that ran on your own CPU, FPGA or GPU. There was no pre-mine and there is no sale.',
-    status: 'TON testnet only — V1, signer quorum, NOT trustless. No market, no price.',
     minted: 'Minted',
     cap: 'Cap',
-    perSpec: 'TRI per accepted spec',
-    earners: 'Earners on the ledger',
+    perSpec: 'TRI per spec',
+    earners: 'GitHub accounts that earned',
     copy: 'Copy to agent',
     copied: 'Copied — paste it to your agent',
     copyFailed: 'This page cannot reach the clipboard here. Select the text below and copy it.',
@@ -38,12 +39,10 @@ const COPY = {
   ru: {
     eyebrow: 'МАЙНИТЬ TRI',
     title: 'TRI добывается принятой работой, а не продаётся',
-    lede: 'TRI выпускается за спеку .t27, которую приняла Королева и чей pull request смержен, — автору по логину GitHub; или зарабатывается полосой, которая работала на ваших CPU, FPGA или GPU. Предварительного выпуска не было, продажи нет.',
-    status: 'Только TON testnet — V1, кворум подписантов, НЕ trustless. Рынка и цены нет.',
     minted: 'Выпущено',
     cap: 'Потолок',
-    perSpec: 'TRI за принятую спеку',
-    earners: 'Заработавших в журнале',
+    perSpec: 'TRI за спеку',
+    earners: 'Заработавших аккаунтов GitHub',
     copy: 'Скопировать агенту',
     copied: 'Скопировано — вставьте агенту',
     copyFailed: 'Здесь страница не может достать буфер обмена. Выделите текст ниже и скопируйте.',
@@ -66,6 +65,7 @@ export default function TriMineBlock() {
   const { lang } = useI18n()
   const key = lang === 'ru' ? 'ru' : 'en'
   const t = COPY[key]
+  const tc = TOKEN_COPY[key]
   const [facts, setFacts] = useState<MineFacts>({})
   const [earners, setEarners] = useState<number | null>(null)
   const [copyState, setCopyState] = useState<CopyState>('idle')
@@ -76,11 +76,10 @@ export default function TriMineBlock() {
     readMinterState(abort.signal)
       .then((s) => setFacts((f) => ({ ...f, minted: formatTri(s.minted), cap: formatTri(s.cap) })))
       .catch(() => { /* a dash, and the prompt points at the minter */ })
-    readEarnings(abort.signal)
-      .then((e) => {
-        if (!e) return
-        setFacts((f) => ({ ...f, triPerSpec: e.triPerSpec }))
-        setEarners(e.earners.filter((x) => x.claimed && x.earned > 0).length)
+    readTriCounts(abort.signal)
+      .then((counts) => {
+        setFacts((f) => ({ ...f, triPerSpec: counts.triPerSpec ?? undefined }))
+        setEarners(boardOf(counts).rows.length)
       })
       .catch(() => { /* a dash, and the prompt points at the ledger */ })
     return () => abort.abort()
@@ -107,8 +106,8 @@ export default function TriMineBlock() {
         <header className="play-block-head">
           <span className="play-block-eyebrow">{t.eyebrow}</span>
           <h2 id="mine-title">{t.title}</h2>
-          <p>{t.lede}</p>
-          <p className="tri-mine-status">{t.status}</p>
+          <p>{tc.lead} {tc.rule}</p>
+          <p className="tri-mine-status">{tc.status}</p>
         </header>
 
         <dl className="tri-mine-stats site-card-row">

@@ -11,15 +11,18 @@
 //      ledger address instead; the same for minted and cap
 //   4  the English prompt has no Cyrillic, and both languages carry the same
 //      set of addresses
-//   5  the block reads its figures (readMinterState, readEarnings) rather than
-//      typing them, passes the real ledger and minter, and App.tsx mounts it
-//      right after PlayBlock
+//   5  the block reads its figures (readMinterState, readTriCounts + boardOf:
+//      the token tab's own reads and count) rather than typing them, passes the
+//      real ledger and minter, and App.tsx mounts it right after PlayBlock
+//   6  DRY (owner, 2026-10-03): who earns, the status and the rate check are
+//      the token tab's, quoted, never restated
 //
 //   node --experimental-strip-types qa/tri-mine-contract.mjs
 
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { MINE_LINKS, minePrompt } from '../src/lib/triMine.ts'
+import { TOKEN_COPY } from '../src/lib/triTokenCopy.ts'
 
 const read = (rel) => readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8')
 let checks = 0
@@ -55,14 +58,14 @@ ok(/Do not invent an acceptance/.test(en) && /Не выдумывай приём
 ok(/## Boundary/.test(en) && /## Boundary/.test(ru), 'the issue must declare a .t27 file in its boundary')
 
 // 3  live figures, and their absence
-ok(en.includes('27 TRI per accepted spec (as the ledger states it now)'), 'en quotes the live rate as the ledger states it')
-ok(ru.includes('27 TRI за каждую принятую спеку'), 'ru quotes the live rate')
+ok(en.includes(TOKEN_COPY.en.rate(27)), 'en quotes the live rate in the token tab’s words')
+ok(ru.includes(TOKEN_COPY.ru.rate(27)), 'ru quotes the live rate in the token tab’s words')
 ok(en.includes('1,234 TRI minted of a 10,460,353,203 cap.'), 'en quotes minted and cap')
-for (const bad of [undefined, 0, -3, Number.NaN, Number.POSITIVE_INFINITY]) {
+for (const bad of [undefined, 0, -3, 2.5, Number.NaN, Number.POSITIVE_INFINITY]) {
   for (const lang of ['en', 'ru']) {
     const p = minePrompt(lang, ROADS, { triPerSpec: bad })
     ok(p.includes(`${ROADS.ledger} (`), `${lang}: rate ${bad} sends the agent to the ledger`)
-    ok(!/\d+ TRI (per|за каждую)/.test(p), `${lang}: rate ${bad} is not printed`)
+    ok(!/\d+ TRI (per|за)/.test(p), `${lang}: rate ${bad} is not printed`)
     ok(p.includes(ROADS.minter), `${lang}: no minted/cap sends the agent to the minter`)
   }
 }
@@ -77,12 +80,14 @@ for (const v of Object.values(MINE_LINKS)) ok(en.includes(v), `the prompt carrie
 
 // 5  the block and its mount
 const block = read('src/components/TriMineBlock.tsx')
-ok(/readMinterState\(/.test(block) && /readEarnings\(/.test(block), 'the block reads the minter and the ledger')
+ok(/readMinterState\(/.test(block) && /readTriCounts\(/.test(block), 'the block reads the minter and the token tab’s counts')
+ok(/boardOf\(counts\)/.test(block) && !/readEarnings|\be\.earners\b/.test(block), 'earners are the token tab’s rows, not the ledger’s')
 ok(/ledger: `\$\{QUEEN_API\}\/queen\/public-earnings`/.test(block), 'the block passes the real ledger address')
 ok(/minter: TRI_EXPLORER/.test(block) && /network: TRI_NETWORK/.test(block), 'the block passes the real minter and network')
 ok(/minePrompt\(key, ROADS, facts\)/.test(block), 'the copied prompt is built from what was read')
 ok(!/\b27\b/.test(block), 'the block types no rate in by hand')
-ok(/testnet only/.test(block) && /Только TON testnet/.test(block), 'the block shows the testnet status in both languages')
+ok(/\{tc\.status\}/.test(block) && /\{tc\.lead\} \{tc\.rule\}/.test(block), 'the block shows the token tab’s lead, rule and status')
+ok(!/status:|lede:/.test(block), 'the block types no status or lede of its own')
 ok(/Copy to agent/.test(block) && /Скопировать агенту/.test(block), 'the button is named in both languages')
 ok(/<pre>\{prompt\}<\/pre>/.test(block), 'the prompt is readable and selectable on the page')
 ok(/setCopyState\('failed'\)/.test(block), 'a refused clipboard is said, not swallowed')
@@ -91,5 +96,15 @@ ok(/import TriMineBlock from '\.\/components\/TriMineBlock'/.test(app), 'App.tsx
 const play = app.indexOf('<PlayBlock />')
 const mine = app.indexOf('<TriMineBlock />')
 ok(play > 0 && mine > play && app.indexOf('<FaqBlock />') > mine, 'the block sits after PlayBlock and before the FAQ')
+
+// 6  one home per rule
+for (const lang of ['en', 'ru']) {
+  const p = lang === 'en' ? en : ru
+  ok(p.includes(TOKEN_COPY[lang].rule), `${lang}: the prompt quotes who earns from TOKEN_COPY`)
+  ok(p.includes(TOKEN_COPY[lang].status), `${lang}: the prompt quotes the status from TOKEN_COPY`)
+}
+const mineLib = read('src/lib/triMine.ts')
+ok(/import \{ validRate \} from '\.\/triBoard\.ts'/.test(mineLib) && /validRate\(f\.triPerSpec\)/.test(mineLib), 'the prompt’s rate check is validRate')
+ok(!/Number\.isFinite|NOT trustless|НЕ trustless|proof of compute|CPU, FPGA/.test(mineLib.replace(/^\s*\/\/.*$/gm, '')), 'triMine.ts restates neither the status nor who earns')
 
 console.log(`tri-mine contract: ${checks} checks OK`)

@@ -77,10 +77,9 @@ for (const bad of [undefined, null, 0, -27, 2.5, Number.NaN, Number.POSITIVE_INF
 // 4  the words
 for (const lang of ['en', 'ru']) {
   const c = TOKEN_COPY[lang]
-  const lead = c.boardLead(27)
-  ok(lead.includes('27 TRI'), `${lang}: the lead quotes the rate it was given`)
-  ok(/leaderboard|лидерборд/.test(lead), `${lang}: the lead says the count is the leaderboard's`)
-  ok(/GitHub/.test(lead) && /proof of compute/.test(lead), `${lang}: both roads, the author's login and proof of compute`)
+  ok(c.rate(27).includes('27 TRI'), `${lang}: the rate line quotes the rate it was given`)
+  ok(/leaderboard|лидерборд/.test(c.rule), `${lang}: the rule says the count is the leaderboard's`)
+  ok(/GitHub/.test(c.rule) && /proof of compute/.test(c.rule), `${lang}: both roads, the author's login and proof of compute`)
   ok(/NOT trustless|НЕ trustless/.test(c.status) && /testnet/i.test(c.status), `${lang}: testnet only, not trustless`)
   ok(c.total('1', '2').includes('2 TRI'), `${lang}: the total sits next to what the chain minted`)
 }
@@ -88,7 +87,7 @@ ok(!/[Ѐ-ӿ]/.test(JSON.stringify(Object.values(TOKEN_COPY.en).map((v) => (typeo
 
 // 5  the component
 const tab = read('src/components/QueenToken.tsx')
-ok(/triBoard\(/.test(tab), 'the tab ranks with triBoard')
+ok(/boardOf\(/.test(tab), 'the tab ranks with boardOf (triBoard over the read counts)')
 ok(!/rankByGithub|\.earners\b/.test(tab), 'the ledger’s earners no longer rank anybody')
 ok(/readMinterState\(/.test(tab), 'the tab still reads the minter')
 ok(!/\b27\b/.test(tab), 'no rate typed in by hand')
@@ -107,6 +106,10 @@ ok(/laneLogin\(/.test(boardSrc) && /loginOf\(/.test(boardSrc), 'triBoard asks th
 ok(!/RegExp|\/\^|claimed/.test(boardSrc.replace(/^\/\/.*$/gm, '')), 'triBoard writes no login rule of its own')
 const lb = read('src/components/QueenLeaderboard.tsx')
 ok(/readLeaderboard\(/.test(lb) && /laneLogin\(/.test(lb), 'the LEADERBOARD tab uses the same read and the same login rule')
-ok(/readLeaderboard\(/.test(tab) && /readSpecAuthors\(/.test(tab), 'the TOKEN tab uses the same reads')
+const token = read('src/lib/triToken.ts')
+ok(/readTriCounts\(/.test(tab), 'the TOKEN tab reads its counts with readTriCounts')
+ok(/readLeaderboard\(/.test(token) && /readSpecAuthors\(/.test(token), 'readTriCounts uses the LEADERBOARD tab’s own reads')
+eq(grep(/\btriBoard\(/).filter((f) => f !== 'src/lib/triBoard.ts'), ['src/lib/triToken.ts'], 'triBoard is called in one place: boardOf')
+eq(grep(/\breadEarnings\(/).filter((f) => f !== 'src/lib/triToken.ts'), [], 'only triToken.ts reads the ledger, and only for its rate')
 
 console.log(`tri-board contract: ${checks} checks OK`)
