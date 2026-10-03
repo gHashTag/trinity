@@ -17,7 +17,9 @@ if (!process.argv.includes('--no-build')) {
 }
 const CHROMES = [process.env.CHROME_PATH, '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', '/Applications/Chromium.app/Contents/MacOS/Chromium', '/usr/bin/google-chrome', '/usr/bin/chromium'].filter(Boolean);
 const CHROME = CHROMES.find(p => existsSync(p));
-if (!CHROME) { console.log('  no Chrome found — skipping the touch check.'); process.exit(0); }
+// A missing browser is NOT MEASURED (rc 2), never a pass: a contract that
+// exits 0 without running reads as green to every caller that checks codes.
+if (!CHROME) { console.log('  Queen touch contract: NOT MEASURED (no Chrome found; set CHROME_PATH)'); process.exit(2); }
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.svg': 'image/svg+xml', '.json': 'application/json', '.woff2': 'font/woff2' };
 const server = createServer((req, res) => {
   let f = join(DIST, decodeURIComponent(new URL(req.url, 'http://x').pathname));
@@ -50,7 +52,12 @@ await call('Page.navigate', { url: `${ORIGIN}/?touch=1${process.env.QUEEN_ENGINE
 // Runtime.evaluate on the comb took minutes, and the old one-line FAIL read as
 // "the board lost an element" -- it had not; it was never asked. A probe that
 // gets no answer in 20 s ends the run as NOT MEASURED (rc 2), with the load.
-const READY = `({ rows: document.querySelectorAll('.queen27-sectors-row').length, canvas: !!document.querySelector('.queen27-comb-field canvas'), unit: !!document.querySelector('.queen27-context-unit-text') })`;
+// Since #1206 the comb on #/queen is the SHARED catalog (QueenCatalogHive),
+// and the old CONTEXT panel is not mounted there at all: a tap opens the
+// catalog's own `.queen-catalog-detail`. This contract still waited for the
+// old panel, and nobody saw, because nothing ran it. The legacy panel stays as
+// the fallback for an engine that draws the comb without the catalog.
+const READY = `({ rows: document.querySelectorAll('.queen27-sectors-row').length, canvas: !!document.querySelector('.queen27-comb-field canvas'), unit: !!document.querySelector('[data-catalog-map]') || !!document.querySelector('.queen27-context-unit-text') })`;
 const answered = expr => Promise.race([evaluate(expr), wait(20000).then(() => { throw new Error('starved'); })]);
 let ready = false, parts = null;
 for (let i = 0; i < 60 && !ready; i++) {
@@ -63,10 +70,10 @@ for (let i = 0; i < 60 && !ready; i++) {
   }
   ready = parts.rows === 6 && parts.canvas && parts.unit;
 }
-if (!ready) { console.log(`  Queen touch contract: FAIL (page never became ready - sectors ${parts?.rows ?? '?'}/6, comb canvas ${parts?.canvas ? 'yes' : 'NO'}, selected unit ${parts?.unit ? 'yes' : 'NO'})`); cleanup(); process.exit(1); }
+if (!ready) { const seen = await answered(`JSON.stringify({ width: innerWidth, phone: matchMedia('(max-width: 900px)').matches, hash: location.hash, context: !!document.querySelector('.queen27-context'), contextClass: document.querySelector('[class*="queen27-context"]')?.className ?? null, page: document.querySelector('.queen27-page')?.className ?? null })`).catch(() => 'no answer'); console.log(`  Queen touch contract: FAIL (page never became ready - sectors ${parts?.rows ?? '?'}/6, comb canvas ${parts?.canvas ? 'yes' : 'NO'}, catalog or context ${parts?.unit ? 'yes' : 'NO'}; page ${seen})`); cleanup(); process.exit(1); }
 await wait(1500);
 const rect = await evaluate(`(() => { const r = document.querySelector('.queen27-comb-field canvas').getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height }; })()`);
-const selected = () => evaluate(`(() => { const u = document.querySelector('.queen27-context-unit-text'); const dd = document.querySelector('.queen27-context-stats dd'); return ((u && u.textContent) || '').replace(/\\s+/g, ' ').trim().slice(0, 80) + ' | ' + ((dd && dd.textContent) || '').trim(); })()`);
+const selected = () => evaluate(`(() => { const d = document.querySelector('.queen-catalog-detail'); if (document.querySelector('[data-catalog-map]')) return d ? (d.textContent || '').replace(/\\s+/g, ' ').trim().slice(0, 80) : ''; const u = document.querySelector('.queen27-context-unit-text'); const dd = document.querySelector('.queen27-context-stats dd'); return ((u && u.textContent) || '').replace(/\\s+/g, ' ').trim().slice(0, 80) + ' | ' + ((dd && dd.textContent) || '').trim(); })()`);
 const tap = async (x, y) => { await call('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] }); await wait(40); await call('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] }); await wait(140); };
 
 const before = await selected();
@@ -77,6 +84,9 @@ for (let gy = 0; gy < 5; gy++) for (let gx = 0; gx < 8; gx++) {
   await tap(x, y);
   const s = await selected();
   if (s !== before && !/THE QUEEN|КОРОЛЕВА/i.test(s)) picks.add(s);
+  // The catalog flies the camera to what was picked, so the next tap would
+  // land inside the same cell. A person closes the detail first; so does this.
+  if (await evaluate(`(() => { const c = document.querySelector('.queen-catalog-close'); if (c) c.click(); return !!c; })()`)) await wait(900);
 }
 // A touch drag must orbit, not pick: the selection after the drag equals the one before it.
 const beforeDrag = await selected();
@@ -89,7 +99,7 @@ const afterDrag = await selected();
 const pageMoved = await evaluate(`document.documentElement.scrollTop !== 0 || document.documentElement.scrollLeft !== 0`);
 cleanup();
 const fails = [];
-if (picks.size < 3) fails.push(`taps picked ${picks.size} distinct cells (need >= 3)`);
+if (picks.size < 3) fails.push(`taps picked ${picks.size} distinct cells (need >= 3): ${[...picks].map(p => JSON.stringify(p.slice(0, 50))).join(', ') || 'none'}`);
 if (afterDrag !== beforeDrag) fails.push('a touch drag changed the pick');
 if (pageMoved) fails.push('a touch drag scrolled the page');
 if (fails.length) { for (const f of fails) console.log('  ✗ ' + f); console.log(`  Queen touch contract: FAIL (${fails.length})`); process.exit(1); }
