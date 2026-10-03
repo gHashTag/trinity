@@ -58,10 +58,10 @@ type Lang = 'en' | 'ru'
 
 const rate = (lang: Lang, f: MineFacts, r: MineRoads) =>
   validRate(f.triPerSpec)
-    ? TOKEN_COPY[lang].rate(f.triPerSpec)
+    ? `${lang === 'ru' ? 'Ставка' : 'Rate'}: ${TOKEN_COPY[lang].rate(f.triPerSpec)}`
     : lang === 'ru'
-      ? `ставку за спеку прочитай в журнале: ${r.ledger} (поле triPerSpec).`
-      : `read the rate per spec from the ledger: ${r.ledger} (field triPerSpec).`
+      ? `Ставка за спеку здесь не прочитана; её пишет журнал: ${r.ledger} (поле triPerSpec)`
+      : `Rate per spec: not read here; the ledger states it at ${r.ledger} (field triPerSpec)`
 
 const supply = (lang: Lang, f: MineFacts, r: MineRoads) =>
   f.minted && f.cap
@@ -69,8 +69,8 @@ const supply = (lang: Lang, f: MineFacts, r: MineRoads) =>
       ? `Выпущено ${f.minted} TRI из потолка ${f.cap}.`
       : `${f.minted} TRI minted of a ${f.cap} cap.`
     : lang === 'ru'
-      ? `Выпуск и потолок читай у минтера: ${r.minter}`
-      : `Read minted and cap from the minter: ${r.minter}`
+      ? `Выпуск и потолок: читай у минтера ${r.minter}`
+      : `Minted and cap: read them from the minter ${r.minter}`
 
 /**
  * The prompt the "Copy to agent" button puts on the clipboard.
@@ -82,9 +82,11 @@ const supply = (lang: Lang, f: MineFacts, r: MineRoads) =>
 export function minePrompt(lang: Lang, roads: MineRoads, facts: MineFacts = {}): string {
   if (lang === 'ru') {
     return [
-      'Помоги мне майнить TRI на t27.ai. Майнинг здесь — не хеширование: TRI выпускается за спеку .t27, которую приняла Королева и чей pull request смержен.',
+      `Помоги мне майнить TRI на t27.ai. Майнинг здесь — не хеширование. Что такое TRI: ${TOKEN_COPY.ru.lead}`,
       '',
-      `Факты: сеть TON ${roads.network}. ${TOKEN_COPY.ru.status} ${supply(lang, facts, roads)} Ставка: ${rate(lang, facts, roads)} Предварительного выпуска нет, продажи нет.`,
+      `Факты: сеть TON ${roads.network}. ${TOKEN_COPY.ru.status}`,
+      supply(lang, facts, roads),
+      rate(lang, facts, roads),
       '',
       `Кто зарабатывает: ${TOKEN_COPY.ru.rule} Значит, всё делается из МОЕГО аккаунта GitHub.`,
       '',
@@ -94,8 +96,8 @@ export function minePrompt(lang: Lang, roads: MineRoads, facts: MineFacts = {}):
       '3. Скомпилируй её настоящим компилятором (обозреватель или t27c). Не компилируется — значит, это ещё не спека.',
       '4. Покажи мне дифф. Только после моего «да» открой pull request из моего аккаунта GitHub со ссылкой на задачу; он должен менять объявленный файл .t27.',
       `5. Когда Королева примет работу и PR смержат, заработок появится на вкладке ${MINE_LINKS.token} под моим логином GitHub.`,
-      `6. Второй путь — своё железо: запусти раннер на моей машине под моим аккаунтом провайдера (${MINE_LINKS.runners}, «Мои раннеры»; руководство: ${MINE_LINKS.howToJoin}). Ключ провайдера остаётся на моей машине.`,
-      '7. Вывод: профиль в приложении → привязать GitHub и TON-кошелёк (testnet) → «Вывести». Минт подписывает мой кошелёк, он же платит газ.',
+      `6. Второй путь — моё железо: раннер на моей машине под моим аккаунтом провайдера (${MINE_LINKS.runners}, «Мои раннеры»; руководство: ${MINE_LINKS.howToJoin}). Расскажи, что именно запустится, и запускай только после моего «да». Ключ провайдера остаётся на моей машине.`,
+      `7. Вывод делаю я сам, не ты; как — написано на вкладке токена: ${MINE_LINKS.token}`,
       '',
       'Правила:',
       '- Никогда не вставляй ключ провайдера, токен или пароль в PR, задачу, коммит или чат.',
@@ -106,9 +108,11 @@ export function minePrompt(lang: Lang, roads: MineRoads, facts: MineFacts = {}):
     ].join('\n')
   }
   return [
-    'Help me mine TRI on t27.ai. Mining here is not hashing: a TRI is minted for a .t27 spec the Queen accepted and whose pull request merged.',
+    `Help me mine TRI on t27.ai. Mining here is not hashing. What TRI is: ${TOKEN_COPY.en.lead}`,
     '',
-    `Facts: TON ${roads.network}. ${TOKEN_COPY.en.status} ${supply(lang, facts, roads)} Rate: ${rate(lang, facts, roads)} No pre-mine, no sale.`,
+    `Facts: TON ${roads.network}. ${TOKEN_COPY.en.status}`,
+    supply(lang, facts, roads),
+    rate(lang, facts, roads),
     '',
     `Who earns: ${TOKEN_COPY.en.rule} So everything is done from MY GitHub account.`,
     '',
@@ -118,8 +122,8 @@ export function minePrompt(lang: Lang, roads: MineRoads, facts: MineFacts = {}):
     '3. Compile it with the real compiler (the Explorer or t27c). If it does not compile, it is not a spec yet.',
     '4. Show me the diff. Only after my "yes", open a pull request from my GitHub account that references the issue and changes the declared .t27 file.',
     `5. Once the Queen accepts the work and the PR merges, the earning appears on ${MINE_LINKS.token} under my GitHub login.`,
-    `6. The second road is your own hardware: run a runner on my machine under my own provider account (${MINE_LINKS.runners}, "My runners"; guide: ${MINE_LINKS.howToJoin}). The provider key stays on my machine.`,
-    '7. To withdraw: the app profile -> link GitHub and a TON (testnet) wallet -> Withdraw. My own wallet signs the mint and pays the gas.',
+    `6. The second road is my own hardware: a runner on my machine under my own provider account (${MINE_LINKS.runners}, "My runners"; guide: ${MINE_LINKS.howToJoin}). Tell me what it will start, and start it only after my "yes". The provider key stays on my machine.`,
+    `7. Withdrawing is mine to do, not yours; the token tab says how: ${MINE_LINKS.token}`,
     '',
     'Rules:',
     '- Never put a provider key, token or password in a PR, issue, commit or chat.',

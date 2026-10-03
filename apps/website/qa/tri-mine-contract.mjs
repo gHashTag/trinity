@@ -14,8 +14,12 @@
 //   5  the block reads its figures (readMinterState, readTriCounts + boardOf:
 //      the token tab's own reads and count) rather than typing them, passes the
 //      real ledger and minter, and App.tsx mounts it right after PlayBlock
-//   6  DRY (owner, 2026-10-03): who earns, the status and the rate check are
-//      the token tab's, quoted, never restated
+//   6  DRY (owner, 2026-10-03): what TRI is, who earns, the status and the
+//      rate check are the token tab's, quoted, never restated; how to withdraw
+//      is pointed at, not copied; the rate is gated once, at readTriCounts, so
+//      the landing card cannot print a rate the tab refuses
+//   7  consent: every step that acts for the person (the pull request, the
+//      runner) waits for their "yes", and withdrawing stays the person's
 //
 //   node --experimental-strip-types qa/tri-mine-contract.mjs
 
@@ -103,8 +107,28 @@ for (const lang of ['en', 'ru']) {
   ok(p.includes(TOKEN_COPY[lang].rule), `${lang}: the prompt quotes who earns from TOKEN_COPY`)
   ok(p.includes(TOKEN_COPY[lang].status), `${lang}: the prompt quotes the status from TOKEN_COPY`)
 }
+for (const lang of ['en', 'ru']) {
+  const p = lang === 'en' ? en : ru
+  ok(p.includes(TOKEN_COPY[lang].lead), `${lang}: the prompt quotes what TRI is from TOKEN_COPY`)
+  ok(!p.includes(TOKEN_COPY[lang].withdraw), `${lang}: the prompt points at withdrawing, it does not copy it`)
+}
+ok(!/signs the mint|pays the gas|подписывает|платит газ/.test(en + ru), 'the prompt does not restate how a mint is signed')
 const mineLib = read('src/lib/triMine.ts')
 ok(/import \{ validRate \} from '\.\/triBoard\.ts'/.test(mineLib) && /validRate\(f\.triPerSpec\)/.test(mineLib), 'the prompt’s rate check is validRate')
-ok(!/Number\.isFinite|NOT trustless|НЕ trustless|proof of compute|CPU, FPGA/.test(mineLib.replace(/^\s*\/\/.*$/gm, '')), 'triMine.ts restates neither the status nor who earns')
+ok(!/Number\.isFinite|NOT trustless|НЕ trustless|proof of compute|CPU, FPGA|pre-mine|предварительного|Withdraw ->|«Вывести»/.test(mineLib.replace(/^\s*\/\/.*$/gm, '')), 'triMine.ts restates neither the status, who earns, what TRI is nor how to withdraw')
+const token = read('src/lib/triToken.ts')
+ok(/import \{ triBoard, validRate, type TriBoard \} from '\.\/triBoard'/.test(token) && /return validRate\(rate\) \? rate : null/.test(token), 'readTriCounts gates the rate with validRate, once, for every reader')
+ok(!/validRate|isInteger|isFinite|> 0/.test(block), 'the landing card has no rate check of its own to drift')
+ok(/setEarners\(boardOf\(counts\)\.rows\.length\)/.test(block), 'earners are exactly the token tab’s rows')
+
+// 7  consent before acting
+for (const [lang, p, yes] of [['en', en, /only after my "yes"|Only after my "yes"/], ['ru', ru, /после моего «да»/]]) {
+  const step = (n) => p.split('\n').find((l) => l.startsWith(`${n}. `)) ?? ''
+  ok(yes.test(step(4)), `${lang}: the pull request waits for the person's yes`)
+  ok(yes.test(step(6)), `${lang}: the runner waits for the person's yes`)
+  ok(/mine to do|делаю я сам/.test(step(7)) && step(7).includes(MINE_LINKS.token), `${lang}: withdrawing is the person's, pointed at the token tab`)
+}
+ok(en.includes('The provider key stays on my machine') && ru.includes('Ключ провайдера остаётся на моей машине'), 'both languages keep the key on the person’s machine')
+ok(!/your own hardware/.test(en), 'the person speaks: my hardware, not yours')
 
 console.log(`tri-mine contract: ${checks} checks OK`)

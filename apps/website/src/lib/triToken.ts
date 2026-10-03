@@ -18,7 +18,7 @@
 import { QUEEN_API } from './queenApi'
 import { readLeaderboard, type Leaderboard } from './leaderboard'
 import { readSpecAuthors, type SpecAuthors } from './queenPeople'
-import { triBoard, type TriBoard } from './triBoard'
+import { triBoard, validRate, type TriBoard } from './triBoard'
 
 /** The only minter there is. TESTNET: there is no mainnet TRI. */
 export const TRI_MINTER = 'kQBtPS1btdHCml1vunIhNIBRRS-pfXggMWVbiLhrsvGjbX8X'
@@ -116,7 +116,8 @@ export async function readEarnings(signal?: AbortSignal): Promise<TriEarnings | 
 export interface TriCounts {
   authors: SpecAuthors
   lanes: Leaderboard
-  /** The ledger's rate; null when the ledger could not say. */
+  /** The ledger's rate; null when the ledger could not say, or said something
+   *  validRate refuses. Gated here, at the one read, so no caller can show it. */
   triPerSpec: number | null
 }
 
@@ -130,7 +131,10 @@ export async function readTriCounts(signal?: AbortSignal): Promise<TriCounts> {
     readSpecAuthors(signal),
     readLeaderboard(QUEEN_API, signal),
     readEarnings(signal).then(
-      (e) => e?.triPerSpec ?? null,
+      (e) => {
+        const rate: unknown = e?.triPerSpec
+        return validRate(rate) ? rate : null
+      },
       () => null,
     ),
   ])
