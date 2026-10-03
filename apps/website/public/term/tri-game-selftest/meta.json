@@ -3,6 +3,7 @@
   "title": "tri game-selftest: the queen loop checks its own tools",
   "desc": "6 of 6 self-tests hold: anomalies, blog_drift, lessons, site_gate, tick, vault.",
   "url": "https://t27.ai/term/tri-game-selftest/",
+  "gif": "https://t27.ai/term/tri-game-selftest/session.gif",
   "post": null,
   "recorded": "2026-10-03 12:59 UTC",
   "real_s": 10.7,
