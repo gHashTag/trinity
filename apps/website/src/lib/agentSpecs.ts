@@ -271,6 +271,8 @@ export interface LadderCounts { specs: number | null; skills: number; crons: num
 // witness missing here is a type error in WITNESS_LABEL rather than a blank tab.
 // ---------------------------------------------------------------------------
 export type ToolFamily = 'tri-cli' | 'mcp'
+/** scripts/agents-from-specs.mjs TOOL_REPOS; gHashTag/BrowserOS holds the trios loop `tri` (specs/tools/trios/tri). */
+export type ToolRepo = 'gHashTag/t27' | 'gHashTag/trinity' | 'gHashTag/BrowserOS'
 export type ToolWitness = 'source-parse' | 'registry-export' | 'help-output' | 'runtime'
 
 interface ToolEntryBase {
@@ -284,7 +286,7 @@ interface ToolEntryBase {
   moduleName: string
   inSpecCorpus: boolean
   family: ToolFamily
-  repo: 'gHashTag/t27' | 'gHashTag/trinity'
+  repo: ToolRepo
   source: string
   aboutSource: string
   agents: { letter: string; ok: boolean }[]
@@ -305,6 +307,8 @@ export interface TriToolEntry extends ToolEntryBase {
   actions: { name: string; about: string }[]
   args: { name: string; about: string }[]
   whenToUse: string
+  /** Only on cards of the trios loop CLI (specs/tools/trios/tri): read from trios/bin/tri at SOURCE_COMMIT. */
+  trios?: { documented: boolean; category: string; dispatch: string; helpLine: string; routed: boolean }
   fields: Record<string, unknown> & { ID: string; KIND: 'tool'; FAMILY: 'tri-cli'; COMMAND: string; SOURCE: string; ABOUT: string; ABOUT_SOURCE: string; ACTIONS: string[]; AGENTS: string[]; AGENTS_NOTE: string; WHEN_TO_USE: string; WITNESS: ToolWitness; ENABLED: boolean }
 }
 
@@ -329,7 +333,7 @@ export interface ToolSpecCatalog extends Omit<SpecCatalogBase, 'codeOnly'> {
   counts: {
     specs: number; tri: number; mcp: number; typecheckOk: number; enabled: number; withAgents: number; withSkills: number
     triWithActions: number; triActions: number; mcpWithTools: number; mcpTools: number; mcpExternal: number
-    byWitness: Record<ToolWitness, number>; byRepo: Record<'gHashTag/t27' | 'gHashTag/trinity', number>
+    byWitness: Record<ToolWitness, number>; byRepo: Record<ToolRepo, number>
   }
   groups: { triByAgent: Record<string, string[]>; mcpByRepo: Record<string, string[]> }
   ladder: LadderCounts
@@ -341,9 +345,18 @@ let toolsPromise: Promise<ToolSpecCatalog> | null = null
 
 export function loadToolSpecs(): Promise<ToolSpecCatalog> {
   if (!toolsPromise) {
-    toolsPromise = fetch('tools/spec-tools.json', { credentials: 'omit' }).then((r) => {
-      if (!r.ok) throw new Error(`could not load spec-tools (${r.status})`)
-      return r.json() as Promise<ToolSpecCatalog>
+    const get = <T,>(path: string) => fetch(path, { credentials: 'omit' }).then((r) => {
+      if (!r.ok) throw new Error(`could not load ${path} (${r.status})`)
+      return r.json() as Promise<T>
+    })
+    // The catalog names its parts (the trios cards, written apart to stay under 1 MB);
+    // scripts/agents-from-specs.mjs joinToolCatalog() is the same join on disk.
+    toolsPromise = get<ToolSpecCatalog & { parts?: { path: string; count: number }[] }>('tools/spec-tools.json').then(async ({ parts = [], ...main }) => {
+      const lists = await Promise.all(parts.map((p) => get<{ tools: ToolSpecEntry[] }>(p.path).then((b) => {
+        if (b.tools.length !== p.count) throw new Error(`${p.path}: ${b.tools.length} cards, the catalog names ${p.count}`)
+        return b.tools
+      })))
+      return { ...main, tools: [...main.tools, ...lists.flat()].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)) }
     })
     toolsPromise.catch(() => { toolsPromise = null })
   }
@@ -394,7 +407,7 @@ export function loadSkillSpecs(): Promise<SkillSpecCatalog> {
  * so cannot read what those frames loaded.
  *
  * Every catalog carries the same generated `ladder`; this reads the smallest of
- * the six (spec-skills.json, ~32 kB against spec-tools.json's ~390 kB) and
+ * the six (spec-skills.json, ~32 kB against spec-tools.json's ~420 kB plus its trios part) and
  * shares the promise the Skill Explorer already uses, so a reader who opens
  * SKILLS pays for it once. The numbers are still generated, never typed here.
  */

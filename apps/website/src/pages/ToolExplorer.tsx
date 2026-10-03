@@ -34,8 +34,8 @@ const UI = {
     subtitle: 'The tri CLI and the MCP servers, each read from its spec',
     metaTitle: 'Tool Explorer',
     metaDescription:
-      'The tools every Trinity agent should know: the commands of the t27 tri CLI and the MCP servers of both repositories, each generated from a .t27 spec with its source, its actions or tools, and the agents that own it.',
-    note: 'Generated from specs/tools/{tri,mcp}/*.t27, not typed by hand',
+      'The tools every Trinity agent should know: the commands of all three tri CLIs (the t27 Rust tri, the Trinity Zig tri and the trios loop tri) and the MCP servers of both repositories, each generated from a .t27 spec with its source, its actions or tools, and the agents that own it.',
+    note: 'Generated from specs/tools/{tri,mcp,trinity/tri,trios/tri}/*.t27, not typed by hand',
     back: '← Home',
     search: 'Search by command, tool or about text',
     allFamilies: 'Both families',
@@ -111,8 +111,8 @@ const UI = {
     subtitle: 'tri CLI и MCP-серверы, каждый прочитан из своей спеки',
     metaTitle: 'Обозреватель инструментов',
     metaDescription:
-      'Инструменты, о которых должен знать каждый агент Trinity: команды t27 tri CLI и MCP-серверы обоих репозиториев, каждый сгенерирован из спеки .t27 с исходником, действиями или инструментами и агентами-владельцами.',
-    note: 'Сгенерировано из specs/tools/{tri,mcp}/*.t27, а не набрано руками',
+      'Инструменты, о которых должен знать каждый агент Trinity: команды всех трёх tri CLI (Rust tri из t27, Zig tri из Trinity и цикловой tri из trios) и MCP-серверы обоих репозиториев, каждый сгенерирован из спеки .t27 с исходником, действиями или инструментами и агентами-владельцами.',
+    note: 'Сгенерировано из specs/tools/{tri,mcp,trinity/tri,trios/tri}/*.t27, а не набрано руками',
     back: '← На главную',
     search: 'Поиск по команде, инструменту или описанию',
     allFamilies: 'Оба семейства',

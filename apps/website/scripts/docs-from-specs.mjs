@@ -19,7 +19,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, statSync,
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
-  CYRILLIC, REPO_ROOT, SITE, T27_REPO_URL, agentPin, analyzeSpecFiles, checkSchema, loadCompiler, sha256, sortKeys,
+  CYRILLIC, REPO_ROOT, SITE, T27_REPO_URL, agentPin, analyzeSpecFiles, checkSchema, loadCompiler, readToolCatalog, sha256, sortKeys,
 } from './agents-from-specs.mjs'
 
 const CORPUS = 'public/t27/files'
@@ -373,7 +373,7 @@ export function buildDocs({ docsSpec, chapterSpecs, i18nSpecs = [], bundles = ne
     { layer: 'Skills', dir: 'specs/skills', count: ladder.skills, typecheckOk: skills?.counts?.typecheckOk ?? null, source: 'public/skills/spec-skills.json' },
     { layer: 'Crons', dir: 'specs/crons', count: ladder.crons, typecheckOk: crons?.counts?.typecheckOk ?? null, source: 'public/crons/spec-crons.json' },
     { layer: 'Agents', dir: 'specs/agents', count: ladder.agents, typecheckOk: agents?.counts?.typecheckOk ?? null, source: 'public/agents/spec-agents.json' },
-    { layer: 'Tools', dir: 'specs/tools/{tri,mcp}', count: ladder.tools, typecheckOk: tools?.counts?.typecheckOk ?? null, source: 'public/tools/spec-tools.json' },
+    { layer: 'Tools', dir: 'specs/tools/{tri,mcp,trinity/tri,trios/tri}', count: ladder.tools, typecheckOk: tools?.counts?.typecheckOk ?? null, source: 'public/tools/spec-tools.json' },
     { layer: 'Functions', dir: 'specs/functions', count: ladder.functions, typecheckOk: functions?.counts?.typecheckOk ?? null, source: 'public/functions/spec-functions.json' },
   ]
   const witnessRows = [
@@ -551,7 +551,7 @@ export async function generate({ generatedAt } = {}) {
   const stamp = generatedAt ?? (epoch ? new Date(Number(epoch) * 1000).toISOString() : new Date().toISOString())
   return buildDocs({
     docsSpec, chapterSpecs, i18nSpecs, bundles, bodies, sourceTexts, pin, trinityPin,
-    catalogs: { skills: readJson('public/skills/spec-skills.json'), crons: readJson('public/crons/spec-crons.json'), agents: readJson('public/agents/spec-agents.json'), tools: readJson('public/tools/spec-tools.json'), functions: readJson('public/functions/spec-functions.json'), t27Manifest: readJson('public/t27/manifest.json') },
+    catalogs: { skills: readJson('public/skills/spec-skills.json'), crons: readJson('public/crons/spec-crons.json'), agents: readJson('public/agents/spec-agents.json'), tools: existsSync(join(SITE, 'public/tools/spec-tools.json')) ? readToolCatalog(SITE) : null, functions: readJson('public/functions/spec-functions.json'), t27Manifest: readJson('public/t27/manifest.json') },
     compilerWasmSha256: sha256(wasmBytes), generatedAt: stamp,
   })
 }
