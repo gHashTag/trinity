@@ -373,7 +373,7 @@ export function buildDocs({ docsSpec, chapterSpecs, i18nSpecs = [], bundles = ne
     { layer: 'Skills', dir: 'specs/skills', count: ladder.skills, typecheckOk: skills?.counts?.typecheckOk ?? null, source: 'public/skills/spec-skills.json' },
     { layer: 'Crons', dir: 'specs/crons', count: ladder.crons, typecheckOk: crons?.counts?.typecheckOk ?? null, source: 'public/crons/spec-crons.json' },
     { layer: 'Agents', dir: 'specs/agents', count: ladder.agents, typecheckOk: agents?.counts?.typecheckOk ?? null, source: 'public/agents/spec-agents.json' },
-    { layer: 'Tools', dir: 'specs/tools/{tri,mcp,trinity/tri,trios/tri}', count: ladder.tools, typecheckOk: tools?.counts?.typecheckOk ?? null, source: 'public/tools/spec-tools.json' },
+    { layer: 'Tools', dir: 'specs/tools/{tri,mcp,trinity/tri,trinity/cli,trios/tri}', count: ladder.tools, typecheckOk: tools?.counts?.typecheckOk ?? null, source: 'public/tools/spec-tools.json' },
     { layer: 'Functions', dir: 'specs/functions', count: ladder.functions, typecheckOk: functions?.counts?.typecheckOk ?? null, source: 'public/functions/spec-functions.json' },
   ]
   const witnessRows = [

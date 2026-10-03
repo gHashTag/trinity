@@ -39,6 +39,8 @@ const ASCII_MAP = [
   [/—|–/g, '--'], [/→/g, '->'], [/←/g, '<-'], [/≠/g, '!='], [/≥/g, '>='], [/≤/g, '<='],
   [/×/g, 'x'], [/³/g, '3'], [/²/g, '2'], [/…/g, '...'], [/[“”«»]/g, '"'], [/[‘’]/g, "'"],
   [/·/g, '-'], [/≈/g, '~'], [/±/g, '+/-'], [/φ/g, 'phi'], [/✓/g, 'ok'], [/✗/g, 'x'],
+  // Greek letters and a superscript the gHashTag/trinity help text uses (scripts/tools-from-trinity-tri.mjs).
+  [/π/g, 'pi'], [/μ/g, 'mu'], [/χ/g, 'chi'], [/σ/g, 'sigma'], [/ε/g, 'epsilon'], [/γ/g, 'gamma'], [/ⁿ/g, '^n'],
 ]
 // A developer's home directory is never published (qa/tools-spec-contract.mjs HOME_PATH);
 // the source names several absolute paths under it, which read the same as ~/.
@@ -157,8 +159,10 @@ export function castFor(command, casts) {
   return fits[0] ?? null
 }
 
-export function cards(src, commit, casts = new Map()) {
-  if (!/^[0-9a-f]{40}$/.test(commit)) throw new Error(`--commit must be a full 40-hex SHA, is ${JSON.stringify(commit)}`)
+// The command set: the union of the top-level case arms and the names `tri help` documents, each with
+// the help entry that describes it (doc) and its case arm (arms). scripts/tri-commands.mjs snapshots
+// the same set, so the coverage gate and the cards can never disagree on what a command is.
+export function commandSet(src) {
   const entries = parseHelp(helpBlock(src))
   const arms = caseArms(src)
   const doc = new Map()
@@ -170,6 +174,26 @@ export function cards(src, commit, casts = new Map()) {
     for (const a of aliases) if (better(a)) doc.set(a, { e, aliasOf: names[0] })
   }
   const all = [...new Set([...arms.keys(), ...doc.keys()])].filter((n) => !NOT_COMMANDS.has(n)).sort()
+  return { all, arms, doc }
+}
+
+// What a command's own source says it does: the help line, else the first comment of its case arm.
+// '' when neither says anything; the card then says so (noHelp) instead of inventing a description.
+export function helpOf(name, { arms, doc }) {
+  const d = doc.get(name)
+  const arm = arms.get(name)
+  // A terse help description ("this help") is kept, prefixed with the command so it reads alone on a card.
+  const helpAbout = !d ? '' : d.e.about && d.e.about.length <= 10 ? `tri ${name}: ${d.e.about}` : d.e.about
+  const comment = arm ? firstComment(arm.body) : ''
+  return { helpAbout, comment, text: helpAbout || comment }
+}
+
+export const noHelp = (commit) => `no help text in ${REPO}:${SOURCE}@${commit.slice(0, 12)}`
+
+export function cards(src, commit, casts = new Map()) {
+  if (!/^[0-9a-f]{40}$/.test(commit)) throw new Error(`--commit must be a full 40-hex SHA, is ${JSON.stringify(commit)}`)
+  const set = commandSet(src)
+  const { all, arms, doc } = set
   const out = new Map()
   for (const name of all) {
     const where = `tri ${name}`
@@ -178,10 +202,8 @@ export function cards(src, commit, casts = new Map()) {
     // DOCUMENTED = `tri help` names the command. The description is the help line's own, else the
     // first comment of the case arm, and ABOUT_SOURCE says which one it is.
     const documented = Boolean(d)
-    const comment = arm ? firstComment(arm.body) : ''
-    // A terse help description ("this help") is kept, prefixed with the command so it reads alone on a card.
-    const helpAbout = !d ? '' : d.e.about && d.e.about.length <= 10 ? `tri ${name}: ${d.e.about}` : d.e.about
-    const about = ascii(helpAbout || comment || (documented ? 'Named by `tri help` without a description; its case arm carries no comment.' : 'No line in `tri help` and no comment in its case arm.'), where)
+    const { helpAbout, comment } = helpOf(name, set)
+    const about = ascii(helpAbout || comment || `${noHelp(commit)}: ${documented ? '`tri help` names it without a description and its case arm carries no comment' : 'no line in `tri help` and no comment in its case arm'}`, where)
     const helpSrc = `\`tri help\` (the heredoc under the help arm of ${SOURCE})${d?.aliasOf ? `, as an alias of tri ${d.aliasOf}` : ''}`
     const armSrc = arm ? `first comment of the \`${name})\` case arm of ${SOURCE}, line ${arm.line}` : ''
     const aboutSource = helpAbout ? helpSrc

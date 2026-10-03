@@ -690,29 +690,31 @@ test('tool translations come through the same i18n contract once SCOPE names spe
   assert.equal(r.tools.i18n[0].coverage.n, 1)
 })
 
-test('the committed tool catalog: 387 specs in four directories at schema 2 (52 t27 tri, 29 Trinity tri, 295 trios tri, 11 mcp), a 63-entry legacy table, two collisions, every agent link resolved both ways, RU summaries for all but the generated trios cards', async () => {
+test('the committed tool catalog: 607 specs in five directories at schema 2 (52 t27 tri, 29 Trinity registry-export tri, 220 generated Trinity tri, 295 trios tri, 11 mcp), a 63-entry legacy table, twelve collisions, every agent link resolved both ways, RU summaries for all but the generated trios and trinity/cli cards', async () => {
   const { generate } = await import('./agents-from-specs.mjs')
   const r = await generate({ generatedAt: '2026-01-01T00:00:00.000Z' })
   assert.deepEqual(r.problems, [])
-  assert.equal(r.tools.tools.length, 387)
-  assert.equal(r.tools.counts.tri, 376)
-  assert.equal(r.tools.counts.trinityTri, 29)
+  assert.equal(r.tools.tools.length, 607)
+  assert.equal(r.tools.counts.tri, 596)
+  assert.equal(r.tools.counts.trinityTri, 249)
+  assert.equal(r.tools.tools.filter((t) => t.specPath.startsWith('specs/tools/trinity/cli/')).length, 220)
   assert.equal(r.tools.counts.triosTri, 295)
   assert.equal(r.tools.counts.mcp, 11)
-  assert.equal(r.tools.counts.schema2, 387)
+  assert.equal(r.tools.counts.schema2, 607)
   assert.equal(r.tools.schema, 2)
   assert.equal(Object.keys(r.tools.legacy).length, 63)
   // The eleventh mcp card is the Queen's scheduler; its witness is the only help-output one.
   assert.equal(r.tools.counts.byWitness['help-output'], 1)
   assert.equal(byIdOf(r).get('mcp/inngest-dev')?.agents.map((a) => a.letter).join(), 'T')
-  assert.deepEqual(r.tools.collisions.map((c) => c.name), ['fpga', 'test'])
+  assert.deepEqual(r.tools.collisions.map((c) => c.name), ['cell', 'doctor', 'experience', 'fmt', 'fpga', 'gen', 'loop', 'pr', 'serve', 'status', 'test', 'verdict'])
   assert.equal(r.tools.counts.byWitness['registry-export'], 29)
   for (const t of r.tools.tools) assert.equal(t.qualifiedId, `${t.repo}:${t.id.includes(':') ? t.id.split(':')[1] : t.id}`, `${t.id}: qualified id`)
   const byId = new Map(r.tools.tools.map((t) => [t.id, t]))
   for (const t of r.tools.tools) {
     assert.ok(t.agents.every((a) => a.ok), `${t.id}: unresolved agent`)
-    // The trios cards are regenerated from trios/bin/tri on every bump; their RU summaries are not written yet.
-    if (t.repo !== 'gHashTag/BrowserOS') assert.ok(t.summary.ru && /[\u0400-\u04ff]/.test(t.summary.ru), `${t.id}: no Russian summary`)
+    // The trios and trinity/cli cards are regenerated from their source on every bump; their RU summaries are not written yet.
+    const isGenerated = t.repo === 'gHashTag/BrowserOS' || t.specPath.startsWith('specs/tools/trinity/cli/')
+    if (!isGenerated) assert.ok(t.summary.ru && /[\u0400-\u04ff]/.test(t.summary.ru), `${t.id}: no Russian summary`)
     assert.ok(!/\/(home|Users)\//.test(t.launch ?? ''), `${t.id}: LAUNCH carries a home path`)
   }
   for (const a of r.agents.agents) for (const t of a.tools) assert.ok(byId.get(t.id)?.agents.some((x) => x.letter === a.letter), `${a.id} -> ${t.id} is one-way`)

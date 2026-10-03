@@ -81,12 +81,15 @@ export const AGENTS_OUT = 'public/agents/spec-agents.json'
 // Layer 5: the tri CLI and the MCP servers (specs/tools/tri/*.t27, specs/tools/mcp/*.t27).
 // The three corpus specs at the top of specs/tools/ are not tool cards and are not read.
 export const TOOL_SPEC_DIR = 'specs/tools'
-export const TOOL_SPEC_SUBDIRS = ['tri', 'mcp', 'trinity/tri', 'trios/tri']
+export const TOOL_SPEC_SUBDIRS = ['tri', 'mcp', 'trinity/tri', 'trinity/cli', 'trios/tri']
 export const TOOLS_OUT = 'public/tools/spec-tools.json'
-// The trios loop tri has ~300 commands; their cards are written beside the catalog so that
-// neither file passes the repository's 1 MB commit limit. The catalog names each part with
+// The trios loop tri has ~300 commands and the Trinity tri ~250; their cards are written beside the
+// catalog, one part per repository, so that no file passes the repository's 1 MB commit limit. The catalog names each part with
 // the sha256 of its card list; readToolCatalog() (and loadToolSpecs() on the site) join them.
-export const TOOLS_PARTS = [{ repo: 'gHashTag/BrowserOS', path: 'public/tools/spec-tools-trios.json' }]
+export const TOOLS_PARTS = [
+  { repo: 'gHashTag/BrowserOS', path: 'public/tools/spec-tools-trios.json' },
+  { repo: 'gHashTag/trinity', path: 'public/tools/spec-tools-trinity.json' },
+]
 
 export function splitToolCatalog(tools) {
   const moved = new Set(TOOLS_PARTS.map((p) => p.repo))
@@ -113,7 +116,7 @@ export function readToolCatalog(root = SITE) {
   const read = (rel) => JSON.parse(readFileSync(join(root, rel), 'utf8'))
   return joinToolCatalog(read(TOOLS_OUT), (path) => read(`public/${path}`))
 }
-export const TOOL_FAMILIES = { tri: 'tri-cli', mcp: 'mcp', 'trinity/tri': 'tri-cli', 'trios/tri': 'tri-cli' }
+export const TOOL_FAMILIES = { tri: 'tri-cli', mcp: 'mcp', 'trinity/tri': 'tri-cli', 'trinity/cli': 'tri-cli', 'trios/tri': 'tri-cli' }
 // Witnesses (specs/tools/catalog.t27): source-parse (read from the source at a named commit),
 // registry-export (read from an artifact the binary itself exported and CI holds to the binary),
 // help-output (diffed against the binary's --help), runtime (an invocation recorded). The
@@ -137,7 +140,7 @@ export const CAST_RE = /^term\/([a-z0-9][a-z0-9-]*)\/session\.cast$/
 export const TERM_DIR = 'public/term'
 export const CAST_SHARE_BASE = 'https://t27.ai/term/'
 // The tool subdirectories whose cards may carry a CAST (a recording shows a command line).
-export const CAST_SUBDIRS = new Set(['tri', 'trinity/tri', 'trios/tri'])
+export const CAST_SUBDIRS = new Set(['tri', 'trinity/tri', 'trinity/cli', 'trios/tri'])
 
 const parseJsonOr = (text, fallback) => {
   try { return JSON.parse(text) } catch { return fallback }
@@ -227,9 +230,9 @@ export function castEntry(cast, command, casts) {
 // Schema 2 (specs/tools/catalog.t27): every card carries REPO, QUALIFIED_ID (<owner>/<repo>:<family>/<name>)
 // and SCHEMA = 2; a legacy card keeps its short ID, a card under trinity/tri has ID = QUALIFIED_ID.
 export const TOOL_SCHEMA = 2
-export const TOOL_REPO_OF_SUBDIR = { tri: 'gHashTag/t27', 'trinity/tri': 'gHashTag/trinity', 'trios/tri': 'gHashTag/BrowserOS' }
+export const TOOL_REPO_OF_SUBDIR = { tri: 'gHashTag/t27', 'trinity/tri': 'gHashTag/trinity', 'trinity/cli': 'gHashTag/trinity', 'trios/tri': 'gHashTag/BrowserOS' }
 // Subdirectories whose cards carry the repository-qualified ID only (another program also called tri).
-const QUALIFIED_ONLY = new Set(['trinity/tri', 'trios/tri'])
+const QUALIFIED_ONLY = new Set(['trinity/tri', 'trinity/cli', 'trios/tri'])
 export const CATALOG_SPEC_DIRS = new Set([SKILL_SPEC_DIR, CRON_SPEC_DIR, AGENT_SPEC_DIR, TOOL_SPEC_DIR])
 export const EXPERIENCE_PATH = 'public/agents/experience.json'
 export const AGENT_LAYERS = ['Archetypal', 'Spiritual', 'Physical']
@@ -416,9 +419,15 @@ const TOOL_TRIOS_TRI_REQUIRED = {
   ...TOOL_TRI_REQUIRED, REPO: 'str', QUALIFIED_ID: 'str', SCHEMA: 'u32', SOURCE_COMMIT: 'str', ROUTED: 'bool', DISPATCH: 'str',
   DOCUMENTED: 'bool', HELP_LINE: 'str', CATEGORY: 'str', WITNESS_SOURCE: 'str',
 }
+// A card of a gHashTag/trinity tri command the registry export does not cover (specs/tools/trinity/cli/<command>.t27),
+// written by scripts/tools-from-trinity-tri.mjs from qa/tri-commands/trinity.json at SOURCE_COMMIT.
+const TOOL_TRINITY_CLI_REQUIRED = {
+  ...TOOL_TRI_REQUIRED, REPO: 'str', QUALIFIED_ID: 'str', SCHEMA: 'u32', SOURCE_COMMIT: 'str', ROUTED: 'bool', ROUTE_KIND: 'str', ROUTE_NOTE: 'str',
+  IN_REGISTRY: 'bool', ALIASES: 'arr', COLLIDES_WITH: 'str', WITNESS_SOURCE: 'str',
+}
 // A tri-cli card may name its recorded run (see castProblems); an mcp card may not.
 const TOOL_CAST_OPTIONAL = { CAST: 'str' }
-const TOOL_ROUTE_KINDS = ['execute_map', 'parse_command', 'main_chain', 'cell_map', 'none']
+const TOOL_ROUTE_KINDS = ['execute_map', 'parse_command', 'main_chain', 'cell_map', 'namespace', 'none']
 const INT_MAX = { u8: 0xff, u16: 0xffff, u32: 0xffffffff }
 export const CYRILLIC = /[\u0400-\u04ff]/
 
@@ -828,15 +837,16 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], func
   // repeating them under fields for ~300 cards would push its part past the 1 MB commit limit.
   const TRIOS_KEPT_FIELDS = ['ID', 'KIND', 'FAMILY', 'REPO', 'QUALIFIED_ID', 'SCHEMA', 'COMMAND', 'SOURCE', 'ABOUT', 'ABOUT_SOURCE', 'AGENTS', 'AGENTS_NOTE', 'WHEN_TO_USE', 'WITNESS', 'CAST', 'ENABLED']
   const slimFields = (f) => Object.fromEntries(TRIOS_KEPT_FIELDS.filter((k) => k in f).map((k) => [k, f[k]]))
+  const SLIM_SUBDIRS = new Set(['trios/tri', 'trinity/cli'])
   const seenTool = new Map()
   const seenLetter = new Map(agents.map((a) => [a.letter, a]))
   for (const t of toolSpecs) {
     const file = t.path
-    const m = /^specs\/tools\/(tri|mcp|trinity\/tri|trios\/tri)\/([^/]+)\.t27$/.exec(file)
-    if (!m) { problems.push(`${file}: a tool spec must live in specs/tools/tri/, specs/tools/mcp/, specs/tools/trinity/tri/ or specs/tools/trios/tri/`); continue }
+    const m = /^specs\/tools\/(tri|mcp|trinity\/tri|trinity\/cli|trios\/tri)\/([^/]+)\.t27$/.exec(file)
+    if (!m) { problems.push(`${file}: a tool spec must live in specs/tools/tri/, specs/tools/mcp/, specs/tools/trinity/tri/, specs/tools/trinity/cli/ or specs/tools/trios/tri/`); continue }
     const [, sub, base] = m
     if (!t.verdict.typecheckOk || t.verdict.discarded > 0 || !t.verdict.hirOk) problems.push(`${file}: compiler verdict not clean (${JSON.stringify(t.verdict)})`)
-    const [required, schemaOptional] = sub === 'tri' ? [TOOL_TRI_REQUIRED, TOOL_TRI_SCHEMA2_OPTIONAL] : sub === 'mcp' ? [TOOL_MCP_REQUIRED, TOOL_MCP_SCHEMA2_OPTIONAL] : sub === 'trios/tri' ? [TOOL_TRIOS_TRI_REQUIRED, {}] : [TOOL_TRINITY_TRI_REQUIRED, {}]
+    const [required, schemaOptional] = sub === 'tri' ? [TOOL_TRI_REQUIRED, TOOL_TRI_SCHEMA2_OPTIONAL] : sub === 'mcp' ? [TOOL_MCP_REQUIRED, TOOL_MCP_SCHEMA2_OPTIONAL] : sub === 'trios/tri' ? [TOOL_TRIOS_TRI_REQUIRED, {}] : sub === 'trinity/cli' ? [TOOL_TRINITY_CLI_REQUIRED, {}] : [TOOL_TRINITY_TRI_REQUIRED, {}]
     const castAllowed = CAST_SUBDIRS.has(sub)
     const optional = castAllowed ? { ...schemaOptional, ...TOOL_CAST_OPTIONAL } : schemaOptional
     problems.push(...checkSchema(t.consts, required, optional, file))
@@ -853,9 +863,10 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], func
     if (sub !== 'mcp' && f.REPO !== undefined && f.REPO !== TOOL_REPO_OF_SUBDIR[sub]) problems.push(`${file}: REPO must be ${TOOL_REPO_OF_SUBDIR[sub]} under ${sub}/, is ${JSON.stringify(f.REPO)}`)
     if (f.SCHEMA !== undefined && f.SCHEMA !== TOOL_SCHEMA) problems.push(`${file}: SCHEMA must be ${TOOL_SCHEMA}, is ${JSON.stringify(f.SCHEMA)}`)
     if (f.QUALIFIED_ID !== undefined && f.QUALIFIED_ID !== qualifiedId) problems.push(`${file}: QUALIFIED_ID must be ${qualifiedId} (REPO:ID), is ${JSON.stringify(f.QUALIFIED_ID)}`)
-    if (sub === 'trios/tri' && !/^[0-9a-f]{40}$/.test(f.SOURCE_COMMIT ?? '')) problems.push(`${file}: SOURCE_COMMIT must be a full 40-hex commit of ${TOOL_REPO_OF_SUBDIR[sub]}`)
-    if (sub === 'trinity/tri') {
-      if (f.SCHEMA === undefined || f.QUALIFIED_ID === undefined || f.REPO === undefined) problems.push(`${file}: a trinity/tri card must carry REPO, QUALIFIED_ID and SCHEMA`)
+    const pinnedBySourceCommit = sub === 'trios/tri' || sub === 'trinity/cli'
+    if (pinnedBySourceCommit && !/^[0-9a-f]{40}$/.test(f.SOURCE_COMMIT ?? '')) problems.push(`${file}: SOURCE_COMMIT must be a full 40-hex commit of ${TOOL_REPO_OF_SUBDIR[sub]}`)
+    if (sub === 'trinity/tri' || sub === 'trinity/cli') {
+      if (f.SCHEMA === undefined || f.QUALIFIED_ID === undefined || f.REPO === undefined) problems.push(`${file}: a ${sub} card must carry REPO, QUALIFIED_ID and SCHEMA`)
       if (!TOOL_ROUTE_KINDS.includes(f.ROUTE_KIND)) problems.push(`${file}: ROUTE_KIND ${JSON.stringify(f.ROUTE_KIND)} is not one of ${TOOL_ROUTE_KINDS.join('|')}`)
       if (f.ROUTED !== (f.ROUTE_KIND !== 'none')) problems.push(`${file}: ROUTED must agree with ROUTE_KIND`)
       if (f.COLLIDES_WITH && !/^gHashTag\/t27:tri\/[^/]+$/.test(f.COLLIDES_WITH)) problems.push(`${file}: COLLIDES_WITH must name a gHashTag/t27:tri/<name> card or be empty`)
@@ -902,6 +913,12 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], func
         card.collidesWith = f.COLLIDES_WITH || null
         card.witnessSource = f.WITNESS_SOURCE
       }
+      if (sub === 'trinity/cli') {
+        card.trinityCli = { aliases: f.ALIASES ?? [], inRegistry: f.IN_REGISTRY === true }
+        card.routing = { routed: f.ROUTED === true, kind: f.ROUTE_KIND, note: f.ROUTE_NOTE }
+        card.collidesWith = f.COLLIDES_WITH || null
+        card.witnessSource = f.WITNESS_SOURCE
+      }
     } else {
       same('TOOLS', 'TOOLS_ABOUT', 'TOOLS', 'TOOLS_ABOUT'); same('TOOLS', 'TOOLS_INPUTS', 'TOOLS', 'TOOLS_INPUTS'); same('RESOURCES', 'RESOURCES_ABOUT', 'RESOURCES', 'RESOURCES_ABOUT')
       if (!['stdio', 'http'].includes(f.TRANSPORT)) problems.push(`${file}: TRANSPORT ${JSON.stringify(f.TRANSPORT)} is not stdio|http`)
@@ -913,7 +930,7 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], func
       card = { family: 'mcp', server: f.SERVER, serverVersion: f.SERVER_VERSION, transport: f.TRANSPORT, launch: f.LAUNCH, env: f.ENV ?? [], config: f.CONFIG, tools: mcpTools, resources, toolsNote: f.TOOLS_NOTE, external: f.EXTERNAL === true, skills: [], aboutSource: f.ABOUT_SOURCE, repo: f.REPO, source: f.SOURCE }
     }
     const repoUrl = card.repo === 'gHashTag/t27' ? T27_REPO_URL : `https://github.com/${card.repo === 'gHashTag/BrowserOS' ? 'gHashTag/BrowserOS' : 'gHashTag/trinity'}`
-    const ref = card.repo === 'gHashTag/t27' ? pin.ref : sub === 'trios/tri' ? f.SOURCE_COMMIT : (experience?.sources ?? []).find((x) => x.repo === 'trinity' && /^[0-9a-f]{40}$/.test(x.commit ?? ''))?.commit ?? 'main'
+    const ref = card.repo === 'gHashTag/t27' ? pin.ref : pinnedBySourceCommit ? f.SOURCE_COMMIT : (experience?.sources ?? []).find((x) => x.repo === 'trinity' && /^[0-9a-f]{40}$/.test(x.commit ?? ''))?.commit ?? 'main'
     tools.push({
       id: f.ID,
       qualifiedId,
@@ -926,7 +943,7 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], func
       discarded: t.verdict.discarded,
       moduleName: t.moduleName,
       inSpecCorpus: corpusPaths.has(file),
-      fields: sub === 'trios/tri' ? slimFields(f) : f,
+      fields: SLIM_SUBDIRS.has(sub) ? slimFields(f) : f,
       ...card,
       agents: letters.map((l) => ({ letter: l, ok: seenLetter.has(l) })),
       links: {

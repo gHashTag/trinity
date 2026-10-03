@@ -1,7 +1,7 @@
 // Layer 5: the tools catalog, checked against what it claims.
 //
 // public/tools/spec-tools.json is written by scripts/agents-from-specs.mjs
-// from the .t27 files under public/t27/files/specs/tools/{tri,mcp,trinity/tri}/ --
+// from the .t27 files under public/t27/files/specs/tools/{tri,mcp,trinity/tri,trinity/cli,trios/tri}/ --
 // through the real compiler, not a regex. The tri family is one card per clap variant
 // of `tri` (gHashTag/t27 cli/tri/src/main.rs) plus, since S06 of gHashTag/trinity#988,
 // one card per command the gHashTag/trinity tri exports (.trinity/registry.json); the
@@ -45,7 +45,7 @@ assert.equal(tools.compilerWasmSha256, sha256(readFileSync('public/t27/t27_compi
 
 // 2. Exactly the vendored files, one card each; the three corpus specs at the top of specs/tools/ are not cards.
 const vendored = TOOL_SPEC_SUBDIRS.flatMap((sub) => readdirSync(join('public/t27/files', TOOL_SPEC_DIR, sub)).filter((f) => f.endsWith('.t27')).map((f) => `${TOOL_SPEC_DIR}/${sub}/${f}`)).sort()
-assert.deepEqual(tools.tools.map((t) => t.specPath).sort(), vendored, 'the catalog is exactly the vendored specs/tools/{tri,mcp,trinity/tri,trios/tri} files')
+assert.deepEqual(tools.tools.map((t) => t.specPath).sort(), vendored, 'the catalog is exactly the vendored specs/tools/{tri,mcp,trinity/tri,trinity/cli,trios/tri} files')
 assert.ok(tools.tools.length >= 50, `${tools.tools.length} tool cards; the tri CLI alone has more than 50 commands`)
 const ids = new Set(tools.tools.map((t) => t.id))
 assert.equal(ids.size, tools.tools.length, 'duplicate tool ids')
@@ -66,7 +66,7 @@ for (const t of tools.tools) {
   assert.equal(t.discarded, 0)
   assert.equal(t.fields.KIND, 'tool')
   assert.equal(t.fields.ID, t.id)
-  const pm = new RegExp(`^${TOOL_SPEC_DIR}/(tri|mcp|trinity/tri|trios/tri)/([^/]+)\\.t27$`).exec(t.specPath)
+  const pm = new RegExp(`^${TOOL_SPEC_DIR}/(tri|mcp|trinity/tri|trinity/cli|trios/tri)/([^/]+)\\.t27$`).exec(t.specPath)
   assert.ok(pm, `${t.id}: ${t.specPath} is not under a tools sub-directory`)
   const [, sub, base] = pm
   assert.equal(t.family, TOOL_FAMILIES[sub])
@@ -77,7 +77,7 @@ for (const t of tools.tools) {
   assert.equal(t.fields.SCHEMA, TOOL_SCHEMA)
   assert.equal(t.repo, sub === 'mcp' ? t.fields.REPO : TOOL_REPO_OF_SUBDIR[sub])
   assert.equal(t.fields.REPO, t.repo)
-  const qualifiedOnly = sub === 'trinity/tri' || sub === 'trios/tri'
+  const qualifiedOnly = sub === 'trinity/tri' || sub === 'trinity/cli' || sub === 'trios/tri'
   const shortId = `${qualifiedOnly ? 'tri' : sub}/${base}`
   assert.equal(t.qualifiedId, `${t.repo}:${shortId}`)
   assert.equal(t.fields.QUALIFIED_ID, t.qualifiedId)
@@ -123,6 +123,22 @@ for (const t of tools.tools) {
     assert.equal(t.registry.mcpEnabled, true, `${t.id}: the export keeps mcp_enabled commands only`)
     assert.match(t.registry.mcpName, /^tri_[a-z0-9_]+$/)
     assert.ok(t.exitCodes.length >= 1 && t.result.length > 0)
+    assert.deepEqual(t.skills, [], `${t.id}: skills name the t27 tri, never a Trinity command`)
+    assert.equal(t.links.config, null)
+    if (t.collidesWith) { assert.ok(ids.has(t.collidesWith.split(':')[1]), `${t.id}: COLLIDES_WITH ${t.collidesWith} names no t27 card`); assert.ok(tools.collisions.some((c) => c.trinity === t.id), `${t.id}: collision not in the table`) }
+  } else if (t.family === 'tri-cli' && sub === 'trinity/cli') {
+    // scripts/tools-from-trinity-tri.mjs: a command of the Zig tri the registry export does not cover.
+    assert.equal(t.repo, 'gHashTag/trinity')
+    assert.equal(t.command, `tri ${base}`)
+    assert.equal(t.fields.COMMAND, t.command)
+    assert.equal(t.witness, 'source-parse', `${t.id}: a trinity/cli card is read from the source, not run`)
+    assert.match(t.links.pinnedAt, /^[0-9a-f]{40}$/, `${t.id}: a trinity/cli card pins a full commit`)
+    assert.ok(t.witnessSource.includes(t.links.pinnedAt), `${t.id}: WITNESS_SOURCE names the pinned commit`)
+    assert.ok(['main_chain', 'namespace', 'parse_command', 'none'].includes(t.routing.kind), `${t.id}: route kind ${t.routing.kind}`)
+    assert.equal(t.routing.routed, t.routing.kind !== 'none')
+    assert.ok(t.routing.note.length > 0, `${t.id}: ROUTE_NOTE empty`)
+    const noHelpText = t.fields.ABOUT.startsWith('no help text in gHashTag/trinity@')
+    if (noHelpText) assert.ok(t.fields.ABOUT.includes(t.links.pinnedAt.slice(0, 12)), `${t.id}: "no help text" names the commit`)
     assert.deepEqual(t.skills, [], `${t.id}: skills name the t27 tri, never a Trinity command`)
     assert.equal(t.links.config, null)
     if (t.collidesWith) { assert.ok(ids.has(t.collidesWith.split(':')[1]), `${t.id}: COLLIDES_WITH ${t.collidesWith} names no t27 card`); assert.ok(tools.collisions.some((c) => c.trinity === t.id), `${t.id}: collision not in the table`) }

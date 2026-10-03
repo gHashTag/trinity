@@ -35,13 +35,15 @@ name: Website checks
 # apps/queen-proxy/** is in the triggers because one of the gates below reads
 # it. The proxy is the server half of the rule that only registered people
 # write to the Queen, and a proxy-only edit that removed the gate would
-# otherwise touch no watched path and run no check at all.
+# otherwise touch no watched path and run no check at all. The five src/tri and
+# src/registry files are in for the same reason: check:tools-coverage re-reads
+# the dispatcher, and a new `tri` command must not land without its card.
 on:
   pull_request:
-    paths: ['apps/website/**', 'apps/queen-proxy/**', '.github/workflows/website-checks.yml']
+    paths: ['apps/website/**', 'apps/queen-proxy/**', '.github/workflows/website-checks.yml', 'src/tri/main.zig', 'src/tri/tri_namespace.zig', 'src/tri/tri_utils.zig', 'src/registry/command_table.zig', 'src/tri/tri_register.zig']
   push:
     branches: [main]
-    paths: ['apps/website/**', 'apps/queen-proxy/**']
+    paths: ['apps/website/**', 'apps/queen-proxy/**', 'src/tri/main.zig', 'src/tri/tri_namespace.zig', 'src/tri/tri_utils.zig', 'src/registry/command_table.zig', 'src/tri/tri_register.zig']
   workflow_dispatch:
 
 jobs:
@@ -101,6 +103,10 @@ jobs:
       # qualified ids the site did not know, and the Queen's Tools tab was blank.
       - name: Tool cards open on the site
         run: npm run check:tools-site
+      # Every command of the three tri programs (qa/tri-commands/) has a card, and
+      # a published recording reaches the card of the command it ran.
+      - name: Every tri command has a card
+        run: npm run check:tools-coverage && npm run test:tri-commands
       # The console reads one person's correspondence in a browser tab. This
       # asserts the four properties that keep that from being a leak: no service
       # key anywhere under src/, exactly one identity header per request, three
