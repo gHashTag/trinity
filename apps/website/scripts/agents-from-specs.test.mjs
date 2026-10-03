@@ -1037,12 +1037,14 @@ test('tools-from-trios-tri names the newest recording that ran the command and p
   assert.equal(castFor('tri dev', casts), null, 'tri devkit is not a run of tri dev')
 })
 
-test('the committed recordings: tri x7-board and tri devkit of the trios CLI end with their casts; no card claims runtime', async () => {
+test('the committed recordings: tri x7-board and tri devkit of the trios CLI, tri misread of the t27 CLI end with their casts; no card claims runtime', async () => {
   const { generate } = await import('./agents-from-specs.mjs')
   const r = await generate({ generatedAt: '2026-01-01T00:00:00.000Z' })
   const byId = byIdOf(r)
   assert.equal(byId.get('gHashTag/BrowserOS:tri/x7-board').cast.src, 'term/x7-board/session.cast')
   assert.equal(byId.get('gHashTag/BrowserOS:tri/devkit').cast.src, 'term/devkit-flow/session.cast')
-  assert.equal(r.tools.counts.withCast, 2)
+  assert.equal(byId.get('tri/misread').cast.src, 'term/t27-tri-misread/session.cast')
+  // 10 trios recordings + 8 t27 ones under public/term/; check:tools-coverage says which card each belongs to.
+  assert.equal(r.tools.counts.withCast, 18)
   assert.equal(r.tools.counts.byWitness.runtime, 0)
 })
