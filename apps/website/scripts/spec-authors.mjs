@@ -30,6 +30,15 @@
 // `attribute` below for the full order. What still has no account is counted
 // as a number, not drawn as a person.
 //
+// THE SWARM'S WORK GOES TO THE LANE IT RAN ON. Owner's word, 2026-10-03. A bee's
+// work reaches t27 master as the squash of a `queen-<issue>` pull request, and
+// the squash is authored by whoever merged it, so the swarm's work read as the
+// merger's own. The Queen records which lane carried each accepted issue and who
+// lent it (`/queen/public-credits`), so a commit squashed from `queen-<issue>`
+// whose issue has a credited lane goes to that lane's owner (`via: lane`). Turns
+// from before an owner lent their lanes are not credited there and keep the
+// rule below.
+//
 // WHY A FILE AND NOT A LIVE READ: an honest answer needs hundreds of GitHub
 // requests and anonymous GitHub allows sixty an hour per address. A generated
 // file costs the visitor nothing and cannot be rate-limited.
@@ -210,11 +219,50 @@ await pool(sources, 4, async ({ repo, path }) => {
   if (page > MAX_PAGES) truncated.push(`${repo}:${path}`)
 })
 
+// ---- 2b. The swarm's lanes: queen-<issue> squashes and who lent the lane. ----
+
+const CREDITS_URL =
+  process.env.QUEEN_CREDITS_URL ?? 'https://trios-agent-server-production.up.railway.app/queen/public-credits'
+const SWARM_REPO = `${OWNER}/t27`
+
+/** issue -> login, from the Queen's own record of accepted turns. */
+const laneOwner = new Map()
+let laneCreditsRead = false
+try {
+  const res = await fetch(CREDITS_URL, { headers: { 'user-agent': 'trinity-spec-authors' } })
+  if (!res.ok) throw new Error(`${res.status}`)
+  const body = await res.json()
+  for (const c of body.credits ?? []) {
+    if (Number.isInteger(c.issue) && isPerson(c.github)) laneOwner.set(c.issue, c.github)
+  }
+  laneCreditsRead = true
+} catch (err) {
+  // Without the record nothing is re-attributed; the old rule stands and the
+  // JSON says why, rather than the board silently changing hands.
+  console.error(`spec-authors: lane credits unavailable (${err.message}); keeping the merger rule`)
+}
+
+/** merge commit sha -> issue, for every merged queen-<issue> pull request. */
+const queenSquash = new Map()
+if (laneOwner.size > 0) {
+  for (let page = 1; page <= 200; page += 1) {
+    const rows = await gh(`repos/${SWARM_REPO}/pulls?state=closed&per_page=100&page=${page}`)
+    if (!rows?.length) break
+    for (const pr of rows) {
+      const m = /^queen-(\d+)$/.exec(pr.head?.ref ?? '')
+      if (m && pr.merged_at && pr.merge_commit_sha) queenSquash.set(pr.merge_commit_sha, Number(m[1]))
+    }
+    if (rows.length < 100) break
+  }
+}
+
 // ---- 3. Attribution: one GitHub account per commit, or none. ----
 
 /**
  * WHO A COMMIT BELONGS TO, IN THIS ORDER:
  *
+ * 0. `lane` - a squash of a merged `queen-<issue>` pull request in t27 whose
+ *    issue the Queen credits to the person who lent the lane (see 2b).
  * 1. `author` - the account GitHub tied to the commit's email. Not for an agent
  *    address, which GitHub ties to a stranger.
  * 2. `pr` - the account that opened the merged pull request carrying the
@@ -234,6 +282,9 @@ async function prAuthor(repo, sha) {
 }
 
 const credited = await pool([...commits.entries()], 4, async ([sha, { repo, row }]) => {
+  const issue = repo === SWARM_REPO ? queenSquash.get(sha) : undefined
+  const lender = issue === undefined ? undefined : laneOwner.get(issue)
+  if (lender) return { sha, login: lender, via: 'lane' }
   const email = (row.commit?.author?.email ?? '').toLowerCase()
   const author = row.author?.login
   if (!AGENT_EMAILS.has(email) && isPerson(author)) return { sha, login: author, via: 'author' }
@@ -293,7 +344,8 @@ process.stdout.write(
     {
       measuredAt: new Date().toISOString(),
       method:
-        'Commits touching a directory that holds .t27 files, in every public gHashTag repository that has one (published mirrors and vendored copies excluded), each commit counted once. Credited to a GitHub account: the commit author, else whoever opened the merged pull request carrying it, else the committer. A measure of work on the spec corpus: not every file under those directories is a spec, and a commit is not a file.',
+        'Commits touching a directory that holds .t27 files, in every public gHashTag repository that has one (published mirrors and vendored copies excluded), each commit counted once. Credited to a GitHub account: for a squash of the swarm\'s queen-<issue> pull request, the person whose provider key the accepted bee ran on (the Queen\'s record); otherwise the commit author, else whoever opened the merged pull request carrying it, else the committer. A measure of work on the spec corpus: not every file under those directories is a spec, and a commit is not a file.',
+      laneCredits: { read: laneCreditsRead, source: CREDITS_URL, issues: laneOwner.size, queenSquashes: queenSquash.size },
       sources,
       truncated,
       unattributed,

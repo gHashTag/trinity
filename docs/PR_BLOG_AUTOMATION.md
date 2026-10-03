@@ -30,12 +30,27 @@ of the existing PR template:
       "The concrete problem, prior behavior and why a reader should care.",
       "The implementation and the evidence supporting its observed result.",
       "The unresolved boundary, what was not tested and what comes next."
-    ]
+    ],
+    "cast": "term/<id>/session.cast",
+    "reproduce": ["the exact command a reader can run to see the result"]
   }
 }
 ```
 <!-- /t27-work-report -->
 ````
+
+`blog.cast` and `blog.reproduce` are optional; omit them rather than filling
+them with placeholders. `cast` must name a recording already published on the
+site (`term/<id>/session.cast`, see the `terminal-cast` skill). `reproduce`
+holds 1–8 commands; the generator shows them and never runs them.
+
+The draft is laid out for readers, not for the audit trail. It opens with
+`summary` (write it as the result, with its number) and a one-line count of
+the reported checks. `outline[0]` becomes "The problem" and the remaining items
+"How it works", so put the problem first. Then come "What changed", a "How we
+checked" table that shows failed and not-run checks next to passed ones, and
+"What this does not show". The provenance notice closes the post. How to write
+each part: "How a post reads" in `.claude/skills/blog-post/SKILL.md`.
 
 Example/placeholder text is not a passing report. `head_sha` must equal the PR's
 current head. Tests may honestly be `passed`, `failed` or `not_run`; passing this

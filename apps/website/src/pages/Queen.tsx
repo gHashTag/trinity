@@ -409,11 +409,10 @@ const COPY = {
     // group, and the three measured cases of ours that pay for it.
     roadmapView: "ROADMAP",
     roadmapHint: "The game: the whole stack rewritten in .t27, by language and stage (key m)",
-    // The fifteenth view: every bee runs on somebody's provider token, and this
-    // is the work each of those lanes did. The score is derived from the
-    // dispatches on every read, so it can be checked against the board.
+    // The fifteenth view: who wrote the specs, and the runners lent to the
+    // swarm. Lanes are counted on TOKEN, not ranked here.
     leaderboardView: "LEADERBOARD",
-    leaderboardHint: "Who lends the swarm a lane, and the XP its bees earned there (key l)",
+    leaderboardHint: "Who wrote the specs, and the runners lent to the swarm (key l)",
     warsView: "WARS",
     warsHint: "Real-task agent benchmarks generated from one .t27 ledger (key x)",
     tokenView: "TOKEN",
@@ -850,7 +849,7 @@ const COPY = {
     roadmapView: "ДОРОЖНАЯ КАРТА",
     roadmapHint: "Игра: весь стек на .t27 — по языкам и этапам (клавиша m)",
     leaderboardView: "ЛИДЕРБОРД",
-    leaderboardHint: "Кто дал рою полосу и сколько XP на ней заработали пчёлы (клавиша l)",
+    leaderboardHint: "Кто писал спеки, и раннеры, одолженные рою (клавиша l)",
     warsView: "ВОЙНЫ",
     warsHint: "Бенчмарки агентов на реальных задачах из единого журнала .t27 (клавиша x)",
     tokenView: "ТОКЕН",

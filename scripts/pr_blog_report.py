@@ -35,6 +35,7 @@ MAX_EVENT_BYTES = 2 * 1024 * 1024
 MAX_REPORT_CHARS = 65536
 SHA = re.compile(r"[0-9a-fA-F]{40}\Z")
 REPOSITORY = re.compile(r"[A-Za-z0-9][A-Za-z0-9-]{0,38}/[A-Za-z0-9][A-Za-z0-9._-]{0,99}\Z")
+CAST = re.compile(r"term/[a-z0-9][a-z0-9-]{0,63}/session\.cast\Z")
 PLACEHOLDER = re.compile(r"\b(?:TODO|TBD|FIXME)\b", re.IGNORECASE)
 EMPTY_VALUE = re.compile(r"(?:none|n/?a|not applicable|placeholder|replace(?: me| this)?|example|test|pending|\.\.\.|…|[-_]+)[.! ]*\Z", re.IGNORECASE)
 TEMPLATE_VALUE = re.compile(r"(?:replace (?:this|me|with)\b.*|(?:insert|write|enter|your)\b.*\bhere[.! ]*|<[^>]+>|\[[^\]]+\])\Z", re.IGNORECASE)
@@ -76,13 +77,15 @@ def decode_json(raw: str, context: str) -> Any:
         fail(f"{context}: malformed JSON ({exc})")
 
 
-def mapping(value: Any, name: str, keys: set[str] | None = None) -> dict[str, Any]:
+def mapping(value: Any, name: str, keys: set[str] | None = None,
+            optional: frozenset[str] = frozenset()) -> dict[str, Any]:
     if not isinstance(value, dict):
         fail(f"{name} must be an object")
-    if keys is not None and set(value) != keys:
+    if keys is not None:
         missing = sorted(keys - set(value))
-        extra = sorted(set(value) - keys)
-        fail(f"{name}: missing keys {missing}; unsupported keys {extra}")
+        extra = sorted(set(value) - keys - optional)
+        if missing or extra:
+            fail(f"{name}: missing keys {missing}; unsupported keys {extra}")
     return value
 
 
@@ -116,6 +119,13 @@ def text_list(value: Any, name: str, minimum_items: int = 1,
     if len(set(item.casefold() for item in result)) != len(result):
         fail(f"{name} must not contain duplicate items")
     return result
+
+
+def cast_path(value: Any, name: str) -> str:
+    # Only a recording published on the site itself: term/<id>/session.cast.
+    if not isinstance(value, str) or not CAST.fullmatch(value):
+        fail(f"{name} must be a published recording path term/<id>/session.cast")
+    return value
 
 
 def sha(value: Any, name: str) -> str:
@@ -218,7 +228,13 @@ def validate_event(event: Any) -> dict[str, Any]:
         normalized_tags.append(tag)
     if len(set(tag.casefold() for tag in normalized_tags)) != len(normalized_tags):
         fail("work report.tags must be unique (case-insensitive)")
-    blog = mapping(report["blog"], "work report.blog", {"title", "summary", "outline"})
+    blog = mapping(report["blog"], "work report.blog", {"title", "summary", "outline"},
+                   frozenset({"cast", "reproduce"}))
+    extras: dict[str, Any] = {}
+    if "cast" in blog:
+        extras["cast"] = cast_path(blog["cast"], "work report.blog.cast")
+    if "reproduce" in blog:
+        extras["reproduce"] = text_list(blog["reproduce"], "work report.blog.reproduce", 1, 8, 2, 1)
     return {
         "version": 1,
         "repository": repository,
@@ -240,6 +256,7 @@ def validate_event(event: Any) -> dict[str, Any]:
             "title": text(blog["title"], "work report.blog.title", 15, 180, words=3),
             "summary": text(blog["summary"], "work report.blog.summary", 40, 600, words=6),
             "outline": text_list(blog["outline"], "work report.blog.outline", 3, 20, 80, 12),
+            **extras,
         },
     }
 
@@ -317,28 +334,70 @@ def lifecycle(report: dict[str, Any]) -> str:
     return "Open PR; unpublished blog draft (not merged)"
 
 
+STATUS_LABEL = {"passed": "passed", "failed": "FAILED", "not_run": "not run"}
+
+
+def code_span(value: str) -> str:
+    return value if "`" in value else f"`{value}`"
+
+
+def check_count(tests: list[dict[str, Any]]) -> str:
+    counts = {status: sum(test["status"] == status for test in tests) for status in STATUS_LABEL}
+    parts = [f"{counts[status]} {STATUS_LABEL[status]}" for status in STATUS_LABEL if counts[status]]
+    return ", ".join(parts)
+
+
 def make_post(report: dict[str, Any]) -> dict[str, Any]:
-    """Produce the website's Post schema, never an SVG/HTML block or published post."""
-    source_notice = (
-        f"{lifecycle(report)}. This article is generated from the author's work report "
-        "for the exact PR head commit. Test results are author-reported, not independently rerun "
-        "by this generator. Merge status is not proof of deployment or runtime correctness."
-    )
-    body = [{"kind": "p", "text": source_notice},
-            {"kind": "h", "text": "Work report"},
-            {"kind": "p", "text": report["summary"]},
-            {"kind": "h", "text": "What changed"},
-            {"kind": "ul", "items": report["changes"]},
-            {"kind": "h", "text": "Context and reasoning"}]
-    body.extend({"kind": "p", "text": paragraph} for paragraph in report["blog"]["outline"])
+    """Produce the website's Post schema, never an SVG/HTML block or published post.
+
+    The order follows what readers do with a technical post: they read the
+    first lines and skim headings. So the result comes first, then the problem
+    (outline[0]) and how it was solved (the rest of the outline), then the
+    evidence and its limits. Where the text came from closes the post.
+    """
+    blog = report["blog"]
+    tests = report["tests"]
+    status = (f"{lifecycle(report).split(';')[0]}. Checks reported by the author: "
+              f"{check_count(tests)}; this generator did not rerun them.")
+    body: list[dict[str, Any]] = [
+        {"kind": "p", "text": report["summary"]},
+        {"kind": "p", "text": status},
+        {"kind": "h", "text": "The problem"},
+        {"kind": "p", "text": blog["outline"][0]},
+        {"kind": "h", "text": "How it works"},
+    ]
+    body.extend({"kind": "p", "text": paragraph} for paragraph in blog["outline"][1:])
+    page = None
+    if "cast" in blog:
+        page = f"https://t27.ai/{blog['cast'].rsplit('/', 1)[0]}/"
+        body.extend([
+            {"kind": "h", "text": "See it run"},
+            {"kind": "p", "text": f"A terminal recording of the commands is published at {page} "
+                                  "(prompt and typing staged, every printed byte real)."},
+        ])
     body.extend([
-        {"kind": "h", "text": "Reported verification"},
-        {"kind": "ul", "items": [
-            f"[{test['status']}] Command: {test['command']}. Result: {test['result']}. Evidence: {test['evidence']}"
-            for test in report["tests"]
-        ]},
-        {"kind": "h", "text": "Limits and open questions"},
+        {"kind": "h", "text": "What changed"},
+        {"kind": "ul", "items": report["changes"]},
+        {"kind": "h", "text": "How we checked"},
+        {"kind": "table", "head": ["Check", "Status", "Result", "Evidence"],
+         "rows": [[code_span(test["command"]), STATUS_LABEL[test["status"]], test["result"], test["evidence"]]
+                  for test in tests]},
+    ])
+    if "reproduce" in blog:
+        body.extend([
+            {"kind": "h", "text": "Try it yourself"},
+            {"kind": "p", "text": "The author lists these commands to reproduce the result; "
+                                  "this generator did not run them."},
+            {"kind": "code", "text": "\n".join(blog["reproduce"])},
+        ])
+    body.extend([
+        {"kind": "h", "text": "What this does not show"},
         {"kind": "ul", "items": report["limitations"]},
+        {"kind": "h", "text": "How this post was made"},
+        {"kind": "p", "text": (
+            f"{lifecycle(report)}. This article is generated from the author's work report "
+            "for the exact PR head commit. Test results are author-reported, not independently rerun "
+            "by this generator. Merge status is not proof of deployment or runtime correctness.")},
     ])
     receipts = [
         {"label": f"{report['repository']} PR #{report['number']}", "href": report["pr_url"]},
@@ -348,12 +407,16 @@ def make_post(report: dict[str, Any]) -> dict[str, Any]:
     if report["merged"]:
         receipts.append({"label": f"Merge commit {report['merge_commit_sha'][:12]}",
                          "href": f"https://github.com/{report['repository']}/commit/{report['merge_commit_sha']}"})
+    if page:
+        receipts.append({"label": "Terminal recording", "href": page})
     word_count = sum(len(block.get("text", "").split()) +
-                     sum(len(item.split()) for item in block.get("items", [])) for block in body)
+                     sum(len(item.split()) for item in block.get("items", [])) +
+                     sum(len(cell.split()) for row in block.get("rows", []) for cell in row)
+                     for block in body)
     return {
         "slug": report["slug"],
-        "title": report["blog"]["title"],
-        "summary": report["blog"]["summary"],
+        "title": blog["title"],
+        "summary": blog["summary"],
         "date": (report["merged_at"] or report["created_at"])[:10],
         "readingMinutes": max(1, math.ceil(word_count / 200)),
         "tags": report["tags"],
@@ -382,6 +445,14 @@ def make_markdown(report: dict[str, Any], post: dict[str, Any]) -> str:
             lines.append(f"## {markdown_text(block['text'])}")
         elif block["kind"] == "ul":
             lines.extend(f"- {markdown_text(item)}" for item in block["items"])
+        elif block["kind"] == "table":
+            # Every cell is escaped, including "|", so a cell cannot add a column.
+            lines.append("| " + " | ".join(markdown_text(cell) for cell in block["head"]) + " |")
+            lines.append("|" + "---|" * len(block["head"]))
+            lines.extend("| " + " | ".join(markdown_text(cell) for cell in row) + " |" for row in block["rows"])
+        elif block["kind"] == "code":
+            # Escaped list items, not a fence: a command cannot close a fence it is not in.
+            lines.extend(f"- {markdown_text(item)}" for item in block["text"].split("\n"))
         else:
             lines.append(markdown_text(block["text"]))
         lines.append("")

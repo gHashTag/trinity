@@ -84,7 +84,7 @@ class ValidationTests(unittest.TestCase):
                 self.assertFalse(post["published"])
                 self.assertEqual(len(post["receipts"]), receipts)
                 self.assertIn(phrase, report.make_markdown(normalized, post))
-                self.assertIn("not independently rerun", post["body"][0]["text"])
+                self.assertIn("not independently rerun", post["body"][-1]["text"])
                 self.assertEqual(post["title"], valid_report()["blog"]["title"])
 
     def test_missing_malformed_and_duplicate_blocks(self):
@@ -219,6 +219,70 @@ class ValidationTests(unittest.TestCase):
         self.assertNotIn("<script>", report.encode_json(post))
         self.assertEqual(json.loads(report.encode_json(post)), post)
         self.assertNotIn("figure", {block["kind"] for block in post["body"]})
+
+
+class TemplateTests(unittest.TestCase):
+    """The draft is shaped for readers: result first, evidence after, provenance last."""
+
+    def test_result_leads_and_provenance_closes(self):
+        payload = valid_report()
+        post = report.make_post(report.validate_event(valid_event(payload)))
+        body = post["body"]
+        self.assertEqual(body[0], {"kind": "p", "text": payload["summary"]})
+        self.assertIn("1 passed", body[1]["text"])
+        self.assertIn("did not rerun", body[1]["text"])
+        headings = [block["text"] for block in body if block["kind"] == "h"]
+        self.assertEqual(headings, ["The problem", "How it works", "What changed", "How we checked",
+                                    "What this does not show", "How this post was made"])
+        self.assertEqual(body[3]["text"], payload["blog"]["outline"][0])
+
+    def test_checks_are_a_table_that_keeps_failures_visible(self):
+        payload = valid_report()
+        payload["tests"].append({"command": "npm run build", "status": "not_run",
+                                 "result": "Left to CI because the laptop is overloaded.",
+                                 "evidence": "Website checks workflow on this PR head."})
+        payload["tests"].append({"command": "zig test src/a.zig", "status": "failed",
+                                 "result": "Two cases fail | on the new parser.",
+                                 "evidence": "Local run log saved as logs/a.txt today."})
+        normalized = report.validate_event(valid_event(payload))
+        post = report.make_post(normalized)
+        table = next(block for block in post["body"] if block["kind"] == "table")
+        self.assertEqual(table["head"], ["Check", "Status", "Result", "Evidence"])
+        self.assertEqual([row[1] for row in table["rows"]], ["passed", "not run", "FAILED"])
+        self.assertEqual(table["rows"][1][0], "`npm run build`")
+        self.assertIn("1 passed, 1 FAILED, 1 not run", post["body"][1]["text"])
+        markdown = report.make_markdown(normalized, post)
+        self.assertIn("Two cases fail \\| on the new parser", markdown)
+
+    def test_optional_cast_and_reproduce(self):
+        payload = valid_report()
+        payload["blog"]["cast"] = "term/x7-board/session.cast"
+        payload["blog"]["reproduce"] = ["tri x7-board --dry-run", "tri cast check x7.cast"]
+        normalized = report.validate_event(valid_event(payload))
+        post = report.make_post(normalized)
+        headings = [block["text"] for block in post["body"] if block["kind"] == "h"]
+        self.assertIn("See it run", headings)
+        self.assertIn("Try it yourself", headings)
+        code = next(block for block in post["body"] if block["kind"] == "code")
+        self.assertEqual(code["text"], "tri x7-board --dry-run\ntri cast check x7.cast")
+        self.assertEqual(post["receipts"][-1], {"label": "Terminal recording",
+                                                "href": "https://t27.ai/term/x7-board/"})
+        markdown = report.make_markdown(normalized, post)
+        self.assertNotIn("```", markdown)
+
+    def test_optional_keys_are_checked_and_others_still_refused(self):
+        for key, value, error in [
+            ("cast", "https://evil.example/x.cast", "published recording"),
+            ("cast", "term/../secrets/session.cast", "published recording"),
+            ("reproduce", [], "reproduce"),
+            ("reproduce", ["ls"] * 9, "reproduce"),
+            ("hero", "anything at all", "unsupported keys"),
+        ]:
+            with self.subTest(key=key, value=value):
+                payload = valid_report()
+                payload["blog"][key] = value
+                with self.assertRaisesRegex(report.ReportError, error):
+                    report.validate_event(valid_event(payload))
 
 
 class ArtifactTests(unittest.TestCase):
