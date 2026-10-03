@@ -3,6 +3,36 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: "tri-cast-from-command-to-card",
+    title: "tri cast: record a command, check the recording, publish it as a page",
+    summary: "[one machine, one day per recording; 10 of 596 commands have one; tri cast is not in a tri release yet] A recorded command can be replayed and checked, a described one can only be believed. tri cast records real terminal output, scrubs and checks it, and publishes a page, a preview card and a player.",
+    date: "2026-10-03",
+    readingMinutes: 4,
+    tags: ["tri", "Verification", "Terminal"],
+    receipts: [
+      { label: "The recording shown in the post: tri selftest", href: "https://t27.ai/term/tri-selftest/" },
+      { label: "The gallery of recorded sessions", href: "https://t27.ai/term/" },
+      { label: "trinity#1273: the recorded-session player and gallery · MERGED 2026-10-03", href: "https://github.com/gHashTag/trinity/pull/1273" },
+      { label: "trinity#1288: recordings for eight tri commands · MERGED 2026-10-03", href: "https://github.com/gHashTag/trinity/pull/1288" },
+      { label: "The FPGA flow, layer by layer (a post built on a recording)", href: "https://t27.ai/#/blog/the-fpga-flow-layer-by-layer" },
+    ],
+    openQuestions: [
+      "A recording shows what a command printed on one machine on one day, not that it is correct for every input.",
+      "Only 10 of 596 commands have a recording; the other 586 have a card and no run.",
+      "tri cast lives in the maintainer's skills directory and is not in a tri release, so a reader cannot install it yet.",
+    ],
+    published: true,
+    ru: {
+      title: "tri cast: записать команду, проверить запись, опубликовать страницей",
+      summary: "[одна машина и один день на запись; запись есть у 10 из 596 команд; tri cast пока не входит в релиз tri] Записанную команду можно проиграть и проверить, описанную — только принять на веру. tri cast записывает настоящий вывод терминала, чистит и проверяет его и публикует страницу, карточку-превью и плеер.",
+      openQuestions: [
+        "Запись показывает, что команда напечатала на одной машине в один день, а не что она верна для любого ввода.",
+        "Запись есть только у 10 из 596 команд; у остальных 586 карточка есть, а прогона нет.",
+        "tri cast живёт в каталоге навыков мейнтейнера и не входит в релиз tri, так что читатель пока не может его установить.",
+      ],
+    },
+  },
+  {
     slug: "the-fpga-flow-layer-by-layer",
     title: "The FPGA flow, layer by layer: what a rewrite from specs is worth",
     summary: "[one design, one laptop at a load of 12.6 on 8 cpus; L1 and L2 figures are Amdahl ceilings, not results; hours a year rest on stated assumptions] We timed every layer of one real XC7A200T build through openXC7. Synthesis took 12.7 s, place and route 70.1 s, FASM to frames 33.9 s and frames to bitstream 0.2 s, 116.9 s in all. With the two layers already rebuilt from t27 specs, the flow takes 83.5 s, 1.40 times faster, and the bitstream is byte-identical. Place and route is now 60% of the build: if it took no time the flow would be 8.75 times faster, while an instant synthesis step caps out at 1.65 times. The numbers are in a recorded terminal session. The tools are not in a tri release yet.",
