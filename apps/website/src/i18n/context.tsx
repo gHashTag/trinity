@@ -3,18 +3,14 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import en from '../../messages/en.json';
 
-const LANGS = ['en', 'ru', 'de', 'zh', 'es'] as const;
+const LANGS = ['en', 'ru'] as const;
 type Lang = typeof LANGS[number];
 
 // English stays static: it is the default and the fallback base for deepMerge,
-// so it has to be there on the first render. The other four were static imports
-// too, which put all five catalogues — 356 kB of JSON — in the entry chunk and
-// made every visitor download four languages they had not asked for.
+// so it has to be there on the first render. Russian is loaded on demand, so a
+// reader of English does not download the Russian catalogue.
 const loaders: Record<Exclude<Lang, 'en'>, () => Promise<{ default: any }>> = {
   ru: () => import('../../messages/ru.json'),
-  de: () => import('../../messages/de.json'),
-  zh: () => import('../../messages/zh.json'),
-  es: () => import('../../messages/es.json'),
 };
 
 interface I18nContextType {
@@ -64,21 +60,6 @@ const SEO = {
     locale: 'ru_RU',
     title: 'TRINITY | TNF · GFTernary — референсная пара форматов для тернарного датапути',
     description: 'TNF и GFTernary: референсная пара числовых форматов для тернарного датапути. 52 теоремы, и каждое аппаратное число измерено на открытом потоке на XC7A200T.',
-  },
-  de: {
-    locale: 'de_DE',
-    title: 'TRINITY | TNF · GFTernary — Referenzformate für den ternären Datenpfad',
-    description: 'TNF und GFTernary: ein Referenzpaar von Zahlenformaten für den ternären Datenpfad. 52 Theoreme, und jede Hardwarezahl auf einem offenen Flow auf XC7A200T gemessen.',
-  },
-  es: {
-    locale: 'es_ES',
-    title: 'TRINITY | TNF · GFTernary — formatos de referencia para la ruta de datos ternaria',
-    description: 'TNF y GFTernary: un par de formatos numéricos de referencia para la ruta de datos ternaria. 52 teoremas, y cada número de hardware medido en un flujo abierto sobre XC7A200T.',
-  },
-  zh: {
-    locale: 'zh_CN',
-    title: 'TRINITY | TNF · GFTernary — 三进制数据通路的参考数字格式',
-    description: 'TNF 与 GFTernary：面向三进制数据通路的一对参考数字格式。52 条定理，所有硬件数据均在 XC7A200T 上以开源流程实测。',
   },
 } as const
 
