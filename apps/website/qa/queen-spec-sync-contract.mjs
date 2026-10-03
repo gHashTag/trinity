@@ -153,6 +153,18 @@ const expected = corpusVersion(corpusIdentity(manifestFile, createHash('sha256')
   fetched.length = 0;
   const modules = await loadCorpus('modules', { wire });
   record('C a part with a wire tries it first and says so when it fell back to the vendored file', fetched[0] === wire && fetched[1].endsWith('queen/modules.json') && modules.source === 'file' && typeof modules.generatedAt === 'string', { fetched, source: modules.source });
+
+  fetched.length = 0;
+  await loadCorpus('modules', { wire, fresh: true });
+  record('C a wire that answered 404 is not asked again on the next poll', !fetched.includes(wire) && fetched.length === 1 && fetched[0].endsWith('queen/modules.json'), { fetched });
+
+  const flaky = 'https://api.invalid/queen/public-foundation';
+  failNext = 1;
+  fetched.length = 0;
+  await loadCorpus('foundation', { wire: flaky });
+  fetched.length = 0;
+  await loadCorpus('foundation', { wire: flaky, fresh: true });
+  record('C a wire that failed with a 5xx is asked again on the next poll', fetched[0] === flaky, { fetched });
 }
 
 // ── D. The address ──
