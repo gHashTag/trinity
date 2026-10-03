@@ -165,12 +165,98 @@ const CSS = `
 .t27t .t27r{white-space:pre;height:1.25em}
 .t27t .t27c{background:#ffd700;color:#000}
 .t27t .prog{height:2px;background:rgba(255,255,255,.06)}.t27t .prog div{height:2px;width:0;background:#00ff88;transition:width .2s linear}
+.t27t .shr{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 12px;background:#0a0a0a;border-top:1px solid rgba(255,255,255,.08);font:12px Outfit,system-ui,sans-serif}
+.t27t .shr .lbl{color:#888;margin-right:2px}
+.t27t .shr .row{display:flex;flex-wrap:wrap;align-items:center;gap:6px;width:100%}
+.t27t .shr .fol a{border-color:transparent;color:#aaa;padding:3px 6px}
+.t27t .shr a,.t27t .shr button{display:inline-flex;align-items:center;gap:5px;background:transparent;border:1px solid rgba(255,255,255,.16);color:${TEXT};border-radius:6px;padding:3px 10px;font:12px Outfit,system-ui,sans-serif;text-decoration:none;cursor:pointer}
+.t27t .shr a:hover,.t27t .shr button:hover{border-color:#00ff88;color:#00ff88}
 `
+
+// The canonical page of a published recording: t27.ai/term/<id>/. A share link
+// always points there, because only that static page has its own preview card
+// (the site's hash routes all share one card).
+const SITE = 'https://t27.ai'
+function sharePage(src, share) {
+  if (share) return share
+  const m = /(?:^|\/)term\/([a-z0-9][a-z0-9-]*)\/session\.cast$/.exec(String(src || '').split(/[?#]/)[0])
+  return m ? `${SITE}/term/${m[1]}/` : ''
+}
+
+// Opened as a Telegram Mini App (the TRI DEV bot's "open" button), Telegram adds
+// tgWebApp* parameters to the address. Only then is Telegram's own script loaded,
+// so links open through Telegram and the page takes the full height.
+let tg = null
+function telegram() {
+  if (tg) return tg
+  const inTelegram = /tgWebApp/.test(window.location.hash + window.location.search)
+  if (!inTelegram) return (tg = Promise.resolve(null))
+  tg = new Promise((resolve) => {
+    if (window.Telegram && window.Telegram.WebApp) return resolve(window.Telegram.WebApp)
+    const s = document.createElement('script')
+    s.src = 'https://telegram.org/js/telegram-web-app.js'
+    s.onload = () => {
+      const app = window.Telegram && window.Telegram.WebApp
+      if (app) { app.ready(); app.expand() }
+      resolve(app || null)
+    }
+    s.onerror = () => resolve(null)
+    document.head.appendChild(s)
+  })
+  return tg
+}
+
+// Where to find us: the same four addresses as the site footer
+// (src/components/Footer.tsx, "Contact"). Change them there and here together.
+const FOLLOW = [
+  ['r/t27ai', 'https://www.reddit.com/r/t27ai/'],
+  ['Telegram', 'https://t.me/t27_lang'],
+  ['X', 'https://x.com/t27_lang'],
+  ['GitHub', 'https://github.com/gHashTag/trinity'],
+]
+
+function shareBar(bar, { page, src, title, ident }) {
+  const text = `${title} · Trinity S³AI`
+  const x = `https://x.com/intent/post?text=${encodeURIComponent(text)}&url=${encodeURIComponent(page)}`
+  const t = `https://t.me/share/url?url=${encodeURIComponent(page)}&text=${encodeURIComponent(text)}`
+  const r = `https://www.reddit.com/submit?url=${encodeURIComponent(page)}&title=${encodeURIComponent(text)}`
+  const follow = FOLLOW.map(([n, h]) => `<a data-k="out" href="${h}" target="_blank" rel="noopener">${n}</a>`).join('')
+  bar.innerHTML = `<div class="row"><span class="lbl">Share</span><a data-k="out" href="${x}" target="_blank" rel="noopener">𝕏 Post</a><a data-k="out" href="${r}" target="_blank" rel="noopener">◉ Reddit</a><a data-k="out" href="${t}" target="_blank" rel="noopener">✈ Telegram</a><button type="button" data-k="copy">⧉ Copy link</button><a data-k="cast" href="${src}" download="${ident || 'session'}.cast">⬇ .cast</a></div><div class="row fol"><span class="lbl">Follow</span>${follow}</div>`
+  const copy = bar.querySelector('[data-k="copy"]')
+  copy.addEventListener('click', async () => {
+    const app = await telegram()
+    const touch = window.matchMedia && window.matchMedia('(pointer:coarse)').matches
+    if (!app && navigator.share && touch) {
+      navigator.share({ title: text, url: page }).catch(() => {})
+      return
+    }
+    try {
+      await navigator.clipboard.writeText(page)
+      copy.textContent = '✓ Copied'
+    } catch {
+      copy.textContent = page
+    }
+    window.setTimeout(() => { copy.textContent = '⧉ Copy link' }, 2000)
+  })
+  // Inside Telegram an ordinary link would leave the Mini App; hand it to Telegram.
+  for (const a of bar.querySelectorAll('a[data-k="out"]')) {
+    a.addEventListener('click', async (e) => {
+      const app = await telegram()
+      if (!app) return
+      e.preventDefault()
+      if (a.href.startsWith('https://t.me/')) app.openTelegramLink(a.href)
+      else app.openLink(a.href)
+    })
+  }
+}
 
 let styled = false
 
-// mount(el, { src, title }) -> { play, pause, replay, destroy }
-export function mount(el, { src, title } = {}) {
+// mount(el, { src, title, share }) -> { play, pause, replay, destroy }
+// share: the recording's page; derived from src when it is term/<id>/session.cast.
+// With a page to point at, the player carries its own share buttons, so every
+// embed (post, spec, share page, Telegram) offers the same ones.
+export function mount(el, { src, title, share } = {}) {
   if (!styled) {
     const st = document.createElement('style')
     st.textContent = CSS
@@ -178,7 +264,10 @@ export function mount(el, { src, title } = {}) {
     styled = true
   }
   el.classList.add('t27t')
-  el.innerHTML = `<div class="bar"><span class="dots" aria-hidden="true"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></span><span class="ttl"></span><span class="note" hidden></span><button type="button" aria-label="Play">▶</button></div><div class="scr"><div class="log" role="log"></div></div><div class="prog"><div></div></div>`
+  el.innerHTML = `<div class="bar"><span class="dots" aria-hidden="true"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></span><span class="ttl"></span><span class="note" hidden></span><button type="button" aria-label="Play">▶</button></div><div class="scr"><div class="log" role="log"></div></div><div class="prog"><div></div></div><div class="shr" hidden></div>`
+  telegram()
+  const page = sharePage(src, share)
+  const ident = (/term\/([a-z0-9-]+)\//.exec(page) || [])[1]
   const ttl = el.querySelector('.ttl')
   const note = el.querySelector('.note')
   const btn = el.querySelector('button')
@@ -258,6 +347,11 @@ export function mount(el, { src, title } = {}) {
       cast = parseCast(t)
       tl = timeline(cast.events)
       if (!title) ttl.textContent = cast.head.title || ''
+      if (page) {
+        const bar = el.querySelector('.shr')
+        shareBar(bar, { page, src, title: ttl.textContent, ident })
+        bar.hidden = false
+      }
       log.setAttribute('aria-label', `Terminal recording: ${ttl.textContent}`)
       reset()
       if (reduced) applyTo(tl.length) // the finished session, still; play is one click away

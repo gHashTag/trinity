@@ -6,7 +6,7 @@ import { useI18n } from '../i18n/context'
 // exists once on the web. Recordings are made and published with `tri cast`.
 
 type Player = { destroy: () => void }
-type PlayerModule = { mount: (el: HTMLElement, o: { src: string; title?: string }) => Player }
+type PlayerModule = { mount: (el: HTMLElement, o: { src: string; title?: string; share?: string }) => Player }
 
 export default function TerminalCast({ src, title, caption, share }: { src: string; title?: string; caption: string; share?: string }) {
   const box = useRef<HTMLDivElement>(null)
@@ -18,7 +18,7 @@ export default function TerminalCast({ src, title, caption, share }: { src: stri
     const url = new URL('term/player.js', document.baseURI).href
     import(/* @vite-ignore */ url)
       .then((m: PlayerModule) => {
-        if (live && box.current) player = m.mount(box.current, { src: new URL(src, document.baseURI).href, title })
+        if (live && box.current) player = m.mount(box.current, { src: new URL(src, document.baseURI).href, title, share })
       })
       .catch(() => {
         if (box.current) box.current.textContent = 'The terminal player could not load.'
@@ -27,7 +27,7 @@ export default function TerminalCast({ src, title, caption, share }: { src: stri
       live = false
       player?.destroy()
     }
-  }, [src, title])
+  }, [src, title, share])
 
   return (
     <figure style={{ margin: '0 0 1.8em' }}>
