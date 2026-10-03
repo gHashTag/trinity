@@ -321,6 +321,12 @@ jobs:
       - name: Roadmap game rules
         run: npm run check:roadmap-game
 
+      # What a link to t27.ai says in a chat preview: the name, the caption and
+      # the description, from lib/motto.ts -- in the head tags, in the i18n
+      # provider that rewrites them after load, and in og/og-image.svg.
+      - name: Link preview words
+        run: npm run check:og-preview
+
       - name: Build
         run: npx vite build
 
