@@ -7922,6 +7922,16 @@ body.queen-shell .queen-starfield-source {
   padding: 0;
 }
 
+/* Only the MAP may run under the floating head. Every other view starts with a
+   title of its own, and the head above sat on it: the phone showed "SECTOR:
+   GHASHTAG/T27" over "LEADERBOARD" and over the first row of every panel
+   (owner, 2026-10-03: "the title is not visible in the header"). So off the
+   comb the body starts below the band the head and the "more" button take:
+   8px top + 44px button = 52px, the taller of the two. */
+.queen27-page.is-shell.is-bare:not([data-view="comb"]) .queen27-hud-viewport > .queen27-hud-vp-body {
+  padding-top: 52px;
+}
+
 .queen27-page.is-shell.is-bare:not(.is-tools) .queen27-hud-viewport > .queen27-hud-vp-head {
   padding: 10px 12px;
   border: 0;
