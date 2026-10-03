@@ -20,6 +20,7 @@ import {
   type BrokerCall,
   type BrowserView,
 } from '../lib/queenBrowser'
+import { QueenWatch, type WatchCopy } from './QueenWatch'
 import './QueenBrowser.css'
 
 export interface BrowserCopy {
@@ -40,10 +41,11 @@ export interface BrowserCopy {
   journal: string
   driving: string
   handBack: string
+  watch: WatchCopy
 }
 
 const brokerEnv = {
-  fetch: (url: string, init: { method: string; credentials: 'omit'; headers: Record<string, string> }) =>
+  fetch: (url: string, init: { method: string; credentials: 'omit'; headers: Record<string, string>; body?: string }) =>
     window.fetch(url, init),
   token: () => {
     const s = appSessionFromWindow()
@@ -221,6 +223,7 @@ export function QueenBrowser({ c, embedded, lang = 'en' }: { c: BrowserCopy; emb
               {c.handBack}
             </button>
           ) : null}
+          <QueenWatch c={c.watch} lang={lang} env={brokerEnv} />
           <button type="button" className="queen27-browser-btn is-quiet" onClick={toggleFullscreen}>
             {isFull ? c.exitFullscreen : c.fullscreen}
           </button>

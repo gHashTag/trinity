@@ -430,6 +430,12 @@ const VERB: Record<string, { ru: string; en: string }> = {
    */
   browser_ask_input: { ru: 'попросил ввести', en: 'asked for input' },
   browser_logins: { ru: 'проверил входы', en: 'checked logins' },
+  /*
+   * Not the agent: a person opened one of the owner's watch links (render
+   * watch-link.ts noteView). The journal is where the owner learns their
+   * screen has an audience -- the link's short id, never the token.
+   */
+  watch_link: { ru: 'открыли ссылку', en: 'watch link opened' },
 }
 
 /**
@@ -450,6 +456,7 @@ export function journalLine(step: JournalStep, lang: 'ru' | 'en'): { time: strin
   else if (typeof d.chars === 'number') text = `${d.chars} ${chars}`
   else if (typeof d.x === 'number' && typeof d.y === 'number') text = `${d.x}, ${d.y}`
   else if (typeof d.pages === 'number') text = String(d.pages)
+  else if (typeof d.link === 'string') text = d.link
   const t = new Date(step.at)
   const time = Number.isNaN(t.getTime())
     ? ''
