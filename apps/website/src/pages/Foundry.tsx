@@ -7,7 +7,8 @@ import Footer from '../components/Footer'
 import QuantumBackground from '../components/QuantumBackground'
 import TerminalCast from '../components/TerminalCast'
 import { X7_BOARD } from '../data/casts'
-import { CLUB, clubPrice } from '../data/club'
+import { CLUB, clubPrice, clubPriceUsd } from '../data/club'
+import AgentShowcase from '../components/AgentShowcase'
 
 /**
  * Golden Foundry — платный клуб разработчиков на кремнии.
@@ -23,8 +24,9 @@ import { CLUB, clubPrice } from '../data/club'
 const CONTACT = { email: 'admin@t27.ai', telegram: CLUB.telegram }
 
 /**
- * Цена подтверждена владельцем 2026-10-03: клуб — $300 в месяц, и это агент
- * разработчик TRI DEV. Один уровень вместо трёх черновых ($29/$79/$249).
+ * Цена — владелец, 2026-10-03: все агенты по одной цене, подписка Telegram
+ * Stars на максимуме (10000 ⭐ / 30 дней, data/club.ts); клуб — это профиль
+ * агента-разработчика TRI DEV. Один уровень вместо трёх черновых.
  * Описание агента — только то, что делает `tri dev` (docs/docs/cli/dev.md):
  * одна задача GitHub — один сервис на Railway — один автономный агент
  * Claude Code. Ничего сверх этого не обещать.
@@ -35,7 +37,6 @@ const TIERS = [
   {
     ru: { name: 'TRI DEV · агент-разработчик', price: clubPrice(true), body: 'Свой агент TRI DEV: автономный агент Claude Code в отдельном сервисе, привязанный к одной вашей задаче на GitHub. Он идёт по конвейеру tri — спека, генерация, тесты, вердикт — отчитывается комментариями в задаче и приносит pull request, который сливаете вы. Плюс всё, что есть в клубе.' },
     en: { name: 'TRI DEV · developer agent', price: clubPrice(false), body: 'Your own TRI DEV agent: an autonomous Claude Code agent in its own service, bound to one of your GitHub issues. It works the tri pipeline — spec, generate, test, verdict — reports each step as a comment on the issue, and delivers a pull request that you merge. Plus everything in the club.' },
-    stars: CLUB.stars,
     featured: true,
   },
 ]
@@ -164,6 +165,8 @@ export default function Foundry() {
           </div>
         </section>
 
+        <AgentShowcase ru={ru} />
+
         {/* УРОВНИ */}
         <section className="section">
           <div className="section-inner">
@@ -186,7 +189,7 @@ export default function Foundry() {
                   >
                     <div style={{ fontSize: '0.75rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--muted)' }}>{loc.name}</div>
                     <div style={{ fontSize: '2rem', fontWeight: 700, margin: '0.5rem 0 0.25rem' }}>{loc.price}</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '0.75rem' }}>{`≈ ${t.stars} ⭐ / ${ru ? 'мес' : 'mo'}`}</div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '0.75rem' }}>{clubPriceUsd(ru)}</div>
                     <p style={{ margin: '0 0 1rem', color: 'var(--muted)', fontSize: '0.92rem', lineHeight: 1.6 }}>{loc.body}</p>
                     <a className={t.featured ? 'btn' : 'btn secondary'} href={CONTACT.telegram} style={{ display: 'inline-block' }}>
                       {c.join}
