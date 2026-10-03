@@ -23,6 +23,7 @@
 import { useEffect, useState } from 'react'
 import {
   loginOf,
+  readSpecAuthors,
   sourceRepos,
   type SpecAuthor,
   type SpecAuthors,
@@ -77,10 +78,8 @@ export default function QueenPeople({ lang }: { lang: 'en' | 'ru' }) {
 
   useEffect(() => {
     let live = true
-    // Relative, so the view works under app.t27.ai/queen/ as well as t27.ai.
-    fetch('roadmap/spec-authors.json', { credentials: 'omit' })
-      .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
-      .then((rows: SpecAuthors) => live && setData(rows))
+    readSpecAuthors()
+      .then((rows) => live && setData(rows))
       .catch(() => live && setData('failed'))
     return () => {
       live = false

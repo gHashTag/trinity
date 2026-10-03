@@ -21,8 +21,9 @@
 
 import { useEffect, useState } from 'react'
 import { QUEEN_API } from '../lib/queenApi'
-import type { SpecAuthors } from '../lib/queenPeople'
-import { triBoard, type LaneUnits } from '../lib/triBoard'
+import { readLeaderboard, type Leaderboard } from '../lib/leaderboard'
+import { readSpecAuthors, type SpecAuthors } from '../lib/queenPeople'
+import { triBoard } from '../lib/triBoard'
 import { TOKEN_COPY, type TokenCopy } from '../lib/triTokenCopy'
 import {
   formatTri,
@@ -112,7 +113,7 @@ export default function QueenToken({ lang }: { lang: 'en' | 'ru' }) {
 
 interface Counts {
   authors: SpecAuthors
-  lanes: { measuredAt: string; contributors: LaneUnits[] }
+  lanes: Leaderboard
   /** The ledger's rate; null when the ledger could not say. */
   triPerSpec: number | null
 }
@@ -123,12 +124,9 @@ interface Counts {
  * is not: without it the units still stand, and the TRI is shown as unknown.
  */
 async function readCounts(signal: AbortSignal): Promise<Counts> {
-  const json = (url: string) =>
-    fetch(url, { credentials: 'omit', signal }).then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
   const [authors, lanes, rate] = await Promise.all([
-    // Relative, so the view works under app.t27.ai/queen/ as well as t27.ai.
-    json('roadmap/spec-authors.json') as Promise<SpecAuthors>,
-    json(`${QUEEN_API}/queen/public-leaderboard`) as Promise<Counts['lanes']>,
+    readSpecAuthors(signal),
+    readLeaderboard(QUEEN_API, signal),
     readEarnings(signal).then(
       (e) => e?.triPerSpec ?? null,
       () => null,

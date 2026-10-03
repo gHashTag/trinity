@@ -62,41 +62,6 @@ export interface TriEarnings {
   recent?: TriEarning[]
 }
 
-/** The same check the leaderboards make: a login becomes an `href`. */
-const GITHUB_LOGIN = /^[a-zA-Z\d](?:[a-zA-Z\d]|-(?=[a-zA-Z\d])){0,38}$/
-export const githubOf = (earner: TriEarner): string | null =>
-  earner.github && GITHUB_LOGIN.test(earner.github) ? earner.github : null
-
-/**
- * The board's ranking: one row per GitHub account, nothing else. Earnings on a
- * lane nobody has tied to an account are summed into `unclaimed` - counted,
- * never drawn as a person (owner, 2026-10-02: rank by GitHub names).
- */
-export function rankByGithub(earners: TriEarner[]): {
-  rows: Array<{ login: string; earned: number; revoked: number }>
-  unclaimed: { earned: number; revoked: number }
-} {
-  const byLogin = new Map<string, { login: string; earned: number; revoked: number }>()
-  const unclaimed = { earned: 0, revoked: 0 }
-  for (const earner of earners) {
-    const login = githubOf(earner)
-    if (!login) {
-      unclaimed.earned += earner.earned
-      unclaimed.revoked += earner.revoked
-      continue
-    }
-    const key = login.toLowerCase()
-    const row = byLogin.get(key) ?? { login, earned: 0, revoked: 0 }
-    row.earned += earner.earned
-    row.revoked += earner.revoked
-    byLogin.set(key, row)
-  }
-  const rows = [...byLogin.values()].sort(
-    (a, b) => b.earned - a.earned || b.revoked - a.revoked || a.login.localeCompare(b.login),
-  )
-  return { rows, unclaimed }
-}
-
 /** `27000n` mTRI -> `"27"`; `1500n` -> `"1.5"`. Exact, no float on the way. */
 export function formatTri(mtri: bigint): string {
   const unit = BigInt(MTRI_PER_TRI)

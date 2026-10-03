@@ -6,34 +6,21 @@
 // the same visitor opens one tab away showed four spec authors and 595 accepted
 // .t27 specs. Two boards about one reward that disagree are one board too many.
 //
-// So this file reads what the leaderboard reads, and nothing else:
+// So this file adds nothing to what the leaderboard knows. The rows, the
+// logins and the reads are the leaderboard's own (lib/queenPeople.ts,
+// lib/leaderboard.ts, lib/githubLogin.ts); the only thing here is the sum:
 //
-// - WHO WROTE THE SPECS (`roadmap/spec-authors.json`): commits to the .t27
-//   corpus per GitHub account -- the spec author's road;
-// - LANES (`/queen/public-leaderboard`): accepted issues whose boundary named a
-//   .t27 file, per lender -- the proof-of-compute road;
+//   TRI = (spec commits by the account + accepted .t27 specs on its lanes)
+//         x triPerSpec, the rate the ledger states (owner's choice,
+//         2026-10-03: specs x 27)
 //
-// and pays each unit at `triPerSpec`, the rate the ledger states (owner's
-// choice, 2026-10-03: specs x 27). One row per GitHub account, both roads
-// summed; what no account answers for is a number under the list, never a row.
+// One row per GitHub account, both roads summed; what no account answers for
+// is a number under the list, never a row.
 //
-// No imports on purpose: plain node runs it in qa/tri-board-contract.mjs.
+// Imports only import-free files: plain node runs it in qa/tri-board-contract.mjs.
 
-/** One author row of `roadmap/spec-authors.json`. */
-export interface AuthorUnits {
-  login: string
-  commits: number
-}
-
-/** One lane row of `/queen/public-leaderboard`. */
-export interface LaneUnits {
-  name: string
-  claimed: boolean
-  github?: string
-  keys: number[]
-  /** Accepted issues whose boundary named a .t27 file. */
-  specs?: number
-}
+import { laneLogin, type Contributor } from './leaderboard.ts'
+import { loginOf, type SpecAuthor } from './queenPeople.ts'
 
 export interface TriRow {
   login: string
@@ -51,8 +38,6 @@ export interface TriBoard {
   total: number | null
 }
 
-const GITHUB_LOGIN = /^[a-zA-Z\d](?:[a-zA-Z\d]|-(?=[a-zA-Z\d])){0,38}$/
-const login = (s: string | undefined) => (s && GITHUB_LOGIN.test(s) ? s : null)
 const count = (n: unknown) => (typeof n === 'number' && Number.isFinite(n) && n > 0 ? Math.floor(n) : 0)
 
 /** A rate is a whole, positive number of TRI, or there is no rate. */
@@ -60,8 +45,8 @@ export const validRate = (rate: unknown): rate is number =>
   typeof rate === 'number' && Number.isInteger(rate) && rate > 0
 
 export function triBoard(
-  authors: AuthorUnits[],
-  lanes: LaneUnits[],
+  authors: Pick<SpecAuthor, 'login' | 'commits'>[],
+  lanes: Pick<Contributor, 'github' | 'specs'>[],
   triPerSpec: number | null | undefined,
   unattributedCommits = 0,
 ): TriBoard {
@@ -78,12 +63,12 @@ export function triBoard(
   }
 
   for (const a of authors) {
-    const who = login(a.login)
+    const who = loginOf(a)
     if (who) row(who).specCommits += count(a.commits)
     else nobody.specCommits += count(a.commits)
   }
   for (const l of lanes) {
-    const who = l.claimed ? login(l.github) : null
+    const who = laneLogin(l)
     if (who) row(who).laneSpecs += count(l.specs)
     else nobody.laneSpecs += count(l.specs)
   }

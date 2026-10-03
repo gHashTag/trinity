@@ -6,8 +6,11 @@
 // This contract holds the tab to the leaderboard's own units:
 //   1  TRI = (spec commits + accepted lane specs) x the ledger's rate, one row
 //      per GitHub account, the live figures of 2026-10-03 reproduced exactly
-//   2  logins merge case-insensitively; an unclaimed lane, a lane without a
-//      login, and an author that is not a login are credited to nobody
+//   2  logins merge case-insensitively; a lane or an author without a valid
+//      login is credited to nobody, by the leaderboard's own rule (laneLogin,
+//      loginOf), so the board and the pay cannot disagree about a person
+//   6  DRY: one GitHub-login check in src, one read of the leaderboard and of
+//      the spec authors, and triBoard writes no rule of its own
 //   3  no valid rate (missing, zero, negative, fractional, NaN, Infinity) means
 //      no TRI is printed anywhere, and the units still stand
 //   4  the copy says where the count comes from, both roads, and the honest
@@ -54,14 +57,13 @@ eq(merged.rows.map((r) => [r.specCommits, r.laneSpecs, r.tri]), [[2, 3, 135]], '
 const stray = triBoard(
   [{ login: 'Claude Code (agent)', commits: 5 }],
   [
-    { name: 'key #7', claimed: false, github: 'someone', keys: [7], specs: 4 },
     { name: 'Bob', claimed: true, keys: [8], specs: 6 },
     { name: 'bad', claimed: true, github: '-bad-', keys: [9], specs: 1 },
   ],
   27,
 )
 eq(stray.rows, [], 'no GitHub account, no row')
-eq(stray.nobody, { specCommits: 5, laneSpecs: 11, tri: 16 * 27 }, 'and every such unit is counted under the list')
+eq(stray.nobody, { specCommits: 5, laneSpecs: 7, tri: 12 * 27 }, 'and every such unit is counted under the list')
 eq(triBoard([{ login: 'a', commits: -4 }, { login: 'b', commits: Number.NaN }], [], 27).rows, [], 'negative or NaN units count as nothing')
 
 // 3  no rate, no TRI
@@ -86,10 +88,25 @@ ok(!/[Ѐ-ӿ]/.test(JSON.stringify(Object.values(TOKEN_COPY.en).map((v) => (typeo
 
 // 5  the component
 const tab = read('src/components/QueenToken.tsx')
-ok(tab.includes("'roadmap/spec-authors.json'") && tab.includes('/queen/public-leaderboard'), 'the tab reads the leaderboard’s two sources')
 ok(/triBoard\(/.test(tab), 'the tab ranks with triBoard')
 ok(!/rankByGithub|\.earners\b/.test(tab), 'the ledger’s earners no longer rank anybody')
 ok(/readMinterState\(/.test(tab), 'the tab still reads the minter')
 ok(!/\b27\b/.test(tab), 'no rate typed in by hand')
+
+// 6  one rule, one home
+const { readdirSync } = await import('node:fs')
+const srcFiles = readdirSync(new URL('../src', import.meta.url), { recursive: true })
+  .filter((f) => /\.(ts|tsx)$/.test(f))
+  .map((f) => `src/${f}`)
+const grep = (pattern) => srcFiles.filter((f) => pattern.test(read(f))).sort()
+eq(grep(/\{0,38\}/), ['src/lib/githubLogin.ts'], 'the GitHub-login check lives in one file')
+eq(grep(/\$\{[^}]+\}\/queen\/public-leaderboard/).filter((f) => !f.includes('QueenRoadmapGame')), ['src/lib/leaderboard.ts'], 'the leaderboard is read in one place')
+eq(grep(/fetch\('roadmap\/spec-authors/), ['src/lib/queenPeople.ts'], 'the spec authors are read in one place')
+const boardSrc = read('src/lib/triBoard.ts')
+ok(/laneLogin\(/.test(boardSrc) && /loginOf\(/.test(boardSrc), 'triBoard asks the leaderboard whose row is whose')
+ok(!/RegExp|\/\^|claimed/.test(boardSrc.replace(/^\/\/.*$/gm, '')), 'triBoard writes no login rule of its own')
+const lb = read('src/components/QueenLeaderboard.tsx')
+ok(/readLeaderboard\(/.test(lb) && /laneLogin\(/.test(lb), 'the LEADERBOARD tab uses the same read and the same login rule')
+ok(/readLeaderboard\(/.test(tab) && /readSpecAuthors\(/.test(tab), 'the TOKEN tab uses the same reads')
 
 console.log(`tri-board contract: ${checks} checks OK`)
