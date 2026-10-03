@@ -438,6 +438,12 @@ const COPY = {
     browserJournal: "What the agent did here",
     browserDriving: "You are driving. The agent watches and waits.",
     browserHandBack: "Hand back to the agent",
+    browserGuideTitle: "What this tab does once you are signed in",
+    browserGuideLive: "It shows your own browser, running on a server, and your agent drives it.",
+    browserGuideJournal: "Every step the agent takes is listed under the window. Press inside the window and you drive while the agent waits, until you hand it back or leave it untouched for ten minutes.",
+    browserGuidePasswords: "This page never asks for a password. You type passwords yourself, inside the window.",
+    browserGuideSpec: "This address names a spec:",
+    browserGuideReadSpec: "read it on SPECS, no sign-in needed",
     triScreens: "App screens",
     triFeed: "Feed",
     triAgent: "Agent",
@@ -874,6 +880,12 @@ const COPY = {
     browserJournal: "Что здесь делал агент",
     browserDriving: "Руль у вас. Агент смотрит и ждёт.",
     browserHandBack: "Вернуть агенту",
+    browserGuideTitle: "Что делает эта вкладка после входа",
+    browserGuideLive: "Здесь виден ваш собственный браузер, запущенный на сервере, и им водит ваш агент.",
+    browserGuideJournal: "Каждый шаг агента записывается под окном. Нажмите внутри окна, и руль ваш, а агент ждёт, пока вы не вернёте руль или десять минут ничего не трогаете.",
+    browserGuidePasswords: "Эта страница никогда не спрашивает пароль. Пароли вы вводите сами, внутри окна.",
+    browserGuideSpec: "Этот адрес называет спеку:",
+    browserGuideReadSpec: "прочитать её во вкладке СПЕКИ, без входа",
     triScreens: "Экраны приложения",
     triFeed: "Лента",
     triAgent: "Агент",
@@ -4256,6 +4268,11 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
             <QueenBrowser
               embedded={embedded}
               lang={lang === 'ru' ? 'ru' : 'en'}
+              // The spec the address names (kept across tab switches, lib/queenEmbed
+              // leaveTabSelections); the signed-out guide links to it on SPECS
+              // through the same setView every tab switch uses.
+              spec={hashParams.get("spec")}
+              onReadSpec={(named) => setView("specs", named)}
               c={{
                 preview: c.browserPreview,
                 nested: c.browserNested,
@@ -4273,6 +4290,12 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                 journal: c.browserJournal,
                 driving: c.browserDriving,
                 handBack: c.browserHandBack,
+                guideTitle: c.browserGuideTitle,
+                guideLive: c.browserGuideLive,
+                guideJournal: c.browserGuideJournal,
+                guidePasswords: c.browserGuidePasswords,
+                guideSpec: c.browserGuideSpec,
+                guideReadSpec: c.browserGuideReadSpec,
               }}
             />
           ) : boardView === "comb" ? (
