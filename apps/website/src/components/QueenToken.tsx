@@ -1,11 +1,15 @@
 // TOKEN: TRI, what it is right now, and who has earned it.
 //
 // Owner's word, 2026-10-02: a tab with the token and its leaderboard, ranked by
-// GitHub account. Two live reads and nothing typed in by hand:
+// GitHub account. Owner's word, 2026-10-03: the tokens are counted by the
+// leaderboard. So every number here is read, nothing typed in by hand:
 //
 // - the minter's `get_tri_state` on TON testnet: minted, cap, epoch, quorum;
-// - the Queen's `/queen/public-earnings`: every accepted spec, by the lender
-//   whose lane carried it, at the rate the ledger itself states.
+// - the leaderboard's two counts, the same files the LEADERBOARD tab reads:
+//   spec commits per author (`roadmap/spec-authors.json`) and accepted .t27
+//   specs per lane (`/queen/public-leaderboard`), summed per GitHub account in
+//   lib/triBoard.ts;
+// - the rate per spec, as the Queen's ledger states it (`triPerSpec`).
 //
 // The status line is not decoration. This is a testnet token under a signer
 // quorum, and a page that showed balances without saying so would be making a
@@ -16,96 +20,21 @@
 // profile, so this tab points there.
 
 import { useEffect, useState } from 'react'
+import { QUEEN_API } from '../lib/queenApi'
+import { readLeaderboard, type Leaderboard } from '../lib/leaderboard'
+import { readSpecAuthors, type SpecAuthors } from '../lib/queenPeople'
+import { triBoard } from '../lib/triBoard'
+import { TOKEN_COPY, type TokenCopy } from '../lib/triTokenCopy'
 import {
   formatTri,
-  MTRI_PER_TRI,
-  rankByGithub,
   readEarnings,
   readMinterState,
   TRI_EXPLORER,
   TRI_MINTER,
   type MinterState,
-  type TriEarnings,
 } from '../lib/triToken'
 import './QueenPeople.css'
 import './QueenToken.css'
-
-export interface TokenCopy {
-  title: string
-  lead: string
-  status: string
-  minted: string
-  cap: string
-  epoch: string
-  quorum: (threshold: number, signers: number) => string
-  minter: string
-  chainFailed: string
-  boardTitle: string
-  boardLead: (triPerSpec: number) => string
-  specs: string
-  revoked: string
-  unclaimed: (specs: number) => string
-  noLedger: string
-  ledgerFailed: string
-  empty: string
-  loading: string
-  withdraw: string
-  withdrawLink: string
-  measured: string
-}
-
-export const TOKEN_COPY: Record<'en' | 'ru', TokenCopy> = {
-  en: {
-    title: 'TRI',
-    lead: 'The token an accepted .t27 spec mints. There is no pre-mine and no sale: every TRI that exists was minted for a spec the Queen accepted and its pull request merged.',
-    status: 'Testnet only — V1, signer quorum, NOT trustless. A TRI here has no market and no price.',
-    minted: 'Minted',
-    cap: 'Cap',
-    epoch: 'Epoch',
-    quorum: (threshold, signers) => `${threshold} of ${signers} signers`,
-    minter: 'Minter',
-    chainFailed: 'The minter could not be read from TON testnet.',
-    boardTitle: 'WHO EARNED IT',
-    boardLead: (triPerSpec) =>
-      `${triPerSpec} TRI for every spec the Queen accepted, credited to the GitHub account of the lane that carried it. A revoked acceptance is shown and pays nothing.`,
-    specs: 'specs',
-    revoked: 'revoked',
-    unclaimed: (specs) =>
-      `${specs} accepted specs ran on lanes not yet tied to a GitHub account, so they are counted here and credited to nobody.`,
-    noLedger: 'The Queen does not publish the earnings ledger yet. Until she does, this board stays empty rather than guessing.',
-    ledgerFailed: 'The earnings ledger could not be read.',
-    empty: 'No spec has been accepted yet.',
-    loading: 'Reading the chain and the ledger…',
-    withdraw: 'To withdraw what you earned: open your profile in the app, link GitHub and a TON wallet, and press Withdraw. Your own wallet signs the mint and pays the gas.',
-    withdrawLink: 'Open my profile',
-    measured: 'Measured',
-  },
-  ru: {
-    title: 'TRI',
-    lead: 'Токен, который выпускает принятая спека .t27. Ни предварительного выпуска, ни продажи: каждый существующий TRI выпущен за спеку, которую приняла Королева и чей пулл-реквест смержен.',
-    status: 'Только testnet — V1, кворум подписантов, НЕ trustless. У TRI здесь нет рынка и нет цены.',
-    minted: 'Выпущено',
-    cap: 'Потолок',
-    epoch: 'Эпоха',
-    quorum: (threshold, signers) => `${threshold} из ${signers} подписантов`,
-    minter: 'Минтер',
-    chainFailed: 'Минтер в TON testnet прочитать не удалось.',
-    boardTitle: 'КТО ЗАРАБОТАЛ',
-    boardLead: (triPerSpec) =>
-      `${triPerSpec} TRI за каждую спеку, принятую Королевой, — на GitHub-аккаунт полосы, которая её вынесла. Отозванная приёмка показана и ничего не платит.`,
-    specs: 'спек',
-    revoked: 'отозвано',
-    unclaimed: (specs) =>
-      `${specs} принятых спек прошли по полосам, ещё не привязанным к аккаунту GitHub, поэтому они посчитаны здесь и не приписаны никому.`,
-    noLedger: 'Королева пока не публикует журнал заработка. До тех пор эта доска пуста, а не угадана.',
-    ledgerFailed: 'Журнал заработка прочитать не удалось.',
-    empty: 'Ни одна спека ещё не принята.',
-    loading: 'Читаю цепочку и журнал…',
-    withdraw: 'Чтобы вывести заработанное: откройте свой профиль в приложении, привяжите GitHub и TON-кошелёк и нажмите «Вывести». Минт подписывает ваш собственный кошелёк, он же платит газ.',
-    withdrawLink: 'Открыть мой профиль',
-    measured: 'Измерено',
-  },
-}
 
 const fmt = (n: number) => n.toLocaleString('en-US')
 
@@ -114,16 +43,16 @@ type Read<T> = { state: 'loading' } | { state: 'ok'; value: T } | { state: 'fail
 export default function QueenToken({ lang }: { lang: 'en' | 'ru' }) {
   const c = TOKEN_COPY[lang === 'ru' ? 'ru' : 'en']
   const [minter, setMinter] = useState<Read<MinterState>>({ state: 'loading' })
-  const [ledger, setLedger] = useState<Read<TriEarnings | null>>({ state: 'loading' })
+  const [board, setBoard] = useState<Read<Counts>>({ state: 'loading' })
 
   useEffect(() => {
     const abort = new AbortController()
     readMinterState(abort.signal)
       .then((value) => setMinter({ state: 'ok', value }))
       .catch(() => !abort.signal.aborted && setMinter({ state: 'failed' }))
-    readEarnings(abort.signal)
-      .then((value) => setLedger({ state: 'ok', value }))
-      .catch(() => !abort.signal.aborted && setLedger({ state: 'failed' }))
+    readCounts(abort.signal)
+      .then((value) => setBoard({ state: 'ok', value }))
+      .catch(() => !abort.signal.aborted && setBoard({ state: 'failed' }))
     return () => abort.abort()
   }, [])
 
@@ -171,7 +100,7 @@ export default function QueenToken({ lang }: { lang: 'en' | 'ru' }) {
 
       <section className="qp" aria-label={c.boardTitle}>
         <h3 className="qp-title">{c.boardTitle}</h3>
-        <TokenBoard c={c} ledger={ledger} />
+        <TokenBoard c={c} board={board} minter={minter} />
       </section>
 
       <p className="qt-withdraw">
@@ -182,24 +111,60 @@ export default function QueenToken({ lang }: { lang: 'en' | 'ru' }) {
   )
 }
 
-function TokenBoard({ c, ledger }: { c: TokenCopy; ledger: Read<TriEarnings | null> }) {
-  if (ledger.state === 'loading') return <p className="qp-note">{c.loading}</p>
-  if (ledger.state === 'failed')
+interface Counts {
+  authors: SpecAuthors
+  lanes: Leaderboard
+  /** The ledger's rate; null when the ledger could not say. */
+  triPerSpec: number | null
+}
+
+/**
+ * The leaderboard's two reads, plus the rate. Both counts are required: a board
+ * built from half of them would rank the other road's people at zero. The rate
+ * is not: without it the units still stand, and the TRI is shown as unknown.
+ */
+async function readCounts(signal: AbortSignal): Promise<Counts> {
+  const [authors, lanes, rate] = await Promise.all([
+    readSpecAuthors(signal),
+    readLeaderboard(QUEEN_API, signal),
+    readEarnings(signal).then(
+      (e) => e?.triPerSpec ?? null,
+      () => null,
+    ),
+  ])
+  return { authors, lanes, triPerSpec: rate }
+}
+
+function TokenBoard({
+  c,
+  board,
+  minter,
+}: {
+  c: TokenCopy
+  board: Read<Counts>
+  minter: Read<MinterState>
+}) {
+  if (board.state === 'loading') return <p className="qp-note">{c.loading}</p>
+  if (board.state === 'failed')
     return (
       <p className="qp-note" role="alert">
-        {c.ledgerFailed}
+        {c.failed}
       </p>
     )
-  if (ledger.value === null) return <p className="qp-note">{c.noLedger}</p>
 
-  const { triPerSpec, earners, measuredAt } = ledger.value
-  const { rows, unclaimed } = rankByGithub(earners)
-  const tri = (specs: number) => formatTri(BigInt(specs * triPerSpec * MTRI_PER_TRI))
+  const { authors, lanes, triPerSpec } = board.value
+  const { rows, nobody, total } = triBoard(
+    authors.people,
+    lanes.contributors,
+    triPerSpec,
+    authors.unattributed?.commits ?? 0,
+  )
+  const tri = (n: number | null) => (n === null ? '—' : fmt(n))
 
   return (
     <>
-      <p className="qp-lead">{c.boardLead(triPerSpec)}</p>
-      {rows.length === 0 && unclaimed.earned === 0 ? (
+      <p className="qp-lead">{triPerSpec === null ? c.noRate : c.boardLead(triPerSpec)}</p>
+      {rows.length === 0 ? (
         <p className="qp-note">{c.empty}</p>
       ) : (
         <ol className="qp-rows">
@@ -219,20 +184,36 @@ function TokenBoard({ c, ledger }: { c: TokenCopy; ledger: Read<TriEarnings | nu
                   {row.login}
                 </a>
                 <b className="qp-repos">
-                  {fmt(row.earned)} {c.specs}
-                  {row.revoked > 0 && ` · ${fmt(row.revoked)} ${c.revoked}`}
+                  {[
+                    row.specCommits > 0 && c.specCommits(fmt(row.specCommits)),
+                    row.laneSpecs > 0 && c.laneSpecs(fmt(row.laneSpecs)),
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
                 </b>
               </span>
               <span className="qp-commits">
-                <b>{tri(row.earned)}</b> TRI
+                <b>{tri(row.tri)}</b> TRI
               </span>
             </li>
           ))}
         </ol>
       )}
-      {unclaimed.earned > 0 && <p className="qp-counted">{c.unclaimed(unclaimed.earned)}</p>}
+      {nobody.specCommits + nobody.laneSpecs > 0 && (
+        <p className="qp-counted">
+          {c.nobody(fmt(nobody.specCommits), fmt(nobody.laneSpecs), tri(nobody.tri))}
+        </p>
+      )}
+      {total !== null && (
+        <p className="qp-counted">
+          {minter.state === 'ok'
+            ? c.total(fmt(total), formatTri(minter.value.minted))
+            : c.totalNoChain(fmt(total))}
+        </p>
+      )}
       <p className="qp-counted">
-        {c.measured}: {measuredAt.slice(0, 16).replace('T', ' ')} UTC
+        {c.measured}: {authors.measuredAt.slice(0, 10)} · {lanes.measuredAt.slice(0, 16).replace('T', ' ')} UTC ·{' '}
+        <a href="#/queen?tab=leaderboard">{c.leaderboardLink} →</a>
       </p>
     </>
   )
