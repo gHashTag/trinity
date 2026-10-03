@@ -303,3 +303,117 @@
   color: #00ff88;
   font-weight: 500;
 }
+
+/* TASKS SIDE BY SIDE (QueenBrowserLanes.tsx): a card per lane under the
+   picture, each with its own question and answer, while the chat stays on the
+   main lane. Grounds are opaque for the reason the quiet button gives above;
+   ink is the board's --hud-muted. Cards wrap to one per row on a phone. */
+.queen27-page.is-shell .queen27-browser-lanes {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px;
+  max-height: 40vh;
+  min-width: 0;
+  overflow-y: auto;
+}
+
+.queen27-page.is-shell .queen27-browser-task {
+  display: flex;
+  flex: 1 1 280px;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 8px 10px;
+  border: 1px solid rgba(0, 255, 136, 0.22);
+  border-radius: 6px;
+  background: #020806;
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.queen27-page.is-shell .queen27-browser-task-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.queen27-page.is-shell .queen27-browser-task-head b {
+  color: #00ff88;
+  font-weight: 500;
+}
+
+.queen27-page.is-shell .queen27-browser-task-state {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* The close mark is one glyph, so its width came from the glyph: 42px, two
+   short of a touch target (measured at 375px). */
+.queen27-page.is-shell .queen27-browser-task-head .queen27-browser-btn {
+  min-width: 44px;
+}
+
+.queen27-page.is-shell .queen27-browser-task-log {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 12em;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.queen27-page.is-shell .queen27-browser-task-log li.is-person {
+  color: #00ff88;
+}
+
+.queen27-page.is-shell .queen27-browser-task :is(.queen27-browser-task-tools, .queen27-browser-task-note) {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.queen27-page.is-shell .queen27-browser-task-note:is(.is-limit, .is-failed, .is-signedout) {
+  color: #ff6b6b;
+}
+
+.queen27-page.is-shell .queen27-browser-task-form {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.queen27-page.is-shell .queen27-browser-task-form textarea {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 44px;
+  padding: 6px 10px;
+  border: 1px solid rgba(0, 255, 136, 0.22);
+  border-radius: 6px;
+  background: #020806;
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
+  font: inherit;
+  resize: vertical;
+}
+
+/* iOS Safari zooms the whole page into a text field set under 16px and does
+   not zoom back out; the card's 12px did it on every tap. */
+@media (pointer: coarse) {
+  .queen27-page.is-shell .queen27-browser-task-form textarea {
+    font-size: 16px;
+  }
+}
+
+.queen27-page.is-shell .queen27-browser-lane {
+  margin-right: 4px;
+  color: #00ff88;
+  font-style: normal;
+  opacity: 0.8;
+}
