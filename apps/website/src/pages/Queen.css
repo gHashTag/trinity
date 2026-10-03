@@ -5295,6 +5295,14 @@ main:where(.queen27-page.is-shell) section {
   cursor: pointer;
 }
 
+/* The dash shown before the board answers sits in the same one-line strip, so
+   it takes the rows' metrics: with the panel's 0.6rem padding it was 35px in a
+   29px strip, an undeclared scroller at 1440x900 with the API dead. */
+.queen27-page.is-shell .queen27-hud-sectors .queen27-sectors-empty {
+  padding: 0;
+  font-size: 0.58rem;
+}
+
 .queen27-page.is-shell .queen27-hud-sectors .queen27-sectors-row[aria-pressed="true"] {
   color: var(--hud-gold);
 }

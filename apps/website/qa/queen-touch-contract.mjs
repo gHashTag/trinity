@@ -17,7 +17,9 @@ if (!process.argv.includes('--no-build')) {
 }
 const CHROMES = [process.env.CHROME_PATH, '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', '/Applications/Chromium.app/Contents/MacOS/Chromium', '/usr/bin/google-chrome', '/usr/bin/chromium'].filter(Boolean);
 const CHROME = CHROMES.find(p => existsSync(p));
-if (!CHROME) { console.log('  no Chrome found — skipping the touch check.'); process.exit(0); }
+// A missing browser is NOT MEASURED (rc 2), never a pass: a contract that
+// exits 0 without running reads as green to every caller that checks codes.
+if (!CHROME) { console.log('  Queen touch contract: NOT MEASURED (no Chrome found; set CHROME_PATH)'); process.exit(2); }
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.svg': 'image/svg+xml', '.json': 'application/json', '.woff2': 'font/woff2' };
 const server = createServer((req, res) => {
   let f = join(DIST, decodeURIComponent(new URL(req.url, 'http://x').pathname));
@@ -28,8 +30,8 @@ const server = createServer((req, res) => {
 await new Promise(r => server.once('listening', r));
 const ORIGIN = `http://127.0.0.1:${server.address().port}`;
 const profile = mkdtempSync(join(tmpdir(), 'touch-'));
-const chrome = spawn(CHROME, ['--headless=new', '--remote-debugging-port=0', `--user-data-dir=${profile}`, '--no-first-run', '--disable-extensions', '--mute-audio', '--window-size=1272,806', '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', 'about:blank'], { stdio: ['ignore', 'ignore', 'pipe'] });
-const browserWs = await new Promise((resolve, reject) => { const t = setTimeout(() => reject(new Error('no port')), 30000); let buf = ''; chrome.stderr.on('data', d => { buf += d; const m = buf.match(/DevTools listening on (ws:\/\/\S+)/); if (m) { clearTimeout(t); resolve(m[1]); } }); });
+const chrome = spawn(CHROME, ['--headless=new', '--remote-debugging-port=0', `--user-data-dir=${profile}`, '--no-first-run', '--disable-extensions', '--mute-audio', '--window-size=1272,806', ...(process.platform === 'linux' ? ['--no-sandbox', '--disable-dev-shm-usage'] : []), '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', 'about:blank'], { stdio: ['ignore', 'ignore', 'pipe'] });
+const browserWs = await new Promise((resolve, reject) => { let buf = ''; const t = setTimeout(() => reject(new Error(`Chrome never announced a debugging port in 30 s; its last stderr:\n${buf.slice(-1500)}`)), 30000); chrome.stderr.on('data', d => { buf += d; const m = buf.match(/DevTools listening on (ws:\/\/\S+)/); if (m) { clearTimeout(t); resolve(m[1]); } }); });
 const ws = new WebSocket(browserWs); await new Promise(r => ws.addEventListener('open', r));
 let nextId = 0; const pending = new Map();
 ws.addEventListener('message', ev => { const msg = JSON.parse(ev.data); if (msg.id && pending.has(msg.id)) { const { resolve, reject } = pending.get(msg.id); pending.delete(msg.id); msg.error ? reject(new Error(msg.error.message)) : resolve(msg.result); } });
@@ -45,12 +47,33 @@ await call('Page.enable');
 await call('Emulation.setDeviceMetricsOverride', { width: 1272, height: 806, deviceScaleFactor: 1, mobile: true });
 await call('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 1 });
 await call('Page.navigate', { url: `${ORIGIN}/?touch=1${process.env.QUEEN_ENGINE ? '&engine=' + process.env.QUEEN_ENGINE : ''}#/queen` });
-let ready = false;
-for (let i = 0; i < 60 && !ready; i++) { await wait(500); ready = await evaluate(`document.querySelectorAll('.queen27-sectors-row').length === 6 && !!document.querySelector('.queen27-comb-field canvas') && !!document.querySelector('.queen27-context-unit-text')`); }
-if (!ready) { console.log('  Queen touch contract: FAIL (page never became ready - board or comb missing)'); cleanup(); process.exit(1); }
+// Readiness names its parts, and a page that does not ANSWER is not a page
+// that is not ready. 2026-10-02: with swap full (load average 560), one
+// Runtime.evaluate on the comb took minutes, and the old one-line FAIL read as
+// "the board lost an element" -- it had not; it was never asked. A probe that
+// gets no answer in 20 s ends the run as NOT MEASURED (rc 2), with the load.
+// Since #1206 the comb on #/queen is the SHARED catalog (QueenCatalogHive),
+// and the old CONTEXT panel is not mounted there at all: a tap opens the
+// catalog's own `.queen-catalog-detail`. This contract still waited for the
+// old panel, and nobody saw, because nothing ran it. The legacy panel stays as
+// the fallback for an engine that draws the comb without the catalog.
+const READY = `({ rows: document.querySelectorAll('.queen27-sectors-row').length, canvas: !!document.querySelector('.queen27-comb-field canvas'), unit: !!document.querySelector('[data-catalog-map]') || !!document.querySelector('.queen27-context-unit-text') })`;
+const answered = expr => Promise.race([evaluate(expr), wait(20000).then(() => { throw new Error('starved'); })]);
+let ready = false, parts = null;
+for (let i = 0; i < 60 && !ready; i++) {
+  await wait(500);
+  try { parts = await answered(READY); } catch (error) {
+    if (error.message !== 'starved') throw error;
+    const { loadavg } = await import('node:os');
+    console.log(`  Queen touch contract: NOT MEASURED (the page did not answer a probe in 20 s; load average ${loadavg().map(n => n.toFixed(0)).join(' ')})`);
+    cleanup(); process.exit(2);
+  }
+  ready = parts.rows === 6 && parts.canvas && parts.unit;
+}
+if (!ready) { const seen = await answered(`JSON.stringify({ width: innerWidth, phone: matchMedia('(max-width: 900px)').matches, hash: location.hash, context: !!document.querySelector('.queen27-context'), contextClass: document.querySelector('[class*="queen27-context"]')?.className ?? null, page: document.querySelector('.queen27-page')?.className ?? null })`).catch(() => 'no answer'); console.log(`  Queen touch contract: FAIL (page never became ready - sectors ${parts?.rows ?? '?'}/6, comb canvas ${parts?.canvas ? 'yes' : 'NO'}, catalog or context ${parts?.unit ? 'yes' : 'NO'}; page ${seen})`); cleanup(); process.exit(1); }
 await wait(1500);
 const rect = await evaluate(`(() => { const r = document.querySelector('.queen27-comb-field canvas').getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height }; })()`);
-const selected = () => evaluate(`(() => { const u = document.querySelector('.queen27-context-unit-text'); const dd = document.querySelector('.queen27-context-stats dd'); return ((u && u.textContent) || '').replace(/\\s+/g, ' ').trim().slice(0, 80) + ' | ' + ((dd && dd.textContent) || '').trim(); })()`);
+const selected = () => evaluate(`(() => { const d = document.querySelector('.queen-catalog-detail'); if (document.querySelector('[data-catalog-map]')) return d ? (d.textContent || '').replace(/\\s+/g, ' ').trim().slice(0, 80) : ''; const u = document.querySelector('.queen27-context-unit-text'); const dd = document.querySelector('.queen27-context-stats dd'); return ((u && u.textContent) || '').replace(/\\s+/g, ' ').trim().slice(0, 80) + ' | ' + ((dd && dd.textContent) || '').trim(); })()`);
 const tap = async (x, y) => { await call('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] }); await wait(40); await call('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] }); await wait(140); };
 
 const before = await selected();
@@ -61,6 +84,9 @@ for (let gy = 0; gy < 5; gy++) for (let gx = 0; gx < 8; gx++) {
   await tap(x, y);
   const s = await selected();
   if (s !== before && !/THE QUEEN|КОРОЛЕВА/i.test(s)) picks.add(s);
+  // The catalog flies the camera to what was picked, so the next tap would
+  // land inside the same cell. A person closes the detail first; so does this.
+  if (await evaluate(`(() => { const c = document.querySelector('.queen-catalog-close'); if (c) c.click(); return !!c; })()`)) await wait(900);
 }
 // A touch drag must orbit, not pick: the selection after the drag equals the one before it.
 const beforeDrag = await selected();
@@ -73,7 +99,7 @@ const afterDrag = await selected();
 const pageMoved = await evaluate(`document.documentElement.scrollTop !== 0 || document.documentElement.scrollLeft !== 0`);
 cleanup();
 const fails = [];
-if (picks.size < 3) fails.push(`taps picked ${picks.size} distinct cells (need >= 3)`);
+if (picks.size < 3) fails.push(`taps picked ${picks.size} distinct cells (need >= 3): ${[...picks].map(p => JSON.stringify(p.slice(0, 50))).join(', ') || 'none'}`);
 if (afterDrag !== beforeDrag) fails.push('a touch drag changed the pick');
 if (pageMoved) fails.push('a touch drag scrolled the page');
 if (fails.length) { for (const f of fails) console.log('  ✗ ' + f); console.log(`  Queen touch contract: FAIL (${fails.length})`); process.exit(1); }
