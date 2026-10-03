@@ -64,13 +64,13 @@ export const MODULES = [
     glyph: '▦',
     en: {
       name: 'KANBAN',
-      hint: 'Operational columns',
+      hint: 'The board in six columns',
       body: 'The board as six columns — backlog, blocked, running, in review, done, dropped — with the issue cards themselves, each carrying its number and how many acceptance criteria it states.',
       play: 'Where you read the contract. The acceptance criteria a card states are what a review will hold you to; a card that states none is a card nobody can be judged against.',
     },
     ru: {
       name: 'КАНБАН',
-      hint: 'Операционные колонки',
+      hint: 'Доска в шесть колонок',
       body: 'Доска шестью колонками — бэклог, заблокировано, в работе, на ревью, готово, отложено — с самими карточками задач: номер и сколько критериев приёмки в ней заявлено.',
       play: 'Место, где читают договор. Критерии приёмки на карточке — это то, по чему вас будет судить ревью; карточка без них — карточка, по которой судить нечем.',
     },

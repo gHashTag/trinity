@@ -3,18 +3,16 @@ import { MODULES } from '../lib/queenModules'
 import { BOARD_VIEWS, PROJECT_VIEWS, RAIL_VIEWS, SPEC_LAYERS, isBoardView, isProjectView, isSpecLayer } from './queenHud'
 import './ModulesBlock.css'
 
-// A compact index of the modules: one card each, linking to its tab. Not on the
-// homepage any more — every module has a block of its own there — but kept
-// because the data it reads now lives in lib/queenModules and this is the one
-// place that shows all of them at a glance.
+// A compact index of the modules: one card each, linking to its tab. It closes
+// the homepage, under the module blocks, because it is the one place that shows
+// all of them at a glance; the data it reads lives in lib/queenModules.
 //
-// It is drawn in the shell's own shape, which is no longer a flat list of
-// fourteen. Seven are buttons on the rail. Five — SKILLS, CRONS, AGENTS, TOOLS,
+// It is drawn in the shell's own shape, which is no longer a flat list. Seven are buttons on the rail. Five — SKILLS, CRONS, AGENTS, TOOLS,
 // FUNCTIONS — are rungs of the ladder inside SPECS, because each is a catalogue
-// generated from .t27 specs and each names the one below it. Two — MISSION MAP
-// and FACTORY — sit under KANBAN, because the three are three readings of the
-// one board. PASSPORT sits inside PROJECT (2026-09-21), the record the project
-// keeps beside itself. A reader who scrolled past fourteen equal cards and then
+// generated from .t27 specs and each names the one below it. MISSION MAP,
+// FACTORY and TECH TREE sit under KANBAN, as further readings of the one board
+// (BOARD_VIEWS; the tech tree joined it after this block last named the group). PASSPORT sits inside PROJECT (2026-09-21), the record the project
+// keeps beside itself. A reader who scrolled past a row of equal cards and then
 // opened the rail was reading a map of a shell that no longer existed.
 //
 // Which group a module is in is asked of the shell's own lists rather than
@@ -53,14 +51,14 @@ const COPY = {
   en: {
     eyebrow: `QUEEN / ${N} MODULES`,
     title: `One screen, ${N} ways to read it`,
-    lede: `The Queen is a single-page module: the 3D map is the ground and every panel floats on it. These ${N} are what that ground can be read as — each one opens on the same map, in the same shell, from the key beside it. ${RAIL_N} are buttons down the left edge; ${LADDER_N} are rungs of one ladder inside SPECS, where every catalogue generated from a spec lives together; ${BOARD_N} are the board's other two readings, under KANBAN; and ${PROJECT_N} is the record kept beside the project, inside PROJECT.`,
+    lede: `The Queen is a single-page module: the 3D map is the ground and every panel floats on it. These ${N} are what that ground can be read as — each one opens on the same map, in the same shell, from the key beside it. ${RAIL_N} are buttons down the left edge; ${LADDER_N} are rungs of one ladder inside SPECS, where every catalogue generated from a spec lives together; ${BOARD_N} are further readings of the board, under KANBAN; and ${PROJECT_N} is the record kept beside the project, inside PROJECT.`,
     railHead: `On the rail · ${RAIL_N}`,
     ladderHead: `Inside SPECS, on the ladder · ${LADDER_N}`,
     ladderNote:
       'Specs, skills, crons, agents, tools and functions are six layers of one thing: each is generated from .t27 and each names the one below it. They open on the same keys as before, one step inside SPECS.',
     boardHead: `Inside KANBAN, on the board · ${BOARD_N}`,
     boardNote:
-      'The kanban, the mission map and the factory read one board: the same issues as columns, as a map, and as what the swarm is building from them. Same keys, one step inside KANBAN.',
+      'The kanban, the mission map, the factory and the tech tree read one board: the same issues as columns, as a map, as what the swarm is building from them, and as the path the .t27 language took to get here. Same keys, one step inside KANBAN.',
     projectHead: `Inside PROJECT, beside it · ${PROJECT_N}`,
     projectNote:
       'The passport is part of how the project describes itself, not an instrument of its own: the record every result has to carry. Same key, one step inside PROJECT.',
@@ -70,14 +68,14 @@ const COPY = {
   ru: {
     eyebrow: `КОРОЛЕВА / ${N} МОДУЛЕЙ`,
     title: `Один экран и ${N} способов его прочитать`,
-    lede: `Королева — одностраничный модуль: 3D-карта здесь основание, а каждая панель плавает над ним. Эти ${N} — то, чем это основание можно прочитать; любой открывается на той же карте, в том же шелле, по клавише рядом с ним. ${RAIL_N} — кнопки вдоль левого края, ${LADDER_N} — ступени одной лестницы внутри СПЕК, где лежат вместе все каталоги, порождённые из спек, ${BOARD_N} — два других прочтения доски, внутри КАНБАНА, и ${PROJECT_N} — запись, которую проект держит рядом с собой, внутри ПРОЕКТА.`,
+    lede: `Королева — одностраничный модуль: 3D-карта здесь основание, а каждая панель плавает над ним. Эти ${N} — то, чем это основание можно прочитать; любой открывается на той же карте, в том же шелле, по клавише рядом с ним. ${RAIL_N} — кнопки вдоль левого края, ${LADDER_N} — ступени одной лестницы внутри СПЕК, где лежат вместе все каталоги, порождённые из спек, ${BOARD_N} — ещё прочтения доски, внутри КАНБАНА, и ${PROJECT_N} — запись, которую проект держит рядом с собой, внутри ПРОЕКТА.`,
     railHead: `На панели · ${RAIL_N}`,
     ladderHead: `Внутри СПЕК, на лестнице · ${LADDER_N}`,
     ladderNote:
       'Спеки, скиллы, кроны, агенты, инструменты и функции — шесть слоёв одного: каждый порождается из .t27 и каждый называет следующий. Клавиши прежние, просто на шаг внутрь СПЕК.',
     boardHead: `Внутри КАНБАНА, на доске · ${BOARD_N}`,
     boardNote:
-      'Канбан, карта миссий и фабрика читают одну доску: те же задачи — колонками, картой и тем, что рой из них строит. Клавиши прежние, просто на шаг внутрь КАНБАНА.',
+      'Канбан, карта миссий, фабрика и тех-дерево читают одну доску: те же задачи — колонками, картой, тем, что рой из них строит, и путём, которым язык .t27 сюда пришёл. Клавиши прежние, просто на шаг внутрь КАНБАНА.',
     projectHead: `Внутри ПРОЕКТА, рядом с ним · ${PROJECT_N}`,
     projectNote:
       'Паспорт — часть того, как проект описывает себя, а не отдельный инструмент: запись, которую должен нести каждый результат. Клавиша прежняя, просто на шаг внутрь ПРОЕКТА.',
@@ -92,7 +90,7 @@ export default function ModulesBlock() {
   const t = COPY[key]
 
   // A list of modules, not MODULES itself: `as const` makes that a tuple of
-  // fourteen, and a filtered group is never that tuple.
+  // every module, and a filtered group is never that tuple.
   const cards = (modules: readonly (typeof MODULES)[number][]) => (
     <ol className="modules-block-grid site-card-row">
       {modules.map((module) => {

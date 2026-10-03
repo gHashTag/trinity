@@ -3,7 +3,7 @@
    this one answers at a lower pitch instead of repeating the hero's shape. */
 .spec-hero-block {
   border-bottom: 1px solid rgba(255, 212, 90, .24);
-  background: #050403;
+  background: #000;
   color: var(--text, #FFFFFF);
 }
 
@@ -55,7 +55,7 @@
   font: 600 .82rem/1.2 "JetBrains Mono", monospace;
   text-decoration: none;
 }
-.spec-hero-block-primary { background: #ffd45a; color: #1b1400; border: 1px solid #ffd45a; }
+.spec-hero-block-primary { background: #000; color: #ffd45a; border: 1px solid #ffd45a; }
 .spec-hero-block-secondary { color: #ffd45a; border: 1px solid #ffd45a88; background: transparent; }
 .spec-hero-block-primary:hover, .spec-hero-block-secondary:hover { filter: brightness(1.12); }
 

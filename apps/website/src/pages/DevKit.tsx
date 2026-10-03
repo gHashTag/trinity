@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { clubPrice } from '../data/club'
 import { motion } from 'framer-motion'
 import { usePageMeta } from '../hooks/usePageMeta'
 import Navigation from '../components/Navigation'
@@ -32,7 +33,7 @@ const ROADMAP = [
 const OPTIONS = [
   { name: 'Open core', price: 'Free', body: 'The tri CLI, the t27 specs and bitwalk under Apache-2.0. Anyone can check the layer table above on their own machine.' },
   { name: 'Kit', price: '$149–199 (draft)', body: 'An Artix-7 board with the flow preinstalled, a receipts harness and one design that proves itself on first power-up. Sold through Crowd Supply, priced against the campaigns below.', featured: true },
-  { name: 'Bench', price: 'From $79 / mo (draft)', body: 'Remote runs on live boards and signed conformance receipts for your design, through the Golden Foundry club.' },
+  { name: 'Club', price: clubPrice(false), body: 'The Golden Foundry club: a TRI DEV developer agent on your own GitHub issue, plus remote runs on live boards and conformance receipts for your design.' },
 ]
 
 function Section({ title, children, narrow }: { title: string; children: React.ReactNode; narrow?: boolean }) {

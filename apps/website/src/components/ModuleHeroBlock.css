@@ -4,7 +4,7 @@
    gold on this site means a spec. */
 .module-hero {
   border-bottom: 1px solid rgba(0, 255, 136, 0.2);
-  background: #030605;
+  background: #000;
   color: var(--text, #FFFFFF);
 }
 
@@ -90,8 +90,8 @@
 }
 
 .module-hero-primary {
-  background: #00ff88;
-  color: #001b0e;
+  background: #000;
+  color: #00ff88;
   border: 1px solid #00ff88;
 }
 

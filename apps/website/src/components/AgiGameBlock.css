@@ -5,7 +5,7 @@
    supervisor and so is set apart from the prose around it. */
 .agi-game {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  background: #020605;
+  background: #000;
   color: var(--text, #FFFFFF);
 }
 
