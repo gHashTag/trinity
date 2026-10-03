@@ -132,6 +132,11 @@ jobs:
       # ledger's rate, one row per GitHub account. Pure, no browser.
       - name: TRI board
         run: npm run check:tri-board
+      # MINE TRI on the landing: the "Copy to agent" prompt says testnet, no
+      # price, NOT trustless, asks the human before a PR and never prints a
+      # rate the ledger did not state; the block reads its figures. Pure.
+      - name: TRI mine
+        run: npm run check:tri-mine
       # The Queen's kanban grew a second lane, and it is the first thing on that
       # page that differs per person. Signed in, it asks the hive for the
       # clients this visitor answers for — on the game token, one identity

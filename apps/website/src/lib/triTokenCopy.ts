@@ -15,7 +15,10 @@ export interface TokenCopy {
   minter: string
   chainFailed: string
   boardTitle: string
-  boardLead: (triPerSpec: number) => string
+  /** The rate, when the ledger states a valid one. */
+  rate: (triPerSpec: number) => string
+  /** Who earns, by the leaderboard. The landing's agent prompt quotes it too. */
+  rule: string
   noRate: string
   specCommits: (n: string) => string
   laneSpecs: (n: string) => string
@@ -43,8 +46,8 @@ export const TOKEN_COPY: Record<'en' | 'ru', TokenCopy> = {
     minter: 'Minter',
     chainFailed: 'The minter could not be read from TON testnet.',
     boardTitle: 'WHO EARNED IT',
-    boardLead: (triPerSpec) =>
-      `Counted by the leaderboard: ${triPerSpec} TRI for every .t27 spec — to its author by GitHub login (spec commits), and to the GitHub account of the lane whose bees carried an accepted spec (proof of compute). One row per GitHub account, both roads summed.`,
+    rate: (triPerSpec) => `${triPerSpec} TRI per spec, as the ledger states it.`,
+    rule: 'Counted by the leaderboard, for every .t27 spec: to its author by GitHub login (spec commits), and to the GitHub account whose lane carried an accepted spec on its own CPU, FPGA or GPU (proof of compute). One row per GitHub account, both roads summed.',
     noRate: 'The rate per spec could not be read from the ledger, so the units are shown and the TRI is not guessed.',
     specCommits: (n) => `${n} spec commits`,
     laneSpecs: (n) => `${n} specs on their lanes`,
@@ -71,8 +74,8 @@ export const TOKEN_COPY: Record<'en' | 'ru', TokenCopy> = {
     minter: 'Минтер',
     chainFailed: 'Минтер в TON testnet прочитать не удалось.',
     boardTitle: 'КТО ЗАРАБОТАЛ',
-    boardLead: (triPerSpec) =>
-      `Считается по лидерборду: ${triPerSpec} TRI за каждую спеку .t27 — её автору по логину GitHub (коммиты в спеки) и GitHub-аккаунту полосы, чьи пчёлы вынесли принятую спеку (proof of compute). Одна строка на аккаунт GitHub, обе дороги сложены.`,
+    rate: (triPerSpec) => `${triPerSpec} TRI за спеку — так пишет журнал.`,
+    rule: 'Считается по лидерборду, за каждую спеку .t27: её автору по логину GitHub (коммиты в спеки) и GitHub-аккаунту, чья полоса вынесла принятую спеку на своих CPU, FPGA или GPU (proof of compute). Одна строка на аккаунт GitHub, обе дороги сложены.',
     noRate: 'Ставку за спеку из журнала прочитать не удалось, поэтому показаны единицы, а TRI не угадывается.',
     specCommits: (n) => `коммитов в спеки: ${n}`,
     laneSpecs: (n) => `спек на его полосах: ${n}`,

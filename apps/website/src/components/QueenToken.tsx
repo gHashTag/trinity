@@ -20,18 +20,17 @@
 // profile, so this tab points there.
 
 import { useEffect, useState } from 'react'
-import { QUEEN_API } from '../lib/queenApi'
-import { readLeaderboard, type Leaderboard } from '../lib/leaderboard'
-import { readSpecAuthors, type SpecAuthors } from '../lib/queenPeople'
-import { triBoard } from '../lib/triBoard'
+import { validRate } from '../lib/triBoard'
 import { TOKEN_COPY, type TokenCopy } from '../lib/triTokenCopy'
 import {
+  boardOf,
   formatTri,
-  readEarnings,
   readMinterState,
+  readTriCounts,
   TRI_EXPLORER,
   TRI_MINTER,
   type MinterState,
+  type TriCounts,
 } from '../lib/triToken'
 import './QueenPeople.css'
 import './QueenToken.css'
@@ -43,14 +42,14 @@ type Read<T> = { state: 'loading' } | { state: 'ok'; value: T } | { state: 'fail
 export default function QueenToken({ lang }: { lang: 'en' | 'ru' }) {
   const c = TOKEN_COPY[lang === 'ru' ? 'ru' : 'en']
   const [minter, setMinter] = useState<Read<MinterState>>({ state: 'loading' })
-  const [board, setBoard] = useState<Read<Counts>>({ state: 'loading' })
+  const [board, setBoard] = useState<Read<TriCounts>>({ state: 'loading' })
 
   useEffect(() => {
     const abort = new AbortController()
     readMinterState(abort.signal)
       .then((value) => setMinter({ state: 'ok', value }))
       .catch(() => !abort.signal.aborted && setMinter({ state: 'failed' }))
-    readCounts(abort.signal)
+    readTriCounts(abort.signal)
       .then((value) => setBoard({ state: 'ok', value }))
       .catch(() => !abort.signal.aborted && setBoard({ state: 'failed' }))
     return () => abort.abort()
@@ -111,37 +110,13 @@ export default function QueenToken({ lang }: { lang: 'en' | 'ru' }) {
   )
 }
 
-interface Counts {
-  authors: SpecAuthors
-  lanes: Leaderboard
-  /** The ledger's rate; null when the ledger could not say. */
-  triPerSpec: number | null
-}
-
-/**
- * The leaderboard's two reads, plus the rate. Both counts are required: a board
- * built from half of them would rank the other road's people at zero. The rate
- * is not: without it the units still stand, and the TRI is shown as unknown.
- */
-async function readCounts(signal: AbortSignal): Promise<Counts> {
-  const [authors, lanes, rate] = await Promise.all([
-    readSpecAuthors(signal),
-    readLeaderboard(QUEEN_API, signal),
-    readEarnings(signal).then(
-      (e) => e?.triPerSpec ?? null,
-      () => null,
-    ),
-  ])
-  return { authors, lanes, triPerSpec: rate }
-}
-
 function TokenBoard({
   c,
   board,
   minter,
 }: {
   c: TokenCopy
-  board: Read<Counts>
+  board: Read<TriCounts>
   minter: Read<MinterState>
 }) {
   if (board.state === 'loading') return <p className="qp-note">{c.loading}</p>
@@ -153,17 +128,14 @@ function TokenBoard({
     )
 
   const { authors, lanes, triPerSpec } = board.value
-  const { rows, nobody, total } = triBoard(
-    authors.people,
-    lanes.contributors,
-    triPerSpec,
-    authors.unattributed?.commits ?? 0,
-  )
+  const { rows, nobody, total } = boardOf(board.value)
   const tri = (n: number | null) => (n === null ? '—' : fmt(n))
 
   return (
     <>
-      <p className="qp-lead">{triPerSpec === null ? c.noRate : c.boardLead(triPerSpec)}</p>
+      <p className="qp-lead">
+        {validRate(triPerSpec) ? c.rate(triPerSpec) : c.noRate} {c.rule}
+      </p>
       {rows.length === 0 ? (
         <p className="qp-note">{c.empty}</p>
       ) : (

@@ -6,6 +6,7 @@ import QueenHeroBlock from './components/QueenHeroBlock'
 import SpecHeroBlock from './components/SpecHeroBlock'
 import ModuleHeroBlock from './components/ModuleHeroBlock'
 import PlayBlock from './components/PlayBlock'
+import TriMineBlock from './components/TriMineBlock'
 import AgiGameBlock from './components/AgiGameBlock'
 import FaqBlock from './components/FaqBlock'
 import ModulesBlock from './components/ModulesBlock'
@@ -70,6 +71,9 @@ export default function App() {
           that put a cell of the core in their hands are named before the
           modules are. The core is built by playing it. */}
       <PlayBlock />
+      {/* What the moves earn, right after the moves: the token's live figures
+          and one button that hands a visitor's own agent the work order. */}
+      <TriMineBlock />
 
       {/* What the reader is thinking once the moves are named: what it costs,
           whether the language has to come first, what happens after they send.
