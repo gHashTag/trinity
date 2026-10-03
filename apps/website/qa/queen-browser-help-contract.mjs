@@ -80,6 +80,11 @@ const panel = readFileSync(new URL('../src/components/QueenChat.tsx', import.met
 assert.match(panel, /const head = headState\(context\.view, live\)/, 'the chip is decided by the view, not by the Queen server alone')
 assert.match(panel, /t\[emptyNote\(context\.view, live\)\]/, 'and so is the empty sentence')
 assert.match(panel, /onClick=\{\(\) => send\(line\)\}/, 'a starter is sent the way a typed question is, as the person')
+assert.match(
+  panel,
+  /scrollTo\(\{ top: turns\.length === 0 \? 0 : log\.current\.scrollHeight \}\)/,
+  'an empty log stays at its top, so the sentence above the starters is not scrolled away',
+)
 assert.doesNotMatch(
   panel,
   /live === false \? t\.offlineNote : t\.empty/,

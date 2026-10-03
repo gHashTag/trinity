@@ -212,9 +212,12 @@ export default function QueenChat({
   // derived tabs run newest-first, because they are read by looking rather than
   // by following, and a filter that answers at the bottom of a scroller has not
   // answered.
+  // Before the first question there is nothing to follow: the log stays at its
+  // top, so the sentence above the BROWSER starters is read first (scrolled to
+  // the bottom, a 375px panel cut it off -- seen in a harness, 2026-10-04).
   useEffect(() => {
     if (tab !== 'queen') return
-    log.current?.scrollTo({ top: log.current.scrollHeight })
+    log.current?.scrollTo({ top: turns.length === 0 ? 0 : log.current.scrollHeight })
   }, [tab, turns.length, busy])
 
   // The clock is started where the question is sent, not here: setting state in
