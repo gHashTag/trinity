@@ -1,6 +1,12 @@
 {
-  "measuredAt": "2026-10-02T04:36:30.085Z",
-  "method": "Commits touching a directory that holds .t27 files, in every public gHashTag repository that has one (published mirrors and vendored copies excluded), each commit counted once. Credited to a GitHub account: the commit author, else whoever opened the merged pull request carrying it, else the committer. A measure of work on the spec corpus: not every file under those directories is a spec, and a commit is not a file.",
+  "measuredAt": "2026-10-03T10:37:52.568Z",
+  "method": "Commits touching a directory that holds .t27 files, in every public gHashTag repository that has one (published mirrors and vendored copies excluded), each commit counted once. Credited to a GitHub account: for a squash of the swarm's queen-<issue> pull request, the person whose provider key the accepted bee ran on (the Queen's record); otherwise the commit author, else whoever opened the merged pull request carrying it, else the committer. A measure of work on the spec corpus: not every file under those directories is a spec, and a commit is not a file.",
+  "laneCredits": {
+    "read": true,
+    "source": "https://trios-agent-server-production.up.railway.app/queen/public-credits",
+    "issues": 1190,
+    "queenSquashes": 564
+  },
   "sources": [
     {
       "repo": "gHashTag/agent-mail-mcp",
@@ -217,7 +223,7 @@
   ],
   "truncated": [],
   "unattributed": {
-    "commits": 47,
+    "commits": 49,
     "names": {
       "Dmitrii Vasilev": 1,
       "Claude": 8,
@@ -225,6 +231,7 @@
       "Trinity Agent": 1,
       "t27-agent": 4,
       "gh CLI": 3,
+      "github-actions[bot]": 2,
       "agent": 2,
       "trinity-bot": 12,
       "t27-wave-bot": 2,
@@ -235,15 +242,15 @@
     {
       "login": "gHashTag",
       "avatar": "https://github.com/gHashTag.png?size=96",
-      "commits": 3235,
+      "commits": 2953,
       "via": {
-        "author": 2605,
+        "author": 2323,
         "pr": 624,
         "name": 6
       },
       "repos": [
-        "t27",
         "agent-mail-mcp",
+        "t27",
         "tri-net",
         "trinity",
         "trinity-fpga",
@@ -256,22 +263,12 @@
       ]
     },
     {
-      "login": "mxfill77",
-      "avatar": "https://github.com/mxfill77.png?size=96",
-      "commits": 74,
-      "via": {
-        "author": 74
-      },
-      "repos": [
-        "turbobaby-user-bot"
-      ]
-    },
-    {
       "login": "dmitrii-f-t27",
       "avatar": "https://github.com/dmitrii-f-t27.png?size=96",
-      "commits": 36,
+      "commits": 358,
       "via": {
-        "author": 31,
+        "author": 42,
+        "lane": 311,
         "pr": 5
       },
       "repos": [
@@ -281,6 +278,17 @@
         "trios",
         "tt-trinity-euler",
         "tt-trinity-gamma",
+        "turbobaby-user-bot"
+      ]
+    },
+    {
+      "login": "mxfill77",
+      "avatar": "https://github.com/mxfill77.png?size=96",
+      "commits": 74,
+      "via": {
+        "author": 74
+      },
+      "repos": [
         "turbobaby-user-bot"
       ]
     },
