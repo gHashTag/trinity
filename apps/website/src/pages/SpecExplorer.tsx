@@ -30,6 +30,8 @@ import { loadCorpus, type ManifestPart } from '../lib/queenCorpus'
 import { specWorld, worldParam } from '../lib/queenCorpusCheck'
 import { HealthBar, HealthDot, PipelineRibbon, HEALTH_COLOR } from '../components/SpecGraphics'
 import { SpecSkillChips } from '../components/SpecChips'
+import TerminalCast from '../components/TerminalCast'
+import { loadToolSpecs, type ToolCast } from '../lib/agentSpecs'
 import { highlightCode, highlightSource, type Span } from '../lib/highlight'
 import {
   analyzeCached,
@@ -81,6 +83,9 @@ const UI = {
     chipOmitted:
       '{n} further declaration(s) are not drawn. The diagram scales to the panel, so past about a dozen rows every label stops being readable; the remainder is counted here rather than rendered too small to read.',
     source: 'Source',
+    castHeading: 'RECORDED RUN',
+    castHint: 'This tool card names a terminal recording of its command (the CAST constant). It shows that the command ran and that every step exited 0; it is not a test of the text above.',
+    castNone: 'No recording yet: this command card names no CAST, so no published tri cast session is attached to it.',
     tokens: 'Tokens',
     ast: 'AST',
     hir: 'HIR',
@@ -183,6 +188,9 @@ const UI = {
     chipOmitted:
       'Ещё {n} объявлений не нарисованы. Схема масштабируется под панель, и после десятка строк подписи перестают читаться; остаток посчитан здесь, а не отрисован нечитаемо мелко.',
     source: 'Исходник',
+    castHeading: 'ЗАПИСАННЫЙ ПРОГОН',
+    castHint: 'Эта карточка инструмента называет терминальную запись своей команды (константа CAST). Запись показывает, что команда запускалась и каждый шаг завершился с кодом 0; проверкой текста выше она не является.',
+    castNone: 'Записи пока нет: в карточке команды нет CAST, и опубликованная сессия tri cast к ней не привязана.',
     tokens: 'Токены',
     ast: 'AST',
     hir: 'HIR',
@@ -477,6 +485,12 @@ export default function SpecExplorer() {
    */
   const [mobilePane, setMobilePane] = useState<'list' | 'detail'>('list')
   const [source, setSource] = useState('')
+  // The recorded run a tool card ends with. Read from the tool catalog, where
+  // scripts/agents-from-specs.mjs castProblems() already held the CAST to its files,
+  // so this page carries no second copy of the rule; null for every other spec.
+  const [cast, setCast] = useState<ToolCast | null>(null)
+  // True when the selected spec is a tri command card the catalog lists without a CAST.
+  const [castMissing, setCastMissing] = useState(false)
   const [result, setResult] = useState<T27Analysis | null>(null)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState<string | null>(null)
@@ -846,6 +860,24 @@ export default function SpecExplorer() {
 
   /** True once the draft diverges from the file as shipped. */
   const edited = draft !== null && draft !== source
+  const selectedPath = selected?.path ?? null
+  useEffect(() => {
+    setCast(null)
+    setCastMissing(false)
+    const isToolCard = selectedPath !== null && selectedPath.startsWith('specs/tools/')
+    if (!isToolCard) return
+    let live = true
+    loadToolSpecs()
+      .then((catalog) => {
+        const card = catalog.tools.find((t) => t.specPath === selectedPath)
+        if (!live) return
+        setCast(card?.cast ?? null)
+        const isCommandWithoutCast = card !== undefined && card.family === 'tri-cli' && !card.cast
+        setCastMissing(isCommandWithoutCast)
+      })
+      .catch(() => { /* No catalog, no recording: the source still renders. */ })
+    return () => { live = false }
+  }, [selectedPath])
 
   const activeTarget = LAYERS.find((l) => l.id === layer)?.kind === 'target' ? result?.targets?.[layer] : undefined
 
@@ -1699,6 +1731,21 @@ export default function SpecExplorer() {
                         onRun={() => void run()}
                         ariaLabel={ui.source}
                       />
+                      {cast && (
+                        <div style={{ padding: '12px 10px', borderTop: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          <div style={{ fontSize: 11, color: C.muted, fontFamily: C.mono }}>{ui.castHeading}</div>
+                          <div style={{ fontSize: 11.5, color: C.muted, lineHeight: 1.5 }}>{ui.castHint}</div>
+                          <div data-lang-exempt="live">
+                            <TerminalCast key={cast.src} src={cast.src} title={cast.title} share={cast.share} caption={cast.recorded ? `${cast.title} · ${cast.recorded}` : cast.title} />
+                          </div>
+                        </div>
+                      )}
+                      {castMissing && (
+                        <div data-cast-state="none" style={{ padding: '12px 10px', borderTop: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          <div style={{ fontSize: 11, color: C.muted, fontFamily: C.mono }}>{ui.castHeading}</div>
+                          <div style={{ fontSize: 11.5, color: C.muted, lineHeight: 1.5 }}>{ui.castNone}</div>
+                        </div>
+                      )}
                     </div>
                   )}
 

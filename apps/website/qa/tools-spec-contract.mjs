@@ -1,7 +1,7 @@
 // Layer 5: the tools catalog, checked against what it claims.
 //
 // public/tools/spec-tools.json is written by scripts/agents-from-specs.mjs
-// from the .t27 files under public/t27/files/specs/tools/{tri,mcp,trinity/tri}/ --
+// from the .t27 files under public/t27/files/specs/tools/{tri,mcp,trinity/tri,trinity/cli,trios/tri}/ --
 // through the real compiler, not a regex. The tri family is one card per clap variant
 // of `tri` (gHashTag/t27 cli/tri/src/main.rs) plus, since S06 of gHashTag/trinity#988,
 // one card per command the gHashTag/trinity tri exports (.trinity/registry.json); the
@@ -15,15 +15,17 @@
 // TOOLS_NOTE instead); does every AGENTS letter exist and does that agent name
 // the tool back; is every skill cross-link backed by the skill's own text; does
 // the witness stay one of the two honest labels; is the search index the card;
-// and does the Queen open the view on the promised key.
+// does every recorded run (CAST) a card names exist under public/term/, read as
+// asciicast v2 with every exit code 0, and actually run the card's command; and
+// does the Queen open the view on the promised key.
 //
 //   node --experimental-strip-types qa/tools-spec-contract.mjs
 
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
-import { join } from 'node:path'
-import { generate, readToolCatalog, TOOLS_OUT, AGENTS_OUT, SKILLS_OUT, TOOL_SPEC_DIR, TOOL_SPEC_SUBDIRS, TOOL_FAMILIES, TOOL_WITNESSES, TOOL_SCHEMA, TOOL_REPO_OF_SUBDIR, summarySourceOf } from '../scripts/agents-from-specs.mjs'
+import { join, relative } from 'node:path'
+import { generate, readToolCatalog, TOOLS_OUT, AGENTS_OUT, SKILLS_OUT, TOOL_SPEC_DIR, TOOL_SPEC_SUBDIRS, TOOL_FAMILIES, TOOL_WITNESSES, TOOL_SCHEMA, TOOL_REPO_OF_SUBDIR, summarySourceOf, CAST_RE, CAST_SHARE_BASE } from '../scripts/agents-from-specs.mjs'
 import { canonicalSpecEditUrl, vendoredSpecUrl } from '../src/lib/agentSpecs.ts'
 import { MODULES } from '../src/lib/queenModules.ts'
 import { HUD_VIEWS, HUD_KEYS } from '../src/components/queenHud.ts'
@@ -43,7 +45,7 @@ assert.equal(tools.compilerWasmSha256, sha256(readFileSync('public/t27/t27_compi
 
 // 2. Exactly the vendored files, one card each; the three corpus specs at the top of specs/tools/ are not cards.
 const vendored = TOOL_SPEC_SUBDIRS.flatMap((sub) => readdirSync(join('public/t27/files', TOOL_SPEC_DIR, sub)).filter((f) => f.endsWith('.t27')).map((f) => `${TOOL_SPEC_DIR}/${sub}/${f}`)).sort()
-assert.deepEqual(tools.tools.map((t) => t.specPath).sort(), vendored, 'the catalog is exactly the vendored specs/tools/{tri,mcp,trinity/tri,trios/tri} files')
+assert.deepEqual(tools.tools.map((t) => t.specPath).sort(), vendored, 'the catalog is exactly the vendored specs/tools/{tri,mcp,trinity/tri,trinity/cli,trios/tri} files')
 assert.ok(tools.tools.length >= 50, `${tools.tools.length} tool cards; the tri CLI alone has more than 50 commands`)
 const ids = new Set(tools.tools.map((t) => t.id))
 assert.equal(ids.size, tools.tools.length, 'duplicate tool ids')
@@ -64,7 +66,7 @@ for (const t of tools.tools) {
   assert.equal(t.discarded, 0)
   assert.equal(t.fields.KIND, 'tool')
   assert.equal(t.fields.ID, t.id)
-  const pm = new RegExp(`^${TOOL_SPEC_DIR}/(tri|mcp|trinity/tri|trios/tri)/([^/]+)\\.t27$`).exec(t.specPath)
+  const pm = new RegExp(`^${TOOL_SPEC_DIR}/(tri|mcp|trinity/tri|trinity/cli|trios/tri)/([^/]+)\\.t27$`).exec(t.specPath)
   assert.ok(pm, `${t.id}: ${t.specPath} is not under a tools sub-directory`)
   const [, sub, base] = pm
   assert.equal(t.family, TOOL_FAMILIES[sub])
@@ -75,7 +77,7 @@ for (const t of tools.tools) {
   assert.equal(t.fields.SCHEMA, TOOL_SCHEMA)
   assert.equal(t.repo, sub === 'mcp' ? t.fields.REPO : TOOL_REPO_OF_SUBDIR[sub])
   assert.equal(t.fields.REPO, t.repo)
-  const qualifiedOnly = sub === 'trinity/tri' || sub === 'trios/tri'
+  const qualifiedOnly = sub === 'trinity/tri' || sub === 'trinity/cli' || sub === 'trios/tri'
   const shortId = `${qualifiedOnly ? 'tri' : sub}/${base}`
   assert.equal(t.qualifiedId, `${t.repo}:${shortId}`)
   assert.equal(t.fields.QUALIFIED_ID, t.qualifiedId)
@@ -121,6 +123,22 @@ for (const t of tools.tools) {
     assert.equal(t.registry.mcpEnabled, true, `${t.id}: the export keeps mcp_enabled commands only`)
     assert.match(t.registry.mcpName, /^tri_[a-z0-9_]+$/)
     assert.ok(t.exitCodes.length >= 1 && t.result.length > 0)
+    assert.deepEqual(t.skills, [], `${t.id}: skills name the t27 tri, never a Trinity command`)
+    assert.equal(t.links.config, null)
+    if (t.collidesWith) { assert.ok(ids.has(t.collidesWith.split(':')[1]), `${t.id}: COLLIDES_WITH ${t.collidesWith} names no t27 card`); assert.ok(tools.collisions.some((c) => c.trinity === t.id), `${t.id}: collision not in the table`) }
+  } else if (t.family === 'tri-cli' && sub === 'trinity/cli') {
+    // scripts/tools-from-trinity-tri.mjs: a command of the Zig tri the registry export does not cover.
+    assert.equal(t.repo, 'gHashTag/trinity')
+    assert.equal(t.command, `tri ${base}`)
+    assert.equal(t.fields.COMMAND, t.command)
+    assert.equal(t.witness, 'source-parse', `${t.id}: a trinity/cli card is read from the source, not run`)
+    assert.match(t.links.pinnedAt, /^[0-9a-f]{40}$/, `${t.id}: a trinity/cli card pins a full commit`)
+    assert.ok(t.witnessSource.includes(t.links.pinnedAt), `${t.id}: WITNESS_SOURCE names the pinned commit`)
+    assert.ok(['main_chain', 'namespace', 'parse_command', 'none'].includes(t.routing.kind), `${t.id}: route kind ${t.routing.kind}`)
+    assert.equal(t.routing.routed, t.routing.kind !== 'none')
+    assert.ok(t.routing.note.length > 0, `${t.id}: ROUTE_NOTE empty`)
+    const noHelpText = t.fields.ABOUT.startsWith('no help text in gHashTag/trinity@')
+    if (noHelpText) assert.ok(t.fields.ABOUT.includes(t.links.pinnedAt.slice(0, 12)), `${t.id}: "no help text" names the commit`)
     assert.deepEqual(t.skills, [], `${t.id}: skills name the t27 tri, never a Trinity command`)
     assert.equal(t.links.config, null)
     if (t.collidesWith) { assert.ok(ids.has(t.collidesWith.split(':')[1]), `${t.id}: COLLIDES_WITH ${t.collidesWith} names no t27 card`); assert.ok(tools.collisions.some((c) => c.trinity === t.id), `${t.id}: collision not in the table`) }
@@ -172,6 +190,50 @@ for (const t of tools.tools) {
   assert.equal(canonicalSpecEditUrl(t.specPath), `https://github.com/gHashTag/t27/edit/master/${t.specPath}`)
   assert.equal(vendoredSpecUrl(t.specPath), `https://github.com/gHashTag/trinity/blob/main/apps/website/public/t27/files/${t.specPath}`)
 }
+
+// 3b. Recorded runs. Read from disk here, not through the generator's castProblems(), so a
+// generator that stopped checking would still be caught: the file and its meta.json exist, the
+// first line is an asciicast v2 header, every "x" (exit) event and meta.exit_codes is "0", and
+// the commands the card lists are recorded commands that run the card's own COMMAND.
+const runs = (line, command) => line === command || line.startsWith(`${command} `)
+for (const t of tools.tools) {
+  const hasCastField = Object.hasOwn(t.fields, 'CAST')
+  const hasCast = t.cast !== null && t.cast !== undefined
+  assert.equal(hasCast, hasCastField, `${t.id}: catalog cast and the spec's CAST disagree`)
+  const isMcp = t.family === 'mcp'
+  if (isMcp) assert.equal(hasCast, false, `${t.id}: an MCP card names no recorded run`)
+  const isRuntime = t.witness === 'runtime'
+  if (isRuntime) assert.ok(hasCast, `${t.id}: witness runtime without a CAST`)
+  if (!hasCast) continue
+  assert.equal(t.cast.src, t.fields.CAST)
+  const m = CAST_RE.exec(t.cast.src)
+  assert.ok(m, `${t.id}: CAST ${t.cast.src} is not term/<id>/session.cast`)
+  assert.equal(t.cast.id, m[1])
+  assert.equal(t.cast.share, `${CAST_SHARE_BASE}${m[1]}/`, `${t.id}: the share link is the recording's own page`)
+  const castFile = join('public', t.cast.src)
+  const metaFile = join('public/term', m[1], 'meta.json')
+  assert.ok(existsSync(castFile), `${t.id}: ${castFile} missing`)
+  assert.ok(existsSync(metaFile), `${t.id}: ${metaFile} missing`)
+  const [head, ...events] = readFileSync(castFile, 'utf8').split('\n').filter((l) => l.trim()).map((l) => JSON.parse(l))
+  assert.equal(head.version, 2, `${t.id}: ${castFile} is not asciicast v2`)
+  const exits = events.filter((e) => e[1] === 'x').map((e) => String(e[2]))
+  assert.ok(exits.every((x) => x === '0'), `${t.id}: ${castFile} records exit codes ${exits.join(',')}`)
+  const meta = JSON.parse(readFileSync(metaFile, 'utf8'))
+  assert.equal(meta.id, m[1])
+  assert.ok((meta.exit_codes ?? []).every((x) => String(x) === '0'), `${t.id}: ${metaFile} exit_codes ${meta.exit_codes}`)
+  assert.equal(t.cast.title, meta.title)
+  assert.ok(t.cast.commands.length > 0, `${t.id}: the recording runs no ${t.command}`)
+  for (const line of t.cast.commands) {
+    assert.ok(meta.commands.includes(line), `${t.id}: ${JSON.stringify(line)} is not a recorded command`)
+    assert.ok(runs(line, t.command), `${t.id}: ${JSON.stringify(line)} does not run ${t.command}`)
+  }
+}
+assert.equal(tools.counts.withCast, tools.tools.filter((t) => t.cast).length)
+// CAST is a tool-card constant: no other spec in the vendored corpus carries one.
+const castSpecs = []
+const walk = (dir) => { for (const e of readdirSync(dir, { withFileTypes: true })) { const p = join(dir, e.name); if (e.isDirectory()) walk(p); else if (e.name.endsWith('.t27') && /^pub const CAST\b/m.test(readFileSync(p, 'utf8'))) castSpecs.push(relative('public/t27/files', p)) } }
+walk('public/t27/files')
+assert.deepEqual(castSpecs.sort(), tools.tools.filter((t) => t.cast).map((t) => t.specPath).sort(), 'every spec with a CAST is a tool card the catalog plays')
 
 // 4. Counts are sums of the list; groups partition the families; the ladder is the catalogs.
 const tri = tools.tools.filter((t) => t.family === 'tri-cli'), mcp = tools.tools.filter((t) => t.family === 'mcp')
@@ -234,7 +296,7 @@ for (const l of tools.i18n) {
 
 console.log(
   `tools-spec-contract: ${tools.tools.length} cards (tri ${tri.length} commands of which ${tools.counts.trinityTri} Trinity, ${tools.counts.triActions} actions; mcp ${mcp.length} servers, ${tools.counts.mcpTools} tools, ${tools.counts.mcpExternal} external; schema ${tools.schema}, ${Object.keys(tools.legacy).length} legacy ids, ${tools.collisions.length} collisions); ` +
-  `with agents ${tools.counts.withAgents}, with skills ${tools.counts.withSkills}; witness ${Object.entries(tools.counts.byWitness).map(([k, v]) => `${k} ${v}`).join(', ')}; ` +
+  `with agents ${tools.counts.withAgents}, with skills ${tools.counts.withSkills}, with a recorded run ${tools.counts.withCast} (${tools.tools.filter((t) => t.cast).map((t) => `${t.id} <- ${t.cast.id}`).join(', ')}); witness ${Object.entries(tools.counts.byWitness).map(([k, v]) => `${k} ${v}`).join(', ')}; ` +
   `links pinned at ${tools.pin.ref.slice(0, 7)}; Queen key ${m.key}; ` +
   `i18n [${tools.i18n.map((l) => `${l.locale} ${l.coverage.n}/${l.coverage.total}`).join('; ')}]`,
 )

@@ -27,6 +27,7 @@ import { skillExplorerHash } from '../lib/skillsCatalog'
 import { agentExplorerHash } from '../lib/agentsCatalog'
 import { toolExplorerHash, canonicalToolUrl, resolveTool } from '../lib/toolsCatalog'
 import { C, panelBox, pill, tagChip } from '../lib/explorerTheme'
+import TerminalCast from '../components/TerminalCast'
 
 const UI = {
   en: {
@@ -35,7 +36,7 @@ const UI = {
     metaTitle: 'Tool Explorer',
     metaDescription:
       'The tools every Trinity agent should know: the commands of all three tri CLIs (the t27 Rust tri, the Trinity Zig tri and the trios loop tri) and the MCP servers of both repositories, each generated from a .t27 spec with its source, its actions or tools, and the agents that own it.',
-    note: 'Generated from specs/tools/{tri,mcp,trinity/tri,trios/tri}/*.t27, not typed by hand',
+    note: 'Generated from specs/tools/{tri,mcp,trinity/tri,trinity/cli,trios/tri}/*.t27, not typed by hand',
     back: '← Home',
     search: 'Search by command, tool or about text',
     allFamilies: 'Both families',
@@ -82,6 +83,11 @@ const UI = {
     aboutFrom: 'about text from',
     witness: 'witness',
     pinnedAt: 'pinned at',
+    castHeading: 'RECORDED RUN',
+    castHint: 'A terminal session of this command, recorded with tri cast and published on its own page. It shows that the command ran and that every step exited 0. It does not change the witness above, which says how the text of the card was obtained, and it may come from a different build than the pinned commit.',
+    castRecorded: 'recorded',
+    castCommands: 'runs in the recording',
+    castNone: 'No recording yet. This card names no CAST: no published tri cast session runs this command, or the sessions that do cannot say which of the three tri programs ran it. Nothing above was run for this card; the witness says how its text was obtained.',
     server: 'SERVER',
     launch: 'launch',
     transport: 'transport',
@@ -112,7 +118,7 @@ const UI = {
     metaTitle: 'Обозреватель инструментов',
     metaDescription:
       'Инструменты, о которых должен знать каждый агент Trinity: команды всех трёх tri CLI (Rust tri из t27, Zig tri из Trinity и цикловой tri из trios) и MCP-серверы обоих репозиториев, каждый сгенерирован из спеки .t27 с исходником, действиями или инструментами и агентами-владельцами.',
-    note: 'Сгенерировано из specs/tools/{tri,mcp,trinity/tri,trios/tri}/*.t27, а не набрано руками',
+    note: 'Сгенерировано из specs/tools/{tri,mcp,trinity/tri,trinity/cli,trios/tri}/*.t27, а не набрано руками',
     back: '← На главную',
     search: 'Поиск по команде, инструменту или описанию',
     allFamilies: 'Оба семейства',
@@ -159,6 +165,11 @@ const UI = {
     aboutFrom: 'описание взято из',
     witness: 'свидетель',
     pinnedAt: 'закреплено на',
+    castHeading: 'ЗАПИСАННЫЙ ПРОГОН',
+    castHint: 'Терминальная сессия этой команды, записанная через tri cast и опубликованная на отдельной странице. Она показывает, что команда запускалась и каждый шаг завершился с кодом 0. Свидетель выше от неё не меняется: он говорит, откуда взят текст карточки, а запись могла быть сделана другой сборкой, чем закреплённый коммит.',
+    castRecorded: 'записано',
+    castCommands: 'запуски в записи',
+    castNone: 'Записи пока нет. В карточке нет CAST: ни одна опубликованная сессия tri cast не запускает эту команду, или по сессиям, которые запускают, нельзя сказать, какая из трёх программ tri её выполнила. Для этой карточки ничего не запускалось; свидетель выше говорит, откуда взят её текст.',
     server: 'СЕРВЕР',
     launch: 'запуск',
     transport: 'транспорт',
@@ -698,6 +709,26 @@ export default function ToolExplorer() {
                   {row(ui.witness, live(selected.witness))}
                   {row(ui.pinnedAt, live(selected.links.pinnedAt))}
                 </div>
+
+                {/* ---- recorded run: the card ends with its screencast when its spec names one (CAST) ---- */}
+                {selected.cast && (
+                  <div style={{ ...box, padding: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {heading(ui.castHeading)}
+                    <div style={{ fontSize: 11.5, color: C.muted, lineHeight: 1.5 }}>{ui.castHint}</div>
+                    {selected.cast.recorded && row(ui.castRecorded, live(selected.cast.recorded))}
+                    {row(ui.castCommands, <span data-lang-exempt="live" style={{ fontFamily: C.mono, fontSize: 11.5 }}>{selected.cast.commands.join(' · ')}</span>)}
+                    <div data-lang-exempt="live">
+                      <TerminalCast key={selected.cast.src} src={selected.cast.src} title={selected.cast.title} share={selected.cast.share} caption={selected.cast.title} />
+                    </div>
+                  </div>
+                )}
+                {/* ---- no recording: a tri command card without CAST says so instead of ending silently ---- */}
+                {selected.family === 'tri-cli' && !selected.cast && (
+                  <div data-cast-state="none" style={{ ...box, padding: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {heading(ui.castHeading)}
+                    <div style={{ fontSize: 11.5, color: C.muted, lineHeight: 1.5 }}>{ui.castNone}</div>
+                  </div>
+                )}
               </div>
             )}
           </main>

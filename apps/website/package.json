@@ -98,6 +98,8 @@
     "check:agents": "node --experimental-strip-types qa/agents-spec-contract.mjs",
     "check:tools": "node --experimental-strip-types qa/tools-spec-contract.mjs",
     "check:tools-site": "node --experimental-strip-types qa/tools-site-contract.mjs",
+    "check:tools-coverage": "node --experimental-strip-types qa/tools-coverage-contract.mjs",
+    "test:tri-commands": "node --test scripts/tri-commands.test.mjs",
     "test:agents-specs": "node --test scripts/agents-from-specs.test.mjs",
     "check:docs": "node --experimental-strip-types qa/docs-spec-contract.mjs",
     "test:docs-specs": "node --test scripts/docs-from-specs.test.mjs",

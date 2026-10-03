@@ -1,0 +1,3094 @@
+{
+  "cli": "trinity",
+  "repo": "gHashTag/trinity",
+  "source": "src/tri/main.zig + src/tri/tri_namespace.zig + src/tri/tri_utils.zig + src/registry/command_table.zig",
+  "commit": "04a7894fa64f52fcd1540c48e800543969cffd92",
+  "rule": "every first word src/tri/main.zig routes before any parser, every namespace word of src/tri/tri_namespace.zig, every command src/tri/tri_utils.zig parseCommand() returns (its tokens: name + aliases) and every top-level entry of src/registry/command_table.zig all_commands",
+  "extractedBy": "apps/website/scripts/tri-commands.mjs",
+  "cardDirs": [
+    "trinity/tri",
+    "trinity/cli"
+  ],
+  "count": 249,
+  "withHelp": 169,
+  "notCounted": [
+    "all-cmd",
+    "autonomous-demo",
+    "context-info",
+    "deps",
+    "holo-cmd",
+    "mm-orch-demo",
+    "omega-cmd",
+    "orchestration-bench",
+    "orchestration-demo",
+    "particle-constants",
+    "query",
+    "regen"
+  ],
+  "notCountedNote": "execute_map handlers (src/tri/tri_register.zig) that no early route, namespace word, parseCommand token or registry entry names; `tri <name>` does not reach them (src/tri/main.zig dispatchNamespacedCommand may)",
+  "commands": [
+    {
+      "name": "agents-bench",
+      "aliases": [],
+      "help": "Run multi-agent benchmark (Needle check)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:530",
+      "route": "parseCommand returns .agents_bench, src/tri/tri_utils.zig:844",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "agents-demo",
+      "aliases": [
+        "agents"
+      ],
+      "help": "Run multi-agent coordination demo",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:529",
+      "route": "parseCommand returns .agents_demo, src/tri/tri_utils.zig:843",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "all",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .all_cmd, src/tri/tri_utils.zig:1010",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "amygdala",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "routed by src/tri/main.zig before any parser, line 606",
+      "routeKind": "early",
+      "routed": true,
+      "inRegistry": false,
+      "comment": "src/tri/main.zig:605: Amygdala: route `tri amygdala check_fear` to Error Guardian"
+    },
+    {
+      "name": "analyze",
+      "aliases": [
+        "scan"
+      ],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .analyze, src/tri/tri_utils.zig:987",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "auto-bench",
+      "aliases": [
+        "autonomous-bench"
+      ],
+      "help": "Run autonomous agent benchmark (Needle check)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:585",
+      "route": "parseCommand returns .autonomous_bench, src/tri/tri_utils.zig:886",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "auto-demo",
+      "aliases": [
+        "auto",
+        "autonomous"
+      ],
+      "help": "Run autonomous agent demo (self-directed task execution)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:584",
+      "route": "parseCommand returns .autonomous_demo, src/tri/tri_utils.zig:885",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "autocomplete",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "routed by src/tri/main.zig before any parser, line 633",
+      "routeKind": "early",
+      "routed": true,
+      "inRegistry": false,
+      "comment": "src/tri/main.zig:632: Autocomplete: `tri autocomplete --print|--install|--uninstall`"
+    },
+    {
+      "name": "batched-bench",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .batched_bench, src/tri/tri_utils.zig:868",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "batched-demo",
+      "aliases": [
+        "batched"
+      ],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .batched_demo, src/tri/tri_utils.zig:867",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "bench",
+      "aliases": [
+        "benchmark"
+      ],
+      "help": "Run performance benchmarks",
+      "helpSource": "registry description, src/registry/command_table.zig:1049",
+      "route": "routed by src/tri/main.zig before any parser, line 400 (for the forms that `if` matches; the rest reach parseCommand); then parseCommand returns .bench, src/tri/tri_utils.zig:820",
+      "routeKind": "early",
+      "routed": true,
+      "inRegistry": true,
+      "comment": "src/tri/main.zig:399: Bench namespace: route `tri bench compare/record/history` to perf_benchmark"
+    },
+    {
+      "name": "bench-suite",
+      "aliases": [
+        "benchmark-all",
+        "all-bench"
+      ],
+      "help": "Run full benchmark suite (FORGE/VSA/VM)",
+      "helpSource": "registry description, src/registry/command_table.zig:1795",
+      "route": "registry entry only, src/registry/command_table.zig:1795, no live execute_map entry; no early route, namespace word or parseCommand token names it, so `tri bench-suite` reaches parseCommand .none",
+      "routeKind": "registry",
+      "routed": false,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "bench-verdict",
+      "aliases": [
+        "toxic-bench",
+        "review-bench"
+      ],
+      "help": "Generate pass/fail verdict with toxic analysis (benchmarks)",
+      "helpSource": "registry description, src/registry/command_table.zig:1804",
+      "route": "registry entry only, src/registry/command_table.zig:1804, no live execute_map entry; no early route, namespace word or parseCommand token names it, so `tri bench-verdict` reaches parseCommand .none",
+      "routeKind": "registry",
+      "routed": false,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "bio",
+      "aliases": [
+        "biology"
+      ],
+      "help": "Biology v14.0 — DNA/RNA/Protein sacred analysis",
+      "helpSource": "registry description, src/registry/command_table.zig:33",
+      "route": "parseCommand returns .bio, src/tri/tri_utils.zig:961",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "blindspots",
+      "aliases": [
+        "blind-spot",
+        "blindspot",
+        "bs"
+      ],
+      "help": "Blind Spots v1.0 — 90+ new formulas across 8 domains",
+      "helpSource": "registry description, src/registry/command_table.zig:147",
+      "route": "registry entry only, src/registry/command_table.zig:147, no live execute_map entry; no early route, namespace word or parseCommand token names it, so `tri blindspots` reaches parseCommand .none",
+      "routeKind": "registry",
+      "routed": false,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "brain",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "routed by src/tri/main.zig before any parser, line 520",
+      "routeKind": "early",
+      "routed": true,
+      "inRegistry": false,
+      "comment": "src/tri/main.zig:519: Brain: route `tri brain [--show|--json|--region|--quick|--watch]` to metrics dashboard"
+    },
+    {
+      "name": "build",
+      "aliases": [
+        "build-cmd"
+      ],
+      "help": "Build project targets",
+      "helpSource": "registry description, src/registry/command_table.zig:1456",
+      "route": "parseCommand returns .build_cmd, src/tri/tri_utils.zig:995",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "cache-bench",
+      "aliases": [
+        "memo-bench"
+      ],
+      "help": "Run adaptive caching benchmark (Needle check)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:675",
+      "route": "parseCommand returns .cache_bench, src/tri/tri_utils.zig:940",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "cache-demo",
+      "aliases": [
+        "cache",
+        "memo"
+      ],
+      "help": "Run adaptive caching demo",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:674",
+      "route": "parseCommand returns .cache_demo, src/tri/tri_utils.zig:939",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "capsec-bench",
+      "aliases": [
+        "sec-bench"
+      ],
+      "help": "Run capability security benchmark (Needle check)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:665",
+      "route": "parseCommand returns .capsec_bench, src/tri/tri_utils.zig:934",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "capsec-demo",
+      "aliases": [
+        "capsec",
+        "sec"
+      ],
+      "help": "Run capability security demo",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:664",
+      "route": "parseCommand returns .capsec_demo, src/tri/tri_utils.zig:933",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "cell",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "routed by src/tri/main.zig before any parser, line 541",
+      "routeKind": "early",
+      "routed": true,
+      "inRegistry": false,
+      "comment": "src/tri/main.zig:540: Cell: route `tri cell <command>` to Honeycomb module management"
+    },
+    {
+      "name": "chain",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .chain, src/tri/tri_utils.zig:829",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "chat",
+      "aliases": [
+        "c"
+      ],
+      "help": "Interactive chat (vision + voice + tools)",
+      "helpSource": "registry description, src/registry/command_table.zig:548",
+      "route": "parseCommand returns .chat, src/tri/tri_utils.zig:809",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "check",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "routed by src/tri/main.zig before any parser, line 210",
+      "routeKind": "early",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "chem",
+      "aliases": [
+        "chemistry"
+      ],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .chem, src/tri/tri_utils.zig:967",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "chimera",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "routed by src/tri/main.zig before any parser, line 457",
+      "routeKind": "early",
+      "routed": true,
+      "inRegistry": false,
+      "comment": "src/tri/main.zig:456: Chimera: route `tri chimera <name>` to fused multi-step commands"
+    },
+    {
+      "name": "chord",
+      "aliases": [],
+      "help": "Analyze chord harmonics",
+      "helpSource": "registry description, src/registry/command_table.zig:504",
+      "route": "registry entry only, src/registry/command_table.zig:504, with an execute_map handler in src/tri/tri_register.zig; no early route, namespace word or parseCommand token names it, so `tri chord` reaches parseCommand .none",
+      "routeKind": "registry",
+      "routed": false,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "clara",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .clara, src/tri/tri_utils.zig:1047",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "clean",
+      "aliases": [],
+      "help": "Clean build artifacts (.zig-cache, zig-out)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:758",
+      "route": "parseCommand returns .clean, src/tri/tri_utils.zig:974",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "cloud",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .cloud, src/tri/tri_utils.zig:1000",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "cluster-bench",
+      "aliases": [
+        "nodes-bench"
+      ],
+      "help": "Run distributed agents benchmark (Needle check)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:615",
+      "route": "parseCommand returns .cluster_bench, src/tri/tri_utils.zig:904",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "cluster-demo",
+      "aliases": [
+        "cluster",
+        "nodes"
+      ],
+      "help": "Run distributed multi-node agents demo",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:614",
+      "route": "parseCommand returns .cluster_demo, src/tri/tri_utils.zig:903",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "code",
+      "aliases": [],
+      "help": "Generate code with typing effect",
+      "helpSource": "registry description, src/registry/command_table.zig:560",
+      "route": "parseCommand returns .code, src/tri/tri_utils.zig:810",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "commands",
+      "aliases": [
+        "list",
+        "ls"
+      ],
+      "help": "List all available TRI commands",
+      "helpSource": "registry description, src/registry/command_table.zig:1896",
+      "route": "parseCommand returns .commands, src/tri/tri_utils.zig:1033",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "commit",
+      "aliases": [],
+      "help": "Stage all changes and create a commit",
+      "helpSource": "registry description, src/registry/command_table.zig:781",
+      "route": "parseCommand returns .commit, src/tri/tri_utils.zig:823",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "comms-bench",
+      "aliases": [
+        "msg-bench"
+      ],
+      "help": "Run communication benchmark (Needle check)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:630",
+      "route": "parseCommand returns .comms_bench, src/tri/tri_utils.zig:913",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "comms-demo",
+      "aliases": [
+        "comms",
+        "msg"
+      ],
+      "help": "Run agent communication protocol demo",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:629",
+      "route": "parseCommand returns .comms_demo, src/tri/tri_utils.zig:912",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "completion",
+      "aliases": [],
+      "help": "Generate shell completion scripts",
+      "helpSource": "registry description, src/registry/command_table.zig:1730",
+      "route": "registry entry only, src/registry/command_table.zig:1730, with an execute_map handler in src/tri/tri_register.zig; no early route, namespace word or parseCommand token names it, so `tri completion` reaches parseCommand .none",
+      "routeKind": "registry",
+      "routed": false,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "conscious",
+      "aliases": [
+        "consciousness"
+      ],
+      "help": "Consciousness awakening simulator (IIT+GWT+OrchOR+Qutrit+ActiveInf)",
+      "helpSource": "registry description, src/registry/command_table.zig:1634",
+      "route": "registry entry only, src/registry/command_table.zig:1634, no live execute_map entry; no early route, namespace word or parseCommand token names it, so `tri conscious` reaches parseCommand .none",
+      "routeKind": "registry",
+      "routed": false,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "consensus-bench",
+      "aliases": [
+        "raft-bench"
+      ],
+      "help": "Run consensus benchmark (Needle check)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:640",
+      "route": "parseCommand returns .consensus_bench, src/tri/tri_utils.zig:919",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "consensus-demo",
+      "aliases": [
+        "consensus",
+        "raft"
+      ],
+      "help": "Run consensus & coordination demo",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:639",
+      "route": "parseCommand returns .consensus_demo, src/tri/tri_utils.zig:918",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "constants",
+      "aliases": [
+        "const"
+      ],
+      "help": "Display sacred constants (φ, π, e, μ, χ, σ, ε)",
+      "helpSource": "registry description, src/registry/command_table.zig:211",
+      "route": "parseCommand returns .constants_cmd, src/tri/tri_utils.zig:952",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "context",
+      "aliases": [
+        "ctx"
+      ],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .context_info, src/tri/tri_utils.zig:989",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "context-bench",
+      "aliases": [],
+      "help": "Run context benchmark (Needle check)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:535",
+      "route": "parseCommand returns .context_bench, src/tri/tri_utils.zig:847",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "context-demo",
+      "aliases": [],
+      "help": "Run long context demo (sliding window)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:534",
+      "route": "parseCommand returns .context_demo, src/tri/tri_utils.zig:846",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "context-load",
+      "aliases": [
+        "ctx-load"
+      ],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .context_load, src/tri/tri_utils.zig:1062",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "contract-bench",
+      "aliases": [
+        "sla-bench"
+      ],
+      "help": "Run contract negotiation benchmark (Needle check)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:680",
+      "route": "parseCommand returns .contract_bench, src/tri/tri_utils.zig:943",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "contract-demo",
+      "aliases": [
+        "contract",
+        "sla"
+      ],
+      "help": "Run contract negotiation demo",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:679",
+      "route": "parseCommand returns .contract_demo, src/tri/tri_utils.zig:942",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "convert",
+      "aliases": [],
+      "help": "Convert between file formats",
+      "helpSource": "registry description, src/registry/command_table.zig:995",
+      "route": "parseCommand returns .convert, src/tri/tri_utils.zig:818",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "core",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "a namespace word (`tri core <command>`), src/tri/tri_namespace.zig:33",
+      "routeKind": "namespace",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "cosmos",
+      "aliases": [
+        "cosmology"
+      ],
+      "help": "Cosmology v15.0 — Universe through φ",
+      "helpSource": "registry description, src/registry/command_table.zig:58",
+      "route": "parseCommand returns .cosmos, src/tri/tri_utils.zig:963",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "dashboard",
+      "aliases": [
+        "dash"
+      ],
+      "help": "Sacred dashboard",
+      "helpSource": "registry description, src/registry/command_table.zig:1316",
+      "route": "parseCommand returns .dashboard, src/tri/tri_utils.zig:983",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "deadline-bench",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .deadline_bench, src/tri/tri_utils.zig:874",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "deadline-demo",
+      "aliases": [
+        "deadline"
+      ],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .deadline_demo, src/tri/tri_utils.zig:873",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "deck",
+      "aliases": [
+        "deck-generate"
+      ],
+      "help": "Generate flash deck for learning",
+      "helpSource": "registry description, src/registry/command_table.zig:1511",
+      "route": "parseCommand returns .deck_generate, src/tri/tri_utils.zig:997",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "decompose",
+      "aliases": [],
+      "help": "Break task into sub-tasks (Link 4)",
+      "helpSource": "registry description, src/registry/command_table.zig:904",
+      "route": "parseCommand returns .decompose, src/tri/tri_utils.zig:830",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "depin",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "routed by src/tri/main.zig before any parser, line 489",
+      "routeKind": "early",
+      "routed": true,
+      "inRegistry": false,
+      "comment": "src/tri/main.zig:488: DePIN: route `tri depin <command>` to DePIN node protocol"
+    },
+    {
+      "name": "deploy",
+      "aliases": [],
+      "help": "Deploy to production (Fly.io)",
+      "helpSource": "registry description, src/registry/command_table.zig:1484",
+      "route": "routed by src/tri/main.zig before any parser, line 322",
+      "routeKind": "early",
+      "routed": true,
+      "inRegistry": true,
+      "comment": "src/tri/main.zig:321: Deploy namespace: route `tri deploy <action>` to runDeployCommand"
+    },
+    {
+      "name": "dev",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "a namespace word (`tri dev <command>`), src/tri/tri_namespace.zig:34",
+      "routeKind": "namespace",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "diff",
+      "aliases": [],
+      "help": "Show unstaged changes",
+      "helpSource": "registry description, src/registry/command_table.zig:807",
+      "route": "parseCommand returns .diff, src/tri/tri_utils.zig:824",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "dispatch",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "routed by src/tri/main.zig before any parser, line 210",
+      "routeKind": "early",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "distributed",
+      "aliases": [
+        "dist"
+      ],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .distributed, src/tri/tri_utils.zig:947",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "dm",
+      "aliases": [
+        "dark",
+        "dark-matter",
+        "darkmatter"
+      ],
+      "help": "Dark Matter v14.1 — φ-γ based candidate beyond WIMPs",
+      "helpSource": "registry description, src/registry/command_table.zig:73",
+      "route": "registry entry only, src/registry/command_table.zig:73, with an execute_map handler in src/tri/tri_register.zig; no early route, namespace word or parseCommand token names it, so `tri dm` reaches parseCommand .none",
+      "routeKind": "registry",
+      "routed": false,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "doc",
+      "aliases": [
+        "document"
+      ],
+      "help": "Generate documentation from code",
+      "helpSource": "registry description, src/registry/command_table.zig:684",
+      "route": "parseCommand returns .doc, src/tri/tri_utils.zig:815",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "docs-gen",
+      "aliases": [
+        "docs_gen",
+        "docgen"
+      ],
+      "help": "Generate CLI reference documentation",
+      "helpSource": "registry description, src/registry/command_table.zig:1709",
+      "route": "registry entry only, src/registry/command_table.zig:1709, no live execute_map entry; no early route, namespace word or parseCommand token names it, so `tri docs-gen` reaches parseCommand .none",
+      "routeKind": "registry",
+      "routed": false,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "doctor",
+      "aliases": [
+        "dr"
+      ],
+      "help": "System health check and diagnostics",
+      "helpSource": "registry description, src/registry/command_table.zig:1230",
+      "route": "parseCommand returns .doctor, src/tri/tri_utils.zig:973",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "dtxn-bench",
+      "aliases": [
+        "txn-bench"
+      ],
+      "help": "Run distributed transaction benchmark (Needle check)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:670",
+      "route": "parseCommand returns .dtxn_bench, src/tri/tri_utils.zig:937",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "dtxn-demo",
+      "aliases": [
+        "dtxn",
+        "txn"
+      ],
+      "help": "Run distributed transaction demo",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:669",
+      "route": "parseCommand returns .dtxn_demo, src/tri/tri_utils.zig:936",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "enrich",
+      "aliases": [
+        "spec-enrich",
+        "spec_enrich"
+      ],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .enrich, src/tri/tri_utils.zig:1038",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "eval",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .eval, src/tri/tri_utils.zig:1059",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "event",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .event_stream, src/tri/tri_utils.zig:1065",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "events",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "routed by src/tri/main.zig before any parser, line 557",
+      "routeKind": "early",
+      "routed": true,
+      "inRegistry": false,
+      "comment": "src/tri/main.zig:556: Events: route `tri events [list|emit|status]` to event bus"
+    },
+    {
+      "name": "eventsrc-bench",
+      "aliases": [
+        "es-bench"
+      ],
+      "help": "Run event sourcing benchmark (Needle check)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:660",
+      "route": "parseCommand returns .eventsrc_bench, src/tri/tri_utils.zig:931",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "eventsrc-demo",
+      "aliases": [
+        "eventsrc",
+        "es"
+      ],
+      "help": "Run event sourcing & CQRS demo",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:659",
+      "route": "parseCommand returns .eventsrc_demo, src/tri/tri_utils.zig:930",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "evolve",
+      "aliases": [],
+      "help": "Self-improving code evolution",
+      "helpSource": "registry description, src/registry/command_table.zig:1092",
+      "route": "parseCommand returns .evolve, src/tri/tri_utils.zig:821",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "experience",
+      "aliases": [
+        "exp-log"
+      ],
+      "help": "",
+      "helpSource": "",
+      "route": "routed by src/tri/main.zig before any parser, line 513 (for the forms that `if` matches; the rest reach parseCommand); then parseCommand returns .experience, src/tri/tri_utils.zig:1052",
+      "routeKind": "early",
+      "routed": true,
+      "inRegistry": false,
+      "comment": "src/tri/main.zig:512: Experience: route `tri experience <save|recall|mistakes>` to tri_experience"
+    },
+    {
+      "name": "experiment",
+      "aliases": [
+        "exp"
+      ],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .experiment, src/tri/tri_utils.zig:1056",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "explain",
+      "aliases": [],
+      "help": "Explain code or concept in detail",
+      "helpSource": "registry description, src/registry/command_table.zig:608",
+      "route": "parseCommand returns .explain, src/tri/tri_utils.zig:813",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "faculty",
+      "aliases": [
+        "a2a"
+      ],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .faculty, src/tri/tri_utils.zig:1054",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "farm",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .farm, src/tri/tri_utils.zig:1001",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "fedlearn-bench",
+      "aliases": [
+        "fl-bench"
+      ],
+      "help": "Run federated learning benchmark (Needle check)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:655",
+      "route": "parseCommand returns .fedlearn_bench, src/tri/tri_utils.zig:928",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "fedlearn-demo",
+      "aliases": [
+        "fedlearn",
+        "fl"
+      ],
+      "help": "Run federated learning demo",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:654",
+      "route": "parseCommand returns .fedlearn_demo, src/tri/tri_utils.zig:927",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "fib",
+      "aliases": [
+        "fibonacci"
+      ],
+      "help": "Fibonacci numbers with BigInt",
+      "helpSource": "registry description, src/registry/command_table.zig:268",
+      "route": "parseCommand returns .fib, src/tri/tri_utils.zig:954",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "finetune-bench",
+      "aliases": [],
+      "help": "Run fine-tuning benchmark (Needle check)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:565",
+      "route": "parseCommand returns .finetune_bench, src/tri/tri_utils.zig:865",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "finetune-demo",
+      "aliases": [
+        "finetune"
+      ],
+      "help": "Run fine-tuning demo (custom model adaptation)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:564",
+      "route": "parseCommand returns .finetune_demo, src/tri/tri_utils.zig:864",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "fix",
+      "aliases": [],
+      "help": "Detect and fix bugs automatically",
+      "helpSource": "registry description, src/registry/command_table.zig:576",
+      "route": "parseCommand returns .fix, src/tri/tri_utils.zig:812",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "fmt",
+      "aliases": [
+        "format"
+      ],
+      "help": "Format Zig source (zig fmt src/)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:759",
+      "route": "parseCommand returns .fmt_cmd, src/tri/tri_utils.zig:975",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "forge",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "a namespace word (`tri forge <command>`), src/tri/tri_namespace.zig:35",
+      "routeKind": "namespace",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "forge-bench",
+      "aliases": [
+        "fb",
+        "forge-benchmark",
+        "fpga-bench"
+      ],
+      "help": "FORGE regression benchmark suite",
+      "helpSource": "registry description, src/registry/command_table.zig:1813",
+      "route": "registry entry only, src/registry/command_table.zig:1813, with an execute_map handler in src/tri/tri_register.zig; no early route, namespace word or parseCommand token names it, so `tri forge-bench` reaches parseCommand .none",
+      "routeKind": "registry",
+      "routed": false,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "forge-verdict",
+      "aliases": [
+        "fv",
+        "forge-review",
+        "fpga-verdict"
+      ],
+      "help": "FORGE verdict with pass/fail and toxic analysis",
+      "helpSource": "registry description, src/registry/command_table.zig:1822",
+      "route": "registry entry only, src/registry/command_table.zig:1822, with an execute_map handler in src/tri/tri_register.zig; no early route, namespace word or parseCommand token names it, so `tri forge-verdict` reaches parseCommand .none",
+      "routeKind": "registry",
+      "routed": false,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "formula",
+      "aliases": [],
+      "help": "Sacred formula evaluator",
+      "helpSource": "registry description, src/registry/command_table.zig:339",
+      "route": "parseCommand returns .formula_cmd, src/tri/tri_utils.zig:958",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "fpga",
+      "aliases": [],
+      "help": "FPGA toolchain via FORGE v2.0 (native Zig)",
+      "helpSource": "registry description, src/registry/command_table.zig:1761",
+      "route": "parseCommand returns .fpga, src/tri/tri_utils.zig:998",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "fpga-demo",
+      "aliases": [
+        "fpga_demo"
+      ],
+      "help": "Run FPGA synthesis and flash demo",
+      "helpSource": "registry description, src/registry/command_table.zig:1536",
+      "route": "parseCommand returns .fpga_demo, src/tri/tri_utils.zig:1002",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "frequency",
+      "aliases": [
+        "freq",
+        "note-freq"
+      ],
+      "help": "Calculate frequency from note",
+      "helpSource": "registry description, src/registry/command_table.zig:485",
+      "route": "registry entry only, src/registry/command_table.zig:485, with an execute_map handler in src/tri/tri_register.zig; no early route, namespace word or parseCommand token names it, so `tri frequency` reaches parseCommand .none",
+      "routeKind": "registry",
+      "routed": false,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "full-cycle",
+      "aliases": [
+        "sacred-full-cycle",
+        "sacred_full_cycle"
+      ],
+      "help": "Run sacred mathematics full cycle demo",
+      "helpSource": "registry description, src/registry/command_table.zig:1561",
+      "route": "parseCommand returns .sacred_full_cycle, src/tri/tri_utils.zig:1004",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "gematria",
+      "aliases": [
+        "gem"
+      ],
+      "help": "Gematria word value calculator",
+      "helpSource": "registry description, src/registry/command_table.zig:321",
+      "route": "parseCommand returns .gematria, src/tri/tri_utils.zig:957",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "gen",
+      "aliases": [
+        "generate"
+      ],
+      "help": "Compile VIBEE spec to Zig/Verilog/Python",
+      "helpSource": "registry description, src/registry/command_table.zig:964",
+      "route": "parseCommand returns .gen, src/tri/tri_utils.zig:811",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "git",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "routed by src/tri/main.zig before any parser, line 243",
+      "routeKind": "early",
+      "routed": true,
+      "inRegistry": false,
+      "comment": "src/tri/main.zig:242: Git namespace: route `tri git <action> [args]` to runGitCommand"
+    },
+    {
+      "name": "golden-chain",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "routed by src/tri/main.zig before any parser, line 614",
+      "routeKind": "early",
+      "routed": true,
+      "inRegistry": false,
+      "comment": "src/tri/main.zig:613: Golden Chain: route `tri golden-chain <run|resume|links>` to 28-link pipeline"
+    },
+    {
+      "name": "govern",
+      "aliases": [],
+      "help": "Sacred governance",
+      "helpSource": "registry description, src/registry/command_table.zig:1301",
+      "route": "parseCommand returns .govern, src/tri/tri_utils.zig:982",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "governor-bench",
+      "aliases": [
+        "gov-bench"
+      ],
+      "help": "Run resource governor benchmark (Needle check)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:650",
+      "route": "parseCommand returns .governor_bench, src/tri/tri_utils.zig:925",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "governor-demo",
+      "aliases": [
+        "governor",
+        "gov"
+      ],
+      "help": "Run adaptive resource governor demo",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:649",
+      "route": "parseCommand returns .governor_demo, src/tri/tri_utils.zig:924",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "graphql",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "routed by src/tri/main.zig before any parser, line 210",
+      "routeKind": "early",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "gravity",
+      "aliases": [
+        "black-hole",
+        "blackhole"
+      ],
+      "help": "Black Hole Information Paradox v16.0 — φ-γ solution",
+      "helpSource": "registry description, src/registry/command_table.zig:99",
+      "route": "registry entry only, src/registry/command_table.zig:99, no live execute_map entry; no early route, namespace word or parseCommand token names it, so `tri gravity` reaches parseCommand .none",
+      "routeKind": "registry",
+      "routed": false,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "habenula",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "routed by src/tri/main.zig before any parser, line 598",
+      "routeKind": "early",
+      "routed": true,
+      "inRegistry": false,
+      "comment": "src/tri/main.zig:597: Habenula: route `tri habenula unfair_detect` to Anti-corruption sensor"
+    },
+    {
+      "name": "hardware",
+      "aliases": [],
+      "help": "Hardware deployment — deploy, status, stop nodes",
+      "helpSource": "registry description, src/registry/command_table.zig:1390",
+      "route": "registry entry only, src/registry/command_table.zig:1390, no live execute_map entry; no early route, namespace word or parseCommand token names it, so `tri hardware` reaches parseCommand .none",
+      "routeKind": "registry",
+      "routed": false,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "harmony",
+      "aliases": [],
+      "help": "Analyze harmonic relationship between frequencies",
+      "helpSource": "registry description, src/registry/command_table.zig:528",
+      "route": "registry entry only, src/registry/command_table.zig:528, with an execute_map handler in src/tri/tri_register.zig; no early route, namespace word or parseCommand token names it, so `tri harmony` reaches parseCommand .none",
+      "routeKind": "registry",
+      "routed": false,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "help",
+      "aliases": [
+        "h",
+        "?"
+      ],
+      "help": "Show help information",
+      "helpSource": "registry description, src/registry/command_table.zig:1739",
+      "route": "parseCommand returns .help, src/tri/tri_utils.zig:1019",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "holo",
+      "aliases": [
+        "holographic"
+      ],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .holo_cmd, src/tri/tri_utils.zig:1011",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "identity",
+      "aliases": [],
+      "help": "Sacred identity",
+      "helpSource": "registry description, src/registry/command_table.zig:1271",
+      "route": "parseCommand returns .identity, src/tri/tri_utils.zig:979",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "igla",
+      "aliases": [],
+      "help": "IGLA initiative status (parser coverage)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:761",
+      "route": "parseCommand returns .igla, src/tri/tri_utils.zig:977",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "info",
+      "aliases": [],
+      "help": "System information",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:765",
+      "route": "parseCommand returns .info, src/tri/tri_utils.zig:1017",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "init",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "routed by src/tri/main.zig before any parser, line 573",
+      "routeKind": "early",
+      "routed": true,
+      "inRegistry": false,
+      "comment": "src/tri/main.zig:572: Init: route `tri init [--cell <name>]` to scaffolding"
+    },
+    {
+      "name": "install",
+      "aliases": [
+        "self-update"
+      ],
+      "help": "Install project dependencies",
+      "helpSource": "registry description, src/registry/command_table.zig:1431",
+      "route": "parseCommand returns .install, src/tri/tri_utils.zig:994",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "intelligence",
+      "aliases": [
+        "intel"
+      ],
+      "help": "Sacred Intelligence system",
+      "helpSource": "registry description, src/registry/command_table.zig:1217",
+      "route": "parseCommand returns .intelligence, src/tri/tri_utils.zig:971",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "issue",
+      "aliases": [
+        "board",
+        "protocol",
+        "github"
+      ],
+      "help": "",
+      "helpSource": "",
+      "route": "routed by src/tri/main.zig before any parser, line 210 (for the forms that `if` matches; the rest reach parseCommand); then parseCommand returns .github, src/tri/tri_utils.zig:1042",
+      "routeKind": "early",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "job",
+      "aliases": [
+        "job-start"
+      ],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .job_start, src/tri/tri_utils.zig:1025",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "job-artifacts",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .job_artifacts, src/tri/tri_utils.zig:1029",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "job-cancel",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .job_cancel, src/tri/tri_utils.zig:1030",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "job-list",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .job_list, src/tri/tri_utils.zig:1031",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "job-logs",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .job_logs, src/tri/tri_utils.zig:1028",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "job-status",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .job_status, src/tri/tri_utils.zig:1027",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "kaggle",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .kaggle, src/tri/tri_utils.zig:1048",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "launch",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .launch, src/tri/tri_utils.zig:1015",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "lint",
+      "aliases": [
+        "validate"
+      ],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .lint, src/tri/tri_utils.zig:1036",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "log",
+      "aliases": [],
+      "help": "Show recent commit history",
+      "helpSource": "registry description, src/registry/command_table.zig:857",
+      "route": "parseCommand returns .log, src/tri/tri_utils.zig:826",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "loop",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .loop, src/tri/tri_utils.zig:1050",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "loop-decide",
+      "aliases": [
+        "loop_decide"
+      ],
+      "help": "Loop decision: CONTINUE/EXIT (Link 17)",
+      "helpSource": "registry description, src/registry/command_table.zig:934",
+      "route": "parseCommand returns .loop_decide, src/tri/tri_utils.zig:838",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "lucas",
+      "aliases": [],
+      "help": "Lucas numbers (L(2)=3=TRINITY)",
+      "helpSource": "registry description, src/registry/command_table.zig:286",
+      "route": "parseCommand returns .lucas, src/tri/tri_utils.zig:955",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "math",
+      "aliases": [],
+      "help": "Sacred mathematics dispatcher",
+      "helpSource": "registry description, src/registry/command_table.zig:200",
+      "route": "parseCommand returns .math, src/tri/tri_utils.zig:951",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "math-agent",
+      "aliases": [
+        "mathagent"
+      ],
+      "help": "Sacred Math Agent - self-aware",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:743",
+      "route": "parseCommand returns .math_agent, src/tri/tri_utils.zig:985",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "math-diff",
+      "aliases": [],
+      "help": "Compare two sacred formulas",
+      "helpSource": "registry description, src/registry/command_table.zig:433",
+      "route": "registry entry only, src/registry/command_table.zig:433, with an execute_map handler in src/tri/tri_register.zig; no early route, namespace word or parseCommand token names it, so `tri math-diff` reaches parseCommand .none",
+      "routeKind": "registry",
+      "routed": false,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "math-doctor",
+      "aliases": [],
+      "help": "Sacred Formula health check",
+      "helpSource": "registry description, src/registry/command_table.zig:422",
+      "route": "registry entry only, src/registry/command_table.zig:422, with an execute_map handler in src/tri/tri_register.zig; no early route, namespace word or parseCommand token names it, so `tri math-doctor` reaches parseCommand .none",
+      "routeKind": "registry",
+      "routed": false,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "math-explain",
+      "aliases": [],
+      "help": "Explain sacred formula details",
+      "helpSource": "registry description, src/registry/command_table.zig:411",
+      "route": "registry entry only, src/registry/command_table.zig:411, with an execute_map handler in src/tri/tri_register.zig; no early route, namespace word or parseCommand token names it, so `tri math-explain` reaches parseCommand .none",
+      "routeKind": "registry",
+      "routed": false,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "math-table",
+      "aliases": [],
+      "help": "Sacred Formula Table v1.1 — All formulas with evidence",
+      "helpSource": "registry description, src/registry/command_table.zig:389",
+      "route": "registry entry only, src/registry/command_table.zig:389, with an execute_map handler in src/tri/tri_register.zig; no early route, namespace word or parseCommand token names it, so `tri math-table` reaches parseCommand .none",
+      "routeKind": "registry",
+      "routed": false,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "math-verify",
+      "aliases": [],
+      "help": "Verify sacred formula against measurement",
+      "helpSource": "registry description, src/registry/command_table.zig:400",
+      "route": "registry entry only, src/registry/command_table.zig:400, with an execute_map handler in src/tri/tri_register.zig; no early route, namespace word or parseCommand token names it, so `tri math-verify` reaches parseCommand .none",
+      "routeKind": "registry",
+      "routed": false,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "mcp",
+      "aliases": [],
+      "help": "MCP tool export and management",
+      "helpSource": "registry description, src/registry/command_table.zig:1914",
+      "route": "a namespace word (`tri mcp <command>`), src/tri/tri_namespace.zig:37; then parseCommand returns .mcp, src/tri/tri_utils.zig:1034",
+      "routeKind": "namespace",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "memory-bench",
+      "aliases": [
+        "mem-bench"
+      ],
+      "help": "Run agent memory benchmark (Needle check)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:600",
+      "route": "parseCommand returns .memory_bench, src/tri/tri_utils.zig:895",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "memory-demo",
+      "aliases": [
+        "memory",
+        "mem"
+      ],
+      "help": "Run agent memory & learning demo",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:599",
+      "route": "routed by src/tri/main.zig before any parser, line 505 (for the forms that `if` matches; the rest reach parseCommand); then parseCommand returns .memory_demo, src/tri/tri_utils.zig:894",
+      "routeKind": "early",
+      "routed": true,
+      "inRegistry": false,
+      "comment": "src/tri/main.zig:504: Memory: route `tri memory <list|read|write|search|gc|stats>` to tri_memory"
+    },
+    {
+      "name": "mesh",
+      "aliases": [],
+      "help": "Global mesh management — status, topology, discovery",
+      "helpSource": "registry description, src/registry/command_table.zig:1362",
+      "route": "registry entry only, src/registry/command_table.zig:1362, no live execute_map entry; no early route, namespace word or parseCommand token names it, so `tri mesh` reaches parseCommand .none",
+      "routeKind": "registry",
+      "routed": false,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "metrics",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .metrics, src/tri/tri_utils.zig:1060",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "mmo-bench",
+      "aliases": [
+        "mm-orch-bench"
+      ],
+      "help": "Run multi-modal multi-agent benchmark (Needle check)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:595",
+      "route": "parseCommand returns .mm_orch_bench, src/tri/tri_utils.zig:892",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "mmo-demo",
+      "aliases": [
+        "mmo",
+        "mm-orch"
+      ],
+      "help": "Run multi-modal multi-agent demo (all modalities+agents)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:594",
+      "route": "parseCommand returns .mm_orch_demo, src/tri/tri_utils.zig:891",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "mu",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .mu, src/tri/tri_utils.zig:981",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "multi-cluster",
+      "aliases": [
+        "mc"
+      ],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .multi_cluster, src/tri/tri_utils.zig:949",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "multimodal-bench",
+      "aliases": [
+        "mm-bench"
+      ],
+      "help": "Run multi-modal benchmark (Needle check)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:570",
+      "route": "parseCommand returns .multimodal_bench, src/tri/tri_utils.zig:877",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "multimodal-demo",
+      "aliases": [
+        "multimodal",
+        "mm"
+      ],
+      "help": "Run multi-modal unified demo (text+vision+voice+code)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:569",
+      "route": "parseCommand returns .multimodal_demo, src/tri/tri_utils.zig:876",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "music",
+      "aliases": [
+        "audio",
+        "sound"
+      ],
+      "help": "Sacred Music v1.0 — φ-based acoustics",
+      "helpSource": "registry description, src/registry/command_table.zig:463",
+      "route": "registry entry only, src/registry/command_table.zig:463, with an execute_map handler in src/tri/tri_register.zig; no early route, namespace word or parseCommand token names it, so `tri music` reaches parseCommand .none",
+      "routeKind": "registry",
+      "routed": false,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "needle",
+      "aliases": [
+        "nedl"
+      ],
+      "help": "Structural editor core",
+      "helpSource": "registry description, src/registry/command_table.zig:1656",
+      "route": "parseCommand returns .needle, src/tri/tri_utils.zig:1021",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "needle-check",
+      "aliases": [
+        "nc",
+        "needle_check"
+      ],
+      "help": "Needle check",
+      "helpSource": "registry description, src/registry/command_table.zig:1687",
+      "route": "parseCommand returns .needle_check, src/tri/tri_utils.zig:1023",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "needle-search",
+      "aliases": [
+        "ns",
+        "needle_search"
+      ],
+      "help": "Needle search",
+      "helpSource": "registry description, src/registry/command_table.zig:1672",
+      "route": "parseCommand returns .needle_search, src/tri/tri_utils.zig:1022",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "neuro",
+      "aliases": [
+        "neuroscience"
+      ],
+      "help": "Neuroscience v16.0 — Brain as sacred computer",
+      "helpSource": "registry description, src/registry/command_table.zig:86",
+      "route": "parseCommand returns .neuro, src/tri/tri_utils.zig:965",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "notify",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "routed by src/tri/main.zig before any parser, line 414",
+      "routeKind": "early",
+      "routed": true,
+      "inRegistry": false,
+      "comment": "src/tri/main.zig:413: Notify: route `tri notify [--chat <id>] [--pin] [--edit <msg_id>] \"<msg>\"` to sendNotification"
+    },
+    {
+      "name": "observe-bench",
+      "aliases": [
+        "otel-bench"
+      ],
+      "help": "Run observability benchmark (Needle check)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:635",
+      "route": "parseCommand returns .observe_bench, src/tri/tri_utils.zig:916",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "observe-demo",
+      "aliases": [
+        "observe",
+        "otel"
+      ],
+      "help": "Run observability & tracing demo",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:634",
+      "route": "parseCommand returns .observe_demo, src/tri/tri_utils.zig:915",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "ofc",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "routed by src/tri/main.zig before any parser, line 590",
+      "routeKind": "early",
+      "routed": true,
+      "inRegistry": false,
+      "comment": "src/tri/main.zig:589: OFC: route `tri ofc verdict --toxic` to Values Chamber"
+    },
+    {
+      "name": "omega",
+      "aliases": [],
+      "help": "Omega phase",
+      "helpSource": "registry description, src/registry/command_table.zig:1328",
+      "route": "parseCommand returns .omega, src/tri/tri_utils.zig:984",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "omega-evolve",
+      "aliases": [
+        "evolve-omega"
+      ],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .omega_evolve, src/tri/tri_utils.zig:1013",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "omega-phase",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .omega_cmd, src/tri/tri_utils.zig:1009",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "orch-bench",
+      "aliases": [
+        "orchestrate-bench"
+      ],
+      "help": "Run multi-agent orchestration benchmark (Needle check)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:590",
+      "route": "parseCommand returns .orchestration_bench, src/tri/tri_utils.zig:889",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "orch-demo",
+      "aliases": [
+        "orch",
+        "orchestrate"
+      ],
+      "help": "Run multi-agent orchestration demo (coordinator+specialists)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:589",
+      "route": "parseCommand returns .orchestration_demo, src/tri/tri_utils.zig:888",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "ouroboros",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "routed by src/tri/main.zig before any parser, line 473",
+      "routeKind": "early",
+      "routed": true,
+      "inRegistry": false,
+      "comment": "src/tri/main.zig:472: Ouroboros: self-evolving recursive improvement loop"
+    },
+    {
+      "name": "particles",
+      "aliases": [
+        "particle",
+        "pdg"
+      ],
+      "help": "Particle physics sacred formulas (49 constants from φ)",
+      "helpSource": "registry description, src/registry/command_table.zig:350",
+      "route": "registry entry only, src/registry/command_table.zig:350, with an execute_map handler in src/tri/tri_register.zig; no early route, namespace word or parseCommand token names it, so `tri particles` reaches parseCommand .none",
+      "routeKind": "registry",
+      "routed": false,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "patent",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "routed by src/tri/main.zig before any parser, line 481",
+      "routeKind": "early",
+      "routed": true,
+      "inRegistry": false,
+      "comment": "src/tri/main.zig:480: Patent: route `tri patent <command>` to IP protection"
+    },
+    {
+      "name": "persist-bench",
+      "aliases": [
+        "save-bench"
+      ],
+      "help": "Run persistent memory benchmark (Needle check)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:605",
+      "route": "parseCommand returns .persist_bench, src/tri/tri_utils.zig:898",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "persist-demo",
+      "aliases": [
+        "persist",
+        "save"
+      ],
+      "help": "Run persistent memory demo (save/load TRMM)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:604",
+      "route": "parseCommand returns .persist_demo, src/tri/tri_utils.zig:897",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "phi",
+      "aliases": [],
+      "help": "Compute φⁿ (golden ratio power)",
+      "helpSource": "registry description, src/registry/command_table.zig:238",
+      "route": "parseCommand returns .phi, src/tri/tri_utils.zig:953",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "phi-series",
+      "aliases": [
+        "phi-freq",
+        "phi-frequencies"
+      ],
+      "help": "Show φ frequency series",
+      "helpSource": "registry description, src/registry/command_table.zig:536",
+      "route": "registry entry only, src/registry/command_table.zig:536, with an execute_map handler in src/tri/tri_register.zig; no early route, namespace word or parseCommand token names it, so `tri phi-series` reaches parseCommand .none",
+      "routeKind": "registry",
+      "routed": false,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "phoenix",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "routed by src/tri/main.zig before any parser, line 314",
+      "routeKind": "early",
+      "routed": true,
+      "inRegistry": false,
+      "comment": "src/tri/main.zig:313: Phoenix namespace: route `tri phoenix <subcommand>` to tri_phoenix"
+    },
+    {
+      "name": "pipeline",
+      "aliases": [],
+      "help": "Execute 22-link Golden Chain v4.0",
+      "helpSource": "registry description, src/registry/command_table.zig:886",
+      "route": "parseCommand returns .pipeline, src/tri/tri_utils.zig:828",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "pipeline-demo",
+      "aliases": [],
+      "help": "Pipeline demo — show Golden Chain workflow",
+      "helpSource": "registry description, src/registry/command_table.zig:897",
+      "route": "registry entry only, src/registry/command_table.zig:897, with an execute_map handler in src/tri/tri_register.zig; no early route, namespace word or parseCommand token names it, so `tri pipeline-demo` reaches parseCommand .none",
+      "routeKind": "registry",
+      "routed": false,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "plan",
+      "aliases": [],
+      "help": "Generate implementation plan (Link 5)",
+      "helpSource": "registry description, src/registry/command_table.zig:914",
+      "route": "parseCommand returns .plan, src/tri/tri_utils.zig:831",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "plugin-bench",
+      "aliases": [
+        "ext-bench"
+      ],
+      "help": "Run plugin system benchmark (Needle check)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:625",
+      "route": "parseCommand returns .plugin_bench, src/tri/tri_utils.zig:910",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "plugin-demo",
+      "aliases": [
+        "plugin",
+        "ext"
+      ],
+      "help": "Run plugin & extension system demo",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:624",
+      "route": "routed by src/tri/main.zig before any parser, line 549 (for the forms that `if` matches; the rest reach parseCommand); then parseCommand returns .plugin_demo, src/tri/tri_utils.zig:909",
+      "routeKind": "early",
+      "routed": true,
+      "inRegistry": false,
+      "comment": "src/tri/main.zig:548: Plugin: route `tri plugin <command>` to plugin CLI"
+    },
+    {
+      "name": "pr",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "routed by src/tri/main.zig before any parser, line 210",
+      "routeKind": "early",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "priority-bench",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .priority_bench, src/tri/tri_utils.zig:871",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "priority-demo",
+      "aliases": [
+        "priority"
+      ],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .priority_demo, src/tri/tri_utils.zig:870",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "qcd",
+      "aliases": [],
+      "help": "QCD Transition v2.0 — Non-perturbative QCD from φ",
+      "helpSource": "registry description, src/registry/command_table.zig:448",
+      "route": "registry entry only, src/registry/command_table.zig:448, no live execute_map entry; no early route, namespace word or parseCommand token names it, so `tri qcd` reaches parseCommand .none",
+      "routeKind": "registry",
+      "routed": false,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "quantum",
+      "aliases": [],
+      "help": "Quantum Trinity",
+      "helpSource": "registry description, src/registry/command_table.zig:1585",
+      "route": "parseCommand returns .quantum, src/tri/tri_utils.zig:1006",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "queen",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "routed by src/tri/main.zig before any parser, line 465",
+      "routeKind": "early",
+      "routed": true,
+      "inRegistry": false,
+      "comment": "src/tri/main.zig:464: Queen: autonomous daemon (monitor + alerts + Telegram)"
+    },
+    {
+      "name": "rag-bench",
+      "aliases": [],
+      "help": "Run RAG benchmark (Needle check)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:540",
+      "route": "parseCommand returns .rag_bench, src/tri/tri_utils.zig:850",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "rag-demo",
+      "aliases": [
+        "rag"
+      ],
+      "help": "Run RAG demo (local retrieval)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:539",
+      "route": "parseCommand returns .rag_demo, src/tri/tri_utils.zig:849",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "railway",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "routed by src/tri/main.zig before any parser, line 330",
+      "routeKind": "early",
+      "routed": true,
+      "inRegistry": false,
+      "comment": "src/tri/main.zig:329: Railway namespace: route `tri railway <build|status|logs|claude|telegram>` to railway commands"
+    },
+    {
+      "name": "reason",
+      "aliases": [],
+      "help": "Chain-of-thought reasoning",
+      "helpSource": "registry description, src/registry/command_table.zig:747",
+      "route": "parseCommand returns .reason, src/tri/tri_utils.zig:817",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "refactor",
+      "aliases": [],
+      "help": "Suggest and apply code refactoring",
+      "helpSource": "registry description, src/registry/command_table.zig:715",
+      "route": "parseCommand returns .refactor, src/tri/tri_utils.zig:816",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "registry-validate",
+      "aliases": [
+        "registry_validate",
+        "regval"
+      ],
+      "help": "Validate command registry and show statistics",
+      "helpSource": "registry description, src/registry/command_table.zig:1717",
+      "route": "registry entry only, src/registry/command_table.zig:1717, no live execute_map entry; no early route, namespace word or parseCommand token names it, so `tri registry-validate` reaches parseCommand .none",
+      "routeKind": "registry",
+      "routed": false,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "release",
+      "aliases": [
+        "release-absolute"
+      ],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .release_absolute, src/tri/tri_utils.zig:1012",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "release-cosmic",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .release_cosmic, src/tri/tri_utils.zig:1007",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "reputation",
+      "aliases": [
+        "rep"
+      ],
+      "help": "Reputation system — show node reputation, leaderboard",
+      "helpSource": "registry description, src/registry/command_table.zig:1376",
+      "route": "registry entry only, src/registry/command_table.zig:1376, no live execute_map entry; no early route, namespace word or parseCommand token names it, so `tri reputation` reaches parseCommand .none",
+      "routeKind": "registry",
+      "routed": false,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "research",
+      "aliases": [
+        "audit",
+        "analyze-code"
+      ],
+      "help": "Research: idempotency audit, duplication check",
+      "helpSource": "registry description, src/registry/command_table.zig:1250",
+      "route": "parseCommand returns .research, src/tri/tri_utils.zig:1055",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "resonance",
+      "aliases": [
+        "res"
+      ],
+      "help": "Calculate resonance patterns",
+      "helpSource": "registry description, src/registry/command_table.zig:512",
+      "route": "registry entry only, src/registry/command_table.zig:512, with an execute_map handler in src/tri/tri_register.zig; no early route, namespace word or parseCommand token names it, so `tri resonance` reaches parseCommand .none",
+      "routeKind": "registry",
+      "routed": false,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "sacred",
+      "aliases": [],
+      "help": "Sacred mathematics utilities",
+      "helpSource": "registry description, src/registry/command_table.zig:374",
+      "route": "parseCommand returns .sacred, src/tri/tri_utils.zig:959",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "sacred-const",
+      "aliases": [
+        "sacred_const",
+        "sacred-constants",
+        "sacred_constants",
+        "sacred-fpga"
+      ],
+      "help": "Sacred constants FPGA synthesis (0 DSP48)",
+      "helpSource": "registry description, src/registry/command_table.zig:1842",
+      "route": "parseCommand returns .sacred_const, src/tri/tri_utils.zig:1003",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "sandbox-bench",
+      "aliases": [],
+      "help": "Run sandbox benchmark (Needle check)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:550",
+      "route": "parseCommand returns .sandbox_bench, src/tri/tri_utils.zig:856",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "sandbox-demo",
+      "aliases": [
+        "sandbox"
+      ],
+      "help": "Run code sandbox demo (safe execution)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:549",
+      "route": "parseCommand returns .sandbox_demo, src/tri/tri_utils.zig:855",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "scale",
+      "aliases": [],
+      "help": "Display musical scale notes and frequencies",
+      "helpSource": "registry description, src/registry/command_table.zig:496",
+      "route": "registry entry only, src/registry/command_table.zig:496, with an execute_map handler in src/tri/tri_register.zig; no early route, namespace word or parseCommand token names it, so `tri scale` reaches parseCommand .none",
+      "routeKind": "registry",
+      "routed": false,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "search",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .search_cmd, src/tri/tri_utils.zig:988",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "sebo",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "routed by src/tri/main.zig before any parser, line 306",
+      "routeKind": "early",
+      "routed": true,
+      "inRegistry": false,
+      "comment": "src/tri/main.zig:305: SEBO namespace: route `tri sebo [args]` to runSeboCommand"
+    },
+    {
+      "name": "self",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "routed by src/tri/main.zig before any parser, line 497",
+      "routeKind": "early",
+      "routed": true,
+      "inRegistry": false,
+      "comment": "src/tri/main.zig:496: Self: route `tri self <test|health|benchmark>` to tri_self"
+    },
+    {
+      "name": "serve",
+      "aliases": [
+        "server"
+      ],
+      "help": "Start HTTP API server",
+      "helpSource": "registry description, src/registry/command_table.zig:1021",
+      "route": "parseCommand returns .serve, src/tri/tri_utils.zig:819",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "sim",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "routed by src/tri/main.zig before any parser, line 527",
+      "routeKind": "early",
+      "routed": true,
+      "inRegistry": false,
+      "comment": "src/tri/main.zig:526: Sim: route `tri sim suite` to evolution simulation"
+    },
+    {
+      "name": "sparc",
+      "aliases": [
+        "sp"
+      ],
+      "help": "Fit Savchenko model to galaxy data",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:726",
+      "route": "parseCommand returns .sparc, src/tri/tri_utils.zig:969",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "spawn-bench",
+      "aliases": [
+        "pool-bench"
+      ],
+      "help": "Run dynamic spawning benchmark (Needle check)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:610",
+      "route": "parseCommand returns .spawn_bench, src/tri/tri_utils.zig:901",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "spawn-demo",
+      "aliases": [
+        "spawn",
+        "pool"
+      ],
+      "help": "Run dynamic agent spawning demo",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:609",
+      "route": "parseCommand returns .spawn_demo, src/tri/tri_utils.zig:900",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "spec-create",
+      "aliases": [
+        "spec_create"
+      ],
+      "help": "Create .tri spec template (Link 6)",
+      "helpSource": "registry description, src/registry/command_table.zig:924",
+      "route": "parseCommand returns .spec_create, src/tri/tri_utils.zig:837",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "specexec-bench",
+      "aliases": [
+        "spec-bench"
+      ],
+      "help": "Run speculative execution benchmark (Needle check)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:645",
+      "route": "parseCommand returns .specexec_bench, src/tri/tri_utils.zig:922",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "specexec-demo",
+      "aliases": [
+        "specexec",
+        "spec"
+      ],
+      "help": "Run speculative execution demo",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:644",
+      "route": "routed by src/tri/main.zig before any parser, line 384 (for the forms that `if` matches; the rest reach parseCommand); then parseCommand returns .specexec_demo, src/tri/tri_utils.zig:921",
+      "routeKind": "early",
+      "routed": true,
+      "inRegistry": false,
+      "comment": "src/tri/main.zig:383: Spec namespace: route `tri spec create <name>` to spec_create, bare `tri spec` → specexec demo"
+    },
+    {
+      "name": "spiral",
+      "aliases": [],
+      "help": "φ-spiral coordinates",
+      "helpSource": "registry description, src/registry/command_table.zig:304",
+      "route": "parseCommand returns .spiral, src/tri/tri_utils.zig:956",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "stats",
+      "aliases": [],
+      "help": "Project statistics (files, LOC, specs, tests)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:760",
+      "route": "parseCommand returns .stats_cmd, src/tri/tri_utils.zig:976",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "status",
+      "aliases": [
+        "st"
+      ],
+      "help": "Show working tree status",
+      "helpSource": "registry description, src/registry/command_table.zig:833",
+      "route": "parseCommand returns .status, src/tri/tri_utils.zig:825",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "storm",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "routed by src/tri/main.zig before any parser, line 582",
+      "routeKind": "early",
+      "routed": true,
+      "inRegistry": false,
+      "comment": "src/tri/main.zig:581: Storm: route `tri storm <run|status|resume|init>` to STORM subcommands"
+    },
+    {
+      "name": "stream-bench",
+      "aliases": [
+        "pipeline-bench"
+      ],
+      "help": "Run streaming pipeline benchmark (Needle check)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:555",
+      "route": "parseCommand returns .stream_bench, src/tri/tri_utils.zig:859",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "stream-demo",
+      "aliases": [
+        "stream"
+      ],
+      "help": "Run streaming multi-modal pipeline demo",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:554",
+      "route": "parseCommand returns .stream_demo, src/tri/tri_utils.zig:858",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "stress",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .stress_test, src/tri/tri_utils.zig:1067",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "string",
+      "aliases": [
+        "string-theory",
+        "e8"
+      ],
+      "help": "String Theory + φ v26.0 — E8, String Tension, Compactification",
+      "helpSource": "registry description, src/registry/command_table.zig:119",
+      "route": "registry entry only, src/registry/command_table.zig:119, with an execute_map handler in src/tri/tri_register.zig; no early route, namespace word or parseCommand token names it, so `tri string` reaches parseCommand .none",
+      "routeKind": "registry",
+      "routed": false,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "swarm",
+      "aliases": [],
+      "help": "Sacred swarm intelligence",
+      "helpSource": "registry description, src/registry/command_table.zig:1286",
+      "route": "parseCommand returns .swarm, src/tri/tri_utils.zig:980",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "sync-check",
+      "aliases": [
+        "sync_check",
+        "synccheck"
+      ],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .sync_check, src/tri/tri_utils.zig:1040",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "system",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "a namespace word (`tri system <command>`), src/tri/tri_namespace.zig:38",
+      "routeKind": "namespace",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "task",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .task_claim, src/tri/tri_utils.zig:1064",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "test",
+      "aliases": [],
+      "help": "Generate comprehensive test suites",
+      "helpSource": "registry description, src/registry/command_table.zig:638",
+      "route": "parseCommand returns .test_cmd, src/tri/tri_utils.zig:814",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "test-repl",
+      "aliases": [
+        "test_repl"
+      ],
+      "help": "Test REPL (Cycle 101)",
+      "helpSource": "registry description, src/registry/command_table.zig:1748",
+      "route": "parseCommand returns .test_repl, src/tri/tri_utils.zig:835",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "time",
+      "aliases": [
+        "temporal"
+      ],
+      "help": "Temporal engine operations",
+      "helpSource": "registry description, src/registry/command_table.zig:1410",
+      "route": "parseCommand returns .time, src/tri/tri_utils.zig:993",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "token",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "routed by src/tri/main.zig before any parser, line 565",
+      "routeKind": "early",
+      "routed": true,
+      "inRegistry": false,
+      "comment": "src/tri/main.zig:564: Token: route `tri token [status|rotate|reset|test]` to token rotator"
+    },
+    {
+      "name": "tooluse-bench",
+      "aliases": [
+        "tools-bench"
+      ],
+      "help": "Run tool use benchmark (Needle check)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:575",
+      "route": "parseCommand returns .tooluse_bench, src/tri/tri_utils.zig:880",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "tooluse-demo",
+      "aliases": [
+        "tooluse",
+        "tools"
+      ],
+      "help": "Run tool use demo (file/code/system from any modality)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:574",
+      "route": "parseCommand returns .tooluse_demo, src/tri/tri_utils.zig:879",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "toxic-verdict",
+      "aliases": [
+        "toxic"
+      ],
+      "help": "Generate toxic verdict (Link 14)",
+      "helpSource": "registry description, src/registry/command_table.zig:952",
+      "route": "registry entry only, src/registry/command_table.zig:952, with an execute_map handler in src/tri/tri_register.zig; no early route, namespace word or parseCommand token names it, so `tri toxic-verdict` reaches parseCommand .none",
+      "routeKind": "registry",
+      "routed": false,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "trace",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .trace, src/tri/tri_utils.zig:1058",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "train",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .train, src/tri/tri_utils.zig:999",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "tvc-demo",
+      "aliases": [
+        "tvc"
+      ],
+      "help": "Run TVC chat demo (distributed learning)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:524",
+      "route": "parseCommand returns .tvc_demo, src/tri/tri_utils.zig:840",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "tvc-stats",
+      "aliases": [],
+      "help": "Show TVC corpus statistics",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:525",
+      "route": "parseCommand returns .tvc_stats, src/tri/tri_utils.zig:841",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "ui",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "routed by src/tri/main.zig before any parser, line 534",
+      "routeKind": "early",
+      "routed": true,
+      "inRegistry": false,
+      "comment": "src/tri/main.zig:533: UI: route `tri ui [build|kill]` to Queen UI launcher"
+    },
+    {
+      "name": "unified-bench",
+      "aliases": [
+        "agent-bench"
+      ],
+      "help": "Run unified agent benchmark (Needle check)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:580",
+      "route": "parseCommand returns .unified_bench, src/tri/tri_utils.zig:883",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "unified-demo",
+      "aliases": [
+        "unified",
+        "agent"
+      ],
+      "help": "Run unified agent demo (text+vision+voice+code+tools)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:579",
+      "route": "routed by src/tri/main.zig before any parser, line 210 (for the forms that `if` matches; the rest reach parseCommand); then a namespace word (`tri agent <command>`), src/tri/tri_namespace.zig:36; then parseCommand returns .unified_demo, src/tri/tri_utils.zig:882",
+      "routeKind": "early",
+      "routed": true,
+      "inRegistry": false,
+      "comment": "src/tri/main.zig:215: Intercept `tri agent <subcommand>` → spawn/run/stop"
+    },
+    {
+      "name": "verdict",
+      "aliases": [],
+      "help": "Generate toxic verdict (Link 14)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:520",
+      "route": "parseCommand returns .verdict, src/tri/tri_utils.zig:833",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "verify",
+      "aliases": [],
+      "help": "Run tests + benchmarks (Links 7-11)",
+      "helpSource": "registry description, src/registry/command_table.zig:942",
+      "route": "parseCommand returns .verify, src/tri/tri_utils.zig:832",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "version",
+      "aliases": [],
+      "help": "Show version",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:766",
+      "route": "routed by src/tri/main.zig before any parser, line 628 (for the forms that `if` matches; the rest reach parseCommand); then parseCommand returns .version, src/tri/tri_utils.zig:1018",
+      "routeKind": "early",
+      "routed": true,
+      "inRegistry": false,
+      "comment": "src/tri/main.zig:627: Version: show version number"
+    },
+    {
+      "name": "vision-bench",
+      "aliases": [
+        "eye-bench"
+      ],
+      "help": "Run vision understanding benchmark (Needle check)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:560",
+      "route": "parseCommand returns .vision_bench, src/tri/tri_utils.zig:862",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "vision-demo",
+      "aliases": [
+        "vision",
+        "eye"
+      ],
+      "help": "Run vision understanding demo (image analysis)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:559",
+      "route": "parseCommand returns .vision_demo, src/tri/tri_utils.zig:861",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "voice-bench",
+      "aliases": [
+        "mic-bench"
+      ],
+      "help": "Run voice I/O benchmark (Needle check)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:545",
+      "route": "parseCommand returns .voice_bench, src/tri/tri_utils.zig:853",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "voice-demo",
+      "aliases": [
+        "voice",
+        "mic"
+      ],
+      "help": "Run voice I/O multi-modal demo (STT+TTS+cross-modal)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:544",
+      "route": "parseCommand returns .voice_demo, src/tri/tri_utils.zig:852",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "vsa",
+      "aliases": [
+        "vector-symbolic"
+      ],
+      "help": "Vector Symbolic Architecture operations",
+      "helpSource": "registry description, src/registry/command_table.zig:1607",
+      "route": "registry entry only, src/registry/command_table.zig:1607, with an execute_map handler in src/tri/tri_register.zig; no early route, namespace word or parseCommand token names it, so `tri vsa` reaches parseCommand .none",
+      "routeKind": "registry",
+      "routed": false,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "wallet",
+      "aliases": [],
+      "help": "Wallet management — connect, balance, claim rewards",
+      "helpSource": "registry description, src/registry/command_table.zig:1344",
+      "route": "registry entry only, src/registry/command_table.zig:1344, no live execute_map entry; no early route, namespace word or parseCommand token names it, so `tri wallet` reaches parseCommand .none",
+      "routeKind": "registry",
+      "routed": false,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "waveform",
+      "aliases": [
+        "wave",
+        "osc"
+      ],
+      "help": "Generate waveform samples",
+      "helpSource": "registry description, src/registry/command_table.zig:520",
+      "route": "registry entry only, src/registry/command_table.zig:520, with an execute_map handler in src/tri/tri_register.zig; no early route, namespace word or parseCommand token names it, so `tri waveform` reaches parseCommand .none",
+      "routeKind": "registry",
+      "routed": false,
+      "inRegistry": true,
+      "comment": ""
+    },
+    {
+      "name": "workflow-bench",
+      "aliases": [
+        "wf-bench"
+      ],
+      "help": "Run temporal workflow benchmark (Needle check)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:685",
+      "route": "parseCommand returns .workflow_bench, src/tri/tri_utils.zig:946",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "workflow-demo",
+      "aliases": [
+        "workflow",
+        "wf"
+      ],
+      "help": "Run temporal workflow demo",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:684",
+      "route": "parseCommand returns .workflow_demo, src/tri/tri_utils.zig:945",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "worksteal-bench",
+      "aliases": [
+        "steal-bench"
+      ],
+      "help": "Run work-stealing benchmark (Needle check)",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:620",
+      "route": "parseCommand returns .worksteal_bench, src/tri/tri_utils.zig:907",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "worksteal-demo",
+      "aliases": [
+        "worksteal",
+        "steal"
+      ],
+      "help": "Run adaptive work-stealing scheduler demo",
+      "helpSource": "`tri help` line, src/tri/tri_utils.zig:619",
+      "route": "parseCommand returns .worksteal_demo, src/tri/tri_utils.zig:906",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    },
+    {
+      "name": "zenodo",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "parseCommand returns .zenodo, src/tri/tri_utils.zig:1046",
+      "routeKind": "parse_command",
+      "routed": true,
+      "inRegistry": false,
+      "comment": ""
+    }
+  ]
+}

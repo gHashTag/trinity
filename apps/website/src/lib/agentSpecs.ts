@@ -294,10 +294,16 @@ interface ToolEntryBase {
   skills: { id: string; via: string[] }[]
   links: { source: string; config: string | null; pinnedAt: string }
   witness: ToolWitness
+  /** The recorded run the card ends with (CAST = term/<id>/session.cast), null when it names none.
+   *  scripts/agents-from-specs.mjs castProblems() holds it: the files exist, asciicast v2, every exit 0,
+   *  and `commands` are the recorded lines that run this card's command. It never upgrades the witness. */
+  cast: ToolCast | null
   health: Health
   messages: string[]
   searchText: string
 }
+
+export interface ToolCast { id: string; src: string; share: string; title: string; recorded: string | null; commands: string[] }
 
 export interface TriToolEntry extends ToolEntryBase {
   family: 'tri-cli'
@@ -309,6 +315,9 @@ export interface TriToolEntry extends ToolEntryBase {
   whenToUse: string
   /** Only on cards of the trios loop CLI (specs/tools/trios/tri): read from trios/bin/tri at SOURCE_COMMIT. */
   trios?: { documented: boolean; category: string; dispatch: string; helpLine: string; routed: boolean }
+  /** Only on generated cards of the Trinity Zig tri (specs/tools/trinity/cli): the dispatcher's parser aliases and
+   *  whether src/registry/command_table.zig lists the command, read at SOURCE_COMMIT (qa/tri-commands/trinity.json). */
+  trinityCli?: { aliases: string[]; inRegistry: boolean }
   fields: Record<string, unknown> & { ID: string; KIND: 'tool'; FAMILY: 'tri-cli'; COMMAND: string; SOURCE: string; ABOUT: string; ABOUT_SOURCE: string; ACTIONS: string[]; AGENTS: string[]; AGENTS_NOTE: string; WHEN_TO_USE: string; WITNESS: ToolWitness; ENABLED: boolean }
 }
 

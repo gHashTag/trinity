@@ -32,6 +32,9 @@ pub const ARGS : [1]str = ["[FILE...]"];
 pub const AGENTS : [0]str = [];
 pub const AGENTS_NOTE : str = "No source binds an agent letter to this command: the trios CLI is not named by docs/agents/AGENTS_ALPHABET.md or .claude/agents/*.md of gHashTag/t27.";
 pub const WHEN_TO_USE : str = "how many times the key occurs in each file (prints counts, never the key); no FILE = every board_runs/ and rehearsal_runs/ log, also flags logs >= 1 MB";
+; public/term/tri-fpga-keycheck/meta.json lists 1 run(s) of `tri fpga-keycheck`; recorded with the live ~/.local/bin/tri,
+; not a build of SOURCE_COMMIT. The site plays it at the end of this card.
+pub const CAST : str = "term/tri-fpga-keycheck/session.cast";
 pub const WITNESS : str = "source-parse";
 pub const WITNESS_SOURCE : str = "gHashTag/BrowserOS:trios/bin/tri at 7366096248dfb09893e9a7d1a0f1c56ced13d16e, read as text (the help heredoc and the top-level case arms); the CLI was not run";
 pub const ENABLED : bool = true;

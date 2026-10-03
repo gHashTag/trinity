@@ -32,6 +32,9 @@ pub const ARGS : [0]str = [];
 pub const AGENTS : [0]str = [];
 pub const AGENTS_NOTE : str = "No source binds an agent letter to this command: the trios CLI is not named by docs/agents/AGENTS_ALPHABET.md or .claude/agents/*.md of gHashTag/t27.";
 pub const WHEN_TO_USE : str = "the FPGA flow layer by layer: per-layer time, t27 replacements byte-compared, Amdahl ceilings, hours/yr";
+; public/term/devkit-flow/meta.json lists 2 run(s) of `tri devkit`; recorded with the live ~/.local/bin/tri,
+; not a build of SOURCE_COMMIT. The site plays it at the end of this card.
+pub const CAST : str = "term/devkit-flow/session.cast";
 pub const WITNESS : str = "source-parse";
 pub const WITNESS_SOURCE : str = "gHashTag/BrowserOS:trios/bin/tri at 7366096248dfb09893e9a7d1a0f1c56ced13d16e, read as text (the help heredoc and the top-level case arms); the CLI was not run";
 pub const ENABLED : bool = true;
