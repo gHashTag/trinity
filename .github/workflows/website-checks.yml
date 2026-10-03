@@ -127,6 +127,11 @@ jobs:
       # memory only; whoami never carries X-Agent-Key. Pure, no browser.
       - name: TRI identity
         run: npm run check:tri-identity
+      # The TOKEN tab counts TRI by the leaderboard (owner, 2026-10-03): spec
+      # commits per author plus accepted .t27 specs per lane, times the
+      # ledger's rate, one row per GitHub account. Pure, no browser.
+      - name: TRI board
+        run: npm run check:tri-board
       # The Queen's kanban grew a second lane, and it is the first thing on that
       # page that differs per person. Signed in, it asks the hive for the
       # clients this visitor answers for — on the game token, one identity
