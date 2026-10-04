@@ -33,6 +33,7 @@
  */
 
 import type { AppSessionVerdict } from './appSessionIdentity.ts'
+import { pageSpecLine, type PageSpec } from './queenBrowserPage.ts'
 
 /** The broker lives on the render server, like /mcp (triIdentity.RENDER_BASE). */
 export const BROKER_BASE = 'https://vibee-render-production.up.railway.app'
@@ -190,10 +191,20 @@ export function browserContext(lang: 'ru' | 'en'): string {
     : "[Context: the person is writing from the BROWSER tab of the Queen's board on app.t27.ai. Their own browser is on their screen right now -- the same one you drive with the browser_* tools -- and they see everything you do. Act in that browser; do not ask which browser is meant. Passwords and codes the person types themselves, in the window: never ask for them or type them. On a bank, mail or payment page, browser_ask_permission first.]"
 }
 
-/** The messages sent: earlier turns, then this question with the context. */
-export function agentMessages(history: readonly ChatTurn[], question: string, lang: 'ru' | 'en'): ChatTurn[] {
+/**
+ * The messages sent: earlier turns, then this question with the context --
+ * and, when the address names a catalog spec, which one (queenBrowserPage.ts
+ * says why only a catalog entry is ever named).
+ */
+export function agentMessages(
+  history: readonly ChatTurn[],
+  question: string,
+  lang: 'ru' | 'en',
+  page: PageSpec | null = null,
+): ChatTurn[] {
   const earlier = history.filter((t) => t.content.trim() !== '').slice(-HISTORY_TURNS)
-  return [...earlier, { role: 'user', content: `${browserContext(lang)}\n\n${question}` }]
+  const context = page ? `${browserContext(lang)}\n${pageSpecLine(page, lang)}` : browserContext(lang)
+  return [...earlier, { role: 'user', content: `${context}\n\n${question}` }]
 }
 
 export interface AgentAnswer {
@@ -286,6 +297,7 @@ export async function askBrowserAgent(
   question: string,
   lang: 'ru' | 'en',
   onProgress?: (soFar: AgentAnswer) => void,
+  page: PageSpec | null = null,
 ): Promise<AgentAnswer> {
   const token = env.token()
   if (!token) throw new AgentSignedOut()
@@ -293,7 +305,7 @@ export async function askBrowserAgent(
     method: 'POST',
     credentials: 'omit',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ messages: agentMessages(history, question, lang) }),
+    body: JSON.stringify({ messages: agentMessages(history, question, lang, page) }),
   })
   if (res.status === 401) throw new AgentSignedOut()
   if (!res.ok) {

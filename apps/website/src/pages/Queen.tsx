@@ -12,6 +12,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { QueenSpecs } from "../components/QueenSpecs";
 import { QueenAgents } from "../components/QueenAgents";
 import { SELECTION_KEY, isExplorerTab, leaveTabSelections } from "../lib/queenEmbed";
+import { specsChatSpec } from "../lib/queenSpecsChat";
 import { hiveFeedHealth, hiveDisplayRecords, hiveSameRepositorySnapshot, placeHiveDisplays, type HiveDisplay } from "../components/queenHiveDisplay";
 import { QueenComb } from "../components/QueenComb";
 import { QueenCommandPanel, type CommandItem } from "../components/QueenCommand";
@@ -3775,7 +3776,11 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
         context={{
           view: boardView,
           repo,
-          spec: boardView === "specs" ? "specs/demos/hello_world.t27" : null,
+          // On SPECS, the spec the frame shows, when its path may go into the
+          // Queen's prompt (lib/queenSpecsChat.ts). On BROWSER, the address's
+          // own spec= (raw: askQueenInBrowser names it to the agent only if it
+          // is a catalog entry, queenBrowserPage.ts).
+          spec: boardView === "specs" ? specsChatSpec(hashParams.get("spec")) : boardView === "browser" ? hashParams.get("spec") : null,
           label: railLabelNow,
           screen: boardView === "tri" ? triScreenNow : null,
           sees: screenNow,
