@@ -609,7 +609,11 @@ jobs:
     name: 🔒 Merge Gate
     runs-on: ubuntu-latest
     needs: [brain-health-report]
-    if: github.event_name == 'pull_request'
+    # always(): without it a failed report makes this job "skipped", and a
+    # skipped check is grey, not red -- on #1328 (run 37176676345) the report
+    # failed and the gate showed skipped. Now it runs and the check below
+    # fails it for any report result other than success.
+    if: always() && github.event_name == 'pull_request'
     timeout-minutes: 2
     steps:
       - name: Check Merge Eligibility
