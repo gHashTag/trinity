@@ -1,0 +1,121 @@
+// SPDX-License-Identifier: Apache-2.0
+; specs/widgets/gallery.t27 -- the widget gallery: what of t27 a person can lift out and share
+; Source of truth for apps/website/scripts/widgets-from-spec.mjs (gHashTag/trinity), which
+; compiles this file with the vendored compiler (public/t27/t27_compiler.wasm), checks the
+; constant schema, evaluates every test block below, reads each widget's own share page for its
+; title, description and card image, and only then writes src/lib/queenWidgets.generated.ts (the
+; WIDGETS tab on the Queen board, key v) and a byte-identical copy of this file at
+; public/widgets/gallery.t27.
+; ASCII only (L3), English only (LANG-EN).
+
+; WHAT A WIDGET IS: something that already runs on t27.ai and has a page of its own -- a
+; terminal recording of a real command, or the player that compiles a spec inside the reader's
+; browser -- picked because an FPGA engineer, a compiler person or a player of the agent game
+; would want to show it to someone else. The gallery adds no new claim: the title, the line under
+; it and the card are read from the widget's page, so a widget cannot say here what its page does
+; not say. A widget whose page is missing fails the build.
+
+; WHAT THE GALLERY GIVES A READER, per widget: the page; a live preview, loaded only on a click;
+; the embed code (an iframe for a site, a linked GIF or card in Markdown for a README); and share
+; links for X and Telegram. Every one of those is the reader's own click. The page posts nothing,
+; sets no cookie and sends nothing anywhere.
+
+; WHAT IS DELIBERATELY ABSENT: a widget built for the gallery alone. IDEAS lists what engineers
+; ask for that t27.ai does not draw yet; they are shown as ideas, with the data each would read,
+; and never as a working widget.
+; phi^2 + 1/phi^2 = 3 | TRINITY
+
+module widgets_gallery;
+
+pub const KIND : str = "widgets";
+pub const ID : str = "widgets/gallery";
+pub const NAME : str = "t27 widgets";
+pub const SCHEMA_VERSION : u8 = 1;
+; The derived files the generator rewrites (relative to apps/website).
+pub const GENERATED : [2]str = ["src/lib/queenWidgets.generated.ts", "public/widgets/gallery.t27"];
+
+; --- Where the widgets live ------------------------------------------------------------------
+; Every address a reader copies is absolute: an embed pasted into somebody's README must not
+; depend on where the gallery was opened. The preview inside the gallery is relative, so the
+; tab works the same on t27.ai and under app.t27.ai/game/.
+pub const ORIGIN : str = "https://t27.ai/";
+pub const SITE_HANDLE : str = "@t27_dev";
+pub const HASHTAGS : [3]str = ["t27", "FPGA", "opensource"];
+; Embed size. The player is 16:9, as its card is; a recording page needs more height than that
+; for its controls.
+pub const EMBED_WIDTH : u16 = 640;
+pub const PLAYER_EMBED_HEIGHT : u16 = 360;
+pub const CAST_EMBED_HEIGHT : u16 = 460;
+; The tab names a widget's page in the Queen board as ORIGIN, then this, then the view.
+pub const TAB_PAGE : str = "#/queen?tab=";
+pub const POSTS_NOTHING : bool = true;
+
+; --- Categories ------------------------------------------------------------------------------
+pub const CATEGORY_COUNT : u8 = 3;
+pub const CATEGORY_IDS : [3]str = ["fpga", "compiler", "game"];
+pub const CATEGORY_NAMES : [3]str = ["FPGA bench", "Compiler", "Agent game"];
+pub const CATEGORY_LINES : [3]str = ["Bitstreams, timing, JTAG and pins, recorded on the bench as the commands ran.", "One spec, seven backends, compiled in the reader's browser by the same WebAssembly compiler.", "The Queen's loop and the arena where agent configurations are compared on real issues."];
+
+; --- Kinds -----------------------------------------------------------------------------------
+; cast:   a terminal recording, page at term/<id>/ (session.gif, card.png, meta.json beside it).
+; player: the X player, page at play/<play>/[<backend>/]; its twitter:player is the embed.
+; tab:    a view of the Queen board; WIDGET_PAGES holds the view's name.
+pub const KINDS : [3]str = ["cast", "player", "tab"];
+
+; --- The widgets -----------------------------------------------------------------------------
+; Parallel arrays, WIDGET_COUNT long. WIDGET_TITLES is empty wherever the page carries an
+; og:title, which is every kind but tab: the page is the one place the words live.
+pub const WIDGET_COUNT : u8 = 18;
+pub const WIDGET_IDS : [18]str = ["x7-board", "tri-x7-fasm", "tri-x7-mutate", "perf2-loop", "tri-fpga-rgmii", "tri-fpga-jtag", "tri-fpga-pins", "devkit-flow", "play-verilog", "play-hello-world", "play-rust", "play-js", "t27c-hello-world", "t27-tri-misread", "wars", "tri-game-tick", "tri-game-vault", "perf2-knockouts"];
+pub const WIDGET_KINDS : [18]str = ["cast", "cast", "cast", "cast", "cast", "cast", "cast", "cast", "player", "player", "player", "player", "cast", "cast", "tab", "cast", "cast", "cast"];
+pub const WIDGET_CATEGORIES : [18]str = ["fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "compiler", "compiler", "compiler", "compiler", "compiler", "game", "game", "game", "game"];
+pub const WIDGET_PAGES : [18]str = ["term/x7-board/", "term/tri-x7-fasm/", "term/tri-x7-mutate/", "term/perf2-loop/", "term/tri-fpga-rgmii/", "term/tri-fpga-jtag/", "term/tri-fpga-pins/", "term/devkit-flow/", "play/hello-world/verilog/", "play/hello-world/", "play/hello-world/rust/", "play/hello-world/js/", "term/t27c-hello-world/", "term/t27-tri-misread/", "wars", "term/tri-game-tick/", "term/tri-game-vault/", "term/perf2-knockouts/"];
+pub const WIDGET_TITLES : [18]str = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "WARS: agent configurations compared on real GitHub issues", "", "", ""];
+pub const WIDGET_LINES : [18]str = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "One issue, one pinned commit, the same tools and gates; only the decision layer changes, and a missing run stays unknown.", "", "", ""];
+; Why a person would pass this one on: the reason the widget is in the gallery at all.
+pub const WIDGET_HOOKS : [18]str = ["The bitstream is byte-identical to openXC7's and runs on a real board: the claim most FPGA people doubt, shown.", "A Xilinx 7-series bitstream assembled with no Vivado anywhere in the path.", "Plant a bug in the bitstream path and watch the tests catch it: mutation testing for hardware.", "Place and route to a loaded bitstream, with the clock on screen.", "RGMII hold margins read from nextpnr's own SDF, not from a datasheet.", "The cable asks which chip is there and the chip answers with its IDCODE.", "Before an edit to a Verilog file: every spec and generator it would touch.", "The whole FPGA flow, one layer per line, from spec to board.", "A spec turned into Verilog inside a post, with the RTL read the way a hardware engineer reads it.", "The t27 compiler running as WebAssembly in a post: compile, test, seven backends.", "The same spec as Rust, printed by a terminal in the page.", "The only backend that runs in the browser: generate the module, then run it.", "t27c on hello_world.t27, on a real machine, every byte as printed.", "Code that compiles and is wrong: the tool that finds it.", "Pick a lane and see whether the TRI decision layer beats the baseline on the same issue.", "One tick of the Queen's loop: an anomaly scan that reports only what changed.", "The loop's skills checked against snapshots before an agent may use them.", "Three performance bits, and one knockout bitstream per bit to prove each one matters."];
+
+; --- Ideas: asked for, not built ---------------------------------------------------------------
+; From what engineers use in the browser today (EDA Playground, Makerchip, 8bitworkshop,
+; DigitalJS, Surfer, WaveDrom) and what none of them draws for a .t27 spec. Each names the data
+; it would read, all of which exists in this repository already. None is shown as working.
+pub const IDEA_COUNT : u8 = 7;
+pub const IDEA_IDS : [7]str = ["placement-map", "resource-bars", "slack-waterfall", "bit-diff", "test-waves", "gf16-calc", "race-the-bee"];
+pub const IDEA_TITLES : [7]str = ["Placement map", "LUT, FF and BRAM bars", "Timing slack waterfall", "Bitstream diff proof", "Test waveforms", "GF16 and ternary calculator", "Race the bee"];
+pub const IDEA_LINES : [7]str = ["Where nextpnr put each cell of a spec's design on the XC7A200T die, as a picture that can be posted.", "The resources one spec costs, as bars against the part's totals, beside the same design from another language.", "Every path's slack from the SDF, sorted, with the failing ones at the top.", "Two bitstreams compared frame by frame: byte-identical, or the first frame that differs.", "A spec's test block drawn as a timing diagram, the way WaveDrom draws one.", "Type a number and see it as GF16 and as balanced ternary, bit by bit, with the format spec it obeys.", "A real open issue, one human and one bee: whoever lands an accepted patch first takes the lane."];
+pub const IDEA_SOURCES : [7]str = ["nextpnr-xilinx placement output of the bench builds", "synthesis reports of the bench builds", "nextpnr SDF, as tri fpga-txhold already reads it", "tri x7-audit and the x7-board byte-identical comparison", "spec test blocks through the in-browser evaluator", "FORMAT-SPEC-001.json and gf16.t27", "specs/queen/wars.t27 and the bees' run ledger"];
+
+; --- Tests -----------------------------------------------------------------------------------
+test the_player_embed_is_sixteen_by_nine {
+    assert EMBED_WIDTH * 9 == PLAYER_EMBED_HEIGHT * 16;
+    assert CAST_EMBED_HEIGHT > PLAYER_EMBED_HEIGHT;
+}
+
+test every_category_has_a_name_and_a_line {
+    assert CATEGORY_COUNT == 3;
+    assert CATEGORY_IDS[0] == "fpga";
+    assert CATEGORY_IDS[1] == "compiler";
+    assert CATEGORY_IDS[2] == "game";
+}
+
+test the_fpga_shelf_comes_first_and_opens_on_the_board {
+    assert WIDGET_CATEGORIES[0] == "fpga";
+    assert WIDGET_IDS[0] == "x7-board";
+    assert WIDGET_KINDS[0] == "cast";
+}
+
+test the_arena_is_a_tab_and_says_its_own_words {
+    assert WIDGET_IDS[14] == "wars";
+    assert WIDGET_KINDS[14] == "tab";
+    assert WIDGET_PAGES[14] == "wars";
+}
+
+test the_gallery_posts_nothing {
+    assert POSTS_NOTHING == true;
+}
+
+test ideas_are_counted_apart_from_widgets {
+    assert IDEA_COUNT == 7;
+    assert IDEA_IDS[6] == "race-the-bee";
+    assert WIDGET_COUNT == 18;
+}

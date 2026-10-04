@@ -44,7 +44,8 @@ const SIZES = [[1920, 1080], [1440, 900], [1272, 806], [1280, 700], [1280, 600],
 // on a phone the board drew six 160px columns whose card boxes were 67px tall
 // round 204px cards, so no column showed a single whole card, and every check
 // above still passed (#1221 fixed it; nothing here would have caught it).
-const VIEWS = ['wars', 'kanban'];
+// WIDGETS joined 2026-10-04: a card grid that must fold to one column at 390px.
+const VIEWS = ['wars', 'kanban', 'widgets'];
 // The rail used to draw one button per view, so this counted HUD_VIEWS and
 // compared. That stopped being the shape of the thing: SPECS has long stood for
 // six layers behind one button, and KANBAN now stands for itself, MAP and
@@ -255,6 +256,7 @@ const DECLARED = [
   '.queen27-city-head dl', '.queen27-city-build-queue dl', '.queen27-hardware-foundry dl', '.queen27-factory-command dl',
   '.queen27-activity-stream ol', '.queen27-flow-grid',
   '.queen-wars', '.queen-wars-table-scroll', '.queen-wars-ledger ol', '.queen-wars-flow',
+  '.queen-widgets',
   // the sub-navigation row: one line at every width, scrolling sideways when
   // the rungs are wider than the module -- overflow-x:auto with the bar hidden,
   // which is the declaration. This gate never met one before, because the row
@@ -308,7 +310,7 @@ const PROBE = (phone) => `(() => {
   // arrive as a single child. Matching only direct children counted zero views
   // on any tab that had grown a row above it, and reported a rendered board as
   // a board that had not rendered at all.
-  const viewSel = '.queen27-comb, .queen27-kanban, .queen27-mission-map, .queen27-factory, .queen27-tech, .queen-wars';
+  const viewSel = '.queen27-comb, .queen27-kanban, .queen27-mission-map, .queen27-factory, .queen27-tech, .queen-wars, .queen-widgets';
   const views = body
     ? [...body.children].flatMap(child =>
         child.matches(viewSel) ? [child] : [...child.querySelectorAll(':scope > ' + viewSel)])
