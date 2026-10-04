@@ -364,6 +364,23 @@ export const MODULES = [
       play: 'Решите, стоит ли сдавать в аренду свою видеокарту или плату: посмотрите, что Gonka требует от хоста, что TRI-NET проверила бы и заплатила и чего ещё не хватает, прежде чем кто-то из них вам заплатит.',
     },
   },
+  {
+    tab: 'widgets',
+    key: 'v',
+    glyph: '\u29C9',
+    en: {
+      name: 'WIDGETS',
+      hint: 'Shareable widgets: recordings, the X player, embed code (key v)',
+      body: 'What of t27 a person can lift out and share. Every widget already runs on t27.ai and has a page of its own: a terminal recording of a real bench command, the X player that compiles a spec inside the reader\u2019s browser, or a tab of this board. Its title, line and card are read from that page by specs/widgets/gallery.t27, so the gallery cannot claim what the page does not. Each card gives the page, a live preview on a click, an iframe and a Markdown embed, and X and Telegram links that open the reader\u2019s own composer. Below, the widgets FPGA engineers ask for that are not built yet, each with the data it would read. Opens on v.',
+      play: 'Pick the recording that proves the claim your colleague doubts, and paste it into their README or your post.',
+    },
+    ru: {
+      name: 'ВИДЖЕТЫ',
+      hint: 'Виджеты для репоста: записи, X-плеер, код встраивания (клавиша v)',
+      body: 'То, что из t27 можно вынести и показать другим. Каждый виджет уже работает на t27.ai и имеет свою страницу: запись реальной команды со стенда, X-плеер, который компилирует спеку прямо в браузере читателя, или вкладка этой доски. Заголовок, строку и карточку спека specs/widgets/gallery.t27 берёт с самой страницы, поэтому галерея не может утверждать того, чего не говорит страница. Каждая карточка даёт страницу, живой просмотр по клику, код iframe и Markdown, ссылки X и Telegram, которые открывают собственный редактор читателя. Ниже — виджеты, которые просят FPGA-инженеры и которых ещё нет, с данными, которые каждый прочитал бы. Открывается клавишей v.',
+      play: 'Выберите запись, которая доказывает то, в чём сомневается коллега, и вставьте её в его README или свой пост.',
+    },
+  },
 ] as const
 
 export type QueenModule = (typeof MODULES)[number];

@@ -590,7 +590,12 @@ const jetton = JSON.parse(readFileSync('public/tri/jetton.json', 'utf8'))
 const MTRI_PER_TRI = Number(readFileSync('src/lib/triToken.ts', 'utf8').match(/export const MTRI_PER_TRI = (\d+)/)?.[1])
 assert.equal(10 ** Number(jetton.decimals), MTRI_PER_TRI, 'public/tri/jetton.json decimals and MTRI_PER_TRI must agree')
 assert.match(jetton.description, /^TESTNET ONLY\./, 'the jetton metadata leads with TESTNET ONLY')
-assert.equal(HUD_KEYS.slice(0, HUD_VIEWS.length).join(''), '1234567890tprbwmlxkg', 'the rail keys are 1-9, 0, t, p, r, b, w, m, l, x, k, g in that order')
+const widgetsModule = MODULES.find((m) => m.tab === 'widgets')
+assert.ok(widgetsModule && HUD_VIEWS.includes('widgets'), 'WIDGETS (what a reader lifts out and shares) is a module and a view')
+assert.equal(widgetsModule.key, 'v', 'WIDGETS opens on v')
+assert.ok(widgetsModule.en.hint.includes('(key v)') && widgetsModule.ru.hint.includes('(клавиша v)'), 'WIDGETS names its letter key in both hints')
+for (const lang of ['en', 'ru']) assert.ok(widgetsModule[lang].body.includes('specs/widgets/gallery.t27'), `widgets: ${lang} copy must name its spec`)
+assert.equal(HUD_KEYS.slice(0, HUD_VIEWS.length).join(''), '1234567890tprbwmlxkgv', 'the rail keys are 1-9, 0, t, p, r, b, w, m, l, x, k, g, v in that order')
 
 // The rail is no longer the whole vocabulary. HUD_VIEWS stays the fourteen
 // addresses -- every ?tab=, every key, every module card -- while the rail draws
