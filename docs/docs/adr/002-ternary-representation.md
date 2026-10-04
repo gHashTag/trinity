@@ -88,7 +88,7 @@ pub const PackedTrits = struct {
 
 ## References
 
-- [Packed Trit Implementation](https://github.com/gHashTag/trinity/blob/main/src/packed_trit.zig)
+- [Packed Trit Implementation](../../../zig-pkg/golden_float-0.2.0-h7LKhVf5BwBpdBO6PgFQ-PHwUV3xmmeaHvRWHEYE387R/src/ternary/packed_trit.zig)
 - [HybridBigInt](https://github.com/gHashTag/trinity/blob/main/src/hybrid.zig)
 - [Balanced Ternary Wikipedia](https://en.wikipedia.org/wiki/Balanced_ternary)
 

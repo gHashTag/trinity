@@ -54,6 +54,7 @@
     "check:queen-coverage": "node --experimental-strip-types qa/queen-coverage-contract.mjs",
     "check:queen-displays": "node --experimental-strip-types qa/queen-hive-display-contract.mjs",
     "check:queen-worlds": "node --experimental-strip-types qa/queen-repository-worlds.mjs",
+    "check:queen-issue-proof": "node scripts/issue-proof-from-spec.mjs --check && node --experimental-strip-types qa/queen-issue-proof.mjs",
     "check:queen-dead-api": "node qa/queen-viewport-contract.mjs --dead-api",
     "check:queen-touch": "node qa/queen-touch-contract.mjs",
     "check:queen-round": "node qa/queen-round-contract.mjs",

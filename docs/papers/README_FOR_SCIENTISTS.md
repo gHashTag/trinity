@@ -210,7 +210,7 @@ If you use this work in research, please cite:
 We welcome critical review, independent verification, and collaboration on physical interpretation.
 
 - **Issues**: https://github.com/gHashTag/trinity/issues
-- **Discussions**: https://github.com/gHashTag/trinity/discussions
+- **Questions and discussion**: use the Issues link above; GitHub Discussions is not enabled.
 - **Email**: via GitHub issues
 
 ---

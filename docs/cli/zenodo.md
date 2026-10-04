@@ -105,4 +105,4 @@ Source code: `src/tri/tri_zenodo.zig` (~58K LOC)
 
 ---
 
-**See also:** [ZENODO_HUB](../ZENODO_HUB.md) | [Python Upload Script](../../tools/zenodo_upload_v8.py)
+**See also:** [ZENODO_HUB](../ZENODO_HUB.md) | [Python Upload Script](../../tools/zenodo_upload_v9.py)

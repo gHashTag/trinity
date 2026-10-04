@@ -76,7 +76,7 @@ This formula is the **architectural invariant** of Trinity:
 φ² + 1/φ² = 3 → 3^27 = 7.6 trillion states (ternary completeness)
 ```
 
-[Full TRI-27 documentation](docs/tri27/README.md)
+[Full TRI-27 documentation](tri27/README.md)
 
 ---
 

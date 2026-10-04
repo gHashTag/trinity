@@ -217,7 +217,7 @@ tri outreach test --to=<email>     # Send test email to yourself
 
 ## References
 
-- [Email Deliverability Toolkit](https://www.joellipman.com/articles/crm/zoho/zoho-email-deliverability-spf-dkim-dmarc-toolkit.html)
+- Email Deliverability Toolkit — historical Joellipman article is unavailable (HTTP404 on 2026-10-04)
 - [Cold Email Templates 2025](https://blog.groupmail.io/cold-email-templates-that-work-proven-strategies-for-higher-response-rates-in-2025/)
 - [Follow-Up Timing](https://stripo.email/blog/five-data-driven-ways-to-improve-cold-email-response-rates/)
 

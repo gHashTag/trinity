@@ -716,9 +716,9 @@ tri clara test --suite integration
 
 ### Trinity Publications
 
-12. Trinity S³AI Unified Framework. https://gHashTag.github.io/trinity/docs/research/TRINITY_S3AI_UNIFIED_FRAMEWORK.md
-13. FPGA Synthesis Pipeline. https://gHashTag.github.io/trinity/docs/research/sacred_formats_fpga.md
-14. Queen Lotus Experiments. https://gHashTag.github.io/trinity/docs/research/queen_lotus_experiments.md
+12. [Trinity S³AI Unified Framework](../research/TRINITY_S3AI_UNIFIED_FRAMEWORK.md). Repository source; this is not a verified published docsite route.
+13. [FPGA Synthesis Pipeline](../research/sacred_formats_fpga.md). Repository source; this is not a verified published docsite route.
+14. [Queen Lotus Experiments](../research/queen_lotus_experiments.md). Repository source; this is not a verified published docsite route.
 15. **IGLA RACE v2 format sweep** — proposal §3.5 (supersedes BENCH-001; the BENCH-001 appendix is annotated as superseded)
 
 ---

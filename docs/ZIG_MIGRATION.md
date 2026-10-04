@@ -142,7 +142,8 @@ When migrating a file from Zig 0.14 to 0.15:
 
 ## Resources
 
-- Zig 0.15 Release Notes: https://ziglang.org/download/0.15.2/release-notes.html
+- Zig 0.15 series release notes (0.15.1): https://ziglang.org/download/0.15.1/release-notes.html
+- Zig 0.15.2 language reference: https://ziglang.org/documentation/0.15.2/
 - Zig Standard Library Docs: https://ziglang.org/documentation/master/std/
 - Trinity Build: `zig build` (uses Zig 0.15.2)
 

@@ -294,7 +294,7 @@ jobs:
       # and the nightly t27 world scan -- the only place these ran -- then
       # failed for three nights. Pure, no browser.
       - name: Queen map close-ups stay readable
-        run: npm run check:queen-displays && npm run check:queen-continuous
+        run: npm run check:queen-displays && npm run check:queen-continuous && npm run check:queen-issue-proof && npm run check:queen-worlds
       # The PASSPORT argues a result is worthless without the record of how it
       # was taken, so its own figures must not drift from its own prose: every
       # plotted quantity carries the literal the text prints for it, in both

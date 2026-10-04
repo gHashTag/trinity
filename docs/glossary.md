@@ -25,7 +25,7 @@ Zig memory management interface. Explicit allocators required for most operation
 ### Bind (VSA)
 VSA operation that associates two vectors. `bind(a, b)` creates a bound representation.
 
-See: [src/vsa/core.zig](../src/vsa/core.zig)
+See: [src/vsa/core.zig](../src/vsa.zig)
 
 ### BitNet
 Neural network architecture using ternary weights {-1, 0, +1} for 20x memory efficiency.
@@ -161,7 +161,7 @@ Commands: `tri issue list`, `tri issue create`, `tri issue comment`
 ### JEPA (Joint Embedding Predictive Architecture)
 Architecture for self-supervised learning. Trinity has T-JEPA implemented.
 
-See: [src/hslm/tjepa.zig](../src/hslm/tjepa.zig)
+See: [src/hslm/tjepa.zig](https://github.com/gHashTag/trinity-training/blob/3e9648c1817a97c5f9b8c727b0f8e2291928eead/src/hslm/tjepa.zig)
 
 ### JTAG
 Joint Test Action Group interface for FPGA programming.
@@ -293,7 +293,7 @@ Command: `tri vibee gen <spec>`
 ### VSA (Vector Symbolic Architecture)
 Cognitive computing framework. Operations: bind, unbind, bundle, similarity.
 
-See: [src/vsa/core.zig](../src/vsa/core.zig)
+See: [src/vsa/core.zig](../src/vsa.zig)
 
 ---
 
