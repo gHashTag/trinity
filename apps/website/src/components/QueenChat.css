@@ -607,3 +607,35 @@
 .queen-chat-draft.is-failed .queen-chat-draft-note {
   color: #ff6b6b;
 }
+
+/* NO ZOOM ON A PHONE. iOS Safari zooms the whole page into a focused text
+   field whose font-size is under 16px, and does not zoom back out: every tap
+   on the composer zoomed the board. A coarse pointer gets 16px in every field
+   this panel draws; a mouse keeps the sizes above.
+   Three of them are ChatInput's (components/chat/ChatInput.tsx), which sets
+   its sizes inline -- 14px on the message, 11px on the two attachment paths --
+   and an inline declaration loses to nothing but !important. The ids are
+   ChatInput's own; the .queen-chat scope keeps CosmicChat's copy as it was.
+   The two rules of this file's own carry .queen-chat as well, so they outrank
+   .queen-chat-draft textarea, .queen-chat-find input and the cell stage's
+   .queen-cell-stage textarea wherever the panel is mounted.
+   16px also makes those three wider: an input is as wide as its size in
+   characters of its own font, and this panel is a <section>, which index.css
+   centres in a column, so the composer is as wide as its widest row rather than
+   the panel. With the attachment row open that row needed 486px -- past the
+   edge of a 375px phone. width: 100% lets a field give way to the panel
+   instead (349px there); ChatInput sets no width inline, so no !important.
+   Pinned in qa/queen-chat-tabs-contract.mjs, with broken copies that must
+   fail. */
+@media (pointer: coarse) {
+  .queen-chat .queen-chat-draft textarea,
+  .queen-chat .queen-chat-find input {
+    font-size: 16px;
+  }
+  .queen-chat #chat-input-field,
+  .queen-chat #chat-image-input,
+  .queen-chat #chat-audio-input {
+    font-size: 16px !important;
+    width: 100%;
+  }
+}
