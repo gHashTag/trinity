@@ -1,0 +1,317 @@
+/* THE MCP FLEET — the second face of the TOOLS view (key t).
+ *
+ * Colours are the HUD's own variables, never new ones: green is online, cyan
+ * "it replied but the body did not parse", cold red offline. The three tones
+ * are the three states — a reader must be able to tell "answered oddly" from
+ * "did not answer" at a glance, which is the whole reason the middle state
+ * exists.
+ *
+ * .mcp-summary is its own class rather than .queen-card on purpose: that is a
+ * <section> carrying a global `display:flex; align-items:center` which collapses
+ * these five metrics into one 150px column. Fixing it here is local; changing
+ * the global rule would move every other card on the site.
+ */
+
+/* Inside the Queen's shell every view is stacked in the same grid cell on top of
+   the live hive scene, so a view without a backdrop is read through a hex field
+   — which is to say not read at all. This owns its backdrop, its stacking level
+   and its scroll, the same three declarations passport.css spells out for .pp.
+   Unscoped rather than under .queen27-page.is-shell because, unlike Passport,
+   this component has no standalone route: the shell is the only place it renders.
+   No `display` is declared here on purpose — the face switch in QueenAgents puts
+   this away with the `hidden` attribute, and a `display` would defeat it. */
+/* The ground is only half of it. 0.94 still lets 6% of the hive through, and 6%
+   of a hexagon edge is a hexagon edge: alpha scales the field's amplitude and
+   leaves its spatial frequency exactly where it was, so the lattice keeps
+   crossing the letterforms at full sharpness however dark this gets. The blur
+   is the half that removes the edges, and it belongs here rather than on the
+   rows inside: backdrop-filter makes this element a backdrop root, so one layer
+   low-passes the whole face instead of one layer per metric in it. */
+.mcp-view {
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 18px 20px 28px;
+  background: rgba(6, 8, 10, 0.94);
+  backdrop-filter: blur(8px);
+  position: relative;
+  z-index: 3;
+  color: #dff5e8;
+  font-size: 14px;
+}
+
+.mcp-head h2 {
+  margin: 0 0 4px;
+  font-size: 18px;
+  letter-spacing: 0.12em;
+  color: var(--hud-green, #00ff88);
+}
+
+.mcp-head p {
+  margin: 0 0 16px;
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
+  max-width: 68ch;
+  line-height: 1.5;
+}
+
+/* stretch + full-width children: the two declarations the global card rule
+   would otherwise override. */
+.mcp-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.mcp-summary > * {
+  width: 100%;
+  max-width: 132px;
+}
+
+/* No blur of its own. --hud-panel resolves to 0.88 inside the shell, so 12% of
+   the hive still reaches these five numbers with its edges unchanged -- but the
+   low pass that removes those edges is on .mcp-view above, and .mcp-view is the
+   only element this ever renders inside. Its backdrop-filter already makes it
+   the backdrop root for everything in the face; a blur here would be five more
+   compositing layers over a backdrop that has been through the filter once. */
+.mcp-metric {
+  border: 1px solid var(--hud-line, rgba(0, 255, 136, 0.22));
+  background: var(--hud-panel, rgba(2, 8, 6, 0.88));
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mcp-metric b {
+  font-size: 22px;
+  line-height: 1;
+  color: var(--hud-gold, #ffd700);
+}
+
+.mcp-metric span {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
+}
+
+.mcp-metric.is-online b { color: var(--hud-green, #00ff88); }
+.mcp-metric.is-reachable b { color: var(--hud-cyan, #64dcff); }
+.mcp-metric.is-offline b { color: var(--hud-cold, #ff6b6b); }
+
+.mcp-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.mcp-scanned {
+  font-size: 12px;
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
+}
+
+.mcp-btn {
+  border: 1px solid var(--hud-line-strong, rgba(0, 255, 136, 0.5));
+  background: transparent;
+  color: var(--hud-green, #00ff88);
+  border-radius: 6px;
+  padding: 5px 12px;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.mcp-btn:hover:not(:disabled) { background: rgba(0, 255, 136, 0.1); }
+.mcp-btn:disabled { opacity: 0.5; cursor: default; }
+
+.mcp-note,
+.mcp-foot {
+  margin: 0 0 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
+  max-width: 76ch;
+}
+
+.mcp-foot { margin-top: 16px; }
+
+.mcp-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Unfrosted for the reason given above .mcp-metric: the same 0.88 ground, the
+   same single parent, and .mcp-view low-passes the field for the whole face.
+   This is also the row the hub can return dozens of, so a backdrop root per
+   card is where the second layer would have cost the most. */
+.mcp-card {
+  border: 1px solid var(--hud-line, rgba(0, 255, 136, 0.22));
+  border-left-width: 3px;
+  background: var(--hud-panel, rgba(2, 8, 6, 0.88));
+  border-radius: 6px;
+}
+
+.mcp-card.is-online { border-left-color: var(--hud-green, #00ff88); }
+.mcp-card.is-reachable { border-left-color: var(--hud-cyan, #64dcff); }
+.mcp-card.is-offline { border-left-color: var(--hud-cold, #ff6b6b); }
+
+.mcp-card-head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.mcp-card-head:hover { background: rgba(0, 255, 136, 0.06); }
+
+.mcp-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.mcp-dot.is-online { background: var(--hud-green, #00ff88); }
+.mcp-dot.is-reachable { background: var(--hud-cyan, #64dcff); }
+.mcp-dot.is-offline { background: var(--hud-cold, #ff6b6b); }
+
+.mcp-name {
+  font-weight: 600;
+  min-width: 190px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mcp-lock { font-size: 11px; }
+
+.mcp-transport,
+.mcp-count,
+.mcp-state,
+.mcp-ms {
+  font-size: 12px;
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
+}
+
+.mcp-transport { min-width: 60px; }
+.mcp-count { min-width: 96px; }
+.mcp-state { margin-left: auto; }
+.mcp-ms { min-width: 64px; text-align: right; }
+
+.mcp-card.is-online .mcp-state { color: var(--hud-green, #00ff88); }
+.mcp-card.is-reachable .mcp-state { color: var(--hud-cyan, #64dcff); }
+.mcp-card.is-offline .mcp-state { color: var(--hud-cold, #ff6b6b); }
+
+.mcp-card-err {
+  margin: 0;
+  padding: 0 12px 9px 42px;
+  font-size: 12px;
+  color: var(--hud-cold, #ff6b6b);
+  word-break: break-word;
+}
+
+.mcp-card-body {
+  padding: 0 12px 12px 42px;
+  border-top: 1px solid var(--hud-line, rgba(0, 255, 136, 0.22));
+  padding-top: 10px;
+}
+
+.mcp-origins,
+.mcp-keys {
+  margin: 0 0 6px;
+  font-size: 12px;
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
+}
+
+.mcp-tools {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mcp-tools li {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.mcp-tools code {
+  color: var(--hud-gold, #ffd700);
+  flex: none;
+  min-width: 180px;
+}
+
+.mcp-tools span {
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
+}
+
+.mcp-down {
+  border: 1px solid var(--hud-line, rgba(0, 255, 136, 0.22));
+  border-radius: 8px;
+  padding: 20px;
+  max-width: 62ch;
+}
+
+.mcp-down h2 {
+  margin: 0 0 8px;
+  font-size: 16px;
+  color: var(--hud-gold, #ffd700);
+}
+
+.mcp-down p {
+  margin: 0 0 12px;
+  line-height: 1.55;
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
+}
+
+.mcp-cmd {
+  display: block;
+  padding: 9px 12px;
+  margin-bottom: 12px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid var(--hud-line, rgba(0, 255, 136, 0.22));
+  border-radius: 6px;
+  color: var(--hud-green, #00ff88);
+  font-size: 13px;
+  user-select: all;
+}
+
+.mcp-err {
+  font-size: 12px;
+  color: var(--hud-cold, #ff6b6b) !important;
+  word-break: break-all;
+}
+
+.mcp-loading {
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
+  font-size: 13px;
+}
+
+@media (max-width: 720px) {
+  .mcp-card-head { flex-wrap: wrap; gap: 6px 10px; }
+  .mcp-name { min-width: 0; }
+  .mcp-state { margin-left: 0; }
+  .mcp-card-body, .mcp-card-err { padding-left: 12px; }
+  .mcp-tools li { flex-direction: column; gap: 1px; }
+  .mcp-tools code { min-width: 0; }
+}

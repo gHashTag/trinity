@@ -1,0 +1,133 @@
+/* The hive and this block are one idea in two beats — here is the map of the
+   specs, here is a spec — so they read as a pair: no rule between them, and
+   this one answers at a lower pitch instead of repeating the hero's shape. */
+.spec-hero-block {
+  border-bottom: 1px solid rgba(255, 212, 90, .24);
+  background: #000;
+  color: var(--text, #FFFFFF);
+}
+
+.spec-hero-block-inner {
+  width: min(1180px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: clamp(1.5rem, 3.5vw, 2.5rem) 0 clamp(2rem, 6vw, 4.5rem);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(1.5rem, 4vw, 2.5rem);
+  align-items: start;
+}
+
+.spec-hero-block-copy {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: clamp(1rem, 3vw, 3rem);
+  align-items: end;
+}
+.spec-hero-block-aside { display: grid; gap: .25rem; }
+.spec-hero-block-eyebrow {
+  color: #ffd45a;
+  font: 600 .72rem/1.2 "JetBrains Mono", monospace;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+/* Subordinate to the hive's headline rather than a second one its size. */
+.spec-hero-block h2 {
+  max-width: 22ch;
+  margin: .4rem 0 0;
+  font: 400 clamp(1.5rem, 2.7vw, 2.5rem)/1.1 Outfit, sans-serif;
+}
+.spec-hero-block p {
+  max-width: 62ch;
+  margin: 0;
+  color: #a8c1ba;
+  font-size: clamp(.95rem, 1.2vw, 1.05rem);
+  line-height: 1.55;
+}
+
+.spec-hero-block-actions { display: flex; flex-wrap: wrap; gap: .65rem; margin-top: 1rem; }
+.spec-hero-block-actions a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: .65rem .9rem;
+  border-radius: 6px;
+  font: 600 .82rem/1.2 "JetBrains Mono", monospace;
+  text-decoration: none;
+}
+.spec-hero-block-primary { background: #000; color: #ffd45a; border: 1px solid #ffd45a; }
+.spec-hero-block-secondary { color: #ffd45a; border: 1px solid #ffd45a88; background: transparent; }
+.spec-hero-block-primary:hover, .spec-hero-block-secondary:hover { filter: brightness(1.12); }
+
+/* The Explorer is a two-pane application, so the frame is sized by what that
+   layout needs rather than by a decorative ratio: a desktop screen's worth,
+   and on a phone the Explorer collapses to one pane and needs the height back. */
+.spec-hero-block-frame {
+  height: min(76vh, 700px);
+  min-height: 460px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 212, 90, .28);
+  background: #000;
+  clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+}
+.spec-hero-block-frame iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #000;
+}
+
+@media (max-width: 900px) {
+  .spec-hero-block-copy { grid-template-columns: minmax(0, 1fr); align-items: start; gap: 1rem; }
+}
+
+@media (max-width: 760px) {
+  .spec-hero-block-frame { height: min(78vh, 560px); min-height: 380px; }
+  .spec-hero-block h2 { max-width: 18ch; }
+}
+
+/* Landscape phones: height is the scarce axis, and a 460px floor would push the
+   frame past the screen. Give it most of the viewport and drop the floor. */
+@media (max-height: 500px) {
+  .spec-hero-block-frame { height: 82vh; min-height: 240px; }
+  .spec-hero-block-inner { padding: 1.25rem 0; gap: 1rem; }
+}
+
+/* The frame before the Explorer runs: the spec it will open and the button
+   that opens it. Gold, because gold on this site means a spec. */
+.spec-hero-block-run {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.85rem;
+  padding: 1.5rem;
+  border: 0;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(255, 212, 90, 0.08), transparent 60%),
+    #000;
+  color: #ffd45a;
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+}
+.spec-hero-block-run > i { font-size: clamp(3rem, 8vw, 5.5rem); font-style: normal; line-height: 1; }
+.spec-hero-block-run > code { color: #a8c1ba; font: 400 0.82rem/1.3 "JetBrains Mono", monospace; overflow-wrap: anywhere; }
+.spec-hero-block-run > span {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.65rem 1.1rem;
+  border: 1px solid #ffd45a;
+  border-radius: 6px;
+  font: 600 0.9rem/1.2 "JetBrains Mono", monospace;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.spec-hero-block-run > small { max-width: 42ch; color: #a8c1ba; font-size: 0.86rem; line-height: 1.5; }
+.spec-hero-block-run:hover > span,
+.spec-hero-block-run:focus-visible > span { background: rgba(255, 212, 90, 0.12); }
+.spec-hero-block-run:focus-visible { outline: 2px solid #ffd45a; outline-offset: -6px; }

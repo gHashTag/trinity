@@ -4,6 +4,7 @@ import { useI18n } from '../i18n/context'
 import Navigation from '../components/Navigation'
 import Footer from '../components/Footer'
 import QuantumBackground from '../components/QuantumBackground'
+import { TnfDecision } from '../components/sections/tnf'
 
 type TaskId = 'weights' | 'accumulation' | 'fpga' | 'audit'
 
@@ -97,8 +98,8 @@ export default function FormatSelection() {
   usePageMeta(
     ru ? 'Выбор формата' : 'Format selection',
     ru
-      ? 'Матрица выбора формата по задаче: 83 кандидата каталога, явные критерии сравнения и границы измерения.'
-      : 'A task-by-format selection matrix for the 83-format catalogue, with explicit comparison criteria and measurement boundaries.',
+      ? 'Матрица выбора формата по задаче: кандидаты из каталога Golden Ruler, явные критерии сравнения и границы измерения.'
+      : 'A task-by-format selection matrix for the Golden Ruler catalogue, with explicit comparison criteria and measurement boundaries.',
   )
 
   const text = (value: { ru: string; en: string }) => ru ? value.ru : value.en
@@ -142,8 +143,8 @@ export default function FormatSelection() {
           </h2>
           <p style={{ margin: '0', maxWidth: 'none', fontSize: '0.92rem', lineHeight: 1.6 }}>
             {ru
-              ? <>В каталоге 83 формата. Ниже — пять отправных кандидатов, а не сокращение каталога: в каждой ячейке указано, какое действие нужно выполнить до вывода.</>
-              : <>The catalogue contains 83 formats. Below are five starting candidates, not a reduction of the catalogue: each cell states what to do before drawing a conclusion.</>}
+              ? <>Каталог Golden Ruler насчитывает 109 форматов (v3, сентябрь 2026) и растёт. Ниже — пять отправных кандидатов, а не сокращение каталога: в каждой ячейке указано, какое действие нужно выполнить до вывода.</>
+              : <>The Golden Ruler catalogue holds 109 formats (v3, Sep 2026) and grows. Below are five starting candidates, not a reduction of the catalogue: each cell states what to do before drawing a conclusion.</>}
           </p>
         </div>
 
@@ -221,6 +222,8 @@ export default function FormatSelection() {
           <a href="#/verification" className="btn secondary" style={{ padding: '0.75rem 1.25rem', fontSize: '0.86rem' }}>{ru ? 'Методика FPGA' : 'FPGA method'}</a>
         </div>
       </section>
+      <TnfDecision />
+
       <Footer />
     </main>
   )

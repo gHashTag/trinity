@@ -24,3 +24,7 @@ dist-ssr
 *.sw?
 .vercel
 .env*.local
+
+# the field's CC0 models (Kenney Space Kit) are shipped, not ignored
+!public/queen/models/
+!public/queen/models/**

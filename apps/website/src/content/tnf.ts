@@ -38,6 +38,7 @@ export const PAPER = {
   author: 'D. Vasilev',
   orcid: '0009-0008-4294-6159',
   date: { en: '11 August 2026', ru: '11 августа 2026' },
+  status: { en: 'under review, Microprocessors and Microsystems (Elsevier), submitted 3 Sep 2026', ru: 'на рецензии, Microprocessors and Microsystems (Elsevier), подана 3 сентября 2026' },
   theorems: 52,
   pages: 60,
 }
@@ -84,10 +85,10 @@ export const hero = {
       tag: 'measured' as Tag,
     },
     {
-      value: '0.1797',
-      unit: 'MHz/LUT',
-      label: { en: 'Throughput per area, 20 range-bearing formats', ru: 'Пропускная способность на площадь, 20 форматов с диапазоном' },
-      note: { en: '+10.2% over binary32 (0.1631); 6.1× over posit32 (0.0295)', ru: '+10.2% к binary32 (0.1631); 6.1× к posit32 (0.0295)' },
+      value: '463',
+      unit: 'LUT',
+      label: { en: 'Whole ternary neuron, 20 range-bearing formats', ru: 'Целый тернарный нейрон, 20 форматов с диапазоном' },
+      note: { en: 'Against binary32 472 LUT (a 1.9% edge, stated as a tie) and posit32 953 LUT', ru: 'Против binary32 — 472 LUT (перевес 1.9%, считаем ничьёй) и posit32 — 953 LUT' },
       tag: 'measured' as Tag,
     },
     {
@@ -135,8 +136,8 @@ export const claim = {
       n: '2',
       name: { en: 'Forced, not chosen', ru: 'Вынужденность, а не выбор' },
       body: {
-        en: 'The alphabet radix is the only r > 1 with r² = r + 1 (Theorem 25). The E/M split is the solution of a maximisation with the range constraint active (Theorem 23). Once the workload range is measured, there is no free parameter left to tune.',
-        ru: 'Основание алфавита — единственное r > 1 с r² = r + 1 (Теорема 25). Разбиение E/M — решение задачи максимизации с активным ограничением диапазона (Теорема 23). Как только диапазон нагрузки измерен, свободного параметра для тюнинга не остаётся.',
+        en: 'The alphabet radix is the only r > 1 with r² = r + 1 (Uniqueness of the golden alphabet within the lattice-closure class). The E/M split is the solution of a maximisation with the range constraint active (Theorem 23). Once the workload range is measured, there is no free parameter left to tune.',
+        ru: 'Основание алфавита — единственное r > 1 с r² = r + 1 (теорема «Уникальность золотого алфавита в классе замыкания решётки»). Разбиение E/M — решение задачи максимизации с активным ограничением диапазона (Теорема 23). Как только диапазон нагрузки измерен, свободного параметра для тюнинга не остаётся.',
       },
       tag: 'proved' as Tag,
     },
@@ -144,8 +145,8 @@ export const claim = {
       n: '3',
       name: { en: 'Predictive', ru: 'Предсказательность' },
       body: {
-        en: 'Mean relative error is a closed form in one number, the mantissa width: E[|rel err|] = ½·E[1/s]·2^−(M+1), independent of the exponent (Theorem 1). Predicted 0.3861 on our workload; measured 0.3756 on average across eight rungs, spread 0.369–0.390. The accumulator can therefore be sized before it is built.',
-        ru: 'Средняя относительная ошибка — замкнутая форма от одного числа, ширины мантиссы: E[|отн. ошибка|] = ½·E[1/s]·2^−(M+1), независимо от экспоненты (Теорема 1). Предсказание 0.3861 на нашей нагрузке; измерено в среднем 0.3756 на восьми ступенях, разброс 0.369–0.390. Значит, аккумулятор можно отмерить до того, как он построен.',
+        en: 'Mean relative error is a closed form in one number, the mantissa width: E[|rel err|] = ½·E[1/s]·2^−(M+1), independent of the exponent (Theorem 1). Predicted 0.3466 for a uniform significand; the eight measured rungs average 0.3700, spread 0.34–0.49. The accumulator can therefore be sized before it is built.',
+        ru: 'Средняя относительная ошибка — замкнутая форма от одного числа, ширины мантиссы: E[|отн. ошибка|] = ½·E[1/s]·2^−(M+1), независимо от экспоненты (Теорема 1). Предсказание 0.3466 при равномерной значащей; восемь измеренных ступеней дают в среднем 0.3700, разброс 0.34–0.49. Значит, аккумулятор можно отмерить до того, как он построен.',
       },
       tag: 'measured' as Tag,
     },
@@ -198,8 +199,8 @@ export const formats = {
       {
         h: { en: 'Uniqueness of the golden alphabet', ru: 'Уникальность золотого алфавита' },
         b: {
-          en: 'Require that the product of two weights be expressible in the additive lattice the datapath already computes — that is r² = r + 1 — and r = φ follows uniquely (Theorem 25).',
-          ru: 'Потребуем, чтобы произведение двух весов выражалось в аддитивной решётке, которую датапуть уже считает, то есть r² = r + 1 — и r = φ следует единственно (Теорема 25).',
+          en: 'Require that the product of two weights be expressible in the additive lattice the datapath already computes — that is r² = r + 1 — and r = φ follows uniquely (Uniqueness of the golden alphabet within the lattice-closure class).',
+          ru: 'Потребуем, чтобы произведение двух весов выражалось в аддитивной решётке, которую датапуть уже считает, то есть r² = r + 1 — и r = φ следует единственно (теорема «Уникальность золотого алфавита в классе замыкания решётки»).',
         },
         tag: 'proved' as Tag,
       },
@@ -226,7 +227,7 @@ export const formats = {
 /* ─────────────────────── MEASURED FRONTIER ─────────────────────── */
 
 export const frontier = {
-  badge: { en: 'MEASURED ON SILICON', ru: 'ИЗМЕРЕНО НА КРЕМНИИ' },
+  badge: { en: 'MEASURED ON FPGA', ru: 'ИЗМЕРЕНО НА FPGA' },
   title: { en: 'Isolated decoder, and one whole ternary neuron', ru: 'Изолированный декодер и один целый тернарный нейрон' },
   sub: {
     en: 'XC7A200T (ALINX AX7203) on the open flow: Yosys 0.65 + nextpnr-xilinx 1743d0f + Icarus Verilog 13.0, median of 5 seeds, DSP inference disabled. One device family. Not a multi-corner characterisation; an ASIC mapping will differ.',
@@ -240,8 +241,8 @@ export const frontier = {
     { rank: 1, name: 'GFTernary', kind: { en: 'fixed', ru: 'фикс.' }, lut: 66, fmax: 974.66, ours: true },
     { rank: 2, name: 'int8', kind: { en: 'fixed', ru: 'фикс.' }, lut: 76, fmax: 925.93, ours: false },
     { rank: 3, name: 'binary32', kind: { en: 'fixed', ru: 'фикс.' }, lut: 112, fmax: 886.52, ours: false },
-    { rank: 4, name: 'TNF16', kind: { en: 'fixed', ru: 'фикс.' }, lut: 101, fmax: 407.66, ours: true },
-    { rank: 6, name: 'BNF16', kind: { en: 'fixed', ru: 'фикс.' }, lut: 97, fmax: 388.35, ours: true },
+    { rank: 4, name: 'TNF16', kind: { en: 'fixed', ru: 'фикс.' }, lut: 101, fmax: 407.66, ours: true, flag: '‡' },
+    { rank: 6, name: 'BNF16', kind: { en: 'fixed', ru: 'фикс.' }, lut: 97, fmax: 388.35, ours: true, flag: '†' },
     { rank: 13, name: 'binary16', kind: { en: 'fixed', ru: 'фикс.' }, lut: 164, fmax: 235.18, ours: false },
     { rank: 15, name: 'LNS16', kind: { en: 'log', ru: 'лог.' }, lut: 270, fmax: 93.17, ours: false },
     { rank: 17, name: 'posit16', kind: { en: 'tapered', ru: 'tapered' }, lut: 302, fmax: 62.39, ours: false },
@@ -251,26 +252,41 @@ export const frontier = {
     en: 'GFTernary lands at 66 LUT where the bare wire is 112: decoding a two-bit alphabet lets the synthesiser simplify the register downstream. Against posit32 that is 7.8× in area and 19.9× in frequency.',
     ru: 'GFTernary даёт 66 LUT там, где голый провод — 112: декод двухбитного алфавита позволяет синтезатору упростить регистр ниже по потоку. Против posit32 это 7.8× по площади и 19.9× по частоте.',
   },
+  // Ordered by area, ascending. The MHz/LUT column this table used to carry is
+  // withdrawn: LUT count is identical across all five seeds, while the frequency
+  // it divided by is not, so the ranking it produced was a ranking of seeds. The
+  // rank column went with it -- eleven of the twenty formats are shown, and a
+  // position among twenty cannot be read off eleven rows.
   neuronCaption: {
-    en: 'One ternary neuron, whole accumulator observable — throughput per area, MHz per LUT',
-    ru: 'Один тернарный нейрон, весь аккумулятор наблюдаем — пропускная способность на площадь, МГц на LUT',
+    en: 'One ternary neuron, whole accumulator observable — by area, eleven of the twenty formats',
+    ru: 'Один тернарный нейрон, весь аккумулятор наблюдаем — по площади, одиннадцать форматов из двадцати',
   },
   neuron: [
-    { rank: 1, name: 'GFTernary', lut: 463, tpa: 0.1797, ours: true },
-    { rank: 2, name: 'binary32', lut: 472, tpa: 0.1631, ours: false },
-    { rank: 3, name: 'fp8 e5m2', lut: 480, tpa: 0.1397, ours: false },
-    { rank: 4, name: 'VAX F', lut: 527, tpa: 0.1395, ours: false },
-    { rank: 5, name: 'fp8 e4m3', lut: 485, tpa: 0.1382, ours: false },
-    { rank: 6, name: 'GF10', lut: 533, tpa: 0.1354, ours: true },
-    { rank: 7, name: 'binary16', lut: 522, tpa: 0.1213, ours: false },
-    { rank: 10, name: 'TNF32', lut: 569, tpa: 0.1176, ours: true },
-    { rank: 12, name: 'TNF16', lut: 565, tpa: 0.1173, ours: true },
-    { rank: 17, name: 'takum16', lut: 789, tpa: 0.0747, ours: false },
-    { rank: 20, name: 'posit32', lut: 953, tpa: 0.0295, ours: false },
+    { name: 'GFTernary', lut: 463, ours: true },
+    { name: 'binary32', lut: 472, ours: false },
+    { name: 'fp8 e5m2', lut: 480, ours: false },
+    { name: 'fp8 e4m3', lut: 485, ours: false },
+    { name: 'binary16', lut: 522, ours: false },
+    { name: 'VAX F', lut: 527, ours: false },
+    { name: 'GF10', lut: 533, ours: true },
+    { name: 'TNF16', lut: 565, ours: true, flag: '‡' },
+    { name: 'TNF32', lut: 569, ours: true, flag: '†' },
+    { name: 'takum16', lut: 789, ours: false },
+    { name: 'posit32', lut: 953, ours: false },
   ],
   neuronNote: {
-    en: '8 of the 20 slots are ours (GFTernary, TNF, BNF, GF families). The advantage over the next format is +10.2%; over the last, 6.1×. The claim that survives on buyable silicon is about fixed fields: no regime codec, no exponent to compute.',
-    ru: '8 из 20 позиций — наши (GFTernary, TNF, BNF, семейства GF). Преимущество над следующим форматом +10.2%, над последним — 6.1×. На покупаемом кремнии выживает заявление про фиксированные поля: нет regime-кодека, нет экспоненты для вычисления.',
+    en: '8 of the 20 slots are ours (GFTernary, TNF, BNF, GF families). Read this table by area: 463 LUT against 472 for binary32 and 953 for posit32 — LUT count is bit-identical across all five seeds, while up to 37 of the 210 pairwise throughput verdicts change winner from seed to seed. The 9-LUT edge over binary32 is 1.9% and is stated as a tie, not a win. What survives on a buyable FPGA part is the claim about fixed fields: no regime codec, no exponent to compute.',
+    ru: '8 из 20 позиций — наши (GFTernary, TNF, BNF, семейства GF). Читайте эту таблицу по площади: 463 LUT против 472 у binary32 и 953 у posit32 — счёт LUT побитово одинаков на всех пяти сидах, тогда как до 37 из 210 попарных вердиктов по пропускной способности меняют победителя от сида к сиду. Перевес в 9 LUT над binary32 — это 1.9%, и мы считаем это ничьёй, а не победой. На покупаемой FPGA-микросхеме выживает заявление про фиксированные поля: нет regime-кодека, нет экспоненты для вычисления.',
+  },
+  // The two tables above price modules; this note says which of those modules
+  // were proved to be the format they are named after, and which were not. It
+  // is a retraction, not a caveat: the TNF16 row measures a narrower module
+  // than the specified format, so its area is a lower bound on TNF16 rather
+  // than a measurement of it. Recorded rather than repaired, because repairing
+  // it means re-synthesising and re-measuring.
+  conformanceNote: {
+    en: '‡ The TNF16 row prices a module that is not the specified format. Swept against its reference, the RTL disagrees on all 65,536 codes: it packs sign+7+8 into sixteen bits where the specified format is sign+7+9 in seventeen. One mantissa bit narrower means its area is a lower bound on the specified format, not a measurement of it. † TNF32 and BNF16 were outside that sweep, which covered 8- and 16-bit formats only, so their conformance is unverified rather than established. GFTernary, GF10, GF14 and binary16 passed with zero mismatches. Two of the competitor decoders did not: posit16 errs on 4 codes of 65,536 and the fp8 pair on 6 and 14 of 256, all in the subnormal range — which makes them smaller than a complete implementation would be, and so flatters them rather than us.',
+    ru: '‡ Строка TNF16 оценивает модуль, который не является заявленным форматом. При сплошной сверке с эталоном RTL расходится на всех 65 536 кодах: он укладывает знак+7+8 в шестнадцать бит там, где заявленный формат — знак+7+9 в семнадцати. На один бит мантиссы уже, поэтому его площадь — нижняя граница для заявленного формата, а не измерение этого формата. † TNF32 и BNF16 в ту сверку не входили — она покрывала только 8- и 16-битные форматы, так что их соответствие не установлено, а не подтверждено. GFTernary, GF10, GF14 и binary16 прошли без единого расхождения. Два чужих декодера — нет: posit16 ошибается на 4 кодах из 65 536, пара fp8 — на 6 и 14 из 256, все в субнормальном диапазоне; это делает их меньше полной реализации, то есть подыгрывает им, а не нам.',
   },
   ops: {
     title: { en: 'What an operation costs', ru: 'Сколько стоит операция' },
@@ -343,7 +359,7 @@ export const theorems = {
       id: 'T1',
       name: { en: 'Precision law', ru: 'Закон точности' },
       stmt: { en: 'E[|rel err|] = ½·E[1/s]·2^−(M+1), independent of the exponent. Constants: ½ln2 = 0.3466 for a uniform significand on [1,2), ½(2ln2)⁻¹ = 0.3607 under Benford.', ru: 'E[|отн. ошибка|] = ½·E[1/s]·2^−(M+1), независимо от экспоненты. Константы: ½ln2 = 0.3466 при равномерной значащей на [1,2), ½(2ln2)⁻¹ = 0.3607 по Бенфорду.' },
-      why: { en: 'Predicted 0.3861, measured 0.3756 across eight rungs. This is what makes the accumulator sizeable before it is built.', ru: 'Предсказано 0.3861, измерено 0.3756 на восьми ступенях. Именно это позволяет отмерить аккумулятор до постройки.' },
+      why: { en: 'Predicted 0.3466, measured 0.3700 on average across eight rungs, spread 0.34–0.49. This is what makes the accumulator sizeable before it is built.', ru: 'Предсказано 0.3466, измерено в среднем 0.3700 на восьми ступенях, разброс 0.34–0.49. Именно это позволяет отмерить аккумулятор до постройки.' },
       tag: 'measured' as Tag,
     },
     {
@@ -433,7 +449,7 @@ export const theorems = {
     {
       id: 'T3/T4',
       name: { en: 'The exact taper of posit and takum', ru: 'Точный taper posit и takum' },
-      stmt: { en: 'The significand of a posit narrows by exactly 2^−es per binade; takum fixes a 3-bit regime field. Applied to 51 formats with a published oracle, the 83-format catalogue resolves into four ladder shapes and no fifth.', ru: 'Значащая posit сужается ровно на 2^−es за бинаду; takum фиксирует 3-битное regime-поле. Применённое к 51 формату с опубликованным оракулом, это разрешает каталог 83 форматов в четыре формы лестницы и никакой пятой.' },
+      stmt: { en: 'The significand of a posit narrows by exactly 2^−es per binade; takum fixes a 3-bit regime field. Applied to 51 formats with a published oracle, the catalogue resolves into four ladder shapes and no fifth.', ru: 'Значащая posit сужается ровно на 2^−es за бинаду; takum фиксирует 3-битное regime-поле. Применённое к 51 формату с опубликованным оракулом, это разрешает каталог в четыре формы лестницы и никакой пятой.' },
       why: { en: 'A taxonomy that predicts rather than describes: given the ladder shape, the decode cost and the precision profile follow.', ru: 'Таксономия, которая предсказывает, а не описывает: по форме лестницы следуют и цена декода, и профиль точности.' },
       tag: 'proved' as Tag,
     },
@@ -483,7 +499,7 @@ export const theorems = {
       id: 'T21',
       name: { en: 'The binary scale is the unique implementable optimum', ru: 'Бинарная шкала — единственный реализуемый оптимум' },
       stmt: { en: 'Scaling is a shift if and only if the radix is 2. Corollary 21: between the shift and φ there is nothing.', ru: 'Шкалирование есть сдвиг ⟺ основание равно 2. Следствие 21: между сдвигом и φ ничего нет.' },
-      why: { en: 'Together with T25 this closes the radix question from both sides: 2 for the scale, φ for the alphabet, and no third option in between.', ru: 'Вместе с Т25 это закрывает вопрос основания с двух сторон: 2 для шкалы, φ для алфавита, и никакого третьего варианта между ними.' },
+      why: { en: 'Together with the uniqueness of the golden alphabet this closes the radix question from both sides: 2 for the scale, φ for the alphabet, and no third option in between.', ru: 'Вместе с уникальностью золотого алфавита это закрывает вопрос основания с двух сторон: 2 для шкалы, φ для алфавита, и никакого третьего варианта между ними.' },
       tag: 'proved' as Tag,
     },
     {
@@ -571,8 +587,8 @@ export const decision = {
     },
   ],
   note: {
-    en: 'If you need a block element for a pipeline that already exists, MXFP4 or NVFP4 is the right starting point. If the question is the scale, the accumulator or multiply-free weight application, the comparison has to be run on that axis — which is what the catalogue of 83 formats and the conformance vectors are for.',
-    ru: 'Если нужен элемент блока для уже существующего конвейера — правильная отправная точка это MXFP4 или NVFP4. Если вопрос в масштабе, аккумуляторе или применении веса без умножения, сравнение надо проводить на соответствующей оси — именно для этого существуют каталог из 83 форматов и векторы соответствия.',
+    en: 'If you need a block element for a pipeline that already exists, MXFP4 or NVFP4 is the right starting point. If the question is the scale, the accumulator or multiply-free weight application, the comparison has to be run on that axis — which is what the Golden Ruler catalogue and its conformance vectors are for.',
+    ru: 'Если нужен элемент блока для уже существующего конвейера — правильная отправная точка это MXFP4 или NVFP4. Если вопрос в масштабе, аккумуляторе или применении веса без умножения, сравнение надо проводить на соответствующей оси — именно для этого существуют каталог Golden Ruler и его векторы соответствия.',
   },
 }
 
@@ -592,8 +608,8 @@ export const faq = {
     {
       q: { en: 'Is this an ASIC result?', ru: 'Это результат на ASIC?' },
       a: {
-        en: 'No. Every hardware number here was measured on a binary FPGA — ALINX AX7203, Xilinx Artix-7 XC7A200T. ASIC mapping and multi-corner characterisation are not claimed. A SKY130 design was submitted through Tiny Tapeout; the die is at the fab and no measurement on silicon is claimed.',
-        ru: 'Нет. Каждое аппаратное число здесь измерено на бинарной FPGA — ALINX AX7203, Xilinx Artix-7 XC7A200T. ASIC-маппинг и многоугловая характеризация не заявляются. Дизайн на SKY130 отправлен через Tiny Tapeout; кристалл на фабрике, измерений на кремнии нет.',
+        en: 'No. Every hardware number here was measured on a binary FPGA — ALINX AX7203, Xilinx Artix-7 XC7A200T. ASIC mapping and multi-corner characterisation are not claimed. A SKY130 design was prepared through Tiny Tapeout; the TTSKY26a/TTSKY26b submissions were withdrawn before fabrication and refunded, so no die exists and no measurement on silicon is claimed.',
+        ru: 'Нет. Каждое аппаратное число здесь измерено на бинарной FPGA — ALINX AX7203, Xilinx Artix-7 XC7A200T. ASIC-маппинг и многоугловая характеризация не заявляются. Дизайн на SKY130 был подготовлен через Tiny Tapeout; заявки TTSKY26a/TTSKY26b отозваны до изготовления с возвратом средств — кристалла нет, измерений на кремнии не заявляется.',
       },
       tag: 'measured',
     },
@@ -640,8 +656,8 @@ export const faq = {
     {
       q: { en: 'What can a reviewer check without asking us?', ru: 'Что рецензент может проверить, не спрашивая нас?' },
       a: {
-        en: 'The paper, the 52 theorems, the conformance vectors for the catalogue of 83 formats, the open toolchain versions, and the exact commands. Where a claim is machine-checked but the artefact is not yet published, it is labelled as awaiting that publication rather than counted as proved.',
-        ru: 'Статью, 52 теоремы, векторы соответствия для каталога из 83 форматов, версии открытого тулчейна и точные команды. Там, где утверждение проверено машинно, но артефакт ещё не опубликован, оно помечено как ожидающее публикации, а не зачтено как доказанное.',
+        en: 'The paper, the 52 theorems, the conformance vectors for the Golden Ruler catalogue, the open toolchain versions, and the exact commands. Where a claim is machine-checked but the artefact is not yet published, it is labelled as awaiting that publication rather than counted as proved.',
+        ru: 'Статью, 52 теоремы, векторы соответствия для каталога Golden Ruler, версии открытого тулчейна и точные команды. Там, где утверждение проверено машинно, но артефакт ещё не опубликован, оно помечено как ожидающее публикации, а не зачтено как доказанное.',
       },
       tag: 'proved',
     },
@@ -701,7 +717,7 @@ export const limits = {
     },
     {
       h: { en: 'Ternary lost to binary three times, independently', ru: 'Троичное проиграло бинарному три раза, независимо' },
-      b: { en: 'BNF16 against TNF16 within 1% in placed silicon; GF8 against GF-T8; MXFP4 against TNF4 on the block axis. We add no support to “ternary beats binary” as a general statement. We measured it three times and each time it went against us. The contribution is the condition under which the 68-year-old argument applies.', ru: 'BNF16 против TNF16 в пределах 1% в размещённом кремнии; GF8 против GF-T8; MXFP4 против TNF4 на блочной оси. Мы не добавляем поддержки утверждению «троичное бьёт бинарное» как общему. Мы измерили его трижды, и каждый раз он был против нас. Вклад — условие, при котором применим 68-летний аргумент.' },
+      b: { en: 'BNF16 against TNF16 within 1% placed and routed on the Artix-7 FPGA; GF8 against GF-T8; MXFP4 against TNF4 on the block axis. We add no support to “ternary beats binary” as a general statement. We measured it three times and each time it went against us. The contribution is the condition under which the 68-year-old argument applies.', ru: 'BNF16 против TNF16 в пределах 1% после размещения и трассировки на FPGA Artix-7; GF8 против GF-T8; MXFP4 против TNF4 на блочной оси. Мы не добавляем поддержки утверждению «троичное бьёт бинарное» как общему. Мы измерили его трижды, и каждый раз он был против нас. Вклад — условие, при котором применим 68-летний аргумент.' },
     },
     {
       h: { en: 'TNF is not the most accurate format at its width', ru: 'TNF — не самый точный формат на своей ширине' },
@@ -771,8 +787,8 @@ export const landscape = {
       url: 'https://posithub.org/docs/Posits4.pdf',
       kind: 'context' as const,
       line: {
-        en: 'The reference tapered family. Measured here, not argued about: posit16 at 302 LUT and 62.39 MHz isolated, posit32 at 953 LUT and 0.0295 MHz/LUT in the neuron. Its narrowing is −0.254 bits per binade. Taper is paid in latency rather than area: all fourteen fixed-field formats sit above all three tapered ones in frequency, while in area they overlap.',
-        ru: 'Референсное tapered-семейство. Здесь оно измерено, а не обсуждается: posit16 — 302 LUT и 62.39 МГц изолированно, posit32 — 953 LUT и 0.0295 МГц/LUT в нейроне. Сужение — −0.254 бита на бинаду. Taper платится задержкой, а не площадью: все четырнадцать фиксированно-полевых форматов выше всех трёх tapered по частоте, тогда как по площади они перекрываются.',
+        en: 'The reference tapered family. Measured here, not argued about: posit16 at 302 LUT isolated, posit32 at 953 LUT in the neuron against GFTernary\'s 463. Its narrowing is −0.254 bits per binade. The area cost is the finding; the frequency comparison that used to stand beside it is withdrawn, because verdicts on that axis change winner between seeds.',
+        ru: 'Референсное tapered-семейство. Здесь оно измерено, а не обсуждается: posit16 — 302 LUT изолированно, posit32 — 953 LUT в нейроне против 463 у GFTernary. Сужение — −0.254 бита на бинаду. Находка — это цена по площади; сравнение по частоте, стоявшее рядом, отозвано: вердикты на этой оси меняют победителя от сида к сиду.',
       },
     },
     {
@@ -816,13 +832,13 @@ export const landscape = {
       },
     },
     {
-      name: { en: 'GoldenFloat · the 83-format catalog', ru: 'GoldenFloat · каталог из 83 форматов' },
+      name: { en: 'GoldenFloat · the Golden Ruler catalog', ru: 'GoldenFloat · каталог Golden Ruler' },
       who: 'D. Vasilev, 2026',
       url: 'https://arxiv.org/abs/2606.05017',
       kind: 'ours' as const,
       line: {
-        en: 'Our own prior work, and the base this stands on: a φ-derived static-split float family (arXiv:2606.05017v3) and an 83-format catalog with bit-exact conformance vectors (arXiv:2606.09686v2). There φ chose field widths. Here it enters the weight alphabet, which is a different and stronger statement — closure rather than density.',
-        ru: 'Наша собственная предыдущая работа и база, на которой стоит эта: φ-производное семейство float’ов со статическим разбиением (arXiv:2606.05017v3) и каталог 83 форматов с бит-точными conformance-векторами (arXiv:2606.09686v2). Там φ выбирало ширины полей. Здесь оно входит в весовой алфавит, а это другое и более сильное утверждение — про замкнутость, а не про плотность.',
+        en: 'Our own prior work, and the base this stands on: a φ-derived static-split float family (arXiv:2606.05017) and Golden Ruler, a numeric format catalog with bit-exact conformance vectors (arXiv:2606.09686, v3 announced 7 Sep 2026). There φ chose field widths. Here it enters the weight alphabet, which is a different and stronger statement — closure rather than density.',
+        ru: 'Наша собственная предыдущая работа и база, на которой стоит эта: φ-производное семейство float’ов со статическим разбиением (arXiv:2606.05017) и Golden Ruler — каталог числовых форматов с бит-точными conformance-векторами (arXiv:2606.09686, v3 анонсирована 7 сентября 2026). Там φ выбирало ширины полей. Здесь оно входит в весовой алфавит, а это другое и более сильное утверждение — про замкнутость, а не про плотность.',
       },
     },
   ],
@@ -854,8 +870,8 @@ export const findings = {
       n: '01',
       h: { en: 'A theorem-chosen radix against an empirically chosen one', ru: 'Основание, выбранное теоремой, против выбранного эмпирически' },
       b: {
-        en: 'AetherFloat (26 Feb 2026) removes the hidden leading bit, base-2 normalisation and sign-magnitude coding to escape the AMAX block-scaling penalty — the same ground we stand on. The difference is not the outcome but the warrant: their quad-radix is proposed, ours is forced. T25 gives r² = r + 1 as the only closure condition, and T27 enumerates every multiply-free scale by companion-matrix sparsity. We can state what cannot exist; an empirical radix cannot.',
-        ru: 'AetherFloat (26.02.2026) убирает скрытый ведущий бит, нормализацию по основанию 2 и sign-magnitude кодирование, чтобы уйти от штрафа блочного масштабирования AMAX — это та же земля, на которой стоим мы. Разница не в результате, а в основании права: их quad-radix предложен, наш — вынужден. Т25 даёт r² = r + 1 как единственное условие замкнутости, Т27 перечисляет все multiply-free шкалы по разрежённости companion-матрицы. Мы можем сказать, чего существовать не может; эмпирический радикс — не может.',
+        en: 'AetherFloat (26 Feb 2026) removes the hidden leading bit, base-2 normalisation and sign-magnitude coding to escape the AMAX block-scaling penalty — the same ground we stand on. The difference is not the outcome but the warrant: their quad-radix is proposed, ours is forced. The uniqueness theorem gives r² = r + 1 as the only closure condition, and the companion-matrix enumeration covers every multiply-free scale by sparsity. We can state what cannot exist; an empirical radix cannot.',
+        ru: 'AetherFloat (26.02.2026) убирает скрытый ведущий бит, нормализацию по основанию 2 и sign-magnitude кодирование, чтобы уйти от штрафа блочного масштабирования AMAX — это та же земля, на которой стоим мы. Разница не в результате, а в основании права: их quad-radix предложен, наш — вынужден. Теорема единственности даёт r² = r + 1 как единственное условие замкнутости, а перечисление по разрежённости companion-матрицы покрывает все multiply-free шкалы. Мы можем сказать, чего существовать не может; эмпирический радикс — не может.',
       },
       tag: 'proved' as Tag,
       refs: [{ label: 'AetherFloat · arXiv:2603.08741', url: 'https://arxiv.org/abs/2603.08741' }],
@@ -931,12 +947,12 @@ export const findings = {
       n: '07',
       h: { en: 'The standard is moving fast enough to be a deadline', ru: 'Стандарт движется достаточно быстро, чтобы быть сроком' },
       b: {
-        en: 'IEEE P3109 went v2.0 (29 Oct 2024) → v3.0 (21 Jul 2025) → v3.2 (5 Jan 2026) → v3.2.1 → v3.2.2 (13 Mar 2026) → v4.0 (26 Jun 2026): six releases in twenty months. Our own 83-format catalogue already carries a P3109 v3.2.0 cross-walk, which is now two minor versions behind. A format proposal that is not tracked against this cadence dates itself, and the cross-walk is a maintenance obligation rather than a completed deliverable.',
-        ru: 'IEEE P3109 прошёл v2.0 (29.10.2024) → v3.0 (21.07.2025) → v3.2 (05.01.2026) → v3.2.1 → v3.2.2 (13.03.2026) → v4.0 (26.06.2026): шесть выпусков за двадцать месяцев. Наш собственный каталог 83 форматов уже несёт cross-walk к P3109 v3.2.0, и он отстал на две минорные версии. Предложение формата, не отслеживаемое против этого темпа, само себя датирует, а cross-walk — обязательство по поддержке, а не закрытая поставка.',
+        en: 'IEEE P3109 went v2.0 (29 Oct 2024) → v3.0 (21 Jul 2025) → v3.2 (5 Jan 2026) → v3.2.1 → v3.2.2 (13 Mar 2026) → v4.0 (26 Jun 2026): six releases in twenty months. Our own catalogue (Golden Ruler) already carries a P3109 v3.2.0 cross-walk, which is now two minor versions behind. A format proposal that is not tracked against this cadence dates itself, and the cross-walk is a maintenance obligation rather than a completed deliverable.',
+        ru: 'IEEE P3109 прошёл v2.0 (29.10.2024) → v3.0 (21.07.2025) → v3.2 (05.01.2026) → v3.2.1 → v3.2.2 (13.03.2026) → v4.0 (26.06.2026): шесть выпусков за двадцать месяцев. Наш собственный каталог (Golden Ruler) уже несёт cross-walk к P3109 v3.2.0, и он отстал на две минорные версии. Предложение формата, не отслеживаемое против этого темпа, само себя датирует, а cross-walk — обязательство по поддержке, а не закрытая поставка.',
       },
       tag: 'spec' as Tag,
       refs: [
-        { label: '83 formats · arXiv:2606.09686', url: 'https://arxiv.org/abs/2606.09686' },
+        { label: 'Golden Ruler · arXiv:2606.09686', url: 'https://arxiv.org/abs/2606.09686' },
         { label: 'P3109 Interim Report v4.0', url: 'https://docenti.ing.unipi.it/m.cococcioni/IEEE_P3109_WG_Interim_Report_ver_4.0_2026_06_26.pdf' },
       ],
     },
@@ -1018,7 +1034,7 @@ export const author = {
   facts: [
     { v: '2', l: { en: 'preprints, both public', ru: 'препринта, оба публичны' }, tag: 'spec' },
     { v: '52', l: { en: 'theorems proved in the paper', ru: 'теоремы доказаны в статье' }, tag: 'proved' },
-    { v: '83', l: { en: 'formats in the catalog', ru: 'формата в каталоге' }, tag: 'spec' },
+    { v: '109', l: { en: 'formats in the catalog (v3, Sep 2026)', ru: 'форматов в каталоге (v3, сентябрь 2026)' }, tag: 'spec' },
     { v: '974.66 MHz', l: { en: 'GFTernary decoder, 66 LUT, XC7A200T', ru: 'декодер GFTernary, 66 LUT, XC7A200T' }, tag: 'measured' },
   ],
   notClaimed: {
@@ -1063,7 +1079,7 @@ export const invest = {
     { v: '100%', l: { en: 'founder-held today, no prior round', ru: 'у основателя сегодня, прежних раундов нет' }, tag: 'terms' },
     { v: '18', l: { en: 'months of runway planned, in three tranches', ru: 'месяцев дистанции в плане, тремя траншами' }, tag: 'plan' },
     { v: 'FPGA', l: { en: 'stage: measured on FPGA, no silicon yet', ru: 'стадия: измерено на FPGA, кремния пока нет' }, tag: 'measured' },
-    { v: '83 / 52', l: { en: 'formats catalogued and theorems proved behind the ask', ru: 'форматов в каталоге и теорем доказано за этим запросом' }, tag: 'proved' },
+    { v: '109 / 52', l: { en: 'formats catalogued (v3, Sep 2026) and theorems proved behind the ask', ru: 'форматов в каталоге (v3, сентябрь 2026) и теорем доказано за этим запросом' }, tag: 'proved' },
   ],
   whyTitle: { en: 'Why this is money now, not later', ru: 'Почему это деньги сейчас, а не потом' },
   why: [
@@ -1113,7 +1129,7 @@ export const invest = {
   done: [
     { v: '2', l: { en: 'preprints, both public', ru: 'препринта, оба публичны' }, tag: 'spec' },
     { v: '52', l: { en: 'theorems proved in the paper', ru: 'теоремы, доказанные в статье' }, tag: 'proved' },
-    { v: '83', l: { en: 'formats in the catalog', ru: 'формата в каталоге' }, tag: 'spec' },
+    { v: '109', l: { en: 'formats in the catalog (v3, Sep 2026)', ru: 'форматов в каталоге (v3, сентябрь 2026)' }, tag: 'spec' },
     { v: '5 / 9', l: { en: 'ladder rungs standing in hardware', ru: 'ступеней лестницы стоят в железе' }, tag: 'measured' },
     { v: '66 LUT', l: { en: 'GFTernary decoder on XC7A200T, isolated — bare wire is 112 LUT', ru: 'декодер GFTernary на XC7A200T, изолированно — голый провод 112 LUT' }, tag: 'measured' },
     { v: '38×', l: { en: 'fewer LUT: a full TNF(4,8) adder is 397 against tekum8’s 15 251, and TNF is the wider format', ru: 'меньше LUT: полный сумматор TNF(4,8) — 397 против 15 251 у tekum8, причём TNF шире' }, tag: 'measured' },
@@ -1160,8 +1176,8 @@ export const invest = {
     ru: 'Теги здесь не украшение. Условия предложения — запрашиваемая позиция, а не измерение; распределение и транши — план, а не результат; внешние числа ведут ссылкой на страницу, откуда взяты. Инженерные цифры — те же, что измерены выше, с тем же происхождением.',
   },
   ctas: [
-    { label: { en: 'Deck in English — PDF, 11 pages', ru: 'Дека по-английски — PDF, 11 страниц' }, href: '/deck/trinity-s3ai-deck-en.pdf' },
-    { label: { en: 'Deck in Russian — PDF, 11 pages', ru: 'Дека по-русски — PDF, 11 страниц' }, href: '/deck/trinity-s3ai-deck-ru.pdf' },
+    { label: { en: 'Deck in English — PDF, 11 pages', ru: 'Дека по-английски — PDF, 11 страниц' }, href: 'https://t27.ai/deck/trinity-s3ai-deck-en.pdf' },
+    { label: { en: 'Deck in Russian — PDF, 11 pages', ru: 'Дека по-русски — PDF, 11 страниц' }, href: 'https://t27.ai/deck/trinity-s3ai-deck-ru.pdf' },
     { label: { en: 'Investor — request the terms', ru: 'Инвестор — запросить условия' }, href: 'mailto:admin@t27.ai?subject=Trinity%20—%20investment' },
     { label: { en: 'Licence a core', ru: 'Лицензировать ядро' }, href: '#/ip' },
     { label: { en: 'Every measured number, and its limits', ru: 'Все измеренные числа и их границы' }, href: '#/proof' },
@@ -1178,9 +1194,9 @@ export const reproduce = {
   },
   chain: ['Yosys 0.65', 'nextpnr-xilinx 1743d0f', 'Icarus Verilog 13.0', 'Python 3.14', 'XC7A200T / ALINX AX7203'],
   links: [
-    { label: { en: 'Ternary Network Floats — the paper', ru: 'Ternary Network Floats — статья' }, href: '#/resources', note: { en: '52 theorems, machine-checked where stated', ru: '52 теоремы, machine-checked где указано' } },
+    { label: { en: 'Ternary Network Floats — the paper', ru: 'Ternary Network Floats — статья' }, href: '#/resources', note: { en: 'under review, Microprocessors and Microsystems (Elsevier), submitted 3 Sep 2026 · 52 theorems, machine-checked where stated', ru: 'на рецензии, Microprocessors and Microsystems (Elsevier), подана 3 сентября 2026 · 52 теоремы, machine-checked где указано' } },
     { label: { en: 'GoldenFloat — arXiv:2606.05017', ru: 'GoldenFloat — arXiv:2606.05017' }, href: 'https://arxiv.org/abs/2606.05017', note: { en: 'φ-derived static-split family, GF4 to GF1024', ru: 'φ-производное семейство со статическим разбиением, GF4…GF1024' }, external: true },
-    { label: { en: '83-format catalog — arXiv:2606.09686', ru: 'Каталог 83 форматов — arXiv:2606.09686' }, href: 'https://arxiv.org/abs/2606.09686', note: { en: 'bit-exact conformance vectors', ru: 'бит-точные conformance-векторы' }, external: true },
+    { label: { en: 'Golden Ruler catalog — arXiv:2606.09686', ru: 'Каталог Golden Ruler — arXiv:2606.09686' }, href: 'https://arxiv.org/abs/2606.09686', note: { en: 'bit-exact conformance vectors (v3, announced 7 Sep 2026)', ru: 'бит-точные conformance-векторы (v3, анонс 7 сентября 2026)' }, external: true },
     { label: { en: 'Send RTL, get it measured', ru: 'Присылайте RTL — измерю' }, href: '#/verification', note: { en: 'On the same board, the same flow, the same seeds', ru: 'На той же плате, тем же потоком, теми же seed’ами' } },
     { label: { en: 'Licensing the arithmetic cores', ru: 'Лицензирование арифметических ядер' }, href: '#/ip', note: { en: 'Cores that have been through the flow', ru: 'Ядра, прошедшие поток' } },
     { label: { en: 'Every measured number, and its limits', ru: 'Все измеренные числа и их границы', }, href: '#/proof', note: { en: 'The proof page', ru: 'Страница доказательств' } },

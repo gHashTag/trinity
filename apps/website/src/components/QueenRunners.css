@@ -1,0 +1,133 @@
+/* MY RUNNERS: same opaque/blurred grounds as the leaderboard rows, because the
+   panel carries text over the lit hive (qa/queen-contrast-contract.mjs). */
+.qr {
+  margin: 18px 0 8px;
+  padding: 14px 16px;
+  border: 1px solid var(--hud-line, rgba(0, 255, 136, 0.22));
+  border-radius: 10px;
+  background: var(--hud-veil, rgba(2, 8, 6, 0.72));
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+.qr-head h3 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  color: var(--hud-green, #00ff88);
+}
+.qr-head p,
+.qr-note,
+.qr-small {
+  margin: 0 0 6px;
+  line-height: 1.5;
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
+}
+.qr-key {
+  color: var(--hud-gold, #ffd700) !important;
+  font-size: 13px;
+}
+.qr-small {
+  font-size: 12px;
+}
+.qr-note a {
+  color: var(--hud-green, #00ff88);
+}
+.qr-list {
+  list-style: none;
+  margin: 10px 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.qr-row {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr) auto;
+  grid-template-areas: 'dot label button' 'dot meta button';
+  align-items: center;
+  column-gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--hud-line, rgba(0, 255, 136, 0.22));
+  border-radius: 8px;
+  background: #020806;
+}
+.qr-dot {
+  grid-area: dot;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+}
+.qr-row.is-online .qr-dot {
+  background: var(--hud-green, #00ff88);
+}
+.qr-label {
+  grid-area: label;
+  overflow-wrap: anywhere;
+  color: #e8f5ee;
+}
+.qr-meta {
+  grid-area: meta;
+  font-size: 12px;
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
+  overflow-wrap: anywhere;
+}
+.qr-row button {
+  grid-area: button;
+}
+.qr button {
+  padding: 6px 10px;
+  border: 1px solid var(--hud-line, rgba(0, 255, 136, 0.22));
+  border-radius: 6px;
+  background: #04170e;
+  color: var(--hud-green, #00ff88);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.qr button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.qr-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0 4px;
+}
+.qr-form input {
+  flex: 1 1 180px;
+  min-width: 0;
+  padding: 6px 10px;
+  border: 1px solid var(--hud-line, rgba(0, 255, 136, 0.22));
+  border-radius: 6px;
+  background: #000;
+  color: #e8f5ee;
+  font: inherit;
+}
+.qr-minted {
+  margin: 10px 0;
+  padding: 10px 12px;
+  border: 1px solid var(--hud-gold, #ffd700);
+  border-radius: 8px;
+  background: #141000;
+}
+.qr-minted p {
+  margin: 4px 0 8px;
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
+}
+.qr-setup {
+  margin: 0 0 8px;
+  padding: 8px;
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: pre;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 12px;
+  color: #e8f5ee;
+  background: #000;
+  border-radius: 6px;
+}
+.qr-actions {
+  display: flex;
+  gap: 8px;
+}

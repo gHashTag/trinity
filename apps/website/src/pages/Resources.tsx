@@ -1,6 +1,8 @@
 import Navigation from '../components/Navigation'
 import Footer from '../components/Footer'
 import { useI18n } from '../i18n/context'
+import { TnfFaq } from '../components/sections/tnf'
+import PublicationsSection from '../components/sections/PublicationsSection'
 import {
   papers,
   datasets,
@@ -63,7 +65,7 @@ const COPY = {
   },
   verifiedPrefix: { ru: 'проверено', en: 'checked' },
   sections: {
-    papers: { ru: 'Статьи (arXiv)', en: 'Papers (arXiv)' },
+    papers: { ru: 'Статьи (arXiv и журнал)', en: 'Papers (arXiv and journal)' },
     datasets: { ru: 'Данные и ПО (DOI на Zenodo)', en: 'Datasets & software (Zenodo DOI)' },
     upstream: { ru: 'Вклад в апстрим — openXC7 / nextpnr-xilinx', en: 'Upstream contributions — openXC7 / nextpnr-xilinx' },
     channels: { ru: 'Каналы', en: 'Channels' },
@@ -292,6 +294,9 @@ export default function Resources() {
           <Group key={g.id} id={g.id} title={COPY.sections[g.id][lang]} rows={g.rows} lang={lang} />
         ))}
       </div>
+      <TnfFaq />
+      <PublicationsSection />
+
       <Footer />
     </main>
   )

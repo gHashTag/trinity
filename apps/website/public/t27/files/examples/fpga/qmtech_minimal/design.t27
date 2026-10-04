@@ -1,0 +1,150 @@
+# QMTECH XC7A100T Minimal Design
+# Trinity .t27 specification for minimal FPGA implementation
+
+import fpga.modules.heartbeat
+import fpga.modules.uart_loopback
+
+# Board configuration
+board: qmtech_xc7a100t_minimal {
+    # Clock configuration
+    clock: external_12mhz {
+        pin: E3
+        frequency: 12_000_000  # 12 MHz
+        io_standard: LVCMOS33
+        bank: 34
+    }
+    
+    # Reset (active low)
+    reset: active_low {
+        pin: C14
+        io_standard: LVCMOS33
+        bank: 34
+    }
+    
+    # UART communication
+    uart: uart_115200 {
+        tx_pin: T15
+        rx_pin: T14
+        baud_rate: 115200
+        io_standard: LVCMOS33
+        bank: 34
+    }
+    
+    # LED outputs (8-bit)
+    leds: led_array {
+        pins: [H17, K15, J13, N14, R18, U18, T13, T11]
+        io_standard: LVCMOS33
+        bank: 35
+    }
+}
+
+# Design instantiation
+design: minimal_heartbeat {
+    # Use heartbeat module for LED pattern
+    heartbeat: heartbeat_module {
+        clock: board.clock
+        reset: board.reset
+        output: board.leds
+        
+        # Heartbeat pattern parameters
+        period: 1_000_000  # 1 second at 12MHz
+        pattern: [0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02]
+    }
+    
+    # UART loopback for testing
+    uart: uart_loopback_module {
+        clock: board.clock
+        reset: board.reset
+        uart: board.uart
+        
+        # Test message: "HELLO\n"
+        test_message: "HELLO\n"
+        repeat_interval: 5_000_000  # 5 seconds
+    }
+}
+
+# Constraints
+constraints: xdc {
+    # Clock constraints
+    create_clock -name clk_12mhz -period 83.333 [get_ports clk]
+    
+    # IO constraints
+    set_io_standard LVCMOS33 [get_ports *]
+    
+    # False path for async reset (if needed)
+    set_false_path -from [get_ports rst_n]
+    
+    # Timing constraints for UART
+    set_max_delay -from [get_ports uart_tx] -to [get_ports uart_rx] -period 10
+}
+
+# Verification
+test: {
+    # Check that heartbeat pattern changes
+    test_heartbeat_pattern: {
+        description: "Verify LED heartbeat pattern cycles correctly"
+        setup: {
+            clock_cycles: 100_000
+        }
+        expect: {
+            led_values_change: true
+            pattern_matches: [0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80]
+        }
+    }
+    
+    # UART communication test
+    test_uart_loopback: {
+        description: "Verify UART loopback transmits test message"
+        setup: {
+            baud_rate: 115200
+            message: "HELLO\n"
+        }
+        expect: {
+            bytes_transmitted: 6
+            received_matches_transmitted: true
+        }
+    }
+}
+
+# Invariants
+invariant: {
+    # Resource usage constraints
+    max_luts: 100
+    max_ffs: 50
+    max_bram: 0
+    max_dsp: 0
+    
+    # Timing constraints
+    max_frequency: 12_000_000
+    
+    # IO bank usage
+    io_banks_used: [34, 35]
+    total_io_pins: 12  # 1 clk + 1 rst + 2 uart + 8 led
+}
+
+# Benchmarks
+benchmark: {
+    # Timing analysis
+    setup_time: "2.0 ns"
+    hold_time: "0.5 ns"
+    clock_to_out: "5.0 ns"
+    
+    # Power estimation (approximate)
+    static_power: "50 mW"
+    dynamic_power: "100 mW @ 12MHz"
+}
+
+# Documentation
+documentation: {
+    title: "QMTECH XC7A100T Minimal Design"
+    description: "Heartbeat LED pattern + UART loopback using Trinity t27 toolchain"
+    target_device: "XC7A100T-1CSG324C"
+    toolchain: "Yosys + nextpnr-xilinx + prjxray"
+    vivado_dependency: "none"
+    
+    pinout_reference: "See specs/boards/qmtech_xc7a100t_minimal.t27"
+    generated_verilog: "build/fpga/generated/minimal_design.v"
+    final_bitstream: "build/fpga/bitstream.bit"
+}
+
+# IA^2 + 1/IA^2 = 3 | TRINITY

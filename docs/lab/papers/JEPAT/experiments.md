@@ -38,7 +38,7 @@
 
 **Goal:** Same configuration as J-000, longer run (50K steps)
 
-See [parameters.md](./parameters.md) for full configuration details.
+See [parameters.md](../../../research/models/JEPAT/parameters.md) for full configuration details.
 
 ## References
 

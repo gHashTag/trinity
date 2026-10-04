@@ -4,8 +4,7 @@
 import os
 import kaggle as kg
 
-os.environ["KAGGLE_API_TOKEN"] = "KGAT_2ea86c02d9642bed9a4a7b713f5b9a62"
-
+# KAGGLE_API_TOKEN is read from the environment (Railway/Infisical); never hardcode it.
 print("=" * 60)
 print("CHECKING DATASET STATUS")
 print("=" * 60)

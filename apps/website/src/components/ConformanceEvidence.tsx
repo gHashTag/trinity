@@ -36,7 +36,7 @@ const PASSED = RESULTS.filter((r) => !r.error && (r.mismatches ?? 0) === 0).leng
 const T = {
   en: {
     h2: 'What the paid tier produced, including the part that went against me',
-    lede: `Every code point of seven number formats in my own Corona chip, decoded in simulation and compared against ml_dtypes — the float4/float6/float8/bfloat16 implementation from the JAX project. ${TOTAL.toLocaleString('en-US')} code points, ${PASSED} of ${RESULTS.length} formats agreeing on every single one.`,
+    lede: `Every code point of seven number formats in my own Corona design (RTL; no die was fabricated), decoded in simulation and compared against ml_dtypes — the float4/float6/float8/bfloat16 implementation from the JAX project. ${TOTAL.toLocaleString('en-US')} code points, ${PASSED} of ${RESULTS.length} formats agreeing on every single one.`,
     exhaustive: 'Exhaustive, not sampled',
     exhaustiveBody: 'A 6-bit format has 64 inputs and an 8-bit format has 256. Every one was checked, so there is no confidence level to quote and no bound to state — the failure rate over the input space is zero, measured, not bounded. That is a claim this service can almost never make, and it is only available because these input spaces are small.',
     independent: 'The oracle is not mine',
@@ -61,7 +61,7 @@ const T = {
   },
   ru: {
     h2: 'Что дала платная ступень — включая часть, которая оказалась против меня',
-    lede: `Все кодовые точки семи числовых форматов в моём же чипе Corona: декодированы в симуляции и сверены с ml_dtypes — реализацией float4/float6/float8/bfloat16 из проекта JAX. ${TOTAL.toLocaleString('ru-RU')} кодовых точек, ${PASSED} формата из ${RESULTS.length} совпадают на каждой.`,
+    lede: `Все кодовые точки семи числовых форматов в моём же дизайне Corona (RTL; кристалл не изготавливался): декодированы в симуляции и сверены с ml_dtypes — реализацией float4/float6/float8/bfloat16 из проекта JAX. ${TOTAL.toLocaleString('ru-RU')} кодовых точек, ${PASSED} формата из ${RESULTS.length} совпадают на каждой.`,
     exhaustive: 'Исчерпывающе, а не выборочно',
     exhaustiveBody: 'У 6-битного формата 64 входа, у 8-битного — 256. Проверены все, поэтому не нужно называть ни уровень доверия, ни границу: частота отказа по пространству входов равна нулю — измеренному, а не ограниченному. Такое этот сервис может заявить крайне редко, и только потому, что эти пространства малы.',
     independent: 'Оракул не мой',

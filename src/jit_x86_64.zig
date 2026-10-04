@@ -469,3 +469,57 @@ test "x86-64 JIT large dimension" {
     const result = func(@ptrCast(&a), @ptrCast(&b));
     try std.testing.expectEqual(expected, result);
 }
+
+// Every kernel against a scalar reference, on random trits and on dimensions with and without a
+// tail. The tests above use one fixed vector each; the ARM64 compiler, tested the same way,
+// carried two encoding errors that only random trits and a tail exposed.
+test "x86-64 kernels agree with a scalar reference, with tails and negative trits" {
+    if (!is_x86_64) return error.SkipZigTest;
+    const dims = [_]usize{ 1, 7, 15, 16, 17, 33, 1024, 1031, 32767, 59049 };
+    const n = 59049;
+    const alloc = std.testing.allocator;
+    const a = try alloc.alloc(i8, n);
+    defer alloc.free(a);
+    const b = try alloc.alloc(i8, n);
+    defer alloc.free(b);
+    const out = try alloc.alloc(i8, n);
+    defer alloc.free(out);
+    var wrong: usize = 0;
+    for (dims) |dim| {
+        var prng = std.Random.DefaultPrng.init(dim);
+        for (a[0..dim], b[0..dim]) |*x, *y| {
+            x.* = @as(i8, @intCast(prng.random().intRangeAtMost(u8, 0, 2))) - 1;
+            y.* = @as(i8, @intCast(prng.random().intRangeAtMost(u8, 0, 2))) - 1;
+        }
+        var dot: i64 = 0;
+        for (a[0..dim], b[0..dim]) |x, y| dot += @as(i64, x) * y;
+        {
+            var c = X86_64JitCompiler.init(alloc);
+            defer c.deinit();
+            try c.compileDotProduct(dim);
+            const r = (try c.finalize())(@ptrCast(a.ptr), @ptrCast(b.ptr));
+            if (r != dot) {
+                std.debug.print("dot dim={d}: got {d}, want {d}\n", .{ dim, r, dot });
+                wrong += 1;
+            }
+        }
+        for ([_]bool{ false, true }) |bundle| {
+            @memcpy(out[0..dim], a[0..dim]);
+            var c = X86_64JitCompiler.init(alloc);
+            defer c.deinit();
+            if (bundle) try c.compileBundleDirect(dim) else try c.compileBindDirect(dim);
+            _ = (try c.finalize())(@ptrCast(out.ptr), @ptrCast(b.ptr));
+            var bad: usize = 0;
+            for (a[0..dim], b[0..dim], out[0..dim]) |x, y, z| {
+                const s: i16 = @as(i16, x) + y;
+                const want: i8 = if (bundle) (if (s > 0) 1 else if (s < 0) -1 else 0) else x * y;
+                if (z != want) bad += 1;
+            }
+            if (bad > 0) {
+                std.debug.print("{s} dim={d}: {d} of {d} trits wrong\n", .{ if (bundle) "bundle" else "bind", dim, bad, dim });
+                wrong += 1;
+            }
+        }
+    }
+    try std.testing.expectEqual(@as(usize, 0), wrong);
+}

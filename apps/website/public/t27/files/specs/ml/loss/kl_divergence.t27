@@ -1,0 +1,34 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// KL divergence - measure of difference between distributions | φ² + 1/φ² = 3 | TRINITY
+
+module KlDivergence;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // forward(p: []const f32) → void
+    fn forward(p: []const f32) -> void {
+        // KL divergence: measure of difference between distributions
+        // Simple implementation: compute sum of p[i] * log(p[i])
+        // TODO: Implement proper KL divergence with target distribution
+        var sum: f32 = 0.0;
+        for (p) |value| {
+            sum += value * @log(value);
+        }
+        // For now, just compute the result without storing it
+        // (function returns void, so this is just a placeholder)
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test forward_basic_case
+        given input = default_input()
+        when result = forward(input)
+        then result != undefined
+

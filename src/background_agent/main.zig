@@ -26,6 +26,13 @@ pub fn main() !u8 {
     if (!config.localMode) {
         try PostgresClient.connect(&db_client, config.databaseUrl);
         std.log.info("Connected to database", .{});
+        // The schema is this service's own; nothing else creates it. A failure
+        // here is worth seeing, not worth taking the service down for: a dead
+        // container writes no logs, so the reason would disappear with it.
+        @import("./db/sessions.zig").ensureSchema(&db_client) catch |err| {
+            std.log.err("schema not ready: {}", .{err});
+        };
+        std.log.info("Schema checked", .{});
     } else {
         std.log.info("Running in local mode - no database connection", .{});
     }

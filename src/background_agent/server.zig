@@ -77,7 +77,9 @@ pub const Server = struct {
 
         self.running = true;
 
-        std.log.info("Background agent listening on {any}", .{self.address});
+        // The address struct printed as a raw dump of its union, which says
+        // nothing a reader can use. The configured host and port do.
+        std.log.info("Background agent listening on {s}:{d}", .{ self.config.host, self.config.port });
 
         while (self.running) {
             const connection = self.server.accept() catch |err| {
@@ -97,29 +99,62 @@ pub const Server = struct {
         self.running = false;
     }
 
+    /// Content-Length from a completed header block, 0 when absent or unparsable.
+    fn contentLengthOf(headers_raw: []const u8) usize {
+        var lines = std.mem.splitSequence(u8, headers_raw, "\r\n");
+        while (lines.next()) |line| {
+            const colon = std.mem.indexOfScalar(u8, line, ':') orelse continue;
+            const name = std.mem.trim(u8, line[0..colon], " \t");
+            if (!std.ascii.eqlIgnoreCase(name, "Content-Length")) continue;
+            const value = std.mem.trim(u8, line[colon + 1 ..], " \t\r");
+            return std.fmt.parseInt(usize, value, 10) catch 0;
+        }
+        return 0;
+    }
+
     /// Handle HTTP connection
     fn handleConnection(self: *Server, connection: net.Server.Connection) !void {
         defer connection.stream.close();
 
+        // One read is not one request: TCP may hand over the headers and the
+        // body in separate segments, and a single read() then returns a request
+        // with nothing after the blank line. Read until the header block is
+        // complete, then until Content-Length bytes have followed it.
         var buffer: [8192]u8 = undefined;
-        const request = try connection.stream.read(&buffer);
+        var filled: usize = 0;
+        var header_end: ?usize = null;
+
+        while (filled < buffer.len) {
+            const n = try connection.stream.read(buffer[filled..]);
+            if (n == 0) break;
+            filled += n;
+            if (header_end == null) {
+                if (std.mem.indexOf(u8, buffer[0..filled], "\r\n\r\n")) |cut| header_end = cut + 4;
+            }
+            if (header_end) |end| {
+                const want = contentLengthOf(buffer[0..end]);
+                if (filled - end >= want) break;
+            }
+        }
 
         // Parse HTTP request
-        const request_str = buffer[0..request];
+        const request_str = buffer[0..filled];
         var lines = std.mem.splitScalar(u8, request_str, '\n');
 
         const first_line = if (lines.next()) |line| line else return error.InvalidRequest;
         var parts = std.mem.splitScalar(u8, first_line, ' ');
 
-        const method = if (parts.next()) |m| m else return error.InvalidRequest;
-        _ = parts.next(); // URI
-        _ = parts.next(); // Protocol
+        // A request line is "METHOD TARGET PROTOCOL", three fields. This skipped
+        // the target and then read the URI from a fourth field that does not
+        // exist, so path was always empty, no route ever matched, and every
+        // request — including the platform's health probe — got nothing back.
+        const method = parts.next() orelse return error.InvalidRequest;
+        const target = parts.next() orelse return error.InvalidRequest;
 
         // Parse URI and query string
-        const next_part = parts.next() orelse "";
-        var uri_parts = std.mem.splitScalar(u8, next_part, '?');
-        const path = if (uri_parts.next()) |p| p else return error.InvalidRequest;
-        const query = if (uri_parts.next()) |q| q else "";
+        var uri_parts = std.mem.splitScalar(u8, target, '?');
+        const path = uri_parts.next() orelse return error.InvalidRequest;
+        const query = uri_parts.next() orelse "";
 
         // Parse headers
         var headers = try std.ArrayList(Header).initCapacity(self.allocator, 16);
@@ -136,38 +171,31 @@ pub const Server = struct {
             var header_parts = std.mem.splitScalar(u8, line, ':');
             if (header_parts.next()) |name| {
                 if (header_parts.next()) |value| {
-                    // Trim leading space
-                    const value_trimmed = if (value.len > 0 and value[0] == ' ')
-                        value[1..]
-                    else
-                        value;
+                    // Header lines end with CRLF and this splits on \n, so every
+                    // value carried a trailing \r. It reached the JWT decoder
+                    // inside the token and base64 rejected it as an invalid
+                    // character — every authenticated request answered 401.
+                    const value_trimmed = std.mem.trim(u8, value, " \t\r");
                     try headers.append(self.allocator, .{
-                        .name = try self.allocator.dupe(u8, name),
+                        .name = try self.allocator.dupe(u8, std.mem.trim(u8, name, " \t\r")),
                         .value = try self.allocator.dupe(u8, value_trimmed),
                     });
                 }
             }
         }
 
-        // Find body (after empty line)
-        var body_len: usize = 0;
-        var body_start: usize = request_str.len;
-
-        var idx: usize = 0;
-        while (lines.next()) |line| {
-            const offset = idx;
-            const line_len = line.len;
-            idx += line_len + 1; // +1 for newline
-            if (offset + 2 < request_str.len and
-                request_str[offset + 1] == '\r' and request_str[offset + 2] == '\n')
-            {
-                body_start = offset + 3;
-                body_len = request_str.len - body_start;
-                break;
-            }
-        }
-
-        const body = buffer[body_start .. body_start + body_len];
+        // The body is whatever follows the blank line that ends the headers.
+        //
+        // The previous walk restarted its offset at zero and reused the line
+        // iterator the header loop had already drained, so it never found the
+        // break and the body came out empty — every POST reached the handler
+        // with nothing to parse and died on UnexpectedEndOfInput.
+        const body = if (std.mem.indexOf(u8, request_str, "\r\n\r\n")) |cut|
+            request_str[cut + 4 ..]
+        else if (std.mem.indexOf(u8, request_str, "\n\n")) |cut|
+            request_str[cut + 2 ..]
+        else
+            request_str[0..0];
 
         // Verify JWT if Authorization header
         var user_id: ?[]const u8 = null;
@@ -205,11 +233,24 @@ pub const Server = struct {
         // Route and handle request
         const response = try routeRequest(self, &request_context);
 
+        // One line per request. Without it the container logged four lines at
+        // boot and then nothing for the rest of its life, so a service that was
+        // answering looked identical to one that was not.
+        std.log.info("{s} {s} -> {d}", .{ method, path, response.status });
+
         // Send response
         try sendResponse(self, connection.stream, response);
     }
 
     /// Route request to handler
+    fn methodNotAllowed() Response {
+        return Response{
+            .status = 405,
+            .content_type = "application/json",
+            .body = "{\"error\":\"Method Not Allowed\"}",
+        };
+    }
+
     pub fn routeRequest(self: *Server, ctx: *const RequestContext) !Response {
         // GET /health
         if (std.mem.eql(u8, ctx.path, "/health")) {
@@ -228,26 +269,25 @@ pub const Server = struct {
             };
         }
 
-        // GET /api/sessions
+        // The collection: list, or open a new session.
+        //
+        // The GET arm used to carry no method guard, so it answered POST as
+        // well and handleCreateSession was unreachable — the same shape of bug
+        // hid handleDeleteSession behind the GET for a single session. Between
+        // them, nothing could start a bee's work or close it: the two verbs the
+        // Queen needs to task one and retire it.
         if (std.mem.eql(u8, ctx.path, "/api/sessions")) {
-            return handleListSessions(self);
+            if (std.mem.eql(u8, ctx.method, "POST")) return handleCreateSession(self, ctx.body);
+            if (std.mem.eql(u8, ctx.method, "GET")) return handleListSessions(self);
+            return methodNotAllowed();
         }
 
-        // POST /api/sessions
-        if (std.mem.eql(u8, ctx.path, "/api/sessions") and std.mem.eql(u8, ctx.method, "POST")) {
-            return handleCreateSession(self, ctx.body);
-        }
-
-        // GET /api/sessions/:id
+        // One session: read it, or end it.
         if (std.mem.startsWith(u8, ctx.path, "/api/sessions/")) {
             const session_id = ctx.path["/api/sessions/".len..];
-            return handleGetSession(self, session_id);
-        }
-
-        // DELETE /api/sessions/:id
-        if (std.mem.eql(u8, ctx.method, "DELETE") and std.mem.startsWith(u8, ctx.path, "/api/sessions/")) {
-            const session_id = ctx.path["/api/sessions/".len..];
-            return handleDeleteSession(self, session_id);
+            if (std.mem.eql(u8, ctx.method, "DELETE")) return handleDeleteSession(self, session_id);
+            if (std.mem.eql(u8, ctx.method, "GET")) return handleGetSession(self, session_id);
+            return methodNotAllowed();
         }
 
         // POST /api/containers
@@ -469,29 +509,30 @@ pub const Server = struct {
 
     /// Send HTTP response
     fn sendResponse(self: *Server, stream: net.Stream, response: Response) !void {
-        // Build headers
+        // A multiline literal does not process escapes: "\r" inside one is a
+        // backslash and an r, and the lines end with a bare \n. The response
+        // therefore had no CRLF anywhere and a single stray character where the
+        // blank line between headers and body belongs — not HTTP, which is why
+        // the proxy answered 502 while the process sat there healthy.
         var headers = try std.ArrayList(u8).initCapacity(self.allocator, 256);
         defer headers.deinit(self.allocator);
 
         try headers.writer(self.allocator).print(
-            \\HTTP/1.1 {d} OK\r
-            \\Content-Type: {s}\r
-            \\Content-Length: {d}\r
-            \\Connection: close\r
-        , .{ response.status, response.content_type, response.body.len });
+            "HTTP/1.1 {d} OK\r\nContent-Type: {s}\r\nContent-Length: {d}\r\nConnection: close\r\n",
+            .{ response.status, response.content_type, response.body.len },
+        );
 
-        // Add CORS if enabled
         if (response.cors) {
-            try headers.appendSlice(self.allocator, "Access-Control-Allow-Origin: *\r");
-            try headers.appendSlice(self.allocator, "Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS\r");
-            try headers.appendSlice(self.allocator, "Access-Control-Allow-Headers: Content-Type, Authorization\r");
+            try headers.appendSlice(self.allocator, "Access-Control-Allow-Origin: *\r\n");
+            try headers.appendSlice(self.allocator, "Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS\r\n");
+            try headers.appendSlice(self.allocator, "Access-Control-Allow-Headers: Content-Type, Authorization\r\n");
         }
 
-        try headers.append(self.allocator, '\r');
+        // The blank line that ends the header block.
+        try headers.appendSlice(self.allocator, "\r\n");
 
-        // Send headers and body
-        _ = try stream.writeAll(headers.items);
-        _ = try stream.writeAll(response.body);
+        try stream.writeAll(headers.items);
+        try stream.writeAll(response.body);
     }
 
     /// Get error name from error union

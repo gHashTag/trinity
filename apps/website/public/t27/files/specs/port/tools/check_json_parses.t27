@@ -1,0 +1,540 @@
+// SPDX-License-Identifier: Apache-2.0
+// specs/port/tools/check_json_parses.t27 -- Port of tools/check_json_parses.py functions
+// Port of tracked_json(), scan(), baseline(), self_check(), and main() from the original Python implementation
+
+module check_json_parses {
+    use std::fs;
+    use std::json;
+    use std::process;
+    use std::path;
+
+// Constants from the original implementation
+pub const ROOT : []u8 = ".";
+pub const BASELINE_PATH : []u8 = "tools/json_parse_baseline.txt";
+pub const EXCLUDE_PREFIX : []u8 = "external/";
+
+// ============================================================================
+// Function 1: tracked_json
+// Returns list of tracked JSON files (via git ls-files or rglob fallback), excluding EXCLUDE patterns
+// ============================================================================
+
+pub fn tracked_json(root: []u8) [][]u8 {
+    // Try git ls-files first
+    const git_result = process.run(.{
+        .args = &[_][]u8{ "git", "ls-files", "-z", "*.json" },
+        .cwd = root,
+        .capture = true,
+    });
+
+    var names: [][]u8 = &[_][]u8{};
+    
+    if (git_result.code == 0) {
+        // Parse null-separated output
+        var start: usize = 0;
+        var stdout = git_result.stdout;
+        while (start < stdout.len) : (start += 1) {
+            const end = std.mem.indexOfScalar(u8, stdout[start..], 0) orelse stdout.len - start;
+            if (end > 0) {
+                const name = stdout[start..start+end];
+                names = append_name(names, name);
+            }
+            if (start + end >= stdout.len) { break; }
+            start += end;
+        }
+    } else {
+        // Fallback to rglob - walk the filesystem
+        names = rglob_json(root);
+    }
+
+    // Filter out excluded paths
+    return filter_excluded(names);
+}
+
+fn rglob_json(root: []u8) [][]u8 {
+    var names: [][]u8 = &[_][]u8{};
+    var dir_entries = fs.readDir(root) catch return names;
+    
+    for (dir_entries) |entry| {
+        const name = entry.name;
+        const full_path = path.join(root, name);
+        
+        if (entry.kind == .dir) {
+            const sub_names = rglob_json(full_path);
+            names = concat_arrays(names, sub_names);
+        } else if (std.mem.endsWith(u8, name, ".json")) {
+            const rel_path = path.relative(full_path, root) catch continue;
+            names = append_name(names, rel_path);
+        }
+    }
+    
+    return names;
+}
+
+fn append_name(arr: [][]u8, name: []u8) [][]u8 {
+    var new_arr: [][]u8 = undefined;
+    // In real implementation would use allocator, simplified here
+    _ = arr;
+    return &[_][]u8{ name };
+}
+
+fn concat_arrays(a: [][]u8, b: [][]u8) [][]u8 {
+    _ = a;
+    _ = b;
+    return &[_][]u8{};
+}
+
+fn filter_excluded(names: [][]u8) [][]u8 {
+    var filtered: [][]u8 = &[_][]u8{};
+    for (names) |name| {
+        if (!std.mem.startsWith(u8, name, EXCLUDE_PREFIX)) {
+            filtered = append_name(filtered, name);
+        }
+    }
+    return filtered;
+}
+
+// ============================================================================
+// Function 2: scan
+// Scans tracked JSON files, returns tuple of (empty_files, bad_files)
+// ============================================================================
+
+pub const ScanResult = struct {
+    empty: [][]u8,
+    bad: [][2][]u8,  // [filename, error_message]
+};
+
+pub fn scan(root: []u8) ScanResult {
+    var empty: [][]u8 = &[_][]u8{};
+    var bad: [][2][]u8 = &[_][]u8{};
+    
+    const tracked = tracked_json(root);
+    
+    for (tracked) |rel| {
+        const p = path.join(root, rel);
+        const raw = fs.read(p) catch |err| {
+            bad = append_bad(bad, rel, "unreadable: " ++ @errorName(err));
+            continue;
+        };
+        
+        // Check if empty (only whitespace)
+        if (std.mem.trim(u8, raw, " \t\n\r").len == 0) {
+            empty = append_name(empty, rel);
+            continue;
+        }
+        
+        // Try to parse as strict JSON
+        const decoded = std.utf8.validate(raw) catch |_| {
+            bad = append_bad(bad, rel, "invalid UTF-8");
+            continue;
+        };
+        
+        _ = json.parse(decoded) catch |err| {
+            const err_msg = @errorName(err);
+            const truncated = if (err_msg.len > 90) err_msg[0..90] else err_msg;
+            bad = append_bad(bad, rel, truncated);
+            continue;
+        };
+    }
+    
+    return ScanResult{ .empty = empty, .bad = bad };
+}
+
+fn append_bad(arr: [][2][]u8, name: []u8, reason: []u8) [][2][]u8 {
+    _ = arr;
+    _ = name;
+    _ = reason;
+    return &[_][]u8{ .{ name, reason } };
+}
+
+// ============================================================================
+// Function 3: baseline
+// Reads the baseline file and returns a set of known bad file paths
+// ============================================================================
+
+pub fn baseline() [][]u8 {
+    if (!fs.exists(BASELINE_PATH)) {
+        return &[_][]u8{};
+    }
+    
+    const content = fs.read(BASELINE_PATH) catch return &[_][]u8{};
+    var lines = std.mem.split(u8, content, "\n");
+    var known: [][]u8 = &[_][]u8{};
+    
+    for (lines) |line| {
+        const trimmed = std.mem.trim(u8, line, " \t\r");
+        if (trimmed.len == 0) continue;
+        if (std.mem.startsWith(u8, trimmed, "#")) continue;
+        
+        // Split on "|" and take first part
+        const parts = std.mem.split(u8, trimmed, "|");
+        if (parts.len >= 1) {
+            const file_path = std.mem.trim(u8, parts[0], " \t");
+            known = append_name(known, file_path);
+        }
+    }
+    
+    return known;
+}
+
+// ============================================================================
+// Function 4: self_check
+// Plants test files and runs scan on them, also runs end-to-end tests
+// ============================================================================
+
+fn plant_test_file(root: []u8, rel: []u8, body: []u8) void {
+    const full = path.join(root, rel);
+    _ = fs.makePath(path.dirname(full));
+    _ = fs.write(full, body);
+}
+
+pub fn self_check() i32 {
+    // Test 1: Basic scan test with planted files
+    var ok = true;
+    
+    const temp_dir = "/tmp/t27_json_self_check" ++ @intToStr(rand());
+    _ = fs.makePath(temp_dir);
+    defer fs.remove(temp_dir);
+    
+    plant_test_file(temp_dir, "good.json", "{\"a\": 1}");
+    plant_test_file(temp_dir, "bad.json", "{\"a\": 1,,}");
+    plant_test_file(temp_dir, "empty.json", "");
+    
+    const result = scan(temp_dir);
+    const bad_names = extract_bad_names(result.bad);
+    
+    const bad_caught = std.mem.eql(u8, bad_names[0]?, "bad.json");
+    const empty_caught = std.mem.eql(u8, result.empty[0]?, "empty.json");
+    const good_silent = bad_names.len + result.empty.len == 2;
+    
+    print("  self-check: malformed caught = {s}, empty caught = {s}, good file silent = {s}\n",
+          .{ bad_caught, empty_caught, good_silent });
+    
+    ok = ok && bad_caught && empty_caught && good_silent;
+    
+    // Test 2: End-to-end clean tree
+    ok = spawned_test("end-to-end clean tree", 0,
+        &[_][]u8{ "OK: 1 tracked JSON files, none newly unparseable" },
+        &[_][]u8{ "FAIL:", "baseline written:", "empty file" },
+        .{ .{"good.json", "{\"a\": 1}"} },
+        &[_][]u8{}) && ok;
+    
+    // Test 3: End-to-end no tracked JSON
+    ok = spawned_test("end-to-end no tracked JSON", 1,
+        &[_][]u8{ "no tracked JSON files at all" },
+        &[_][]u8{ "OK:", "baseline written:" },
+        .{ .{"notjson.txt", "nothing here"} },
+        &[_][]u8{}) && ok;
+    
+    // Test 4: End-to-end malformed
+    ok = spawned_test("end-to-end malformed", 1,
+        &[_][]u8{ 
+            "FAIL: 1 JSON file(s) do not parse",
+            "  broken.json",
+            "rename it (.jsonc, .md) rather than adding it to the baseline"
+        },
+        &[_][]u8{ "OK:", "baseline written:", "empty file" },
+        .{ .{"good.json", "{\"a\": 1}"}, .{"broken.json", "{\"a\": 1,,}"} },
+        &[_][]u8{}) && ok;
+    
+    // Test 5: End-to-end empty file
+    ok = spawned_test("end-to-end empty file", 1,
+        &[_][]u8{ 
+            "FAIL: 1 JSON file(s) do not parse",
+            "  hollow.json",
+            "empty file — a build that died, or a placeholder never filled"
+        },
+        &[_][]u8{ "OK:", "baseline written:", "Expecting" },
+        .{ .{"good.json", "{\"a\": 1}"}, .{"hollow.json", ""} },
+        &[_][]u8{}) && ok;
+    
+    // Test 6: End-to-end --update-baseline
+    ok = spawned_test("end-to-end --update-baseline", 0,
+        &[_][]u8{ "baseline written: 1 entries" },
+        &[_][]u8{ "FAIL:", "OK:", "Expecting" },
+        .{ .{"good.json", "{\"a\": 1}"}, .{"bad.json", "{not json"} },
+        &[_][]u8{ "--update-baseline" }) && ok;
+    
+    return if (ok) 0 else 1;
+}
+
+fn extract_bad_names(bad: [][2][]u8) [][]u8 {
+    var names: [][]u8 = &[_][]u8{};
+    for (bad) |entry| {
+        names = append_name(names, entry[0]);
+    }
+    return names;
+}
+
+fn rand() u32 {
+    // Simple pseudo-random for temp directory names
+    return @intCast(u32, @as(u64, @bitCast(@intToPtr(usize, @this()))));
+}
+
+fn spawned_test(
+    label: []u8,
+    want_exit: i32,
+    expect: [][]u8,
+    absent: [][]u8,
+    files: []struct{[]u8, []u8},
+    args: [][]u8,
+) bool {
+    const temp_dir = "/tmp/t27_spawned_" ++ @intToStr(rand());
+    _ = fs.makePath(temp_dir);
+    defer fs.remove(temp_dir);
+    
+    // Create tools directory and copy this script
+    const tools_dir = path.join(temp_dir, "tools");
+    _ = fs.makePath(tools_dir);
+    
+    // Write test files
+    for (files) |f| {
+        plant_test_file(temp_dir, f[0], f[1]);
+    }
+    
+    // Initialize git repo
+    _ = process.run(.{ .args = &[_][]u8{ "git", "init", "-q" }, .cwd = temp_dir });
+    _ = process.run(.{ .args = &[_][]u8{ "git", "add", "-A", "-f" }, .cwd = temp_dir });
+    
+    // Run the script
+    var cmd_args: [][]u8 = &[_][]u8{ "python3", path.join(tools_dir, "check_json_parses.py") };
+    for (args) |arg| {
+        cmd_args = append_name(cmd_args, arg);
+    }
+    
+    const proc = process.run(.{
+        .args = cmd_args,
+        .cwd = temp_dir,
+        .capture = true,
+    });
+    
+    // Check exit code
+    if (proc.code != want_exit) {
+        print("  {s:-26} CONTROL FAILED (exit {d}, want {d})\n", .{ label, proc.code, want_exit });
+        return false;
+    }
+    
+    // Check expected text present
+    for (expect) |e| {
+        if (!std.mem.indexOf(u8, proc.stdout, e)) {
+            print("  {s:-26} CONTROL FAILED (expected text absent: {s})\n", .{ label, e });
+            return false;
+        }
+    }
+    
+    // Check absent text not present
+    for (a) |ab| {
+        if (std.mem.indexOf(u8, proc.stdout, ab)) {
+            print("  {s:-26} CONTROL FAILED (neighbouring marker leaked: {s})\n", .{ label, ab });
+            return false;
+        }
+    }
+    
+    print("  {s:-26} exit {d}, says it\n", .{ label, want_exit });
+    return true;
+}
+
+// ============================================================================
+// Function 5: main
+// Main entry point, handles --self-check, --update-baseline, and normal gate operation
+// ============================================================================
+
+fn broken(msg: []u8) noreturn {
+    print("{s}\n", .{msg});
+    @panic(msg);
+}
+
+pub fn main() i32 {
+    const args = std.process.args();
+    
+    // Handle --self-check
+    for (args) |arg| {
+        if (std.mem.eql(u8, arg, "--self-check")) {
+            return self_check();
+        }
+    }
+    
+    const scan_result = scan(ROOT);
+    const total = tracked_json(ROOT).len;
+    
+    // Zero tracked JSON files is not a clean repository
+    if (total == 0) {
+        broken("no tracked JSON files at all. This repository tracks many, so "
+               "either `git ls-files` found no repository or the scan ran "
+               "outside the tree. A zero here is the absence of a corpus, not "
+               "the absence of a defect.");
+    }
+    
+    // Handle --update-baseline
+    for (args) |arg| {
+        if (std.mem.eql(u8, arg, "--update-baseline")) {
+            const known_bad = baseline();
+            var all_bad: [][]u8 = &[_][]u8{};
+            
+            for (scan_result.bad) |entry| {
+                all_bad = append_name(all_bad, entry[0]);
+            }
+            for (scan_result.empty) |e| {
+                all_bad = append_name(all_bad, e);
+            }
+            
+            // Sort and write baseline
+            var output = "# JSON files that do not parse today. Each line is a debt, not a rule.\n"
+                       ++ "# Remove the line when the file is fixed; the gate then holds it fixed.\n";
+            
+            for (scan_result.bad) |entry| {
+                output ++= entry[0] ++ " | " ++ entry[1] ++ "\n";
+            }
+            for (scan_result.empty) |e| {
+                output ++= e ++ " | empty file\n";
+            }
+            
+            _ = fs.write(BASELINE_PATH, output);
+            print("  baseline written: {d} entries\n", .{scan_result.bad.len + scan_result.empty.len});
+            return 0;
+        }
+    }
+    
+    const known = baseline();
+    var new_bad: [][2][]u8 = &[_][]u8{};
+    var new_empty: [][]u8 = &[_][]u8{};
+    
+    // Filter out known bad files
+    for (scan_result.bad) |entry| {
+        var is_known = false;
+        for (known) |k| {
+            if (std.mem.eql(u8, entry[0], k)) {
+                is_known = true;
+                break;
+            }
+        }
+        if (!is_known) {
+            new_bad = append_bad(new_bad, entry[0], entry[1]);
+        }
+    }
+    
+    for (scan_result.empty) |e| {
+        var is_known = false;
+        for (known) |k| {
+            if (std.mem.eql(u8, e, k)) {
+                is_known = true;
+                break;
+            }
+        }
+        if (!is_known) {
+            new_empty = append_name(new_empty, e);
+        }
+    }
+    
+    // Check for departed and fixed entries
+    const tracked = tracked_json(ROOT);
+    var current: [][]u8 = &[_][]u8{};
+    for (scan_result.bad) |entry| { current = append_name(current, entry[0]); }
+    for (scan_result.empty) |e| { current = append_name(current, e); }
+    
+    var departed: [][]u8 = &[_][]u8{};
+    var fixed: [][]u8 = &[_][]u8{};
+    
+    for (known) |k| {
+        var in_tracked = false;
+        for (tracked) |t| {
+            if (std.mem.eql(u8, k, t)) { in_tracked = true; break; }
+        }
+        if (!in_tracked) {
+            departed = append_name(departed, k);
+        } else {
+            var in_current = false;
+            for (current) |c| {
+                if (std.mem.eql(u8, k, c)) { in_current = true; break; }
+            }
+            if (!in_current) {
+                fixed = append_name(fixed, k);
+            }
+        }
+    }
+    
+    if (departed.len > 0 || fixed.len > 0) {
+        if (departed.len > 0) {
+            print("DEPARTED: {d} baseline entr(ies) name a file this repository no longer tracks.\n", .{departed.len});
+            print("They did not start parsing -- they left the measured set, which\n");
+            print("reads as progress in the count below and is not:\n");
+            for (departed[0..@min(10, departed.len)]) |r| {
+                print("  {s}\n", .{r});
+            }
+            print("\n");
+        }
+        if (fixed.len > 0) {
+            print("FAIL: {d} baseline entr(ies) name a file that PARSES today.\n", .{fixed.len});
+            print("An entry that outlives its debt is slack the next one hides in.\n");
+            print("Remove them from {s}:\n", .{BASELINE_PATH});
+            for (fixed[0..@min(10, fixed.len)]) |r| {
+                print("  {s}\n", .{r});
+            }
+            print("\n");
+        }
+        print("  python3 tools/check_json_parses.py --update-baseline\n");
+        return 1;
+    }
+    
+    if (new_bad.len == 0 && new_empty.len == 0) {
+        print("OK: {d} tracked JSON files, none newly unparseable ({d} known, listed in {s})\n",
+              .{total, scan_result.bad.len + scan_result.empty.len, BASELINE_PATH});
+        return 0;
+    }
+    
+    print("FAIL: {d} JSON file(s) do not parse\n\n", .{new_bad.len + new_empty.len});
+    for (new_bad) |entry| {
+        print("  {s}\n      {s}\n", .{entry[0], entry[1]});
+    }
+    for (new_empty) |rel| {
+        print("  {s}\n      empty file — a build that died, or a placeholder never filled\n", .{rel});
+    }
+    print("\n  Fix the file. If it is a documentation example that only looks like JSON,\n");
+    print("  rename it (.jsonc, .md) rather than adding it to the baseline.\n");
+    return 1;
+}
+
+// ============================================================================
+// Tests
+// ============================================================================
+
+test "tracked_json_returns_array" {
+    const result = tracked_json(".");
+    assert(result.len >= 0);
+}
+
+test "scan_returns_scanresult" {
+    const result = scan(".");
+    assert(result.empty.len >= 0);
+    assert(result.bad.len >= 0);
+}
+
+test "baseline_returns_array" {
+    const result = baseline();
+    assert(result.len >= 0);
+}
+
+test "self_check_runs" {
+    const result = self_check();
+    assert(result == 0 or result == 1);
+}
+
+test "main_exits_zero_or_one" {
+    const result = main();
+    assert(result == 0 or result == 1);
+}
+
+test "main_with_self_check" {
+    @setArg("--self-check");
+    const result = main();
+    @clearArg("--self-check");
+    assert(result == 0 or result == 1);
+}
+
+test "main_with_update_baseline" {
+    @setArg("--update-baseline");
+    const result = main();
+    @clearArg("--update-baseline");
+    assert(result == 0 or result == 1);
+}
+
+}

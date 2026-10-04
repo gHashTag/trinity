@@ -1,0 +1,1270 @@
+// The single-screen Queen HUD: the one contract every panel imports.
+//
+// Nothing here fetches, renders or guesses. Every type mirrors a field the
+// page already receives from the five public endpoints (status, public-board,
+// public-activity, public-research, public-hardware), and every helper is a
+// pure function of those fields. If a panel needs a number that is not
+// derivable from these types, the number does not exist yet and the panel
+// must say so rather than invent it.
+
+export type HudView = "comb" | "specs" | "kanban" | "map" | "factory" | "research" | "skills" | "crons" | "agents" | "functions" | "tools" | "project" | "tri" | "passport" | "browser" | "roadmap" | "leaderboard" | "wars" | "token" | "providers" | "widgets";
+// In command-panel order: the key that opens a view is HUD_KEYS at the same
+// position, and `?tab=` accepts exactly these names. Kept identical to
+// lib/queenModules (qa/agents-spec-contract.mjs checks the two lists agree), so
+// SPECS is the second entry rather than an afterthought the keyboard could not reach.
+export const HUD_VIEWS: readonly HudView[] = [
+  "comb",
+  "specs",
+  "kanban",
+  "map",
+  "factory",
+  "research",
+  "skills",
+  "crons",
+  "agents",
+  "functions",
+  "tools",
+  // Twelfth, on the letter p (the digits are spent; TOOLS took t): the system documentation
+  // -- the project, the rules of the game for its agents, and the system in detail.
+  "project",
+  // Thirteenth, on the letter r: TRI, the app at app.t27.ai inside the game (the
+  // digits are spent, t is TOOLS, p is PROJECT).
+  "tri",
+  // Fourteenth, on the letter b: the PASSPORT -- the record a result must carry,
+  // proposed to the OCP neuromorphic working group, with the three measured cases
+  // of our own that pay for it. (The digits are spent; t is TOOLS, p is PROJECT,
+  // r is TRI.)
+  "passport",
+  // Fifteenth, on the letter w (web): the person's own remote browser -- the
+  // same pod the app's Browser tab shows and the agent drives, framed here
+  // because the board and the app share one origin (lib/queenBrowser.ts).
+  "browser",
+  // Sixteenth, on the letter m (map of the road): the ROADMAP -- the game's goal,
+  // the whole stack rewritten in .t27, measured by language and repository, with
+  // one goal issue per stage. (Digits spent; t, p, r, b, w taken.)
+  "roadmap",
+  // Seventeenth, on the letter l: the LEADERBOARD -- who lends the swarm a
+  // lane, and what its bees did there (owner, 2026-09-23).
+  "leaderboard",
+  // Eighteenth, on x (the crossed blades): WARS compares agent configurations
+  // on pinned real issues. Its protocol, entrants and results are generated from
+  // specs/queen/wars.t27; the view never invents a score for an absent run.
+  "wars",
+  // Nineteenth, on k (the coin): TOKEN -- TRI as the minter on TON testnet
+  // reports it, and who earned it, one row per GitHub account (owner,
+  // 2026-10-02). Testnet only, and the view says so before any number.
+  "token",
+  // Twentieth, on g (the GPU): PROVIDERS -- the seventh layer of the ladder.
+  // Who sells compute (every model the Gonka chain lists) and what a person
+  // could rent out to our own network for $TRI (a consumer GPU, an Artix-7
+  // FPGA). Generated from specs/providers/*.t27; it folds under SPECS like the
+  // other layers, so the rail does not grow.
+  "providers",
+  // Twenty-first, on v (the view a reader carries away): WIDGETS -- what of t27
+  // a person can lift out and share: real terminal recordings, the X player,
+  // a board tab, each with its page, its embed code and share links that open
+  // the reader's own composer. Generated from specs/widgets/gallery.t27; it
+  // posts nothing.
+  "widgets",
+] as const;
+// The keyboard shortcut per view, by position: the digits 1-9, then 0, then
+// letters once the digits are spent. The rail prints HUD_KEYS[i] on button i and
+// the shell binds exactly these keys; a tenth or eleventh view takes the next
+// entry here and nothing else changes.
+export const HUD_KEYS: readonly string[] = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "t", "p", "r", "b", "w", "m", "l", "x", "k", "g", "v"] as const;
+export const hudKeyOf = (view: HudView): string => HUD_KEYS[HUD_VIEWS.indexOf(view)] ?? "";
+// The physical key behind each HUD_KEYS entry (KeyboardEvent.code), for a
+// character that is not a Latin letter or digit: on a Russian layout the r key
+// reports key "к" and code "KeyR".
+export const HUD_CODES: readonly string[] = ["Digit1", "Digit2", "Digit3", "Digit4", "Digit5", "Digit6", "Digit7", "Digit8", "Digit9", "Digit0", "KeyT", "KeyP", "KeyR", "KeyB", "KeyW", "KeyM", "KeyL", "KeyX", "KeyK", "KeyG", "KeyV"] as const;
+/** The HUD_KEYS index a key event means, or -1. A typed Latin letter or digit
+ *  decides, as the rail's badge says (Dvorak and Colemak put them on other
+ *  keys); anything else (another script, a shifted digit, a keypad key with Num
+ *  Lock off, no key) falls back to the physical key. */
+export function hudKeyIndex(event: { code?: string; key?: string }): number {
+  const key = (event.key ?? "").toLowerCase();
+  if (/^[a-z0-9]$/.test(key)) return HUD_KEYS.indexOf(key);
+  const code = event.code ?? "";
+  const pad = /^Numpad([0-9])$/.exec(code);
+  return pad ? HUD_KEYS.indexOf(pad[1]) : HUD_CODES.indexOf(code);
+}
+
+// The ladder, and the one place it is written down as a list.
+//
+// Specs, Skills, Crons, Agents, Tools, Functions and Providers are seven layers
+// of one thing: every card in each of them is stated by a .t27 spec, and each
+// layer names the one below it. They were six buttons of a fourteen-button rail, so
+// the rail read as fourteen unrelated instruments and the ladder -- which the
+// site states in prose on three pages -- was nowhere visible in the shell.
+// They are now one module: SPECS holds the other six (Providers joined on
+// 2026-10-04), and the rail switches between nine things instead of fourteen.
+//
+// Order is the ladder's own, bottom to top; it is what the sub-navigation draws.
+export const SPEC_LAYERS = ["specs", "skills", "crons", "agents", "tools", "functions", "providers"] as const;
+export type SpecLayer = (typeof SPEC_LAYERS)[number];
+export const isSpecLayer = (value: string): value is SpecLayer =>
+  (SPEC_LAYERS as readonly string[]).includes(value);
+
+// The board, and the one place its three views are written down as a list.
+//
+// Kanban, Mission Map and Factory are three readings of one subject: the board
+// the swarm works. The kanban draws its columns, the map draws the same cards
+// as sectors of ground (measured 2026-09-20: the same BACKLOG count and the
+// same issue numbers, laid out differently), and the factory draws what the
+// Bees are producing on it. As three rail buttons they asked the reader to
+// choose between three words for one thing before being shown any of it. They
+// are now one module: KANBAN holds the other two, exactly as SPECS holds its
+// layers.
+//
+// Order is the board's own -- columns, then ground, then production -- and it
+// is what the sub-navigation draws.
+// TECH TREE joined the board on the owner's word, 2026-09-21: it is read
+// beside the columns, not as a rail button of its own.
+export const BOARD_VIEWS = ["kanban", "map", "factory", "research"] as const;
+export type BoardView = (typeof BOARD_VIEWS)[number];
+export const isBoardView = (value: string): value is BoardView =>
+  (BOARD_VIEWS as readonly string[]).includes(value);
+
+// The project, and the record beside it. PASSPORT moved inside PROJECT on the
+// owner's word, 2026-09-21: the disclosure record is part of how the project
+// describes itself, not an instrument of its own. Same shape as the board.
+export const PROJECT_VIEWS = ["project", "passport"] as const;
+export type ProjectView = (typeof PROJECT_VIEWS)[number];
+export const isProjectView = (value: string): value is ProjectView =>
+  (PROJECT_VIEWS as readonly string[]).includes(value);
+
+/**
+ * A view the rail does not draw, because another module holds it: every rung
+ * of the ladder below SPECS, and every board view beside KANBAN. Written once,
+ * as the negation of "is the door of its own family", so a family cannot grow
+ * a member the rail then draws twice.
+ */
+const isFolded = (view: HudView): boolean =>
+  (isSpecLayer(view) && view !== SPEC_LAYERS[0]) ||
+  (isBoardView(view) && view !== BOARD_VIEWS[0]) ||
+  (isProjectView(view) && view !== PROJECT_VIEWS[0]);
+
+// The rail: the modules that hold no other, plus SPECS and KANBAN, which are
+// the doors of the two that do. Every one of the fourteen names stays a valid
+// `?tab=` -- a link, a bookmark and a keyboard shortcut that named a layer or a
+// board view still lands on it -- so this list is what the rail *draws*, not
+// what the address accepts. The address vocabulary is still HUD_VIEWS.
+export const RAIL_VIEWS: readonly HudView[] = HUD_VIEWS.filter((view) => !isFolded(view));
+/** The rail button a view lights: a ladder layer lights SPECS, a board view KANBAN. */
+export const railViewOf = (view: HudView): HudView =>
+  isSpecLayer(view) ? SPEC_LAYERS[0] : isBoardView(view) ? BOARD_VIEWS[0] : isProjectView(view) ? PROJECT_VIEWS[0] : view;
+
+export type Territory = "held" | "neutral" | "fog";
+
+export interface HudColumn {
+  key: string;
+  title: string;
+  blurb: string;
+}
+
+export interface HudCard {
+  number: number;
+  title: string;
+  column: string;
+  criteria?: number;
+  needs?: string[];
+}
+
+export interface HudWorkers {
+  capacity: number;
+  active: number;
+  idle: number;
+  utilization: number;
+  slots: Array<{ slot: number; state: "busy" | "idle" }>;
+}
+
+export type HudEventKind =
+  | "dispatch"
+  | "progress"
+  | "tool"
+  | "result"
+  | "usage"
+  | "error"
+  | "finished"
+  | "review";
+
+export interface HudEvent {
+  id: string;
+  kind: HudEventKind;
+  issue: number | null;
+  title: string;
+  at: string;
+  state: string | null;
+}
+
+export type BeeLine = "scribe" | "wright" | "lapidary";
+
+/** What the comb reports when a cell is clicked. The centre cell is the Queen's. */
+export interface HudPick {
+  index: number;
+  isQueen: boolean;
+  territory: Territory;
+  card: HudCard | null;
+  bee: { slot: number; line: BeeLine; busy: boolean } | null;
+  /** The code module on the cell, when the field shows modules (M-2). */
+  module?: HudModule | null;
+  /** What was picked (H-E): the Queen's hub, a module cell, or a honey cell (a closed issue). Identity is (kind, number). */
+  kind?: "queen" | "module" | "issue";
+  /** The closed issue under the pick when kind is "issue", from the loop's snapshot. */
+  issue?: FoundationIssue | null;
+}
+
+/** Imperative handle the shell uses to drive the comb's camera. */
+export interface CombHandle {
+  zoomIn(): void;
+  zoomOut(): void;
+  /** Reset yaw, pitch and distance to the defaults and resume the slow auto-orbit. */
+  fit(): void;
+}
+
+/** A read-only view of the field for the minimap: one entry per cell. */
+export interface CombCellSummary {
+  x: number;
+  y: number;
+  yTop: number;
+  up: boolean;
+  own: Territory;
+  cardNumber: number | null;
+}
+
+// Which column means which ground. done/running: the swarm holds it. backlog
+// and review: reachable, unclaimed. blocked/dropped: fog - nothing to scout.
+// Identical to the comb's own rule; the comb imports this one.
+export function territoryOf(column: string): Territory {
+  if (column === "done" || column === "running") return "held";
+  if (column === "blocked" || column === "dropped") return "fog";
+  return "neutral";
+}
+
+/** Colour role of an event kind. Resolved to the live palette in Queen.css. */
+export type Tone = "gold" | "cold" | "green" | "cyan" | "muted";
+
+export function eventTone(kind: HudEventKind): Tone {
+  switch (kind) {
+    case "review":
+      return "gold";
+    case "error":
+      return "cold";
+    case "finished":
+    case "result":
+      return "green";
+    case "dispatch":
+    case "progress":
+      return "cyan";
+    default:
+      return "muted";
+  }
+}
+
+/** One row of the sectors panel: a board column as a territory with its share. */
+export interface SectorRow {
+  key: string;
+  title: string;
+  count: number;
+  territory: Territory;
+  /** count / total cards, 0..1; 0 when the board is empty. */
+  share: number;
+}
+
+export function sectorRows(columns: HudColumn[], cards: HudCard[]): SectorRow[] {
+  const total = cards.length;
+  return columns.map((column) => {
+    const count = cards.filter((card) => card.column === column.key).length;
+    return {
+      key: column.key,
+      title: column.title,
+      count,
+      territory: territoryOf(column.key),
+      share: total > 0 ? count / total : 0,
+    };
+  });
+}
+
+/** The window the bell counts over. The activity feed's own buffer is capped
+ *  by count, not by time, so the shell keeps alert-kind events in a second
+ *  buffer evicted by this window; the two must agree on it. */
+export const ALERT_WINDOW_MS = 60 * 60 * 1_000;
+
+/** The kinds that deserve the bell: verdicts, errors, finishes. */
+export function isAlertKind(kind: HudEventKind): boolean {
+  return kind === "review" || kind === "error" || kind === "finished";
+}
+
+/**
+ * An event's identity (P0-10). The wire stamps a review verdict anew every
+ * round it stays pending (`review-<issue>-<tick stamp>-<n>`), so by id the
+ * same verdict is a fresh alert, feed row and glint every five minutes. A
+ * verdict is the pair (issue, state): the identity changes only when the
+ * state does. Every other kind keeps its wire id.
+ */
+export function eventIdentity(event: { id: string; kind: HudEventKind; issue: number | null; state: string | null }): string {
+  return event.kind === "review" && event.issue !== null ? `review:${event.issue}:${event.state ?? ""}` : event.id;
+}
+
+/** Events in the last window whose kind deserves the bell. */
+export function alertCount(
+  events: HudEvent[],
+  now: number,
+  windowMs = ALERT_WINDOW_MS,
+): number {
+  const identities = new Set<string>();
+  for (const event of events) {
+    if (!isAlertKind(event.kind)) continue;
+    const at = new Date(event.at).getTime();
+    if (Number.isFinite(at) && now - at <= windowMs) identities.add(eventIdentity(event));
+  }
+  return identities.size;
+}
+
+/** The latest event recorded for an issue, or null. */
+export function latestEventFor(events: HudEvent[], issue: number): HudEvent | null {
+  let best: HudEvent | null = null;
+  for (const event of events) {
+    if (event.issue !== issue) continue;
+    if (!best || new Date(event.at).getTime() > new Date(best.at).getTime()) best = event;
+  }
+  return best;
+}
+
+/**
+ * The detail under the round clock. On ALLOW the refusal is by definition
+ * absent, so say what the round did - how many Bees run and the latest
+ * dispatch - instead of printing the "no eligible specification" fallback
+ * that only means anything on a refusal. Measured 2026-09-04 01:39Z: an
+ * allowed tick (4 dispatched) rendered the refusal explanation.
+ */
+export function decisionDetail(
+  decision: { allowed: boolean; refusal: string | null },
+  running: number | null,
+  latestIssue: number | null,
+  labels: { queueMeaning: string; executing: string },
+): string {
+  if (decision.allowed) {
+    const tail = latestIssue !== null ? ` · #${latestIssue}` : "";
+    return `${running ?? "—"} ${labels.executing}${tail}`;
+  }
+  return decision.refusal ?? labels.queueMeaning;
+}
+
+/**
+ * The A2A bootstrap names its endpoints on api.t27.ai, an origin that fails
+ * TLS and 404s (measured 2026-09-04). The page itself reads from QUEEN_API,
+ * so the copy hands out that origin with each endpoint's own path and query.
+ */
+export function rewriteEndpoints(
+  endpoints: Record<string, string>,
+  origin: string,
+): Record<string, string> {
+  const base = origin.replace(/\/+$/, "");
+  const out: Record<string, string> = {};
+  for (const [key, value] of Object.entries(endpoints)) {
+    try {
+      const url = new URL(value);
+      out[key] = `${base}${url.pathname}${url.search}`;
+    } catch {
+      out[key] = value;
+    }
+  }
+  return out;
+}
+
+/**
+ * The one-line resolution of a round, shown for a few seconds when
+ * lastTick.decidedAt changes: the clock of the tick, the verdict, what it did
+ * (decisionDetail) and how many candidates it skipped. Every part is a status
+ * field or a COPY key.
+ */
+export function roundStrip(
+  decision: { decidedAt: string; allowed: boolean; refusal: string | null; skippedCount: number },
+  running: number | null,
+  latestIssue: number | null,
+  labels: { allow: string; refuse: string; executing: string; queueMeaning: string; reasons: string },
+  lang: string,
+): string {
+  const at = new Date(decision.decidedAt);
+  const clock = Number.isNaN(at.getTime())
+    ? "—"
+    : at.toLocaleTimeString(lang === "ru" ? "ru-RU" : "en-GB", { hour: "2-digit", minute: "2-digit", hour12: false });
+  const verdict = decision.allowed ? labels.allow : labels.refuse;
+  const detail = decisionDetail(decision, running, latestIssue, labels);
+  return `${clock} · ${verdict} · ${detail} · ${decision.skippedCount} ${labels.reasons}`;
+}
+
+/**
+ * A skip-reason key as words. The wire sends camelCase identifiers and no
+ * meaning (backlog P3-8 asks the server for one); the page spaces the words
+ * and adds nothing.
+ */
+export function skipReasonWords(key: string): string {
+  return key.replace(/([a-z0-9])([A-Z])/g, "$1 $2").toLowerCase();
+}
+
+/** One skip category and how many candidates the round filed under it. */
+export interface SkipCount { key: string; count: number }
+
+const isCount = (value: unknown): value is number =>
+  typeof value === "number" && Number.isInteger(value) && value >= 0;
+
+/** The server's closed category set (queen-public-status.ts, SKIP_CATEGORIES). */
+const SKIP_CATEGORIES = new Set(["claimed", "completed", "missingBoundary", "fileConflict", "incompleteSpec", "notFirst", "other"]);
+
+/**
+ * lastTick.skipSummary as counts in wire order. The wire sends
+ * { count, issues, more } per category (older servers a bare number); only
+ * the count is read. A key outside the server's closed set is filed under
+ * "other", as the server files a sentence it does not know. Null when the
+ * summary is absent, any entry is unreadable, or the counts do not sum to
+ * skippedCount, which the server guarantees they do: a malformed summary says
+ * nothing, never a zero.
+ */
+export function skipCounts(summary: unknown, skipped: number | null = null): SkipCount[] | null {
+  if (!summary || typeof summary !== "object" || Array.isArray(summary)) return null;
+  const counts: SkipCount[] = [];
+  let total = 0;
+  for (const [wireKey, value] of Object.entries(summary)) {
+    const count = value && typeof value === "object" ? (value as { count?: unknown }).count : value;
+    if (!isCount(count)) return null;
+    const key = SKIP_CATEGORIES.has(wireKey) ? wireKey : "other";
+    const filed = counts.find((r) => r.key === key);
+    if (filed) filed.count += count;
+    else counts.push({ key, count });
+    total += count;
+  }
+  return skipped !== null && total !== skipped ? null : counts;
+}
+
+/** The refusal queend writes when no candidate survives a round. */
+const NOTHING_TO_CHOOSE = "nothing to choose";
+
+export type IdleReason =
+  | { kind: "stale"; free: number; ageSeconds: number; intervalSeconds: number }
+  | { kind: "refused"; free: number; refusal: string; checked: number | null; counts: SkipCount[] | null };
+
+/**
+ * Why free worker slots started nothing, from /queen/status alone. Measured
+ * 2026-09-15: BEES 0/4 was read as broken bees while the round had said
+ * "nothing to choose" and 449 of 488 candidates had no ## Boundary. Null when
+ * there is nothing to explain or nothing trustworthy to explain it with: no
+ * free slot, a round that dispatched, a scheduler that is off, an unreadable
+ * tick. A tick older than two intervals (the server's TICK_STALENESS_INTERVALS)
+ * is stale, and a stale round explains nothing.
+ */
+export function idleReason(status: unknown, serverNowMs: number): IdleReason | null {
+  if (!status || typeof status !== "object") return null;
+  const { scheduler, workers, lastTick } = status as {
+    scheduler?: { enabled?: unknown; intervalSeconds?: unknown } | null;
+    workers?: { capacity?: unknown; active?: unknown } | null;
+    lastTick?: { decidedAt?: unknown; allowed?: unknown; refusal?: unknown; skippedCount?: unknown; skipSummary?: unknown } | null;
+  };
+  if (!scheduler || scheduler.enabled !== true) return null;
+  const interval = scheduler.intervalSeconds;
+  if (typeof interval !== "number" || !Number.isFinite(interval) || interval <= 0) return null;
+  if (!workers || !isCount(workers.capacity) || !isCount(workers.active)) return null;
+  const free = workers.capacity - workers.active;
+  if (free <= 0) return null;
+  if (!lastTick || typeof lastTick.decidedAt !== "string" || typeof lastTick.allowed !== "boolean") return null;
+  const decidedMs = Date.parse(lastTick.decidedAt);
+  if (Number.isNaN(decidedMs)) return null;
+  const ageMs = serverNowMs - decidedMs;
+  if (ageMs > interval * 1000 * 2) {
+    return { kind: "stale", free, ageSeconds: Math.floor(ageMs / 1000), intervalSeconds: interval };
+  }
+  if (lastTick.allowed || typeof lastTick.refusal !== "string" || !lastTick.refusal.trim()) return null;
+  if (lastTick.refusal !== NOTHING_TO_CHOOSE) return { kind: "refused", free, refusal: lastTick.refusal, checked: null, counts: null };
+  // skippedCount counts skip LINES, not issues. queend (main.swift, choose)
+  // files "delegatable but ..." and goes on judging the same issue; in a round
+  // that chose nothing, that issue always files " held by " next. So an
+  // incompleteSpec line never blocked anything and counts its issue twice: it
+  // is left out of the reasons and out of how many issues were checked. More
+  // of them than fileConflict lines contradicts the decider, and says nothing.
+  const skipped = isCount(lastTick.skippedCount) ? lastTick.skippedCount : null;
+  const read = skipCounts(lastTick.skipSummary, skipped);
+  const countOf = (key: string) => read?.find((r) => r.key === key)?.count ?? 0;
+  const incomplete = countOf("incompleteSpec");
+  const counts = read && incomplete <= countOf("fileConflict") ? read.filter((r) => r.key !== "incompleteSpec") : null;
+  const checked = counts && skipped !== null ? skipped - incomplete : null;
+  return { kind: "refused", free, refusal: lastTick.refusal, checked, counts };
+}
+
+export interface IdleWords {
+  idle: string;
+  nothingToChoose: string;
+  /** The tile's word for any other refusal; the line keeps the wire's text. */
+  refused: string;
+  /** Label for how many issues the round checked. */
+  checked: string;
+  stale: string;
+  /** With {age} and {interval}. */
+  staleDetail: string;
+  unitS: string;
+  unitMin: string;
+  unitH: string;
+  /** A label per skip category, printed "label: count", so no count has to agree with a word. */
+  reasons: Record<string, string>;
+}
+
+export interface IdleLine { head: string; tail: string | null; text: string; example: boolean }
+
+function spanWords(seconds: number, words: IdleWords): string {
+  if (seconds < 120) return `${seconds} ${words.unitS}`;
+  if (seconds < 7200) return `${Math.floor(seconds / 60)} ${words.unitMin}`;
+  return `${Math.floor(seconds / 3600)} ${words.unitH}`;
+}
+
+/**
+ * The idle reason as one line. The head is short enough for the BEES tile:
+ * the free slots and "nothing to choose", "round refused" or "round stale".
+ * The tail is what the wire counted: how many issues the round checked and
+ * the three largest skip reasons, or the stale tick's age. Any other refusal
+ * prints in the line as the wire wrote it; only queend's fixed "nothing to
+ * choose" has words of its own. The format example is offered only when
+ * issues were skipped for having no ## Boundary.
+ */
+export function idleLine(reason: IdleReason, words: IdleWords): IdleLine {
+  const lead = `${reason.free} ${words.idle}`;
+  if (reason.kind === "stale") {
+    const head = `${lead}: ${words.stale}`;
+    const tail = words.staleDetail
+      .replace("{age}", spanWords(reason.ageSeconds, words))
+      .replace("{interval}", spanWords(reason.intervalSeconds, words));
+    return { head, tail, text: `${head} — ${tail}`, example: false };
+  }
+  if (reason.refusal !== NOTHING_TO_CHOOSE) {
+    return { head: `${lead}: ${words.refused}`, tail: null, text: `${lead}: ${reason.refusal}`, example: false };
+  }
+  const head = `${lead}: ${words.nothingToChoose}`;
+  const top = (reason.counts ?? []).filter((r) => r.count > 0).sort((a, b) => b.count - a.count).slice(0, 3);
+  const said = top.map((r) => `${words.reasons[r.key] ?? words.reasons.other}: ${r.count}`).join(", ");
+  const tail = top.length === 0 ? null : reason.checked !== null ? `${words.checked}: ${reason.checked}; ${said}` : said;
+  return {
+    head,
+    tail,
+    text: tail ? `${head} — ${tail}` : head,
+    example: (reason.counts ?? []).some((r) => r.key === "missingBoundary" && r.count > 0),
+  };
+}
+
+/**
+ * A hardware device's family string -> the crystal hue on the comb: gold for
+ * CPU (the default), cyan for FPGA, green for GPU - the ring colours of the
+ * mark as CONTEXT.md assigns them. Only the signed registry's devices are
+ * drawn; nothing is invented.
+ */
+export function crystalOf(family: string): "cpu" | "fpga" | "gpu" {
+  const f = family.toLowerCase();
+  if (/fpga|xc7|artix|kintex|zynq|lattice|ice40|ecp5|wukong|nexus/.test(f)) return "fpga";
+  if (/gpu|cuda|rtx|radeon|tensor core|h100|a100/.test(f)) return "gpu";
+  return "cpu";
+}
+
+/**
+ * The field's shape for a card count: rows of down-pointing marks, cols per
+ * row. One function, so the comb, the minimap and the placement ledger agree
+ * on how many cells exist (P1-20).
+ */
+export function fieldShape(cardCount: number): { rows: number; cols: number; cellCount: number } {
+  const count = Math.max(27, cardCount);
+  const rows = Math.max(3, Math.ceil(Math.sqrt(count / 1.1)));
+  const cols = rows + 2;
+  // buildCells keeps only the down cells: an even row holds cols of them, an
+  // odd row one fewer. rows * cols overstated the count by floor(rows / 2)
+  // and left that many placed slots with no cell (found by the ring order).
+  return { rows, cols, cellCount: rows * cols - Math.floor(rows / 2) };
+}
+
+/**
+ * Placement ledger keyed by card number. The public board is rebuilt in wire
+ * order on every poll, so a positional layout moved every structure and every
+ * bee whenever an issue was inserted at the head. Here a known card keeps the
+ * cell it had; a card that left frees its cell; a new card takes the first
+ * free cell; a cell index that no longer fits the field is re-placed. Pure:
+ * the ledger passed in is never mutated, the next one is returned.
+ */
+export function placeCards<T extends { number: number }>(
+  previous: ReadonlyMap<number, number>,
+  cards: T[],
+  cellCount: number,
+  order?: readonly number[],
+): { placed: (T | null)[]; ledger: Map<number, number> } {
+  const placed: (T | null)[] = new Array<T | null>(cellCount).fill(null);
+  const ledger = new Map<number, number>();
+  const pending: T[] = [];
+  for (const card of cards) {
+    const index = previous.get(card.number);
+    if (index !== undefined && index < cellCount && placed[index] === null && !ledger.has(card.number)) {
+      placed[index] = card;
+      ledger.set(card.number, index);
+    } else if (!ledger.has(card.number)) {
+      pending.push(card);
+    }
+  }
+  // an order may be shorter than the field (the spiral order skips the hub,
+  // cell 0): it is honoured as far as it goes, never padded
+  const seq = order && order.length > 0 && order.length <= cellCount ? order : null;
+  const limit = seq ? seq.length : cellCount;
+  let free = 0;
+  for (const card of pending) {
+    while (free < limit && placed[seq ? seq[free] : free] !== null) free += 1;
+    if (free >= limit) break;
+    const slot = seq ? seq[free] : free;
+    placed[slot] = card;
+    ledger.set(card.number, slot);
+  }
+  return { placed, ledger };
+}
+
+/**
+ * THE HONEYCOMB (2026-09-05): a pointy-top hex spiral from the Queen's hub.
+ * Cell 0 is the hub and never a card's; ring k holds 6k cells starting at
+ * 3k(k-1)+1 and the whole field of n rings holds 3n(n+1)+1. Every closed
+ * GitHub issue takes the next cell in closed_at order (the foundation), the
+ * repository's modules take cells by the placement ledger from cell 1 (the
+ * CODE layer), the castle stands on ring 7. Neighbours stand S_CELL apart,
+ * today's triangle side, so every building scale holds. All of it is pure
+ * and pinned by the honesty contract; the comb, the minimap and the field
+ * read the same functions.
+ */
+export const S_CELL = 150;
+export const HEX_R = S_CELL / Math.sqrt(3);
+export const HEX_HOME = 0;
+export interface Axial { q: number; r: number }
+export const HEX_DIRS: readonly Axial[] = [
+  { q: 1, r: 0 }, { q: 1, r: -1 }, { q: 0, r: -1 }, { q: -1, r: 0 }, { q: -1, r: 1 }, { q: 0, r: 1 },
+];
+
+export function hexRing(a: Axial): number {
+  return Math.max(Math.abs(a.q), Math.abs(a.r), Math.abs(a.q + a.r));
+}
+export function hexCellCount(rings: number): number {
+  return 3 * rings * (rings + 1) + 1;
+}
+export function hexRingsFor(count: number): number {
+  let n = 3;
+  while (hexCellCount(n) < count) n += 1;
+  return n;
+}
+/** The field for a count of things that need cells (the hub included). */
+export function hexField(count: number): { rings: number; cellCount: number } {
+  const rings = hexRingsFor(Math.max(1, count));
+  return { rings, cellCount: hexCellCount(rings) };
+}
+export function hexRingStart(k: number): number {
+  return k <= 0 ? 0 : 3 * k * (k - 1) + 1;
+}
+export function hexRingCells(k: number): number[] {
+  if (k <= 0) return [0];
+  const start = hexRingStart(k);
+  return Array.from({ length: 6 * k }, (_, i) => start + i);
+}
+/** Spiral index -> axial: ring k, side j (six sides, each k steps), step t. */
+export function spiralAxial(i: number): Axial {
+  if (i <= 0) return { q: 0, r: 0 };
+  const k = Math.floor((3 + Math.sqrt(12 * i - 3)) / 6);
+  const p = i - hexRingStart(k);
+  const j = Math.floor(p / k);
+  const t = p - j * k;
+  const c = HEX_DIRS[j];
+  const d = HEX_DIRS[(j + 2) % 6];
+  return { q: c.q * k + d.q * t, r: c.r * k + d.r * t };
+}
+/** Axial -> spiral index, the inverse of spiralAxial. */
+export function spiralIndex(a: Axial): number {
+  const k = hexRing(a);
+  if (k === 0) return 0;
+  for (let j = 0; j < 6; j += 1) {
+    const c = { q: HEX_DIRS[j].q * k, r: HEX_DIRS[j].r * k };
+    const d = HEX_DIRS[(j + 2) % 6];
+    const t = d.q !== 0 ? (a.q - c.q) / d.q : (a.r - c.r) / d.r;
+    if (Number.isInteger(t) && t >= 0 && t < k && c.q + d.q * t === a.q && c.r + d.r * t === a.r) return hexRingStart(k) + j * k + t;
+  }
+  return -1;
+}
+/** Axial -> world (x east, y south in the field's plane; the comb's "y" is the scene's z). */
+export function hexToWorld(a: Axial, R = HEX_R): { x: number; y: number } {
+  return { x: R * (Math.sqrt(3) * a.q + (Math.sqrt(3) / 2) * a.r), y: R * 1.5 * a.r };
+}
+/** World -> axial by cube rounding: O(1), no search over the cells. */
+export function worldToHex(x: number, y: number, R = HEX_R): Axial {
+  const q = ((Math.sqrt(3) / 3) * x - y / 3) / R;
+  const r = ((2 / 3) * y) / R;
+  const sv = -q - r;
+  let rq = Math.round(q);
+  let rr = Math.round(r);
+  const rs = Math.round(sv);
+  const dq = Math.abs(rq - q);
+  const dr = Math.abs(rr - r);
+  const ds = Math.abs(rs - sv);
+  if (dq > dr && dq > ds) rq = -rr - rs;
+  else if (dr > ds) rr = -rq - rs;
+  return { q: rq, r: rr };
+}
+/** The cell under a world point, or -1 beyond the field. */
+export function hexIndexAt(x: number, y: number, cellCount: number, R = HEX_R): number {
+  const i = spiralIndex(worldToHex(x, y, R));
+  return i >= 0 && i < cellCount ? i : -1;
+}
+/** Six corners around the cell's centre, the first at 30 degrees (pointy top). */
+export function hexCorners(a: Axial, R = HEX_R, inset = 0): Array<{ x: number; y: number }> {
+  const c = hexToWorld(a, R);
+  return Array.from({ length: 6 }, (_, k) => {
+    const ang = (Math.PI / 6) + (Math.PI / 3) * k;
+    return { x: c.x + (R - inset) * Math.cos(ang), y: c.y + (R - inset) * Math.sin(ang) };
+  });
+}
+/** Six corners around a world centre (pointy top), for cells the caller already placed. */
+export function hexCornersAt(x: number, y: number, R = HEX_R, inset = 0): Array<{ x: number; y: number }> {
+  return Array.from({ length: 6 }, (_, k) => {
+    const ang = (Math.PI / 6) + (Math.PI / 3) * k;
+    return { x: x + (R - inset) * Math.cos(ang), y: y + (R - inset) * Math.sin(ang) };
+  });
+}
+/**
+ * The field as every view sees it: one summary per spiral cell, the placed
+ * card's territory on it, fog where nothing stands. Replaces the comb's
+ * summariseCells for the hex field; the minimap, the Babylon field and the
+ * page share it, so a click anywhere names the same cell.
+ */
+export function hexCellSummaries(placed: ReadonlyArray<{ number: number; column: string } | null>): CombCellSummary[] {
+  return placed.map((card, i) => {
+    const w = hexToWorld(spiralAxial(i));
+    return { x: w.x, y: w.y, yTop: w.y - HEX_R, up: false, own: card ? territoryOf(card.column) : "fog", cardNumber: card ? card.number : null };
+  });
+}
+/** One centre per cell, spiral order (replaces cellGeometry for the hex field). */
+export function hexCentres(cellCount: number, R = HEX_R): Array<{ x: number; y: number }> {
+  return Array.from({ length: cellCount }, (_, i) => hexToWorld(spiralAxial(i), R));
+}
+/** The placement order: every cell but the hub, nearest ring first (replaces ringOrder). */
+export function spiralOrder(cellCount: number, from = 1): number[] {
+  return Array.from({ length: Math.max(0, cellCount - from) }, (_, i) => from + i);
+}
+
+/**
+ * THE CASTLE OF THE RINGS (K-1). The 21 ring directories of the repository
+ * stand on spiral ring 7: a plinth on every other cell in name order, a wall
+ * piece on the cell between. A place is a convention, never a claim, so it
+ * never moves when data changes. An epic binds to a ring by the ring:<NAME>
+ * label first, then by a directory name in its title, else it is unassigned
+ * and stands at the keep. A tower's stage follows its children on GitHub.
+ */
+export const CASTLE_RING = 7;
+export type RingFamily = "RUST" | "SR" | "T27" | "other";
+export function ringFamily(ring: string): RingFamily {
+  if (ring.startsWith("RUST-")) return "RUST";
+  if (ring.startsWith("SR-")) return "SR";
+  if (ring.startsWith("T27-")) return "T27";
+  return "other";
+}
+/** The mark's three colours per family (gold, cyan, green), grey for the rest. */
+export function familyTint(family: RingFamily): [number, number, number, number] {
+  if (family === "RUST") return [1, 0.83, 0.35, 1];
+  if (family === "SR") return [0.39, 0.86, 1, 1];
+  if (family === "T27") return [0, 1, 0.53, 1];
+  return [0.6, 0.6, 0.6, 1];
+}
+export interface CastlePlace { ring: string; plinth: number; wall: number }
+/** Plinths on the odd cells of ring 7 in name order, walls on the even ones between; independent of the input's order. */
+export function castlePlaces(rings: readonly string[]): CastlePlace[] {
+  const cells = hexRingCells(CASTLE_RING);
+  return [...new Set(rings)].sort().map((ring, i) => ({ ring, plinth: cells[(2 * i) % cells.length], wall: cells[(2 * i + 1) % cells.length] }));
+}
+export interface EpicChild { number: number; title: string; state: string; closedAt: string | null }
+export interface EpicRecord { number: number; title: string; state: string; closedAt: string | null; labels: string[]; ring?: string | null; ringBy?: string | null; children: EpicChild[] }
+const RING_NAME = /\b(RUST-\d{2}|SR-\d{2}|T27-\d{2})\b/;
+/** Which ring an epic builds: its ring:<NAME> label, else a directory name in its title, else none. */
+export function ringOfEpic(epic: EpicRecord, rings: readonly string[]): { ring: string | null; by: "label" | "title" | null } {
+  const known = new Set(rings);
+  for (const label of epic.labels) {
+    const m = /^ring:(.+)$/.exec(label);
+    if (m && known.has(m[1])) return { ring: m[1], by: "label" };
+  }
+  const t = RING_NAME.exec(epic.title);
+  if (t && known.has(t[1])) return { ring: t[1], by: "title" };
+  return { ring: null, by: null };
+}
+/** Closed children over all children; no children means no ratio, never 0. */
+export function epicProgress(epic: EpicRecord): { closed: number; total: number; ratio: number | null } {
+  const total = epic.children.length;
+  const closed = epic.children.filter((c) => c.state === "closed").length;
+  return { closed, total, ratio: total > 0 ? closed / total : null };
+}
+export type TowerStage = "plinth" | "walls" | "tower" | "wizardTower";
+/** No children: a plinth. A closed child: walls. Half closed: a tower. The epic closed with every child closed: the wizard tower. */
+export function towerStage(epic: EpicRecord): TowerStage {
+  const p = epicProgress(epic);
+  if (p.total === 0 || p.ratio === null) return "plinth";
+  if (epic.state === "closed" && p.closed === p.total) return "wizardTower";
+  if (p.ratio >= 0.5) return "tower";
+  if (p.closed > 0) return "walls";
+  return "plinth";
+}
+/** A ring's epics and their children, counted only for the epics bound to it. */
+export function ringSummary(ring: string, epics: readonly EpicRecord[], rings: readonly string[]): { epics: number; closed: number; total: number; ratio: number | null } {
+  const mine = epics.filter((e) => ringOfEpic(e, rings).ring === ring);
+  const closed = mine.reduce((n, e) => n + epicProgress(e).closed, 0);
+  const total = mine.reduce((n, e) => n + epicProgress(e).total, 0);
+  return { epics: mine.length, closed, total, ratio: total > 0 ? closed / total : null };
+}
+/** A wall rises only between two rings whose every epic is a keep. */
+/** The ring a module path belongs to: `rings/<NAME>` or anything beneath it; null elsewhere (K-5). */
+export function ringOfModulePath(path: string): string | null {
+  const m = /^rings\/([^/]+)(?:\/|$)/.exec(path);
+  return m ? m[1] : null;
+}
+
+/** The first epic that lists the issue among its children; null when no epic claims it (K-5). */
+export function epicOfIssue(number: number, epics: readonly EpicRecord[]): EpicRecord | null {
+  for (const e of epics) if (e.children.some((c) => c.number === number)) return e;
+  return null;
+}
+
+export function wallBetween(a: readonly EpicRecord[], b: readonly EpicRecord[]): boolean {
+  const done = (list: readonly EpicRecord[]) => list.length > 0 && list.every((e) => towerStage(e) === "wizardTower");
+  return done(a) && done(b);
+}
+
+/** A closed GitHub issue as the loop's snapshot records it (foundation.json). */
+export interface FoundationIssue {
+  number: number;
+  title: string;
+  closedAt: string;
+  labels: string[];
+  epicRefs: number[];
+  stateReason?: string | null;
+}
+/** closed_at ascending, undatable closes last, ties by number: the pour order. */
+export function foundationOrder<T extends FoundationIssue>(issues: readonly T[]): T[] {
+  const key = (i: T) => {
+    const t = Date.parse(i.closedAt);
+    return Number.isFinite(t) ? t : Number.POSITIVE_INFINITY;
+  };
+  return [...issues].sort((a, b) => key(a) - key(b) || a.number - b.number);
+}
+/** Index i+1 holds the i-th closed issue; the hub (0) holds nothing. */
+export function foundationCells<T extends FoundationIssue>(issues: readonly T[], cellCount: number): (T | null)[] {
+  const out: (T | null)[] = new Array<T | null>(cellCount).fill(null);
+  foundationOrder(issues).forEach((issue, i) => {
+    if (i + 1 < cellCount) out[i + 1] = issue;
+  });
+  return out;
+}
+/** The honey's gold by the age of the close: fresh, this week, older. Always honey. */
+export function honeyTone(closedAt: string, nowMs: number): [number, number, number, number] {
+  const t = Date.parse(closedAt);
+  const age = Number.isFinite(t) ? nowMs - t : Number.POSITIVE_INFINITY;
+  if (age <= 24 * 3600 * 1000) return [1, 0.88, 0.42, 1];
+  if (age <= 7 * 24 * 3600 * 1000) return [0.86, 0.64, 0.22, 1];
+  return [0.62, 0.44, 0.13, 1];
+}
+export type FieldLayer = "foundation" | "castle" | "code";
+export const FIELD_LAYERS: readonly FieldLayer[] = ["foundation", "castle", "code"];
+/** ?layers=a,b -> exactly those; ?layers=none -> none; absent -> all on; unknown names ignored. */
+export function layersFromSearch(search: string): Record<FieldLayer, boolean> {
+  const all: Record<FieldLayer, boolean> = { foundation: true, castle: true, code: true };
+  const raw = new URLSearchParams(search.startsWith("?") ? search : `?${search}`).get("layers");
+  if (raw === null) return all;
+  const on = new Set(raw.split(",").map((s) => s.trim()).filter((s): s is FieldLayer => (FIELD_LAYERS as readonly string[]).includes(s)));
+  return { foundation: on.has("foundation"), castle: on.has("castle"), code: on.has("code") };
+}
+
+/**
+ * Seconds since the last successful poll, but only once a poll has FAILED
+ * after a first success: that is the moment the numbers on screen stop being
+ * the wire's and the reader must be told (P1-12). Before the first success
+ * there is nothing stale (the tiles read dashes); while polls succeed there is
+ * nothing stale either. Null means "no badge".
+ */
+export function staleAge(nowMs: number, syncedAt: Date | null, error: string | null): number | null {
+  if (error === null || syncedAt === null) return null;
+  return Math.max(0, Math.floor((nowMs - syncedAt.getTime()) / 1000));
+}
+
+/**
+ * The ring colour of a territory, RTS style: the hover ring and the
+ * selection flare are coloured by whose ground it is (StarCraft II colours
+ * its hover and selection circles by allegiance). Held is the swarm's green,
+ * neutral the HUD's cyan, fog the cold red the feed uses for errors.
+ */
+export function ringTone(territory: Territory): string {
+  if (territory === "held") return "#00FF88";
+  if (territory === "fog") return "#FF6B6B";
+  return "#64DCFF";
+}
+
+// ---- THE HIVE'S COLOUR LAW (the user, 2026-09-06) -------------------------
+// The game's objective is to rewrite the repository from hand-written code to
+// T27 specs while the bugs are fixed in parallel, so colour on the comb may
+// mean exactly one of three things — never decoration:
+//   yellow    the cell's issue is covered by T27 functionality;
+//   neon blue the cell is still waiting for its T27 spec;
+//   red       the cell carries hand-written ("manual") code that is not
+//             spec-generated and is therefore the debt the game must clear.
+// Honey is reserved for the pointer: the hand is looking for nectar.
+export const HIVE_TONES = {
+  t27: "#FFD45A",
+  awaiting: "#64DCFF",
+  unknown: "#64DCFF",
+  manual: "#FF4D5E",
+  hover: "#FFC24D",
+} as const;
+export type HiveCover = "t27" | "awaiting" | "manual" | "unknown";
+
+/** Lower-case letters and digits only: the comparable form of a path or name. */
+export function hiveKey(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, "");
+}
+
+/** Keep path identity: punctuation, case and directory boundaries are significant. */
+function coveragePath(value: unknown): string | null {
+  if (typeof value !== "string" || !value || value !== value.trim()) return null;
+  if (value === ".") return value;
+  if (value.split("/").some((part) => !part || part === "." || part === "..") || value.includes("\\")) return null;
+  return value;
+}
+
+/** Manifest SOURCE-CLAIM, not acceptance or generated-code parity. Unknown is null. */
+export function hiveCoverageFromManifest(manifest: unknown, repository: string | null): ReadonlySet<string> | null {
+  // This corpus is scanned from gHashTag repositories; a same-named fork is not it.
+  const repo = typeof repository === "string" ? repository.match(/^ghashtag\/([a-z0-9_.-]+)$/i)?.[1].toLowerCase() : null;
+  if (!repo || !manifest || typeof manifest !== "object") return null;
+  const data = manifest as { coverageSchemaVersion?: unknown; repos?: unknown; specs?: unknown };
+  // Legacy `module` is a parsed language/display label, never a code path.
+  // Until a producer supplies the explicit mapping schema, coverage is unknown.
+  if (data.coverageSchemaVersion !== 1 || !Array.isArray(data.repos) || !Array.isArray(data.specs)) return null;
+  if (!data.repos.some((row) => row && typeof row === "object" && row.repo === repo && typeof row.commit === "string" && /^[a-f0-9]{7,40}$/i.test(row.commit))) return null;
+  const covered = new Set<string>();
+  for (const row of data.specs) {
+    if (!row || typeof row !== "object" || typeof row.repo !== "string") return null;
+    if (row.repo !== repo) continue;
+    const sourcePath = coveragePath(row.path);
+    // sync-t27-specs keeps primary t27 paths relative and prefixes other repos.
+    if (!sourcePath || !sourcePath.endsWith(".t27") || (repo !== "t27" && !sourcePath.startsWith(`${repo}/`))) return null;
+    // Explicit null means the spec has no module claim (e.g. a tutorial).
+    if (row.modulePath === null) continue;
+    const modulePath = coveragePath(row.modulePath);
+    if (!modulePath) return null;
+    covered.add(modulePath);
+  }
+  return covered;
+}
+
+/** No basename, directory-name or display-name heuristics may create a claim. */
+export function hiveCoverOf(modulePath: string | null, covered: ReadonlySet<string> | null): HiveCover {
+  if (!modulePath) return "awaiting";
+  if (covered === null) return "unknown";
+  if (covered.has(modulePath)) return "t27";
+  return "manual";
+}
+
+/** The cover's rgba tone for Babylon line colours. */
+export function hiveToneOf(cover: HiveCover): [number, number, number, number] {
+  const hex = HIVE_TONES[cover];
+  const n = parseInt(hex.slice(1), 16);
+  return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255, 1];
+}
+
+/**
+ * A code module of the repository the Queen supervises: the unit of place
+ * on the field (the user, 2026-09-04: "modules in rings from the centre;
+ * bees are the issues"). The signature is what the visual is generated from.
+ * Until /queen/public-modules exists (M-1) the rows come from
+ * public/queen/modules.json, a scan of the repo stamped with its commit.
+ */
+export interface HudModule {
+  path: string;
+  depth: number;
+  language: string;
+  files: number;
+  lines: number;
+  functions: number;
+  imports: number;
+  exports: number;
+  lastTouched: string | null;
+  openIssues: number[];
+}
+
+/** FNV-1a over the path: a stable positive id, so a module can be a card. */
+export function moduleId(path: string): number {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < path.length; i += 1) {
+    h ^= path.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return (h % 2147483646) + 1;
+}
+
+const DAY = 86_400_000;
+
+/**
+ * The column a module stands in, from facts: an open issue in progress on
+ * it makes it "running"; any open issue "review"; touched within 30 days
+ * "done" (alive); untouched for 180 days "dropped" (dormant); else backlog.
+ * Territory then follows territoryOf as for a card.
+ */
+export function moduleColumn(m: HudModule, nowMs: number, running: ReadonlySet<number>): string {
+  if (m.openIssues.some((n) => running.has(n))) return "running";
+  if (m.openIssues.length > 0) return "review";
+  const touched = m.lastTouched ? Date.parse(m.lastTouched) : NaN;
+  if (Number.isFinite(touched)) {
+    const age = nowMs - touched;
+    if (age <= 30 * DAY) return "done";
+    if (age >= 180 * DAY) return "dropped";
+  }
+  return "backlog";
+}
+
+export function moduleCard(m: HudModule, nowMs: number, running: ReadonlySet<number>): HudCard {
+  return { number: moduleId(m.path), title: m.path, column: moduleColumn(m, nowMs, running), criteria: m.files };
+}
+
+/** The module a file path belongs to: the longest module path that prefixes it. */
+export function moduleFor(filePath: string, modules: readonly HudModule[]): HudModule | null {
+  const rel = filePath.startsWith("trios/") ? filePath.slice(6) : filePath;
+  let best: HudModule | null = null;
+  for (const m of modules) {
+    if (m.path === "." || rel === m.path || rel.startsWith(m.path + "/")) {
+      if (!best || m.path.length > best.path.length) best = m;
+    }
+  }
+  return best;
+}
+
+/** The first path-like token in a title, if any (issue titles name files). */
+export function pathInTitle(title: string): string | null {
+  const m = /(?<![\w.])((?:[A-Za-z0-9_.-]+\/){1,}[A-Za-z0-9_.-]+)/.exec(title);
+  return m ? m[1] : null;
+}
+
+/**
+ * The same layout buildCells uses (rows of down cells, cols per row): cell
+ * centres for a card count, so a ring order can be computed before anything
+ * is placed. Kept in step with QueenComb's buildCells by the honesty contract.
+ */
+export function cellGeometry(cardCount: number): Array<{ x: number; y: number }> {
+  const { rows, cols } = fieldShape(cardCount);
+  const S = 150;
+  const HH = (S * Math.sqrt(3)) / 2;
+  const out: Array<{ x: number; y: number }> = [];
+  for (let r = 0; r < rows; r += 1) {
+    for (let c = 0; c < cols * 2 - 1; c += 1) {
+      if (((c + r) & 1) === 1) continue;
+      out.push({ x: (c - (cols * 2 - 2) / 2) * (S / 2), y: (r - rows / 2) * HH + HH / 3 });
+    }
+  }
+  return out;
+}
+
+/**
+ * Rings from the centre (the Flower of Life): cell indices by distance from
+ * the home cell, home first. The placement ledger takes free cells in this
+ * order, so the first modules stand nearest the Queen and later ones grow
+ * the base outward.
+ */
+export function ringOrder(cells: ReadonlyArray<{ x: number; y: number }>, home: number): number[] {
+  const h = cells[home];
+  if (!h) return cells.map((_, i) => i);
+  return cells
+    .map((c, i) => ({ i, d: (c.x - h.x) ** 2 + (c.y - h.y) ** 2 }))
+    .sort((a, b) => a.d - b.d || a.i - b.i)
+    .map((e) => e.i);
+}
+
+/**
+ * The shape grammar (M-3): a module's building as a list of parts, a pure
+ * function of its signature, so the same code always yields the same
+ * building and a different module a different one. Parts are Kenney models
+ * the field already loads, placed around the core in the core's frame:
+ * - core: by language; footprint by lines (log scale); height by function
+ *   density (functions per hundred lines), stretched up to 1.6x;
+ * - wings: one annex platform per export band (0..3), on the core's sides;
+ * - antennae: one dish per import band (0..3), on the core's corners;
+ * - the whole building turned a quarter per the path's hash;
+ * - an open issue adds the red fence (drawn by the field, not a part).
+ */
+export interface BuildingPart {
+  model: "core" | "annex" | "antenna" | "band";
+  dx: number;
+  dz: number;
+  scale: number;
+  height: number;
+  /** for a window band: its level up the core, 1..3 */
+  level?: number;
+}
+export interface BuildingPlan {
+  core: string;
+  turn: number;
+  parts: BuildingPart[];
+}
+const CORE_BY_LANGUAGE: Record<string, string> = { typescript: "done", javascript: "doneDepot", swift: "doneDepot", rust: "doneSilo", zig: "running", python: "review", shell: "backlog", go: "doneSilo" };
+const band = (n: number, steps: number[]) => steps.filter((t) => n >= t).length;
+
+export function buildingPlan(m: HudModule): BuildingPlan {
+  const scale = 0.85 + 0.55 * Math.min(1, Math.log10(Math.max(1, m.lines)) / 4.5);
+  const density = m.lines > 0 ? (m.functions / m.lines) * 100 : 0;
+  const height = 1 + Math.min(0.6, density / 12);
+  const wings = band(m.exports, [8, 30, 90]);
+  const antennae = band(m.imports, [10, 40, 120]);
+  const parts: BuildingPart[] = [{ model: "core", dx: 0, dz: 0, scale, height }];
+  const sides: Array<[number, number]> = [[1, 0], [-1, 0], [0, 1]];
+  for (let i = 0; i < wings; i += 1) parts.push({ model: "annex", dx: sides[i][0] * 0.62, dz: sides[i][1] * 0.62, scale: scale * 0.45, height: 1 });
+  const corners: Array<[number, number]> = [[0.55, -0.55], [-0.55, -0.55], [0.55, 0.55]];
+  for (let i = 0; i < antennae; i += 1) parts.push({ model: "antenna", dx: corners[i][0], dz: corners[i][1], scale: scale * 0.3, height: 1 });
+  // lit window bands up the core: one per function band (0..3), so a module
+  // with many functions reads as a busy building at night
+  const bands = band(m.functions, [40, 160, 500]);
+  for (let i = 0; i < bands; i += 1) parts.push({ model: "band", dx: 0, dz: 0, scale: scale * 0.72, height, level: i + 1 });
+  return { core: CORE_BY_LANGUAGE[m.language] ?? "dropped", turn: (moduleId(m.path) % 6) * (Math.PI / 3), parts };
+}
+
+/**
+ * The per-instance tint (M-4): the material reads it per building, so no
+ * two modules of one language and size look alike. Recency warms and
+ * brightens (touched within a week: warm white; within a month: neutral;
+ * dormant half a year: cold and dim); every open issue wears the paint down
+ * a step. RGBA in 0..1, multiplied onto the model's palette.
+ */
+export function buildingTint(m: HudModule, nowMs: number): [number, number, number, number] {
+  const touched = m.lastTouched ? Date.parse(m.lastTouched) : NaN;
+  const age = Number.isFinite(touched) ? (nowMs - touched) / DAY : 365;
+  let r = 0.62, g = 0.66, b = 0.78;
+  if (age <= 7) { r = 1.0; g = 0.96; b = 0.86; }
+  else if (age <= 30) { r = 0.9; g = 0.9; b = 0.9; }
+  else if (age <= 180) { r = 0.76; g = 0.78; b = 0.84; }
+  const wear = Math.max(0.55, 1 - 0.12 * Math.min(3, m.openIssues.length));
+  return [r * wear, g * wear, b * wear, 1];
+}
+
+/** A stable hash of a plan: the contract that the same signature yields the same building. */
+export function planHash(plan: BuildingPlan): number {
+  const text = plan.core + "|" + plan.turn.toFixed(4) + "|" + plan.parts.map((p) => `${p.model}:${p.dx.toFixed(3)},${p.dz.toFixed(3)},${p.scale.toFixed(4)},${p.height.toFixed(4)}`).join(";");
+  return moduleId(text);
+}
+
+/**
+ * The server does not know issues; the board does. A module's open issues
+ * are the cards (not done, not dropped) whose title names a path inside it,
+ * so the wire's rows and the loop's snapshot carry the same field (M-1).
+ */
+export function withOpenIssues(modules: readonly HudModule[], cards: ReadonlyArray<{ number: number; title: string; column: string }>): HudModule[] {
+  const open = new Map<string, number[]>();
+  for (const card of cards) {
+    if (card.column === "done" || card.column === "dropped") continue;
+    const p = pathInTitle(card.title);
+    const m = p ? moduleFor(p, modules) : null;
+    if (!m) continue;
+    const list = open.get(m.path) ?? [];
+    if (!list.includes(card.number)) list.push(card.number);
+    open.set(m.path, list);
+  }
+  return modules.map((m) => ({ ...m, openIssues: (open.get(m.path) ?? []).slice().sort((a, b) => a - b) }));
+}
+
+/**
+ * The server's clock, from the Date header of a status answer (RFC 7231:
+ * whole seconds, the moment the response was generated). offset = server -
+ * client at receipt, so serverNow = clientNow + offset. A client whose clock
+ * runs two minutes fast would otherwise read every round as OVERDUE two
+ * minutes early (P1-30). Null when the header is absent or unparsable: the
+ * countdown then trusts the client clock, as before, and says nothing false.
+ * Whole-second resolution and a no-store answer (Date is generation time,
+ * not delivery time) are the header's limits; the clock shows whole seconds.
+ */
+export function serverOffsetMs(dateHeader: string | null, sentAtMs: number, receivedAtMs: number = sentAtMs): number | null {
+  if (!dateHeader) return null;
+  const t = Date.parse(dateHeader);
+  if (!Number.isFinite(t)) return null;
+  // NTP's estimate: the server stamped the answer about half a round trip
+  // after the request left, so the client's matching instant is the midpoint
+  return t - (sentAtMs + receivedAtMs) / 2;
+}
+
+/**
+ * The round clock, server-relative: seconds elapsed since the last round as
+ * the server would count them. `known` is false without a round length or
+ * a last round; `overdue` when the round length has passed.
+ */
+export function countdownFor(clientNowMs: number, offsetMs: number | null, lastRoundAt: string | null, roundSeconds: number): { known: boolean; elapsed: number; overdue: boolean; remaining: number } {
+  if (!lastRoundAt || !(roundSeconds > 0)) return { known: false, elapsed: 0, overdue: false, remaining: 0 };
+  const last = Date.parse(lastRoundAt);
+  if (!Number.isFinite(last)) return { known: false, elapsed: 0, overdue: false, remaining: 0 };
+  const serverNow = clientNowMs + (offsetMs ?? 0);
+  const elapsed = Math.max(0, (serverNow - last) / 1000);
+  return { known: true, elapsed, overdue: elapsed > roundSeconds, remaining: Math.max(0, roundSeconds - elapsed) };
+}
+
+/**
+ * The activity buffer after a poll (P0-9). Pure: the newest poll's events
+ * first in the wire's own order, then the events only the previous buffer
+ * held; a stable sort by time, newest first, so same-second ties keep the
+ * newest poll's order (Array.prototype.sort is stable) instead of letting the
+ * older copy win; an event present in both (by identity, see eventIdentity)
+ * keeps the newest copy; the feed
+ * keeps `cap` events by count, the bell's alerts keep the window by age
+ * against `nowMs` (no clock is read here).
+ */
+export function mergeActivity<E extends { id: string; kind: HudEventKind; at: string; issue: number | null; state: string | null }>(
+  previous: { events: E[]; alerts: E[]; observedFrom?: string | null } | null,
+  next: { cursor: number; events: E[] },
+  nowMs: number,
+  cap = 120,
+  windowMs = ALERT_WINDOW_MS,
+): { cursor: number; events: E[]; alerts: E[]; observedFrom: string | null } {
+  const time = (event: E) => {
+    const t = Date.parse(event.at);
+    return Number.isFinite(t) ? t : Number.NEGATIVE_INFINITY;
+  };
+  // identity, not id: a verdict re-stamped by the tick replaces its older row (P0-10)
+  const newest = new Set(next.events.map(eventIdentity));
+  const ordered = [...next.events, ...(previous?.events ?? []).filter((event) => !newest.has(eventIdentity(event)))];
+  const seen = new Set<string>();
+  const events = ordered
+    .filter((event) => (seen.has(eventIdentity(event)) ? false : (seen.add(eventIdentity(event)), true)))
+    .sort((left, right) => time(right) - time(left))
+    .slice(0, cap);
+  const seenAlerts = new Set<string>();
+  const alerts = [...next.events, ...(previous?.alerts ?? []).filter((event) => !newest.has(eventIdentity(event)))]
+    .filter((event) => isAlertKind(event.kind) && nowMs - time(event) <= windowMs)
+    .filter((event) => (seenAlerts.has(eventIdentity(event)) ? false : (seenAlerts.add(eventIdentity(event)), true)))
+    .sort((left, right) => time(right) - time(left));
+  // the oldest moment the wire ever showed this page (P0-11): the bell can
+  // only vouch for alerts since then, whatever its window says
+  let observedFrom = previous?.observedFrom ?? null;
+  for (const event of next.events) {
+    const t = time(event);
+    if (t !== Number.NEGATIVE_INFINITY && (observedFrom === null || t < Date.parse(observedFrom))) observedFrom = event.at;
+  }
+  return { cursor: next.cursor, events, alerts, observedFrom };
+}
+
+/**
+ * The span the bell actually observed (P0-11): the window, clipped to the
+ * moment the wire's first answer began. The server hands the newest 120
+ * events, so a busy swarm's first answer may begin minutes ago, not an hour;
+ * the bell then names those minutes instead of implying the hour. Null
+ * until the wire has answered once.
+ */
+export function alertSpan(observedFrom: string | null, nowMs: number, windowMs = ALERT_WINDOW_MS): { seconds: number; clipped: boolean } | null {
+  if (observedFrom === null) return null;
+  const from = Date.parse(observedFrom);
+  if (!Number.isFinite(from)) return null;
+  const observed = Math.max(0, nowMs - from);
+  return observed < windowMs ? { seconds: Math.round(observed / 1000), clipped: true } : { seconds: Math.round(windowMs / 1000), clipped: false };
+}
+
+/**
+ * How long a bee has been silent (P1-23): seconds since its last word on
+ * the wire, and whether that silence outlasts one round. Cold only when a
+ * round length is known; no last word yields null, never a fabricated age.
+ */
+export function beeSilence(latestAt: string | null | undefined, nowMs: number, roundSeconds: number | null): { seconds: number; cold: boolean } | null {
+  if (!latestAt) return null;
+  const t = Date.parse(latestAt);
+  if (!Number.isFinite(t)) return null;
+  const seconds = Math.max(0, Math.round((nowMs - t) / 1000));
+  return { seconds, cold: roundSeconds !== null && roundSeconds > 0 && seconds > roundSeconds };
+}

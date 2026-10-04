@@ -1,0 +1,25 @@
+1/24 tool_executor.test.ToolName.fromString...OK
+2/24 tool_executor.test.isPathSafe blocks traversal...OK
+3/24 tool_executor.test.isBashAllowed blocks injection...OK
+4/24 tool_executor.test.redactSecrets blocks API keys...OK
+5/24 tool_executor.test.redactSecrets blocks GitHub PATs...OK
+6/24 tool_executor.test.redactSecrets passes clean strings...OK
+7/24 tool_executor.test.invalid writes are rejected before checkpoint side effects...OK
+8/24 permissions.test.ruleMatches wildcard...OK
+9/24 permissions.test.ruleMatches prefix...OK
+10/24 permissions.test.ruleMatches exact...OK
+11/24 permissions.test.parseRuleString...OK
+12/24 permissions.test.check deny wins over allow...OK
+13/24 permissions.test.check defaults...OK
+14/24 permissions.test.loaded rules survive JSON and file buffer release...OK
+15/24 permissions.test.invalid settings fail closed, including partially parsed allow...OK
+16/24 permissions.test.rules decode escaped JSON and enforce capacity without truncation...OK
+17/24 mcp_client.test.MCP tool metadata owns strings after response release...OK
+18/24 mcp_client.test.invalid MCP entry rolls back tool registration...OK
+19/24 mcp_client.test.MCP handshake consumes initialize before listing tools...OK
+20/24 tool_protocol.test.extractField basic...OK
+21/24 tool_protocol.test.extractField stop_reason...OK
+22/24 tool_protocol.test.extractObject basic...OK
+23/24 tool_protocol.test.unescapeString...OK
+24/24 tool_protocol.test.writeJsonEscaped...OK
+All 24 tests passed.

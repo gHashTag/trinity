@@ -1,0 +1,19 @@
+/* What the view is for, set apart from what it shows: the same measure as the
+   description it follows, a rule in the accent to mark the change of voice, and
+   no extra weight — the reason is not more important than the description, it is
+   the other half of it. */
+
+/* Two classes, deliberately. Every block that mounts this line also styles its
+   own paragraphs with a `.block p` selector, which is (0,1,1) and would beat a
+   single class at (0,1,0) — the colour and the rule would silently not apply.
+   Doubling the class makes this (0,2,0), higher than any of them, so the line
+   looks the same in every block without this file having to name them. */
+.play-line.play-line {
+  max-width: 62ch;
+  margin: 0.7rem 0 0;
+  padding-left: 0.85rem;
+  border-left: 2px solid rgba(0, 255, 136, 0.4);
+  color: #cfe6df;
+  font-size: clamp(0.88rem, 1.1vw, 0.98rem);
+  line-height: 1.55;
+}

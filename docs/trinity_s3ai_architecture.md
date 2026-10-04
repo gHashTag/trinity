@@ -35,7 +35,7 @@
 3. **Dual Target**: Zig software emulation + Verilog FPGA synthesis
 4. **Bridge Layer**: Connects Trinity math (Strand I) to hardware (Strand III)
 
-[Full TRI-27 Documentation](docs/tri27/README.md)
+[Full TRI-27 Documentation](tri27/README.md)
 
 ---
 
@@ -252,10 +252,10 @@ Pure Zig 0.15 implementation:
 ## 📖 References
 
 - [Trinity GitHub](https://github.com/gHashTag/trinity)
-- [VSA module](../src/vsa/README.md)
-- [FPGA Synthesis](project_fpga_synthesis_results.md)
-- [Tri Language](specs/tri/README.md)
-- [TRI-27 ISA](docs/tri27/OPCODES.md) (planned)
+- [VSA module](docs/api/vsa.md)
+- FPGA Synthesis (historical path `project_fpga_synthesis_results.md`; not present in this checkout)
+- [Tri Language](../specs/tri/)
+- [TRI-27 ISA](tri27/README.md#isa--36-opcodes) (planned)
 
 ---
 

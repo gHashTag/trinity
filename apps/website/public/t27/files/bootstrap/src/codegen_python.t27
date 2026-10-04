@@ -1,0 +1,206 @@
+// bootstrap/src/codegen_python.rs
+// Python Code Generator for CLARA (TA2 Deliverable)
+// φ² + 1/φ² = 3 | TRINITY
+//
+// Generates Python code from .t27 specifications for PyTorch integration
+// NOTE: This is a specification stub - full implementation is P1 priority
+//
+// ─────────────────────────────────────────────────────────────────────────────────────────────
+
+// Syntax note: the older `module codegen_python { ... }` block form is written
+// as the `module codegen_python;` header; the block's closing brace and two
+// stray closing braces after the tests were removed.
+module codegen_python;
+    use base::types;
+    use parser;
+
+    // ═════════════════════════════════════════════════════════════════
+    // CONFIGURATION
+    // ════════════════════════════════════════════════════════════════
+
+    /// Python module prefix for generated code
+    // Rust byte string b"t27_" written as an ordinary t27 string literal.
+    pub const PYTHON_MODULE_PREFIX : []const u8 = "t27_";
+
+    // ══════════════════════════════════════════════════════════════════
+    // TYPE MAPPINGS
+    // ══════════════════════════════════════════════════════════════════════════════════════
+
+    /// T27 Trit → Python type
+    fn map_trit_to_python_type(tn : Trit) -> []const u8 {
+        // For basic implementation, use int mapping
+        // K_TRUE -> 1, K_FALSE -> 0, K_UNKNOWN -> 0
+        // Better: Use Python's bool or enum
+        if (tn == .pos) {
+            return "bool";
+        } else if (tn == .neg) {
+            return "bool";
+        } else {
+            return "int";  // For unknown, use int (0 or 1)
+        }
+    }
+
+    /// T27 array → Python list
+    fn map_trit_array_to_python_list(array : [MAX_ARGS]Trit) -> []const u8 {
+        // Array mapping: [-1, 0, +1] as Python list
+        var result : [array.len * 8]u8 = undefined;
+        var i : usize = 0;
+        var j : usize = 0;
+
+        while (i < array.len) {
+            result[i] = map_trit_to_python_type(array[i]);
+            i += 1;
+            j += 8;
+        }
+
+        return result;
+    }
+
+    /// T27 struct → Python class
+    fn map_struct_to_python_class(node : *Node) -> []const u8 {
+        // Extract struct name and fields
+        var class_name : []const u8 = undefined;
+        var fields : [32]u8 = undefined;
+        var field_count : u8 = 0;
+
+        // Get struct name from node type identifier
+        // (Rust `match node.kind { StructDecl => ..., _ => ... }` as if/else.)
+        if (node.kind == .StructDecl) {
+            const name = node.name;
+            fields = &node.fields;
+        } else {
+            // For other types, skip for now
+            class_name = "Any";
+        }
+
+        // Process each field
+        // For now, just store field names
+        // Real implementation would traverse fields
+
+        var i : usize = 0;
+        while (i < field_count) {
+            var field_name = extract_identifier(&node.fields[i]);
+            fields[field_count] = field_name;
+            field_count += 1;
+            i += 1;
+        }
+
+        var result : [field_count]u8 = undefined;
+        return result;
+    }
+
+    /// Extract identifier from field node (strips module::, namespace::)
+    fn extract_identifier(node : *Node) -> []const u8 {
+        // Strip module:: and namespace:: prefixes
+        // Get raw name
+        var raw_name : []const u8 = node.name;
+        var name_len = raw_name.len;
+
+        // Skip common prefixes
+        var i : usize = 6;  // len("module::")
+        if (string_starts_with_prefix(&raw_name, i, "module::")) { i += 7; }
+        if (string_starts_with_prefix(&raw_name, i, "namespace::")) { i += 11; }
+
+        return raw_name[i..name_len];
+    }
+
+    /// Strip module:: prefixes from identifier
+    fn strip_prefixes(name : []const u8) -> []const u8 {
+        var start_idx : usize = 0;
+        var write_idx : usize = 0;
+
+        while (start_idx < name.len && write_idx < 32) {
+            // Copy to output if it's a valid char for Python
+            if (name[start_idx] == ':' ||
+                name[start_idx + 1] == '_' ||
+                name[start_idx + 1] == '.' ||
+                !name[start_idx + 1].is_ascii()) {
+                // Skip or invalid character
+                start_idx += 1;
+            } else {
+                name[write_idx] = name[start_idx + 1];
+                write_idx += 1;
+            }
+        }
+
+        return name[0..write_idx];
+    }
+
+    /// Generate Python function from function node
+    fn gen_function(fn_node : *Node) -> []const u8 {
+        var func_name = fn_node.name;
+        var params = gen_params(fn_node);
+
+        // For stub: just generate def name(params) -> pass
+        // Full implementation would handle default values, docstrings, etc.
+
+        var result : [256]u8 = undefined;
+        var offset : usize = 0;
+
+        // Rust `&mut offset` borrows written as the pointer `&offset`.
+        offset = string_copy_str(&offset, "def ");
+        offset = string_copy_str(&offset, func_name);
+        offset = gen_params(&offset, params, false);
+        offset = string_copy_str(&offset, "):\n");
+        offset = indent_lines(&offset, INDENT);
+
+        return result[0..offset];
+    }
+
+    /// Generate parameters from params node
+    fn gen_params(params_node : *Node) -> []const u8 {
+        var result : [256]u8 = undefined;
+        var offset : usize = 0;
+
+        // For now, just generate params list: param1, param2, ...
+        var param_count : usize = 0;
+
+        while (offset < params_node.value.arg_count) {
+            var param = &params_node.args[offset];
+
+            // Generate param name (default "param" + N)
+            offset = string_copy_str(&offset, "param");
+            offset = string_copy_str(&offset, param_count);
+            offset = string_copy_str(&offset, ": ");
+
+            // Just stub: "param1" (no default value)
+            param_count += 1;
+            offset += 1;
+        }
+
+        return result[0..offset];
+    }
+
+    // ════════════════════════════════════════════════════
+    // TESTS
+    // ══════════════════════════════════════════════════════
+
+    // given/when/then clauses written as statements; `when call f(x)` binds
+    // the call's value to `result`, which the `then` clause reads.
+    test "map_trit_to_python_type" {
+        // given
+        const node = ExprIdentifier { name = "test_trit", value = "" };
+        // when
+        const result = map_trit_to_python_type(node);
+        // then
+        assert(result == "bool");
+    }
+
+    test "gen_function_basic" {
+        // given (`fn` is a keyword, so the node is named fn_node)
+        const fn_node = ExprIdentifier { name = "test_func", value = "" };
+        // when
+        const result = gen_function(fn_node);
+        // then: result starts with "def test_func("
+        assert(@startsWith(result, "def test_func("));
+    }
+
+    // ════════════════════════════════════════════════════════
+    // Invariant: Python generator always produces valid syntax
+    invariant "python_output_is_valid" {
+        // given
+        const output = generate_python_class(ExprIdentifier { name = "test_module" });
+        // then: output contains "class test_module"
+        assert(@contains(output, "class test_module"));
+    }
+

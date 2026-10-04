@@ -6,6 +6,25 @@ ERC20 + Permit + Vesting token for the Trinity ternary AI network.
 
 **Sacred Formula:** phi^2 + 1/phi^2 = 3 (Trinity Identity)
 
+> **SUPERSEDED -- DO NOT DEPLOY.** On 2026-09-24 this contract and its
+> tokenomics were superseded by the mint-on-acceptance design in
+> [`gHashTag/trinity-fpga`](https://github.com/gHashTag/trinity-fpga) @ `d7e9718e9`:
+> `specs/trinet/mint_on_acceptance.t27`, `contracts/README.md`,
+> `docs/docs/depin/tokenomics.md`, `docs/docs/depin/principles.md`.
+> There, 100% of TRI is mined by accepted work: zero pre-mine, no allocation,
+> no sale; cap 3^21 = 10,460,353,203 TRI; chains TON and Solana; trust model
+> V1 M-of-N attestor quorum, then V2 optimistic challenge, then V3 zk receipt.
+> Nothing is deployed.
+>
+> The pre-mine and vesting allocation below contradict "100% mined". The
+> Sepolia deployment `0xef368e29FA3aB2eaf02BccD05438ED3bafE9f469`
+> (`deployment-sepolia.json`) is a historical testnet artefact: all five
+> allocation addresses equal the deployer, so the four `_setupVesting` calls
+> overwrote one another and only the last (treasury, 10%) survived. At most
+> 20% of the cap can ever exist on it; 80% can never be minted. See the
+> header of `src/TrinityToken.sol` for the derivation and the on-chain check.
+> This directory is kept as history only.
+
 ---
 
 ## Prerequisites
@@ -156,7 +175,7 @@ forge script script/Deploy.s.sol:DeployTrinityToken \
 
 ---
 
-## Tokenomics
+## Tokenomics (superseded, see the note at the top)
 
 | Allocation | Share | Amount (TRI) | Vesting | Cliff |
 |------------|-------|-------------|---------|-------|

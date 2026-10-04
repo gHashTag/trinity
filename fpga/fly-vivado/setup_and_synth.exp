@@ -1,14 +1,21 @@
 #!/usr/bin/expect -f
 # Vivado AuthTokenGen automation (auth only)
 set timeout 300
+# Credentials come from the environment (Railway/Infisical), never from this file.
+foreach var {AMD_ACCOUNT_EMAIL AMD_ACCOUNT_PASSWORD} {
+    if {![info exists env($var)] || $env($var) eq ""} {
+        puts "=== AUTH TOKEN ERROR: $var is not set ==="
+        exit 1
+    }
+}
 
 # Generate Auth Token (interactive - requires expect)
 puts "=== Generating Auth Token ==="
 spawn /vivado/installer/xsetup -b AuthTokenGen
 expect "E-mail Address:"
-send "999aigents@gmail.com\r"
+send "$env(AMD_ACCOUNT_EMAIL)\r"
 expect "Password:"
-send "TNzL7xAn0GpbwUcHsDwLYsVD4DReIQDm4d!\r"
+send "$env(AMD_ACCOUNT_PASSWORD)\r"
 expect {
     "Saved authentication token file successfully" {
         puts "\n=== AUTH TOKEN GENERATED ==="

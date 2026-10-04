@@ -57,7 +57,7 @@ const RU = {
   seatNote: 'Следующий поток стартует, когда наберётся группа — напишите, и я придержу место.',
   whyTitle: 'Зачем этот курс',
   why1: 'Вендорские курсы учат вендорским инструментам. Курсы по ASIC заканчиваются на тейпауте. Никто не учит тому, что мне пришлось доказать на железе: нейросеть, делающая обратный проход прямо на FPGA, проверенная побитово — на тулчейне, который студент ставит бесплатно на свой ноутбук.',
-  why2: 'Я учу этому, потому что сам это построил: собственный формат чисел от статьи на arXiv через RTL, умещающийся в логику без единого аппаратного умножителя, до дизайна, отправленного на изготовление по SKY130 (измерений на кристалле нет) — и до этого обучил больше тысячи разработчиков.',
+  why2: 'Я учу этому, потому что сам это построил: собственный формат чисел от статьи на arXiv через RTL, умещающийся в логику без единого аппаратного умножителя, до дизайна, подготовленного для SKY130 через Tiny Tapeout (заявка отозвана до изготовления, кристалла нет) — и до этого обучил больше тысячи разработчиков.',
   modulesTitle: 'Восемь модулей',
   modules: [
     { n: '01', title: 'Открытый флоу с нуля', body: 'Yosys, nextpnr-xilinx, prjxray, openFPGALoader и iverilog, установленные и проверенные на macOS arm64 или Linux. Первый битстрим мигает светодиодом на реальной плате — и ни одной вендор-лицензии в цепочке.' },
@@ -169,7 +169,7 @@ export default function Course() {
             {c ? c.why1 : `Vendor courses teach you vendor tools. ASIC courses stop at the tape-out. Nobody teaches the thing I actually had to prove on hardware: a neural network performing its own backward pass on an FPGA, verified bit-exact against an independent model — with a toolchain a student can install for free on a laptop.`}
           </p>
           <p style={{ fontSize: '0.95rem', lineHeight: 1.65, opacity: 0.9, margin: '0.9rem 0 0' }}>
-            {c ? c.why2 : `I teach it because I built it: a number format of my own from an arXiv paper, through RTL that needs no hard multipliers at all, to a design submitted for SKY130 fabrication — no die measurements yet. And I taught over a thousand developers before that.`}
+            {c ? c.why2 : `I teach it because I built it: a number format of my own from an arXiv paper, through RTL that needs no hard multipliers at all, to a design prepared for SKY130 through Tiny Tapeout — the submission was withdrawn before fabrication, so no die exists. And I taught over a thousand developers before that.`}
           </p>
         </motion.div>
 

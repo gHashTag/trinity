@@ -601,7 +601,7 @@ pub const E2ETestSuite = struct {
 
     /// Print results
     pub fn printResults(self: *Self) void {
-        const stdout = std.io.getStdOut().writer();
+        const stdout = std.fs.File.stdout().deprecatedWriter();
 
         stdout.print("\n", .{}) catch {};
         stdout.print("╔══════════════════════════════════════════════════════════════════╗\n", .{}) catch {};

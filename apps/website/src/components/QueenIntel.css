@@ -1,0 +1,103 @@
+/* QueenIntel.css - SECTORS, the panel that prints the six board columns as
+   territories. It fills the cell the shell gives it; its <ul> is the only
+   scroll owner. Colours come from the --hud-* variables Queen.css defines,
+   with the live palette as fallback.
+
+   The INTEL FEED shared this sheet until the shell gave its cell to the
+   Queen's conversation; its rules went with the component. */
+
+/* In the shell this panel sits in the top bar, where Queen.css strips it to
+   `background: none` on `.queen27-hud-sectors > .queen27-sectors` -- the bar
+   is already frosted, so the ground below is what the panel paints anywhere
+   else. */
+.queen27-sectors {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  min-height: 0;
+  height: 100%;
+  border: 1px solid var(--hud-line, rgba(0, 255, 136, 0.22));
+  background: var(--hud-panel, rgba(2, 8, 6, 0.88));
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+}
+
+/* ---- header strip ------------------------------------------------------ */
+
+.queen27-sectors-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.64rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
+  padding: 0.45rem 0.7rem;
+  border-bottom: 1px solid var(--hud-line, rgba(0, 255, 136, 0.22));
+}
+
+/* ---- sectors ------------------------------------------------------------ */
+
+.queen27-sectors-list {
+  list-style: none;
+  margin: 0;
+  padding: 0.25rem 0;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--hud-line-strong, rgba(0, 255, 136, 0.5)) transparent;
+}
+
+.queen27-sectors-row {
+  display: grid;
+  grid-template-columns: 1rem minmax(0, 1fr) auto auto;
+  grid-template-areas: "glyph title territory count" "bar bar bar bar";
+  column-gap: 0.5rem;
+  row-gap: 0.2rem;
+  width: 100%;
+  padding: 0.3rem 0.7rem;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.queen27-sectors-row:hover { background: rgba(0, 255, 136, 0.05); }
+.queen27-sectors-row[aria-pressed="true"] { background: rgba(0, 255, 136, 0.07); box-shadow: inset 2px 0 0 var(--hud-green, #00ff88); }
+.queen27-sectors-row:focus-visible { outline: 1px solid var(--hud-green, #00ff88); outline-offset: -1px; }
+
+.queen27-sectors-glyph { grid-area: glyph; font-size: 0.7rem; text-align: center; }
+.queen27-sectors-title {
+  grid-area: title; font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase;
+  overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+}
+.queen27-sectors-territory { grid-area: territory; font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; }
+.queen27-sectors-count {
+  grid-area: count;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.78rem;
+  text-align: right;
+  color: var(--hud-gold, #ffd700);
+}
+.queen27-sectors-count > small {
+  margin-left: 0.3em; font-size: 0.56rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
+}
+.queen27-sectors-bar { grid-area: bar; height: 3px; background: rgba(255, 255, 255, 0.07); }
+.queen27-sectors-bar > span { display: block; height: 100%; background: currentColor; transition: width 0.4s ease; }
+
+/* territory colour: glyph, word and bar fill share it via currentColor */
+.queen27-sectors-row[data-territory="held"] :is(.queen27-sectors-glyph, .queen27-sectors-territory, .queen27-sectors-bar > span) { color: var(--hud-green, #00ff88); }
+.queen27-sectors-row[data-territory="neutral"] :is(.queen27-sectors-glyph, .queen27-sectors-territory, .queen27-sectors-bar > span) { color: var(--hud-cyan, #64dcff); }
+.queen27-sectors-row[data-territory="fog"] :is(.queen27-sectors-glyph, .queen27-sectors-territory, .queen27-sectors-bar > span) { color: var(--hud-cold, #ff6b6b); }
+
+.queen27-sectors-empty { padding: 0.6rem 0.7rem; color: var(--hud-muted, rgba(255, 255, 255, 0.78)); }
+
+/* ---- motion ------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .queen27-sectors-bar > span { transition: none; }
+}

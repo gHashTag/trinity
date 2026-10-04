@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {treasuryCells,treasurySources} from '../src/lib/queenSpecTreasury.ts';
+const specs=Array.from({length:760},(_,i)=>({id:i.toString(16).padStart(64,'0'),sources:[{repo:i%2?'ghashtag/t27':'ghashtag/tri-net',path:`specs/example_${i}.t27`}]}));
+const cells=treasuryCells(specs);
+assert.equal(cells.length,760);assert.equal(new Set(cells.map(c=>`${c.x}:${c.y}`)).size,760);
+assert.ok(cells.every(c=>Math.hypot(c.x,c.y)>70),'reserve the real center for the Queen');
+assert.deepEqual(treasuryCells([...specs].reverse()),cells,'source identity layout is input-order independent');
+assert.deepEqual(treasurySources(specs[1]),['ghashtag/t27'],'edges come from actual catalog source records');
+assert.deepEqual(treasurySources({...specs[1],sources:[...specs[1].sources,...specs[0].sources]}),['ghashtag/t27','ghashtag/tri-net']);
+const alias={...specs[0],sources:[...specs[0].sources,{repo:'ghashtag/t27',path:'specs/alternate.t27'}]};
+assert.ok(treasuryCells([alias])[0].paths.includes('specs/alternate.t27'),'all aliases remain searchable');
+console.log('Spec treasury: PASS (760 distinct resources, empty center, deterministic layout, real source edges)');

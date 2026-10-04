@@ -1,0 +1,215 @@
+/* The Spec Explorer's block, given to every other module: the same measures,
+   the same frame, the same rhythm — so six modules read as one series instead
+   of as two presented ones and four listed. Green rather than gold, because
+   gold on this site means a spec. */
+.module-hero {
+  border-bottom: 1px solid rgba(0, 255, 136, 0.2);
+  background: #000;
+  color: var(--text, #FFFFFF);
+}
+
+.module-hero-inner {
+  width: min(1180px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: clamp(1.5rem, 3.5vw, 2.5rem) 0 clamp(2rem, 6vw, 4.5rem);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(1.5rem, 4vw, 2.5rem);
+  align-items: start;
+}
+
+.module-hero-copy {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: clamp(1rem, 3vw, 3rem);
+  align-items: end;
+}
+
+.module-hero-aside {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.module-hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: #00ff88;
+  font: 600 0.72rem/1.2 "JetBrains Mono", monospace;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.module-hero-eyebrow > i {
+  font-size: 1.05rem;
+  font-style: normal;
+}
+
+/* The number is the key that opens this module in the shell, drawn as a key. */
+.module-hero-eyebrow > b {
+  display: grid;
+  place-items: center;
+  width: 19px;
+  height: 19px;
+  border: 1px solid rgba(0, 255, 136, 0.35);
+  color: #a8c1ba;
+  font-size: 0.6rem;
+  font-weight: 400;
+}
+
+.module-hero h2 {
+  max-width: 22ch;
+  margin: 0.4rem 0 0;
+  font: 400 clamp(1.5rem, 2.7vw, 2.5rem)/1.1 Outfit, sans-serif;
+}
+
+.module-hero p {
+  max-width: 62ch;
+  margin: 0;
+  color: #a8c1ba;
+  font-size: clamp(0.95rem, 1.2vw, 1.05rem);
+  line-height: 1.55;
+}
+
+.module-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.module-hero-actions a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.65rem 0.9rem;
+  border-radius: 6px;
+  font: 600 0.82rem/1.2 "JetBrains Mono", monospace;
+  text-decoration: none;
+}
+
+.module-hero-primary {
+  background: #000;
+  color: #00ff88;
+  border: 1px solid #00ff88;
+}
+
+.module-hero-secondary {
+  color: #00ff88;
+  border: 1px solid #00ff8888;
+  background: transparent;
+}
+
+.module-hero-primary:hover,
+.module-hero-secondary:hover {
+  filter: brightness(1.12);
+}
+
+/* A module is a screen, and a screen shown small is a screenshot of one. Same
+   measure the Explorer's frame uses, for the same reason. */
+.module-hero-frame {
+  height: min(76vh, 700px);
+  min-height: 460px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(0, 255, 136, 0.28);
+  background: #000;
+  clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+}
+
+.module-hero-frame iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #000;
+}
+
+@media (max-width: 900px) {
+  .module-hero-copy {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 760px) {
+  .module-hero-frame {
+    height: min(78vh, 560px);
+    min-height: 380px;
+  }
+
+  .module-hero h2 {
+    max-width: 18ch;
+  }
+}
+
+/* Landscape phones: height is the scarce axis and a 460px floor would push the
+   frame off the screen. */
+@media (max-height: 500px) {
+  .module-hero-frame {
+    height: 82vh;
+    min-height: 240px;
+  }
+
+  .module-hero-inner {
+    padding: 1.25rem 0;
+    gap: 1rem;
+  }
+}
+
+/* The frame before it runs: what it holds and the one button that runs it.
+   The whole frame is the button, so the target is the screen it fills. */
+.module-hero-run {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.85rem;
+  padding: 1.5rem;
+  border: 0;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(0, 255, 136, 0.08), transparent 60%),
+    #000;
+  color: #00ff88;
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+}
+
+.module-hero-run > i {
+  font-size: clamp(3rem, 8vw, 5.5rem);
+  font-style: normal;
+  line-height: 1;
+}
+
+.module-hero-run > span {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.65rem 1.1rem;
+  border: 1px solid #00ff88;
+  border-radius: 6px;
+  font: 600 0.9rem/1.2 "JetBrains Mono", monospace;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.module-hero-run > small {
+  max-width: 42ch;
+  color: #a8c1ba;
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.module-hero-run:hover > span,
+.module-hero-run:focus-visible > span {
+  background: rgba(0, 255, 136, 0.12);
+}
+
+.module-hero-run:focus-visible {
+  outline: 2px solid #00ff88;
+  outline-offset: -6px;
+}

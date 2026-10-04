@@ -5,8 +5,7 @@ import os
 import kaggle_benchmarks as kb
 
 # Set token from env
-os.environ["KAGGLE_API_TOKEN"] = "KGAT_2ea86c02d9642bed9a4a7b713f5b9a62"
-
+# KAGGLE_API_TOKEN is read from the environment (Railway/Infisical); never hardcode it.
 # Check what's available in kaggle_benchmarks
 print(f"Available in kaggle_benchmarks:")
 print([x for x in dir(kb) if not x.startswith("_")][:20])

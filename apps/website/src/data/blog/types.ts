@@ -7,6 +7,9 @@ export type Block =
   | { kind: 'code'; text: string }
   | { kind: 'table'; head: string[]; rows: string[][] }
   | { kind: 'figure'; svg: string; caption: string }
+  // A recorded terminal session (asciicast v2 under public/), replayed in the page by
+  // TerminalCast; `share` is its page at /term/<id>/ (made by `tri cast publish`).
+  | { kind: 'terminal'; src: string; title: string; caption: string; share?: string }
 
 export interface PostRuMeta {
   title: string

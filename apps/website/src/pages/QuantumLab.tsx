@@ -14,7 +14,8 @@ const categories = [
     modes: [
       { id: 'trinity-computer', icon: '🔮', title: 'TRINITY Computer', titleRu: 'Компьютер Троицы', color: '#ffd700' },
       { id: 'trinity', icon: '🔺', title: 'Trinity Core', titleRu: 'Ядро Троицы', color: '#0f8' },
-      { id: 'universal-translator', icon: '⚡', title: 'Universal Translator', titleRu: 'Универсальный транслятор', color: '#00FF88' },
+      // The id stays for ?mode= links; the panel is the real t27 compiler now, not a translator between languages it never read (2026-10-04).
+      { id: 'universal-translator', icon: '⚡', title: 't27 Compiler', titleRu: 'Компилятор t27', color: '#00FF88' },
     ]
   },
   {
@@ -138,7 +139,7 @@ export default function QuantumLab() {
       {/* Fullscreen Canvas */}
       <QuantumCanvas mode={currentMode} particleCount={2000} interactive={true} />
 
-      {/* Translator Demo Overlay */}
+      {/* t27 compiler overlay */}
       {currentMode === 'universal-translator' && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 60, overflowY: 'auto', paddingTop: '80px', pointerEvents: 'auto' }}>
            <TranslatorDemo />

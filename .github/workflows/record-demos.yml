@@ -1,16 +1,61 @@
+# Render the VHS tapes in tapes/ against a `tri` built from this checkout and
+# upload the GIFs as the run's artifact, terminal-demo-gifs.
+#
+# Until 2026-10-01 no run got past "Install VHS". It downloaded
+# vhs_0.7.1_linux_amd64.tar.gz, an asset the v0.7.1 release does not publish
+# (the file is vhs_0.7.1_Linux_x86_64.tar.gz), so wget exited 8 on main, on
+# every branch and on the v10.2.0 and v10.3.0 tags. With the right name it
+# would still have failed: `wget -qO-` writes the archive to stdout, and the
+# `tar xzf` after it opened a file that was never written. Every later step
+# had never executed, and several could not have worked:
+#
+#   - The job ended with `git push` of recordings/*.gif. On main, ruleset
+#     23148303 ("T27 mandatory work report") rejects a direct push with GH013,
+#     the answer signal-health-self.yml gets every day; on a tag there is no
+#     branch to push to; on any other branch it would have put a bot commit
+#     under its author. The GIFs are an artifact now. Whether they belong in
+#     the repository or on the site is a separate decision, made by a person.
+#   - `zig build` without -Dci=true also builds the raylib GUI targets, which
+#     need X11 and GL headers the runner does not have. brain-ci.yml builds
+#     `tri` with -Dci=true; so does this.
+#   - The tapes typed `cd ~/trinity-w1`, one developer's checkout, and wrote
+#     their GIFs into the working directory rather than recordings/.
+#   - VHS needs ttyd and ffmpeg next to the browser; the runner has only the
+#     browser.
 name: Terminal Demo GIFs
 
 on:
+  # main only: a tag push skips path filters entirely, so every release tag ran
+  # this job, and so did every branch that touched a .zig file, archived
+  # stashes included.
   push:
+    branches: [main]
     paths:
       - 'tapes/*.tape'
       - 'src/**/*.zig'
+      - '.github/workflows/record-demos.yml'
+  # A pull request that changes a tape or this file renders before it merges.
+  pull_request:
+    paths:
+      - 'tapes/*.tape'
+      - '.github/workflows/record-demos.yml'
   workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: record-demos-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   render:
     name: Render VHS tapes to GIFs
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -21,34 +66,53 @@ jobs:
           version: 0.15.2
 
       - name: Install VHS
+        env:
+          VHS_VERSION: 0.7.1
+          # sha256 of vhs_0.7.1_Linux_x86_64.tar.gz, as listed in the release's
+          # checksums.txt.
+          VHS_SHA256: 748443e0b5df89475499330b8943bf650cf0627250290cd5a11d38d3859e96d4
         run: |
-          wget -qO- https://github.com/charmbracelet/vhs/releases/download/v0.7.1/vhs_0.7.1_linux_amd64.tar.gz
-          tar xzf vhs_0.7.1_linux_amd64.tar.gz
-          sudo mv vhs /usr/local/bin/
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends ttyd ffmpeg
+          asset="vhs_${VHS_VERSION}_Linux_x86_64.tar.gz"
+          curl -fsSL -o "$RUNNER_TEMP/$asset" \
+            "https://github.com/charmbracelet/vhs/releases/download/v${VHS_VERSION}/$asset"
+          echo "$VHS_SHA256  $RUNNER_TEMP/$asset" | sha256sum -c -
+          # The binary sits at the top of the archive, next to README.md,
+          # LICENSE, completions/ and manpages/; take only the binary.
+          tar -xzf "$RUNNER_TEMP/$asset" -C "$RUNNER_TEMP" vhs
+          sudo install -m 0755 "$RUNNER_TEMP/vhs" /usr/local/bin/vhs
+          vhs --version
+          ttyd --version
+          ffmpeg -version | head -n 1
 
       - name: Build tri
         run: |
-          zig build
+          zig build -Dci=true
+          zig-out/bin/tri --version
 
+      # Each tape runs from the repository root, puts zig-out/bin first on PATH
+      # in a hidden line, and writes recordings/<name>.gif; VHS creates the
+      # directory.
       - name: Render tri-math-demo
-        run: vhs < tapes/tri-math-demo.tape
+        run: vhs tapes/tri-math-demo.tape
 
       - name: Render tri-benchmark
-        run: vhs < tapes/tri-benchmark.tape
+        run: vhs tapes/tri-benchmark.tape
 
       - name: Render tri-test
-        run: vhs < tapes/tri-test.tape
+        run: vhs tapes/tri-test.tape
 
       - name: Render tri-status
-        run: vhs < tapes/tri-status.tape
+        run: vhs tapes/tri-status.tape
 
       - name: Render tri-fpga-synth
-        run: vhs < tapes/tri-fpga-synth.tape
+        run: vhs tapes/tri-fpga-synth.tape
 
-      - name: Commit GIFs
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "actions@github.com"
-          git add recordings/*.gif docs/CLI_DEMOS_README.md
-          git commit -m "chore(demos): Regenerate terminal GIFs from VHS tapes"
-          git push
+      - name: Upload GIFs
+        uses: actions/upload-artifact@v4
+        with:
+          name: terminal-demo-gifs
+          path: recordings/*.gif
+          if-no-files-found: error
+          retention-days: 30

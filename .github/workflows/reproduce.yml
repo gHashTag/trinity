@@ -1,0 +1,87 @@
+name: Reproduce the headless profile
+
+# S12 of #988 (#989): the declared headless profile, built and tested from a clean
+# clone on a runner with no cache, and judged against specs/reproduce/headless.t27.
+# tools/reproduce.py points ZIG_GLOBAL_CACHE_DIR and ZIG_LOCAL_CACHE_DIR at a new
+# empty directory and setup-zig keeps no cache, so nothing built before is reused.
+# The record of the run -- each command with its exit code, the compile failures by
+# root, the run steps, every compiled test root and every install with its sha256 --
+# is uploaded as the artifact reproduce-headless-<arch>, with the capability index of
+# tools/capabilities.py built on it (capabilities-<arch>.json, and a table in the job summary).
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "build.zig"
+      - "build.zig.zon"
+      - "src/**"
+      - "external/**"
+      - "deploy/**/*.zig"
+      - "tools/reproduce.py"
+      - "tools/capabilities.py"
+      - "tools/contracts.py"
+      - "specs/reproduce/**"
+      - ".github/workflows/reproduce.yml"
+  push:
+    branches: [main]
+  schedule:
+    - cron: "23 4 * * 1"
+  workflow_dispatch:
+
+jobs:
+  headless:
+    # Both architectures the spec has floors for. The ARM64 JIT kernels run only on an ARM64
+    # machine: with x86_64 alone, two encoding errors in src/jit_arm64.zig (a CMLT for a CMGT,
+    # a 32-bit LDRSB under 64-bit arithmetic) had no runner that could execute them.
+    name: Headless profile from a clean clone (${{ matrix.arch }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            runner: ubuntu-latest
+          - arch: aarch64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Zig, no cache
+        uses: mlugg/setup-zig@v2
+        with:
+          version: 0.15.2
+          use-cache: false
+
+      # A gate nobody has seen fail is not a gate: the judge is run on planted records
+      # first -- a swallowed exit code, a new compile failure, a blocked root that compiles,
+      # a failed test, a leak, a shrunken graph, an empty run step, a missing install --
+      # and each must be reported.
+      - name: Negative control
+        run: python3 tools/reproduce.py --self-check
+
+      - name: Build and test the headless profile with fresh caches
+        run: python3 tools/reproduce.py headless --out reproduce-headless.json
+
+      # Every S01 capability card held to this run: measured (installs hashed, test roots passed,
+      # acceptance commands run), blocked (each in KNOWN_BLOCKED with its reason) or excluded with
+      # its reason -- specs/reproduce/capabilities.t27. The table goes to the job summary.
+      - name: Negative control of the capability index
+        run: python3 tools/capabilities.py --self-check
+
+      - name: Index the capabilities against this run
+        run: python3 tools/capabilities.py index --record reproduce-headless.json --out capabilities-${{ matrix.arch }}.json --summary "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload the record
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          # One artifact per architecture: upload-artifact@v4 refuses a second one by the same name.
+          name: reproduce-headless-${{ matrix.arch }}
+          # The record and, beside it, the whole output of each command.
+          path: |
+            reproduce-headless.json
+            reproduce-headless.*.log
+            capabilities-*.json
+          if-no-files-found: error

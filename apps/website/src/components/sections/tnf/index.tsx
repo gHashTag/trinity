@@ -228,7 +228,7 @@ export function TnfHero() {
 
         <motion.div {...fade} style={{ marginTop: 'var(--sp2)', color: 'var(--muted)', fontSize: 'var(--f-1)' }}>
           {L(PAPER.title)} · {PAPER.author} · ORCID {PAPER.orcid} · {L(PAPER.date)} · {PAPER.theorems}{' '}
-          {key === 'ru' ? 'теорем' : 'theorems'}
+          {key === 'ru' ? 'теорем' : 'theorems'} · {L(PAPER.status)}
         </motion.div>
 
         {/* Две работы, на которых стоит эта: они были упомянуты в разделах ниже,
@@ -244,12 +244,13 @@ export function TnfHero() {
           </a>
           <a href="https://arxiv.org/abs/2606.09686" target="_blank" rel="noopener noreferrer"
              style={{ color: 'var(--text)', textDecoration: 'none', borderBottom: '1px solid var(--border)' }}>
-            arXiv:2606.09686 — {key === 'ru' ? 'каталог 83 форматов' : 'the 83-format catalogue'}
+            arXiv:2606.09686 — {key === 'ru' ? 'Golden Ruler, каталог форматов' : 'Golden Ruler, the format catalogue'}
           </a>
           <a href="#visuals" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
             {key === 'ru' ? 'два чертежа по ним ↓' : 'two drawings from them ↓'}
           </a>
         </motion.div>
+
       </div>
     </section>
   )
@@ -320,7 +321,8 @@ export function TnfFormats() {
 export function TnfFrontier() {
   const { L, key } = useL()
   const maxLut = Math.max(...frontier.decoder.map((d) => d.lut))
-  const maxTpa = Math.max(...frontier.neuron.map((d) => d.tpa))
+  // The neuron table is read by area: the bar is the LUT count, longest is worst.
+  const maxNeuronLut = Math.max(...frontier.neuron.map((d) => d.lut))
 
   return (
     <section id="frontier" className="tnf-section">
@@ -349,7 +351,7 @@ export function TnfFrontier() {
                   {frontier.decoder.map((d) => (
                     <tr key={d.name} className={d.ours ? 'ours' : ''}>
                       <td className="tnf-mono" style={{ textAlign: 'left' }}>{d.rank}</td>
-                      <td className="tnf-mono" style={{ textAlign: 'left' }}>{d.name}</td>
+                      <td className="tnf-mono" style={{ textAlign: 'left' }}>{d.name}{'flag' in d && d.flag ? <sup style={{ color: 'var(--accent)' }}>{d.flag}</sup> : null}</td>
                       <td style={{ textAlign: 'left' }}>{L(d.kind)}</td>
                       <td className="tnf-mono">{d.lut}</td>
                       <td className="tnf-mono">{d.fmax.toFixed(2)}</td>
@@ -375,23 +377,19 @@ export function TnfFrontier() {
               <table className="tnf-table">
                 <thead>
                   <tr>
-                    <th scope="col">#</th>
                     <th scope="col">{key === 'ru' ? 'формат' : 'format'}</th>
                     <th scope="col">LUT</th>
-                    <th scope="col">{key === 'ru' ? 'МГц/LUT' : 'MHz/LUT'}</th>
                     <th scope="col" style={{ width: '90px' }} />
                   </tr>
                 </thead>
                 <tbody>
                   {frontier.neuron.map((d) => (
                     <tr key={d.name} className={d.ours ? 'ours' : ''}>
-                      <td className="tnf-mono" style={{ textAlign: 'left' }}>{d.rank}</td>
-                      <td className="tnf-mono" style={{ textAlign: 'left' }}>{d.name}</td>
+                      <td className="tnf-mono" style={{ textAlign: 'left' }}>{d.name}{'flag' in d && d.flag ? <sup style={{ color: 'var(--accent)' }}>{d.flag}</sup> : null}</td>
                       <td className="tnf-mono">{d.lut}</td>
-                      <td className="tnf-mono">{d.tpa.toFixed(4)}</td>
                       <td>
                         <div className="tnf-bar">
-                          <i style={{ width: `${(d.tpa / maxTpa) * 100}%`, background: d.ours ? 'var(--accent)' : 'rgba(255,255,255,0.3)' }} />
+                          <i style={{ width: `${(d.lut / maxNeuronLut) * 100}%`, background: d.ours ? 'var(--accent)' : 'rgba(255,255,255,0.3)' }} />
                         </div>
                       </td>
                     </tr>
@@ -401,6 +399,10 @@ export function TnfFrontier() {
             </div>
             <p className="tnf-note">{L(frontier.neuronNote)}</p>
           </div>
+
+          {/* Which of the priced modules are the format they are named after.
+              Spans both tables above, so it sits outside either cell. */}
+          <p className="tnf-note" style={{ gridColumn: '1 / -1', marginTop: 0 }}>{L(frontier.conformanceNote)}</p>
         </motion.div>
 
         <motion.div {...fade} className="tnf-grid" style={{ marginTop: '1.5rem', gridTemplateColumns: '1fr' }}>

@@ -1,73 +1,123 @@
-import { lazy, Suspense } from 'react'
 import Navigation from './components/Navigation'
+import GameHero from './components/GameHero'
+import GetStartedBlock from './components/GetStartedBlock'
 import Footer from './components/Footer'
 import ServiceEntry from './components/ServiceEntry'
-import { TnfHero } from './components/sections/tnf'
+import QueenHeroBlock from './components/QueenHeroBlock'
+import SpecHeroBlock from './components/SpecHeroBlock'
+import ModuleHeroBlock from './components/ModuleHeroBlock'
+import PlayBlock from './components/PlayBlock'
+import TriMineBlock from './components/TriMineBlock'
+import AgiGameBlock from './components/AgiGameBlock'
+import FaqBlock from './components/FaqBlock'
+import ModulesBlock from './components/ModulesBlock'
+import DevKitBlock from './components/DevKitBlock'
 
-// Главная страница построена под статьёй «Trinity S³AI: Ternary Network Floats»
-// (52 теоремы). Порядок разделов повторяет порядок аргумента:
-// что заявлено → чем именно заявлено → что измерено → что стоит бюджет →
-// на каких теоремах держится → где границы и что отозвано → кто ещё на этой
-// земле → откуда линия → как воспроизвести.
+// Модулей на главной три, а не одиннадцать: доску, корпус и этот показ ведут
+// собственные блоки, остальные лежат указателем в конце.
+const SHOWCASE = ['kanban', 'factory', 'agents'] as const
+
+// Главная — это игра, и читается она как воронка: марка и девиз, три входа,
+// живая доска, зачем ею управлять, как сделать ход, что спрашивают перед
+// ходом, вход — и только потом глубина: корпус, три модуля в полный рост и
+// указатель на все остальные.
 //
-// Секции прежней главной (DePIN, ROI-калькулятор, Solution с прогнозными
-// множителями, Invest) с главной сняты: они несли прогнозы и категорические
-// формулировки рядом с измеренными числами, и научный читатель не мог отделить
-// одно от другого. Компоненты остались в репозитории и доступны на своих
-// страницах — снята только их роль первого экрана.
-const TnfClaim = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfClaim })))
-const TnfFormats = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfFormats })))
-const TnfFrontier = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfFrontier })))
-const TnfLadder = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfLadder })))
-const TnfTheorems = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfTheorems })))
-const TnfLimits = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfLimits })))
-const TnfLandscape = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfLandscape })))
-const TnfDecision = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfDecision })))
-const TnfFaq = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfFaq })))
-const TnfStart = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfStart })))
-const TnfCalculators = lazy(() => import('./components/sections/tnf/Calculators'))
-const TnfVisuals = lazy(() => import('./components/sections/tnf/PhiViz'))
-const TnfFindings = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfFindings })))
-const TnfLineage = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfLineage })))
-const TnfAuthor = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfAuthor })))
-const TnfInvest = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfInvest })))
-const TnfReproduce = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfReproduce })))
-const PublicationsSection = lazy(() => import('./components/sections/PublicationsSection'))
-
-const SectionFallback = () => (
-  <div style={{ minHeight: '40vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-    <div style={{ width: '40px', height: '40px', border: '3px solid var(--border)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-  </div>
-)
-
+// Корпус и модули не запускаются сами. Каждый из них — целое приложение во
+// фрейме, и пока они монтировались при прокрутке, один проход по главной
+// загружал четыре копии сайта: 218 запросов, около 8 МБ, и каждая доска
+// опрашивала супервизор (замер на t27.ai, 2026-10-04). Теперь фрейм
+// запускается кнопкой в нём самом.
+//
+// Порядок такой не по вкусу. Страницу измерили: 20 962px, 27 экранов, из них
+// восемнадцать подряд — одиннадцать одинаковых блоков модулей с одной и той же
+// кнопкой, а единственный шаг, где посетитель может назваться, стоял двадцать
+// пятым. Возражения не разбирались нигде. Всё перечисленное — известные
+// причины терять читателя, и все три исправлены здесь, а не переписаны словами.
+//
+// Число и заявление о форматах — r² = r + 1 и всё, что из него следует, — были
+// здесь первым экраном и переехали на /trinity целиком. Тот, кто пришёл за
+// арифметикой, находит её в одном месте, а не прокручивает мимо, чтобы дойти
+// до доски.
+//
+// Прежняя главная несла 21 секцию и 31 393px (около 35 экранов): вся статья
+// «Trinity S³AI: Ternary Network Floats» лежала на одной странице, и цель игры
+// в ней терялась. Ни одна секция не удалена — каждая переехала на свою
+// страницу и живёт там целиком:
+//
+//   formats, visuals, calculators → /gft
+//   ladder, theorems, limits      → /proof
+//   frontier, reproduce           → /verification
+//   decision                      → /select
+//   landscape, findings           → /cases
+//   lineage, author               → /about
+//   faq, publications             → /resources
+//   start                         → /start
+//   invest                        → /ip
 export default function App() {
   return (
     <main>
       <Navigation />
 
-      <TnfHero />
+      {/* The mark, the motto under it, and in one line what the site is. The
+          number the game exists to build lives on /trinity and is linked from
+          here. */}
+      <GameHero />
+
+      {/* Three ways in, one per kind of visitor, before anything asks them to
+          read: someone who writes code, someone with a machine to lend, someone
+          who wants to work on the core. Each button opens a place that works
+          today; what is not built yet is said on its card. */}
+      <GetStartedBlock />
+
+      {/* The board itself, right after the ways in. It is the strongest thing
+          this page has — the live scene the /queen route mounts, not a
+          picture of it — and it
+          used to sit at the seventh screen, behind the argument for it. Show
+          the board, then argue for it. */}
+      <QueenHeroBlock />
+
+      {/* Why a swarm is worth directing, before how to contribute to it. It
+          carries the move the site never named — writing the boundary that
+          lets the Queen dispatch an issue — and the supervisor's own refusal
+          count as the evidence that the move is needed. Its first card hands
+          the reader down to PlayBlock, so it sits above it. */}
+      <AgiGameBlock />
+      {/* The point of the front door: a developer arrives, and the four moves
+          that put a cell of the core in their hands are named before the
+          modules are. The core is built by playing it. */}
+      <PlayBlock />
+      {/* What the moves earn, right after the moves: the token's live figures
+          and one button that hands a visitor's own agent the work order. */}
+      <TriMineBlock />
+
+      {/* What the reader is thinking once the moves are named: what it costs,
+          whether the language has to come first, what happens after they send.
+          Objections are answered where they are raised, and the ask comes
+          straight after them rather than twenty screens later. */}
+      <FaqBlock />
       <ServiceEntry />
 
-      <Suspense fallback={<SectionFallback />}>
-        <TnfClaim />
-        <TnfFormats />
-        <TnfFrontier />
-        <TnfVisuals />
-        <TnfLadder />
-        <TnfTheorems />
-        <TnfCalculators />
-        <TnfLimits />
-        <TnfDecision />
-        <TnfLandscape />
-        <TnfFindings />
-        <TnfLineage />
-        <PublicationsSection />
-        <TnfAuthor />
-        <TnfFaq />
-        <TnfStart />
-        <TnfInvest />
-        <TnfReproduce />
-      </Suspense>
+      {/* The newest measured work and the club, after the ask: the FPGA flow
+          timed layer by layer (#/devkit, the flow post) and the TRI DEV
+          developer agent at the club's one price. */}
+      <DevKitBlock />
+
+      {/* Then the depth, for the reader still going: the corpus through the
+          real compiler, three modules shown at full size, and an index of all
+          of them.
+          This place carried eleven identical blocks — eighteen consecutive
+          screens of one layout and one button. The header comment above said
+          "затем шесть модулей" and had stopped being true. The showcase is now
+          a named list, and every other module stands as a card at the end, so
+          none is lost and none is repeated. */}
+      <SpecHeroBlock />
+      {SHOWCASE.map((tab) => (
+        <ModuleHeroBlock key={tab} tab={tab} />
+      ))}
+      {/* Every module is reachable from the homepage: ModulesBlock draws all
+          MODULES.length cards, TRI included — whose full-size preview would
+          load a whole third-party app for everyone who scrolled past it. */}
+      <ModulesBlock />
 
       <Footer />
     </main>
