@@ -22,6 +22,7 @@ interface RunnersCopy {
   signin: string
   elsewhere: string
   unavailable: string
+  pending: string
   loading: string
   none: string
   namePlaceholder: string
@@ -48,6 +49,7 @@ const RUNNERS_COPY: Record<'en' | 'ru', RunnersCopy> = {
     signin: 'Sign in to app.t27.ai to manage your runners.',
     elsewhere: 'Runners are managed on the app’s board, where your session lives:',
     unavailable: 'The Queen did not answer. Try again in a minute.',
+    pending: 'Runners are on their way: the Queen does not offer them yet. This panel switches on by itself the day she does.',
     loading: 'Reading your runners…',
     none: 'No runners yet.',
     namePlaceholder: 'Name, e.g. my laptop',
@@ -72,6 +74,7 @@ const RUNNERS_COPY: Record<'en' | 'ru', RunnersCopy> = {
     signin: 'Войдите в app.t27.ai, чтобы управлять раннерами.',
     elsewhere: 'Раннеры управляются на доске приложения, где живёт ваша сессия:',
     unavailable: 'Королева не ответила. Попробуйте через минуту.',
+    pending: 'Раннеры скоро появятся: Королева их пока не выдаёт. Панель включится сама, как только это изменится.',
     loading: 'Читаю ваших раннеров…',
     none: 'Раннеров пока нет.',
     namePlaceholder: 'Имя, например «мой ноутбук»',
@@ -174,6 +177,7 @@ export default function QueenRunners({ lang }: { lang: 'en' | 'ru' }) {
           {c.unavailable}
         </p>
       )}
+      {view?.state === 'pending' && <p className="qr-note">{c.pending}</p>}
 
       {view?.state === 'minted' && (
         <div className="qr-minted" role="status">
@@ -258,7 +262,7 @@ export default function QueenRunners({ lang }: { lang: 'en' | 'ru' }) {
           </p>
         </>
       )}
-      <p className="qr-small">{c.nextStage}</p>
+      {view?.state !== 'pending' && <p className="qr-small">{c.nextStage}</p>}
     </section>
   )
 }

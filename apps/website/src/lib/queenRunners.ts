@@ -43,6 +43,13 @@ export interface Cabinet {
 /** What the panel can be showing. A token appears only in `minted`, once. */
 export type CabinetView =
   | { state: 'signin' }
+  /**
+   * The Queen answered, and the cabinet is not on her yet: a 404 on its path.
+   * A server that has the cabinet answers that path 200, 401 or 503 and never
+   * 404, so this is "not deployed", not "down" - and saying "she did not
+   * answer" to someone she just answered is the one wrong thing to show.
+   */
+  | { state: 'pending' }
   | { state: 'unavailable' }
   | { state: 'ready'; cabinet: Cabinet }
   | { state: 'minted'; cabinet: Cabinet; token: string; runner: RunnerView }
@@ -111,6 +118,7 @@ export async function callRunners(env: RunnersEnv, call: RunnersCall, previous?:
   const list = async (): Promise<CabinetView> => {
     const res = await env.fetch(base, { method: 'GET', credentials: 'omit', headers })
     if (res.status === 401) return { state: 'signin' }
+    if (res.status === 404) return { state: 'pending' }
     if (!res.ok) return { state: 'unavailable' }
     return { state: 'ready', cabinet: cabinetOf(await res.json().catch(() => ({}))) }
   }
@@ -135,6 +143,7 @@ export async function callRunners(env: RunnersEnv, call: RunnersCall, previous?:
     body: JSON.stringify({ label }),
   })
   if (res.status === 401) return { state: 'signin' }
+  if (res.status === 404) return { state: 'pending' }
   if (res.status === 409) return { state: 'refused', cabinet: kept, reason: 'limit' }
   if (res.status === 400) return { state: 'refused', cabinet: kept, reason: 'label' }
   if (!res.ok) return { state: 'unavailable' }
