@@ -2902,4 +2902,161 @@ pub fn build(b: *std.Build) void {
     });
     const run_arena_tests = b.addRunArtifact(arena_tests);
     test_step.dependOn(&run_arena_tests.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // S³AI BRAIN — region tests run by .github/workflows/brain-ci.yml
+    // ═══════════════════════════════════════════════════════════════════════════════
+    //
+    // 42490a22 (#517) removed every test-<region>, test-brain and
+    // test-brain-stress step from this file while brain-ci.yml kept calling
+    // them, so each Unit Tests job died on "no step named 'test-basal-ganglia'"
+    // and Integration, Stress and CLI Smoke never ran behind it. The source
+    // files and their test blocks were never removed; these steps point back
+    // at them. Only regions whose tests compile and pass on 0.15.2 are here.
+    //
+    // Not restored, on purpose:
+    //   test-intraparietal -- src/brain/intraparietal_sulcus.zig wraps the
+    //     hslm library that moved to gHashTag/trinity-training. What is left
+    //     are stubs (GF16 = TF3 = f32, PHI = 3.0) that do not compile, and its
+    //     tests assert behaviour of the moved library.
+    //   test-hslm -- hslm lives in gHashTag/trinity-training and is tested
+    //     there; nothing named hslm is in this tree.
+    const brainModule = struct {
+        fn make(
+            bb: *std.Build,
+            t: std.Build.ResolvedTarget,
+            o: std.builtin.OptimizeMode,
+            root: []const u8,
+            imports: []const std.Build.Module.Import,
+        ) *std.Build.Module {
+            return bb.createModule(.{
+                .root_source_file = bb.path(root),
+                .target = t,
+                .optimize = o,
+                .imports = imports,
+            });
+        }
+    }.make;
+
+    const bg_mod = brainModule(b, target, optimize, "src/brain/basal_ganglia.zig", &.{});
+    const rf_mod = brainModule(b, target, optimize, "src/brain/reticular_formation.zig", &.{});
+    const lc_mod = brainModule(b, target, optimize, "src/brain/locus_coeruleus.zig", &.{});
+    const bg_rf: []const std.Build.Module.Import = &.{
+        .{ .name = "basal_ganglia", .module = bg_mod },
+        .{ .name = "reticular_formation", .module = rf_mod },
+    };
+    const amygdala_b_mod = brainModule(b, target, optimize, "src/brain/amygdala.zig", &.{});
+    const persistence_b_mod = brainModule(b, target, optimize, "src/brain/persistence.zig", &.{});
+    const telemetry_b_mod = brainModule(b, target, optimize, "src/brain/telemetry.zig", &.{});
+    const thalamus_b_mod = brainModule(b, target, optimize, "src/brain/thalamus_logs.zig", &.{});
+    const pfc_b_mod = brainModule(b, target, optimize, "src/brain/prefrontal_cortex.zig", &.{});
+    const hh_b_mod = brainModule(b, target, optimize, "src/brain/health_history.zig", &.{});
+    const microglia_b_mod = brainModule(b, target, optimize, "src/brain/microglia.zig", &.{});
+    const alerts_b_mod = brainModule(b, target, optimize, "src/brain/alerts.zig", &.{});
+    const visualization_b_mod = brainModule(b, target, optimize, "src/brain/visualization.zig", &.{});
+    const learning_b_mod = brainModule(b, target, optimize, "src/brain/learning.zig", &.{});
+    const evolution_b_mod = brainModule(b, target, optimize, "src/brain/evolution_simulation.zig", &.{});
+    const state_recovery_b_mod = brainModule(b, target, optimize, "src/brain/state_recovery.zig", bg_rf);
+    const federation_b_mod = brainModule(b, target, optimize, "src/brain/federation.zig", bg_rf);
+    const async_b_mod = brainModule(b, target, optimize, "src/brain/async_processor.zig", bg_rf);
+    const metrics_b_mod = brainModule(b, target, optimize, "src/brain/metrics_dashboard.zig", &.{
+        .{ .name = "basal_ganglia", .module = bg_mod },
+        .{ .name = "reticular_formation", .module = rf_mod },
+        .{ .name = "locus_coeruleus", .module = lc_mod },
+        .{ .name = "amygdala", .module = amygdala_b_mod },
+        .{ .name = "prefrontal_cortex", .module = pfc_b_mod },
+        .{ .name = "telemetry", .module = telemetry_b_mod },
+        .{ .name = "health_history", .module = hh_b_mod },
+        .{ .name = "microglia", .module = microglia_b_mod },
+    });
+    const simulation_b_mod = brainModule(b, target, optimize, "src/brain/simulation.zig", &.{
+        .{ .name = "basal_ganglia", .module = bg_mod },
+        .{ .name = "reticular_formation", .module = rf_mod },
+        .{ .name = "locus_coeruleus", .module = lc_mod },
+    });
+    const observability_b_mod = brainModule(b, target, optimize, "src/brain/observability_export.zig", &.{
+        .{ .name = "basal_ganglia", .module = bg_mod },
+        .{ .name = "reticular_formation", .module = rf_mod },
+        .{ .name = "metrics_dashboard", .module = metrics_b_mod },
+    });
+    const admin_b_mod = brainModule(b, target, optimize, "src/brain/admin.zig", &.{
+        .{ .name = "basal_ganglia", .module = bg_mod },
+        .{ .name = "reticular_formation", .module = rf_mod },
+        .{ .name = "state_recovery", .module = state_recovery_b_mod },
+        .{ .name = "telemetry", .module = telemetry_b_mod },
+    });
+    const sebo_b_mod = brainModule(b, target, optimize, "src/brain/sebo.zig", &.{
+        .{ .name = "evolution_simulation", .module = evolution_b_mod },
+    });
+
+    // One step per region: the region file is the test root, so the step
+    // runs exactly that file's own test blocks.
+    const brain_region_steps = [_]struct { step: []const u8, desc: []const u8, mod: *std.Build.Module }{
+        .{ .step = "test-basal-ganglia", .desc = "Run Basal Ganglia tests (src/brain/basal_ganglia.zig)", .mod = bg_mod },
+        .{ .step = "test-reticular-formation", .desc = "Run Reticular Formation tests (src/brain/reticular_formation.zig)", .mod = rf_mod },
+        .{ .step = "test-locus-coeruleus", .desc = "Run Locus Coeruleus tests (src/brain/locus_coeruleus.zig)", .mod = lc_mod },
+    };
+    for (brain_region_steps) |r| {
+        const region_tests = b.addTest(.{ .root_module = r.mod });
+        b.step(r.step, r.desc).dependOn(&b.addRunArtifact(region_tests).step);
+    }
+
+    // test-brain: the aggregator src/brain/brain.zig (AgentCoordination over
+    // the regions above) plus src/brain/integration_test.zig (cross-region
+    // scenarios). brain.zig also names intraparietal_sulcus, perf_dashboard
+    // and benchmarks; none of its tests reference them, and Zig analyses an
+    // @import only when it is referenced, so they are not wired here.
+    const brain_agg_mod = brainModule(b, target, optimize, "src/brain/brain.zig", &.{
+        .{ .name = "basal_ganglia", .module = bg_mod },
+        .{ .name = "reticular_formation", .module = rf_mod },
+        .{ .name = "locus_coeruleus", .module = lc_mod },
+        .{ .name = "amygdala", .module = amygdala_b_mod },
+        .{ .name = "persistence", .module = persistence_b_mod },
+        .{ .name = "telemetry", .module = telemetry_b_mod },
+        .{ .name = "thalamus_logs", .module = thalamus_b_mod },
+        .{ .name = "prefrontal_cortex", .module = pfc_b_mod },
+        .{ .name = "health_history", .module = hh_b_mod },
+        .{ .name = "microglia", .module = microglia_b_mod },
+        .{ .name = "metrics_dashboard", .module = metrics_b_mod },
+        .{ .name = "state_recovery", .module = state_recovery_b_mod },
+        .{ .name = "admin", .module = admin_b_mod },
+        .{ .name = "alerts", .module = alerts_b_mod },
+        .{ .name = "simulation", .module = simulation_b_mod },
+        .{ .name = "evolution_simulation", .module = evolution_b_mod },
+        .{ .name = "sebo", .module = sebo_b_mod },
+        .{ .name = "observability_export", .module = observability_b_mod },
+        .{ .name = "visualization", .module = visualization_b_mod },
+        .{ .name = "learning", .module = learning_b_mod },
+        .{ .name = "federation", .module = federation_b_mod },
+        .{ .name = "async_processor", .module = async_b_mod },
+    });
+    // integration_test.zig reaches metrics_dashboard.zig by file path, so that
+    // file is compiled as part of this module and needs its imports here too.
+    const brain_integration_mod = brainModule(b, target, optimize, "src/brain/integration_test.zig", &.{
+        .{ .name = "basal_ganglia", .module = bg_mod },
+        .{ .name = "reticular_formation", .module = rf_mod },
+        .{ .name = "locus_coeruleus", .module = lc_mod },
+        .{ .name = "amygdala", .module = amygdala_b_mod },
+        .{ .name = "prefrontal_cortex", .module = pfc_b_mod },
+        .{ .name = "telemetry", .module = telemetry_b_mod },
+        .{ .name = "health_history", .module = hh_b_mod },
+        .{ .name = "alerts", .module = alerts_b_mod },
+        .{ .name = "state_recovery", .module = state_recovery_b_mod },
+        .{ .name = "learning", .module = learning_b_mod },
+        .{ .name = "federation", .module = federation_b_mod },
+        .{ .name = "async_processor", .module = async_b_mod },
+        .{ .name = "microglia", .module = microglia_b_mod },
+    });
+    const brain_tests_step = b.step("test-brain", "Run brain aggregator + cross-region integration tests (src/brain/brain.zig, src/brain/integration_test.zig)");
+    brain_tests_step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = brain_agg_mod })).step);
+    brain_tests_step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = brain_integration_mod })).step);
+
+    // test-brain-stress: src/brain/stress_test.zig, 10,000-claim and
+    // 20,000-event load tests over basal_ganglia, reticular_formation,
+    // locus_coeruleus, telemetry and alerts. It imports them by file path, so
+    // it is a single module with no imports of its own.
+    const brain_stress_tests = b.addTest(.{
+        .root_module = brainModule(b, target, optimize, "src/brain/stress_test.zig", &.{}),
+    });
+    b.step("test-brain-stress", "Run brain stress tests (src/brain/stress_test.zig)").dependOn(&b.addRunArtifact(brain_stress_tests).step);
 }
