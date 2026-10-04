@@ -250,6 +250,30 @@ export const FN_PROBE_RESULTS = ['COMPLETED', 'FAILED-at-guard', 'skipped', 'not
 // exists in the bot tree but is withdrawn from registerFunctions.ts and not served;
 // the spec's NOTE says why. The bot manifest uses the same value for `control`.
 export const FN_CONTROLS = ['spec+code', 'spec-only', 'code-only', 'code-only/unregistered']
+// Layer 7: providers (specs/providers) -- the models a network sells and the hardware a
+// person could rent out for $TRI. catalog.t27 is the schema: the field lists, the
+// vocabularies and the network directories are read from it, not kept here.
+// tri_gnk_pair.t27 is the study the page shows beside the cards; it is not a card.
+export const PROVIDER_SPEC_DIR = 'specs/providers'
+export const PROVIDER_CATALOG_SPEC = `${PROVIDER_SPEC_DIR}/catalog.t27`
+export const PROVIDER_STUDY_SPEC = `${PROVIDER_SPEC_DIR}/tri_gnk_pair.t27`
+export const PROVIDERS_OUT = 'public/providers/spec-providers.json'
+// The shape of every field catalog.t27 names. The names are the catalog's (COMMON_FIELDS,
+// MODEL_FIELDS, HOST_FIELDS); this table says only what each one holds, and the build
+// fails when its keys and the catalog's lists differ.
+export const PROVIDER_FIELD_SHAPES = {
+  KIND: 'str', ID: 'str', FAMILY: 'str', NETWORK: 'str', NAME: 'str', SUMMARY_EN: 'str', STATUS: 'str', WITNESS: 'str', CHECKED: 'str', SOURCES: 'arr', NOTE: 'str', ENABLED: 'bool',
+  MODEL_ID: 'str', HF_COMMIT: 'str', CONTEXT_TOKENS: 'u32', VRAM_GB: 'u32', THROUGHPUT_PER_NONCE: 'u32', VALIDATION_PERMILLE: 'u16', POC_MODEL: 'bool', POC_WEIGHT_SCALE_E4: 'u32', HOSTS: 'u32', EPOCH: 'u32', UNITS_OF_COMPUTE_PER_TOKEN: 'u32', PRICE_PER_TOKEN: 'u32', PRICE_UNIT: 'str', API: 'str', CALL: 'str', VLLM_ARGS: 'arr',
+  DEVICE: 'str', MEMORY_GB: 'u32', UNITS_PER_GONKA_NODE: 'u32', PROOF: 'str', REWARD: 'str', STAKE: 'str', GONKA_PARALLEL: 'str', MEASURED: 'arr', GAPS: 'arr', TOKEN: 'str',
+}
+// Which of the catalog's field lists each family adds to COMMON_FIELDS.
+export const PROVIDER_FAMILY_FIELDS = { model: 'MODEL_FIELDS', 'host-class': 'HOST_FIELDS' }
+// The words of catalog.t27 whose meaning buildProviders encodes (STATUS_RULE, WITNESS_RULE,
+// CALL_RULE). They are read from the catalog and compared with these; when the catalog's
+// vocabulary changes, the build stops instead of misreading a card.
+export const PROVIDER_WORDS = { FAMILIES: ['model', 'host-class'], STATUSES: ['serving', 'listed', 'measured', 'planned'], WITNESSES: ['chain-read', 'bench-measured', 'design-only'], CALLS: ['needs-key', 'none'] }
+// The study fields the page renders; every other constant of the study passes through as declared.
+const PROVIDER_STUDY_REQUIRED = { KIND: 'str', ID: 'str', CHECKED: 'str', ROUTES: 'arr', CONFLICT: 'str', PARALLELS: 'arr', TRI_CHAINS: 'arr', TRI_MAINNET: 'bool', GONKA_POOL_REGISTERED: 'bool', BRIDGE_CHAINS: 'arr', GONKA_APPROVED_FOR_TRADE: 'arr', IBC_CHANNELS: 'arr', WGNK_ETHEREUM: 'str', WGNK_USDT_UNISWAP_V3_POOL: 'str', GNK_DECIMALS: 'u8' }
 export const T27_REPO_URL = 'https://github.com/gHashTag/t27'
 // Repo root of gHashTag/trinity (BUNDLE_PATH is repo-relative).
 export const REPO_ROOT = resolve(SITE, '..', '..')
@@ -612,9 +636,9 @@ export function analyzeSpecFiles(analyze, files) {
   })
 }
 
-export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], functionSpecs = [], toolSpecs = [], casts = new Map(), i18nSpecs = [], bundles = new Map(), experience = null, skillsManifest, cronsManifest, functionsManifest = null, t27Manifest, railway, compilerWasmSha256, generatedAt }) {
+export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], functionSpecs = [], toolSpecs = [], providerSpecs = [], providerCatalogSpec = null, providerStudySpec = null, providerDirs = [], casts = new Map(), i18nSpecs = [], bundles = new Map(), experience = null, skillsManifest, cronsManifest, functionsManifest = null, t27Manifest, railway, compilerWasmSha256, generatedAt }) {
   const problems = []
-  for (const s of [...skillSpecs, ...cronSpecs, ...agentSpecs, ...functionSpecs, ...toolSpecs, ...i18nSpecs]) {
+  for (const s of [...skillSpecs, ...cronSpecs, ...agentSpecs, ...functionSpecs, ...toolSpecs, ...providerSpecs, ...[providerCatalogSpec, providerStudySpec].filter(Boolean), ...i18nSpecs]) {
     if (s.text !== undefined && CYRILLIC.test(s.text)) problems.push(`${s.path}: Cyrillic in a .t27 spec (t27 LANG-EN; translated text belongs in the bundle a specs/i18n/*.t27 contract points to)`)
   }
   const corpusPaths = new Set((t27Manifest?.specs ?? []).map((s) => s.path))
@@ -822,6 +846,9 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], func
   // the card. A cron function is joined to its cron card by REPO + LEGACY_ID =
   // the cron spec's NAME with HOST inngest -- an evidence join, not a name guess.
   const { functions, codeOnlyFunctions } = buildFunctions({ functionSpecs, functionsManifest, crons, corpusPaths, problems })
+  // Layer 7: providers. The witness of a model card is the Gonka chain, re-read by the
+  // browser; the witness of a host class is a bench record or nothing (catalog.t27).
+  const { providers, catalog: providerCatalog, study: providerStudy } = buildProviders({ providerSpecs, providerCatalogSpec, providerStudySpec, providerDirs, corpusPaths, problems })
   // Tools, the layer after agents on this site's ladder (the t27 README of
   // specs/tools also calls itself "Layer 5", as does specs/functions -- a
   // source discrepancy recorded in the report, not resolved here). Two families read from two sub-directories, never merged
@@ -989,6 +1016,7 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], func
   for (const a of agents) specsById.set(a.id, { dir: AGENT_SPEC_DIR, fields: a.fields })
   for (const fn of functions) specsById.set(fn.id, { dir: FUNCTION_SPEC_DIR, fields: fn.fields })
   for (const tl of tools) specsById.set(tl.id, { dir: TOOL_SPEC_DIR, fields: tl.fields })
+  for (const p of providers) specsById.set(p.id, { dir: PROVIDER_SPEC_DIR, fields: p.fields })
   const locales = []
   const seenLocale = new Map()
   // A translation contract belongs to this generator when its SCOPE names one of the
@@ -1014,13 +1042,13 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], func
     const { missing: _all, ...rest } = l.entry
     return { ...rest, coverage: { n: list.length - missing.length, total: list.length }, missing }
   })
-  for (const e of [...skills, ...crons, ...agents, ...functions]) {
+  for (const e of [...skills, ...crons, ...agents, ...functions, ...providers]) {
     e.summary = localized(e.fields.SUMMARY_EN, e.id, 'SUMMARY', locales)
     e.name = localized(e.fields.NAME, e.id, 'NAME', locales)
   }
   for (const tl of tools) tl.summary = localized(summarySourceOf(tl.fields), tl.id, 'SUMMARY', locales)
   const base = { version: VERSION, compilerWasmSha256 }
-  const ladder = { specs: t27Manifest?.specCount ?? null, skills: skills.length, crons: crons.length, agents: agents.length, tools: tools.length, functions: functions.length }
+  const ladder = { specs: t27Manifest?.specCount ?? null, skills: skills.length, crons: crons.length, agents: agents.length, tools: tools.length, functions: functions.length, providers: providers.length }
   const skillsOut = sortKeys({
     ...base,
     generatedAt,
@@ -1144,14 +1172,34 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], func
     codeOnly: codeOnlyFunctions,
     i18n: i18nFor(FUNCTION_SPEC_DIR, functions),
   })
+  const providersOut = sortKeys({
+    ...base,
+    generatedAt,
+    counts: {
+      specs: providers.length,
+      typecheckOk: providers.filter((p) => p.typecheckOk).length,
+      enabled: providers.filter((p) => p.fields.ENABLED === true).length,
+      byFamily: Object.fromEntries((providerCatalog?.families ?? []).map((x) => [x, providers.filter((p) => p.family === x).length])),
+      byNetwork: Object.fromEntries((providerCatalog?.networks ?? []).map((x) => [x, providers.filter((p) => p.network === x).length])),
+      byStatus: Object.fromEntries((providerCatalog?.statuses ?? []).map((x) => [x, providers.filter((p) => p.status === x).length])),
+      byWitness: Object.fromEntries((providerCatalog?.witnesses ?? []).map((x) => [x, providers.filter((p) => p.witness === x).length])),
+    },
+    // Layer 7 of the ladder: Specs -> Skills -> Crons -> Agents -> Tools -> Functions -> Providers.
+    ladder,
+    catalog: providerCatalog,
+    study: providerStudy,
+    providers,
+    i18n: i18nFor(PROVIDER_SPEC_DIR, providers),
+  })
   // A hash of everything but the clock, so a checker can compare committed and
   // regenerated output without the timestamp getting in the way.
+  providersOut.contentSha256 = sha256(JSON.stringify({ ...providersOut, generatedAt: null }))
   skillsOut.contentSha256 = sha256(JSON.stringify({ ...skillsOut, generatedAt: null }))
   cronsOut.contentSha256 = sha256(JSON.stringify({ ...cronsOut, generatedAt: null }))
   agentsOut.contentSha256 = sha256(JSON.stringify({ ...agentsOut, generatedAt: null }))
   functionsOut.contentSha256 = sha256(JSON.stringify({ ...functionsOut, generatedAt: null }))
   toolsOut.contentSha256 = sha256(JSON.stringify({ ...toolsOut, generatedAt: null }))
-  return { skills: sortKeys(skillsOut), crons: sortKeys(cronsOut), agents: sortKeys(agentsOut), functions: sortKeys(functionsOut), tools: sortKeys(toolsOut), problems }
+  return { skills: sortKeys(skillsOut), crons: sortKeys(cronsOut), agents: sortKeys(agentsOut), functions: sortKeys(functionsOut), tools: sortKeys(toolsOut), providers: sortKeys(providersOut), problems }
 }
 
 /** The fields of a manifest entry the spec repeats, and how each is compared. */
@@ -1262,6 +1310,203 @@ function buildFunctions({ functionSpecs, functionsManifest, crons, corpusPaths, 
 }
 
 /**
+ * The exact text of every u64/i64 constant. `literalValue` reads an integer as a
+ * JS number, which is exact only below 2^53; the Gonka supply in ngonka is not.
+ * A wide integer travels as its decimal string, never as a rounded number.
+ */
+export function wideIntegersOf(analysis) {
+  const out = {}
+  for (const d of (analysis.ast?.children ?? []).filter((n) => n.kind === 'ConstDecl' && /^[ui]64$/.test(n.type ?? ''))) {
+    const raw = decodeBytes(d.children?.[0]?.value ?? '')
+    if (/^-?\d+$/.test(raw)) out[d.name] = raw
+  }
+  return out
+}
+
+const verdictClean = (v) => v.typecheckOk && v.discarded === 0 && v.hirOk
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
+
+/** catalog.t27, read once: its vocabularies, its field lists, and the family of each network directory. */
+export function readProviderCatalog(spec, problems) {
+  const file = spec.path
+  if (!verdictClean(spec.verdict)) problems.push(`${file}: compiler verdict not clean (${JSON.stringify(spec.verdict)})`)
+  const c = plain(spec.consts)
+  if (c.KIND !== 'providers-catalog') problems.push(`${file}: KIND must be "providers-catalog"`)
+  for (const [name, words] of Object.entries(PROVIDER_WORDS)) {
+    if (!sameList(c[name], words)) problems.push(`${file}: ${name} is ${JSON.stringify(c[name])}; agents-from-specs.mjs encodes the rules for ${JSON.stringify(words)} -- change both together`)
+  }
+  const lists = ['COMMON_FIELDS', ...Object.values(PROVIDER_FAMILY_FIELDS)]
+  for (const name of lists) if (!Array.isArray(c[name])) problems.push(`${file}: ${name} must be a list of field names`)
+  const named = lists.flatMap((name) => (Array.isArray(c[name]) ? c[name] : []))
+  const twice = named.filter((n, i) => named.indexOf(n) !== i)
+  if (twice.length) problems.push(`${file}: ${[...new Set(twice)].join(', ')} named in more than one field list`)
+  if (!sameSet([...new Set(named)], Object.keys(PROVIDER_FIELD_SHAPES))) problems.push(`${file}: the field lists name ${JSON.stringify([...named].sort())}, the generator's shape table ${JSON.stringify(Object.keys(PROVIDER_FIELD_SHAPES).sort())}`)
+  // DIRECTORIES says which family lives under which network: "gonka/<slug>.t27 (FAMILY model: ...)".
+  const familyOf = new Map()
+  for (const d of Array.isArray(c.DIRECTORIES) ? c.DIRECTORIES : []) {
+    const m = /^([a-z0-9-]+)\/<slug>\.t27 \(FAMILY ([a-z-]+):/.exec(d)
+    if (!m) { problems.push(`${file}: DIRECTORIES entry ${JSON.stringify(d)} does not read "<network>/<slug>.t27 (FAMILY <family>: ..."`); continue }
+    familyOf.set(m[1], m[2])
+  }
+  for (const n of Array.isArray(c.NETWORKS) ? c.NETWORKS : []) {
+    if (!familyOf.has(n)) problems.push(`${file}: NETWORKS names ${n}, DIRECTORIES gives it no family`)
+    else if (!(c.FAMILIES ?? []).includes(familyOf.get(n))) problems.push(`${file}: DIRECTORIES gives ${n} the family ${familyOf.get(n)}, not one of FAMILIES`)
+  }
+  for (const n of familyOf.keys()) if (!(c.NETWORKS ?? []).includes(n)) problems.push(`${file}: DIRECTORIES names ${n}, which is not in NETWORKS`)
+  return { fields: c, familyOf }
+}
+
+/** One provider card: the catalog's schema, then the rules catalog.t27 states in STATUS_RULE, WITNESS_RULE and CALL_RULE. */
+function providerCard(s, cat, problems) {
+  const file = s.path
+  const { fields: c, familyOf } = cat
+  if (!verdictClean(s.verdict)) problems.push(`${file}: compiler verdict not clean (${JSON.stringify(s.verdict)})`)
+  const rel = file.slice(PROVIDER_SPEC_DIR.length + 1).replace(/\.t27$/, '')
+  const network = rel.split('/')[0]
+  const family = familyOf.get(network)
+  const own = c[PROVIDER_FAMILY_FIELDS[family]] ?? []
+  const required = Object.fromEntries([...(c.COMMON_FIELDS ?? []), ...own].map((n) => [n, PROVIDER_FIELD_SHAPES[n] ?? 'str']))
+  problems.push(...checkSchema(s.consts, required, {}, file))
+  const f = plain(s.consts)
+  if (f.KIND !== 'provider') problems.push(`${file}: KIND must be "provider"`)
+  if (f.ID !== rel) problems.push(`${file}: ID must be the path under ${PROVIDER_SPEC_DIR} without .t27 (${rel}), is ${JSON.stringify(f.ID)}`)
+  const expectModule = `provider_${rel.replace(/[^A-Za-z0-9]+/g, '_')}`
+  if (s.moduleName && s.moduleName !== expectModule) problems.push(`${file}: module must be ${expectModule}, is ${s.moduleName}`)
+  if (f.FAMILY !== family) problems.push(`${file}: FAMILY must be ${family} under ${network}/, is ${JSON.stringify(f.FAMILY)}`)
+  if (f.NETWORK !== network) problems.push(`${file}: NETWORK must be ${network}, is ${JSON.stringify(f.NETWORK)}`)
+  if (!(c.STATUSES ?? []).includes(f.STATUS)) problems.push(`${file}: STATUS ${JSON.stringify(f.STATUS)} is not one of ${(c.STATUSES ?? []).join('|')}`)
+  if (!(c.WITNESSES ?? []).includes(f.WITNESS)) problems.push(`${file}: WITNESS ${JSON.stringify(f.WITNESS)} is not one of ${(c.WITNESSES ?? []).join('|')}`)
+  if (typeof f.CHECKED === 'string' && !DATE_RE.test(f.CHECKED)) problems.push(`${file}: CHECKED must be YYYY-MM-DD, is ${JSON.stringify(f.CHECKED)}`)
+  if (Array.isArray(f.SOURCES) && f.SOURCES.length === 0) problems.push(`${file}: SOURCES must name where the card was read from`)
+  const statusOf = (code) => (c.STATUSES ?? [])[code]
+  const messages = []
+  if (family === 'model') {
+    // model_status: serving exactly when a host of EPOCH serves it.
+    const want = f.HOSTS > 0 ? statusOf(c.STATUS_SERVING) : statusOf(c.STATUS_LISTED)
+    if (f.STATUS !== want) problems.push(`${file}: HOSTS ${f.HOSTS} makes the STATUS ${want}, the card says ${f.STATUS}`)
+    if (f.WITNESS !== 'chain-read') problems.push(`${file}: a model card is copied from the chain, WITNESS must be chain-read`)
+    // hosts_allowed: a model outside poc_params.models has no hosts.
+    if (!(f.POC_MODEL === true || f.HOSTS === 0)) problems.push(`${file}: POC_MODEL is false, so no host may serve it, but HOSTS is ${f.HOSTS}`)
+    if (f.POC_MODEL === false && f.POC_WEIGHT_SCALE_E4 !== 0) problems.push(`${file}: POC_WEIGHT_SCALE_E4 is 0 when the model is not a PoC model`)
+    if (Number.isInteger(f.VALIDATION_PERMILLE) && f.VALIDATION_PERMILLE > 1000) problems.push(`${file}: VALIDATION_PERMILLE ${f.VALIDATION_PERMILLE} is above 1000`)
+    if (!(c.CALLS ?? []).includes(f.CALL)) problems.push(`${file}: CALL ${JSON.stringify(f.CALL)} is not one of ${(c.CALLS ?? []).join('|')}`)
+    // FIELD_SOURCE_RULE: CONTEXT_TOKENS is the --max-model-len of the model_args the card copies.
+    const args = Array.isArray(f.VLLM_ARGS) ? f.VLLM_ARGS : []
+    const at = args.indexOf('--max-model-len')
+    if (at >= 0 && args[at + 1] !== String(f.CONTEXT_TOKENS)) problems.push(`${file}: CONTEXT_TOKENS ${f.CONTEXT_TOKENS} differs from --max-model-len ${args[at + 1]} in VLLM_ARGS`)
+    if (f.STATUS === statusOf(c.STATUS_LISTED)) messages.push(f.POC_MODEL ? `on chain, no host of epoch ${f.EPOCH} serves it` : `on chain, removed from the PoC models: no host of epoch ${f.EPOCH} serves it`)
+  } else if (family === 'host-class') {
+    // host_status: measured exactly when a bench record exists; a design never claims one.
+    const measured = Array.isArray(f.MEASURED) && f.MEASURED.length > 0
+    const want = measured ? statusOf(c.STATUS_MEASURED) : statusOf(c.STATUS_PLANNED)
+    if (f.STATUS !== want) problems.push(`${file}: MEASURED ${measured ? 'names records' : 'is empty'}, so STATUS must be ${want}, is ${f.STATUS}`)
+    const wantWitness = measured ? 'bench-measured' : 'design-only'
+    if (f.WITNESS !== wantWitness) problems.push(`${file}: MEASURED ${measured ? 'names records' : 'is empty'}, so WITNESS must be ${wantWitness}, is ${f.WITNESS}`)
+    if (Array.isArray(f.GAPS) && f.GAPS.length === 0 && !measured) problems.push(`${file}: a design-only card says in GAPS what is missing`)
+    if (!measured) messages.push('a design: nothing has run')
+  } else {
+    problems.push(`${file}: ${network}/ is not a network directory of ${PROVIDER_CATALOG_SPEC}`)
+  }
+  return { f, rel, network, family, messages }
+}
+
+function buildProviders({ providerSpecs, providerCatalogSpec, providerStudySpec, providerDirs = [], corpusPaths, problems }) {
+  if (!providerCatalogSpec) {
+    if (providerSpecs.length) problems.push(`${PROVIDER_SPEC_DIR}: provider cards without ${PROVIDER_CATALOG_SPEC}`)
+    return { providers: [], catalog: null, study: null }
+  }
+  const cat = readProviderCatalog(providerCatalogSpec, problems)
+  const c = cat.fields
+  // A card in a directory the catalog does not name would be silently skipped; say so instead.
+  for (const d of providerDirs) if (!(c.NETWORKS ?? []).includes(d)) problems.push(`${PROVIDER_SPEC_DIR}/${d}/: not a network of ${PROVIDER_CATALOG_SPEC} (NETWORKS ${JSON.stringify(c.NETWORKS)})`)
+  const providers = []
+  const seen = new Map()
+  for (const s of providerSpecs) {
+    const { f, network, family, messages } = providerCard(s, cat, problems)
+    if (typeof f.ID === 'string') {
+      if (seen.has(f.ID)) problems.push(`${s.path}: duplicate provider ID ${f.ID} (also ${seen.get(f.ID)})`)
+      seen.set(f.ID, s.path)
+    }
+    const good = f.STATUS === (c.STATUSES ?? [])[c.STATUS_SERVING] || f.STATUS === (c.STATUSES ?? [])[c.STATUS_MEASURED]
+    providers.push({
+      id: f.ID,
+      specPath: s.path,
+      summary: { en: f.SUMMARY_EN },
+      name: { en: f.NAME },
+      sha256: s.sha256,
+      typecheckOk: s.verdict.typecheckOk,
+      discarded: s.verdict.discarded,
+      moduleName: s.moduleName,
+      inSpecCorpus: corpusPaths.has(s.path),
+      fields: f,
+      family,
+      network,
+      status: f.STATUS,
+      witness: f.WITNESS,
+      health: good ? 'ok' : 'warn',
+      messages,
+      searchText: [f.ID, f.NAME, f.SUMMARY_EN, f.MODEL_ID ?? '', f.DEVICE ?? '', f.STATUS, f.WITNESS, network].join(' ').toLowerCase().replace(/\s+/g, ' ').trim(),
+    })
+  }
+  // Models first, by hosts served; then host classes, measured before planned.
+  const familyRank = (p) => (c.FAMILIES ?? []).indexOf(p.family)
+  providers.sort((a, b) => familyRank(a) - familyRank(b) || (b.fields.HOSTS ?? 0) - (a.fields.HOSTS ?? 0) || (c.STATUSES ?? []).indexOf(a.status) - (c.STATUSES ?? []).indexOf(b.status) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
+  const catalog = {
+    specPath: providerCatalogSpec.path,
+    sha256: providerCatalogSpec.sha256,
+    typecheckOk: providerCatalogSpec.verdict.typecheckOk,
+    schemaVersion: c.SCHEMA_VERSION ?? null,
+    families: c.FAMILIES, networks: c.NETWORKS, directories: c.DIRECTORIES, idRule: c.ID_RULE,
+    commonFields: c.COMMON_FIELDS, modelFields: c.MODEL_FIELDS, hostFields: c.HOST_FIELDS, fieldSourceRule: c.FIELD_SOURCE_RULE,
+    statuses: c.STATUSES, statusRule: c.STATUS_RULE, witnesses: c.WITNESSES, witnessRule: c.WITNESS_RULE, calls: c.CALLS, callRule: c.CALL_RULE,
+  }
+  return { providers, catalog, study: providerStudySpec ? buildProviderStudy(providerStudySpec, providers, problems) : null }
+}
+
+/**
+ * The study (tri_gnk_pair.t27) as the page shows it: every constant as declared, a
+ * wide integer as its exact decimal string. The derived numbers are the arithmetic
+ * the study's own `test` blocks pin (t27c test-report), computed with BigInt.
+ */
+function buildProviderStudy(spec, providers, problems) {
+  const file = spec.path
+  if (!verdictClean(spec.verdict)) problems.push(`${file}: compiler verdict not clean (${JSON.stringify(spec.verdict)})`)
+  for (const [name, shape] of Object.entries(PROVIDER_STUDY_REQUIRED)) {
+    if (!(name in spec.consts)) { problems.push(`${file}: missing ${name}`); continue }
+    const bad = shapeProblem(spec.consts[name], shape)
+    if (bad) problems.push(`${file}: ${name}: ${bad}`)
+  }
+  const fields = { ...plain(spec.consts), ...(spec.wide ?? {}) }
+  if (fields.KIND !== 'providers-study') problems.push(`${file}: KIND must be "providers-study"`)
+  const id = file.replace(/^specs\//, '').replace(/\.t27$/, '')
+  if (fields.ID !== id) problems.push(`${file}: ID must be ${id}, is ${JSON.stringify(fields.ID)}`)
+  if (typeof fields.CHECKED === 'string' && !DATE_RE.test(fields.CHECKED)) problems.push(`${file}: CHECKED must be YYYY-MM-DD`)
+  const big = (name) => (typeof fields[name] === 'string' && /^\d+$/.test(fields[name]) ? BigInt(fields[name]) : null)
+  const ceilDiv = (a, b) => (Number.isInteger(a) && Number.isInteger(b) && b > 0 ? Math.ceil(a / b) : null)
+  const subsidies = big('TOTAL_SUBSIDIES_NGONKA'), fees = big('TOTAL_FEES_NGONKA'), height = big('CHAIN_HEIGHT'), until = big('ALLOWLIST_UNTIL_HEIGHT')
+  const derived = {
+    allowlistActive: height !== null && until !== null ? height < until : null,
+    subsidyPerFee: subsidies !== null && fees ? String(subsidies / fees) : null,
+    vestingDays: Number.isInteger(fields.VESTING_EPOCHS) && Number.isInteger(fields.EPOCH_SECONDS_MEASURED) ? Math.floor((fields.VESTING_EPOCHS * fields.EPOCH_SECONDS_MEASURED) / 86400) : null,
+    consumerCardsPerNode: {
+      smallest: ceilDiv(fields.SMALLEST_POC_MODEL_GB, fields.CONSUMER_CARD_GB),
+      mostServed: ceilDiv(fields.MOST_SERVED_MODEL_GB, fields.CONSUMER_CARD_GB),
+      largest: ceilDiv(fields.LARGEST_POC_MODEL_GB, fields.CONSUMER_CARD_GB),
+    },
+  }
+  // The study and the cards were read on the same day from the same chain: they agree, or the page says which is stale.
+  const models = providers.filter((p) => p.family === 'model')
+  const epochs = [...new Set(models.map((p) => p.fields.EPOCH))]
+  if (models.length && (epochs.length !== 1 || epochs[0] !== fields.EPOCH)) problems.push(`${file}: EPOCH ${fields.EPOCH}, the model cards read epoch(s) ${epochs.join(', ')}`)
+  const pocVram = models.filter((p) => p.fields.POC_MODEL).map((p) => p.fields.VRAM_GB)
+  const busiest = [...models].sort((a, b) => b.fields.HOSTS - a.fields.HOSTS)[0]
+  if (busiest && busiest.fields.VRAM_GB !== fields.MOST_SERVED_MODEL_GB) problems.push(`${file}: MOST_SERVED_MODEL_GB ${fields.MOST_SERVED_MODEL_GB}, the most served card (${busiest.id}) needs ${busiest.fields.VRAM_GB} GB`)
+  if (busiest && busiest.fields.HOSTS > fields.ACTIVE_HOSTS) problems.push(`${file}: ACTIVE_HOSTS ${fields.ACTIVE_HOSTS}, but ${busiest.id} has ${busiest.fields.HOSTS} hosts`)
+  if (pocVram.length && (Math.min(...pocVram) !== fields.SMALLEST_POC_MODEL_GB || Math.max(...pocVram) !== fields.LARGEST_POC_MODEL_GB)) problems.push(`${file}: SMALLEST/LARGEST_POC_MODEL_GB ${fields.SMALLEST_POC_MODEL_GB}/${fields.LARGEST_POC_MODEL_GB}, the PoC model cards span ${Math.min(...pocVram)}..${Math.max(...pocVram)} GB`)
+  return { id, specPath: file, sha256: spec.sha256, typecheckOk: spec.verdict.typecheckOk, moduleName: spec.moduleName, fields, derived }
+}
+
+/**
  * The t27 ref the agents' SOUL / AGENTS.md / alphabet links point at: the commit
  * the experience snapshot was read from (its `sources` carry `repo: 't27'`), or
  * the default branch when no snapshot pins one. The source is recorded so the
@@ -1307,6 +1552,17 @@ export async function generate({ generatedAt } = {}) {
   const agentSpecs = analyzeSpecFiles(analyze, readSpecDir(AGENT_SPEC_DIR))
   const functionSpecs = analyzeSpecFiles(analyze, readSpecDir(FUNCTION_SPEC_DIR))
   const toolSpecs = analyzeSpecFiles(analyze, readToolSpecs())
+  // The catalog names the network directories; every sub-directory is listed so that a
+  // card in one the catalog does not name is reported, not skipped.
+  const providerRoot = join(SITE, CORPUS, PROVIDER_SPEC_DIR)
+  const providerDirs = existsSync(providerRoot) ? readdirSync(providerRoot, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name).sort() : []
+  const readOne = (rel) => (existsSync(join(SITE, CORPUS, rel)) ? { path: rel, text: readFileSync(join(SITE, CORPUS, rel), 'utf8') } : null)
+  const catalogFile = readOne(PROVIDER_CATALOG_SPEC)
+  const studyFile = readOne(PROVIDER_STUDY_SPEC)
+  const providerCatalogSpec = catalogFile ? analyzeSpecFiles(analyze, [catalogFile])[0] : null
+  const providerStudySpec = studyFile ? { ...analyzeSpecFiles(analyze, [studyFile])[0], wide: wideIntegersOf(analyze(studyFile.text)) } : null
+  const networks = providerCatalogSpec && Array.isArray(plain(providerCatalogSpec.consts).NETWORKS) ? plain(providerCatalogSpec.consts).NETWORKS : []
+  const providerSpecs = analyzeSpecFiles(analyze, networks.flatMap((n) => readSpecDir(`${PROVIDER_SPEC_DIR}/${n}`)))
   const i18nSpecs = analyzeSpecFiles(analyze, readSpecDir(I18N_SPEC_DIR))
   // Each contract names its bundle; load exactly those, repo-relative.
   const bundles = new Map()
@@ -1324,6 +1580,10 @@ export async function generate({ generatedAt } = {}) {
     agentSpecs,
     functionSpecs,
     toolSpecs,
+    providerSpecs,
+    providerCatalogSpec,
+    providerStudySpec,
+    providerDirs,
     casts: readCasts(),
     experience: readJson(EXPERIENCE_PATH),
     skillsManifest: readJson('public/skills/manifest.json'),
@@ -1348,26 +1608,27 @@ function writeAtomic(rel, data) {
 
 async function main(argv) {
   const check = argv.includes('--check')
-  const { skills, crons, agents, functions, tools, problems } = await generate()
+  const { skills, crons, agents, functions, tools, providers, problems } = await generate()
   if (problems.length) {
     console.error(`agents-from-specs: ${problems.length} problem(s)`)
     for (const p of problems) console.error('  ' + p)
     process.exit(1)
   }
   if (check) {
-    const prior = { skills: readJson(SKILLS_OUT), crons: readJson(CRONS_OUT), agents: readJson(AGENTS_OUT), functions: readJson(FUNCTIONS_OUT), tools: readJson(TOOLS_OUT) }
+    const prior = { skills: readJson(SKILLS_OUT), crons: readJson(CRONS_OUT), agents: readJson(AGENTS_OUT), functions: readJson(FUNCTIONS_OUT), tools: readJson(TOOLS_OUT), providers: readJson(PROVIDERS_OUT) }
     const drift = []
     if (prior.skills?.contentSha256 !== skills.contentSha256) drift.push(SKILLS_OUT)
     if (prior.crons?.contentSha256 !== crons.contentSha256) drift.push(CRONS_OUT)
     if (prior.agents?.contentSha256 !== agents.contentSha256) drift.push(AGENTS_OUT)
     if (prior.functions?.contentSha256 !== functions.contentSha256) drift.push(FUNCTIONS_OUT)
     if (prior.tools?.contentSha256 !== tools.contentSha256) drift.push(TOOLS_OUT)
+    if (prior.providers?.contentSha256 !== providers.contentSha256) drift.push(PROVIDERS_OUT)
     for (const p of splitToolCatalog(tools).parts) if (sha256(JSON.stringify(readJson(p.path)?.tools ?? null)) !== p.sha256) drift.push(p.path)
     if (drift.length) {
       console.error(`agents-from-specs: committed output is stale: ${drift.join(', ')} -- run node scripts/agents-from-specs.mjs`)
       process.exit(1)
     }
-    console.log(`agents-from-specs: ${SKILLS_OUT}, ${CRONS_OUT}, ${AGENTS_OUT} ${FUNCTIONS_OUT} and ${TOOLS_OUT} match the specs`)
+    console.log(`agents-from-specs: ${SKILLS_OUT}, ${CRONS_OUT}, ${AGENTS_OUT}, ${FUNCTIONS_OUT}, ${TOOLS_OUT} and ${PROVIDERS_OUT} match the specs`)
     return
   }
   writeAtomic(SKILLS_OUT, skills)
@@ -1377,12 +1638,15 @@ async function main(argv) {
   const split = splitToolCatalog(tools)
   for (const p of split.parts) writeAtomic(p.path, p.body)
   writeAtomic(TOOLS_OUT, split.main)
+  writeAtomic(PROVIDERS_OUT, providers)
   const s = skills.counts, c = crons.counts, a = agents.counts, fn = functions.counts, t = tools.counts
   console.log(`agents-from-specs: skills ${s.specs} specs (typecheck ok ${s.typecheckOk}/${s.specs}; spec+code ${s.specPlusCode}, spec-only ${s.specOnly}, code-only ${s.codeOnly}) -> ${SKILLS_OUT}`)
   console.log(`agents-from-specs: crons  ${c.specs} specs (typecheck ok ${c.typecheckOk}/${c.specs}; spec+code ${c.specPlusCode}, spec-only ${c.specOnly}, code-only ${c.codeOnly}; with RUNS ${c.withRuns}) -> ${CRONS_OUT}`)
   console.log(`agents-from-specs: agents ${a.specs} specs (typecheck ok ${a.typecheckOk}/${a.specs}; enabled ${a.enabled}; with skills ${a.withSkills}, with crons ${a.withCrons}, with tools ${a.withTools}; spec+experience ${a.specPlusExperience}, spec-only ${a.specOnly}; episodes attributed ${a.episodesAttributed}, unattributed ${a.episodesUnattributed ?? 'n/a'}; links pinned at ${agents.pin.ref.slice(0, 7)}) -> ${AGENTS_OUT}`)
   console.log(`agents-from-specs: functions ${fn.specs} specs (typecheck ok ${fn.typecheckOk}/${fn.specs}; spec+code ${fn.specPlusCode}, spec-only ${fn.specOnly}, code-only ${fn.codeOnly}; deployed ${fn.deployed}, not deployed ${fn.notDeployed}, unknown ${fn.deployUnknown}; with differences from the manifest ${fn.withDifferences}; cron cards joined ${fn.withCronSpec}/${fn.byTrigger.cron}) -> ${FUNCTIONS_OUT}`)
   console.log(`agents-from-specs: tools  ${t.specs} specs (tri ${t.tri} commands, ${t.triActions} actions; mcp ${t.mcp} servers, ${t.mcpTools} tools, ${t.mcpExternal} external; typecheck ok ${t.typecheckOk}/${t.specs}; with agents ${t.withAgents}, with skills ${t.withSkills}, with a recorded run ${t.withCast}; witness ${Object.entries(t.byWitness).map(([k, v]) => `${k} ${v}`).join(', ')}) -> ${TOOLS_OUT}`)
+  const pv = providers.counts
+  console.log(`agents-from-specs: providers ${pv.specs} specs (typecheck ok ${pv.typecheckOk}/${pv.specs}; ${Object.entries(pv.byNetwork).map(([k, v]) => `${k} ${v}`).join(', ')}; ${Object.entries(pv.byStatus).map(([k, v]) => `${k} ${v}`).join(', ')}; study ${providers.study ? providers.study.id : 'none'}) -> ${PROVIDERS_OUT}`)
   for (const l of skills.i18n) console.log(`agents-from-specs: i18n ${l.locale} via ${l.spec} -> ${l.bundle}: skills ${l.coverage.n}/${l.coverage.total}, crons ${crons.i18n.find((x) => x.locale === l.locale)?.coverage.n ?? 0}/${crons.counts.specs}, agents ${agents.i18n.find((x) => x.locale === l.locale)?.coverage.n ?? 0}/${agents.counts.specs}, functions ${functions.i18n.find((x) => x.locale === l.locale)?.coverage.n ?? 0}/${functions.counts.specs}, tools ${tools.i18n.find((x) => x.locale === l.locale)?.coverage.n ?? 0}/${tools.counts.specs}${l.enabled ? '' : ' (disabled)'}`)
 }
 

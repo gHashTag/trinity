@@ -65,7 +65,7 @@ async function sha256Hex(bytes:ArrayBuffer):Promise<string|null> {
 
 async function read(url:string,cache:RequestCache):Promise<ArrayBuffer> {
   const response=await fetch(url,{headers:{Accept:'application/json'},cache,credentials:'omit'});
-  if(!response.ok)throw new Error(`could not fetch ${url.split('/').slice(-2).join('/')} (${response.status})`);
+  if(!response.ok)throw Object.assign(new Error(`could not fetch ${url.split('/').slice(-2).join('/')} (${response.status})`),{status:response.status});
   return response.arrayBuffer();
 }
 const json=(bytes:ArrayBuffer):unknown=>JSON.parse(new TextDecoder().decode(bytes));
@@ -81,6 +81,9 @@ function foundation(value:unknown):FoundationSnapshot {
   return {...next,rings:Array.isArray(next.rings)?next.rings:[],epics:Array.isArray(next.epics)?next.epics:[],releases:Array.isArray(next.releases)?next.releases:[]};
 }
 
+/** Wire routes that answered 404 in this realm; the registry lives in the top window, so every frame shares it. */
+const missingWires=new Set<string>();
+
 async function fetchPart(name:CorpusPartName,file:string,wire:string|null):Promise<Parts[CorpusPartName]> {
   const {cache}=FILES[name];
   if(name==='manifest'){
@@ -92,7 +95,11 @@ async function fetchPart(name:CorpusPartName,file:string,wire:string|null):Promi
   if(name==='atlas'){const data=validateAtlas(json(await read(file,cache)));return {data,source:'file',generatedAt:data.at};}
   const parse=name==='modules'?modules:foundation;
   // The supervisor first; the loop's dated snapshot only when the wire has none.
-  if(wire)try{const data=parse(json(await read(wire,'no-store')));return {data,source:'wire',generatedAt:data.generatedAt} as Parts[CorpusPartName];}catch{/* fall through to the file */}
+  // A route the supervisor answers 404 is asked once per page, not on every
+  // poll of every frame (measured 2026-10-04: /queen/public-modules and
+  // /queen/public-foundation both 404, so the home printed a console error
+  // every 15 s per Queen frame). A 5xx or a network failure is asked again.
+  if(wire&&!missingWires.has(wire))try{const data=parse(json(await read(wire,'no-store')));return {data,source:'wire',generatedAt:data.generatedAt} as Parts[CorpusPartName];}catch(error){if((error as {status?:number}).status===404)missingWires.add(wire);/* fall through to the file */}
   const data=parse(json(await read(file,cache)));
   return {data,source:'file',generatedAt:data.generatedAt} as Parts[CorpusPartName];
 }

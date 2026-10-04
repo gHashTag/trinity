@@ -3,6 +3,7 @@ import ChatInput from './chat/ChatInput'
 import ChatMessage from './chat/ChatMessage'
 import { NotSignedIn, type ChatResponse } from '../services/chatApi'
 import { directiveHelp, readDirectives } from '../lib/queenDirectives'
+import { emptyNote, headState, startersFor } from '../lib/queenBrowserHelp'
 import { askQueen, askQueenInBrowser, queenCaller, queenHealth, queenModelName } from '../services/queenModel'
 import { signInHref } from '../lib/triIdentity'
 import { HUD_VIEWS, type HudEvent, type HudEventKind } from './queenHud'
@@ -51,6 +52,10 @@ const copy = {
     context: 'In context', offline: 'OFFLINE', online: 'LIVE', checking: 'CHECKING',
     offlineNote: 'No Queen is answering. Start one with `tri serve --chat`, or point VITE_QUEEN_CHAT_URL at a deployed one. Nothing here is answered from a sample.',
     empty: 'Ask her about the board. She sees the view you are on; the traffic it makes is in LOGS, and who it travelled between is in A2A.',
+    browserEmpty: 'Here she works in your own browser: she reads the page, clicks and types for you, and stops at a sign-in field so you type the password into the picture yourself. Every step she takes is in the journal under the picture.',
+    agentState: 'YOUR AGENT',
+    agentStateTitle: 'On this tab your own agent answers, with the browser tools.',
+    starters: 'Start with',
     failed: 'The Queen did not answer.',
     about: 'Ask about this',
     subject: 'Asking about',
@@ -87,6 +92,10 @@ const copy = {
     context: 'В контексте', offline: 'OFFLINE', online: 'LIVE', checking: 'ПРОВЕРКА',
     offlineNote: 'Королева не отвечает. Поднимите её через `tri serve --chat` или укажите VITE_QUEEN_CHAT_URL на развёрнутую. Ни один ответ здесь не берётся из образца.',
     empty: 'Спрашивайте её о доске. Она видит вид, на котором вы стоите; его трафик — во вкладке ЛОГИ, а между кем он шёл — в A2A.',
+    browserEmpty: 'Здесь она работает в вашем собственном браузере: читает страницу, нажимает и печатает за вас, а на поле входа останавливается — пароль вы вводите в картинку сами. Каждый её шаг виден в журнале под картинкой.',
+    agentState: 'ВАШ АГЕНТ',
+    agentStateTitle: 'На этой вкладке отвечает ваш собственный агент, с инструментами браузера.',
+    starters: 'Начните с',
     failed: 'Королева не ответила.',
     about: 'Спросить об этом',
     subject: 'Разговор о',
@@ -203,9 +212,12 @@ export default function QueenChat({
   // derived tabs run newest-first, because they are read by looking rather than
   // by following, and a filter that answers at the bottom of a scroller has not
   // answered.
+  // Before the first question there is nothing to follow: the log stays at its
+  // top, so the sentence above the BROWSER starters is read first (scrolled to
+  // the bottom, a 375px panel cut it off -- seen in a harness, 2026-10-04).
   useEffect(() => {
     if (tab !== 'queen') return
-    log.current?.scrollTo({ top: log.current.scrollHeight })
+    log.current?.scrollTo({ top: turns.length === 0 ? 0 : log.current.scrollHeight })
   }, [tab, turns.length, busy])
 
   // The clock is started where the question is sent, not here: setting state in
@@ -314,6 +326,10 @@ export default function QueenChat({
   const label: Record<ChatTab, string> = { queen: t.tabQueen, logs: t.tabLogs, a2a: t.tabA2A }
   const hint: Record<ChatTab, string> = { queen: t.tabQueenTitle, logs: t.tabLogsTitle, a2a: t.tabA2ATitle }
   const badge: Record<ChatTab, number | null> = { queen: turns.length || null, logs: feed.length || null, a2a: net.links.length || null }
+  // On BROWSER the person's agent answers, not the Queen server whose health
+  // `live` is (lib/queenBrowserHelp.ts says why).
+  const head = headState(context.view, live)
+  const starters = startersFor(context.view, { turns: turns.length, signedIn, busy }, lang === 'ru' ? 'ru' : 'en')
 
   const eventRow = (event: HudEvent) => (
     <article
@@ -337,8 +353,8 @@ export default function QueenChat({
     <section className="queen-chat" aria-label={t.title}>
       <header className="queen-chat-head">
         <span className="queen-chat-title">{t.title}</span>
-        <span className={`queen-chat-state is-${live === null ? 'checking' : live ? 'live' : 'offline'}`}>
-          {live === null ? t.checking : live ? t.online : t.offline}
+        <span className={`queen-chat-state is-${head}`} title={head === 'agent' ? t.agentStateTitle : undefined}>
+          {head === 'agent' ? t.agentState : head === 'checking' ? t.checking : head === 'live' ? t.online : t.offline}
         </span>
         <span className="queen-chat-count">{queenModelName()} · {events.length} {t.events}</span>
         <button type="button" className="queen-chat-hide" onClick={() => setOpen(false)} aria-expanded>
@@ -379,7 +395,16 @@ export default function QueenChat({
       >
         {tab === 'queen' && (
           <div className="queen-chat-log" ref={log}>
-            {turns.length === 0 && <p className="queen-chat-empty">{live === false ? t.offlineNote : t.empty}</p>}
+            {turns.length === 0 && <p className="queen-chat-empty">{t[emptyNote(context.view, live)]}</p>}
+            {starters.length > 0 && (
+              <div className="queen-chat-starters" role="group" aria-label={t.starters}>
+                {starters.map((line) => (
+                  <button key={line} type="button" className="queen-chat-starter" onClick={() => send(line)}>
+                    {line}
+                  </button>
+                ))}
+              </div>
+            )}
             {turns.map((turn, i) => (
               <div key={`t:${i}:${turn.at}`} className="queen-chat-turn">
                 <ChatMessage

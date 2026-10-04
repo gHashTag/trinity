@@ -94,3 +94,40 @@
   .spec-hero-block-frame { height: 82vh; min-height: 240px; }
   .spec-hero-block-inner { padding: 1.25rem 0; gap: 1rem; }
 }
+
+/* The frame before the Explorer runs: the spec it will open and the button
+   that opens it. Gold, because gold on this site means a spec. */
+.spec-hero-block-run {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.85rem;
+  padding: 1.5rem;
+  border: 0;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(255, 212, 90, 0.08), transparent 60%),
+    #000;
+  color: #ffd45a;
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+}
+.spec-hero-block-run > i { font-size: clamp(3rem, 8vw, 5.5rem); font-style: normal; line-height: 1; }
+.spec-hero-block-run > code { color: #a8c1ba; font: 400 0.82rem/1.3 "JetBrains Mono", monospace; overflow-wrap: anywhere; }
+.spec-hero-block-run > span {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.65rem 1.1rem;
+  border: 1px solid #ffd45a;
+  border-radius: 6px;
+  font: 600 0.9rem/1.2 "JetBrains Mono", monospace;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.spec-hero-block-run > small { max-width: 42ch; color: #a8c1ba; font-size: 0.86rem; line-height: 1.5; }
+.spec-hero-block-run:hover > span,
+.spec-hero-block-run:focus-visible > span { background: rgba(255, 212, 90, 0.12); }
+.spec-hero-block-run:focus-visible { outline: 2px solid #ffd45a; outline-offset: -6px; }

@@ -26,13 +26,14 @@
 import { agentExplorerHash, normalizeAgentLetter } from './agentsCatalog'
 import { cronExplorerHash } from './cronsCatalog'
 import { functionExplorerHash } from './functionsCatalog'
+import { providerExplorerHash } from './providersCatalog'
 import { explorerRouteParts } from './queenFrame'
 import { skillExplorerHash } from './skillsCatalog'
 import { specExplorerHash } from './specCatalog'
 import { systemDocsHash } from './systemDocs'
 import { toolExplorerHash } from './toolsCatalog'
 
-export type ExplorerTab = 'specs' | 'skills' | 'crons' | 'agents' | 'functions' | 'tools' | 'project'
+export type ExplorerTab = 'specs' | 'skills' | 'crons' | 'agents' | 'functions' | 'tools' | 'providers' | 'project'
 
 /** The key of the Queen address that names each tab's card. */
 export const SELECTION_KEY: Readonly<Record<ExplorerTab, string>> = {
@@ -42,6 +43,7 @@ export const SELECTION_KEY: Readonly<Record<ExplorerTab, string>> = {
   agents: 'agent',
   functions: 'function',
   tools: 'tool',
+  providers: 'provider',
   project: 'chapter',
 }
 
@@ -75,6 +77,7 @@ function cardHash(tab: ExplorerTab, id: string): string {
     case 'agents': return agentExplorerHash(id, { embedded: true })
     case 'functions': return functionExplorerHash(id, { embedded: true })
     case 'tools': return toolExplorerHash(id, { embedded: true })
+    case 'providers': return providerExplorerHash(id, { embedded: true })
     case 'project':
       if (!CHAPTER.test(id)) throw new Error('Invalid chapter stem')
       return systemDocsHash(id, { embedded: true })

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { useI18n } from '../i18n/context'
 import { MODULES, type QueenModuleTab } from '../lib/queenModules'
 import PlayLine from './PlayLine'
@@ -11,14 +11,15 @@ import './ModuleHeroBlock.css'
 // to every other module, driven by lib/queenModules so that the next module is
 // an entry in that list and not another component.
 //
-// The frame mounts when the block comes near the viewport: a page of shells
-// booting at once is a page of everything at once. The observer reports nothing
-// in a tab that is open but not displayed, so the rectangle is also read on a
-// timer that stops itself — an empty frame is the one state a presentation must
-// not have.
+// The frame is the whole board booted a second time, so it mounts when the
+// reader asks for it, not when the block scrolls near. It used to mount on
+// approach, and a reader who scrolled the home once booted three boards and the
+// Explorer beside the page's own: 218 requests, about 8 MB, and every board
+// polling the supervisor (measured on t27.ai, 2026-10-04). Until then the frame
+// shows what it holds and the one button that runs it -- never an empty box.
 const COPY = {
-  en: { open: 'Open this module', all: 'Open the shell', frame: 'TRINITY module' },
-  ru: { open: 'Открыть модуль', all: 'Открыть шелл', frame: 'Модуль TRINITY' },
+  en: { open: 'Open this module', all: 'Open the shell', frame: 'TRINITY module', run: 'Run it here', note: 'The live module is the whole board in a frame, so it loads only when you ask.' },
+  ru: { open: 'Открыть модуль', all: 'Открыть шелл', frame: 'Модуль TRINITY', run: 'Запустить здесь', note: 'Живой модуль — это весь борд во фрейме, поэтому он грузится только по вашей просьбе.' },
 } as const
 
 export default function ModuleHeroBlock({ tab }: { tab: QueenModuleTab }) {
@@ -27,29 +28,7 @@ export default function ModuleHeroBlock({ tab }: { tab: QueenModuleTab }) {
   const t = COPY[lang]
   const module = MODULES.find((m) => m.tab === tab)!
   const m = module[lang]
-  const host = useRef<HTMLDivElement>(null)
-  const [near, setNear] = useState(() => typeof IntersectionObserver === 'undefined')
-
-  useEffect(() => {
-    const node = host.current
-    if (!node || near) return
-    const watch = new IntersectionObserver(
-      (entries) => entries.forEach((entry) => entry.isIntersecting && setNear(true)),
-      { rootMargin: '320px' },
-    )
-    watch.observe(node)
-    const poll = window.setInterval(() => {
-      const box = node.getBoundingClientRect()
-      if (box.top < window.innerHeight + 320 && box.bottom > -320) {
-        window.clearInterval(poll)
-        setNear(true)
-      }
-    }, 400)
-    return () => {
-      watch.disconnect()
-      window.clearInterval(poll)
-    }
-  }, [near])
+  const [running, setRunning] = useState(false)
 
   return (
     <section className="module-hero" aria-labelledby={`module-hero-${tab}`}>
@@ -76,17 +55,22 @@ export default function ModuleHeroBlock({ tab }: { tab: QueenModuleTab }) {
             </div>
           </div>
         </div>
-        <div className="module-hero-frame" ref={host}>
-          {near ? (
+        <div className="module-hero-frame">
+          {running ? (
             <iframe
               title={`${t.frame} — ${m.name}`}
               // ?lang= in the search, where the provider reads it: a frame is
               // its own document and does not hear the parent's switch.
               src={`./?lang=${lang}#/queen?tab=${tab}&embed=1`}
-              loading="lazy"
               sandbox="allow-scripts allow-same-origin"
             />
-          ) : null}
+          ) : (
+            <button type="button" className="module-hero-run" onClick={() => setRunning(true)}>
+              <i aria-hidden="true">{module.glyph}</i>
+              <span>{t.run} ▸</span>
+              <small>{t.note}</small>
+            </button>
+          )}
         </div>
       </div>
     </section>
