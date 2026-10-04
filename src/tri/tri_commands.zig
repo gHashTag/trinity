@@ -43,6 +43,7 @@ const quantum_cosmic = @import("commands/quantum_cosmic.zig");
 const basal_ganglia = @import("basal_ganglia");
 const reticular_formation = @import("reticular_formation");
 const locus_coeruleus = @import("locus_coeruleus");
+const brain_health = @import("brain_health.zig");
 // Re-export multi-cluster types and command
 pub const NodeTier = multi_cluster.NodeTier;
 pub const NodeEntry = multi_cluster.NodeEntry;
@@ -791,9 +792,17 @@ pub fn runTaskClaimCommand(allocator: std.mem.Allocator, args: []const []const u
     _ = args;
     std.debug.print("{s}⚠️  task-claim: TODO - not implemented yet{s}\n", .{ YELLOW, RESET });
 }
-/// Stress Test Command - Run stress tests
-/// Usage: tri stress-test [options]
+/// Stress Test Command
+/// Usage: tri stress --health
+///
+/// `--health` runs the brain self-check probes in brain_health.zig and prints
+/// `Score: <n>/100` (fraction of probes passed). It exits 1 if any probe fails.
+/// The other modes (--scan, --record, --metrics, --history) are not
+/// implemented yet and only print a notice.
 pub fn runStressTestCommand(args: []const []const u8) !void {
-    _ = args;
+    for (args) |arg| {
+        if (std.mem.eql(u8, arg, "--health")) return brain_health.run();
+    }
     std.debug.print("{s}⚠️  stress-test: TODO - not implemented yet{s}\n", .{ YELLOW, RESET });
+    std.debug.print("   only `tri stress --health` (brain self-check probes) is implemented\n", .{});
 }
