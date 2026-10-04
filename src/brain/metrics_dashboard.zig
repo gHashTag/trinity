@@ -130,7 +130,7 @@ pub const RegionMetrics = struct {
             allocator.free(entry.value_ptr.*);
         }
         self.raw_metrics.deinit();
-        if (self.alert) |a| allocator.free(a);
+        if (self.alert) |a| self.raw_metrics.allocator.free(a);
     }
 
     /// Set a raw metric value (copies both key and value)
