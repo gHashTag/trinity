@@ -74,6 +74,21 @@ const env = (fetch, token = 'session-token') => ({ base: BASE, fetch, token: () 
   assert.deepEqual(await callRunners(env(b.fetch), { kind: 'list' }), { state: 'unavailable' })
 }
 
+// 3b. A Queen without the cabinet yet answers its path 404. That is "not here
+//     yet", not "she did not answer": the panel must not report an outage for
+//     a server that is up, and it must not offer a create form it cannot serve.
+{
+  const a = recorder([{ status: 404 }])
+  assert.deepEqual(await callRunners(env(a.fetch), { kind: 'list' }), { state: 'pending' })
+  const b = recorder([{ status: 404 }])
+  assert.deepEqual(
+    await callRunners(env(b.fetch), { kind: 'create', label: 'laptop' }, { runners: [], limit: 5 }),
+    { state: 'pending' },
+  )
+  const page = readFileSync(new URL('../src/components/QueenRunners.tsx', import.meta.url), 'utf8')
+  assert.ok(page.includes("view?.state === 'pending'"), 'the panel renders the pending state')
+}
+
 // 4. Create: the token is shown once, only in `minted`, and only when it is a
 //    runner token as minted; the list is re-read after.
 {
