@@ -534,7 +534,7 @@ export function localized(en, id, field, locales) {
   }
   return out
 }
-export const HOSTS = ['github-actions', 'inngest', 'railway-cron', 'timer']
+export const HOSTS = ['github-actions', 'inngest', 'railway-cron', 'timer', 'launchd']
 export const CONTROLS = ['github-actions-dispatch', 'railway-dashboard', 'inngest-dashboard', 'code-only']
 export const ON_FAILURE = ['issue', 'log', 'unknown']
 
@@ -560,6 +560,8 @@ export function runNowTarget(fields, railway) {
     }
     case 'inngest':
       return { kind: 'link', via: 'inngest', url: INNGEST_DASHBOARD_URL }
+    case 'launchd':
+      return { kind: 'disabled', reason: 'launchd' }
     default:
       return { kind: 'disabled', reason: 'timer' }
   }
@@ -703,19 +705,24 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], func
     const isTimer = f.HOST === 'timer'
     if (isTimer && !('INTERVAL_MS' in f)) problems.push(`${file}: a timer needs INTERVAL_MS`)
     if (isTimer && 'SCHEDULE' in f) problems.push(`${file}: a timer has INTERVAL_MS, not SCHEDULE`)
-    if (!isTimer && !('SCHEDULE' in f)) problems.push(`${file}: a scheduled job needs SCHEDULE`)
-    if (!isTimer && 'INTERVAL_MS' in f) problems.push(`${file}: only a timer has INTERVAL_MS`)
+    // launchd (the owner's Mac): StartInterval -> INTERVAL_MS, StartCalendarInterval/crontab -> SCHEDULE; exactly one.
+    const isLaunchd = f.HOST === 'launchd'
+    if (isLaunchd && ('SCHEDULE' in f) === ('INTERVAL_MS' in f)) problems.push(`${file}: a launchd job has exactly one of SCHEDULE and INTERVAL_MS`)
+    if (!isTimer && !isLaunchd && !('SCHEDULE' in f)) problems.push(`${file}: a scheduled job needs SCHEDULE`)
+    if (!isTimer && !isLaunchd && 'INTERVAL_MS' in f) problems.push(`${file}: only a timer has INTERVAL_MS (or a launchd job)`)
     if (f.SCHEDULE === '' && !f.SCHEDULE_NOTE) problems.push(`${file}: an empty SCHEDULE needs SCHEDULE_NOTE`)
     const code = codeCrons.get(f.ID)
     const runs = Array.isArray(f.RUNS) ? f.RUNS : []
     const runsResolved = runs.map((id) => ({ id, ok: seenSkill.has(id) }))
     const unresolved = runsResolved.filter((r) => !r.ok)
+    // The code manifest scans repositories, not the owner's Mac: a launchd card is spec-only by construction.
+    const macOnly = f.HOST === 'launchd'
     const messages = [
-      ...(code ? [] : [`no job ${f.ID} in public/crons/manifest.json`]),
+      ...(code || macOnly ? [] : [`no job ${f.ID} in public/crons/manifest.json`]),
       ...unresolved.map((r) => `RUNS names ${r.id}, which has no skill spec`),
     ]
     let health = 'ok'
-    if (!code) health = 'warn'
+    if (!code && !macOnly) health = 'warn'
     if (unresolved.length) health = 'fail'
     // The code catalog knows the schedule it read from the file; when the spec
     // disagrees, that is a fact the reader must see, not a build failure.
