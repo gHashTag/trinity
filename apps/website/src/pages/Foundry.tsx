@@ -5,6 +5,10 @@ import { useI18n } from '../i18n/context'
 import Navigation from '../components/Navigation'
 import Footer from '../components/Footer'
 import QuantumBackground from '../components/QuantumBackground'
+import TerminalCast from '../components/TerminalCast'
+import { X7_BOARD } from '../data/casts'
+import { CLUB, clubPrice } from '../data/club'
+import AgentShowcase from '../components/AgentShowcase'
 
 /**
  * Golden Foundry — платный клуб разработчиков на кремнии.
@@ -17,36 +21,18 @@ import QuantumBackground from '../components/QuantumBackground'
  */
 
 // Клубный бот — @t27ai_bot (выделен владельцем под клуб 2026-08-22)
-const CONTACT = { email: 'admin@t27.ai', telegram: 'https://t.me/t27ai_bot?start=foundry' }
+const CONTACT = { email: 'admin@t27.ai', telegram: CLUB.telegram }
 
 /**
- * УСЛОВИЯ НЕ ПОДТВЕРЖДЕНЫ ВЛАДЕЛЬЦЕМ.
- * Суммы ниже — черновик по логике /course. Пока DRAFT_TERMS=true, читателю
- * показывается предупреждение. Продавать вход по выдуманной цене — та же
- * ошибка, что печатать в блоге неизмеренное число.
+ * Цена — владелец, 2026-10-03: все агенты по одной цене, подписка Telegram
+ * Stars на максимуме (10000 ⭐ / 30 дней, data/club.ts); клуб — это профиль
+ * агента-разработчика TRI DEV. Один уровень вместо трёх черновых.
+ * Описание агента — только то, что делает `tri dev` (docs/docs/cli/dev.md):
+ * одна задача GitHub — один сервис на Railway — один автономный агент
+ * Claude Code. Ничего сверх этого не обещать.
  */
-const DRAFT_TERMS = true
-
-const TIERS = [
-  {
-    ru: { name: 'Подмастерье', price: '$29 / мес', body: 'Закрытый канал, еженедельные разборы замеров, KAT-векторы и репозитории до публикации.' },
-    en: { name: 'Apprentice', price: '$29 / mo', body: 'Private channel, weekly measurement teardowns, KAT vector sets and repositories before they go public.' },
-    stars: 1499,
-  },
-  {
-    ru: { name: 'Мастер', price: '$79 / мес', body: 'Всё выше, плюс удалённые прогоны на живых платах Artix-7 и разбор вашего RTL раз в месяц.' },
-    en: { name: 'Journeyman', price: '$79 / mo', body: 'Everything above, plus remote runs on live Artix-7 boards and a monthly teardown of your own RTL.' },
-    stars: 3999,
-    featured: true,
-  },
-  {
-    ru: { name: 'Литейщик', price: '$249 / мес', body: 'Всё выше, плюс сопровождение вашего дизайна до тейпаута и совместная публикация замеров.' },
-    en: { name: 'Founder', price: '$249 / mo', body: 'Everything above, plus your design walked to tape-out and co-published measurements.' },
-    stars: 12499,
-  },
-]
-
 const INSIDE = [
+  { ru: ['Агент TRI DEV', 'Автономный агент-разработчик на одной вашей задаче: от спеки до pull request, каждый шаг — комментарием в задаче.'], en: ['A TRI DEV agent', 'An autonomous developer agent on one of your issues: from spec to pull request, every step a comment on the issue.'] },
   { ru: ['Разбор чужих замеров', 'Каждую неделю берём один опубликованный бенчмарк и проверяем, выдерживает ли он собственную методику.'], en: ['Teardowns of published numbers', 'Each week we take one published benchmark and check whether it survives its own methodology.'] },
   { ru: ['Свой стенд', 'Удалённый доступ к живым платам: присылаете RTL — получаете измерение, а не симуляцию.'], en: ['A bench of your own', 'Remote access to live boards: send RTL, get a measurement rather than a simulation.'] },
   { ru: ['Право первым проверить', 'Методы и векторы попадают в клуб раньше блога — вместе с тем, что ещё не сошлось.'], en: ['First right to check', 'Methods and vectors reach the club before the blog — including the parts that do not yet agree.'] },
@@ -58,11 +44,13 @@ const NOT_THIS = {
     'Это не курс. Курс отдельно, на /course, и в клуб он не входит.',
     'Это не гарантия тейпаута: кремний зависит от шаттла, а не от подписки.',
     'Это не чат «вопрос — ответ»: работа идёт по замерам, которые вы приносите.',
+    'Агент не сливает сам: каждое изменение приходит pull request’ом, решение за вами.',
   ],
   en: [
     'This is not the course. The course lives at /course and is not bundled here.',
     'This is not a tape-out guarantee: silicon depends on a shuttle, not a subscription.',
     'This is not a Q&A chat: the work is driven by measurements you bring.',
+    'The agent does not merge on its own: every change arrives as a pull request, and the decision is yours.',
   ],
 }
 
@@ -75,30 +63,26 @@ const WHO = [
 const RU = {
   eyebrow: 'Закрытый клуб · набор волнами',
   h1pre: 'Клуб разработчиков на кремнии',
-  lede: 'Закрытый круг тех, кто проверяет свои числа на живом кремнии. Внутри — разбор замеров, доступ к стенду и право первым увидеть метод до публикации.',
+  lede: `Закрытый круг тех, кто проверяет свои числа на живом кремнии. ${clubPrice(true)}: свой агент-разработчик TRI DEV на вашей задаче, разбор замеров, доступ к стенду и право первым увидеть метод до публикации.`,
   cta: 'Вступить через Telegram',
   ctaAlt: 'Сначала блог',
   seatNote: 'Беру столько людей, скольким успеваю читать RTL лично. Оплата — в боте, картой или звёздами Telegram.',
   insideTitle: 'Что внутри',
-  tiersTitle: 'Уровни',
   notTitle: 'Чем это не является',
   whoTitle: 'Кому подойдёт',
-  draftNote: 'Условия уточняются: суммы — черновик, окончательные будут подтверждены до открытия набора.',
   join: 'Вступить',
 }
 
 const EN = {
   eyebrow: 'Private club · intake in waves',
   h1pre: 'A club for people who build on silicon',
-  lede: 'A closed circle of people who check their numbers on live silicon. Inside: measurement teardowns, bench access, and first sight of methods before they are published.',
+  lede: `A closed circle of people who check their numbers on live silicon. ${clubPrice(false)}: your own TRI DEV developer agent on your issue, measurement teardowns, bench access, and first sight of methods before they are published.`,
   cta: 'Join via Telegram',
   ctaAlt: 'Read the blog first',
   seatNote: 'I take as many people as I can personally read RTL for. Payment in the bot — card or Telegram Stars.',
   insideTitle: 'What is inside',
-  tiersTitle: 'Tiers',
   notTitle: 'What this is not',
   whoTitle: 'Who it fits',
-  draftNote: 'Terms are being finalised: the figures are a draft and will be confirmed before intake opens.',
   join: 'Join',
 }
 
@@ -132,7 +116,7 @@ export default function Foundry() {
               <p style={{ fontSize: '1.05rem', lineHeight: 1.7, color: 'var(--muted)', maxWidth: 620, marginTop: '1.25rem' }}>
                 {c.lede}
               </p>
-              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1.75rem' }}>
+              <div className="foundry-cta" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center', marginTop: '1.75rem' }}>
                 <a className="btn" href={CONTACT.telegram}>{c.cta}</a>
                 <a className="btn secondary" href="#/blog">{c.ctaAlt}</a>
               </div>
@@ -159,39 +143,15 @@ export default function Foundry() {
           </div>
         </section>
 
-        {/* УРОВНИ */}
+        {/* Как выглядит прогон на стенде: запись с платы, а не макет */}
         <section className="section">
-          <div className="section-inner">
-            <h2 style={{ marginTop: 0 }}>{c.tiersTitle}</h2>
-            {DRAFT_TERMS ? (
-              <p style={{ color: 'var(--golden)', fontSize: '0.85rem', marginTop: 0 }}>{c.draftNote}</p>
-            ) : null}
-            <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))' }}>
-              {TIERS.map(t => {
-                const loc = ru ? t.ru : t.en
-                return (
-                  <motion.div
-                    key={loc.name}
-                    className="premium-card"
-                    initial={{ opacity: 0, y: 16 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5 }}
-                    style={t.featured ? { borderColor: 'var(--accent)' } : undefined}
-                  >
-                    <div style={{ fontSize: '0.75rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--muted)' }}>{loc.name}</div>
-                    <div style={{ fontSize: '2rem', fontWeight: 700, margin: '0.5rem 0 0.25rem' }}>{loc.price}</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '0.75rem' }}>{`≈ ${t.stars} ⭐ / ${ru ? 'мес' : 'mo'}`}</div>
-                    <p style={{ margin: '0 0 1rem', color: 'var(--muted)', fontSize: '0.92rem', lineHeight: 1.6 }}>{loc.body}</p>
-                    <a className={t.featured ? 'btn' : 'btn secondary'} href={CONTACT.telegram} style={{ display: 'inline-block' }}>
-                      {c.join}
-                    </a>
-                  </motion.div>
-                )
-              })}
-            </div>
+          <div className="section-inner narrow">
+            <h2 style={{ marginTop: 0 }}>{ru ? 'Как выглядит прогон на стенде' : 'What a bench run looks like'}</h2>
+            <TerminalCast src={X7_BOARD.src} share={X7_BOARD.share} title={X7_BOARD.title} caption={ru ? X7_BOARD.caption.ru : X7_BOARD.caption.en} />
           </div>
         </section>
+
+        <AgentShowcase ru={ru} featured="tridev" />
 
         {/* КОМУ ПОДОЙДЁТ */}
         <section className="section">

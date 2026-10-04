@@ -5,6 +5,7 @@ import { useI18n } from '../i18n/context'
 import Navigation from '../components/Navigation'
 import Footer from '../components/Footer'
 import QuantumBackground from '../components/QuantumBackground'
+import { TnfLadder, TnfTheorems, TnfLimits } from '../components/sections/tnf'
 
 const LINKS = {
   github: 'https://github.com/gHashTag',
@@ -257,6 +258,10 @@ export default function Proof() {
           </div>
         </motion.div>
       </section>
+
+      <TnfLadder />
+      <TnfTheorems />
+      <TnfLimits />
 
       <Footer />
     </main>

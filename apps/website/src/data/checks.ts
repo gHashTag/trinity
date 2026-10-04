@@ -97,8 +97,8 @@ export const CHECKS: Check[] = [
     with:
       top: my_top_module`,
     evidence: {
-      en: 'It found a shuttle-blocking defect in two of my own chips and none in the third-party designs it has been run on.',
-      ru: 'Нашла блокирующий шаттл дефект в двух моих чипах и ни одного в чужих дизайнах, на которых запускалась.',
+      en: 'It found a shuttle-blocking defect in two of my own designs and none in the third-party designs it has been run on.',
+      ru: 'Нашла блокирующий шаттл дефект в двух моих дизайнах и ни одного в чужих дизайнах, на которых запускалась.',
     },
   },
   {

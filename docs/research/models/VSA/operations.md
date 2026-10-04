@@ -30,9 +30,9 @@ Combines multiple VSA vectors with associated metadata.
 
 ## Full Documentation
 
-- [Complete API: docs/docs/api/vsa.md](../../docs/api/vsa.md)
-- [15-minute Tutorial: docs/docs/tutorials/vsa-operations.md](../../docs/tutorials/vsa-operations.md)
-- [Quick Reference: docs/docs/cheatsheets/vsa-operations.md](../../docs/cheatsheets/vsa-operations.md)
+- [Complete API: docs/docs/api/vsa.md](../../../docs/api/vsa.md)
+- [15-minute Tutorial: docs/docs/tutorials/vsa-operations.md](../../../docs/tutorials/vsa-operations.md)
+- [Quick Reference: docs/docs/cheatsheets/vsa-operations.md](../../../docs/cheatsheets/vsa-operations.md)
 
 ## Implementation
 

@@ -2,16 +2,21 @@ import { useState, useEffect, memo, useCallback } from 'react'
 import { useI18n } from '../i18n/context'
 import LanguageSwitcher from './LanguageSwitcher'
 
-// Порядок повторяет порядок аргумента на главной, а не порядок продуктов.
-const sectionIds = ['hero', 'claim', 'formats', 'frontier', 'ladder', 'theorems', 'limits', 'landscape', 'reproduce']
+// Док ведёт к цели: карта и спеки идут сразу за именем, дальше — страницы, на
+// которые переехали секции статьи. Записи, начинающиеся с '#/', это маршруты;
+// остальные — секции самой главной.
+const navTargets = ['hero', '#/queen', '#/specs', 'claim', '#/gft', '#/proof', '#/verification', '#/cases']
+// Скролл-спай следит только за тем, что после переноса осталось на главной.
+const sectionIds = ['hero', 'claim']
 const BASE = import.meta.env.BASE_URL
-// Docs points to t27.ai/docs/ (custom domain)
-const DOCS_URL = 'https://t27.ai/docs/'
+// Docs is the site's own system documentation (#/docs, generated from
+// specs/docs/**.t27); the t27.ai/docs/ Jekyll copy is being retired in its favour.
+const DOCS_URL = '#/docs'
 
 // The locale files have no keys for the commercial pages yet, so the labels
 // live next to the links. Missing locales fall back to English.
 const PAGES_LABEL: Record<string, string> = {
-  ru: 'Страницы', de: 'Seiten', es: 'Páginas', zh: '页面',
+  ru: 'Страницы',
 }
 
 type PageLink = { href: string; en: string; ru: string; note: string; noteRu: string; external?: boolean; color?: string }
@@ -33,6 +38,9 @@ const PAGES: PageLink[] = [
   { href: '#/verification', en: 'Verification', ru: 'Верификация', note: 'Send RTL, get it measured on a live FPGA board', noteRu: 'Присылаете RTL — измеряю на живой FPGA-плате' },
   { href: '#/ip', en: 'Licensing', ru: 'Лицензирование', note: 'Arithmetic cores with RTL, reference model and vectors', noteRu: 'Ядра: RTL, эталонная модель и векторы' },
   { href: '#/proof', en: 'Proof', ru: 'Доказательства', note: 'Every measured number, and its limits', noteRu: 'Все измеренные цифры и их границы' },
+  // The homepage's old first screen. It is the game's front door now, so the
+  // number that the game exists to build has a page of its own.
+  { href: '#/trinity', en: 'The number', ru: 'Число', note: 'r² = r + 1, the format claim, and the evidence under it', noteRu: 'r² = r + 1, заявление о формате и свидетельства под ним' },
   { href: '#/cases', en: 'Case studies', ru: 'Работы', note: 'Verification runs on other people’s RTL', noteRu: 'Прогоны чужого RTL' },
   { href: '#/course', en: 'Course', ru: 'Курс', note: 'Train a neural network on an FPGA', noteRu: 'Обучите нейросеть прямо на FPGA' },
   { href: '#/foundry', en: 'Golden Foundry', ru: 'Золотая Литейная', note: 'A club for people who build on silicon', noteRu: 'Клуб разработчиков на кремнии', color: '#C9A24B' },
@@ -41,7 +49,10 @@ const PAGES: PageLink[] = [
   { href: '#/blog', en: 'Blog', ru: 'Блог', note: 'Notes on the work as it happens', noteRu: 'Заметки по ходу работы' },
   { href: '#/dashboard', en: 'Dashboard', ru: 'Панель', note: 'Project metrics', noteRu: 'Метрики проекта', color: '#00ccff' },
   { href: '#/tree', en: 'Research Lab', ru: 'Исслед. лаб', note: 'Interactive visualisations', noteRu: 'Интерактивные визуализации', color: '#ffd700' },
-  { href: DOCS_URL, en: 'Docs', ru: 'Документация', note: 'Full documentation', noteRu: 'Полная документация', external: true },
+  { href: '#/specs', en: 'Spec Explorer', ru: 'Обозреватель спек', note: 'The .t27 corpus, layer by layer, through the real compiler', noteRu: 'Корпус .t27 по слоям через настоящий компилятор', color: '#00FF88' },
+  { href: '#/skills', en: 'Skill Explorer', ru: 'Обозреватель скилов', note: 'Every published skill, bound to the .t27 spec it stands on', noteRu: 'Каждый опубликованный скил и спека .t27, на которой он стоит', color: '#00FF88' },
+  { href: '#/crons', en: 'Cron Explorer', ru: 'Обозреватель кронов', note: 'Every scheduled job of the farm, and when it next fires', noteRu: 'Все задания по расписанию и когда каждое сработает', color: '#00ccff' },
+  { href: DOCS_URL, en: 'Docs', ru: 'Документация', note: 'The project, the rules of the game for its agents, and the system in detail', noteRu: 'Проект, правила игры для агентов и система в деталях', color: '#ffd700' },
 ]
 
 // Smooth scrolling is animation-driven, so it silently does nothing when
@@ -157,18 +168,25 @@ export default memo(function Navigation() {
     <>
       {/* Desktop dock nav */}
       <nav className="nav-dock" aria-label="Main navigation">
-        {t.nav?.map((item: string, i: number) => (
-          <a
-            key={i}
-            href={`#${sectionIds[i]}`}
-            className={active === sectionIds[i] ? 'active' : ''}
-            onClick={(e) => { e.preventDefault(); scrollTo(sectionIds[i]) }}
-            aria-label={`Navigate to ${item}`}
-            aria-current={active === sectionIds[i] ? 'page' : undefined}
-          >
-            {item}
-          </a>
-        ))}
+        {t.nav?.map((item: string, i: number) => {
+          const target = navTargets[i]
+          if (!target) return null
+          if (target.startsWith('#/')) {
+            return <a key={i} href={target} aria-label={`Navigate to ${item}`}>{item}</a>
+          }
+          return (
+            <a
+              key={i}
+              href={`#${target}`}
+              className={active === target ? 'active' : ''}
+              onClick={(e) => { e.preventDefault(); scrollTo(target) }}
+              aria-label={`Navigate to ${item}`}
+              aria-current={active === target ? 'page' : undefined}
+            >
+              {item}
+            </a>
+          )
+        })}
         <button
           type="button"
           className={`nav-pages-toggle ${pagesOpen ? 'open' : ''}`}
@@ -241,18 +259,29 @@ export default memo(function Navigation() {
               Navigation Menu
             </h2>
             <div className="mobile-menu-links" role="navigation" aria-label="Mobile navigation">
-              {t.nav?.map((item: string, i: number) => (
-                <a
-                  key={i}
-                  href={`#${sectionIds[i]}`}
-                  className={active === sectionIds[i] ? 'active' : ''}
-                  onClick={(e) => { e.preventDefault(); scrollTo(sectionIds[i]) }}
-                  aria-label={`Navigate to ${item}`}
-                  aria-current={active === sectionIds[i] ? 'page' : undefined}
-                >
-                  {item}
-                </a>
-              ))}
+              {t.nav?.map((item: string, i: number) => {
+                const target = navTargets[i]
+                if (!target) return null
+                if (target.startsWith('#/')) {
+                  return (
+                    <a key={i} href={target} onClick={() => setMenuOpen(false)} aria-label={`Navigate to ${item}`}>
+                      {item}
+                    </a>
+                  )
+                }
+                return (
+                  <a
+                    key={i}
+                    href={`#${target}`}
+                    className={active === target ? 'active' : ''}
+                    onClick={(e) => { e.preventDefault(); scrollTo(target) }}
+                    aria-label={`Navigate to ${item}`}
+                    aria-current={active === target ? 'page' : undefined}
+                  >
+                    {item}
+                  </a>
+                )
+              })}
               {/* Same source as the desktop disclosure, so the two can't drift apart */}
               {PAGES.map((p) => (
                 <a

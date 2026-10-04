@@ -1,5 +1,11 @@
 ## Description
 
+**Required for every PR:** add the current-head machine-readable work report
+from [PR_BLOG_AUTOMATION.md](../docs/PR_BLOG_AUTOMATION.md). The `T27 work report`
+check rejects missing, placeholder or stale reports. After merge the report
+becomes a source-linked blog publication task. Existing checklists below do not
+replace the report; failed/not-run tests must be reported honestly.
+
 Briefly describe what this PR does and why it's needed.
 
 ## Related Issue

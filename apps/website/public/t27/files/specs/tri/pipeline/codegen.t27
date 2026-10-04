@@ -1,0 +1,23 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// | | φ² + 1/φ² = 3 | TRINITY
+
+module TestSpec;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const ParseError = struct {
+        message : String,
+        line : Int,
+        column : Int,
+        source : String,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+

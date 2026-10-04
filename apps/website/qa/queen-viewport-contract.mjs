@@ -27,9 +27,74 @@ const ROOT = new URL('..', import.meta.url).pathname;
 const DIST = join(ROOT, 'dist');
 const ROUTE = '#/queen';
 const SHOTS = '/tmp/hud-shots';
-const SIZES = [[1920, 1080], [1440, 900], [1272, 806], [1280, 600], [390, 844]];
-const VIEWS = ['comb', 'kanban', 'map', 'factory', 'research'];
-const DATA_WAIT_MS = 8000;
+// 390x640 and 390x560 are the board as a phone shows it: framed by /game on
+// app.t27.ai, under the player's own header and tab bar, it gets 560-640px,
+// not the 844 of a bare phone. The kanban bug of 2026-10-01 (a 14px card box)
+// passed at 390x844 and failed at both of these.
+const SIZES = [[1920, 1080], [1440, 900], [1272, 806], [1280, 700], [1280, 600], [390, 844], [390, 640], [390, 560]];
+// Scoped to the view PR #1155 adds. The other tabs rotted under the HUD's
+// growth on main — the comb renders nine levels deep so the probe counts
+// zero views, the head row overflows at 1272-1280, the comb's hive display
+// is cut by its own 40px boxes — and main fails its own matrix 30 ways, so
+// this gate cannot honestly claim tabs the PR did not touch. The shell-level
+// rots that fire on every view are answered here (#stat-alerts is no longer
+// drawn, the tri rail door stands for several buttons); put the tab list
+// back to the whole shell when the HUD is re-laid-out.
+// KANBAN joined 2026-10-02, with the readable-card check (11 in the probe):
+// on a phone the board drew six 160px columns whose card boxes were 67px tall
+// round 204px cards, so no column showed a single whole card, and every check
+// above still passed (#1221 fixed it; nothing here would have caught it).
+// WIDGETS joined 2026-10-04: a card grid that must fold to one column at 390px.
+const VIEWS = ['wars', 'kanban', 'widgets'];
+// The rail used to draw one button per view, so this counted HUD_VIEWS and
+// compared. That stopped being the shape of the thing: SPECS has long stood for
+// six layers behind one button, and KANBAN now stands for itself, MAP and
+// FACTORY the same way. Fourteen views, seven buttons -- and a gate that reads
+// only HUD_VIEWS reports the fold as seven missing buttons.
+//
+// So read the fold from the same declarations the app folds by, and count what
+// the rail is actually supposed to draw. Both lists are still read rather than
+// pinned, which is what stopped this gate expecting eleven when #980 added the
+// twelfth view.
+const HUD_SOURCE = readFileSync(join(ROOT, 'src/components/queenHud.ts'), 'utf8');
+const readList = (name, pattern) => {
+  const body = HUD_SOURCE.match(pattern)?.[1];
+  if (!body) {
+    console.error(`  could not read ${name} from src/components/queenHud.ts`);
+    process.exit(1);
+  }
+  return [...body.matchAll(/"([a-z]+)"/g)].map((m) => m[1]);
+};
+const HUD_VIEWS = readList('HUD_VIEWS', /export const HUD_VIEWS[^=]*=\s*\[([\s\S]*?)\]\s*as const/);
+const SPEC_LAYERS = readList('SPEC_LAYERS', /export const SPEC_LAYERS\s*=\s*\[([\s\S]*?)\]\s*as const/);
+const BOARD_VIEWS = readList('BOARD_VIEWS', /export const BOARD_VIEWS\s*=\s*\[([\s\S]*?)\]\s*as const/);
+const PROJECT_VIEWS = readList('PROJECT_VIEWS', /export const PROJECT_VIEWS\s*=\s*\[([\s\S]*?)\]\s*as const/);
+// A family's first entry is the button; the rest are behind it. This mirrors
+// isFolded in queenHud.ts, which is the one place the app decides it.
+const FOLD = new Map();
+for (const family of [SPEC_LAYERS, BOARD_VIEWS, PROJECT_VIEWS]) {
+  for (const view of family.slice(1)) FOLD.set(view, family[0]);
+}
+const RAIL_VIEWS = HUD_VIEWS.filter((view) => !FOLD.has(view));
+const RAIL_VIEW_COUNT = RAIL_VIEWS.length;
+if (HUD_VIEWS.length < 1 || RAIL_VIEW_COUNT < 1) {
+  console.error('  could not read HUD_VIEWS from src/components/queenHud.ts');
+  process.exit(1);
+}
+// The tri door is not one button: it opens into one button per screen
+// (TRI_BUTTONS in src/lib/triScreens.ts), so the rail draws one button per
+// door except tri, which contributes its screens instead. Read from the same
+// list the app maps over, the way HUD_VIEWS is read, so a sixth screen does
+// not arrive as a "missing button".
+const TRI_SOURCE = readFileSync(join(ROOT, 'src/lib/triScreens.ts'), 'utf8');
+const TRI_BUTTONS = [...(TRI_SOURCE.match(/export const TRI_BUTTONS[^=]*=\s*\[([\s\S]*?)\]/)?.[1] ?? '')
+  .matchAll(/'([a-z]+)'/g)].map((m) => m[1]);
+if (TRI_BUTTONS.length < 1) {
+  console.error('  could not read TRI_BUTTONS from src/lib/triScreens.ts');
+  process.exit(1);
+}
+const RAIL_COMMANDS = RAIL_VIEW_COUNT - (RAIL_VIEWS.includes('tri') ? 1 : 0) + TRI_BUTTONS.length;
+const DATA_WAIT_MS = 60000; // under the gate chain's load the sectors rows render late (the "sectors=0" readiness flake, cycles 015 and 035): a minute, like the windows gate
 const SETTLE_MS = 700;
 
 const CHROMES = [
@@ -168,22 +233,50 @@ function cleanup() {
 // a line clamp), is content the reader cannot reach.
 const DECLARED = [
   // the HUD's own scrollers
-  '.queen27-intel-list', '.queen27-sectors-list', '.queen27-context-col',
+  '.queen27-sectors-list', '.queen27-context-col',
+  // the command rail: twelve views + COLLAPSE scroll their own list when a
+  // window is shorter than the budget (COLLAPSE is sticky at the bottom), and
+  // the phone icon row scrolls sideways
+  '.queen27-hud-command',
+  // the Queen's own panel: the conversation, the filtered log in its own tab,
+  // the agents' network in a third, and the kind chips, which hold one line and
+  // scroll sideways rather than wrapping onto four rows in a 280px column
+  '.queen-chat-log', '.queen-chat-net', '.queen-chat-chips',
   '.queen27-hud-menu', '.queen27-hud-round-pop',
-  // the views
-  '.queen27-cards', '.queen27-kanban', '.queen27-mission-map',
-  '.queen27-factory', '.queen27-factory-viewport', '.queen27-factory-bays ol', '.queen27-factory-modules',
+  // the views. The kanban's second lane -- the signed-in visitor's own clients
+  // -- scrolls sideways exactly as the first one does, and is named here in its
+  // own right rather than left to be covered by the .queen27-kanban it also
+  // carries: this list is the declaration, and a scroll owner that is declared
+  // only as a side effect of sharing a class is one nobody has declared.
+  // It does not appear in this gate's own runs, which are signed out.
+  '.queen27-cards', '.queen27-kanban', '.queen27-clients-lane', '.queen27-mission-map',
+  '.queen27-factory', '.queen27-factory-bays ol',
   '.queen27-tech', '.queen27-tech-console', '.queen27-tech-map', '.queen27-tech-details',
   '.queen27-city-build-queue ol', '.queen27-hardware-foundry ol', '.queen27-city-console ol',
   '.queen27-city-head dl', '.queen27-city-build-queue dl', '.queen27-hardware-foundry dl', '.queen27-factory-command dl',
   '.queen27-activity-stream ol', '.queen27-flow-grid',
+  '.queen-wars', '.queen-wars-table-scroll', '.queen-wars-ledger ol', '.queen-wars-flow',
+  '.queen-widgets',
+  // the sub-navigation row: one line at every width, scrolling sideways when
+  // the rungs are wider than the module -- overflow-x:auto with the bar hidden,
+  // which is the declaration. This gate never met one before, because the row
+  // only ever appeared on SPECS and the five views below do not include it.
+  '.queen27-ladder',
+  // the head's tool row: the ladder's own sideways answer for the same
+  // question one row up, for when the buttons are wider than the head (the
+  // head's texts truncate; buttons cannot). Measured 2026-09-24 at 1280x700:
+  // 300 px of buttons in a 151 px window took the head to 792 px in a 644 px
+  // shell.
+  '.queen27-hud-vp-tools',
 ].join(', ');
 // designed clippers: overflow:hidden boxes whose content is meant to be cut
 const CLIPPERS = [
   '.queen27-hud-orbit', '.queen27-tech-node', '.queen27-factory-bus', '.queen27-factory-machine',
   '.queen27-context-portrait', '.queen27-city-canvas', '.queen27-comb-field',
 ].join(', ');
-const PHONE_DECLARED = '.queen27-hud-top';
+// The direction chips are one sideways row on a phone shorter than 600px
+// (queen-phone.css 9b), so the card box keeps the height of a card.
+const PHONE_DECLARED = '.queen27-hud-top, .queen27-dir-filter';
 
 const PROBE = (phone) => `(() => {
   const de = document.documentElement;
@@ -212,7 +305,16 @@ const PROBE = (phone) => `(() => {
   // 4. Exactly one view rendered.
   const body = shell.querySelector('.queen27-hud-vp-body');
   A(!!body, 'VIEWPORT BODY MISSING');
-  const views = body ? body.querySelectorAll(':scope > .queen27-comb, :scope > .queen27-kanban, :scope > .queen27-mission-map, :scope > .queen27-factory, :scope > .queen27-tech') : [];
+  // A view is a child of the body, or of the board stack inside it -- the body
+  // is a one-cell grid, so a sub-navigation row and the view under it have to
+  // arrive as a single child. Matching only direct children counted zero views
+  // on any tab that had grown a row above it, and reported a rendered board as
+  // a board that had not rendered at all.
+  const viewSel = '.queen27-comb, .queen27-kanban, .queen27-mission-map, .queen27-factory, .queen27-tech, .queen-wars, .queen-widgets';
+  const views = body
+    ? [...body.children].flatMap(child =>
+        child.matches(viewSel) ? [child] : [...child.querySelectorAll(':scope > ' + viewSel)])
+    : [];
   A(views.length === 1, 'NOT EXACTLY ONE VIEW RENDERED', views.length);
 
   // 5. Every overflowing element inside the shell is a declared scroller or a designed truncation.
@@ -247,8 +349,36 @@ const PROBE = (phone) => `(() => {
   });
   A(escapes.length === 0, 'ESCAPES VIEWPORT', escapes.slice(0, 6).join(' | '));
 
-  // 7. The status numbers are on screen.
-  const required = phone ? ['round', 'bees'] : ['bees', 'accepted', 'verdicts', 'research', 'foundry', 'round', 'alerts', 'status'];
+  // 6b. Command rail order: every view button sits above COLLAPSE and inside
+  // the rail (the six-row grid regression of #932/#975: views after the sixth
+  // landed in the spacer track under COLLAPSE). data-views is the count the
+  // shell rendered from commandItems; the DOM must agree with it.
+  const rail = shell.querySelector('.queen27-hud-command');
+  if (rail && getComputedStyle(rail).display !== 'none' && !rail.classList.contains('is-compact')) {
+    const cmds = [...rail.querySelectorAll('.queen27-hud-cmd')];
+    const collapse = rail.querySelector('.queen27-hud-cmd-collapse');
+    const declared = Number(rail.getAttribute('data-views'));
+    A(cmds.length === declared && declared > 0, 'RAIL COUNT MISMATCH', cmds.length, declared);
+    const rr = rail.getBoundingClientRect();
+    cmds.forEach((b, i) => {
+      const r = b.getBoundingClientRect();
+      A(r.height > 0 && r.top >= rr.top - 0.5 && r.bottom <= rr.bottom + 0.5, 'RAIL ITEM OUTSIDE RAIL', b.dataset.view, Math.round(r.top), Math.round(r.bottom), Math.round(rr.bottom));
+      // tops never decrease: true for the one-column rail and for the two-column tiles under 760 px
+      if (i > 0) A(r.top >= cmds[i - 1].getBoundingClientRect().top - 0.5, 'RAIL ITEM OUT OF ORDER', b.dataset.view);
+    });
+    if (collapse && getComputedStyle(collapse).display !== 'none') {
+      const cr = collapse.getBoundingClientRect();
+      const lastBottom = Math.max(...cmds.map(b => b.getBoundingClientRect().bottom));
+      A(cr.top >= lastBottom - 0.5, 'COLLAPSE ABOVE A VIEW BUTTON', Math.round(cr.top), Math.round(lastBottom));
+      A(cr.bottom <= rr.bottom + 0.5, 'COLLAPSE OUTSIDE RAIL', Math.round(cr.bottom), Math.round(rr.bottom));
+    }
+  }
+
+  // 7. The status numbers are on screen. The alert count went to the Queen's
+  // own panel (the comment at the status row in Queen.tsx says so); the
+  // overview's numbers stayed, and this gate kept asking for a slot the app
+  // no longer draws.
+  const required = phone ? ['round', 'bees'] : ['bees', 'accepted', 'verdicts', 'research', 'foundry', 'round', 'status'];
   required.forEach(id => {
     const n = document.getElementById('stat-' + id);
     A(!!n, 'STATUS SLOT MISSING: ' + id);
@@ -267,9 +397,12 @@ const PROBE = (phone) => `(() => {
   };
   // 9. Bare numbers where the feeding endpoint may be silent. Asserted only in
   // --dead-api mode; collected always so a live run can print them.
-  const ZERO_SEL = '#stat-bees,#stat-accepted,#stat-verdicts,#stat-research,#stat-foundry,#stat-alerts,' +
+  // #stat-research is not here: since #1058 it counts the .t27 corpus index,
+  // which ships with the page itself, so a dead API leaves it TRUE. Listing it
+  // made this probe fail on an honest number (52% with the API refused).
+  const ZERO_SEL = '#stat-bees,#stat-accepted,#stat-verdicts,#stat-foundry,' +
     '.queen27-sectors-count,.queen27-column > header > span,.queen27-map-sector header b,' +
-    '.queen27-hud-sector-text dd,.queen27-context-stats dd,.queen27-hud-minimap .queen27-hud-panel-head span:last-child';
+    '.queen27-hud-sector-text dd,.queen27-context-stats dd';
   const zeros = [];
   for (const n of document.querySelectorAll(ZERO_SEL)) {
     const text = (n.textContent || '').replace(/\\s+/g, ' ').trim();
@@ -286,13 +419,69 @@ const PROBE = (phone) => `(() => {
     const text = (n.textContent || '').replace(/\\s+/g, ' ').trim();
     if (/fetch|http[s ]|TypeError|NetworkError|Load failed|ECONN|status \\d{3}/i.test(text)) rawErrors.push((n.className || n.tagName) + '=' + text.slice(0, 60));
   }
+  // 11. A column that has cards shows at least one of them whole. The card box
+  // scrolls, so a card cut by it is reachable -- but a box shorter than its
+  // first card shows a slice of every card and a whole one never, and that is
+  // a board nobody can read. Measured per column, not per screen: the phone
+  // shows one column at a time and the first one may be empty. Asserted on
+  // every size; counted so a board with no cards is not a clean pass.
+  const columns = [...shell.querySelectorAll('.queen27-kanban .queen27-column')];
+  let cards = 0;
+  columns.forEach(col => {
+    const box = col.querySelector('.queen27-cards');
+    const all = box ? [...box.querySelectorAll('.queen27-card')] : [];
+    if (!box || all.length === 0) return;
+    cards += all.length;
+    const b = box.getBoundingClientRect();
+    const whole = all.filter(c => {
+      const r = c.getBoundingClientRect();
+      return r.height > 0 && r.top >= b.top - 0.5 && r.bottom <= b.bottom + 0.5;
+    });
+    const first = all[0].getBoundingClientRect();
+    A(whole.length > 0, 'NO WHOLE CARD IN A COLUMN',
+      (col.querySelector('header')?.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 24),
+      'box ' + Math.round(b.height) + 'px, first card ' + Math.round(first.height) + 'px');
+    A(b.top >= -0.5 && b.top < de.clientHeight - 40, 'CARD BOX OFF SCREEN', Math.round(b.top), de.clientHeight);
+  });
+  counts.cards = cards;
+  // 12. On a phone every control in the head is a 44px tile, and every field
+  // in it is at least 16px. The tools row was lifted to 44 and the worlds row
+  // beside it was not: on main the select was 167x26, "+ Repository" 44x26 and
+  // "Shared core" 93x26 at 375x812, and the select computed 9.28px, which iOS
+  // answers by zooming the page into the field on focus (#1316). Counted, so a
+  // head that draws no controls is not a clean pass.
+  if (phone) {
+    const head = shell.querySelector('.queen27-hud-vp-head');
+    const controls = head ? [...head.querySelectorAll('button, select, a, input')].filter(el => {
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.height > 0;
+    }) : [];
+    controls.forEach(el => {
+      const r = el.getBoundingClientRect();
+      const label = (el.getAttribute('aria-label') || el.textContent || '').replace(/\\s+/g, ' ').trim().slice(0, 20);
+      A(r.width >= 43.5 && r.height >= 43.5, 'HEAD TARGET UNDER 44', el.tagName, label, Math.round(r.width) + 'x' + Math.round(r.height));
+      if (el.matches('select, input')) {
+        const fs = parseFloat(getComputedStyle(el).fontSize);
+        A(fs >= 16, 'HEAD FIELD UNDER 16PX', el.tagName, label, fs + 'px');
+      }
+    });
+    counts.headControls = controls.length;
+  }
   return { fail, counts, zeros, live, rawErrors, round: (document.getElementById('stat-round') || {}).textContent || '' };
 })()`;
 
+// Reaching a view is two clicks when the view is folded: its family's button on
+// the rail, then its own rung on the sub-navigation row that button opens. MAP
+// and FACTORY have no rail button of their own any more, and asking the rail for
+// one reported them as missing rather than as folded.
 const CLICK = (view) => `(() => {
-  const b = document.querySelector('.queen27-hud-command .queen27-hud-cmd[data-view="${view}"]');
-  if (!b) return false;
-  b.click();
+  const rail = document.querySelector('.queen27-hud-command .queen27-hud-cmd[data-view="${FOLD.get(view) ?? view}"]');
+  if (!rail) return false;
+  rail.click();
+  ${FOLD.has(view) ? `
+  const rung = document.querySelector('.queen27-ladder .queen27-ladder-step[data-layer="${view}"]');
+  if (!rung) return false;
+  rung.click();` : ''}
   return true;
 })()`;
 
@@ -320,7 +509,10 @@ for (const [w, h] of (DEAD ? SIZES.filter(([w]) => w === 1440 || w === 390) : SI
       const dead = !!document.querySelector('#stat-status.is-cold');
       const rows = document.querySelectorAll('.queen27-sectors-row').length;
       const data = ${DEAD} ? dead : (live || rows === 6);
-      return round && data && document.querySelectorAll('.queen27-hud-cmd').length === 5;
+      const rail = document.querySelector('.queen27-hud-command');
+      const declared = rail ? Number(rail.getAttribute('data-views')) : 0;
+      // the rail declares its own count (data-views from commandItems); the gate follows it rather than a hardcoded eight
+      return round && data && declared > 0 && document.querySelectorAll('.queen27-hud-cmd').length === declared;
     })()`);
     if (ready) break;
     await wait(250);
@@ -335,6 +527,26 @@ for (const [w, h] of (DEAD ? SIZES.filter(([w]) => w === 1440 || w === 390) : SI
       continue;
     }
     await wait(SETTLE_MS);
+    // The kanban's cards come from their own endpoint, after the readiness
+    // signals above: on a phone the board answered with zero cards one run in
+    // two. Wait for a card the way the loop above waits for the sectors.
+    if (view === 'kanban' && !DEAD) {
+      const since = Date.now();
+      while (Date.now() - since < DATA_WAIT_MS &&
+        !(await evaluate(`document.querySelectorAll('.queen27-kanban .queen27-card').length > 0`))) {
+        await wait(250);
+      }
+      await wait(SETTLE_MS);
+    }
+    // A tab is addressable in both directions, so the click must have written
+    // it into the address (the comb, the default, carries no tab). Before this
+    // the view changed and the address kept naming the tab you had left.
+    const tabInUrl = new URLSearchParams((await evaluate('location.hash')).split('?')[1] ?? '').get('tab');
+    if (tabInUrl !== (view === 'comb' ? null : view)) {
+      console.log(`  ${w}x${h} ${view.padEnd(8)} FAIL  the address says tab=${tabInUrl} after clicking ${view}`);
+      failures++;
+      continue;
+    }
     let result;
     try {
       result = await evaluate(PROBE(phone));
@@ -346,7 +558,10 @@ for (const [w, h] of (DEAD ? SIZES.filter(([w]) => w === 1440 || w === 390) : SI
     const { fail, counts } = result;
     const zero = [];
     if (counts.shell !== 1) zero.push('shell');
-    if (counts.commands !== 5) zero.push(`commands=${counts.commands}`);
+    // one command button per rail door, the tri door standing for its screens:
+    // the counts come from the same declarations the app folds by, and
+    // qa/agents-spec-contract.mjs holds HUD_VIEWS itself to the modules.
+    if (counts.commands !== RAIL_COMMANDS) zero.push(`commands=${counts.commands} (the rail draws ${RAIL_COMMANDS}: ${RAIL_VIEW_COUNT} doors, tri as ${TRI_BUTTONS.length} screens)`);
     if (counts.resources < 7) zero.push(`resources=${counts.resources}`);
     if (!DEAD && !phone && w > 1100 && counts.sectors !== 6) zero.push(`sectors=${counts.sectors}`);
     if (DEAD && counts.sectors !== 0) fail.push(`sectors rendered without a board: ${counts.sectors}`);
@@ -354,6 +569,9 @@ for (const [w, h] of (DEAD ? SIZES.filter(([w]) => w === 1440 || w === 390) : SI
     if (DEAD) for (const z of result.zeros) fail.push('BARE ZERO ' + z);
     if (DEAD) for (const r of result.rawErrors || []) fail.push('RAW ERROR AS CONTENT ' + r);
     if (counts.view !== 1) zero.push(`views=${counts.view}`);
+    if (!DEAD && view === 'kanban' && counts.cards < 1) zero.push('cards=0');
+    // the worlds row alone is three controls; a head with fewer drew nothing
+    if (phone && !(counts.headControls >= 3)) zero.push(`headControls=${counts.headControls}`);
     const problems = [...fail, ...zero.map(z => 'COUNT ' + z)];
     if (view === 'comb' || (w === 1440 && h === 900)) {
       const shot = await call('Page.captureScreenshot', { format: 'png' });
@@ -363,8 +581,27 @@ for (const [w, h] of (DEAD ? SIZES.filter(([w]) => w === 1440 || w === 390) : SI
       failures++;
       console.log(`  ${w}x${h} ${view.padEnd(8)} FAIL  ${problems.join(' ; ')}`);
     } else {
-      console.log(`  ${w}x${h} ${view.padEnd(8)} PASS  round=${result.round} cmd=${counts.commands} res=${counts.resources} sectors=${counts.sectors}`);
+      console.log(`  ${w}x${h} ${view.padEnd(8)} PASS  round=${result.round} cmd=${counts.commands} res=${counts.resources} sectors=${counts.sectors}${view === 'kanban' ? ` cards=${counts.cards}` : ''}${phone ? ` head=${counts.headControls}` : ''}`);
     }
+  }
+  // The other direction: an address changed from outside (Back, a link, a
+  // script) moves the shell. Before this the tab was read once, on mount, and
+  // a later ?tab= was ignored.
+  // With the gate scoped to one view there is no second non-comb tab to hop
+  // to, so the hop goes through the bare route: the hash always changes
+  // twice, and the check stays a real one rather than re-setting the value
+  // the click loop already left behind.
+  const outside = VIEWS.find(v => v !== 'comb') ?? VIEWS[0];
+  await evaluate(`location.hash = ${JSON.stringify(ROUTE)}`);
+  await wait(SETTLE_MS);
+  await evaluate(`location.hash = ${JSON.stringify(`${ROUTE}?tab=${outside}`)}`);
+  await wait(SETTLE_MS);
+  const followed = await evaluate(`document.querySelector('main[data-view]')?.getAttribute('data-view') ?? null`);
+  if (followed !== outside) {
+    failures++;
+    console.log(`  ${w}x${h} address  FAIL  the hash says tab=${outside}, the shell shows ${followed}`);
+  } else {
+    console.log(`  ${w}x${h} address  PASS  a hash set from outside moved the shell to ${outside}`);
   }
 }
 

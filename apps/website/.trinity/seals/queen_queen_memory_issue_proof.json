@@ -1,0 +1,19 @@
+{
+  "gen_hash_c": "sha256:1fc8028838199f002744ccc8c4f07d0c484ab3891a5860b40dbfe4d61d75b193",
+  "gen_hash_rust": "sha256:20697fa6f847927370e5db58eefa12f7c0199ea8b49a4744283471e3f6fe54e0",
+  "gen_hash_verilog": "sha256:e526dfed7b4ae3a450284f0bdf03285e10f8019721da787e35b03ac05ac19a0d",
+  "gen_hash_zig": "sha256:9bf4a15ac36afa28ecc2b09bf94c90a53cdbaaa07e68b51ea5efe5e38d49a38e",
+  "module": "queen_memory_issue_proof",
+  "ring": 12,
+  "sealed_at": "2026-10-04T16:00:44Z",
+  "sealed_by": "t27c-bootstrap@0.4.0",
+  "spec_hash": "sha256:7875901e265be6cca4915b21f6d9dad525922383406f9243ea5891e56f8056e9",
+  "spec_path": "specs/queen/memory_issue_proof.t27",
+  "tests": {
+    "failed": 0,
+    "failing": [],
+    "forced": false,
+    "passed": 2,
+    "total": 2
+  }
+}

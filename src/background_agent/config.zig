@@ -6,7 +6,10 @@ const Allocator = std.mem.Allocator;
 
 /// Configuration for background-agent API
 pub const Config = struct {
-    host: []const u8 = "0.0.0.0",
+    // Railway's proxy reaches a container over IPv6, so a listener bound to
+    // 0.0.0.0 is invisible to it: the process runs, the port is open, and every
+    // request comes back 502. "::" accepts both families.
+    host: []const u8 = "::",
     port: u16 = 3000,
     railwayApiToken: []const u8 = "",
     railwayProjectId: []const u8 = "",

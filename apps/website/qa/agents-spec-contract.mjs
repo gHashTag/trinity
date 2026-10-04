@@ -1,0 +1,738 @@
+// The spec-first skills and crons catalogs, checked against what they claim.
+//
+// public/skills/spec-skills.json and public/crons/spec-crons.json are written
+// by scripts/agents-from-specs.mjs from the .t27 files under
+// public/t27/files/specs/{skills,crons}/ -- through the real compiler, not a
+// regex. This gate asks the questions a generated file can still fail: is the
+// committed JSON what the specs produce today (no stale output, no hand edit);
+// does every entry point at a file whose bytes hash to what it says; does every
+// witness label agree with the code catalog it names; does every RUNS link
+// resolve both ways; and does the public page carry nothing shaped like a
+// secret. It also pins the management-strip facts the page derives -- the
+// canonical edit URL and the "run now" target per host -- so the buttons in the
+// Explorer cannot silently point somewhere the spec does not.
+//
+//   node --experimental-strip-types qa/agents-spec-contract.mjs
+
+import assert from 'node:assert/strict'
+import { createHash } from 'node:crypto'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
+import { join } from 'node:path'
+import { generate, SKILLS_OUT, CRONS_OUT, AGENTS_OUT, FUNCTIONS_OUT, TOOLS_OUT, readToolCatalog, FUNCTIONS_MANIFEST, EXPERIENCE_PATH, AGENT_COUNT, AGENT_LAYERS, HOSTS, CONTROLS, ON_FAILURE, FN_TRIGGERS, FN_ON_FAILURE, FN_SIDE_EFFECTS, FN_PROBE_RESULTS, FN_CONTROLS, functionDifferences, PROVIDERS_OUT, PROVIDER_WORDS, PROVIDER_FAMILY_FIELDS, PROVIDER_CATALOG_SPEC, PROVIDER_STUDY_SPEC, I18N_SPEC_DIR, I18N_FIELD_SOURCE, REPO_ROOT } from '../scripts/agents-from-specs.mjs'
+import { canonicalSpecEditUrl, vendoredSpecUrl, specSlug } from '../src/lib/agentSpecs.ts'
+import { MODULES } from '../src/lib/queenModules.ts'
+import { HUD_VIEWS, HUD_KEYS, RAIL_VIEWS, SPEC_LAYERS, BOARD_VIEWS, PROJECT_VIEWS, railViewOf } from '../src/components/queenHud.ts'
+
+const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex')
+const skills = JSON.parse(readFileSync(SKILLS_OUT, 'utf8'))
+const crons = JSON.parse(readFileSync(CRONS_OUT, 'utf8'))
+const agents = JSON.parse(readFileSync(AGENTS_OUT, 'utf8'))
+const functions = JSON.parse(readFileSync(FUNCTIONS_OUT, 'utf8'))
+const functionsCode = JSON.parse(readFileSync(FUNCTIONS_MANIFEST, 'utf8'))
+const providers = JSON.parse(readFileSync(PROVIDERS_OUT, 'utf8'))
+const tools = readToolCatalog()
+const experience = JSON.parse(readFileSync(EXPERIENCE_PATH, 'utf8'))
+const skillsCode = JSON.parse(readFileSync('public/skills/manifest.json', 'utf8'))
+const cronsCode = JSON.parse(readFileSync('public/crons/manifest.json', 'utf8'))
+const t27Manifest = JSON.parse(readFileSync('public/t27/manifest.json', 'utf8'))
+const corpusPaths = new Set(t27Manifest.specs.map((s) => s.path))
+
+// 1. The committed output is what the specs produce today.
+const fresh = await generate({ generatedAt: skills.generatedAt })
+assert.deepEqual(fresh.problems, [], 'the generator reports problems:\n' + fresh.problems.join('\n'))
+assert.equal(skills.contentSha256, fresh.skills.contentSha256, `${SKILLS_OUT} is stale or hand-edited; run node scripts/agents-from-specs.mjs`)
+assert.equal(crons.contentSha256, fresh.crons.contentSha256, `${CRONS_OUT} is stale or hand-edited; run node scripts/agents-from-specs.mjs`)
+assert.equal(agents.contentSha256, fresh.agents.contentSha256, `${AGENTS_OUT} is stale or hand-edited; run node scripts/agents-from-specs.mjs`)
+assert.equal(functions.contentSha256, fresh.functions.contentSha256, `${FUNCTIONS_OUT} is stale or hand-edited; run node scripts/agents-from-specs.mjs`)
+assert.equal(providers.contentSha256, fresh.providers.contentSha256, `${PROVIDERS_OUT} is stale or hand-edited; run node scripts/agents-from-specs.mjs`)
+assert.equal(functions.compilerWasmSha256, skills.compilerWasmSha256)
+assert.equal(providers.compilerWasmSha256, skills.compilerWasmSha256)
+assert.equal(agents.compilerWasmSha256, skills.compilerWasmSha256)
+assert.equal(skills.compilerWasmSha256, sha256(readFileSync('public/t27/t27_compiler.wasm')), 'the catalog names a compiler other than the vendored one')
+assert.equal(crons.compilerWasmSha256, skills.compilerWasmSha256)
+
+// 2. Nothing shaped like a secret on a public page.
+const FORBIDDEN = [
+  { name: 'telegram id', re: /\b\d{9,10}\b/ },
+  { name: 'IPv4 address', re: /\b(?:\d{1,3}\.){3}\d{1,3}\b/ },
+  { name: 'bearer token', re: /Bearer\s+[A-Za-z0-9._-]{10,}/ },
+  { name: 'bot token', re: /\b\d{8,10}:[A-Za-z0-9_-]{35}\b/ },
+  { name: 'url credential', re: /:\/\/[^\s/:@]+:[^\s@]+@/ },
+  { name: 'github token', re: /\bgh[pousr]_[A-Za-z0-9]{20,}\b/ },
+]
+for (const [name, text] of [['spec-skills', JSON.stringify(skills)], ['spec-crons', JSON.stringify(crons)], ['spec-agents', JSON.stringify(agents)], ['spec-functions', JSON.stringify(functions)], ['spec-providers', JSON.stringify(providers)], ['functions-manifest', JSON.stringify(functionsCode)], ['experience', JSON.stringify(experience)]]) {
+  for (const f of FORBIDDEN) {
+    const hit = f.re.exec(text)
+    assert.ok(!hit, `${name} carries something shaped like a ${f.name} (${hit ? hit[0].slice(0, 4) : ''}…)`)
+  }
+}
+
+// 3. Every entry: a real file, the right bytes, an honest witness.
+const WITNESS = new Set(['spec+code', 'spec-only'])
+const HEALTH = new Set(['ok', 'warn', 'fail'])
+const CYRILLIC = /[\u0400-\u04ff]/
+
+// Language policy: a .t27 spec is English-only (t27 LANG-EN; bootstrap/build.rs
+// on gHashTag/t27 fails on any Cyrillic under specs/). Every other locale is
+// connected through a contract spec in specs/i18n/ (checked in section 6); the
+// entry itself carries `en` from the spec plus whatever the loaded bundles gave.
+function assertSummary(e, locales) {
+  const file = join('public/t27/files', e.specPath)
+  assert.ok(!CYRILLIC.test(readFileSync(file, 'utf8')), `${e.specPath}: Cyrillic in a .t27 spec (LANG-EN)`)
+  assert.ok(!('SUMMARY_RU' in e.fields), `${e.id}: SUMMARY_RU must not be a spec constant`)
+  assert.ok(!('ruSource' in e), `${e.id}: ruSource is gone; locales come from specs/i18n/*.t27`)
+  assert.equal(e.summary.en, e.fields.SUMMARY_EN)
+  assert.equal(e.name.en, e.fields.NAME)
+  assert.ok(e.summary.en.length > 10, `${e.id}: SUMMARY_EN is missing`)
+  for (const field of ['summary', 'name']) {
+    for (const k of Object.keys(e[field])) assert.ok(k === 'en' || locales.has(k), `${e.id}: ${field}.${k} has no contract spec in ${I18N_SPEC_DIR}`)
+  }
+  if (e.summary.ru) assert.ok(e.summary.ru.length > 10 && CYRILLIC.test(e.summary.ru), `${e.id}: summary.ru is not Russian`)
+}
+const localesOf = (cat) => new Set(cat.i18n.map((l) => l.locale))
+const skillIds = new Set(skills.skills.map((s) => s.id))
+const cronIds = new Set(crons.crons.map((c) => c.id))
+assert.equal(skillIds.size, skills.skills.length, 'duplicate skill ids')
+assert.equal(cronIds.size, crons.crons.length, 'duplicate cron ids')
+const codeSkillIds = new Set(skillsCode.skills.map((s) => s.id))
+const codeCronIds = new Set(cronsCode.crons.map((c) => c.id))
+
+for (const s of skills.skills) {
+  const file = join('public/t27/files', s.specPath)
+  assert.ok(existsSync(file), `${s.id}: ${s.specPath} is not in the vendored corpus`)
+  assert.equal(sha256(readFileSync(file)), s.sha256, `${s.id}: the spec bytes changed under the catalog`)
+  assert.equal(s.typecheckOk, true)
+  assert.equal(s.discarded, 0)
+  assert.ok(WITNESS.has(s.witness))
+  assert.equal(s.witness, codeSkillIds.has(s.id) ? 'spec+code' : 'spec-only', `${s.id}: witness disagrees with the code catalog`)
+  assert.ok(HEALTH.has(s.health))
+  if (s.witness === 'spec-only') assert.notEqual(s.health, 'ok', `${s.id}: spec-only must not read ok`)
+  assert.equal(s.inSpecCorpus, corpusPaths.has(s.specPath), `${s.id}: inSpecCorpus disagrees with public/t27/manifest.json`)
+  assert.equal(s.fields.ID, s.id)
+  assert.equal(s.fields.KIND, 'skill')
+  assertSummary(s, localesOf(skills))
+  for (const id of s.runBy) assert.ok(cronIds.has(id), `${s.id}: runBy names ${id}, which has no cron spec`)
+  for (const id of s.runBy) {
+    const cron = crons.crons.find((c) => c.id === id)
+    assert.ok(cron.runs.includes(s.id), `${s.id}: runBy ${id} but that cron's RUNS does not name it`)
+  }
+  // Management strip facts.
+  assert.equal(canonicalSpecEditUrl(s.specPath), `https://github.com/gHashTag/t27/edit/master/${s.specPath}`)
+  assert.equal(vendoredSpecUrl(s.specPath), `https://github.com/gHashTag/trinity/blob/main/apps/website/public/t27/files/${s.specPath}`)
+  assert.equal(specSlug(s.specPath), s.specPath.replace(/^specs\/skills\//, '').replace(/\.t27$/, ''))
+}
+for (const id of skills.codeOnly) assert.ok(codeSkillIds.has(id) && !skillIds.has(id), `codeOnly ${id} is wrong`)
+for (const id of codeSkillIds) assert.ok(skillIds.has(id) || skills.codeOnly.includes(id), `${id} is in code but neither spec nor codeOnly`)
+
+for (const c of crons.crons) {
+  const file = join('public/t27/files', c.specPath)
+  assert.ok(existsSync(file), `${c.id}: ${c.specPath} is not in the vendored corpus`)
+  assert.equal(sha256(readFileSync(file)), c.sha256, `${c.id}: the spec bytes changed under the catalog`)
+  assert.equal(c.typecheckOk, true)
+  assert.equal(c.discarded, 0)
+  assert.ok(WITNESS.has(c.witness))
+  assert.equal(c.witness, codeCronIds.has(c.id) ? 'spec+code' : 'spec-only', `${c.id}: witness disagrees with the code catalog`)
+  assert.ok(HEALTH.has(c.health))
+  assert.equal(c.fields.ID, c.id)
+  assert.equal(c.fields.KIND, 'cron')
+  assert.ok(HOSTS.includes(c.fields.HOST))
+  assert.ok(CONTROLS.includes(c.control))
+  assert.equal(c.control, c.fields.CONTROL)
+  assert.ok(ON_FAILURE.includes(c.fields.ON_FAILURE))
+  assertSummary(c, localesOf(crons))
+  assert.deepEqual(c.runs, c.fields.RUNS)
+  assert.equal(c.runsResolved.length, c.runs.length)
+  for (const r of c.runsResolved) {
+    assert.equal(r.ok, skillIds.has(r.id), `${c.id}: RUNS ${r.id} resolution is wrong`)
+    if (!r.ok) assert.equal(c.health, 'fail', `${c.id}: an unresolved RUNS must read fail`)
+    if (r.ok) assert.ok(skills.skills.find((s) => s.id === r.id).runBy.includes(c.id), `${c.id}: RUNS ${r.id} has no reverse runBy`)
+  }
+  if (c.fields.HOST === 'timer') {
+    assert.ok(Number.isInteger(c.fields.INTERVAL_MS) && c.fields.INTERVAL_MS > 0)
+    assert.equal(c.fields.SCHEDULE, undefined)
+    assert.equal(c.control, 'code-only', `${c.id}: a timer cannot be controlled from outside its process`)
+  } else {
+    assert.equal(typeof c.fields.SCHEDULE, 'string')
+    if (c.fields.SCHEDULE === '') assert.ok(c.fields.SCHEDULE_NOTE, `${c.id}: an empty SCHEDULE needs a note`)
+  }
+  // A cron that runs no skill must say so in its own words, not stay silent.
+  if (c.runs.length === 0) assert.ok(c.fields.RUNS_NOTE.length > 0, `${c.id}: empty RUNS without RUNS_NOTE`)
+  // Management strip facts: where "run now" goes, per host, never invented.
+  const target = c.runNow
+  if (c.fields.HOST === 'github-actions') {
+    assert.equal(target.kind, 'link')
+    assert.equal(target.url, `https://github.com/gHashTag/${c.fields.REPO}/actions/workflows/${c.fields.SERVICE.split('/').pop()}`)
+  } else if (c.fields.HOST === 'railway-cron') {
+    assert.equal(target.kind, 'link')
+    assert.match(target.url, /^https:\/\/railway\.com\/project\/[0-9a-f-]{36}\/service\/[0-9a-f-]{36}$/)
+  } else if (c.fields.HOST === 'inngest') {
+    assert.equal(target.kind, 'link')
+    assert.equal(target.url, 'https://inngestinngest-production-6a21.up.railway.app')
+  } else {
+    assert.equal(target.kind, 'disabled')
+  }
+  assert.equal(canonicalSpecEditUrl(c.specPath), `https://github.com/gHashTag/t27/edit/master/${c.specPath}`)
+}
+for (const id of crons.codeOnly) assert.ok(codeCronIds.has(id) && !cronIds.has(id), `codeOnly ${id} is wrong`)
+for (const id of codeCronIds) assert.ok(cronIds.has(id) || crons.codeOnly.includes(id), `${id} is in code but neither spec nor codeOnly`)
+
+// 4. The counts on the page are sums of the list.
+assert.equal(skills.counts.specs, skills.skills.length)
+assert.equal(skills.counts.specPlusCode, skills.skills.filter((s) => s.witness === 'spec+code').length)
+assert.equal(skills.counts.codeOnly, skills.codeOnly.length)
+assert.equal(skills.counts.runBy, skills.skills.filter((s) => s.runBy.length).length)
+assert.equal(crons.counts.specs, crons.crons.length)
+assert.equal(crons.counts.withRuns, crons.crons.filter((c) => c.runs.length).length)
+for (const h of HOSTS) assert.equal(crons.counts.byHost[h], crons.crons.filter((c) => c.fields.HOST === h).length)
+
+// 4b. Layer 4: the agent catalog. Exactly the alphabet, every skill link
+//     resolved, crons derived from RUNS (never listed by hand), experience
+//     joined by LETTER from the committed snapshot and adding up to it, links
+//     pinned to one t27 ref, and the witness honest about zero episodes.
+const AGENT_WITNESS = new Set(['spec+experience', 'spec-only'])
+assert.equal(agents.agents.length, AGENT_COUNT, `${AGENTS_OUT}: ${agents.agents.length} agents, the alphabet has ${AGENT_COUNT}`)
+assert.deepEqual(agents.agents.map((a) => a.letter), [...'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'TI'], 'the agents are A..Z then TI, in ORDINAL order')
+assert.deepEqual(agents.agents.map((a) => a.ordinal), Array.from({ length: AGENT_COUNT }, (_, i) => i + 1))
+const agentIds = new Set(agents.agents.map((a) => a.id))
+assert.equal(agentIds.size, agents.agents.length, 'duplicate agent ids')
+assert.match(agents.pin.ref, /^([0-9a-f]{40}|master)$/, 'the pin is a commit sha or the default branch')
+const t27Src = experience.sources.find((x) => x.repo === 't27')
+if (t27Src) assert.equal(agents.pin.ref, t27Src.commit, 'links are pinned to the t27 commit the experience snapshot came from')
+let attributedSum = 0
+for (const a of agents.agents) {
+  const file = join('public/t27/files', a.specPath)
+  assert.ok(existsSync(file), `${a.id}: ${a.specPath} is not in the vendored corpus`)
+  assert.equal(sha256(readFileSync(file)), a.sha256, `${a.id}: the spec bytes changed under the catalog`)
+  assert.equal(a.specPath, `specs/agents/${a.letter.toLowerCase()}.t27`)
+  assert.equal(a.typecheckOk, true)
+  assert.equal(a.discarded, 0)
+  assert.equal(a.fields.ID, a.id)
+  assert.equal(a.id, `t27/${a.letter}`)
+  assert.equal(a.fields.KIND, 'agent')
+  assert.ok(AGENT_LAYERS.includes(a.fields.LAYER), `${a.id}: LAYER ${a.fields.LAYER}`)
+  assert.match(a.fields.REGISTER, /^R(\d|1\d|2[0-6])$/, `${a.id}: REGISTER ${a.fields.REGISTER}`)
+  assertSummary(a, localesOf(agents))
+  for (const k of ['SOUL', 'AGENTS_DOC', 'ALPHABET']) assert.ok(a.fields[k].length > 0, `${a.id}: ${k} empty`)
+  assert.equal(a.fields.SOUL, 'SOUL.md')
+  assert.equal(a.fields.AGENTS_DOC, 'AGENTS.md')
+  assert.equal(a.fields.ALPHABET, 'docs/agents/AGENTS_ALPHABET.md')
+  assert.equal(a.links.soul, `https://github.com/gHashTag/t27/blob/${agents.pin.ref}/SOUL.md`)
+  assert.equal(a.links.agentsDoc, `https://github.com/gHashTag/t27/blob/${agents.pin.ref}/AGENTS.md`)
+  assert.equal(a.links.alphabet, `https://github.com/gHashTag/t27/blob/${agents.pin.ref}/docs/agents/AGENTS_ALPHABET.md`)
+  // Skills: every one resolves, and an empty list explains itself.
+  assert.deepEqual(a.skills.map((x) => x.id), a.fields.SKILLS)
+  for (const x of a.skills) { assert.equal(x.ok, true, `${a.id}: SKILLS ${x.id} unresolved`); assert.ok(skillIds.has(x.id), `${a.id}: SKILLS ${x.id} has no skill spec`) }
+  if (a.skills.length === 0) assert.ok(a.fields.SKILLS_NOTE.length > 0, `${a.id}: empty SKILLS without SKILLS_NOTE`)
+  assert.equal(a.health, 'ok', `${a.id}: health ${a.health}: ${a.messages.join('; ')}`)
+  // Crons: exactly the crons whose RUNS name one of the agent's skills.
+  const expectCrons = crons.crons.filter((c) => c.runs.some((id) => a.fields.SKILLS.includes(id))).map((c) => c.id).sort()
+  assert.deepEqual(a.crons, expectCrons, `${a.id}: crons are not derived from RUNS`)
+  // Tools (layer 5): every ID resolves to a tool spec that names the letter back; an empty list explains itself.
+  assert.deepEqual(a.tools.map((x) => x.id), a.fields.TOOLS ?? [])
+  for (const x of a.tools) {
+    assert.equal(x.ok, true, `${a.id}: TOOLS ${x.id} unresolved`)
+    const tl = tools.tools.find((t) => t.id === x.id)
+    assert.ok(tl, `${a.id}: TOOLS ${x.id} has no tool spec`)
+    assert.ok(tl.agents.some((g) => g.letter === a.letter), `${a.id}: ${x.id} does not name ${a.letter} in AGENTS`)
+  }
+  if ('TOOLS' in a.fields && a.fields.TOOLS.length === 0) assert.ok(a.fields.TOOLS_NOTE, `${a.id}: empty TOOLS without TOOLS_NOTE`)
+  // Experience: joined by LETTER, witness follows the count, zero says so.
+  const ex = experience.agents?.[a.letter]
+  assert.equal(a.experience.episodes, ex?.episodes ?? 0, `${a.id}: experience join disagrees with ${EXPERIENCE_PATH}`)
+  attributedSum += a.experience.episodes
+  assert.ok(AGENT_WITNESS.has(a.witness))
+  assert.equal(a.witness, a.experience.episodes > 0 ? 'spec+experience' : 'spec-only', `${a.id}: witness disagrees with the episode count`)
+  if (a.experience.episodes === 0) assert.ok(a.messages.includes('no attributed episodes in the experience snapshot'), `${a.id}: zero episodes must be said`)
+  if (a.experience.episodes > 0) assert.ok(a.experience.last && a.experience.files.length > 0, `${a.id}: episodes without last timestamp or files`)
+  assert.equal(a.fields.ENABLED, a.letter !== 'TI', `${a.id}: only the reserved seat is disabled`)
+  assert.equal(canonicalSpecEditUrl(a.specPath), `https://github.com/gHashTag/t27/edit/master/${a.specPath}`)
+}
+assert.equal(attributedSum, experience.counts.attributed, 'attributed episodes on the cards do not add up to the snapshot')
+assert.equal(agents.counts.episodesAttributed, attributedSum)
+assert.equal(agents.counts.episodesUnattributed, experience.unattributed.episodes)
+assert.equal(agents.counts.episodesTotal, experience.counts.episodes)
+assert.equal(experience.counts.attributed + experience.unattributed.episodes, experience.counts.episodes, 'the snapshot does not add up')
+assert.equal(agents.counts.specs, agents.agents.length)
+assert.equal(agents.counts.specPlusExperience, agents.agents.filter((a) => a.witness === 'spec+experience').length)
+assert.equal(agents.counts.specOnly, agents.agents.filter((a) => a.witness === 'spec-only').length)
+assert.equal(agents.counts.withSkills, agents.agents.filter((a) => a.skills.length).length)
+assert.equal(agents.counts.withCrons, agents.agents.filter((a) => a.crons.length).length)
+assert.equal(agents.counts.withTools, agents.agents.filter((a) => a.tools.length).length)
+assert.equal(agents.counts.withExperience, agents.counts.specPlusExperience)
+for (const l of AGENT_LAYERS) assert.equal(agents.counts.byLayer[l], agents.agents.filter((a) => a.fields.LAYER === l).length)
+assert.deepEqual(agents.ladder, { specs: t27Manifest.specCount, skills: skills.skills.length, crons: crons.crons.length, agents: agents.agents.length, tools: tools.tools.length, functions: functions.functions.length, providers: providers.providers.length }, 'the ladder counts are the catalogs, tools, functions and providers included')
+assert.deepEqual(skills.ladder, agents.ladder, 'the skills catalog shows the same ladder as the agents catalog')
+assert.deepEqual(crons.ladder, agents.ladder, 'the crons catalog shows the same ladder as the agents catalog')
+// The snapshot's own attribution rule names the letters it can assign; every agent letter is among them.
+for (const a of agents.agents) assert.ok(experience.attribution.letters.includes(a.letter), `${a.letter}: the attribution rule cannot assign this letter`)
+
+// 4b. Layer five: every function spec is a card, witnessed by the vendored
+//     functions manifest (public/functions/manifest.json), with the spec first
+//     and the manifest's own reading beside it; where they differ the card says so.
+const codeFns = new Map(functionsCode.functions.map((f) => [f.id, f]))
+assert.equal(functions.functions.length, codeFns.size, `${FUNCTIONS_OUT}: ${functions.functions.length} specs against ${codeFns.size} manifest entries`)
+assert.deepEqual(functions.codeOnly, [], 'every manifest function has a spec (none is code-only)')
+assert.equal(functions.manifest.repo, functionsCode.repo)
+assert.equal(functions.manifest.entries, functionsCode.functions.length)
+assert.match(functions.manifest.generatedFrom.commit, /^[0-9a-f]{7,40}$/, 'the manifest names the commit it was read from')
+const functionIds = new Set(functions.functions.map((f) => f.id))
+assert.equal(functionIds.size, functions.functions.length, 'duplicate function ids')
+assert.deepEqual(functions.functions.map((f) => f.id), [...functionIds].sort(), 'functions are sorted by id')
+const cronIdSet = new Set(crons.crons.map((c) => c.id))
+for (const f of functions.functions) {
+  const x = f.fields
+  assert.equal(x.KIND, 'function', `${f.id}: KIND`)
+  assert.equal(x.ID, f.id, `${f.id}: ID is the file name`)
+  assert.equal(f.specPath, `specs/functions/${f.id}.t27`)
+  assert.equal(f.moduleName, `fn_${f.id.replace(/-/g, '_')}`)
+  assert.equal(specSlug(f.specPath), f.id)
+  assert.ok(f.typecheckOk, `${f.id}: the compiler rejected the spec`)
+  assert.equal(x.REPO, '999-multibots-telegraf')
+  assert.ok(FN_TRIGGERS.includes(x.TRIGGER), `${f.id}: TRIGGER ${x.TRIGGER}`)
+  assert.ok(FN_ON_FAILURE.includes(x.ON_FAILURE), `${f.id}: ON_FAILURE ${x.ON_FAILURE}`)
+  assert.ok(FN_PROBE_RESULTS.includes(x.PROBE_RESULT), `${f.id}: PROBE_RESULT ${x.PROBE_RESULT}`)
+  assert.ok(FN_CONTROLS.includes(x.CONTROL), `${f.id}: CONTROL ${x.CONTROL}`)
+  assert.ok(Array.isArray(x.SIDE_EFFECTS) && x.SIDE_EFFECTS.length >= 1, `${f.id}: SIDE_EFFECTS names at least one effect (or none)`)
+  for (const se of x.SIDE_EFFECTS) assert.ok(FN_SIDE_EFFECTS.includes(se), `${f.id}: side effect ${se}`)
+  assert.ok(Array.isArray(x.STEPS) && x.STEPS.length >= 1, `${f.id}: STEPS in source order`)
+  assert.ok(Number.isInteger(x.RETRIES) && x.RETRIES >= 0, `${f.id}: RETRIES`)
+  assert.match(x.SERVICE, /^src\/inngest_app\/functions\/.+\.ts:\d+$/, `${f.id}: SERVICE is file:line under src/inngest_app/functions`)
+  if (x.TRIGGER === 'event') {
+    assert.ok(x.EVENT.length > 0 && x.CRON === '', `${f.id}: an event function has EVENT, not CRON`)
+    assert.equal(f.cronSpec, null, `${f.id}: an event function joins no cron card`)
+  } else {
+    assert.ok(x.CRON.length > 0 && x.EVENT === '', `${f.id}: a cron function has CRON, not EVENT`)
+    assert.equal(x.LEGACY_EVENTS.length, 0, `${f.id}: a cron function has no legacy events`)
+    assert.ok(f.cronSpec && cronIdSet.has(f.cronSpec), `${f.id}: its cron card ${f.cronSpec} is in the crons catalog`)
+    assert.equal(f.cronSpec, `inngest/999-multibots-telegraf/${x.LEGACY_ID}`, `${f.id}: the cron card is joined by host, repo and legacy id`)
+  }
+  if (x.SAFE_PROBE) JSON.parse(x.SAFE_PROBE)
+  assertSummary(f, localesOf(functions))
+  // Witness: the manifest entry with the same id, read verbatim; differences are computed, not asserted away.
+  const code = codeFns.get(f.id)
+  assert.ok(code, `${f.id}: no manifest entry — the generator must have marked it spec-only`)
+  assert.equal(f.witness, 'spec+code')
+  assert.equal(f.code.legacyId, code.legacy_id)
+  assert.equal(f.code.file, code.file || null, `${f.id}: an empty manifest file is null on the card, never an invented path`)
+  assert.equal(f.code.deployed, code.deployed_2026_09_09)
+  assert.equal(f.code.probeResult, code.probe_result)
+  assert.deepEqual(f.differences, functionDifferences(x, code), `${f.id}: differences are exactly what the generator computes`)
+  if (f.code.deployed === false) {
+    assert.equal(x.PROBE_RESULT, 'not-deployed', `${f.id}: a function not on the production build has PROBE_RESULT not-deployed`)
+    assert.ok(f.messages.some((m) => /not on the production build/.test(m)), `${f.id}: the card says it is not deployed`)
+  }
+  if (f.differences.length) assert.equal(f.health, 'warn', `${f.id}: a difference from the manifest is a warning`)
+  for (const d of f.differences) assert.ok(f.messages.some((m) => m.startsWith(d.field)), `${f.id}: difference ${d.field} is stated on the card`)
+}
+assert.equal(functions.counts.specs, functions.functions.length)
+assert.equal(functions.counts.specPlusCode, functions.functions.filter((f) => f.witness === 'spec+code').length)
+assert.equal(functions.counts.specOnly, functions.functions.filter((f) => f.witness === 'spec-only').length)
+assert.equal(functions.counts.codeOnly, functions.codeOnly.length)
+assert.equal(functions.counts.deployed, functions.functions.filter((f) => f.code?.deployed === true).length)
+assert.equal(functions.counts.notDeployed, functions.functions.filter((f) => f.code?.deployed === false).length)
+assert.equal(functions.counts.deployed + functions.counts.notDeployed + functions.counts.deployUnknown, functions.functions.length)
+assert.equal(functions.counts.withCronSpec, functions.functions.filter((f) => f.cronSpec).length)
+assert.equal(functions.counts.withCronSpec, functions.counts.byTrigger.cron, 'every cron function has its cron card')
+assert.equal(functions.counts.withDifferences, functions.functions.filter((f) => f.differences.length).length)
+for (const t of FN_TRIGGERS) assert.equal(functions.counts.byTrigger[t], functions.functions.filter((f) => f.fields.TRIGGER === t).length)
+for (const s of FN_SIDE_EFFECTS) assert.equal(functions.counts.bySideEffect[s], functions.functions.filter((f) => f.fields.SIDE_EFFECTS.includes(s)).length)
+for (const p of FN_PROBE_RESULTS) assert.equal(functions.counts.byProbeResult[p], functions.functions.filter((f) => f.fields.PROBE_RESULT === p).length)
+assert.deepEqual(functions.ladder, agents.ladder, 'the functions catalog shows the same ladder as the agents catalog')
+// The deployed app the manifest describes registers as many functions as the manifest lists.
+assert.equal(functionsCode.deployedApp.mainRegisters, functionsCode.functions.length, 'main registers every manifest function')
+assert.equal(functionsCode.deployedApp.baseFunctions, functions.counts.deployed, 'the production build carries exactly the deployed functions')
+
+// 4c. Layer seven: every provider spec is a card. A model card copies the Gonka
+//     chain and says on which day; a host card is our own device class and says
+//     whether anything has run on it. The words a card may use are the ones
+//     specs/providers/catalog.t27 names, and no card names a host's address.
+const providerIds = new Set(providers.providers.map((p) => p.id))
+assert.equal(providerIds.size, providers.providers.length, 'duplicate provider ids')
+assert.equal(providers.catalog.specPath, PROVIDER_CATALOG_SPEC)
+assert.equal(providers.catalog.sha256, sha256(readFileSync(join('public/t27/files', PROVIDER_CATALOG_SPEC))), 'the provider catalog spec changed under the catalog')
+assert.equal(providers.study.specPath, PROVIDER_STUDY_SPEC)
+assert.deepEqual(providers.catalog.families, PROVIDER_WORDS.FAMILIES, 'catalog.t27 FAMILIES and the generator disagree')
+assert.deepEqual(providers.catalog.statuses, PROVIDER_WORDS.STATUSES, 'catalog.t27 STATUSES and the generator disagree')
+assert.deepEqual(providers.catalog.witnesses, PROVIDER_WORDS.WITNESSES, 'catalog.t27 WITNESSES and the generator disagree')
+for (const p of providers.providers) {
+  const file = join('public/t27/files', p.specPath)
+  assert.ok(existsSync(file), `${p.id}: ${p.specPath} is not in the vendored corpus`)
+  assert.equal(sha256(readFileSync(file)), p.sha256, `${p.id}: the spec bytes changed under the catalog`)
+  assert.equal(p.typecheckOk, true, `${p.id}: the compiler rejected the spec`)
+  assert.equal(p.discarded, 0, `${p.id}: the parser discarded tokens`)
+  assert.equal(p.specPath, `specs/providers/${p.id}.t27`, `${p.id}: ID is the path under specs/providers`)
+  assert.equal(p.moduleName, `provider_${p.id.replace(/[^a-z0-9]+/g, '_')}`, `${p.id}: module name per catalog.t27 ID_RULE`)
+  assert.equal(specSlug(p.specPath), p.id)
+  assert.equal(p.fields.ID, p.id)
+  assert.equal(p.fields.KIND, 'provider')
+  assert.equal(p.family, p.fields.FAMILY)
+  assert.equal(p.network, p.fields.NETWORK)
+  assert.equal(p.status, p.fields.STATUS)
+  assert.equal(p.witness, p.fields.WITNESS)
+  assert.ok(PROVIDER_WORDS.FAMILIES.includes(p.family), `${p.id}: FAMILY ${p.family}`)
+  assert.ok(providers.catalog.networks.includes(p.network), `${p.id}: NETWORK ${p.network}`)
+  assert.ok(PROVIDER_WORDS.STATUSES.includes(p.status), `${p.id}: STATUS ${p.status}`)
+  assert.ok(PROVIDER_WORDS.WITNESSES.includes(p.witness), `${p.id}: WITNESS ${p.witness}`)
+  assert.ok(p.id.startsWith(`${p.network}/`), `${p.id}: the directory is the network`)
+  for (const f of providers.catalog[PROVIDER_FAMILY_FIELDS[p.family] === 'MODEL_FIELDS' ? 'modelFields' : 'hostFields']) assert.ok(f in p.fields, `${p.id}: ${p.family} card lacks ${f}`)
+  if (p.family === 'model') {
+    assert.equal(p.network, 'gonka', `${p.id}: a model card is a Gonka model`)
+    assert.equal(p.witness, 'chain-read', `${p.id}: a model card is read from the chain`)
+    assert.ok(PROVIDER_WORDS.CALLS.includes(p.fields.CALL), `${p.id}: CALL ${p.fields.CALL}`)
+    assert.equal(p.status, p.fields.HOSTS > 0 ? 'serving' : 'listed', `${p.id}: STATUS follows HOSTS (catalog.t27 STATUS_RULE)`)
+    assert.match(p.fields.HF_COMMIT, /^[0-9a-f]{40}$/, `${p.id}: HF_COMMIT is a full commit`)
+    assert.match(String(p.fields.PRICE_PER_TOKEN), /^\d+$/, `${p.id}: PRICE_PER_TOKEN is an integer in the smallest unit`)
+  } else {
+    assert.equal(p.network, 'trinet', `${p.id}: a host card is our network`)
+    assert.ok(['measured', 'planned'].includes(p.status), `${p.id}: a host class is measured or planned`)
+    assert.equal(p.witness, p.status === 'measured' ? 'bench-measured' : 'design-only', `${p.id}: a design never claims a measurement`)
+    if (p.witness === 'design-only') assert.notEqual(p.health, 'ok', `${p.id}: a design-only card must not read ok`)
+  }
+  assert.ok(HEALTH.has(p.health))
+  assert.equal(p.inSpecCorpus, corpusPaths.has(p.specPath), `${p.id}: inSpecCorpus disagrees with public/t27/manifest.json`)
+  // No host address, seed or validator key reaches a card, whatever field it hides in.
+  assert.doesNotMatch(JSON.stringify(p), /inference_url|validator_key|"seed"|https?:\/\/\d/, `${p.id}: a card carries a participant address or key`)
+  assertSummary(p, localesOf(providers))
+  assert.equal(canonicalSpecEditUrl(p.specPath), `https://github.com/gHashTag/t27/edit/master/${p.specPath}`)
+}
+assert.equal(providers.counts.specs, providers.providers.length)
+assert.equal(providers.counts.typecheckOk, providers.providers.filter((p) => p.typecheckOk).length)
+assert.equal(providers.counts.enabled, providers.providers.filter((p) => p.fields.ENABLED).length)
+for (const [key, words] of [['byFamily', PROVIDER_WORDS.FAMILIES], ['byStatus', PROVIDER_WORDS.STATUSES], ['byWitness', PROVIDER_WORDS.WITNESSES], ['byNetwork', providers.catalog.networks]]) {
+  const prop = { byFamily: 'family', byStatus: 'status', byWitness: 'witness', byNetwork: 'network' }[key]
+  for (const w of words) assert.equal(providers.counts[key][w] ?? 0, providers.providers.filter((p) => p[prop] === w).length, `${key}.${w}`)
+}
+assert.ok(providers.providers.some((p) => p.family === 'model') && providers.providers.some((p) => p.family === 'host-class'), 'both families have at least one card')
+assert.deepEqual(providers.ladder, agents.ladder, 'the providers catalog shows the same ladder as the agents catalog')
+
+// 5. The Queen knows the six explorer views and the PROJECT view, at the keys the modules list promises.
+for (const tab of ['skills', 'crons', 'agents', 'functions', 'tools', 'providers', 'project']) {
+  const m = MODULES.find((x) => x.tab === tab)
+  assert.ok(m, `queenModules has no ${tab} entry`)
+  assert.ok(HUD_VIEWS.includes(tab), `HUD_VIEWS does not include ${tab}`)
+  assert.equal(HUD_KEYS[HUD_VIEWS.indexOf(tab)], m.key, `${tab}: the key on the card (${m.key}) is not the keyboard key`)
+  for (const lang of ['en', 'ru']) assert.ok(m[lang].name && m[lang].hint && m[lang].body.length > 40, `${tab}: ${lang} copy missing`)
+}
+// Every module says what it is for, not only what it shows, and says it once.
+// `body` describes the view; `play` is the reason a person is standing in front
+// of it. A missing one leaves a paragraph about someone else's instrument, and
+// a duplicated one is this repository's oldest defect — a list copied by hand
+// until two of its entries say the same thing about different things.
+const plays = new Map()
+for (const m of MODULES) {
+  for (const lang of ['en', 'ru']) {
+    const play = m[lang].play
+    assert.ok(typeof play === 'string' && play.length > 40, `${m.tab}: ${lang} play line missing or too short to say anything`)
+    assert.notEqual(play, m[lang].body, `${m.tab}: ${lang} play repeats the body instead of giving the reason`)
+    const seen = plays.get(`${lang}:${play}`)
+    assert.equal(seen, undefined, `${m.tab}: ${lang} play is the same sentence as ${seen}'s`)
+    plays.set(`${lang}:${play}`, m.tab)
+  }
+}
+
+// ...and the homepage actually shows it. Three blocks mount the line: the one
+// every module shares, and the two hand-written ones (the comb's and the
+// corpus's) that draw their own description but take the move from the same
+// record.
+const src = (name) => readFileSync(new URL(`../src/${name}`, import.meta.url), 'utf8')
+const modulePage = src('components/ModuleHeroBlock.tsx')
+assert.match(modulePage, /<PlayLine>\{m\.play\}<\/PlayLine>/, 'the shared module block does not render the play line')
+for (const [file, tab] of [['components/QueenHeroBlock.tsx', 'comb'], ['components/SpecHeroBlock.tsx', 'specs']]) {
+  const text = src(file)
+  assert.match(
+    text,
+    new RegExp(`<PlayLine>\\{MODULES\\.find\\(\\(module\\) => module\\.tab === '${tab}'\\)!\\[lang\\]\\.play\\}</PlayLine>`),
+    `${file} writes its own description but does not take ${tab}'s play line from the module record`,
+  )
+}
+// Reachability, which is the property that actually matters and the one the
+// homepage lost. It used to render every module but three as a full-size block:
+// eighteen consecutive screens of one layout, which is why the showcase is now
+// a named few. A named few is only safe if nothing falls out of the page with
+// it, so the invariant checked here is not "these three are omitted" but "every
+// module is reachable": the showcase names blocks, ModulesBlock draws a card
+// for each of MODULES, and between them no module is unreachable from the
+// homepage. Add a fifteenth module to lib/queenModules and it appears in the
+// index without anyone touching App.tsx; delete the index and this fails.
+const app = src('App.tsx')
+const showcase = app.match(/const SHOWCASE = \[([^\]]*)\]/)
+assert.ok(showcase, 'the homepage no longer names its showcase modules in one list')
+const shown = [...showcase[1].matchAll(/'([a-z]+)'/g)].map((match) => match[1])
+for (const tab of shown) {
+  assert.ok(MODULES.some((m) => m.tab === tab), `the homepage showcases '${tab}', which is not a module`)
+  assert.ok(tab !== 'comb' && tab !== 'specs', `'${tab}' has a block of its own; showcasing it would render it twice`)
+}
+assert.match(app, /<ModulesBlock \/>/, 'the homepage does not mount the index, so every module the showcase leaves out is unreachable')
+// The index draws four groups -- the rail's buttons, the ladder inside SPECS,
+// the board inside KANBAN, the record inside PROJECT -- and they have to stay a
+// partition of MODULES or the homepage silently drops a module. The fourth came
+// with PASSPORT's move inside PROJECT (2026-09-21): until the index learned it,
+// PASSPORT was a module with no card anywhere. The predicates are asked of the shell's own
+// lists, so this is checkable here rather than only readable there.
+const modulesBlock = src('components/ModulesBlock.tsx')
+assert.match(modulesBlock, /RAIL_VIEWS as readonly string\[\]\)\.includes\(tab\)/, 'the index no longer reads the rail from RAIL_VIEWS, so its groups can drift from the buttons')
+assert.match(modulesBlock, /MODULES\.filter\(\(m\) => isRailModule\(m\.tab\)\)/, 'the rail group is no longer MODULES on the rail, so a module can fall off the homepage')
+assert.match(modulesBlock, /MODULES\.filter\(\(m\) => isLadderRung\(m\.tab\)\)/, 'the ladder group is no longer the spec layers the rail does not draw')
+assert.match(modulesBlock, /MODULES\.filter\(\(m\) => isBoardReading\(m\.tab\)\)/, 'the board group is no longer the board views the rail does not draw')
+assert.match(modulesBlock, /MODULES\.filter\(\(m\) => isProjectRecord\(m\.tab\)\)/, 'the project group is no longer the project views the rail does not draw')
+for (const m of MODULES) {
+  const group = RAIL_VIEWS.includes(m.tab)
+    ? 'rail'
+    : SPEC_LAYERS.includes(m.tab)
+      ? 'ladder'
+      : BOARD_VIEWS.includes(m.tab)
+        ? 'board'
+        : PROJECT_VIEWS.includes(m.tab)
+          ? 'project'
+          : null
+  assert.ok(group, `module '${m.tab}' is in none of the index's four groups, so its card is drawn nowhere`)
+}
+assert.match(modulesBlock, /modules\.map\(\(module\)/, 'the index no longer draws a card for every module in a group')
+// lib/queenModules opens by calling itself "the only place their identity is
+// written down", and it was not: the shell types each module's name a second
+// time into its own COPY deck, once per language, and draws the rail from that
+// copy. Twenty-eight strings with no test between them and their one home. It
+// went wrong the ordinary way -- the English name was shortened to TECH TREE
+// and the Russian stayed the long DEREVO TEHNOLOGIY for a release, so the same
+// module was two different modules depending on the language chosen.
+//
+// The shell is not made to import MODULES here: its deck is one object the
+// whole page reads and unpicking it is a change with no test behind it. What
+// is checked instead is the property that was actually lost -- the two homes
+// agree -- which is cheap, catches the drift on the commit that writes it, and
+// leaves the refactor to be done on purpose rather than in passing.
+const shell = src('pages/Queen.tsx')
+const deck = (lang) => {
+  const at = shell.indexOf(`\n  ${lang}: {`)
+  assert.ok(at > 0, `the shell's COPY has no ${lang} deck, so the rail's labels cannot be read`)
+  const end = lang === 'en' ? shell.indexOf('\n  ru: {') : shell.indexOf('\n} as const;')
+  return shell.slice(at, end > at ? end : undefined)
+}
+const DECKS = { en: deck('en'), ru: deck('ru') }
+let railed = 0
+for (const m of MODULES) {
+  const entry = shell.match(new RegExp(`\\{ view: "${m.tab}" as const, glyph: "([^"]+)", label: c\\.(\\w+),`))
+  assert.ok(entry, `the shell draws no rail entry for module '${m.tab}', so its key opens nothing`)
+  railed += 1
+  const [, glyph, key] = entry
+  assert.equal(glyph, m.glyph, `module '${m.tab}' is drawn with '${glyph}' on the rail and '${m.glyph}' on the homepage`)
+  for (const lang of ['en', 'ru']) {
+    const said = DECKS[lang].match(new RegExp(`\\n    ${key}: "([^"]*)"`))
+    assert.ok(said, `the shell's ${lang} deck has no '${key}', which the rail asks it for`)
+    assert.equal(
+      said[1],
+      m[lang].name,
+      `module '${m.tab}' is "${said[1]}" on the ${lang} rail and "${m[lang].name}" in lib/queenModules: rename it in both or in neither`,
+    )
+  }
+}
+assert.equal(railed, MODULES.length, 'not every module has a rail entry in the shell')
+// The line loses its colour and its rule to any `.block p` selector unless the
+// class outranks one: the reason it is written twice.
+assert.match(readFileSync(new URL('../src/components/PlayLine.css', import.meta.url), 'utf8'), /\.play-line\.play-line \{/, 'the play line style no longer outranks the block paragraph rules it sits inside')
+
+// The motto is one wording in three places -- the mark's caption, the head of
+// the headline, and the names of the three moves. Three copies of three words
+// is the classic way for a site to end up saying "Direct" in the hero and
+// "Govern" in the body, so none of the three is allowed to type them: each
+// reads lib/motto. This checks that they still do, in both languages.
+const motto = src('lib/motto.ts')
+for (const lang of ['en', 'ru']) {
+  const block = motto.match(new RegExp(`${lang}: \\{[\\s\\S]*?verbs: \\[([^\\]]*)\\]`))
+  assert.ok(block, `lib/motto names no ${lang} verbs`)
+  assert.equal([...block[1].matchAll(/'[^']+'/g)].length, 3, `the ${lang} motto is not three verbs`)
+  assert.match(motto, new RegExp(`${lang}: \\{[\\s\\S]*?caption: '`), `lib/motto gives ${lang} no caption for the mark`)
+  assert.match(motto, new RegExp(`${lang}: \\{[\\s\\S]*?headline: '`), `lib/motto gives ${lang} no headline opening`)
+}
+const hero = src('components/GameHero.tsx')
+assert.match(hero, /className="game-hero-motto">\{motto\.caption\}/, 'the mark has lost its caption, or the caption is no longer the motto')
+assert.match(hero, /<h1 id="game-hero-title">\{motto\.headline\}/, 'the headline no longer opens with the motto')
+const agi = src('components/AgiGameBlock.tsx')
+for (const lang of ['en', 'ru']) {
+  for (const i of [0, 1, 2]) {
+    assert.ok(
+      agi.includes(`name: MOTTO.${lang}.verbs[${i}]`),
+      `the ${lang} move ${i + 1} is typed into AgiGameBlock instead of read from the motto`,
+    )
+  }
+}
+
+assert.equal(MODULES.length, HUD_VIEWS.length, 'every module is a view and every view a module')
+assert.ok(HUD_KEYS.length >= HUD_VIEWS.length, 'every view has a key')
+assert.equal(new Set(HUD_KEYS).size, HUD_KEYS.length, 'keys are unique')
+for (const [i, m] of MODULES.entries()) assert.equal(m.key, HUD_KEYS[i], `module ${m.tab} carries key ${m.key} at position ${i + 1} (expected ${HUD_KEYS[i]})`)
+assert.equal(MODULES.find((m) => m.tab === 'agents').key, '9', 'AGENTS opens on 9')
+assert.equal(MODULES.find((m) => m.tab === 'functions').key, '0', 'FUNCTIONS opens on 0, the tenth key')
+assert.equal(MODULES.find((m) => m.tab === 'tools').key, 't', 'TOOLS opens on t: the digits are spent after FUNCTIONS on 0')
+assert.equal(MODULES.find((m) => m.tab === 'project').key, 'p', 'PROJECT opens on p (the digits are spent, t is TOOLS)')
+const triModule = MODULES.find((m) => m.tab === 'tri')
+assert.ok(triModule && HUD_VIEWS.includes('tri'), 'TRI (the app inside the game) is a module and a view')
+assert.equal(triModule.key, 'r', 'TRI opens on r: digits spent, t is TOOLS, p is PROJECT')
+assert.ok(triModule.en.hint.includes('(key r)') && triModule.ru.hint.includes('(клавиша r)'), 'TRI names its letter key in both hints')
+for (const lang of ['en', 'ru']) assert.ok(triModule[lang].name && triModule[lang].body.length > 40, `tri: ${lang} copy missing`)
+const passportModule = MODULES.find((m) => m.tab === 'passport')
+assert.ok(passportModule && HUD_VIEWS.includes('passport'), 'PASSPORT (the record a result must carry) is a module and a view')
+assert.equal(passportModule.key, 'b', 'PASSPORT opens on b: digits spent, t is TOOLS, p is PROJECT, r is TRI')
+assert.ok(passportModule.en.hint.includes('(key b)') && passportModule.ru.hint.includes('(клавиша b)'), 'PASSPORT names its letter key in both hints')
+for (const lang of ['en', 'ru']) assert.ok(passportModule[lang].name && passportModule[lang].body.length > 40, `passport: ${lang} copy missing`)
+const warsModule = MODULES.find((m) => m.tab === 'wars')
+assert.ok(warsModule && HUD_VIEWS.includes('wars'), 'WARS (the real-task agent arena) is a module and a view')
+assert.equal(warsModule.key, 'x', 'WARS opens on x: the crossed-blades key')
+assert.ok(warsModule.en.hint.includes('(key x)') && warsModule.ru.hint.includes('(клавиша x)'), 'WARS names its letter key in both hints')
+for (const lang of ['en', 'ru']) assert.ok(warsModule[lang].name && warsModule[lang].body.length > 40, `wars: ${lang} copy missing`)
+const tokenModule = MODULES.find((m) => m.tab === 'token')
+assert.ok(tokenModule && HUD_VIEWS.includes('token'), 'TOKEN (TRI and who earned it) is a module and a view')
+assert.equal(tokenModule.key, 'k', 'TOKEN opens on k: the coin key')
+assert.ok(tokenModule.en.hint.includes('(key k)') && tokenModule.ru.hint.includes('(клавиша k)'), 'TOKEN names its letter key in both hints')
+for (const lang of ['en', 'ru']) assert.ok(tokenModule[lang].name && /testnet/i.test(tokenModule[lang].body), `token: ${lang} copy must say testnet`)
+// The jetton metadata wallets read must agree with the unit the page divides by.
+const jetton = JSON.parse(readFileSync('public/tri/jetton.json', 'utf8'))
+const MTRI_PER_TRI = Number(readFileSync('src/lib/triToken.ts', 'utf8').match(/export const MTRI_PER_TRI = (\d+)/)?.[1])
+assert.equal(10 ** Number(jetton.decimals), MTRI_PER_TRI, 'public/tri/jetton.json decimals and MTRI_PER_TRI must agree')
+assert.match(jetton.description, /^TESTNET ONLY\./, 'the jetton metadata leads with TESTNET ONLY')
+const widgetsModule = MODULES.find((m) => m.tab === 'widgets')
+assert.ok(widgetsModule && HUD_VIEWS.includes('widgets'), 'WIDGETS (what a reader lifts out and shares) is a module and a view')
+assert.equal(widgetsModule.key, 'v', 'WIDGETS opens on v')
+assert.ok(widgetsModule.en.hint.includes('(key v)') && widgetsModule.ru.hint.includes('(клавиша v)'), 'WIDGETS names its letter key in both hints')
+for (const lang of ['en', 'ru']) assert.ok(widgetsModule[lang].body.includes('specs/widgets/gallery.t27'), `widgets: ${lang} copy must name its spec`)
+assert.equal(HUD_KEYS.slice(0, HUD_VIEWS.length).join(''), '1234567890tprbwmlxkgv', 'the rail keys are 1-9, 0, t, p, r, b, w, m, l, x, k, g, v in that order')
+
+// The rail is no longer the whole vocabulary. HUD_VIEWS stays the fourteen
+// addresses -- every ?tab=, every key, every module card -- while the rail draws
+// RAIL_VIEWS, because SKILLS, CRONS, AGENTS, TOOLS, FUNCTIONS and PROVIDERS are
+// reached inside SPECS as the seven rungs of the ladder, and MISSION MAP and FACTORY
+// inside KANBAN as the other two readings of the one board. The lists have to
+// stay each other's complement: a view on none of them is unreachable, and a
+// member on both its family's list and the rail is drawn twice.
+assert.ok(SPEC_LAYERS.every((layer) => HUD_VIEWS.includes(layer)), 'a ladder layer is not a view, so it has no address and no key')
+assert.ok(BOARD_VIEWS.every((view) => HUD_VIEWS.includes(view)), 'a board view is not a view, so it has no address and no key')
+assert.ok(PROJECT_VIEWS.every((view) => HUD_VIEWS.includes(view)), 'a project view is not a view, so it has no address and no key')
+assert.ok(RAIL_VIEWS.every((view) => HUD_VIEWS.includes(view)), 'the rail draws a button for something that is not a view')
+assert.equal(SPEC_LAYERS[0], 'specs', 'SPECS is the first rung: it is the module the rail opens and the ladder stands in')
+assert.equal(BOARD_VIEWS[0], 'kanban', 'KANBAN is the board the rail opens and the row stands in')
+assert.equal(PROJECT_VIEWS[0], 'project', 'PROJECT is the module the rail opens and PASSPORT stands inside (2026-09-21)')
+assert.deepEqual(
+  [...SPEC_LAYERS],
+  ['specs', 'skills', 'crons', 'agents', 'tools', 'functions', 'providers'],
+  'the ladder is specs, skills, crons, agents, tools, functions, providers -- in that order, which is not the order of their keys',
+)
+assert.deepEqual(
+  [...BOARD_VIEWS],
+  ['kanban', 'map', 'factory', 'research'],
+  'the board is kanban, mission map, factory, tech tree -- the order of their keys, 3/4/5/6',
+)
+assert.deepEqual(
+  [...new Set([...RAIL_VIEWS, ...SPEC_LAYERS, ...BOARD_VIEWS, ...PROJECT_VIEWS])].sort(),
+  [...HUD_VIEWS].sort(),
+  'rail plus ladder plus board plus project is no longer every view: something is unreachable',
+)
+assert.deepEqual(
+  RAIL_VIEWS.filter((view) => SPEC_LAYERS.includes(view)),
+  ['specs'],
+  'only SPECS may be on the rail and in the ladder; another layer on both is drawn twice',
+)
+assert.deepEqual(
+  RAIL_VIEWS.filter((view) => BOARD_VIEWS.includes(view)),
+  ['kanban'],
+  'only KANBAN may be on the rail and in the board row; another reading on both is drawn twice',
+)
+assert.deepEqual(
+  RAIL_VIEWS.filter((view) => PROJECT_VIEWS.includes(view)),
+  ['project'],
+  'only PROJECT may be on the rail and in the project family; PASSPORT on both is drawn twice',
+)
+assert.equal(
+  RAIL_VIEWS.length,
+  HUD_VIEWS.length - (SPEC_LAYERS.length - 1) - (BOARD_VIEWS.length - 1) - (PROJECT_VIEWS.length - 1),
+  'the rail is the views less the layers folded into SPECS, the readings folded into KANBAN and the record folded into PROJECT',
+)
+// Every view still answers railViewOf, and answers with a button the rail draws
+// -- that is what lights the rail while a folded member is open.
+for (const view of HUD_VIEWS) {
+  assert.ok(RAIL_VIEWS.includes(railViewOf(view)), `${view} lights a rail button the rail does not draw`)
+}
+// The rail reads its keys from the item, not from the button's position: with
+// nine buttons over fourteen names a positional key prints 5 on TECHNOLOGY TREE.
+const command = src('components/QueenCommand.tsx')
+assert.match(command, /hotkey: string/, 'a rail item no longer carries its own key, so the key shown is the button position')
+assert.doesNotMatch(command, /HUD_KEYS\[/, 'QueenCommand indexes HUD_KEYS by position again; the rail is shorter than the key list')
+// The ladder is the only place the six folded layers still advertise their keys.
+const ladder = src('components/QueenLadder.tsx')
+assert.match(ladder, /hudKeyOf\(item\.layer\)/, 'the ladder no longer shows each layer its key, and 7/8/9/0/t/g are advertised nowhere')
+
+// 6. Translations are connected through .t27 contract specs, never hardcoded.
+//    Every specs/i18n/*.t27 the corpus carries is in both catalogs' i18n lists
+//    (the vendored copy is English-only too); each contract's bundle exists at
+//    the declared path, names the contract back, matches the locale, and every
+//    entry resolves to a spec whose keys are within FIELDS (ORPHANS_ALLOWED is
+//    false in the shipped contract). Coverage is printed, not asserted (the
+//    contract says COVERAGE_REQUIRED false), unless the spec says otherwise.
+const i18nDir = join('public/t27/files', I18N_SPEC_DIR)
+const i18nSpecFiles = existsSync(i18nDir) ? readdirSync(i18nDir).filter((f) => f.endsWith('.t27')).sort() : []
+assert.ok(i18nSpecFiles.length >= 1, `${I18N_SPEC_DIR}: at least the Russian contract (agents-ru.t27) must exist`)
+assert.ok(i18nSpecFiles.includes('agents-ru.t27'), `${I18N_SPEC_DIR}/agents-ru.t27 is the Russian contract`)
+for (const f of i18nSpecFiles) assert.ok(!CYRILLIC.test(readFileSync(join(i18nDir, f), 'utf8')), `${I18N_SPEC_DIR}/${f}: Cyrillic in a .t27 spec (LANG-EN)`)
+// The catalogs list the contracts whose SCOPE names their directories; a
+// contract scoped to specs/docs belongs to docs-from-specs.mjs and is listed by
+// public/docs/system-docs.json instead. Between the two generators every file in
+// the directory is claimed exactly once -- read from their outputs, not by
+// parsing the specs here.
+const docsOut = 'public/docs/system-docs.json'
+const docsI18n = existsSync(docsOut) ? JSON.parse(readFileSync(docsOut, 'utf8')).i18n.map((l) => l.spec) : []
+for (const l of skills.i18n) assert.ok(l.scope.some((d) => ['specs/skills', 'specs/crons', 'specs/agents', 'specs/tools'].includes(d)), `${l.spec}: listed by the catalogs but scoped elsewhere (${l.scope.join(', ')})`)
+assert.deepEqual(
+  [...new Set([...skills.i18n.map((l) => l.spec), ...docsI18n])].sort((a, b) => a.localeCompare(b)),
+  i18nSpecFiles.map((f) => `${I18N_SPEC_DIR}/${f}`).sort((a, b) => a.localeCompare(b)),
+  'the catalogs and the docs generator together list exactly the contract specs',
+)
+assert.ok(skills.i18n.some((l) => l.spec === `${I18N_SPEC_DIR}/agents-ru.t27`), 'skills.i18n lists the Russian catalog contract')
+assert.deepEqual(crons.i18n.map((l) => l.spec).sort(), skills.i18n.map((l) => l.spec).sort(), 'both catalogs see the same contracts')
+assert.deepEqual(agents.i18n.map((l) => l.spec).sort(), skills.i18n.map((l) => l.spec).sort(), 'the agent catalog sees the same contracts (SCOPE names specs/agents)')
+const coverageLine = []
+for (const l of skills.i18n) {
+  const c = crons.i18n.find((x) => x.locale === l.locale)
+  assert.ok(c, `${l.locale}: contract missing from crons.i18n`)
+  const ag = agents.i18n.find((x) => x.locale === l.locale)
+  assert.ok(ag, `${l.locale}: contract missing from agents.i18n`)
+  assert.ok(l.scope.includes('specs/agents'), `${l.spec}: SCOPE must name specs/agents`)
+  assert.ok(l.scope.includes('specs/tools'), `${l.spec}: SCOPE must name specs/tools`)
+  assert.equal(l.sha256, sha256(readFileSync(join('public/t27/files', l.spec))), `${l.spec}: sha256 in the catalog is not the vendored file`)
+  assert.ok(existsSync(join(REPO_ROOT, l.bundle)), `${l.spec}: bundle ${l.bundle} does not exist`)
+  const bundle = JSON.parse(readFileSync(join(REPO_ROOT, l.bundle), 'utf8'))
+  assert.equal(bundle.$spec, l.spec, `${l.bundle}: $spec must name its contract`)
+  assert.equal(bundle.locale, l.locale, `${l.bundle}: locale must match the contract`)
+  for (const field of l.fields) assert.ok(field in I18N_FIELD_SOURCE, `${l.spec}: FIELDS ${field} backed by no spec constant`)
+  const fn = functions.i18n.find((x) => x.locale === l.locale)
+  assert.ok(fn, `${l.locale}: contract missing from functions.i18n`)
+  assert.ok(l.scope.includes('specs/functions'), `${l.spec}: SCOPE must name specs/functions`)
+  const tl = tools.i18n.find((x) => x.locale === l.locale)
+  assert.ok(tl, `${l.locale}: contract missing from tools.i18n`)
+  const ids = new Set([...skillIds, ...cronIds, ...agentIds, ...functionIds, ...tools.tools.map((t) => t.id)])
+  for (const [id, entry] of Object.entries(bundle.entries)) {
+    assert.ok(ids.has(id), `${l.bundle}: orphan entry ${id} (ORPHANS_ALLOWED is false)`)
+    for (const k of Object.keys(entry)) assert.ok(l.fields.includes(k), `${l.bundle}: ${id}.${k} not in FIELDS ${l.fields.join(',')}`)
+  }
+  // Coverage in the catalog equals what the bundle actually gives each entry.
+  const has = (list) => list.filter((e) => e.summary[l.locale] || e.name[l.locale]).length
+  assert.equal(l.coverage.n, has(skills.skills), `${l.locale}: skills coverage n mismatch`)
+  assert.equal(l.coverage.total, skills.skills.length)
+  assert.equal(c.coverage.n, has(crons.crons), `${l.locale}: crons coverage n mismatch`)
+  assert.equal(c.coverage.total, crons.crons.length)
+  assert.equal(ag.coverage.n, has(agents.agents), `${l.locale}: agents coverage n mismatch`)
+  assert.equal(ag.coverage.total, agents.agents.length)
+  assert.equal(fn.coverage.n, has(functions.functions), `${l.locale}: functions coverage n mismatch`)
+  assert.equal(fn.coverage.total, functions.functions.length)
+  assert.equal(l.missing.length, l.coverage.total - l.coverage.n)
+  coverageLine.push(`${l.locale} via ${l.spec}${l.enabled ? '' : ' (off)'}: skills ${l.coverage.n}/${l.coverage.total}, crons ${c.coverage.n}/${c.coverage.total}, agents ${ag.coverage.n}/${ag.coverage.total}, functions ${fn.coverage.n}/${fn.coverage.total}, orphans 0`)
+}
+
+console.log(
+  `agents-spec-contract: skills ${skills.skills.length} (spec+code ${skills.counts.specPlusCode}, spec-only ${skills.counts.specOnly}, code-only ${skills.counts.codeOnly}, run by a cron ${skills.counts.runBy}); ` +
+  `crons ${crons.crons.length} (spec+code ${crons.counts.specPlusCode}, spec-only ${crons.counts.specOnly}, code-only ${crons.counts.codeOnly}, with RUNS ${crons.counts.withRuns}); ` +
+  `in vendored corpus manifest: ${skills.skills.filter((s) => s.inSpecCorpus).length + crons.crons.filter((c) => c.inSpecCorpus).length}/${skills.skills.length + crons.crons.length}; ` +
+  `agents ${agents.agents.length} (spec+experience ${agents.counts.specPlusExperience}, spec-only ${agents.counts.specOnly}, with skills ${agents.counts.withSkills}, with crons ${agents.counts.withCrons}; episodes attributed ${agents.counts.episodesAttributed}, unattributed ${agents.counts.episodesUnattributed}, unreadable files ${experience.counts.unreadableFiles}; links pinned at ${agents.pin.ref.slice(0, 7)}); ` +
+  `functions ${functions.functions.length} (spec+code ${functions.counts.specPlusCode}, spec-only ${functions.counts.specOnly}, code-only ${functions.counts.codeOnly}; deployed ${functions.counts.deployed}, not deployed ${functions.counts.notDeployed}, unknown ${functions.counts.deployUnknown}; differences from the manifest ${functions.counts.withDifferences}; cron cards ${functions.counts.withCronSpec}/${functions.counts.byTrigger.cron}; manifest ${functions.manifest.repo}@${functions.manifest.generatedFrom.commit.slice(0, 7)}); ` +
+  `providers ${providers.providers.length} (models ${providers.counts.byFamily.model ?? 0}, host classes ${providers.counts.byFamily['host-class'] ?? 0}; read from a chain ${providers.counts.byWitness['chain-read'] ?? 0}, from a bench ${providers.counts.byWitness['bench-measured'] ?? 0}, design only ${providers.counts.byWitness['design-only'] ?? 0}; checked ${providers.study.fields.CHECKED}); ` +
+  `Queen views ${HUD_VIEWS.length}, modules ${MODULES.length}, keys ${HUD_KEYS.slice(0, HUD_VIEWS.length).join('')}; ` +
+  `i18n contracts ${skills.i18n.length} [${coverageLine.join('; ')}]`,
+)

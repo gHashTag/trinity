@@ -1,0 +1,371 @@
+/* The cell at the size of the display.
+   One column on a phone, three on a desktop, decided by the width available and
+   not by a breakpoint list. The hexagon behind it is decoration and is drawn
+   with preserveAspectRatio="none", so it is the same cell stretched to whatever
+   the viewport is rather than a shape that only fits one of them. */
+.queen-cell-stage {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: clamp(0.5rem, 1.4vh, 1rem);
+  padding: clamp(0.75rem, 2.2vw, 1.75rem);
+  /* Opaque. At 0.96 the HUD underneath kept printing its own headings through
+     the panels -- KANBAN and a second copy of this issue number read straight
+     through the text of the first. A close-up is a close-up. */
+  background: #020605;
+  color: #e7f7fa;
+  overflow: hidden;
+}
+
+.queen-cell-hex {
+  position: absolute;
+  inset: clamp(0.25rem, 1vw, 0.75rem);
+  width: auto;
+  height: auto;
+  pointer-events: none;
+}
+
+.queen-cell-hex > polygon {
+  fill: rgb(var(--cell-rgb) / 0.03);
+  stroke: rgb(var(--cell-rgb) / 0.55);
+  stroke-width: 0.35;
+  vector-effect: non-scaling-stroke;
+}
+
+/* A bee has it now: the board's own column, animated. Nothing else on this
+   screen moves, so the movement means exactly that one thing. */
+.queen-cell-hex-pulse {
+  fill: none;
+  stroke: rgb(var(--cell-rgb) / 0.9);
+  animation: queen-cell-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes queen-cell-pulse {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.85; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .queen-cell-hex-pulse { animation: none; opacity: 0.6; }
+}
+
+.queen-cell-head {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+}
+
+.queen-cell-id {
+  color: #a8c1ba;
+  text-transform: uppercase;
+}
+
+.queen-cell-column {
+  padding: 2px 8px;
+  border: 1px solid rgb(var(--cell-rgb) / 0.8);
+  color: rgb(var(--cell-rgb));
+  text-transform: uppercase;
+}
+
+.queen-cell-blurb {
+  color: #8b9490;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+}
+
+.queen-cell-close {
+  min-height: 44px;
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 1rem;
+  border: 1px solid rgba(0, 255, 136, 0.45);
+  border-radius: 10px;
+  background: transparent;
+  color: #00ff88;
+  font: inherit;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.queen-cell-close > kbd {
+  padding: 0 4px;
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  color: #a8c1ba;
+  font-size: 0.62rem;
+}
+
+.queen-cell-title {
+  position: relative;
+  margin: 0;
+  max-width: 90ch;
+  font-size: clamp(1.25rem, 2.8vw, 2.1rem);
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.queen-cell-grid {
+  position: relative;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: clamp(0.6rem, 1.4vw, 1rem);
+}
+
+/* The same neutral card the homepage uses (styles/card.css): white border at a
+   tenth, a white gradient under it, a radius. Green is left to the numbers. */
+.queen-cell-panel {
+  min-height: 0;
+  display: grid;
+  align-content: start;
+  gap: 0.7rem;
+  padding: clamp(0.9rem, 1.8vw, 1.3rem);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.018));
+  overflow-y: auto;
+}
+
+.queen-cell-panel h3 {
+  margin: 0;
+  color: #00ff88;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.queen-cell-panel h4 {
+  margin: 0.4rem 0 0;
+  color: #ffd45a;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.76rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.queen-cell-panel p,
+.queen-cell-note {
+  margin: 0;
+  color: #a8c1ba;
+  font-size: clamp(0.9rem, 1.4vw, 1rem);
+  line-height: 1.6;
+}
+
+.queen-cell-panel p[role="alert"] {
+  color: #ff6b6b;
+}
+
+.queen-cell-panel p[data-tone="ok"] {
+  color: #00ff88;
+}
+
+/* Two columns, label and value, so an em dash lines up under the figure it
+   replaces and an absent field is as legible as a present one. */
+.queen-cell-facts {
+  display: grid;
+  grid-template-columns: minmax(8ch, auto) 1fr;
+  gap: 0.3rem 0.75rem;
+  margin: 0;
+  font-size: clamp(0.88rem, 1.3vw, 0.98rem);
+}
+
+.queen-cell-facts > dt {
+  color: #8b9490;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.queen-cell-facts > dd {
+  margin: 0;
+  color: #e7f7fa;
+}
+
+/* A scroll box in an auto grid row collapses to its own minimum, and the
+   minimum of something that scrolls is nothing: the description drew as a
+   21px sliver holding 344px of text. A floor makes it a box again, and the
+   ceiling still stops a long brief from owning the panel. */
+.queen-cell-body {
+  min-height: clamp(9rem, 22vh, 18rem);
+  max-height: 40vh;
+  margin: 0;
+  padding: 0.6rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: #cfe3de;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* The Queen is a column: her grid fills the box she is given and her composer
+   sits in its last row. A panel of automatic height is not a box, so she
+   overflowed it and the composer drew across the GitHub section below her.
+   Here she is given a definite one, and the panel scrolls around it. */
+.queen-cell-say > .queen-chat {
+  height: clamp(240px, 34vh, 420px);
+  border-radius: 12px;
+}
+
+/* The specs the catalog links to this cell. A path is long and a panel is
+   narrow, so the button wraps rather than pushing the panel wider. */
+.queen-cell-specs {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.queen-cell-specs > li {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.queen-cell-specs > li > button {
+  justify-self: start;
+  min-height: 44px;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  color: #ffd45a;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  text-align: left;
+  word-break: break-word;
+  cursor: pointer;
+}
+
+.queen-cell-specs > li > button:hover {
+  border-color: rgba(255, 212, 90, 0.4);
+}
+
+.queen-cell-specs > li > small {
+  color: #8b9490;
+  font-size: 0.76rem;
+}
+
+.queen-cell-log {
+  max-height: 46vh;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-y: auto;
+  display: grid;
+  align-content: start;
+  gap: 1px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.queen-cell-event {
+  display: grid;
+  grid-template-columns: minmax(6ch, auto) minmax(4ch, auto) 1fr;
+  gap: 0.5rem;
+  padding: 0.45rem 0.55rem;
+  background: #050b09;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.queen-cell-event > b {
+  color: #00ff88;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.queen-cell-event[data-kind="result"] > b { color: #ffd45a; }
+.queen-cell-event[data-kind="tool"] > b { color: #64dcff; }
+
+.queen-cell-event > time {
+  color: #8b9490;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.72rem;
+}
+
+.queen-cell-event > span {
+  color: #cfe3de;
+  overflow-wrap: anywhere;
+}
+
+.queen-cell-say {
+  gap: 0.75rem;
+}
+
+.queen-cell-comment {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.queen-cell-comment > span {
+  color: #8b9490;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.queen-cell-stage textarea {
+  min-height: 84px;
+  padding: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  color: #e7f7fa;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.queen-cell-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.queen-cell-actions > button,
+.queen-cell-panel p > button {
+  min-height: 44px;
+  padding: 0 0.9rem;
+  border: 1px solid rgba(0, 255, 136, 0.35);
+  border-radius: 10px;
+  background: transparent;
+  color: #00ff88;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.queen-cell-actions > button:disabled {
+  color: #4a5a55;
+  border-color: rgba(0, 255, 136, 0.15);
+  cursor: not-allowed;
+}
+
+.queen-cell-actions > button:not(:disabled):hover,
+.queen-cell-close:hover {
+  background: rgba(0, 255, 136, 0.08);
+}

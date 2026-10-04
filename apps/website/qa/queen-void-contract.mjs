@@ -69,6 +69,8 @@ outer: for (let gy = 0; gy < 6; gy++) for (let gx = 0; gx < 10; gx++) {
 }
 if (!picked) { console.log('  Queen void contract: FAIL (no card could be picked; data-pick-number never set)'); cleanup(); process.exit(1); }
 
+// with the honey on, almost no cell is empty ground (1009 closed issues fill 18 rings): turn FOUNDATION off so a cardless cell is void again, which is what the rule says - void is a cell with nothing drawn on it
+await evaluate(`(() => { const b = document.querySelector('button[data-layer="foundation"]'); if (b) b.click(); })()`); await wait(400);
 // now find empty ground: sweep the outer field until the host reports a void hit
 const hit = () => evaluate(`(() => { const f = document.querySelector('.queen27-comb-field[data-engine="babylon"]'); return f ? f.getAttribute('data-hit') : 'no-field'; })()`);
 let voidSeen = null;

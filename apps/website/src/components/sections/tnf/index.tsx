@@ -251,40 +251,6 @@ export function TnfHero() {
           </a>
         </motion.div>
 
-        {/* Продуктовая линейка. Слова «курс»/«концепт» обязательны: измеренных
-            ток/с на целевом кристалле ещё нет, и пост говорит это первым.
-            Флагман зафиксирован владельцем 31.08.2026. */}
-        <motion.div {...fade} style={{ marginTop: 'var(--sp2)', display: 'flex', flexDirection: 'column', gap: 'var(--sp0)' }}>
-          <div style={{
-            display: 'inline-flex', alignItems: 'baseline', gap: '0.6rem', flexWrap: 'wrap',
-            border: '1px solid var(--golden)', borderRadius: '8px',
-            padding: 'var(--sp0) var(--sp2)',
-          }}>
-            <span className="tnf-badge" style={{ color: 'var(--golden)' }}>TRI PHONE</span>
-            <span style={{ color: 'var(--text)', fontSize: 'var(--f-1)' }}>
-              {key === 'ru'
-                ? 'флагман-курс: тернарный FPGA-карманник — и одноплатный компьютер — с TRIOS и агентом TRI CLAW; связь — mesh, не сотовая'
-                : 'flagship course: a ternary FPGA pocket computer — and an SBC — running TRIOS with the TRI CLAW agent; mesh connectivity, not cellular'}
-            </span>
-          </div>
-          <a href="#/blog/tri-claw-an-agent-you-can-audit" style={{
-            display: 'inline-flex', alignItems: 'baseline', gap: '0.6rem', flexWrap: 'wrap',
-            border: '1px solid var(--border)', borderRadius: '8px',
-            padding: 'var(--sp0) var(--sp2)', textDecoration: 'none',
-          }}>
-            <span className="tnf-badge" style={{ color: 'var(--accent)' }}>
-              {key === 'ru' ? 'ступень v0 — строится' : 'rung v0 — in progress'}
-            </span>
-            <span style={{ color: 'var(--text)', fontSize: 'var(--f-1)' }}>
-              {key === 'ru'
-                ? 'TRI CLAW: агент, которого можно проверить — три недоехавших кристалла как гейтвер на 7-й серии, концепт'
-                : 'TRI CLAW: an agent you can audit — three unfabricated dies as 7-series gateware, a concept'}
-            </span>
-            <span style={{ color: 'var(--accent)', fontSize: 'var(--f-1)' }}>
-              {key === 'ru' ? 'пост →' : 'the post →'}
-            </span>
-          </a>
-        </motion.div>
       </div>
     </section>
   )
@@ -355,7 +321,8 @@ export function TnfFormats() {
 export function TnfFrontier() {
   const { L, key } = useL()
   const maxLut = Math.max(...frontier.decoder.map((d) => d.lut))
-  const maxTpa = Math.max(...frontier.neuron.map((d) => d.tpa))
+  // The neuron table is read by area: the bar is the LUT count, longest is worst.
+  const maxNeuronLut = Math.max(...frontier.neuron.map((d) => d.lut))
 
   return (
     <section id="frontier" className="tnf-section">
@@ -384,7 +351,7 @@ export function TnfFrontier() {
                   {frontier.decoder.map((d) => (
                     <tr key={d.name} className={d.ours ? 'ours' : ''}>
                       <td className="tnf-mono" style={{ textAlign: 'left' }}>{d.rank}</td>
-                      <td className="tnf-mono" style={{ textAlign: 'left' }}>{d.name}</td>
+                      <td className="tnf-mono" style={{ textAlign: 'left' }}>{d.name}{'flag' in d && d.flag ? <sup style={{ color: 'var(--accent)' }}>{d.flag}</sup> : null}</td>
                       <td style={{ textAlign: 'left' }}>{L(d.kind)}</td>
                       <td className="tnf-mono">{d.lut}</td>
                       <td className="tnf-mono">{d.fmax.toFixed(2)}</td>
@@ -410,23 +377,19 @@ export function TnfFrontier() {
               <table className="tnf-table">
                 <thead>
                   <tr>
-                    <th scope="col">#</th>
                     <th scope="col">{key === 'ru' ? 'формат' : 'format'}</th>
                     <th scope="col">LUT</th>
-                    <th scope="col">{key === 'ru' ? 'МГц/LUT' : 'MHz/LUT'}</th>
                     <th scope="col" style={{ width: '90px' }} />
                   </tr>
                 </thead>
                 <tbody>
                   {frontier.neuron.map((d) => (
                     <tr key={d.name} className={d.ours ? 'ours' : ''}>
-                      <td className="tnf-mono" style={{ textAlign: 'left' }}>{d.rank}</td>
-                      <td className="tnf-mono" style={{ textAlign: 'left' }}>{d.name}</td>
+                      <td className="tnf-mono" style={{ textAlign: 'left' }}>{d.name}{'flag' in d && d.flag ? <sup style={{ color: 'var(--accent)' }}>{d.flag}</sup> : null}</td>
                       <td className="tnf-mono">{d.lut}</td>
-                      <td className="tnf-mono">{d.tpa.toFixed(4)}</td>
                       <td>
                         <div className="tnf-bar">
-                          <i style={{ width: `${(d.tpa / maxTpa) * 100}%`, background: d.ours ? 'var(--accent)' : 'rgba(255,255,255,0.3)' }} />
+                          <i style={{ width: `${(d.lut / maxNeuronLut) * 100}%`, background: d.ours ? 'var(--accent)' : 'rgba(255,255,255,0.3)' }} />
                         </div>
                       </td>
                     </tr>
@@ -436,6 +399,10 @@ export function TnfFrontier() {
             </div>
             <p className="tnf-note">{L(frontier.neuronNote)}</p>
           </div>
+
+          {/* Which of the priced modules are the format they are named after.
+              Spans both tables above, so it sits outside either cell. */}
+          <p className="tnf-note" style={{ gridColumn: '1 / -1', marginTop: 0 }}>{L(frontier.conformanceNote)}</p>
         </motion.div>
 
         <motion.div {...fade} className="tnf-grid" style={{ marginTop: '1.5rem', gridTemplateColumns: '1fr' }}>

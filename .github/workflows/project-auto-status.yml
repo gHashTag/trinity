@@ -70,7 +70,8 @@ jobs:
 
   # When a PR is opened → set "In review"
   pr-opened:
-    if: github.event_name == 'pull_request' && github.event.action == 'opened'
+    # Fork PRs have no PROJECT_TOKEN (secrets are withheld on pull_request from forks).
+    if: github.event_name == 'pull_request' && github.event.action == 'opened' && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
       - name: Get project item ID
@@ -115,7 +116,7 @@ jobs:
 
   # When a PR is merged → set PR + linked issues to "Done"
   pr-merged:
-    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
       - name: Move PR to Done

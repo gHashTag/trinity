@@ -1,8 +1,7 @@
 // permissions.zig — Tool permission system for tri-api
-// deny > allow, project overrides user. Same model as Claude Code.
+// User and project rules are combined; deny always takes priority.
 // Issue #65: Phase 6 permissions + checkpoints
 const std = @import("std");
-const proto = @import("tool_protocol.zig");
 
 const user_settings = ".trinity/api/settings.json";
 const project_settings = ".trinity/api/settings.json";
@@ -13,8 +12,11 @@ pub const Permission = enum { allow, deny };
 pub const PermissionConfig = struct {
     allow_rules: std.ArrayList(Rule),
     deny_rules: std.ArrayList(Rule),
+    invalid: bool = false,
 
     pub fn deinit(self: *PermissionConfig, allocator: std.mem.Allocator) void {
+        for (self.allow_rules.items) |rule| rule.deinit(allocator);
+        for (self.deny_rules.items) |rule| rule.deinit(allocator);
         self.allow_rules.deinit(allocator);
         self.deny_rules.deinit(allocator);
     }
@@ -23,6 +25,7 @@ pub const PermissionConfig = struct {
     /// Returns .deny if any deny rule matches, .allow if any allow rule matches,
     /// otherwise defaults: read_file/grep → allow, bash/write_file → deny.
     pub fn check(self: *const PermissionConfig, tool: []const u8, arg: []const u8) Permission {
+        if (self.invalid) return .deny;
         // 1. deny rules take priority
         for (self.deny_rules.items) |rule| {
             if (ruleMatches(rule, tool, arg)) return .deny;
@@ -42,6 +45,14 @@ pub const PermissionConfig = struct {
 const Rule = struct {
     tool: []const u8, // "bash", "write_file", etc.
     pattern: []const u8, // glob-like: "*", "git diff *", ".env"
+    owned: bool = false,
+
+    fn deinit(self: Rule, allocator: std.mem.Allocator) void {
+        if (self.owned) {
+            allocator.free(self.tool);
+            allocator.free(self.pattern);
+        }
+    }
 };
 
 /// Check if a rule matches a tool+arg pair.
@@ -62,7 +73,7 @@ fn ruleMatches(rule: Rule, tool: []const u8, arg: []const u8) bool {
     return std.mem.eql(u8, arg, pat);
 }
 
-/// Load permission config. Project settings override user settings.
+/// Load and combine user/project permission settings; deny always wins.
 /// Format: {"permissions":{"allow":["bash(git diff *)","read_file(*)"],"deny":["bash(rm -rf *)"]}}
 pub fn loadConfig(allocator: std.mem.Allocator) PermissionConfig {
     var config = PermissionConfig{
@@ -70,7 +81,7 @@ pub fn loadConfig(allocator: std.mem.Allocator) PermissionConfig {
         .deny_rules = std.ArrayList(Rule).empty,
     };
 
-    // Try user settings first (~/.tri-api/settings.json)
+    // Try user settings first (~/.trinity/api/settings.json)
     const home = std.posix.getenv("HOME") orelse "";
     if (home.len > 0) {
         var user_path_buf: [512]u8 = undefined;
@@ -79,53 +90,47 @@ pub fn loadConfig(allocator: std.mem.Allocator) PermissionConfig {
         } else |_| {}
     }
 
-    // Project settings override (.tri-api/settings.json in cwd)
+    // Add project settings (.trinity/api/settings.json in cwd)
     loadFromFile(allocator, &config, project_settings);
 
     return config;
 }
 
-/// Parse a settings file and add rules to config.
+/// Missing settings use defaults; unreadable or invalid settings deny every tool.
 fn loadFromFile(allocator: std.mem.Allocator, config: *PermissionConfig, path: []const u8) void {
-    const content = readFile(allocator, path) catch return;
+    const content = readFile(allocator, path) catch |err| {
+        if (err != error.FileNotFound) config.invalid = true;
+        return;
+    };
     defer allocator.free(content);
-
-    // Parse "allow":[...] array
-    parseRuleArray(allocator, content, "allow", &config.allow_rules);
-    // Parse "deny":[...] array
-    parseRuleArray(allocator, content, "deny", &config.deny_rules);
+    parseSettings(allocator, config, content) catch {
+        config.invalid = true;
+    };
 }
 
-/// Parse a JSON array of rule strings: "tool(pattern)"
-fn parseRuleArray(allocator: std.mem.Allocator, data: []const u8, key: []const u8, rules: *std.ArrayList(Rule)) void {
-    // Find "key":[ in the JSON
-    var needle_buf: [64]u8 = undefined;
-    const needle = std.fmt.bufPrint(&needle_buf, "\"{s}\":[", .{key}) catch return;
+fn parseSettings(allocator: std.mem.Allocator, config: *PermissionConfig, content: []const u8) !void {
+    const parsed = try std.json.parseFromSlice(std.json.Value, allocator, content, .{});
+    defer parsed.deinit();
+    if (parsed.value != .object) return error.InvalidSettings;
+    const perms = parsed.value.object.get("permissions") orelse return;
+    if (perms != .object) return error.InvalidSettings;
+    try parseRuleArray(allocator, perms.object.get("allow"), &config.allow_rules);
+    try parseRuleArray(allocator, perms.object.get("deny"), &config.deny_rules);
+}
 
-    const idx = std.mem.indexOf(u8, data, needle) orelse return;
-    var pos = idx + needle.len;
-
-    // Scan for quoted strings until ]
-    while (pos < data.len and data[pos] != ']') {
-        // Find next quoted string
-        if (std.mem.indexOfPos(u8, data, pos, "\"")) |q_start| {
-            if (q_start >= data.len) break;
-            const str_start = q_start + 1;
-            var str_end = str_start;
-            while (str_end < data.len and data[str_end] != '"') : (str_end += 1) {}
-
-            if (str_end > str_start) {
-                const rule_str = data[str_start..str_end];
-                if (parseRuleString(rule_str)) |rule| {
-                    if (rules.items.len < max_rules) {
-                        rules.append(allocator, rule) catch |err| {
-                            std.log.warn("permissions: failed to append rule: {}", .{err});
-                        };
-                    }
-                }
-            }
-            pos = str_end + 1;
-        } else break;
+fn parseRuleArray(allocator: std.mem.Allocator, value: ?std.json.Value, rules: *std.ArrayList(Rule)) !void {
+    const array = value orelse return;
+    if (array != .array) return error.InvalidSettings;
+    for (array.array.items) |item| {
+        if (item != .string) return error.InvalidRule;
+        const rule = parseRuleString(item.string) orelse return error.InvalidRule;
+        if (rules.items.len >= max_rules) return error.TooManyRules;
+        // Parsed JSON and file buffers die after loading; the config owns its strings.
+        const tool = try allocator.dupe(u8, rule.tool);
+        errdefer allocator.free(tool);
+        const pattern = try allocator.dupe(u8, rule.pattern);
+        errdefer allocator.free(pattern);
+        try rules.append(allocator, .{ .tool = tool, .pattern = pattern, .owned = true });
     }
 }
 
@@ -217,4 +222,59 @@ test "check defaults" {
     try std.testing.expectEqual(Permission.deny, config.check("bash", "any"));
     // write_file defaults to deny
     try std.testing.expectEqual(Permission.deny, config.check("write_file", "any"));
+}
+
+test "loaded rules survive JSON and file buffer release" {
+    const a = std.testing.allocator;
+    var config = PermissionConfig{ .allow_rules = .empty, .deny_rules = .empty };
+    defer config.deinit(a);
+    var tmp = std.testing.tmpDir(.{});
+    defer tmp.cleanup();
+    try tmp.dir.writeFile(.{ .sub_path = "settings.json", .data =
+        \\{"permissions": {"allow": ["read_file(*)"], "deny": ["read_file(.env)"]}}
+    });
+    const path = try tmp.dir.realpathAlloc(a, "settings.json");
+    defer a.free(path);
+    loadFromFile(a, &config, path);
+    try std.testing.expect(!config.invalid);
+    try std.testing.expectEqual(Permission.deny, config.check("read_file", ".env"));
+    try std.testing.expectEqual(Permission.allow, config.check("read_file", "README.md"));
+}
+
+test "invalid settings fail closed, including partially parsed allow" {
+    const a = std.testing.allocator;
+    const cases = [_][]const u8{
+        "{",                                                              "[]",                                         "{\"permissions\":null}",
+        "{\"permissions\":{\"allow\":[\"read_file(*)\"],\"deny\":[42]}}", "{\"permissions\":{\"deny\":[\"invalid\"]}}", "{\"permissions\":{\"deny\":\"read_file(*)\"}}",
+        "{\"permissions\":{\"deny\":[],\"deny\":[]}}",
+    };
+    for (cases) |content| {
+        var config = PermissionConfig{ .allow_rules = .empty, .deny_rules = .empty };
+        defer config.deinit(a);
+        var tmp = std.testing.tmpDir(.{});
+        defer tmp.cleanup();
+        try tmp.dir.writeFile(.{ .sub_path = "settings.json", .data = content });
+        const path = try tmp.dir.realpathAlloc(a, "settings.json");
+        defer a.free(path);
+        loadFromFile(a, &config, path);
+        try std.testing.expect(config.invalid);
+        try std.testing.expectEqual(Permission.deny, config.check("read_file", "README.md"));
+        try std.testing.expectEqual(Permission.deny, config.check("bash", "pwd"));
+    }
+}
+
+test "rules decode escaped JSON and enforce capacity without truncation" {
+    const a = std.testing.allocator;
+    var config = PermissionConfig{ .allow_rules = .empty, .deny_rules = .empty };
+    defer config.deinit(a);
+    try parseSettings(a, &config,
+        \\{ "permissions" : { "deny" : ["read_file(secret\u002efile)"] } }
+    );
+    try std.testing.expectEqual(Permission.deny, config.check("read_file", "secret.file"));
+    for (0..max_rules - 1) |_| try parseSettings(a, &config,
+        \\{"permissions":{"deny":["read_file(*)"]}}
+    );
+    try std.testing.expectError(error.TooManyRules, parseSettings(a, &config,
+        \\{"permissions":{"deny":["read_file(.env)"]}}
+    ));
 }

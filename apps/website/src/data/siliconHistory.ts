@@ -1,0 +1,284 @@
+// Hardware and silicon history for spec formats that have been through the board.
+//
+// PROVENANCE — read this before adding a row.
+//
+// Every figure below is transcribed from
+//   research/goldenfloat-hw-conformance/GOLDENFLOAT_HW_CONFORMANCE_v0.2.md
+// in gHashTag/trinity-fpga, whose own source is the evidence chain published on
+// EPIC #199. A cell is "Tier E" only when all four links exist and are public:
+// CI run id -> bitstream SHA-256 -> JTAG flash -> UART log. Tier C (self-report)
+// is not represented here at all, because there is none left.
+//
+// What this data is NOT: it is not a synthesis report for the Verilog that the
+// .t27 compiler emits from these specs. That Verilog is a module shell -- across
+// the corpus it yields 0 LUTs and 0 flip-flops. The silicon results belong to
+// hand-written RTL in external/tt-trinity-corona and fpga/openxc7-synth, verified
+// against an oracle written independently of it. The spec and the RTL describe the
+// same format; they are not the same artifact, and the UI must say so.
+
+export type OpKind = 'ADD' | 'MUL' | 'SUB' | 'decode'
+
+/** How far a claim has actually been carried. Ordered weakest to strongest. */
+export type Level = 'declared' | 'formal' | 'prepared' | 'silicon'
+
+export interface SiliconCell {
+  op: OpKind
+  level: Level
+  /** Exhaustive-or-sampled code coverage, exactly as published, e.g. "512/512". */
+  codes?: string
+  /** One line on what this particular cell cost or taught. */
+  note?: { en: string; ru: string }
+}
+
+export interface SiliconRecord {
+  /** Catalog format key, e.g. "gf16". */
+  format: string
+  cells: SiliconCell[]
+  /** A defect this format's hardware run exposed that simulation had missed. */
+  caseStudy?: { en: string; ru: string }
+}
+
+/** The board every one of these numbers was measured on. */
+export const DEVICE = {
+  board: 'ALINX AX7203',
+  part: 'xc7a200tfbg484-2',
+  idcode: '0x13636093',
+  clock: 'CFGMCLK via STARTUPE2, ~69-70 MHz measured',
+  uart: 'CP2102N @ 160000 baud',
+} as const
+
+/** The open toolchain. No vendor licence is required at any step. */
+export const TOOLCHAIN = {
+  synth: 'yosys',
+  pnr: 'nextpnr-xilinx',
+  db: 'Project X-Ray',
+  image: 'regymm/openxc7:latest',
+  flash: 'openocd (AL321 / FT2232H)',
+  oracle: 'conformance/gf_ref.py — exact rational arithmetic (fractions.Fraction)',
+} as const
+
+/** The four links. A cell is Tier E only when it has all of them. */
+export const CHAIN: { id: string; en: string; ru: string }[] = [
+  { id: 'synth', en: 'openXC7 CI synth', ru: 'синтез в CI (openXC7)' },
+  { id: 'bit', en: 'bitstream + SHA-256', ru: 'битстрим + SHA-256' },
+  { id: 'flash', en: 'JTAG flash', ru: 'прошивка по JTAG' },
+  { id: 'uart', en: 'UART verify vs golden', ru: 'проверка по UART против эталона' },
+]
+
+const RECORDS: SiliconRecord[] = [
+  {
+    format: 'gf4',
+    cells: [
+      { op: 'ADD', level: 'silicon', codes: '256/256', note: { en: 'BIAS=0 fix', ru: 'исправление BIAS=0' } },
+      { op: 'MUL', level: 'silicon', codes: '256/256' },
+      { op: 'SUB', level: 'prepared' },
+    ],
+  },
+  {
+    format: 'gf8',
+    cells: [
+      { op: 'ADD', level: 'silicon', codes: '512/512' },
+      { op: 'MUL', level: 'silicon', codes: '480/480' },
+      { op: 'SUB', level: 'prepared' },
+    ],
+  },
+  {
+    format: 'gf12',
+    cells: [
+      { op: 'ADD', level: 'silicon', codes: '512/512' },
+      { op: 'MUL', level: 'silicon', codes: '480/480' },
+      { op: 'SUB', level: 'prepared' },
+    ],
+  },
+  {
+    format: 'gf16',
+    cells: [
+      { op: 'ADD', level: 'silicon', codes: '512/512', note: { en: 'NaN fix', ru: 'исправление NaN' } },
+      { op: 'MUL', level: 'silicon', codes: '512/512' },
+      { op: 'SUB', level: 'prepared' },
+    ],
+    caseStudy: {
+      en: 'GF16 is the only width with HAS_INF=1. The adder returned Inf where NaN was required — and the reference testbench had the same blind spot, so simulation reported 30000/30000 PASS three times running. Only the independently written golden, run against the board, found the 6 failures in 512. Fixed, then 512/512 on silicon.',
+      ru: 'GF16 — единственная ширина с HAS_INF=1. Сумматор возвращал Inf там, где требовался NaN, и у эталонного стенда была та же слепая зона: симуляция трижды показала 30000/30000 PASS. Ошибку (6 из 512) нашёл только независимо написанный эталон, запущенный против платы. После исправления — 512/512 на кристалле.',
+    },
+  },
+  {
+    format: 'gf20',
+    cells: [
+      { op: 'ADD', level: 'silicon', codes: '480/480', note: { en: 'placer fix', ru: 'исправление размещения' } },
+      { op: 'MUL', level: 'silicon', codes: '480/480' },
+      { op: 'SUB', level: 'prepared' },
+    ],
+    caseStudy: {
+      en: 'The GF20 build was cancelled nine times under the wrong diagnosis "Docker Hub pull hang". Per-step CI timing showed the pull took about a minute. The real blocker was place-and-route: the simulated-annealing placer failed to route the wider netlist in 40 minutes; the analytical placer (--placer heap) routed it in about 8 seconds.',
+      ru: 'Сборку GF20 отменяли девять раз с неверным диагнозом «зависание docker pull». Потактовый разбор времени в CI показал, что pull занимает около минуты. Настоящей причиной была трассировка: размещение отжигом не развело более широкую схему за 40 минут, аналитический размещатель (--placer heap) справился примерно за 8 секунд.',
+    },
+  },
+  {
+    format: 'gf24',
+    cells: [
+      { op: 'ADD', level: 'silicon', codes: '480/480' },
+      { op: 'MUL', level: 'silicon', codes: '480/480', note: { en: 'needs synth_xilinx -nodsp', ru: 'требует synth_xilinx -nodsp' } },
+      { op: 'SUB', level: 'prepared' },
+    ],
+  },
+]
+
+export const SILICON: Record<string, SiliconRecord> = Object.fromEntries(
+  RECORDS.map((r) => [r.format, r]),
+)
+
+/**
+ * Spec path -> catalog format. Written out rather than inferred from the filename,
+ * so a spec never picks up a hardware claim by resembling one.
+ *
+ * The corpus carries the GF ladder THREE times -- under specs/, chips/euler/ and
+ * trinity-fpga/t27/ -- and the first version of this table listed only the first,
+ * so twelve specs describing silicon-verified formats read "No hardware run".
+ * That is a wrong readout in the understating direction, which is quieter than
+ * over-claiming and no more correct. Each path below was checked to declare the
+ * same format before being added: identical `module` name across copies (GF4,
+ * GF8, GF12, triformat-gf16, GF20, GF24) and, where stated, the identical bit
+ * layout. scripts/check-silicon-coverage.mjs now fails the build if a corpus spec
+ * declares one of these formats and appears in neither this table nor EXCLUDED.
+ */
+export const SPEC_TO_FORMAT: Record<string, string> = {
+  // canonical ladder
+  'specs/numeric/gf4.t27': 'gf4',
+  'specs/numeric/gf8.t27': 'gf8',
+  'specs/numeric/gf12.t27': 'gf12',
+  'specs/numeric/gf16.t27': 'gf16',
+  'specs/numeric/gf20.t27': 'gf20',
+  'specs/numeric/gf24.t27': 'gf24',
+
+  // tt-trinity-euler copy -- same module names, same declared layout. These
+  // were vendored under chips/euler/ while the corpus came from a t27 branch
+  // that carried the chip repositories as directories; the GitHub-sourced
+  // refresh attributes them to tt-trinity-euler, the repository that owns them.
+  'tt-trinity-euler/specs/numeric/gf4.t27': 'gf4',
+  'tt-trinity-euler/specs/numeric/gf8.t27': 'gf8',
+  'tt-trinity-euler/specs/numeric/gf12.t27': 'gf12',
+  'tt-trinity-euler/specs/numeric/gf16.t27': 'gf16',
+  'tt-trinity-euler/specs/numeric/gf20.t27': 'gf20',
+  'tt-trinity-euler/specs/numeric/gf24.t27': 'gf24',
+
+  // trinity-fpga/t27 copy -- shorter files, same declared layout
+  'trinity-fpga/t27/specs/numeric/gf4.t27': 'gf4',
+  'trinity-fpga/t27/specs/numeric/gf8.t27': 'gf8',
+  'trinity-fpga/t27/specs/numeric/gf12.t27': 'gf12',
+  'trinity-fpga/t27/specs/numeric/gf16.t27': 'gf16',
+  'trinity-fpga/t27/specs/numeric/gf20.t27': 'gf20',
+  'trinity-fpga/t27/specs/numeric/gf24.t27': 'gf24',
+
+  // Declares GF16 outright -- "[sign:1][exponent:6][mantissa:9], bias 31" with
+  // the field accessors -- rather than merely consuming it.
+  'tri-net/specs/gf16_format.t27': 'gf16',
+}
+
+/**
+ * Specs that name a verified format but deliberately carry no hardware record,
+ * each with the reason. This exists so the coverage guard can tell "considered
+ * and excluded" from "never looked at" -- an empty exclusion list and a missing
+ * entry are indistinguishable otherwise.
+ */
+export const EXCLUDED: Record<string, string> = {
+  // GF32 is outside the silicon-verified ladder (GF4-GF24). No cell, no claim.
+  'specs/numeric/gf32.t27': 'format outside the silicon-verified GF4-GF24 ladder',
+  'tt-trinity-euler/specs/numeric/gf32.t27': 'format outside the silicon-verified GF4-GF24 ladder',
+  'trinity-fpga/t27/specs/numeric/gf32.t27': 'format outside the silicon-verified GF4-GF24 ladder',
+
+  // Above the ladder. Surfaced by the coverage guard, which matches the
+  // `triformat-gf<N>` module declaration rather than the filename -- these three
+  // would have been missed by a path pattern built around the known widths.
+  // GF64 and GF128 have no hardware cell; GF256 is recorded in the conformance
+  // draft as structural, its bias still an open R&D parameter.
+  'tt-trinity-euler/specs/numeric/gf64.t27': 'format above the silicon-verified GF4-GF24 ladder',
+  'tt-trinity-euler/specs/numeric/gf128.t27': 'format above the silicon-verified GF4-GF24 ladder',
+  'tt-trinity-euler/specs/numeric/gf256.t27': 'structural by design — bias is an open R&D parameter',
+  // tt-trinity-gamma carries its own copies of the same three (catalog refresh of
+  // 2026-09-24, #1039); same widths, same reasons.
+  'tt-trinity-gamma/specs/numeric/gf64.t27': 'format above the silicon-verified GF4-GF24 ladder',
+  'tt-trinity-gamma/specs/numeric/gf128.t27': 'format above the silicon-verified GF4-GF24 ladder',
+  'tt-trinity-gamma/specs/numeric/gf256.t27': 'structural by design — bias is an open R&D parameter',
+
+  // Widths the GitHub-sourced refresh brought in from t27 master, none of them
+  // rungs of the silicon-verified ladder (GF4, GF8, GF12, GF16, GF20, GF24 --
+  // enumerated in SPEC_TO_FORMAT above). Between the rungs first, then above
+  // them. No cell was run for any of these, so none carries a claim.
+  'specs/numeric/gf6.t27': 'a width between the rungs of the silicon-verified GF4-GF24 ladder',
+  'specs/numeric/gf10.t27': 'a width between the rungs of the silicon-verified GF4-GF24 ladder',
+  'specs/numeric/gf14.t27': 'a width between the rungs of the silicon-verified GF4-GF24 ladder',
+  'specs/numeric/gf48.t27': 'format above the silicon-verified GF4-GF24 ladder',
+  'specs/numeric/gf96.t27': 'format above the silicon-verified GF4-GF24 ladder',
+  'specs/numeric/gf512.t27': 'format above the silicon-verified GF4-GF24 ladder',
+  'specs/numeric/gf1024.t27': 'format above the silicon-verified GF4-GF24 ladder',
+  // The canonical copies of three widths whose tt-trinity-euler copies are
+  // listed above, with the same reasons. GF64 here declares `module GF64`
+  // rather than `triformat-gf64`, so the guard does not surface it; it is
+  // listed anyway, because one copy excluded and its twin silent is how the
+  // three-copy problem started.
+  'specs/numeric/gf64.t27': 'format above the silicon-verified GF4-GF24 ladder',
+  'specs/numeric/gf128.t27': 'format above the silicon-verified GF4-GF24 ladder',
+  'specs/numeric/gf256.t27': 'structural by design — bias is an open R&D parameter',
+
+  // These use, convert or measure a verified format; they do not declare it, so
+  // the format's hardware record is not theirs to show.
+  'specs/fpga/gf16_accel.t27': 'an accelerator that consumes GF16, not a declaration of the format',
+  'specs/fpga/testbench/gf16_accel_tb.t27': 'testbench for the accelerator above',
+  'specs/benchmarks/gf16_bfloat16_nmse.t27': 'a numerical benchmark against bfloat16, not a format declaration',
+  'trinity-fpga/specs/numeric/gf16_plus_quire_audit.t27': 'an audit of GF16 plus a quire, not the format itself',
+  'tt-trinity-euler/specs/fpga/gf16_to_fp16.t27': 'a converter between two formats',
+  'tt-trinity-euler/specs/fpga/gf16_to_posit16.t27': 'a converter between two formats',
+  'tt-trinity-euler/specs/fpga/gf32_to_fp32.t27': 'a converter between two formats',
+  'tt-trinity-gamma/specs/fpga/gf16_to_fp16.t27': 'a converter between two formats',
+  'tt-trinity-gamma/specs/fpga/gf16_to_posit16.t27': 'a converter between two formats',
+  'tt-trinity-gamma/specs/fpga/gf32_to_fp32.t27': 'a converter between two formats',
+  // Vivado ports brought in by the 1737-spec catalog refresh (#1176).
+  'specs/port/fpga/vivado/gf16_dot4.t27': 'a dot-product unit that consumes GF16, not a declaration of the format',
+  'specs/port/fpga/vivado/gf16_matmul_top.t27': 'a board top (LED counter around gf16_dot4), not a declaration of the format',
+  // dmitrii-f-t27/trinity-memory RTL (issues #103-#113 there), vendored by the first scan
+  // after those merged. Each says in its own header what it is; none declares the format.
+  'dmitrii-f-t27/trinity-memory/t27/rtl/gf16_codec.t27': 'an RNE converter between FP32 and GF16 bit patterns, not a declaration of the format',
+  'dmitrii-f-t27/trinity-memory/t27/rtl/gf16_ffn.t27': 'an FFN controller that computes in GF16, not a declaration of the format',
+  'dmitrii-f-t27/trinity-memory/t27/rtl/gf16_scalar.t27': 'clocked scalar arithmetic on GF16 operands, not a declaration of the format',
+  'dmitrii-f-t27/trinity-memory/t27/rtl/gf16_wide_norm.t27': 'a wide product and normalization unit over GF16, not a declaration of the format',
+}
+
+/**
+ * Specs that describe the catalog rather than one format. They get the family
+ * totals instead of a single format's cells. Same three-copy problem as the
+ * ladder, so all copies are listed.
+ */
+export const FAMILY_SPECS = new Set([
+  'specs/numeric/goldenfloat_family.t27',
+  'specs/numeric/formats.t27',
+  'specs/numeric/gf_competitive.t27',
+  'specs/math/gf_competitive.t27',
+  'tt-trinity-euler/specs/numeric/goldenfloat_family.t27',
+  'tt-trinity-euler/specs/numeric/formats.t27',
+  'trinity-fpga/t27/specs/numeric/goldenfloat_family.t27',
+])
+
+/** Catalog-wide totals, as published in the v0.2 draft. */
+export const FAMILY_TOTALS = {
+  tierE: 27,
+  catalog: 83,
+  decodeHw: 13,
+  addHw: 7,
+  mulHw: 7,
+  swBitexact: 62,
+  structural: 15,
+}
+
+/** The formal track: which widths a SAT engine has proven over their whole input space. */
+export const FORMAL_PROVEN: Record<string, OpKind[]> = {
+  gf4: ['ADD', 'MUL'],
+  gf6: ['ADD', 'MUL'],
+  gf8: ['ADD'],
+  gf12: ['ADD'],
+}
+
+export function siliconFor(specPath: string): SiliconRecord | null {
+  const key = SPEC_TO_FORMAT[specPath]
+  return key ? SILICON[key] ?? null : null
+}

@@ -2,7 +2,7 @@
 # Simple Telegram Reporter
 # Sends messages to configured chat
 
-TELEGRAM_BOT_TOKEN="8110000341:AAHn9c7e8Jx0f1eY-4hT5Gd9Xh8iJ0kL1mN"
+TELEGRAM_BOT_TOKEN="${TELEGRAM_BOT_TOKEN:?set TELEGRAM_BOT_TOKEN (Railway/Infisical)}"
 TELEGRAM_CHAT_ID="144022504"
 
 send_message() {

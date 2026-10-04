@@ -3,7 +3,7 @@
 // source facts a regex CAN state. Node 22 needs --experimental-strip-types
 // to import the TypeScript module; package.json passes it.
 import { readFileSync } from "node:fs";
-import { alertCount, alertSpan, beeSilence, buildingPlan, feedCoverage, buildingTint, cellGeometry, countdownFor, eventIdentity, mergeActivity, serverOffsetMs, decisionDetail, fieldShape, moduleColumn, moduleFor, moduleId, pathInTitle, placeCards, rewriteEndpoints, ringOrder, ringTone, roundStrip, skipReasonWords, staleAge, territoryOf, planHash, withOpenIssues } from "../src/components/queenHud.ts";
+import { alertCount, alertSpan, beeSilence, buildingPlan, castlePlaces, epicProgress, familyTint, ringFamily, ringOfEpic, ringSummary, towerStage, wallBetween, ringOfModulePath, epicOfIssue, hexRingCells, foundationCells, foundationOrder, hexCellCount, hexCentres, hexCorners, hexField, hexIndexAt, hexRing, hexRingStart, hexToWorld, honeyTone, layersFromSearch, spiralAxial, spiralIndex, spiralOrder, HEX_R, S_CELL, buildingTint, cellGeometry, countdownFor, eventIdentity, mergeActivity, serverOffsetMs, decisionDetail, fieldShape, moduleColumn, moduleFor, moduleId, pathInTitle, placeCards, rewriteEndpoints, ringOrder, ringTone, roundStrip, skipReasonWords, staleAge, territoryOf, planHash, withOpenIssues, HIVE_TONES, hiveCoverOf, hiveKey, hiveToneOf } from "../src/components/queenHud.ts";
 
 const fails = [];
 let checks = 0;
@@ -24,6 +24,7 @@ check(rewritten.research === "https://trios-agent-server-production.up.railway.a
 check(rewritten.board === "https://trios-agent-server-production.up.railway.app/queen/public-board?x=1", "query kept");
 check(rewritten.odd === "not a url", "a non-URL is left alone");
 
+const combSrc = readFileSync(new URL('../src/components/QueenCombBabylon.tsx', import.meta.url), 'utf8');
 const src = readFileSync(new URL("../src/pages/Queen.tsx", import.meta.url), "utf8");
 check(/rounds:\s*null,/.test(src), "rounds / 24h is a dash (pulse.rounds is a lease-row count)");
 check(!/c\.hudAccepted\b/.test(src), "no tile is labelled ACCEPTED");
@@ -42,11 +43,11 @@ check(/skipReasonWords\(reason\)/.test(src) && /roundStrip\(/.test(src), "the pa
 
 // self-test: the contract must be able to fail
 const A = [{ number: 5 }, { number: 4 }, { number: 3 }];
-const pa = placeCards(new Map(), A, fieldShape(A.length).cellCount);
-check(pa.placed.slice(0, 3).map((c) => c && c.number).join(",") === "5,4,3" && pa.placed.length === fieldShape(3).cellCount, "first placement is wire order on a field of the right size");
-const pb = placeCards(pa.ledger, [{ number: 6 }, ...A], fieldShape(4).cellCount);
+const pa = placeCards(new Map(), A, hexField(A.length).cellCount);
+check(pa.placed.slice(0, 3).map((c) => c && c.number).join(",") === "5,4,3" && pa.placed.length === hexField(3).cellCount, "first placement is wire order on a field of the right size");
+const pb = placeCards(pa.ledger, [{ number: 6 }, ...A], hexField(4).cellCount);
 check(pb.placed[0]?.number === 5 && pb.placed[1]?.number === 4 && pb.placed[2]?.number === 3 && pb.placed[3]?.number === 6, "a head insert leaves every known card on its cell; the new card takes the first free cell");
-const pc = placeCards(pb.ledger, [{ number: 6 }, { number: 3 }, { number: 5 }], fieldShape(3).cellCount);
+const pc = placeCards(pb.ledger, [{ number: 6 }, { number: 3 }, { number: 5 }], hexField(3).cellCount);
 check(pc.placed[0]?.number === 5 && pc.placed[1] === null && pc.placed[2]?.number === 3 && pc.placed[3]?.number === 6 && pa.ledger.size === 3, "a departed card frees its cell, nobody moves, the input ledger is untouched");
 check(placeCards(new Map([[7, 500]]), [{ number: 7 }], 27).placed[0]?.number === 7, "an index outside the field is re-placed");
 const t0 = Date.parse("2026-09-04T09:00:00Z");
@@ -63,17 +64,27 @@ check(moduleColumn(M({ openIssues: [5] }), T, new Set([5])) === "running" && mod
 check(moduleColumn(M({ lastTouched: "2026-09-01T00:00:00Z" }), T, new Set()) === "done" && moduleColumn(M({ lastTouched: "2026-01-01T00:00:00Z" }), T, new Set()) === "dropped" && moduleColumn(M({ lastTouched: "2026-06-01T00:00:00Z" }), T, new Set()) === "backlog", "touched within 30 days is alive, 180 days dormant, between is backlog");
 check(moduleFor("trios/agent-server/apps/server/src/lib/agents/x.ts", [M({ path: "agent-server" }), M({ path: "agent-server/apps/server/src" })])?.path === "agent-server/apps/server/src" && moduleFor("nowhere/x.ts", [M({ path: "agent-server" })]) === null, "a file belongs to the longest module path that prefixes it");
 check(pathInTitle("trios/agent-server/apps/server/src/api/x.ts breaks L3") === "trios/agent-server/apps/server/src/api/x.ts" && pathInTitle("no path here") === null, "the first path in a title, or none");
-const geo = cellGeometry(114);
-check(geo.length === fieldShape(114).cellCount, "cell geometry has one centre per cell of the field's shape");
-const order = ringOrder(geo, Math.floor(geo.length / 2));
-check(order[0] === Math.floor(geo.length / 2) && order.length === geo.length && new Set(order).size === geo.length, "ring order starts at home and visits every cell once");
-const d = (i) => (geo[i].x - geo[order[0]].x) ** 2 + (geo[i].y - geo[order[0]].y) ** 2;
-check(order.every((i, k) => k === 0 || d(i) >= d(order[k - 1])), "ring order never moves inward");
-const shape3 = fieldShape(3);
-const home3 = Math.floor(shape3.cellCount / 2);
-const ringed = placeCards(new Map(), [{ number: 1 }, { number: 2 }, { number: 3 }], shape3.cellCount, ringOrder(cellGeometry(3), home3));
-check(ringed.ledger.get(1) === home3 && ringed.placed[home3]?.number === 1, "with a ring order the first card takes the home cell");
-check(fieldShape(165).cellCount === 189 && fieldShape(114).cellCount === 138, "the field's cell count is the comb's (189 for 165 cards, not 195)");
+// the hex spiral (the honeycomb foundation, 2026-09-05): pointy-top, cell 0 is the hub, ring k holds 6k cells
+check(hexCellCount(18) === 1027 && hexField(1010).rings === 18 && hexField(1010).cellCount === 1027 && hexField(165).rings === 7 && hexField(165).cellCount === 169 && hexField(114).cellCount === 127 && hexField(3).cellCount === 37, "1009 closed issues plus the hub fill 18 rings of 1027 cells; 165 cards 7 rings; 114 cards 6 rings; the smallest field has 37 cells");
+const anchors = [[1, 1, 0], [6, 0, 1], [7, 2, 0], [18, 1, 1], [19, 3, 0], [1026, 17, 1]];
+check(anchors.every(([i, q, r]) => spiralAxial(i).q === q && spiralAxial(i).r === r) && spiralAxial(0).q === 0 && spiralAxial(0).r === 0, "the spiral's anchors: cell 1 due east, each ring starts due east, the last cell of ring 18 is (17,1)");
+check(Array.from({ length: 1027 }, (_, i) => i).every((i) => spiralIndex(spiralAxial(i)) === i), "spiral index and spiral axial are inverses for every cell of 18 rings");
+check(Array.from({ length: 1027 }, (_, i) => hexRing(spiralAxial(i))).every((k, i, a) => i === 0 || k >= a[i - 1]) && Array.from({ length: 18 }, (_, k) => k + 1).every((k) => hexRing(spiralAxial(hexRingStart(k))) === k), "the spiral never moves inward and ring k begins at 3k(k-1)+1");
+check(Math.abs(hexToWorld({ q: 1, r: 0 }).x - S_CELL) < 1e-9 && Math.abs(HEX_R * Math.sqrt(3) - S_CELL) < 1e-9, "neighbours stand 150 apart, today's cell side, so every building scale holds");
+check(Array.from({ length: 1027 }, (_, i) => i).every((i) => { const w = hexToWorld(spiralAxial(i)); return hexIndexAt(w.x, w.y, 1027) === i; }), "a world point at a cell's centre reads back as that cell, for all 1027");
+const c31 = hexToWorld({ q: 3, r: -1 }), c41 = hexToWorld({ q: 4, r: -1 });
+check(hexIndexAt(c31.x + (c41.x - c31.x) * 0.4, c31.y, 1027) === spiralIndex({ q: 3, r: -1 }) && hexIndexAt(c31.x + (c41.x - c31.x) * 0.6, c31.y, 1027) === spiralIndex({ q: 4, r: -1 }), "a point four tenths of the way to the neighbour still reads its own cell; six tenths reads the neighbour");
+check(hexIndexAt(hexToWorld({ q: 19, r: 0 }).x, 0, 1027) === -1 && hexCorners({ q: 0, r: 0 }).length === 6 && hexCorners({ q: 0, r: 0 }).every((p) => Math.abs(Math.hypot(p.x, p.y) - HEX_R) < 1e-9), "a point beyond the last ring reads no cell; a hex has six corners at the circumradius");
+check(hexCentres(127).length === 127 && spiralOrder(37).length === 36 && spiralOrder(37)[0] === 1 && !spiralOrder(37).includes(0) && new Set(spiralOrder(37)).size === 36, "one centre per cell; the spiral order visits every cell but the hub, cell 1 first");
+const ringed = placeCards(new Map(), [{ number: 1 }, { number: 2 }, { number: 3 }], 37, spiralOrder(37));
+check(ringed.ledger.get(1) === 1 && ringed.placed[0] === null && ringed.placed[1]?.number === 1 && ringed.placed[2]?.number === 2, "with the spiral order the first card takes cell 1; cell 0 is the hub and never a card's");
+check(placeCards(new Map(), [{ number: 8 }, { number: 9 }], 37, [5, 6]).ledger.size === 2 && placeCards(new Map(), [{ number: 8 }, { number: 9 }], 37, [5, 6]).placed[6]?.number === 9, "an order shorter than the field is honoured as far as it goes");
+// the foundation: one cell per closed issue, in closed_at order, from a dated snapshot
+const fdIssues = [{ number: 5, title: "b", closedAt: "2026-09-05T00:00:02Z", labels: [], epicRefs: [] }, { number: 4, title: "a", closedAt: "2026-09-05T00:00:01Z", labels: [], epicRefs: [] }, { number: 9, title: "c", closedAt: "not a date", labels: [], epicRefs: [] }];
+check(foundationOrder(fdIssues).map((i) => i.number).join(",") === "4,5,9" && foundationCells(fdIssues, 37)[0] === null && foundationCells(fdIssues, 37)[1]?.number === 4 && foundationCells(fdIssues, 37)[2]?.number === 5, "closed_at ascending, an undatable close last; index i+1 holds the i-th; the hub holds nothing");
+const fdNow = Date.parse("2026-09-05T12:00:00Z");
+check(honeyTone("2026-09-05T11:00:00Z", fdNow)[0] > honeyTone("2026-09-01T00:00:00Z", fdNow)[0] && honeyTone("2026-09-01T00:00:00Z", fdNow)[0] > honeyTone("2026-05-01T00:00:00Z", fdNow)[0] && honeyTone("bad", fdNow)[3] === 1, "fresh honey is brightest, a week old warmer than a season old; an undatable close still reads as honey");
+check(layersFromSearch("").foundation && layersFromSearch("").castle && layersFromSearch("").code && layersFromSearch("?layers=castle").castle && !layersFromSearch("?layers=castle").foundation && !layersFromSearch("?layers=none").code && layersFromSearch("?layers=bogus,code").code, "no parameter: every layer on; a list: exactly those; none: none; unknown names ignored");
 // the shape grammar (M-3): the building is a pure function of the signature
 const sig = M({ path: "agent-server/apps/server/src", language: "typescript", lines: 12000, functions: 900, imports: 60, exports: 40 });
 check(planHash(buildingPlan(sig)) === planHash(buildingPlan({ ...sig })), "the same signature yields the same building");
@@ -132,19 +143,83 @@ check(/`\$\{c\.hudSince\} \$\{formatMoment\(lastRoundAt, lang\)\} · ≤ \$\{for
 check(/schedulerOff \|\| !roundKnown \? "—" : `\+\$\{formatCountdown\(elapsedSeconds\)\}`/.test(src), "the value counts up since the last round; no countdown promises the next round at a second");
 // the status pill reads swarmState through COPY keys; the VERDICTS tile adds the unreviewed count only when the wire has it (P1-28)
 check(/data\?\.swarmState === "working"[\s\S]{0,40}c\.swarmWorking[\s\S]{0,120}c\.swarmIdle[\s\S]{0,120}c\.swarmPaused[\s\S]{0,80}data\.swarmState\.toUpperCase\(\)[\s\S]{0,40}c\.swarmUnknown/.test(src), "the pill maps working/idle/paused to COPY keys, prints an unfamiliar wire state as itself, and a missing one as the unknown key");
-check(/swarmWorking:\s*"WORKING"/.test(src) && /swarmWorking:\s*"РАБОТАЕТ"/.test(src) && /hudReady:\s*"ready"/.test(src) && /hudReady:\s*"готово"/.test(src), "the four swarm words and the ready word exist in both languages");
-check(/typeof data\?\.dispatches\.unreviewed === "number" \? ` · \$\{data\.dispatches\.unreviewed\} \$\{c\.hudReady\}` : ""/.test(src), "the VERDICTS sub-line prints the unreviewed count only when the wire carries the field, never 0 for an absent one");
-check(/`\$\{decisionInfo\} · \$\{decision\.allowed \? c\.chose : c\.stoodDown\}`/.test(src), "the gold block's decision line leads with the wire field (the refusal or what the round did), the verb follows");
-// the INTEL FEED header states what it holds, from its rows (P1-27)
-const cov = feedCoverage([{ at: "2026-09-05T00:40:00Z" }, { at: "2026-09-05T00:41:02Z" }, { at: "2026-09-05T00:40:30Z" }]);
-check(cov.rows === 3 && cov.spanSeconds === 62 && cov.oldestAt === "2026-09-05T00:40:00Z" && cov.newestAt === "2026-09-05T00:41:02Z", "three rows over 62 s: the header says 3 rows · 62 s from the rows themselves");
-check(feedCoverage([{ at: "2026-09-05T00:40:00Z" }]).spanSeconds === null && feedCoverage([]).rows === 0 && feedCoverage([{ at: "bad" }, { at: "2026-09-05T00:40:00Z" }]).spanSeconds === null, "one row, no rows or an undatable row: no span is printed, never a fabricated 0 s");
+check(/swarmWorking:\s*"WORKING"/.test(src) && /swarmWorking:\s*"РАБОТАЕТ"/.test(src) && /hudNoVerdict:\s*"finished, no verdict"/.test(src) && /hudNoVerdict:\s*"без вердикта"/.test(src), "the four swarm words and the no-verdict words exist in both languages (dispatches.unreviewed counts finished rows with no verdict, not issues ready)");
+check(/typeof data\?\.dispatches\.unreviewed === "number" \? ` · \$\{data\.dispatches\.unreviewed\} \$\{c\.hudNoVerdict\}` : ""/.test(src), "the VERDICTS sub-line prints the unreviewed count only when the wire carries the field, never 0 for an absent one");
+// This pin held `${decisionInfo} · ${verb}` (decisionLine), the fallback line
+// of the command rail's second round button. 9316e9edd removed that button --
+// one round control is left, the resource tile, whose line is roundStrip
+// (pinned above) or the round window -- and moved its popover onto the tile.
+// The popover is where the decision is still spelled out: the verb on a line
+// of its own, and the line under it leading with the wire field.
+check(/<strong>\s*\{decision\s*\?\s*decision\.allowed\s*\?\s*c\.chose\s*:\s*c\.stoodDown\s*:\s*c\.noDecision\}\s*<\/strong>\s*\{decision && \(\s*<p>\s*\{decisionInfo\} · \{decision\.skippedCount\}/.test(src), "the round popover's verb has a line of its own; the line under it leads with the wire field (the refusal or what the round did), the skip count follows");
+// Two assertions exercised feedCoverage(), the INTEL FEED header's row count
+// and row span (P1-27). The feed was deleted -- the shell gave its cell to the
+// Queen's conversation -- and these calls were the function's only remaining
+// reader, so the gate was the sole reason a dead helper still shipped. Both are
+// gone with it. The rule they stood for, that a header never prints a
+// fabricated "0 s", has no header left to govern: the conversation prints its
+// own row count from events.length and prints no span anywhere. The nearest
+// surface that could want one is the A2A tab, whose netScope line scopes the
+// link counts in rows alone ("the last {n} events", QueenChat.tsx:381); giving
+// it a span is a change to published copy in two languages, so the rule comes
+// back with that decision, not before it.
 // review and finished rows print their wire state after the kind word (P1-24)
 check(/return \(event\.kind === "review" \|\| event\.kind === "finished"\) && event\.state && event\.state !== event\.kind \? `\$\{word\} · \$\{event\.state\}` : word;/.test(src), "a verdict or a finish carries its wire state after the kind word; no state or a state equal to the kind (finished · finished) adds no suffix");
 // a bee's silence is measured against the round (P1-23)
 const nowB = Date.parse("2026-09-05T02:05:00Z");
 check(beeSilence("2026-09-05T02:04:18Z", nowB, 300)?.seconds === 42 && beeSilence("2026-09-05T02:04:18Z", nowB, 300)?.cold === false && beeSilence("2026-09-05T01:59:59Z", nowB, 300)?.cold === true, "42 s of silence under a 300 s round is warm; 301 s is cold");
 check(beeSilence("2026-09-05T01:00:00Z", nowB, null)?.cold === false && beeSilence(null, nowB, 300) === null && beeSilence("bad", nowB, 300) === null, "no round length: never cold; no last word or an undatable one: no age at all");
+// #1206 moved every corpus read into src/lib/queenCorpus.ts, and rule B of
+// qa/queen-spec-sync-contract.mjs (run in CI) refuses any other file that names
+// queen/foundation.json -- so the regex here, which demanded that Queen.tsx
+// name it, could not pass again. What Queen.tsx still decides is pinned here:
+// it asks the store for the foundation with the server's route as the wire,
+// keeps the snapshot only for the board's own repository, and names
+// count@date:source on the viewport. The store's order -- the wire first, the
+// vendored file when the wire has none, a 404 asked once, a 5xx asked again --
+// is executed in rule C of that contract, not restated here.
+check(/useCorpus\("foundation", \{ wire: `\$\{QUEEN_API\}\/queen\/public-foundation`/.test(src) && /const hiveFoundation = hiveSameRepositorySnapshot\(repo, foundationState\.data\);/.test(src) && /data-foundation=\{hiveFoundation \? `\$\{hiveFoundation\.closedIssues\.length\}@\$\{hiveFoundation\.generatedAt\}:\$\{hiveFoundation\.source\}`/.test(src), "GitHub facts come from the store with the server's route as the wire, only for the board's own repository, and the viewport names count@date:source (H-C1)");
+check((src.match(/hexField\(fieldNeed\)/g) || []).length >= 2 && /const fieldNeed = Math\.max\(moduleCards\.length \+ 1, closedCount \+ 1, hiveRecords\.length \+ 1, \(hiveFoundation\?\.rings\.length \?\? 0\) > 0 \? hexCellCount\(CASTLE_RING\) \+ 1 : 0\)/.test(src), "field reserves hub and space for modules, closed issues, live issue displays and same-repository castle");
+check(/data-pick-kind=\{livePick\?\.kind/.test(src) && /data-pick-issue=\{livePick\?\.kind === "issue"/.test(src) && /if \(pick\.kind === "issue" && pick\.issue\)/.test(src), "a pick is (kind, number): an issue pick follows its number through the snapshot, the viewport names the kind and the issue (H-E)");
+// the castle of the rings (K-1): places on spiral ring 7, epics to rings, towers by stage
+const ksRings = ["SR-00", "RUST-13", "T27-00", "RUST-04"];
+const ksPlaces = castlePlaces(ksRings);
+check(ksPlaces.length === 4 && ksPlaces.map((p) => p.ring).join(",") === "RUST-04,RUST-13,SR-00,T27-00" && ksPlaces.every((p) => hexRingCells(7).includes(p.plinth) && hexRingCells(7).includes(p.wall) && p.plinth % 2 === 1 && p.wall % 2 === 0) && new Set(ksPlaces.map((p) => p.plinth)).size === 4, "the plinths take ring 7's cells in name order, one per ring, walls on the cells between; a permuted input gives the same places");
+check(castlePlaces(["T27-00", "SR-00", "RUST-13", "RUST-04"]).map((p) => p.plinth).join(",") === ksPlaces.map((p) => p.plinth).join(","), "the places do not depend on the input's order");
+check(ringFamily("RUST-13") === "RUST" && ringFamily("SR-00") === "SR" && ringFamily("T27-01") === "T27" && ringFamily("weird") === "other" && familyTint("RUST")[0] > familyTint("SR")[0] && familyTint("other")[3] === 1, "a ring's family is its prefix; each family has a tint, an unknown one a grey");
+const ksEpic = (over) => ({ number: 9001, title: "EPIC: RING-SR-00 has one source", state: "open", closedAt: null, labels: [], ring: null, ringBy: null, children: [], ...over });
+check(ringOfEpic(ksEpic({ labels: ["ring:RUST-13"] }), ksRings).ring === "RUST-13" && ringOfEpic(ksEpic({ labels: ["ring:RUST-13"] }), ksRings).by === "label" && ringOfEpic(ksEpic({}), ksRings).ring === "SR-00" && ringOfEpic(ksEpic({}), ksRings).by === "title" && ringOfEpic(ksEpic({ title: "EPIC: RING-00 is generated", labels: ["ring:NOPE"] }), ksRings).ring === null, "an epic's ring: the ring:<NAME> label first, then a directory name in the title, else unassigned; an unknown label name and RING-00 bind nothing");
+const ksKids = (closed, open) => [...Array.from({ length: closed }, (_, i) => ({ number: 100 + i, title: "c", state: "closed", closedAt: "2026-09-05T00:00:00Z" })), ...Array.from({ length: open }, (_, i) => ({ number: 200 + i, title: "o", state: "open", closedAt: null }))];
+check(epicProgress(ksEpic({ children: ksKids(3, 2) })).closed === 3 && epicProgress(ksEpic({ children: ksKids(3, 2) })).total === 5 && Math.abs(epicProgress(ksEpic({ children: ksKids(3, 2) })).ratio - 0.6) < 1e-9 && epicProgress(ksEpic({})).ratio === null, "progress is closed children over all children; no children means no ratio, never 0");
+check(towerStage(ksEpic({})) === "plinth" && towerStage(ksEpic({ children: ksKids(1, 4) })) === "walls" && towerStage(ksEpic({ children: ksKids(3, 2) })) === "tower" && towerStage(ksEpic({ state: "closed", closedAt: "2026-09-05T00:00:00Z", children: ksKids(5, 0) })) === "wizardTower" && towerStage(ksEpic({ state: "open", children: ksKids(5, 0) })) === "tower", "the stages: no children a plinth, a closed child walls, half a tower, a closed epic with every child closed the wizard tower");
+const ksSummary = ringSummary("SR-00", [ksEpic({ children: ksKids(3, 2) }), ksEpic({ number: 9002, labels: ["ring:RUST-13"], children: ksKids(0, 1) })], ksRings);
+check(ksSummary.epics === 1 && ksSummary.closed === 3 && ksSummary.total === 5 && ringSummary("T27-00", [], ksRings).epics === 0 && ringSummary("T27-00", [], ksRings).ratio === null, "a ring's summary counts only the epics bound to it; a ring with no epic has no ratio");
+check(wallBetween([ksEpic({ state: "closed", closedAt: "x", children: ksKids(2, 0) })], [ksEpic({ state: "closed", closedAt: "x", children: ksKids(1, 0) })]) === true && wallBetween([ksEpic({ children: ksKids(3, 2) })], [ksEpic({ state: "closed", closedAt: "x", children: ksKids(1, 0) })]) === false && wallBetween([], [ksEpic({ state: "closed", closedAt: "x", children: ksKids(1, 0) })]) === false, "a wall rises only between two rings whose every epic is a keep");
+check(ringOfModulePath("rings/SR-00") === "SR-00" && ringOfModulePath("rings/RUST-13/clade-meshd/src") === "RUST-13" && ringOfModulePath("rings") === null && ringOfModulePath("apps/rings/SR-00") === null && ringOfModulePath(".") === null, "ringOfModulePath: rings/<NAME> and anything beneath it; nothing else");
+check(epicOfIssue(101, [ksEpic({ number: 9001, children: ksKids(3, 2) }), ksEpic({ number: 9002, children: [] })])?.number === 9001 && epicOfIssue(1, [ksEpic({ children: ksKids(3, 2) })]) === null, "epicOfIssue: the first epic listing the issue among its children, else null");
+check(/data-working-age/.test(combSrc) && /kind === "finished" \|\| kind === "error"/.test(combSrc) && !/WORK_WINDOW_MS/.test(combSrc) && /const i = displaysRef.current \? indexByNumber.get\(issueNumber\) \?\? -1 : cellOfPath\(title\);/.test(combSrc), "work follows the issue's LAST wire state, not age; issue displays join its exact number and only legacy module cells use paths");
+check(/if \(hover >= 0 && hover !== p && cells\[hover\]\) placeDashed/.test(combSrc), "every cell under the pointer lights up, not only the ones carrying a card");
+check(!/\.glb/.test(combSrc) && !/LoadAssetContainerAsync/.test(combSrc) && /data-look", "hive"/.test(combSrc) && /CreateLineSystem\("queen-mark"/.test(combSrc), "the hive draws no model at all: no .glb is named, no asset container is loaded, and the Queen at the centre is the mark itself (the user, 2026-09-06)");
+const SPACE_KIT = ["platform_small", "machine_generatorLarge", "satelliteDish_large", "hangar_smallA", "hangar_roundA", "structure_closed", "gate_complex", "crater", "hangar_largeA", "rock_crystalsLargeA", "astronautA", "astronautB", "rover", "alien"];
+check(SPACE_KIT.every((m) => !combSrc.includes(m)), `the field draws one kit: no space-kit model may be named (${SPACE_KIT.filter((m) => combSrc.includes(m)).join(", ") || "none"})`);
+check(/host\.setAttribute\("data-foundation-shape", displaysRef.current \? "status-filled" : "outline"\)/.test(combSrc) && /CreateLineSystem\("cells"/.test(combSrc) && !/CreateCylinder\("honey"/.test(combSrc) && !/hex-sand/.test(combSrc), "issue cells have status fills (user 2026-09-07); module outlines remain, no fabricated honey or tile model");
+check(/host\.setAttribute\("data-hover-issue"/.test(combSrc) && /queen27-hover-card/.test(combSrc), "a hovered cell names its GitHub issue on the host and in the card");
+check(/host\.setAttribute\("data-castle-source", fdNow \? fdNow\.source : "none"\)/.test(combSrc) && /data-castle-stages/.test(combSrc) && /data-castle-unassigned/.test(combSrc), "the castle's testimony on the host comes from the snapshot's source, never a guess; stages and unassigned epics are named (K-2)");
+check(HIVE_TONES.t27 === "#FFD45A" && HIVE_TONES.awaiting === "#64DCFF" && HIVE_TONES.manual === "#FF4D5E" && HIVE_TONES.hover === "#FFC24D", "the hive's colour law is exact: yellow T27, neon blue awaiting, red manual, honey only for the hand");
+const claimed = new Set(["agent-server/apps/access-control"]);
+check(hiveCoverOf("agent-server/apps/access-control", claimed) === "t27" && hiveCoverOf("agent-server/apps/manual", claimed) === "manual" && hiveCoverOf(null, claimed) === "awaiting" && hiveToneOf("manual")[0] > hiveToneOf("manual")[2], "cover is a claim against the module: T27, manual, or awaiting; no decoration chooses it");
+check(/fieldRoot.rotation.copyFromFloats\(HIVE_WALL_ROTATION.x, HIVE_WALL_ROTATION.y, HIVE_WALL_ROTATION.z\)/.test(combSrc) && /new ArcRotateCamera\("cam", Math\.PI \/ 2, Math\.PI \/ 2/.test(combSrc) && /data-orientation", "facing"/.test(combSrc), "the comb is a wall facing the player, with the shared point-down orientation");
+check(/HIVE_TONES\.hover/.test(combSrc) && /hiveToneOf\(covers\[i\]\)/.test(combSrc) && /queen27-hive-law/.test(combSrc), "hover is honey while cell claims follow the law, and the legend names that law");
+check(/fieldRoot\.position\.y = motionPreference\.matches \|\| selectedDisplayRef\.current !== null \? 0 : Math\.sin\(nowMs \/ 6400\) \* 7/.test(combSrc), "wall drift stops for close-up reading and reduced motion");
+check(/hiveWallToWorld\(anchor.x, anchor.z\)/.test(combSrc) && /hiveWorldToWall\(wx, wy, fieldRoot.position.y\)/.test(combSrc) && /const p = planeAt\(x, y\)/.test(combSrc), "zoom and picking use the same rotated wall-plane coordinates");
+check(/QueenHiveDisplays/.test(combSrc) && /projected\.slice\(0,32\)/.test(combSrc) && !/new DynamicTexture\(`event-card-/.test(combSrc), "native displays replace blurry256px textures and cull to32 visible cells");
+// The same move (#1206) took `fetch("t27/manifest.json"` out of Queen.tsx; the
+// coverage now reads the manifest part of the store, and the scoping itself
+// (hiveCoverageFromManifest) is executed in qa/queen-coverage-contract.mjs.
+check(/function useT27Coverage\(repository: string \| null\)[^\n]*\{\n\s*const \{ manifest \} = useT27Manifest\(\);/.test(src) && /function useT27Manifest\(\)[^\n]*\{\n\s*const \{ part, error \} = useCorpus\("manifest"\);/.test(src) && /hiveCoverageFromManifest\(manifest, repository\)/.test(src) && /useT27Coverage\(modulesState\.data\?\.repo \?\? null\)/.test(src), "yellow is scoped to the displayed module snapshot repository, never hard-coded trinity");
+check(/\[\.\.\.t27Coverage\]\.sort\(\)/.test(combSrc), "same-size coverage changes invalidate the scene's signature");
+check(/hiveLawT27:\s*"T27 covered"/.test(src) && /hiveLawManual:\s*"manual code"/.test(src) && /hiveLawAwaiting:\s*"awaiting T27"/.test(src) && /hiveLawBees:\s*"bees"/.test(src), "the English colour-law words exist");
+check(/hiveLawT27:\s*"покрыто T27"/.test(src) && /hiveLawManual:\s*"ручной код"/.test(src) && /hiveLawAwaiting:\s*"ждёт T27"/.test(src) && /hiveLawBees:\s*"пчёлы"/.test(src), "the Russian colour-law words exist");
 check(decisionDetail({ allowed: false, refusal: null }, 0, 1, L) !== "0 executing now", "self-test");
 
 if (fails.length) { for (const f of fails) console.log("  ✗ " + f); console.log(`Queen honesty contract: FAIL (${fails.length})`); process.exit(1); }

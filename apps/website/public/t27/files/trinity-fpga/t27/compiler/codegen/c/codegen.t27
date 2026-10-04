@@ -1,0 +1,5 @@
+# compiler/codegen/c — C backend code generator
+# Status: stub (pending full spec)
+module c_codegen {
+    export generate(spec: Spec) -> String
+}

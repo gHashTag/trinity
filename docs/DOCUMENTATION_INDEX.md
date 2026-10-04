@@ -26,7 +26,7 @@
 | [`README.md`](../README.md) | Main project README with installation and quick start |
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | High-level system architecture overview |
 | [`docs/papers/README_FOR_SCIENTISTS.md`](papers/README_FOR_SCIENTISTS.md) | Mathematical framework for scientific collaborators |
-| [Contributing Guide](docs/docs/contributing.md) | Guidelines for contributing to Trinity |
+| [Contributing Guide](docs/contributing.md) | Guidelines for contributing to Trinity |
 
 **Key Commands:**
 ```bash
@@ -54,7 +54,7 @@ tri constants                   # Show sacred constants
 
 | Module | Documentation |
 |--------|---------------|
-| VSA | [`src/vsa/README.md`](../src/vsa/README.md) - Vector Symbolic Architecture |
+| VSA | [VSA API](docs/api/vsa.md) - Vector Symbolic Architecture |
 | VM | [`src/vm.zig`](../src/vm.zig) - Ternary Virtual Machine |
 | Common | [`src/common/README.md`](../src/common/README.md) - Shared constants |
 | UART/FPGA | [`fpga/openxc7-synth/UART_README.md`](../fpga/openxc7-synth/UART_README.md) - FPGA protocol |
@@ -180,10 +180,10 @@ fxload -t fx2 -I ./fpga/openxc7-synth/xc7a-xc7s-ftdi.hex -d 0x0013
 
 | Module | Status |
 |--------|--------|
-| `src/hslm/tjepa.zig` | ✅ Implemented |
-| `src/hslm/tjepa_trainer.zig` | ✅ Implemented |
-| `crates/trios-train-cpu/src/tjepa.rs` | ✅ Implemented (Rust backend) |
-| `crates/trios-train-cpu/src/objective.rs` | ✅ Implemented (multi-objective) |
+| [`tjepa.zig` in trinity-training](https://github.com/gHashTag/trinity-training/blob/3e9648c1817a97c5f9b8c727b0f8e2291928eead/src/hslm/tjepa.zig) | Moved to trinity-training; source present at the pinned revision |
+| [`tjepa_trainer.zig` in trinity-training](https://github.com/gHashTag/trinity-training/blob/3e9648c1817a97c5f9b8c727b0f8e2291928eead/src/hslm/tjepa_trainer.zig) | Moved to trinity-training; source present at the pinned revision |
+| Historical `crates/trios-train-cpu/src/tjepa.rs` | Rust backend is absent from this repository; current execution is not verified by this documentation gate |
+| Historical `crates/trios-train-cpu/src/objective.rs` | Multi-objective backend is absent here; this gate does not claim model inference |
 | Documentation | ✅ Consolidated in research/models/JEPAT/ |
 
 ### Farm Management
@@ -202,13 +202,13 @@ fxload -t fx2 -I ./fpga/openxc7-synth/xc7a-xc7s-ftdi.hex -d 0x0013
 | File | Description |
 |------|-------------|
 | [`README_FOR_SCIENTISTS.md`](papers/README_FOR_SCIENTISTS.md) | Mathematical framework overview |
-| [`docs/docs/research/trinity-status-2026.md`](docs/docs/research/trinity-status-2026.md) | 2026 unified framework status |
+| [`docs/docs/research/trinity-status-2026.md`](docs/research/trinity-status-2026.md) | 2026 unified framework status |
 | [`LISA_PREDICTION_ROADMAP_2035.md`](papers/LISA_PREDICTION_ROADMAP_2035.md) | 12 testable predictions for LISA |
 | [`lab/papers/patent-strategy/full-analysis.md`](lab/papers/patent-strategy/full-analysis.md) | Patent strategy (8 inventions) |
 
 ### Research Reports
 
-**Cycles 27-45:** Golden Chain evolution reports in [`docs/docs/research/`](docs/docs/research/)
+**Cycles 27-45:** Golden Chain evolution reports in [`docs/docs/research/`](docs/research/)
 
 Key reports:
 - `trinity-golden-chain-v2-27-tri100-report.md`

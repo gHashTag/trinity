@@ -102,7 +102,7 @@ pub const AuthorRole = enum(u8) {
 pub const CFFGenerator = struct {
     pub fn generate(self: CFFGenerator, allocator: std.mem.Allocator) ![]const u8 {
         // CFF 1.2.0 format
-        // https://citation-file-format.github.io/1.2.0/
+        // https://github.com/citation-file-format/citation-file-format/blob/1.2.0/schema-guide.md
     }
 };
 ```
@@ -203,13 +203,13 @@ pub const COARNotifier = struct {
 
 ## References
 
-1. NeurIPS 2025 Dataset Track: https://neurips.cc/Conferences/2025/DatasetTrack
-2. ICLR 2025 Reproducibility Checklist: https://iclr.cc/Conferences/2025/reproducibility-checklist
-3. MLSys 2025 Artifact Evaluation: https://mlsys.org/Conferences/2025/artifact-evaluation
+1. NeurIPS 2025 Dataset Track: https://neurips.cc/Conferences/2025/CallForDatasetsBenchmarks
+2. ICLR 2025 Author Guide (reproducibility statement): https://iclr.cc/Conferences/2025/AuthorGuide
+3. MLSys 2025 Artifact Evaluation: https://mlsys.org/Conferences/2025/CallForAE
 4. Schema.org SoftwareSourceCode: https://schema.org/SoftwareSourceCode
 5. DataCite 4.5: https://schema.datacite.org/meta/kernel-4.5/
-6. CFF 1.2.0: https://citation-file-format.github.io/1.2.0/
-7. ORCID API: https://info.orcid.org/documentation/api-v3.0/
+6. CFF 1.2.0: https://github.com/citation-file-format/citation-file-format/blob/1.2.0/schema-guide.md
+7. ORCID API: https://info.orcid.org/documentation/integration-guide/
 8. COAR Notify: https://notify.coar-repositories.org/
 9. OpenAlex: https://openalex.org/
 

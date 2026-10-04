@@ -5,6 +5,9 @@ import { useI18n } from '../i18n/context'
 import Navigation from '../components/Navigation'
 import Footer from '../components/Footer'
 import QuantumBackground from '../components/QuantumBackground'
+import { TnfFormats } from '../components/sections/tnf'
+import TnfVisuals from '../components/sections/tnf/PhiViz'
+import TnfCalculators from '../components/sections/tnf/Calculators'
 
 /**
  * The format's own page.
@@ -376,6 +379,10 @@ value = (-1)^sign · (1 + M/2^9) · 2^e,   e = Σ tᵢ·3ⁱ  ∈ [−40, +40]`}
           </a>
         </motion.div>
       </section>
+
+      <TnfFormats />
+      <TnfVisuals />
+      <TnfCalculators />
 
       <Footer />
     </main>

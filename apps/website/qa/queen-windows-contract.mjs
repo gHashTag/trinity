@@ -85,7 +85,9 @@ for (const lang of LANGS) for (const [w, h] of SIZES) {
       if (!el) return;
       const cs = getComputedStyle(el);
       if (cs.display === 'none' || el.clientWidth === 0) return; // a tile whose sub-line is hidden by design at this size shows no window at all
-      const cutX = el.scrollWidth > el.clientWidth + 1, cutY = el.scrollHeight > el.clientHeight + 1;
+      // a line-clamped element is a designed truncation of its TAIL (the decision line leads with the wire field, P1-18): its content height is not a cut
+      const clamped = cs.webkitLineClamp && cs.webkitLineClamp !== 'none';
+      const cutX = el.scrollWidth > el.clientWidth + 1, cutY = !clamped && el.scrollHeight > el.clientHeight + 1;
       if (cutX || cutY) out.push(label + ' "' + (el.textContent || '').trim().slice(0, 60) + '" ' + el.scrollWidth + 'x' + el.scrollHeight + ' in ' + el.clientWidth + 'x' + el.clientHeight);
     };
     document.querySelectorAll('.queen27-hud-res').forEach((tile, i) => check(tile.querySelector(':scope > span'), 'tile ' + i + ' (' + ((tile.querySelector('small') || {}).textContent || '').trim() + ')'));
@@ -100,7 +102,17 @@ for (const lang of LANGS) for (const [w, h] of SIZES) {
   })()`);
   const { out: cut, minTile, tiles } = cutInfo;
   // the intercept must have reached the gold block, or the pin is silent
-  if (lang === 'en' && w === 1920) { const emText = await evaluate(`(() => { const e = document.querySelector('.queen27-hud-round-btn > em'); return e ? e.textContent : ''; })()`); if (!/no eligible specification/.test(emText)) problems.push(`en 1920x1080: the refusal intercept did not reach the gold block (em reads "${String(emText).slice(0, 60)}")`); }
+  if (lang === 'en' && w === 1920) {
+    // the page renders the refusal on its own poll, so the pin WAITS for it
+    // instead of reading once (a race that failed three runs of cycle 045)
+    let emText = '';
+    for (let i = 0; i < 40; i += 1) {
+      emText = await evaluate(`(() => { const e = document.querySelector('.queen27-hud-round-btn > em'); return e ? e.textContent : ''; })()`);
+      if (/no eligible specification/.test(emText)) break;
+      await wait(500);
+    }
+    if (!/no eligible specification/.test(emText)) problems.push(`en 1920x1080: the refusal intercept did not reach the gold block in 20 s (em reads "${String(emText).slice(0, 60)}")`);
+  }
   if (cut.length) problems.push(`${lang} ${w}x${h}: ${cut.join(' | ')}`);
   console.log(`  ${lang} ${w}x${h} ${cut.length ? 'CUT  ' + cut.length + ' window(s): ' + cut.join(' | ') : 'ok   every window whole'} · ${tiles} tiles, narrowest ${minTile} px`);
 }

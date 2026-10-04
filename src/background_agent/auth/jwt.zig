@@ -19,6 +19,7 @@ pub const Payload = struct {
 /// JWT error set
 pub const Error = error{
     InvalidToken,
+    MissingSecret,
     ExpiredToken,
     SignatureMismatch,
     EncodingFailed,
@@ -58,7 +59,7 @@ fn base64UrlEncode(allocator: Allocator, input: []const u8) ![]u8 {
 /// Base64URL decode (handles URL-safe encoding)
 fn base64UrlDecode(allocator: Allocator, input: []const u8) ![]u8 {
     // Convert from URL-safe: - -> +, _ -> /
-    var normalized = try allocator.alloc(u8, input.len);
+    const normalized = try allocator.alloc(u8, input.len + 3);
     defer allocator.free(normalized);
 
     for (input, 0..) |c, i| {
@@ -70,19 +71,19 @@ fn base64UrlDecode(allocator: Allocator, input: []const u8) ![]u8 {
     }
 
     // Add padding if needed
+    // One buffer, allocated with room for the padding from the start: the
+    // previous shape freed `normalized` here and again through its defer, a
+    // double free that corrupts the allocator on every padded segment — which
+    // is most of them, since a 32-byte signature encodes to 43 characters.
     const padding = (4 - (input.len % 4)) % 4;
-    const padded = if (padding > 0) try allocator.alloc(u8, input.len + padding) else normalized;
-    if (padding > 0) {
-        @memcpy(padded[0..input.len], normalized);
-        for (padded[input.len..]) |*c| c.* = '=';
-        allocator.free(normalized);
-    }
+    const padded = normalized[0 .. input.len + padding];
+    for (padded[input.len..]) |*c| c.* = '=';
 
     // Zig 0.15 base64 API: calculate size, allocate, decode
     const decoder = std.base64.standard.Decoder;
-    const size = try decoder.calcSizeForSlice(if (padding > 0) padded else normalized);
+    const size = try decoder.calcSizeForSlice(padded);
     const result = try allocator.alloc(u8, size);
-    try decoder.decode(result, if (padding > 0) padded else normalized);
+    try decoder.decode(result, padded);
     return result;
 }
 
@@ -154,8 +155,15 @@ pub fn verifyToken(allocator: Allocator, token: []const u8, secret: []const u8) 
     var expected_mac: [crypto.auth.hmac.sha2.HmacSha256.mac_length]u8 = undefined;
     crypto.auth.hmac.sha2.HmacSha256.create(&expected_mac, signature_input.items, secret);
 
-    // Verify signature
-    if (!std.mem.eql(u8, provided_sig, &expected_mac)) {
+    // An empty secret still produces a valid HMAC, so a server running without
+    // one accepts any token a forger cares to sign with "". Fail closed: no
+    // secret means no authentication, not open authentication.
+    if (secret.len == 0) return error.MissingSecret;
+
+    // Constant time: mem.eql returns on the first differing byte, which leaks
+    // how much of a guessed signature was right.
+    if (provided_sig.len != expected_mac.len) return error.SignatureMismatch;
+    if (!crypto.timing_safe.eql([expected_mac.len]u8, provided_sig[0..expected_mac.len].*, expected_mac)) {
         return error.SignatureMismatch;
     }
 

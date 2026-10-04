@@ -15,7 +15,7 @@ From experiments, convergence rates for different objectives:
 
 - **Wave 9 config:** `.trinity/wave9.json`
 - **JEPA weight:** `HSLM_JEPA_WEIGHT=0.25` (25% of multi-objective)
-- **Full config:** See [FOUND_EXPERIMENTS_SUMMARY.md](../../../experiments/FOUND_EXPERIMENTS_SUMMARY.md)
+- **Full config:** See [FOUND_EXPERIMENTS_SUMMARY.md](../../experiments/FOUND_EXPERIMENTS_SUMMARY.md)
 
 ## Environment Variables
 
@@ -38,4 +38,4 @@ JEPA operates within the multi-objective system alongside:
 - **NCA** (Neural Cellular Automata): 25% weight
 - **JEPA**: 25% weight
 
-See [integration.md](./integration.md) for details.
+See integration.md (historical path `./integration.md`; not present in this checkout) for details.

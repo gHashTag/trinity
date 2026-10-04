@@ -87,22 +87,24 @@ pub fn load(cpu: *cpu_state.CPUState, code: []const u8, constants: []const f64) 
                 // Move offset past section header (type=1 + padding=1 + size=2 = 4 bytes)
                 offset += 4;
 
-                if (offset + size > code.len) return LoadError.Truncated;
-                if (offset + size > cpu.memory_len) return LoadError.DataTooLarge;
+                // Container padding: the two bytes tri_asm.zig writes after the CODE
+                // header so the payload starts at byte 12, the word-3 boundary the
+                // fetch reads at pc * 4. The writer and the loader agree on the
+                // twelve-byte container header.
+                if (offset + 2 > code.len) return LoadError.Truncated;
+                offset += 2;
 
-                // Copy code to CPU memory starting at word 3 (skip 12-byte header)
+                if (offset + size > code.len) return LoadError.Truncated;
+
+                // One code word per four-byte fetch unit: repack the payload into the
+                // byte-addressed memory at byte 12 + i*4, so run's fetch at pc * 4
+                // reads exactly the word that was written, starting at pc = 3.
                 const code_data = code[offset .. offset + size];
-                // Pack 4 bytes per word (little-endian)
-                var word_idx: usize = 3; // Start at word 3 (PC=3)
+                const bytes = cpu.getBytesMut();
+                if (12 + size > bytes.len) return LoadError.DataTooLarge;
                 var i: usize = 0;
                 while (i + 4 <= size) : (i += 4) {
-                    const b0 = code_data[i];
-                    const b1 = code_data[i + 1];
-                    const b2 = code_data[i + 2];
-                    const b3 = code_data[i + 3];
-                    const word_value: u64 = @as(u64, b0) | (@as(u64, b1) << 8) | (@as(u64, b2) << 16) | (@as(u64, b3) << 24);
-                    cpu.memory[word_idx] = tri_memory.Word{ .word_value = @bitCast(word_value) };
-                    word_idx += 1;
+                    @memcpy(bytes[12 + i .. 12 + i + 4], code_data[i .. i + 4]);
                 }
                 code_size = size;
 
@@ -110,10 +112,13 @@ pub fn load(cpu: *cpu_state.CPUState, code: []const u8, constants: []const f64) 
             },
 
             2 => { // CONSTANTS section
-                if (offset + 1 > code.len) return LoadError.Truncated;
+                // Documented layout: id (1) + count (1) + count * 8 bytes.
+                // The values come from the constants array the caller passes; the
+                // file bytes are skipped.
+                if (offset + 2 > code.len) return LoadError.Truncated;
 
-                const num_constants = code[offset];
-                offset += 1;
+                const num_constants = code[offset + 1];
+                offset += 2;
 
                 // Load constants from constants array (passed as parameter)
                 // Store as u64 in Word format for compatibility
@@ -128,7 +133,7 @@ pub fn load(cpu: *cpu_state.CPUState, code: []const u8, constants: []const f64) 
                 }
 
                 // Skip constant data in file (already passed via constants array)
-                const data_size = num_constants * 8; // 8 bytes per f64
+                const data_size = @as(usize, num_constants) * 8; // 8 bytes per f64
                 if (offset + data_size > code.len) return LoadError.Truncated;
                 offset += data_size;
             },
@@ -168,8 +173,10 @@ pub fn load(cpu: *cpu_state.CPUState, code: []const u8, constants: []const f64) 
     }
 
     // Initialize CPU state
-    // Instructions start at word 0
-    cpu.pc = 0;
+    // The twelve-byte container header (magic, version, section count, the CODE
+    // section header and its two padding bytes) ends at the first instruction,
+    // word 3 — the address run fetches at pc * 4.
+    cpu.pc = 3;
     cpu.sp = @as(u32, @intCast(cpu.memory_len - 1));
     cpu.fp = 0;
     cpu.instructions_executed = 0;
@@ -181,4 +188,67 @@ pub fn load(cpu: *cpu_state.CPUState, code: []const u8, constants: []const f64) 
     // Validate that constants count matches input
     const total_constants = code[4];
     _ = total_constants;
+}
+
+// ═════════════════════════════════════════════════════════════════════════════════════════
+// TESTS
+// ═════════════════════════════════════════════════════════════════════════════════════════
+
+test "load: the writer's twelve-byte container lands at word 3 with pc = 3" {
+    // The container tri_asm.zig writes: magic, version 1, one section, the CODE
+    // header, two padding bytes, then two instruction words.
+    const container = [_]u8{
+        0x32, 0x49, 0x52, 0x54, // magic
+        0x01, // version
+        0x01, // section count
+        0x01, 0x00, 0x08, 0x00, // CODE: id, padding, size 8
+        0x00, 0x00, // container padding
+        0xaa, 0xbb, 0xcc, 0xdd, // word 0
+        0x11, 0x22, 0x33, 0x44, // word 1
+    };
+
+    var cpu = try cpu_state.CPUState.init(std.testing.allocator);
+    defer cpu.deinit();
+
+    try load(&cpu, &container, &[_]f64{});
+
+    // pc starts at the first instruction word, and the fetch at pc * 4 reads
+    // exactly the two written words.
+    try std.testing.expectEqual(@as(u32, 3), cpu.pc);
+    const bytes = cpu.getBytes();
+    try std.testing.expectEqual(@as(u8, 0xaa), bytes[12]);
+    try std.testing.expectEqual(@as(u8, 0xbb), bytes[13]);
+    try std.testing.expectEqual(@as(u8, 0xcc), bytes[14]);
+    try std.testing.expectEqual(@as(u8, 0xdd), bytes[15]);
+    try std.testing.expectEqual(@as(u8, 0x11), bytes[16]);
+    try std.testing.expectEqual(@as(u8, 0x44), bytes[19]);
+    // Words 0..2 keep the zeros of a fresh CPU: no padding leaks into the code.
+    for (0..12) |i| try std.testing.expectEqual(@as(u8, 0), bytes[i]);
+}
+
+test "load: the CONSTANTS parser reads the id, then the count, then count * 8 bytes" {
+    // Documented layout: id (2) + count (1) + eight bytes, then the CODE section
+    // with its header and padding.
+    const container = [_]u8{
+        0x32, 0x49, 0x52, 0x54, // magic
+        0x01, // version
+        0x02, // section count
+        0x02, 0x01, // CONSTANTS: id, count 1
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // the constant's eight bytes
+        0x01, 0x00, 0x04, 0x00, // CODE: id, padding, size 4
+        0x00, 0x00, // container padding
+        0x01, 0x02, 0x03, 0x04, // one instruction word
+    };
+
+    var cpu = try cpu_state.CPUState.init(std.testing.allocator);
+    defer cpu.deinit();
+
+    try load(&cpu, &container, &[_]f64{0.0});
+
+    // The loader consumed exactly id + count + eight bytes: the code section that
+    // follows is found and packed at byte 12.
+    try std.testing.expectEqual(@as(u32, 3), cpu.pc);
+    const bytes = cpu.getBytes();
+    try std.testing.expectEqual(@as(u8, 0x01), bytes[12]);
+    try std.testing.expectEqual(@as(u8, 0x04), bytes[15]);
 }

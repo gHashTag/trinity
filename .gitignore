@@ -90,6 +90,8 @@ zig-macos-*/
 zig-linux-*/
 zig-windows-*/
 zig/
+# ...but a play's zig terminal page is a page, not an SDK download (play-from-spec.mjs writes it)
+!apps/website/public/play/*/zig/
 *.tar.xz
 
 # Ralph logs (keep config)
@@ -273,6 +275,9 @@ bench_core
 *.wav
 *.trit
 
+# GIFs rendered from tapes/ (record-demos.yml uploads them as an artifact)
+/recordings/
+
 # Invalid filenames (shell artifact)
 --
 -language
@@ -325,6 +330,13 @@ fpga/tools/weight_pack_wide
 # .claude/skills/ are tracked only because they predate the *.md rule above --
 # every skill written since has been silently unstageable without -f.
 !.claude/skills/**
+# The vendored skill corpus is a PUBLISHED artifact, exactly like
+# public/t27/files: the site fetches these bodies at runtime and the manifest
+# pins each one by SHA-256. The *.md rule above swallowed all 26 of them on the
+# first commit, so the catalog shipped naming files that were not in the tree --
+# the build passed locally, where they exist on disk, and the contract caught it
+# only in CI.
+!apps/website/public/skills/files/**
 
 # Docker files in root (use deploy/ subdirectory instead)
 #
@@ -368,7 +380,12 @@ bindings/
 contracts/
 demo/
 demos/
-extensions/
+# Anchored 2026-09-20, same defect as website/ below. Unanchored, `extensions/`
+# matched deploy/trinity-nexus/extensions at depth 3 and silently swallowed both
+# browser manifests and all six icons when that tree was moved there -- the 53
+# already-tracked files kept working, so nothing looked wrong, and Extension
+# Release built zips with no manifest.json in them for months.
+/extensions/
 homebrew-tap/
 install.sh
 k8s/
@@ -380,7 +397,10 @@ packages/
 runtime/
 translator-app/
 tree-sitter-vibee/
-trinity-nexus/
+# Anchored for the same reason: it matched deploy/trinity-nexus, where 2988
+# files are tracked. No top-level trinity-nexus/ exists, so the rule was
+# protecting nothing and hiding real source.
+/trinity-nexus/
 # website/ removed 2026-08-10: it matched apps/website at any depth and silently
 # excluded every NEW file in the site source, while already-tracked files kept working.
 # Build output is handled by apps/website/.gitignore (node_modules, dist).
@@ -423,3 +443,27 @@ fpga-flash
 !.trinity/issue_bindings.json
 !.trinity/souls/
 !templates/SOUL.md
+
+# The vendored t27 corpus backs the /specs explorer -- it is data, not build
+# output. Many bare directory rules above (`demos/`, `runtime/`, `legacy/`, …)
+# match at any depth and silently drop files from the snapshot; because git
+# cannot re-include a file whose parent directory is excluded, the `**` has to
+# re-include those directories too, not just the files inside them.
+# Enumerating them one by one was tried first and is whack-a-mole: the widened
+# corpus immediately hit three more.
+!apps/website/public/t27/**
+
+# apps/website/docs: hand-written contracts for the website (e.g. the optional
+# agent control API), not generated reports; the *.md rule above would drop them.
+!apps/website/docs/**
+
+# external/t27 is a byte-for-byte copy of t27 files, locked by specs/reproduce/contracts.t27
+# and written only by `tools/contracts.py vendor`. Nothing in it may be ignored -- `*.md` and
+# `mcp/` above would drop four of its files -- or the copy the lock checks is not the copy
+# the commit carries. Directories first: a file under an excluded directory cannot be re-included.
+!external/t27/**/
+!external/t27/**
+
+# Local credential files: never commit (values come from Railway/Infisical)
+.trinity/ralph/queue/.creds
+ralph/queue/.creds

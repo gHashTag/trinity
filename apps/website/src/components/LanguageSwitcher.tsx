@@ -4,29 +4,21 @@ import { useI18n } from '../i18n/context'
 
 const flags: Record<string, string> = {
   en: '🇺🇸',
-  ru: '🇷🇺',
-  de: '🇩🇪',
-  zh: '🇨🇳',
-  es: '🇪🇸'
+  ru: '🇷🇺'
 }
 
 const labels: Record<string, string> = {
   en: 'EN',
-  ru: 'RU',
-  de: 'DE',
-  zh: '中文',
-  es: 'ES'
+  ru: 'RU'
 }
 
 const langNames: Record<string, string> = {
   en: 'English',
-  ru: 'Russian',
-  de: 'German',
-  zh: 'Chinese',
-  es: 'Spanish'
+  ru: 'Russian'
 }
 
-const LANGS = ['en', 'ru', 'de', 'zh', 'es']
+// The site is written in English and Russian only.
+const LANGS = ['en', 'ru']
 
 export default memo(function LanguageSwitcher() {
   const { lang, setLang } = useI18n()

@@ -1,7 +1,7 @@
 #!/bin/bash
 # Test Telegram Bot @vibee_dev_bot
 
-TOKEN="8729158167:AAFUIozc36MOsj4bVH_g2Yt-xO6sX0AgVkk"
+TOKEN="${TELEGRAM_BOT_TOKEN:?set TELEGRAM_BOT_TOKEN (Railway/Infisical)}"
 CHAT_ID="144022504"
 
 # Test 1: getMe - verify bot exists

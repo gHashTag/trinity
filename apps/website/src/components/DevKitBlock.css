@@ -1,0 +1,149 @@
+/* The devkit block reads as the rest of the front door: a black ground, cards
+   drawn by their border (styles/card.css), green only on the figures and the
+   links. */
+.devkit-block {
+  display: block;
+  text-align: left;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: #000;
+  color: var(--text, #ffffff);
+}
+
+.devkit-block-inner {
+  width: min(1180px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: clamp(2rem, 6vw, 4.5rem) 0;
+  display: grid;
+  gap: clamp(1.4rem, 4vw, 2.4rem);
+}
+
+.devkit-block-head {
+  max-width: 68ch;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.devkit-block-eyebrow {
+  color: #ffd45a;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.devkit-block-head h2 {
+  margin: 0;
+  font-size: clamp(1.5rem, 3.4vw, 2.4rem);
+  font-weight: 500;
+  line-height: 1.15;
+}
+
+.devkit-block-head p {
+  margin: 0;
+  color: #a8c1ba;
+  font-size: clamp(1rem, 1.8vw, 1.15rem);
+  line-height: 1.6;
+}
+
+.devkit-block-stats li {
+  display: grid;
+  gap: 0.5rem;
+  align-content: start;
+}
+
+.devkit-block-stats strong {
+  color: #00ff88;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: clamp(1.15rem, 2.4vw, 1.5rem);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.devkit-block-stats span {
+  color: #a8c1ba;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.devkit-block-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.devkit-block-primary,
+.devkit-block-secondary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0.65rem 1rem;
+  border-radius: 6px;
+  font: 600 0.82rem/1.2 "JetBrains Mono", ui-monospace, monospace;
+  text-decoration: none;
+  background: #000;
+}
+
+.devkit-block-primary {
+  color: #00ff88;
+  border: 1px solid #00ff88;
+}
+
+.devkit-block-secondary {
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+}
+
+.devkit-block-primary:hover,
+.devkit-block-secondary:hover {
+  border-color: #ffffff;
+}
+
+.devkit-block-actions small {
+  color: #a8c1ba;
+  font-size: 0.82rem;
+}
+
+.devkit-block-actions small a {
+  color: #00ff88;
+}
+
+.devkit-block-club {
+  display: grid;
+  gap: 0.6rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+.devkit-block-club-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem 1.5rem;
+}
+
+.devkit-block-club-row strong {
+  font-size: clamp(1.2rem, 2.6vw, 1.6rem);
+  font-weight: 500;
+}
+
+.devkit-block-club-row b {
+  color: #00ff88;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: clamp(1.2rem, 2.6vw, 1.6rem);
+  font-weight: 600;
+}
+
+.devkit-block-club-body {
+  max-width: 72ch;
+  color: #a8c1ba;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.devkit-block-club-cta {
+  color: #00ff88;
+  font: 600 0.82rem/1.2 "JetBrains Mono", ui-monospace, monospace;
+  letter-spacing: 0.08em;
+}

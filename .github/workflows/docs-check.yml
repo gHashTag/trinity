@@ -14,19 +14,35 @@ on:
     branches: [main, fix/*, feat/*]
     paths:
       - 'README.md'
-      - 'docs/**.md'
+      - 'docs/**'
       - 'CLAUDE.md'
       - 'AGENTS.md'
       - 'CONTRIBUTING.md'
       - '.github/workflows/docs-check.yml'
+      - 'specs/ci/**'
+      - '.trinity/seals/ci_ci_*.json'
+      - 'conformance/ci_*.json'
+      - 'scripts/ci-*'
+      - 'scripts/docs-*'
+      - 'qa/ci-corona-pr-gate.mjs'
+      - 'qa/docs-reference-gate.mjs'
   pull_request:
     branches: [main]
     paths:
       - 'README.md'
-      - 'docs/**.md'
+      - 'docs/**'
       - 'CLAUDE.md'
       - 'AGENTS.md'
       - 'CONTRIBUTING.md'
+      - '.github/workflows/docs-check.yml'
+      - '.markdown-link-check.json'
+      - 'specs/ci/**'
+      - '.trinity/seals/ci_ci_*.json'
+      - 'conformance/ci_*.json'
+      - 'scripts/ci-*'
+      - 'scripts/docs-*'
+      - 'qa/ci-corona-pr-gate.mjs'
+      - 'qa/docs-reference-gate.mjs'
 
 permissions:
   contents: read
@@ -35,19 +51,38 @@ jobs:
   markdown-link-check:
     name: Check Documentation Links
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Link Checker
-        uses: gaurav-nelson/github-action-markdown-link-check@v1
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          use-quiet-mode: 'yes'
-          use-verbose-mode: 'yes'
-          config-file: '.markdown-link-check.json'
-          folder-path: 'docs'
-          file-extension: '.md'
-          check-modified-files-only: 'no'
+          node-version: 24
+          cache: npm
+          cache-dependency-path: docs/package-lock.json
+
+      - name: Install locked docsite dependencies
+        run: npm ci --prefix docs --ignore-scripts
+
+      - name: Build real docsite routes
+        run: npm run build --prefix docs
+
+      - name: Reference specification and conformance
+        run: node scripts/docs-gate-from-spec.mjs --check && node qa/docs-reference-gate.mjs
+
+      - name: Check tracked documentation targets
+        run: node scripts/docs-reference-check.mjs --external --report work/docs-reference-report.json
+
+      - name: Upload individual reference observations
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation-reference-observations
+          path: work/docs-reference-report.json
+          if-no-files-found: warn
+          retention-days: 30
 
   docs-structure:
     name: Validate Documentation Structure
@@ -156,21 +191,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: CI gate specification and conformance
+        run: node scripts/ci-gate-from-spec.mjs --check && node qa/ci-corona-pr-gate.mjs
+
+      - name: Read pinned model source
+        id: training
+        run: node scripts/docs-model-consistency.mjs --policy
+
+      - name: Checkout moved T-JEPA source
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.training.outputs.repo }}
+          ref: ${{ steps.training.outputs.rev }}
+          path: work/docs-training
+          persist-credentials: false
+          sparse-checkout: src/hslm
+
       - name: Check T-JEPA status consistency
-        run: |
-          echo "Checking T-JEPA implementation status across docs..."
-          TJEPA_FILES="src/hslm/tjepa.zig src/hslm/tjepa_trainer.zig"
-
-          for file in $TJEPA_FILES; do
-            if [ -f "$file" ]; then
-              echo "✅ $file exists (T-JEPA implemented)"
-            else
-              echo "❌ $file not found"
-              exit 1
-            fi
-          done
-
-          echo "Note: If T-JEPA files exist, docs should reflect 'implemented' status"
+        run: node scripts/docs-model-consistency.mjs --check work/docs-training
 
       - name: Check version consistency
         run: |

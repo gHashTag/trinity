@@ -1,0 +1,29 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+//  | φ² + 1/φ² = 3 | TRINITY
+
+module TriNamespace;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Namespace = struct {
+        kind : Enum,
+        variants : ,
+    };
+
+    pub const ParsedCommand = struct {
+        kind : Union(enum),
+        variants : ,
+        namespaced : ,
+        flat : ,
+        help : void,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+

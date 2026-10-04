@@ -1,48 +1,47 @@
-// The comb in Babylon.js as a GAME FIELD (the user, 2026-09-04 11:10Z, with a
-// StarCraft screenshot: "I want a field like THIS"): one continuous plate of
-// steel tiles with the mark engraved in every tile, low-poly buildings with
-// volume standing where the cards stand, bees as units on the ground, an RTS
-// camera (fixed angle, zoom, no idle sway). The cells still come from
-// summariseCells, so placement, picking, the pairing of bees to running cards
-// and the event glints keep their rules; only the picture changed. Buildings
-// are procedural until the user names an asset pack (B-5).
-import { useEffect, useRef } from "react";
+// The comb in Babylon.js as a HIVE DISPLAY (the user, 2026-09-06): a vertical
+// honeycomb wall floating right in front of the player — not a board lying on
+// the ground. No 3D models: every fact is a cell (rim, cap, colour, card).
+// Cells rise toward the hand on hover and tap; the pointer is answered with
+// honey. Issue fills show unresolved goals (red), work/review (blue), and
+// completed T27 goals (honey). Module provenance is a separate law. The logo
+// inside the hub cell — and the latest wire events land in their cells as
+// cards, so the comb works as the hive's display.
+import { ImageProcessingConfiguration } from "@babylonjs/core/Materials/imageProcessingConfiguration";
+import { useEffect, useRef, useState, useImperativeHandle } from "react";
+import { QueenHiveDisplays, QueenHiveTaskLegend, type HiveDisplayController } from './QueenHiveDisplays';
+import { QueenStarfield } from './QueenStarfield';
+import {catalogCellAt,catalogFocusView,catalogMaxZoom,catalogSpecSelection,catalogConnectionView,type CatalogHive,type CatalogController} from './queenCatalogData';
+import { HIVE_TASK_PALETTE, hiveSignalDelivery, hiveSignalRing, hiveRunningIssueNumbers, hiveTaskPaint, hiveTaskCounts, hiveDisplayPaintKey, hiveFocusZoom, hiveMaxZoom, hiveDisplayLod, type HiveDisplay, type HiveDisplayProjection, type HiveTaskTone, type HiveSignalHealth, type HiveSignalCursor, type HiveEventRing } from './queenHiveDisplay';
+import { HIVE_WALL_ROTATION, hiveWallToWorld, hiveWorldToWall } from './queenHiveOrientation';
+import type { Ref } from "react";
+import { TransformNode } from "@babylonjs/core/Meshes/transformNode";
 import { Engine } from "@babylonjs/core/Engines/engine";
 import { Scene } from "@babylonjs/core/scene";
 import { ArcRotateCamera } from "@babylonjs/core/Cameras/arcRotateCamera";
 import { Camera } from "@babylonjs/core/Cameras/camera";
-import { Vector3, Matrix, Quaternion } from "@babylonjs/core/Maths/math.vector";
+import { Vector3, Matrix } from "@babylonjs/core/Maths/math.vector";
 import { Color3, Color4 } from "@babylonjs/core/Maths/math.color";
 import { Mesh } from "@babylonjs/core/Meshes/mesh";
 import { VertexBuffer } from "@babylonjs/core/Buffers/buffer";
 import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
-import { DynamicTexture } from "@babylonjs/core/Materials/Textures/dynamicTexture";
-import { SpriteManager } from "@babylonjs/core/Sprites/spriteManager";
-import { Sprite } from "@babylonjs/core/Sprites/sprite";
 import { CreateLineSystem, CreateDashedLines } from "@babylonjs/core/Meshes/Builders/linesBuilder";
-import { CreateGround } from "@babylonjs/core/Meshes/Builders/groundBuilder";
-import { CreateBox } from "@babylonjs/core/Meshes/Builders/boxBuilder";
 import { CreateCylinder } from "@babylonjs/core/Meshes/Builders/cylinderBuilder";
-import { CreateSphere } from "@babylonjs/core/Meshes/Builders/sphereBuilder";
-import { CreateTorus } from "@babylonjs/core/Meshes/Builders/torusBuilder";
 import { HemisphericLight } from "@babylonjs/core/Lights/hemisphericLight";
 import { DirectionalLight } from "@babylonjs/core/Lights/directionalLight";
-import { ShadowGenerator } from "@babylonjs/core/Lights/Shadows/shadowGenerator";
 import "@babylonjs/core/Lights/Shadows/shadowGeneratorSceneComponent";
 import { GlowLayer } from "@babylonjs/core/Layers/glowLayer";
 import "@babylonjs/core/Layers/effectLayerSceneComponent";
 import "@babylonjs/core/Meshes/thinInstanceMesh";
-import { LoadAssetContainerAsync } from "@babylonjs/core/Loading/sceneLoader";
-import "@babylonjs/loaders/glTF";
-import type { AbstractMesh } from "@babylonjs/core/Meshes/abstractMesh";
-import type { PBRMaterial } from "@babylonjs/core/Materials/PBR/pbrMaterial";
-import type { BaseTexture } from "@babylonjs/core/Materials/Textures/baseTexture";
-import type { InstancedMesh } from "@babylonjs/core/Meshes/instancedMesh";
 import type { LinesMesh } from "@babylonjs/core/Meshes/linesMesh";
 import { PointerEventTypes } from "@babylonjs/core/Events/pointerEvents";
-import "@babylonjs/core/Culling/ray";
-import { S, HH, EDGES, summariseCells, queenIndexOf } from "./QueenComb";
-import { buildingPlan, buildingTint, crystalOf, eventTone, ringTone, type BeeLine, type HudEvent, type HudModule, type HudPick, type Tone , eventIdentity } from "./queenHud";
+import { HivePointers } from './queenHivePointers';
+import { Ray } from "@babylonjs/core/Culling/ray";
+import { S, EDGES } from "./QueenComb";
+import { eventTone, ringTone, type BeeLine, type HudEvent, type HudModule, type HudPick, type Tone , eventIdentity , hexCellSummaries, hexIndexAt, hexCornersAt, HEX_HOME, HEX_R, foundationCells, spiralAxial, S_CELL, type FoundationIssue,
+ FIELD_LAYERS, type FieldLayer, type CombHandle,
+ castlePlaces, ringOfEpic, towerStage, ringFamily, familyTint, ringOfModulePath, epicOfIssue, type TowerStage, type EpicRecord,
+ HIVE_TONES, hiveCoverOf, hiveToneOf, type HiveCover,
+} from "./queenHud";
 
 interface SpikeCard {
   number: number;
@@ -56,9 +55,21 @@ interface SpikeWorkers {
 }
 
 interface QueenCombBabylonProps {
+  sceneKey?: string;
+  inspectIssueKey?: string | null;
+  inspectCatalogKey?: string | null;
+  onDisplaySelect?: (row:HiveDisplay)=>void;
+  /** A shared resource layer in this exact renderer; never coerced to issues. */
+  catalogLayer?: CatalogHive;
+  catalogControlRef?: Ref<CatalogController>;
+  onCatalogPick?: (index:number|null)=>void;
+  onCatalogProject?: (rows:HiveDisplayProjection[],regions:HiveDisplayProjection[])=>void;
+  signalHealth?: HiveSignalHealth;
+  displays?: readonly (HiveDisplay | null)[];
+  lang?: 'ru' | 'en';
+  onInspect?: () => void;
   cards: (SpikeCard | null)[];
   workers: SpikeWorkers | null;
-  devices: Array<{ family: string }> | null;
   onPick?: (pick: HudPick | null) => void;
   pickIndex?: number | null;
   /** Fraction (0..1) of the host's height covered at the bottom by the context panel. */
@@ -67,138 +78,70 @@ interface QueenCombBabylonProps {
   events?: HudEvent[];
   /** The code modules by card id (M-2): the building is generated from the signature. */
   modules?: ReadonlyMap<number, HudModule>;
-  /** Per issue in progress: the cell of the module its title names, or null (the hub). */
+  /** Per issue in progress: its exact issue display cell, or null (unmapped). */
   beeTargets?: ReadonlyArray<number | null>;
+  /** The honeycomb foundation: the loop's snapshot of closed GitHub issues, one honey hex each. */
+  foundation?: { issues: FoundationIssue[]; generatedAt: string; source: "wire" | "file"; rings?: string[]; epics?: EpicRecord[]; releases?: Array<{ tag: string; name: string; publishedAt: string | null; prerelease: boolean }> } | null;
+  /** Which layers draw: FOUNDATION (tiles and honey), CASTLE (the rings' towers), CODE (the module buildings). Bees always. */
+  layers?: Record<FieldLayer, boolean>;
+  /** The toolbar's zoom and fit, the same handle the canvas comb exposes. */
+  handleRef?: Ref<CombHandle>;
+  /** Exact paths claimed by the displayed repository's T27 corpus; null is unknown. */
+  t27Coverage?: ReadonlySet<string> | null;
+  /** The colour law's words, in the page's language, for the legend above the field. */
+  law?: { t27: string; manual: string; awaiting: string; unknown: string; bees: string };
 }
-// the plan's part kinds map to models the field loads: annexes are the
-// platform, antennae the dish; the core is the plan's own key
-const PART_MODEL: Record<"annex" | "antenna", ModelKey> = { annex: "backlog", antenna: "review" };
 
 type Territory = "held" | "neutral" | "fog";
 const LINES: readonly BeeLine[] = ["scribe", "wright", "lapidary"];
 const TONE_HEX: Record<Tone, string> = { gold: "#FFD45A", cold: "#FF6B6B", green: "#00FF88", cyan: "#64DCFF", muted: "#FFFFFF" };
 const EMPTY_EVENTS: HudEvent[] = [];
 const RING_POOL = 24;
-const COLUMNS = ["backlog", "running", "review", "done", "blocked", "dropped"] as const;
-type Column = (typeof COLUMNS)[number];
-// Kenney Space Kit (CC0, kenney.nl), the user's "download it yourself, open
-// source": one model per building state, three for done cards, the Queen's
-// hangar, crystals, and units. Served from public/queen/models.
-const MODELS = {
-  backlog: "platform_small", running: "machine_generatorLarge", review: "satelliteDish_large",
-  done: "hangar_smallA", doneDepot: "hangar_roundA", doneSilo: "structure_closed",
-  blocked: "gate_complex", dropped: "crater", hub: "hangar_largeA", crystal: "rock_crystalsLargeA",
-  scribe: "astronautA", wright: "rover", lapidary: "astronautB", larva: "alien",
-} as const;
-type ModelKey = keyof typeof MODELS;
-const MARGIN = S * 1.2;
 
-/** Point-in-down-triangle for the cell under a world point (x, z). */
-function cellAtWorld(cells: ReturnType<typeof summariseCells>, wx: number, wz: number): number {
-  for (let i = 0; i < cells.length; i += 1) {
-    const c = cells[i];
-    const ax = c.x - S / 2, ay = c.yTop;
-    const bx = c.x + S / 2, by = c.yTop;
-    const cx = c.x, cy = c.yTop + HH;
-    const d1 = (wx - bx) * (ay - by) - (ax - bx) * (wz - by);
-    const d2 = (wx - cx) * (by - cy) - (bx - cx) * (wz - cy);
-    const d3 = (wx - ax) * (cy - ay) - (cx - ax) * (wz - ay);
-    const neg = d1 < 0 || d2 < 0 || d3 < 0;
-    const pos = d1 > 0 || d2 > 0 || d3 > 0;
-    if (!(neg && pos)) return i;
-  }
-  return -1;
-}
 
-/**
- * The ground: steel platform tiles (the user's StarCraft reference), panel
- * seams, corner bolts, and the mark engraved faintly in the centre of every
- * tile - "the tile IS our drawing" survives as an engraving.
- */
-function drawTiles(ctx: CanvasRenderingContext2D, size: number, per: number) {
-  const tile = size / per;
-  ctx.fillStyle = "#4d5563";
-  ctx.fillRect(0, 0, size, size);
-  for (let r = 0; r < per; r += 1) for (let c = 0; c < per; c += 1) {
-    const x = c * tile, y = r * tile;
-    const v = ((r * 7 + c * 13) % 5) - 2;
-    ctx.fillStyle = `rgb(${86 + v * 3},${94 + v * 3},${108 + v * 3})`;
-    ctx.fillRect(x + 2, y + 2, tile - 4, tile - 4);
-    ctx.strokeStyle = "rgba(20,24,32,.9)";
-    ctx.lineWidth = 3;
-    ctx.strokeRect(x + 1.5, y + 1.5, tile - 3, tile - 3);
-    ctx.strokeStyle = "rgba(160,170,190,.25)";
-    ctx.lineWidth = 1;
-    ctx.strokeRect(x + 5.5, y + 5.5, tile - 11, tile - 11);
-    ctx.fillStyle = "rgba(20,24,32,.8)";
-    for (const [bx, by] of [[9, 9], [tile - 9, 9], [9, tile - 9], [tile - 9, tile - 9]]) { ctx.beginPath(); ctx.arc(x + bx, y + by, 2.2, 0, Math.PI * 2); ctx.fill(); }
-    ctx.strokeStyle = "rgba(200,210,230,.16)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    const sc = tile * 0.62, cx = x + tile / 2, cy = y + tile / 2;
-    for (const [ax, ay, bx2, by2] of EDGES) { ctx.moveTo(cx + ax * sc, cy + ay * sc); ctx.lineTo(cx + bx2 * sc, cy + by2 * sc); }
-    ctx.stroke();
-  }
-}
 
-/**
- * Load a Kenney GLB and merge it into one mesh with a multi-material, so it
- * can be thin-instanced like the procedural templates. Returns the mesh and
- * its footprint (max of width and depth) and base (min y), both in model
- * units, so the caller can scale it to a cell and stand it on the ground.
- */
-async function loadTemplate(scene: Scene, key: ModelKey): Promise<{ mesh: Mesh; footprint: number; base: number; height: number } | null> {
-  try {
-    if (scene.isDisposed) return null;
-    const container = await LoadAssetContainerAsync(`./queen/models/${MODELS[key]}.glb`, scene);
-    // the view may have switched while the file was in flight: a disposed
-    // scene has no engine program to compile materials on
-    if (scene.isDisposed) { container.dispose(); return null; }
-    const parts = container.meshes.filter((m): m is Mesh => m instanceof Mesh && m.getTotalVertices() > 0);
-    if (parts.length === 0) return null;
-    // Kenney's models are flat palette colours: a StandardMaterial carries
-    // them as well as the glTF PBR one, lights like the rest of the field,
-    // and needs no BRDF lookup texture - the async generation of that texture
-    // ran its callback on a disposed engine when the view switched mid-load
-    // (TypeError: reading 'program' in bindSamplers), which the viewport gate
-    // counted as a failure.
-    for (const m of parts) {
-      const src = m.material as (PBRMaterial & { albedoTexture?: BaseTexture | null; albedoColor?: Color3 }) | null;
-      if (src && src.getClassName() === "PBRMaterial") {
-        const flat = new StandardMaterial(`${src.name}-flat`, scene);
-        if (src.albedoTexture) flat.diffuseTexture = src.albedoTexture;
-        if (src.albedoColor) flat.diffuseColor = src.albedoColor.clone();
-        flat.specularColor = new Color3(0.12, 0.12, 0.14);
-        flat.specularPower = 32;
-        m.material = flat;
-        src.dispose(false, false);
-      }
-    }
-    // bake the glTF root transform (right-handed -> left-handed flip) into the vertices
-    for (const m of parts) { m.computeWorldMatrix(true); m.bakeCurrentTransformIntoVertices(); }
-    const merged = parts.length === 1 ? parts[0] : Mesh.MergeMeshes(parts, true, true, undefined, false, true);
-    if (!merged) return null;
-    merged.setParent(null);
-    merged.position.set(0, 0, 0); merged.rotationQuaternion = null; merged.rotation.set(0, 0, 0); merged.scaling.set(1, 1, 1);
-    merged.computeWorldMatrix(true);
-    const b = merged.getBoundingInfo().boundingBox;
-    const footprint = Math.max(b.maximum.x - b.minimum.x, b.maximum.z - b.minimum.z) || 1;
-    merged.isVisible = false; merged.isPickable = false;
-    scene.addMesh(merged);
-    for (const m of container.meshes) if (m !== merged && !(m as AbstractMesh).isDisposed()) m.dispose();
-    return { mesh: merged, footprint, base: b.minimum.y, height: b.maximum.y - b.minimum.y };
-  } catch {
-    return null;
-  }
-}
+const ALL_LAYERS: Record<FieldLayer, boolean> = { foundation: true, castle: true, code: true };
+const UNKNOWN_HEALTH: HiveSignalHealth = {board:'unknown',activity:'unknown'};
 
-export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = null, fitInset = 0, events = EMPTY_EVENTS, modules, beeTargets }: QueenCombBabylonProps) {
+export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fitInset = 0, events = EMPTY_EVENTS, modules, beeTargets, foundation = null, layers = ALL_LAYERS, handleRef, t27Coverage = null, law, displays, lang = 'en', onInspect, signalHealth = UNKNOWN_HEALTH, catalogLayer,catalogControlRef,onCatalogPick,onCatalogProject,sceneKey='default',inspectIssueKey,inspectCatalogKey,onDisplaySelect }: QueenCombBabylonProps) {
+  const catalogRef=useRef(catalogLayer),catalogPickRef=useRef(onCatalogPick),catalogProjectRef=useRef(onCatalogProject),catalogController=useRef<CatalogController|null>(null);
+  useEffect(()=>{catalogRef.current=catalogLayer;catalogPickRef.current=onCatalogPick;catalogProjectRef.current=onCatalogProject;},[catalogLayer,onCatalogPick,onCatalogProject]);
+  useImperativeHandle(catalogControlRef,()=>({inspect:(index,focus)=>catalogController.current?.inspect(index,focus),overview:()=>catalogController.current?.overview(),hover:index=>catalogController.current?.hover(index)}),[]);
   const hostRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  // An element React renders and then never looks inside. The canvas is made
+  // per mount (see the effect) and lives here rather than among the field's
+  // other children: React reconciles those, and a node it did not create sitting
+  // between them is a node it can move or drop while the engine keeps drawing
+  // into it — a blank map with nothing in the console to say why.
+  const stageRef = useRef<HTMLDivElement>(null);
+  // The one WebGL context this component is allowed, held across effect runs.
+  const engineRef = useRef<{ engine: Engine; canvas: HTMLCanvasElement } | null>(null);
+  const engineIdleRef = useRef(0);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [projections, setProjections] = useState<HiveDisplayProjection[]>([]);
+  const [selectedDisplayKey, setSelectedDisplayKey] = useState<string | null>(null);
+  const displayIndex = displays?.findIndex(row => row?.key === selectedDisplayKey) ?? -1;
+  const selectedDisplay = displayIndex >= 0 ? displayIndex : null;
+  const displaysRef = useRef(displays);
+  const selectedDisplayRef = useRef(selectedDisplay);
+  const inspectRef = useRef(onInspect);
+  const displayControllerRef = useRef<HiveDisplayController | null>(null);
+  const appliedIssueFocus=useRef<string|null>(null);
+  const appliedCatalogFocus=useRef<string|null>(null);
+  const savedViewRef = useRef<{ zoom: number; x: number; y: number; focusKey: string | null; connection?:boolean } | null>(null);
+  const savedViewsRef = useRef(new Map<string,NonNullable<typeof savedViewRef.current>>());
+  const displaySelectRef=useRef(onDisplaySelect);
+  useEffect(()=>{displaySelectRef.current=onDisplaySelect;},[onDisplaySelect]);
+  useEffect(() => { displaysRef.current = displays; selectedDisplayRef.current = selectedDisplay; inspectRef.current = onInspect; }, [displays, selectedDisplay, onInspect]);
   const onPickRef = useRef(onPick);
   const pickRef = useRef<number | null>(pickIndex);
   const insetRef = useRef(fitInset);
   const eventsRef = useRef(events);
+  const signalHealthRef = useRef(signalHealth);
+  const signalCursorRef = useRef<HiveSignalCursor>({ready:false,seen:new Set()});
+  const displayRepo = displays?.find(row=>row!==null)?.repo;
+  useEffect(()=>{signalCursorRef.current={ready:false,seen:new Set()};},[displayRepo]);
+  useEffect(()=>{signalHealthRef.current=signalHealth;},[signalHealth]);
   const seenEventsRef = useRef<Set<string>>(new Set());
   const eventsPrimedRef = useRef(false);
   useEffect(() => {
@@ -209,85 +152,342 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
   }, [onPick, pickIndex, fitInset, events]);
 
   const signature = JSON.stringify([
+    catalogLayer?.signature??null,
     cards.map((c) => (c ? [c.number, c.column] : null)),
     workers?.slots.map((s) => [s.slot, s.state]) ?? null,
-    devices?.map((d) => d.family) ?? null,
+    // a new snapshot of the foundation rebuilds the honey like a modules change rebuilds the city
+    foundation ? [foundation.generatedAt, foundation.issues.length] : null,
+    hiveDisplayPaintKey(displays),
+    // a new claim from the spec corpus re-colours the law; the words re-word the legend
+    t27Coverage ? [...t27Coverage].sort() : null,
+    law ? [law.t27, law.manual, law.awaiting, law.unknown, law.bees] : null,
   ]);
   const cardsRef = useRef(cards);
   const workersRef = useRef(workers);
-  const devicesRef = useRef(devices);
   const modulesRef = useRef(modules);
   const targetsRef = useRef(beeTargets);
+  const foundationRef = useRef(foundation);
+  const layersRef = useRef(layers);
+  const coverageRef = useRef(t27Coverage);
+  const lawRef = useRef(law);
+  const cameraRef = useRef<CombHandle | null>(null);
   useEffect(() => {
     cardsRef.current = cards;
     workersRef.current = workers;
-    devicesRef.current = devices;
     modulesRef.current = modules;
     targetsRef.current = beeTargets;
-  }, [cards, workers, devices, modules, beeTargets]);
+    foundationRef.current = foundation;
+    layersRef.current = layers;
+    coverageRef.current = t27Coverage;
+    lawRef.current = law;
+  }, [cards, workers, modules, beeTargets, foundation, layers, t27Coverage, law]);
 
+  useImperativeHandle(handleRef, () => ({
+    zoomIn: () => cameraRef.current?.zoomIn(),
+    zoomOut: () => cameraRef.current?.zoomOut(),
+    fit: () => cameraRef.current?.fit(),
+  }), []);
   useEffect(() => {
-    const canvas = canvasRef.current;
     const host = hostRef.current;
-    if (!canvas || !host) return;
+    const stage = stageRef.current;
+    if (!host || !stage) return;
+    // One WebGL context for the life of this component, not one per effect run.
+    //
+    // Measured 2026-09-09 by counting getContext('webgl2') on a load of this
+    // page: two contexts, 183ms apart, both on a queen-hive-scene canvas. This
+    // effect rebuilds on [signature, sceneKey], and StrictMode mounts it twice
+    // besides. Chrome grants every one of them. Safari has a small per-page
+    // limit and evicts the oldest to serve a new request — which arrives as
+    // "WebGL: context lost" on the context the scene is still building, and
+    // then "Unable to create index buffer" thrown out of that build.
+    //
+    // So the engine outlives the effect. A rebuild disposes the scene and keeps
+    // the context; disposal of the context itself is scheduled and cancelled by
+    // the next run, which is what carries it across StrictMode's gap. Babylon's
+    // dispose() also calls WEBGL_lose_context, and a canvas that has had one
+    // lost never yields another — so the canvas is made and dropped with it.
+    const held = engineRef.current;
+    if (held && (!held.canvas.isConnected || held.engine.isDisposed)) {
+      // Its element is gone (a route change, a new mount): it can never draw
+      // here again, and a context nobody can see is one Safari still counts.
+      try { held.engine.dispose(); } catch { /* already gone */ }
+      held.canvas.remove();
+      engineRef.current = null;
+    }
+    window.clearTimeout(engineIdleRef.current);
+    const reused = engineRef.current;
+    // Attached before the engine asks for a context: a detached canvas has no
+    // box, and the buffer would be sized from Babylon's 300x150 default.
+    const canvas =
+      reused?.canvas ??
+      (() => {
+        const made = document.createElement("canvas");
+        made.className = "queen-hive-scene";
+        made.style.touchAction = "none";
+        made.style.outline = "none";
+        // Into the stage, which is React's element and empty as far as React is
+        // concerned. The overlays that follow it in the field read as above it,
+        // and the field's own stacking says the same.
+        stage.appendChild(made);
+        return made;
+      })();
+    const engine =
+      reused?.engine ??
+      new Engine(canvas, true, { preserveDrawingBuffer: false, stencil: false }, false);
+    if (!reused) engineRef.current = { engine, canvas };
     const cards = cardsRef.current;
     const workers = workersRef.current;
-    const devices = devicesRef.current;
-    const cells = summariseCells(cards);
-    const home = queenIndexOf(cells.length);
-    const engine = new Engine(canvas, true, { preserveDrawingBuffer: false, stencil: false }, false);
+    const viewKey=(index:number)=>displaysRef.current?.[index]?.key??catalogRef.current?.cells[index]?.key??null;
+    const viewStore=savedViewsRef.current;
+    savedViewRef.current=viewStore.get(sceneKey)??null;
+    const cellScale=(index:number)=>catalogRef.current?.positions?.[index]?.scale??1;
+    const cells = hexCellSummaries(cards).map((cell,index)=>{
+      const position=catalogRef.current?.positions?.[index];
+      return position?{...cell,x:position.x,y:position.y,yTop:position.y-HEX_R*position.scale}:cell;
+    });
+    const home = HEX_HOME;
+    // the honey under the cells (H-C2): the same map the click reads (H-E)
+    const fdNow = foundationRef.current;
+    const fCells = fdNow ? foundationCells(fdNow.issues, cells.length) : null;
+    // the castle's testimony starts honest: no snapshot, no castle facts
+    host.setAttribute("data-castle-source", fdNow ? fdNow.source : "none");
+    if (!fdNow) { host.removeAttribute("data-castle-stages"); host.removeAttribute("data-castle-rings"); host.removeAttribute("data-castle-unassigned"); host.removeAttribute("data-castle-releases"); }
+    // How many pixels the scene may ask for, at all.
+    //
+    // Sharpness was set from the device ratio alone, so a 2x display meant a
+    // drawing buffer of four times the CSS area — 5.2 million pixels at
+    // 1440x900 — and this scene keeps several full-size targets beside it: the
+    // glow layer's two blur passes and the image-processing pass. Safari's
+    // WebGL budget is not Chrome's, and it answered by losing the context at
+    // creation; "Unable to create index buffer" is what a scene says when the
+    // memory it asked for was refused. The budget is an area now, so a big
+    // display still gets sharpness — up to a ceiling, and never past it.
+    const MAX_DRAWING_PIXELS = 4_200_000;
+    const pixelBudgetLevel = () => {
+      const width = canvas.clientWidth || host.clientWidth || 1;
+      const height = canvas.clientHeight || host.clientHeight || 1;
+      const ratio = Math.min(2, Math.max(1, window.devicePixelRatio || 1));
+      // A level below 1 means more buffer pixels than CSS pixels; the budget is
+      // therefore a floor on the level, not a ceiling.
+      return Math.max(1 / ratio, Math.sqrt((width * height) / MAX_DRAWING_PIXELS));
+    };
+    // A lost context is an event, not an exception. Preventing the default is
+    // what lets the browser offer one back; without it Safari never tries, and
+    // the next draw throws out of a React effect instead.
+    const onContextLost = (event: Event) => { event.preventDefault(); engine.stopRenderLoop(); };
+    canvas.addEventListener('webglcontextlost', onContextLost, false);
+    // Sharpness (the user, 2026-09-06: "сделай качество выше"). The engine was
+    // rendering one sample per CSS pixel, so on a 2x display every line on the
+    // comb was drawn at half the resolution of the screen it lands on. Capped at
+    // 2x: past that the comb costs four times the pixels for nothing the eye
+    // gets. Babylon's own picking divides by the same scaling level, so the pan,
+    // the wheel and the pick keep working - proved by the pick, void and touch
+    // gates rather than assumed.
+    engine.setHardwareScalingLevel(pixelBudgetLevel());
     const scene = new Scene(engine);
-    scene.clearColor = new Color4(2 / 255, 8 / 255, 6 / 255, 1);
+    const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+    scene.clearColor = new Color4(0, 0, 0, 0);
     scene.skipPointerMovePicking = true;
     // the rendered look: tone mapping with a little contrast and a vignette,
     // depth fog into the void, and a glow on every emissive part (windows,
     // lamps, bands, rings) - what a game's post pass gives a low-poly scene
     const ipc = scene.imageProcessingConfiguration;
     ipc.toneMappingEnabled = true;
+    ipc.toneMappingType = ImageProcessingConfiguration.TONEMAPPING_ACES;
     ipc.contrast = 1.22;
     ipc.exposure = 1.08;
     ipc.vignetteEnabled = true;
     ipc.vignetteWeight = 1.6;
     ipc.vignetteColor = new Color4(0, 0.02, 0.01, 0);
+    // as a post-process the grade lands on the lines too (V-9): without this the
+    // 1009 comb outlines, the pick ring and the flight lines render raw over a
+    // graded world, which is the mechanical form of "the visual does not agree"
+    ipc.applyByPostProcess = true;
     scene.fogMode = Scene.FOGMODE_LINEAR;
     scene.fogColor = new Color3(2 / 255, 8 / 255, 6 / 255);
-    const glow = new GlowLayer("glow", scene, { blurKernelSize: 24 });
-    glow.intensity = 0.55;
+    // a tighter, dimmer bloom: at kernel 24 the centre of the comb smeared into
+    // one haze because a thousand lit rims bled into each other
+    const glow = new GlowLayer("glow", scene, { blurKernelSize: 12 });
+    glow.intensity = 0.42;
 
-    // ---- extents and the RTS camera: fixed angle, zoom, no idle sway ------
+    // ---- extents and the floating wall: vertical, facing the player ------
     let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
-    for (const c of cells) {
-      minX = Math.min(minX, c.x - S / 2); maxX = Math.max(maxX, c.x + S / 2);
-      minZ = Math.min(minZ, c.yTop); maxZ = Math.max(maxZ, c.yTop + HH);
-    }
+    cells.forEach((c,index) => {
+      const scale=cellScale(index);
+      minX = Math.min(minX, c.x - S_CELL*scale / 2); maxX = Math.max(maxX, c.x + S_CELL*scale / 2);
+      minZ = Math.min(minZ, c.y - HEX_R*scale); maxZ = Math.max(maxZ, c.y + HEX_R*scale);
+    });
     const centre = new Vector3((minX + maxX) / 2, 0, (minZ + maxZ) / 2);
-    const camera = new ArcRotateCamera("cam", Math.PI / 2 + 0.55, 0.95, 4000, centre.clone(), scene);
+    // THE WALL (the user, 2026-09-06: "поле не по горизонтали лежащим, а прямо
+    // перед лицом парящее"). The comb keeps its own flat coordinates (x, z per
+    // cell, y as height toward the board); one root turns that plane into the
+    // wall the player faces. After the user's180-degree field turn, local
+    // (x, height, z) becomes world (-x, z, height). The original SVG mark now
+    // projects point-down, without changing its geometry or mirroring it. The
+    // camera sits dead in front at +Z, so the honeycomb hangs in the air at eye
+    // height and a cell's lift (its local y) comes TOWARD the hand instead of
+    // away from it. Every position below stays in comb coordinates; only the
+    // pick and the pan convert world to comb.
+    const fieldRoot = new TransformNode("field-root", scene);
+    fieldRoot.rotation.copyFromFloats(HIVE_WALL_ROTATION.x, HIVE_WALL_ROTATION.y, HIVE_WALL_ROTATION.z);
+    host.setAttribute('data-map-turn', '180');
+    host.setAttribute('data-logo-orientation', 'point-down');
+    const centrePoint = hiveWallToWorld(centre.x, centre.z);
+    const centreWorld = new Vector3(centrePoint.x, centrePoint.y, 0);
+    const camera = new ArcRotateCamera("cam", Math.PI / 2, Math.PI / 2, 4000, centreWorld.clone(), scene);
+    // the wall is a plane, not a mesh: a screen point becomes a comb point by
+    // solving the picking ray against z = 0, the plane the comb is drawn on
+    const pickRay = new Ray(Vector3.Zero(), Vector3.Up(), Number.MAX_VALUE);
+    const planeAt = (x: number, y: number): { x: number; z: number } | null => {
+      scene.createPickingRayToRef(x, y, null, pickRay, camera);
+      const dz = pickRay.direction.z;
+      if (Math.abs(dz) < 1e-6) return null;
+      const t = -pickRay.origin.z / dz;
+      if (t < 0) return null;
+      const wx = pickRay.origin.x + pickRay.direction.x * t;
+      const wy = pickRay.origin.y + pickRay.direction.y * t;
+      return hiveWorldToWall(wx, wy, fieldRoot.position.y);
+    };
     const depth = Math.max(maxX - minX, maxZ - minZ);
     scene.fogStart = 4000 - depth * 0.1;
     scene.fogEnd = 4000 + depth * 1.4;
     camera.mode = Camera.ORTHOGRAPHIC_CAMERA;
-    camera.lowerBetaLimit = 0.95; camera.upperBetaLimit = 0.95;
+    camera.lowerBetaLimit = Math.PI / 2; camera.upperBetaLimit = Math.PI / 2;
     camera.lowerAlphaLimit = camera.alpha; camera.upperAlphaLimit = camera.alpha;
     camera.panningSensibility = 0;
-    let zoom = 1;
+    let zoom = savedViewRef.current?.zoom ?? 1;
+    let zoomGoal = zoom;
+    // recomputed by fit(): the ceiling follows the field and the viewport (hiveMaxZoom)
+    let maxZoom = 128;
+    if (savedViewRef.current) { camera.target.x = savedViewRef.current.x; camera.target.y = savedViewRef.current.y; }
+    const restoredFocus = savedViewRef.current?.focusKey ? cells.findIndex((_,index)=>viewKey(index)===savedViewRef.current?.focusKey) : -1;
+    let focusIndex: number | null = restoredFocus >= 0 ? restoredFocus : null;
+    let focusConnection=savedViewRef.current?.connection??false;
+    let anchor: { x: number; z: number } | null = null;
     let appliedInset = -1;
+    // the castle's couplings to the code and the honey (K-5): filled when the snapshot lands
+    let castleLinks: { plinthOfRing: Map<string, number>; ringOfCell: Map<number, string>; cellsOfRing: Map<string, number[]>; epics: EpicRecord[]; rings: string[] } | null = null;
+    let linkLines: LinesMesh | null = null; let linkFor: string | null = null;
+    let rootLines: LinesMesh | null = null;
+    // three transform nodes carry the layers: a disabled parent hides its children without touching a buffer
+    const layerNodes = Object.fromEntries(FIELD_LAYERS.map((layer) => {
+      const node = new TransformNode(`layer-${layer}`, scene);
+      node.parent = fieldRoot;
+      return [layer, node];
+    })) as Record<FieldLayer, TransformNode>;
+    const specInset=()=>{
+      const w=host.clientWidth||1,h=host.clientHeight||1;
+      const layer=host.closest('.queen-catalog-layer');
+      const bottom=layer&&getComputedStyle(layer).getPropertyValue('--catalog-inspector-mode').trim()==='bottom';
+      return bottom?{right:0,bottom:Math.min(.8,.5+24/h)}:{right:Math.min(.7,392/w),bottom:0};
+    };
     const fit = () => {
       const w = host.clientWidth || 1, h = host.clientHeight || 1;
       const inset = insetRef.current;
       const band = h * (1 - inset);
-      const fieldW = (maxX - minX + S) * 1.02, fieldH = (maxZ - minZ + S) * Math.cos(camera.beta) * 1.02 + S * 1.3;
+      // the wall is parallel to the screen: width and height map one to one
+      // room kept around the field for the region labels: 160x110px on a
+      // desktop; on a phone (measured 2026-09-10 at 358px of field) the same
+      // allowance was 45% of the width and the whole map drew 180px wide.
+      // Phone labels are two lines and ~85px (queen-phone.css), so 80x64.
+      const labelRoomW=w<641?80:160,labelRoomH=w<641?64:110;
+      const portalMargin=catalogRef.current?Math.max(w/Math.max(100,w-labelRoomW),band/Math.max(100,band-labelRoomH)):1;
+      const fieldW = (maxX - minX + S) * 1.04*portalMargin, fieldH = (maxZ - minZ + S) * 1.08*portalMargin;
       const aspect = w / band;
       let halfW = fieldW / 2, halfH = halfW / aspect;
       if (halfH < fieldH / 2) { halfH = fieldH / 2; halfW = halfH * aspect; }
+      maxZoom = catalogRef.current ? catalogMaxZoom(catalogRef.current, halfW, w) : hiveMaxZoom(S_CELL * w / (halfW * 2));
+      // a narrower host lowers the ceiling; take the zoom down with it here, not at the next drag or wheel
+      if (focusIndex === null && zoom > maxZoom) zoom = zoomGoal = maxZoom;
+      if (focusIndex !== null && cells[focusIndex]) {
+        const view=catalogRef.current?(focusConnection?catalogConnectionView(catalogRef.current,focusIndex,halfW,halfH,specInset(),maxZoom):catalogFocusView(catalogRef.current,focusIndex,halfW,halfH,w,band,catalogRef.current.cells[focusIndex]?.kind==='spec'?specInset():undefined)):null;
+        zoom = zoomGoal = view?.zoom??hiveFocusZoom(S_CELL * cellScale(focusIndex) * w / (halfW * 2), w, band, maxZoom);
+        const focusedPoint = hiveWallToWorld(view?.x??cells[focusIndex].x, view?.y??cells[focusIndex].y);
+        camera.target.x = focusedPoint.x;
+        camera.target.y = focusedPoint.y;
+      }
       halfW /= zoom; halfH /= zoom;
       const unitsPerPx = (halfH * 2) / band;
       const shift = (h - band) * unitsPerPx;
       camera.orthoLeft = -halfW; camera.orthoRight = halfW;
       camera.orthoTop = halfH; camera.orthoBottom = -halfH - shift;
       appliedInset = inset;
+      host.setAttribute("data-zoom", zoom.toFixed(2));
+      savedViewRef.current = {zoom,x:camera.target.x,y:camera.target.y,focusKey:focusIndex !== null ? viewKey(focusIndex) : null,connection:focusConnection};
     };
     fit();
-    canvas.addEventListener("wheel", (e) => { e.preventDefault(); zoom = Math.min(8, Math.max(0.5, zoom * (e.deltaY < 0 ? 1.1 : 1 / 1.1))); fit(); }, { passive: false });
+    // the wall answers the hand (the user, 2026-09-06). Both the drag and the
+    // wheel work against the same z = 0 plane the pick uses, so the point under
+    // the cursor is the point that follows it; pan runs in the wall's own axes.
+    const ROAM = Math.max(maxX - minX, maxZ - minZ) * 0.55;
+    const clampTarget = () => {
+      camera.target.x = Math.min(Math.max(camera.target.x, centreWorld.x - ROAM), centreWorld.x + ROAM);
+      camera.target.y = Math.min(Math.max(camera.target.y, centreWorld.y - ROAM), centreWorld.y + ROAM);
+    };
+    const gestureSurface=host.closest('.queen-catalog-layer')??canvas;
+    const mapTarget=(target:EventTarget|null)=>target===canvas||(target instanceof Element&&!!target.closest('.queen-catalog-cell'));
+    const onWheel = (e: WheelEvent) => {
+      if(!mapTarget(e.target))return;
+      e.preventDefault();
+      const r = canvas.getBoundingClientRect();
+      focusIndex = null;
+      anchor = planeAt(e.clientX - r.left, e.clientY - r.top);
+      zoomGoal = Math.min(maxZoom, Math.max(0.05, zoomGoal * Math.exp(-e.deltaY * 0.0016)));
+      host.setAttribute("data-zoom-goal", zoomGoal.toFixed(2));
+    };
+    // Listen above the native spec labels too: their text must not form dead
+    // islands over the map. Do not intercept inspector controls/text scrolling.
+    gestureSurface.addEventListener("wheel", onWheel as EventListener, { passive: false });
+    const pointers=new HivePointers();
+    const onDown = (e: PointerEvent) => { if(e.button!==0||!mapTarget(e.target))return;pointers.down(e.pointerId,e.clientX,e.clientY); };
+    const onMove = (e: PointerEvent) => {
+      if(e.pointerType==='mouse'&&e.buttons===0){pointers.up(e.pointerId,true);return;}
+      const movement=pointers.move(e.pointerId,e.clientX,e.clientY);if(!movement)return;
+      focusIndex = null;
+      anchor=null;
+      const r = canvas.getBoundingClientRect();
+      const a=planeAt(movement.from.x-r.left,movement.from.y-r.top);
+      zoom=zoomGoal=Math.min(maxZoom,Math.max(.05,zoom*movement.scale));fit();
+      const b=planeAt(movement.to.x-r.left,movement.to.y-r.top);
+      if (a && b) {
+        const from = hiveWallToWorld(a.x,a.z), to = hiveWallToWorld(b.x,b.z);
+        camera.target.x += from.x - to.x; camera.target.y += from.y - to.y;
+        clampTarget(); fit();
+      }
+    };
+    const onUp=(e:PointerEvent)=>pointers.up(e.pointerId,e.type==='pointercancel');
+    const onBlur=()=>pointers.cancel();
+    const suppressDraggedClick=(e:MouseEvent)=>{if(mapTarget(e.target)&&e.detail!==0&&pointers.suppressClick){e.preventDefault();e.stopPropagation();}};
+    gestureSurface.addEventListener('pointerdown',onDown as EventListener,true);
+    gestureSurface.addEventListener('click',suppressDraggedClick as EventListener,true);
+    window.addEventListener('pointermove',onMove);
+    window.addEventListener('pointerup',onUp);
+    window.addEventListener('pointercancel',onUp);
+    window.addEventListener('blur',onBlur);
+    // the toolbar's FIT VIEW / - / + reach the scene through the same handle the canvas comb exposes
+    cameraRef.current = {
+      zoomIn: () => { focusIndex = null; anchor = null; zoom = zoomGoal = Math.min(maxZoom, zoom * 1.25); fit(); },
+      zoomOut: () => { focusIndex = null; anchor = null; zoom = zoomGoal = Math.max(0.05, zoom / 1.25); fit(); },
+      // FIT VIEW is the way home: it undoes the roam as well as the zoom
+      fit: () => { focusIndex = null; selectedDisplayRef.current = null; setSelectedDisplayKey(null); host.removeAttribute('data-display-selected'); anchor = null; zoom = zoomGoal = 1; camera.target.copyFrom(centreWorld); fit(); },
+    };
+    const inspectDisplay = (index: number) => {
+      const row = displaysRef.current?.[index]; if (!row) return;
+      selectedDisplayRef.current = index; setSelectedDisplayKey(row.key);
+      if(catalogRef.current)catalogPickRef.current?.(index);
+      displaySelectRef.current?.(row);
+      focusIndex = index; focusConnection=false; anchor = null; inspectRef.current?.(); fit();
+      host.setAttribute('data-display-selected', row.key);
+    };
+    displayControllerRef.current = { inspect: inspectDisplay, overview: () => cameraRef.current?.fit(), hover: index => { hover = index ?? -1; } };
+    catalogController.current={inspect:(index,focus=false)=>{
+      if(displaysRef.current?.[index]){inspectDisplay(index);return;}
+      const row=catalogRef.current?.cells[index];if(!row)return;
+      selectedDisplayRef.current=null;setSelectedDisplayKey(null);host.removeAttribute('data-display-selected');
+      pickRef.current=index;catalogPickRef.current?.(index);
+      focusIndex=index;focusConnection=!focus&&row.kind==='spec';anchor=null;fit();
+      host.setAttribute('data-catalog-selected',row.key);
+    },overview:()=>{cameraRef.current?.fit();pickRef.current=null;catalogPickRef.current?.(null);host.removeAttribute('data-catalog-selected');},hover:index=>{hover=index??-1;}};
 
     // ---- light: a sun from the upper left and a soft sky, shadows on -----
     const sky = new HemisphericLight("sky", new Vector3(0.2, 1, 0.1), scene);
@@ -296,221 +496,116 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
     const sun = new DirectionalLight("sun", new Vector3(-0.6, -1, 0.35), scene);
     sun.intensity = 1.1;
     sun.position = new Vector3(centre.x + 800, 1400, centre.z - 500);
-    const shadows = new ShadowGenerator(2048, sun);
-    shadows.useBlurExponentialShadowMap = true;
-    shadows.blurKernel = 16;
-    shadows.darkness = 0.45;
+    // no shadow generator: the plate that received the shadows is gone, so a
+    // 2048 map was rendered every frame for nothing (V-11)
 
-    // ---- the ground: one plate of steel tiles ----------------------------
-    const tex = new DynamicTexture("tiles", 1024, scene, true);
-    const tctx = tex.getContext() as CanvasRenderingContext2D;
-    drawTiles(tctx, 1024, 4);
-    tex.update(false);
-    const groundW = maxX - minX + MARGIN * 2, groundH = maxZ - minZ + MARGIN * 2;
-    tex.uScale = groundW / (S * 4);
-    tex.vScale = groundH / (S * 4);
-    const groundMat = new StandardMaterial("ground", scene);
-    groundMat.diffuseTexture = tex;
-    groundMat.specularTexture = tex;
-    groundMat.specularColor = new Color3(0.18, 0.19, 0.22);
-    groundMat.specularPower = 48;
-    const ground = CreateGround("ground", { width: groundW, height: groundH }, scene);
-    ground.position = new Vector3(centre.x, 0, centre.z);
-    ground.material = groundMat;
-    ground.receiveShadows = true;
-    ground.isPickable = true;
-    const rim = CreateBox("rim", { width: groundW + 8, depth: groundH + 8, height: 14 }, scene);
-    rim.position = new Vector3(centre.x, -7.5, centre.z);
-    const rimMat = new StandardMaterial("rim", scene);
-    rimMat.diffuseColor = new Color3(0.08, 0.09, 0.12);
-    rim.material = rimMat;
-    rim.isPickable = false;
-    // hazard stripes along the platform edge (the reference's yellow-black rails)
-    const stripes = new DynamicTexture("stripes", { width: 256, height: 32 }, scene, false);
-    const sctx = stripes.getContext() as CanvasRenderingContext2D;
-    for (let i = 0; i < 16; i += 1) { sctx.fillStyle = i % 2 ? "#d9b230" : "#1a1a1a"; sctx.beginPath(); sctx.moveTo(i * 16, 0); sctx.lineTo(i * 16 + 16, 0); sctx.lineTo(i * 16 + 8, 32); sctx.lineTo(i * 16 - 8, 32); sctx.closePath(); sctx.fill(); }
-    stripes.update(false);
-    const stripeMat = new StandardMaterial("stripes", scene);
-    stripeMat.diffuseTexture = stripes; stripeMat.emissiveColor = new Color3(0.35, 0.3, 0.1); stripeMat.specularColor = Color3.Black();
-    for (const [w, d, x, z, rep] of [[groundW, 6, centre.x, centre.z - groundH / 2 + 3, groundW / 40], [groundW, 6, centre.x, centre.z + groundH / 2 - 3, groundW / 40], [6, groundH, centre.x - groundW / 2 + 3, centre.z, groundH / 40], [6, groundH, centre.x + groundW / 2 - 3, centre.z, groundH / 40]] as const) {
-      const rail = CreateBox(`rail-${x}-${z}`, { width: w, depth: d, height: 3 }, scene);
-      rail.position = new Vector3(x, 1.5, z);
-      const m = stripeMat.clone(`stripes-${x}-${z}`);
-      const t = stripes.clone(); t.uScale = w > d ? rep : 1; t.vScale = w > d ? 1 : rep; m.diffuseTexture = t;
-      rail.material = m; rail.isPickable = false;
-    }
+    // ---- no plate: the ground is a number, not a mesh ---------------------
+    // The plate was a rectangle two cells wider than a hexagonal comb, so about
+    // a thousand units of bare slab stuck out at every corner and caught the
+    // sun where there is no field. It carried no fact and it was the only
+    // straight edge on the board. y = 0 is a plane; a plane has no vertices,
+    // no material and no draw call, and the pick solves against it in maths.
+    // ---- no buildings: the kit is gone, the cell IS the fact ---------------
+    // (the user, 2026-09-06: "убери 3D объекты а то шума много"). The whole
+    // Hexagon Kit block — templates, thin instances, per-column depots — went
+    // with the GLBs; what remains is pure comb geometry.
+    // the colour law's cover for a cell: T27 if the corpus claims the module,
+    // manual if there is hand-written code and no claim, awaiting otherwise
+    const covered = coverageRef.current;
+    const coverOf = (i: number): HiveCover => displaysRef.current
+      ? displaysRef.current[i]?.coverage ?? 'awaiting'
+      : hiveCoverOf(cards[i]?.title ?? null, covered);
+    const covers: HiveCover[] = cells.map((_, i) => coverOf(i));
 
-    // ---- buildings: one low-poly template per column, thin-instanced ------
-    const mat = (name: string, diffuse: string, emissive = "#000000") => {
-      const m = new StandardMaterial(name, scene);
-      m.diffuseColor = Color3.FromHexString(diffuse);
-      m.emissiveColor = Color3.FromHexString(emissive);
-      m.specularColor = new Color3(0.15, 0.15, 0.18);
-      return m;
-    };
-    const steel = mat("steel", "#8a93a3"), dark = mat("dark", "#3a4150"), glass = mat("glass", "#1d3a4a", "#0e5a7a");
-    const green = mat("green", "#1e4d3a", "#00ff88"), gold = mat("gold", "#5a4a1e", "#ffd45a"), red = mat("red", "#4d1e1e", "#ff6b6b"), cyan = mat("cyan", "#1e3f4d", "#64dcff"), ruin = mat("ruin", "#2a2d33");
-    const u = S * 0.4;
-    interface Template { parts: Mesh[]; matrices: number[]; scales: number[]; turns: number[]; heights: number[]; colors: number[] }
-    const mods = modulesRef.current;
-    const nowWall = Date.now();
-    const templates: Record<Column, Template> = {} as Record<Column, Template>;
-    const part = (m: Mesh, material: StandardMaterial, y: number, x = 0, z = 0) => { m.material = material; m.position.set(x, y, z); m.isPickable = false; m.isVisible = false; shadows.addShadowCaster(m); return m; };
-    templates.backlog = { parts: [
-      part(CreateBox("bl-slab", { width: u, depth: u, height: 5 }, scene), dark, 2.5),
-      ...[[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([px, pz], k) => part(CreateBox(`bl-post-${k}`, { width: 4, depth: 4, height: 16 }, scene), steel, 8, px * u * 0.42, pz * u * 0.42)),
-    ], matrices: [], scales: [], turns: [], heights: [], colors: [] };
-    templates.running = { parts: [
-      part(CreateBox("ru-body", { width: u * 0.8, depth: u * 0.8, height: u * 0.55 }, scene), steel, u * 0.275),
-      part(CreateBox("ru-band", { width: u * 0.84, depth: u * 0.84, height: 4 }, scene), cyan, u * 0.3),
-      part(CreateCylinder("ru-mast", { diameter: 3, height: u * 0.6 }, scene), steel, u * 0.85, u * 0.25, u * 0.25),
-      part(CreateSphere("ru-lamp", { diameter: 8 }, scene), cyan, u * 1.15, u * 0.25, u * 0.25),
-    ], matrices: [], scales: [], turns: [], heights: [], colors: [] };
-    templates.review = { parts: [
-      part(CreateCylinder("rv-base", { diameter: u * 0.9, height: u * 0.3, tessellation: 12 }, scene), steel, u * 0.15),
-      part(CreateSphere("rv-dome", { diameter: u * 0.7, slice: 0.5, segments: 12 }, scene), glass, u * 0.3),
-      part(CreateTorus("rv-ring", { diameter: u * 0.72, thickness: 3, tessellation: 24 }, scene), gold, u * 0.31),
-    ], matrices: [], scales: [], turns: [], heights: [], colors: [] };
-    templates.done = { parts: [
-      part(CreateBox("dn-tower", { width: u * 0.6, depth: u * 0.6, height: u * 1.1 }, scene), steel, u * 0.55),
-      part(CreateBox("dn-win1", { width: u * 0.62, depth: u * 0.62, height: 3 }, scene), green, u * 0.35),
-      part(CreateBox("dn-win2", { width: u * 0.62, depth: u * 0.62, height: 3 }, scene), green, u * 0.7),
-      part(CreateBox("dn-cap", { width: u * 0.7, depth: u * 0.7, height: 6 }, scene), dark, u * 1.13),
-    ], matrices: [], scales: [], turns: [], heights: [], colors: [] };
-    // two more silhouettes for done cards, chosen by card number, so a hundred
-    // finished tasks read as a base and not as a grid of one tower
-    const doneDepot: Template = { parts: [
-      part(CreateBox("dd-body", { width: u * 0.95, depth: u * 0.7, height: u * 0.35 }, scene), steel, u * 0.175),
-      part(CreateBox("dd-roof", { width: u * 1.0, depth: u * 0.75, height: 4 }, scene), dark, u * 0.37),
-      part(CreateBox("dd-strip", { width: u * 0.97, depth: u * 0.72, height: 2.5 }, scene), green, u * 0.2),
-    ], matrices: [], scales: [], turns: [], heights: [], colors: [] };
-    const doneSilo: Template = { parts: [
-      part(CreateCylinder("ds-body", { diameter: u * 0.6, height: u * 0.8, tessellation: 14 }, scene), steel, u * 0.4),
-      part(CreateSphere("ds-top", { diameter: u * 0.6, slice: 0.5, segments: 12 }, scene), dark, u * 0.8),
-      part(CreateTorus("ds-band", { diameter: u * 0.62, thickness: 2.5, tessellation: 24 }, scene), green, u * 0.5),
-    ], matrices: [], scales: [], turns: [], heights: [], colors: [] };
-    templates.blocked = { parts: [
-      part(CreateBox("bk-body", { width: u * 0.7, depth: u * 0.7, height: u * 0.4 }, scene), dark, u * 0.2),
-      part(CreateTorus("bk-fence", { diameter: u * 0.95, thickness: 2.5, tessellation: 6 }, scene), red, 8),
-      part(CreateBox("bk-light", { width: u * 0.72, depth: u * 0.72, height: 3 }, scene), red, u * 0.42),
-    ], matrices: [], scales: [], turns: [], heights: [], colors: [] };
-    templates.dropped = { parts: [
-      part(CreateBox("dr-a", { width: u * 0.5, depth: u * 0.4, height: u * 0.18 }, scene), ruin, u * 0.09, -u * 0.12, u * 0.05),
-      part(CreateBox("dr-b", { width: u * 0.3, depth: u * 0.3, height: u * 0.3 }, scene), ruin, u * 0.15, u * 0.2, -u * 0.15),
-    ], matrices: [], scales: [], turns: [], heights: [], colors: [] };
-    const bandTpl: Template = { parts: [part(CreateTorus("win-band", { diameter: u * 1.0, thickness: 2.2, tessellation: 4 }, scene), green, 0)], matrices: [], scales: [], turns: [], heights: [], colors: [] };
-    cells.forEach((c, i) => {
-      if (i === home) return;
-      const card = cards[i];
-      if (!card) return;
-      const col = (COLUMNS as readonly string[]).includes(card.column) ? (card.column as Column) : "backlog";
-      const m = mods?.get(card.number);
-      const templateOf = (key: string) => (key === "doneDepot" ? doneDepot : key === "doneSilo" ? doneSilo : templates[(key in templates ? key : "backlog") as Column]);
-      const tint: [number, number, number, number] = m ? buildingTint(m, nowWall) : [1, 1, 1, 1];
-      const push = (t: Template, x: number, z: number, k: number, h: number, turn: number, y = 0) => {
-        t.matrices.push(...Matrix.Compose(new Vector3(k, k * h, k), Quaternion.RotationAxis(Vector3.Up(), turn), new Vector3(x, y, z)).toArray());
-        t.scales.push(k); t.turns.push(turn); t.heights.push(h); t.colors.push(...tint);
-      };
-      if (m) {
-        // the shape grammar: the building is the plan's parts, in the core's frame
-        const plan = buildingPlan(m);
-        const cos = Math.cos(plan.turn), sin = Math.sin(plan.turn);
-        for (const part of plan.parts) {
-          if (part.model === "band") {
-            // a lit ring at its level up the core: the core's model height is
-            // unknown until loaded, so the level is in cell units
-            push(bandTpl, c.x, c.y, part.scale, 1, plan.turn + Math.PI / 4, u * 0.28 * (part.level ?? 1) * part.height);
-            continue;
-          }
-          const key = part.model === "core" ? plan.core : PART_MODEL[part.model];
-          const x = c.x + (part.dx * cos - part.dz * sin) * u * 2, z = c.y + (part.dx * sin + part.dz * cos) * u * 2;
-          push(templateOf(key), x, z, part.scale, part.height, plan.turn);
-        }
-        // an open issue on a module fences it in red (the blocked template's fence)
-        if (m.openIssues.length > 0 && plan.core !== "blocked") push(templates.blocked, c.x, c.y, plan.parts[0].scale, 1, 0);
-      } else {
-        const key = col === "done" ? (["done", "doneDepot", "doneSilo"] as const)[card.number % 3] : col;
-        push(templateOf(key), c.x, c.y, 1, 1, 0);
-      }
-    });
-    for (const t of [...COLUMNS.map((col) => templates[col]), doneDepot, doneSilo, bandTpl]) {
-      const count = t.matrices.length / 16;
-      for (const p of t.parts) {
-        if (count === 0) { p.dispose(); continue; }
-        p.isVisible = true;
-        p.thinInstanceSetBuffer("matrix", new Float32Array(t.matrices), 16, true);
-        if (t.colors.length === count * 4) p.thinInstanceSetBuffer("color", new Float32Array(t.colors), 4, true);
-      }
-    }
-    const hub = part(CreateCylinder("hub", { diameter: S * 0.9, height: 10, tessellation: 24 }, scene), steel, 5, cells[home].x, cells[home].y);
-    hub.isVisible = true;
-    const hubDome = part(CreateSphere("hub-dome", { diameter: S * 0.5, slice: 0.5, segments: 16 }, scene), gold, 10, cells[home].x, cells[home].y);
-    hubDome.isVisible = true;
-
-
-    // ---- rings: picked (gold), hover (dashed, territory colour) ---------
-    const ring4 = () => [[new Vector3(0, 0, 0), new Vector3(0, 0, 0), new Vector3(0, 0, 0), new Vector3(0, 0, 0)]];
-    const picked = CreateLineSystem("picked", { lines: ring4(), updatable: true }, scene);
-    picked.color = Color3.FromHexString("#FFD45A"); picked.isPickable = false;
-    const tri = (i: number): [number, number][] => { const c = cells[i]; return [[c.x - S / 2, c.yTop], [c.x + S / 2, c.yTop], [c.x, c.yTop + HH]]; };
+    // ---- rings: picked (gold), hover (dashed, honey) --------------------
+    const ring7 = () => [Array.from({ length: 7 }, () => new Vector3(0, 0, 0))];
+    const picked = CreateLineSystem("picked", { lines: ring7(), updatable: true }, scene);
+    picked.color = Color3.FromHexString(HIVE_TONES.hover); picked.isPickable = false; picked.parent = fieldRoot;
+    // a cell's outline is its hexagon, inset a little so the ring reads as the cell's, not the neighbour's
+    const hexOf = (i: number): [number, number][] => hexCornersAt(cells[i].x, cells[i].y, HEX_R*cellScale(i), 4*cellScale(i)).map((c) => [c.x, c.y]);
     const placeRing = (mesh: LinesMesh, i: number, y: number) => {
-      const p = tri(i); const pts = [p[0], p[1], p[2], p[0]];
+      const p = hexOf(i); const pts = [...p, p[0]];
       const buf = mesh.getVerticesData(VertexBuffer.PositionKind);
       if (!buf) return;
       pts.forEach(([px, pz], k) => { buf[k * 3] = px; buf[k * 3 + 1] = y; buf[k * 3 + 2] = pz; });
       mesh.updateVerticesData(VertexBuffer.PositionKind, buf);
       mesh.isVisible = true;
     };
-    const hovered = CreateDashedLines("hover", { points: [new Vector3(0, 0, 0), new Vector3(1, 0, 0), new Vector3(1, 0, 1), new Vector3(0, 0, 0)], dashSize: 3, gapSize: 2, dashNb: 60, updatable: true }, scene);
-    hovered.alpha = 0.8; hovered.isPickable = false; hovered.isVisible = false;
+    const hovered = CreateDashedLines("hover", { points: Array.from({ length: 7 }, (_, k) => new Vector3(Math.cos(k), 0, Math.sin(k))), dashSize: 3, gapSize: 2, dashNb: 60, updatable: true }, scene);
+    hovered.alpha = 0.9; hovered.isPickable = false; hovered.isVisible = false; hovered.parent = fieldRoot;
+    // the hover card (the user, 2026-09-06): the hovered cell's issue, named beside the pointer
+    let hoverIssue = -1;
+    let pointerXY: [number, number] = [0, 0];
+    const clearHoverCard = () => {
+      hoverIssue = -1;
+      cardRef.current?.setAttribute("aria-hidden", "true");
+      cardRef.current?.replaceChildren();
+      host.removeAttribute("data-hover-issue");
+    };
+    // DOM survives a scene rebuild; the previous repo's coverage must not.
+    clearHoverCard();
+    const showHoverCard = (i: number) => {
+      const card = cardRef.current;
+      if (!card) return;
+      const issue = i >= 0 ? fCells?.[i] ?? null : null;
+      if (!issue) {
+        if (hoverIssue !== -1) clearHoverCard();
+        return;
+      }
+      if (issue.number !== hoverIssue) {
+        hoverIssue = issue.number;
+        const head = document.createElement("b"); head.textContent = `#${issue.number} ${issue.title}`;
+        const meta = document.createElement("span");
+        const cover = coverOf(i);
+        const coverWord = lawRef.current?.[cover] ?? (cover === "unknown" ? "T27 coverage unknown" : cover);
+        // A closed issue and a module share a cell position, not an identity.
+        // Attribute the claim to its module explicitly, never to that issue.
+        const modulePath = cards[i]?.title;
+        meta.textContent = [issue.closedAt.slice(0, 16).replace("T", " "), ...issue.labels, ...(modulePath ? [`${modulePath}: ${coverWord}`] : [])].join(" \u00b7 ");
+        meta.dataset.cover = cover;
+        card.replaceChildren(head, meta);
+        card.setAttribute("aria-hidden", "false");
+        host.setAttribute("data-hover-issue", String(issue.number));
+      }
+      const r = host.getBoundingClientRect();
+      card.style.left = `${Math.round(Math.min(Math.max(pointerXY[0] + 16, 8), Math.max(8, r.width - 316)))}px`;
+      card.style.top = `${Math.round(Math.min(Math.max(pointerXY[1] + 16, 8), Math.max(8, r.height - 72)))}px`;
+    };
     const placeDashed = (i: number, y: number) => {
-      const p = tri(i);
-      CreateDashedLines("hover", { points: [new Vector3(p[0][0], y, p[0][1]), new Vector3(p[1][0], y, p[1][1]), new Vector3(p[2][0], y, p[2][1]), new Vector3(p[0][0], y, p[0][1])], dashSize: 3, gapSize: 2, dashNb: 60, instance: hovered }, scene);
-      hovered.color = Color3.FromHexString(ringTone(cells[i].own as Territory));
+      const p = hexOf(i);
+      CreateDashedLines("hover", { points: [...p, p[0]].map(([px, pz]) => new Vector3(px, y, pz)), dashSize: 3, gapSize: 2, dashNb: 60, instance: hovered }, scene);
+      // honey, not territory: the hand is looking for nectar (the user,
+      // 2026-09-06: "не цветом говна выделять карточку! я медоносным цветом!")
+      hovered.color = Color3.FromHexString(HIVE_TONES.hover);
       hovered.isVisible = true;
     };
 
-    // ---- sprites: the Queen's portrait, crystals, bees as units ----------
-    const managers = new Map<string, SpriteManager>();
-    const manager = (name: string, capacity: number) => {
-      let m = managers.get(name);
-      if (!m) {
-        m = new SpriteManager(name, `./queen/${name}-256.png`, capacity, { width: 256, height: 256 }, scene);
-        m.isPickable = false;
-        managers.set(name, m);
-      }
-      return m;
-    };
-    const put = (name: string, cell: number, size: number, lift: number, capacity = 64) => {
-      const c = cells[cell];
-      if (!c) return null;
-      const s = new Sprite(name, manager(name, capacity));
-      s.width = size; s.height = size;
-      s.position = new Vector3(c.x, lift + size / 2, c.y);
-      return s;
-    };
-    put("queen", home, S * 0.6, S * 0.28, 1);
+    // ---- no sprites: the Queen is the mark, the swarm is motes -----------
+    // (the user, 2026-09-06: "а королева в центре наш логотип! это и есть
+    // королева"). The portrait sprite went with the buildings; the mark in the
+    // hub cell below IS the Queen.
     const ring = cells
       .map((c, i) => ({ i, d: (c.x - cells[home].x) ** 2 + (c.y - cells[home].y) ** 2 }))
       .filter((e) => e.i !== home)
       .sort((a, b) => a.d - b.d);
-    const crystalSprites: Sprite[] = [];
-    (devices ?? []).forEach((d, k) => { const r = ring[k]; if (r) { const sp = put(`crystal-${crystalOf(d.family)}`, r.i, S * 0.4, 0, 64); if (sp) crystalSprites.push(sp); } });
 
     const running = cells.map((c, i) => ({ c, i })).filter(({ i }) => cards[i]?.column === "running").map(({ i }) => i);
     const indexByNumber = new Map<number, number>();
-    cells.forEach((c, i) => { if (c.cardNumber !== null) indexByNumber.set(c.cardNumber, i); });
-    interface Bee { slot: number; busy: boolean; work: boolean; from: number; to: number; t: number; speed: number; hover: number; line: BeeLine; body: Sprite; larva: Sprite; bodyModel?: InstancedMesh; bodyK?: number; bodyBase?: number; larvaModel?: InstancedMesh; larvaK?: number; larvaBase?: number }
+    if (displaysRef.current) displaysRef.current.forEach((row,i) => { if(row) indexByNumber.set(row.number,i); });
+    else cells.forEach((c, i) => { if (c.cardNumber !== null) indexByNumber.set(c.cardNumber, i); });
+    // The swarm is anonymous by the server's decision, so every bee is the same
+    // mote: one glowing hex, bright while it works. Three sprite costumes used
+    // to imply a distinction the wire does not carry; cut 2026-09-06.
+    const moteMat = new StandardMaterial("mote", scene);
+    moteMat.diffuseColor = new Color3(0.5, 0.4, 0.14); moteMat.emissiveColor = new Color3(0.95, 0.74, 0.28); moteMat.specularColor = Color3.Black();
+    interface Bee { slot: number; busy: boolean; work: boolean; from: number; to: number; t: number; speed: number; hover: number; line: BeeLine; mote: Mesh }
     const bees: Bee[] = (workers?.slots ?? []).map((slot, k) => {
-      const line = LINES[k % LINES.length];
-      const body = new Sprite(`bee-${slot.slot}`, manager(line, 16));
-      const larva = new Sprite(`larva-${slot.slot}`, manager("larva", 16));
-      const size = line === "scribe" ? S * 0.28 : line === "wright" ? S * 0.34 : S * 0.4;
-      body.width = size; body.height = size; body.isVisible = false;
-      larva.width = S * 0.3; larva.height = larva.width; larva.isVisible = false;
-      return { slot: slot.slot, busy: false, work: false, from: home, to: home, t: 1, speed: 0, hover: k * 1.7, line, body, larva };
+      const mote = CreateCylinder(`bee-${slot.slot}`, { tessellation: 6, diameter: S * 0.2, height: 5 }, scene);
+      mote.material = moteMat; mote.isPickable = false; mote.isVisible = false; mote.parent = fieldRoot;
+      glow.referenceMeshToUseItsOwnMaterial(mote);
+      return { slot: slot.slot, busy: false, work: false, from: home, to: home, t: 1, speed: 0, hover: k * 1.7, line: LINES[k % LINES.length], mote };
     });
-    const ringCell = (rank: number) => { const r = ring[(devices?.length ?? 0) + rank]; return r ? r.i : home; };
+    const ringCell = (rank: number) => { const r = ring[rank]; return r ? r.i : home; };
     const aimBees = () => {
       const slots = new Map<number, "busy" | "idle">();
       for (const slot of workersRef.current?.slots ?? []) slots.set(slot.slot, slot.state);
@@ -519,72 +614,181 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
       for (const b of bees) {
         b.busy = slots.get(b.slot) === "busy";
         let target = home;
-        if (b.busy) { const byIssue = issueTargets ? issueTargets[busyRank] : undefined; target = byIssue ?? running[busyRank] ?? home; b.work = (byIssue !== undefined && byIssue !== null) || running[busyRank] !== undefined; busyRank += 1; }
+        if (b.busy) {
+          const byIssue = issueTargets ? issueTargets[busyRank] : undefined;
+          const fallback = displaysRef.current ? undefined : running[busyRank];
+          target = byIssue ?? fallback ?? home;
+          b.work = (byIssue !== undefined && byIssue !== null) || fallback !== undefined;
+          busyRank += 1;
+        }
         else { b.work = false; target = ringCell(idleRank); idleRank += 1; }
         if (b.to !== target) { b.from = b.t < 0.5 ? b.from : b.to; b.to = target; b.t = 0; b.speed = b.busy ? 0.55 : 0.35; }
       }
     };
     aimBees();
     const beeAt = (index: number) => bees.find((b) => (b.t < 0.5 ? b.from : b.to) === index) ?? null;
-    const flightLines = bees.map((b) => { const m = CreateDashedLines(`flight-${b.slot}`, { points: [new Vector3(0, 0, 0), new Vector3(1, 0, 1)], dashSize: 6, gapSize: 4, dashNb: 40, updatable: true }, scene); m.color = Color3.FromHexString("#64DCFF"); m.alpha = 0.55; m.isPickable = false; m.isVisible = false; return m; });
-    const unitRings = bees.map((b) => { const m = CreateTorus(`unit-ring-${b.slot}`, { diameter: b.body.width * 0.8, thickness: 1.6, tessellation: 20 }, scene); m.material = green; m.isPickable = false; m.isVisible = false; return m; });
+    const flightLines = bees.map((b) => { const m = CreateDashedLines(`flight-${b.slot}`, { points: [new Vector3(0, 0, 0), new Vector3(1, 0, 1)], dashSize: 6, gapSize: 4, dashNb: 40, updatable: true }, scene); m.color = Color3.FromHexString(HIVE_TONES.awaiting); m.alpha = 0.55; m.isPickable = false; m.isVisible = false; m.parent = fieldRoot; return m; });
 
-    // The glTF loader creates PBR materials, and a PBR material's first use
-    // schedules the environment BRDF lookup texture, generated asynchronously
-    // through executeWhenCompiled; when the view switches mid-load that
-    // callback ran on a disposed engine (TypeError: reading 'program'). The
-    // models become StandardMaterials anyway, so the scene gets a 2x2 stand-in
-    // BRDF texture up front and nothing is ever generated.
-    if (!scene.environmentBRDFTexture) scene.environmentBRDFTexture = new DynamicTexture("brdf-none", 2, scene, false);
-    // ---- the Kenney models replace the procedural templates as they load;
-    //      a model that fails to load leaves its procedural stand-in --------
-    let disposed = false;
-    const modelInstances = new Map<ModelKey, { mesh: Mesh; footprint: number; base: number; height: number }>();
-    const placeModel = (t: { mesh: Mesh; footprint: number; base: number }, matrices: number[], target: number, parts: Mesh[], scales: number[] = [], turns: number[] = [], heights: number[] = [], colors: number[] = []) => {
-      if (disposed || scene.isDisposed || matrices.length === 0) return;
-      const out: number[] = [];
-      for (let i = 0, j = 0; i < matrices.length; i += 16, j += 1) {
-        const tx = matrices[i + 12], tz = matrices[i + 14];
-        const k = (target / t.footprint) * (scales[j] ?? 1), h = heights[j] ?? 1;
-        out.push(...Matrix.Compose(new Vector3(k, k * h, k), Quaternion.RotationAxis(Vector3.Up(), turns[j] ?? 0), new Vector3(tx, -t.base * k * h, tz)).toArray());
-      }
-      t.mesh.thinInstanceSetBuffer("matrix", new Float32Array(out), 16, true);
-      // the per-instance tint (M-4): StandardMaterial multiplies its palette by it
-      if (colors.length === (matrices.length / 16) * 4) t.mesh.thinInstanceSetBuffer("color", new Float32Array(colors), 4, true);
-      t.mesh.isVisible = true;
-      shadows.addShadowCaster(t.mesh);
-      for (const p of parts) p.dispose();
+    // ---- the hive: everything is comb, nothing is a model --------------------
+    // The user, 2026-09-06: "убери 3D объекты а то шума много", "замки не красиво
+    // смотрятся, а соты мёд пчёлы классно читается", and a reference image of a
+    // dark hexagon field with glowing edges. So the kit is gone. Every fact is a
+    // cell: its rim, its cap, its colour. A hive has no towers.
+    host.setAttribute("data-look", "hive");
+    host.setAttribute("data-models", "0/0");
+    host.setAttribute("data-orientation", "facing");
+    // Full hex fills remain visible below text LOD. One batch per status color,
+    // not a material/texture per issue. Empty cells and the hub receive no fill.
+    const capBatches = new Map<HiveTaskTone | 'legacy', number[]>();
+    const drawCaps = (tone: HiveTaskTone | 'legacy', matrices: number[]) => {
+      // Spec cells are the map's transparent gold outlines, not a second wall
+      // of stacked volumes over the shared core.
+      if (tone === 'honey' && catalogRef.current) return;
+      const material = new StandardMaterial(`cap-${tone}`, scene);
+      material.diffuseColor = Color3.Black(); material.specularColor = Color3.Black();
+      material.disableLighting = true;
+      material.emissiveColor = tone === 'legacy' ? new Color3(.055, .075, .072) : Color3.FromHexString(HIVE_TASK_PALETTE[tone].hex);
+      material.alpha = tone === 'legacy' ? .08 : HIVE_TASK_PALETTE[tone].alpha;
+      // Keep catalog faces transparent at every zoom; preserve the golden rims.
+      if(tone==='honey'&&catalogRef.current)material.alpha=.035;
+      const caps = CreateCylinder(`caps-${tone}`, { tessellation: 6, diameter: 2 * HEX_R * .92, height: 2 }, scene);
+      const cb = caps.getBoundingInfo().boundingBox;
+      if (cb.maximum.x - cb.minimum.x > cb.maximum.z - cb.minimum.z) { caps.rotation.y = Math.PI / 6; caps.bakeCurrentTransformIntoVertices(); }
+      caps.material = material; caps.isPickable = false; caps.parent = layerNodes.foundation;
+      caps.alwaysSelectAsActiveMesh = true;
+      caps.thinInstanceSetBuffer("matrix", new Float32Array(matrices), 16, true);
+      glow.addExcludedMesh(caps); // Broad fills must not bloom into adjacent task states.
     };
-    const unitInstances: Array<{ key: ModelKey; node: InstancedMesh; k: number; base: number }> = [];
-    void (async () => {
-      const keys: ModelKey[] = ["backlog", "running", "review", "done", "doneDepot", "doneSilo", "blocked", "dropped", "hub", "crystal", "scribe", "wright", "lapidary", "larva"];
-      const loaded = await Promise.all(keys.map(async (key) => [key, await loadTemplate(scene, key)] as const));
-      if (disposed || scene.isDisposed) { for (const [, t] of loaded) t?.mesh.dispose(); return; }
-      for (const [key, t] of loaded) if (t) modelInstances.set(key, t);
-      const bind = (key: ModelKey, tpl: Template, target: number) => { const t = modelInstances.get(key); if (t) placeModel(t, tpl.matrices, target, tpl.parts, tpl.scales, tpl.turns, tpl.heights, tpl.colors); };
-      // a building takes about half a cell, so the roads between them still show
-      bind("backlog", templates.backlog, u * 1.3); bind("running", templates.running, u * 1.25); bind("review", templates.review, u * 1.3);
-      bind("done", templates.done, u * 1.35); bind("doneDepot", doneDepot, u * 1.35); bind("doneSilo", doneSilo, u * 1.25);
-      bind("blocked", templates.blocked, u * 1.3); bind("dropped", templates.dropped, u * 1.2);
-      const hubT = modelInstances.get("hub");
-      if (hubT) { placeModel(hubT, [...Matrix.Translation(cells[home].x, 0, cells[home].y).toArray()], S * 1.25, [hub, hubDome]); }
-      const crystalT = modelInstances.get("crystal");
-      if (crystalT) {
-        const mats: number[] = [];
-        (devices ?? []).forEach((_, k2) => { const r = ring[k2]; if (r) mats.push(...Matrix.Translation(cells[r.i].x, 0, cells[r.i].y).toArray()); });
-        placeModel(crystalT, mats, u * 1.0, []);
-        for (const sp of crystalSprites) sp.dispose();
+    // A cell RISES under the pointer and stays up while it is picked (the user,
+    // 2026-09-06). This is the reference picture's raised hex, and it is the only
+    // motion on the field that answers the hand rather than the wire.
+    const liftMat = new StandardMaterial("lift", scene);
+    liftMat.diffuseColor = Color3.Black(); liftMat.specularColor = Color3.Black();
+    liftMat.emissiveColor = new Color3(0.1, 0.14, 0.135);
+    liftMat.alpha = 0.14;
+    const lift = CreateCylinder("lift", { tessellation: 6, diameter: 2 * HEX_R * 0.92, height: 3 }, scene);
+    const lb = lift.getBoundingInfo().boundingBox;
+    if (lb.maximum.x - lb.minimum.x > lb.maximum.z - lb.minimum.z) { lift.rotation.y = Math.PI / 6; lift.bakeCurrentTransformIntoVertices(); }
+    lift.material = liftMat; lift.isPickable = false; lift.isVisible = false; lift.parent = fieldRoot;
+    let liftIndex = -1; let liftY = 0;
+    // ---- the comb: one cell per GitHub issue, rim by state ------------------
+    try {
+      if (cells.length > 1) {
+        const lines: Vector3[][] = []; const lineColours: Color4[][] = [];
+        let count = 0; let first: string | null = null; let last: string | null = null;
+        for (let i = 1; i < cells.length; i += 1) {
+          const corners = hexCornersAt(cells[i].x, cells[i].y, HEX_R*cellScale(i), 4*cellScale(i));
+          lines.push([...corners, corners[0]].map((c) => new Vector3(c.x, 1.5, c.y)));
+          const issue = displaysRef.current ? displaysRef.current[i] : fCells?.[i] ?? null;
+          const resource=catalogRef.current?.cells[i];
+          const paint = resource?{tone:resource.kind==='spec'?'honey' as const:resource.open===null?'paused' as const:resource.open>0?'problem' as const:'active' as const}:displaysRef.current ? hiveTaskPaint(displaysRef.current[i]) : null;
+          const tint = paint ? Color3.FromHexString(HIVE_TASK_PALETTE[paint.tone].hex) : null;
+          const tone = tint ? [tint.r, tint.g, tint.b] : issue ? hiveToneOf(covers[i]) : [0.11, 0.34, 0.33, 1];
+          const c4 = new Color4(tone[0], tone[1], tone[2], resource?.kind === 'spec' ? 0.28 : issue||resource ? 0.95 : 0.34);
+          lineColours.push(Array.from({ length: 7 }, () => c4));
+          if (issue||resource) {
+            const batch = paint?.tone ?? 'legacy';
+            const matrices = capBatches.get(batch) ?? [];
+            matrices.push(...Matrix.Scaling(cellScale(i),1,cellScale(i)).multiply(Matrix.Translation(cells[i].x, .6, cells[i].y)).toArray());
+            capBatches.set(batch, matrices);
+            const a = spiralAxial(i); const tag = `${resource?.key??issue?.number}@${a.q},${a.r}`;
+            if (first === null) first = tag; last = tag; count += 1;
+          }
+        }
+        const comb = CreateLineSystem("cells", { lines, colors: lineColours, useVertexAlpha: true }, scene);
+        comb.isPickable = false; comb.parent = layerNodes.foundation; comb.alwaysSelectAsActiveMesh = true;
+        glow.referenceMeshToUseItsOwnMaterial(comb);
+        for (const [tone, matrices] of capBatches) drawCaps(tone, matrices);
+        host.setAttribute("data-foundation-shape", displaysRef.current ? "status-filled" : "outline");
+        if(catalogRef.current){const specs=catalogRef.current.cells.filter(c=>c?.kind==='spec');host.setAttribute('data-catalog-specs',String(new Set(specs.map(c=>c.specId)).size));host.setAttribute('data-catalog-source-specs',String(specs.filter(c=>c.placement==='source').length));host.setAttribute('data-catalog-repos',String(catalogRef.current.cells.filter(c=>c?.kind==='repo').length));}
+        host.setAttribute("data-task-fill-counts", JSON.stringify(hiveTaskCounts(displaysRef.current ?? [])));
+        host.setAttribute("data-task-fill-batches", String(capBatches.size));
+        host.setAttribute("data-foundation-cells", String(count));
+        host.setAttribute("data-foundation-shown", layersRef.current.foundation ? String(count) : "0");
+        const law = { t27: covers.filter((v) => v === "t27").length, manual: covers.filter((v) => v === "manual").length, awaiting: covers.filter((v) => v === "awaiting").length };
+        host.setAttribute("data-cover-t27", String(law.t27));
+        host.setAttribute("data-cover-manual", String(law.manual));
+        host.setAttribute("data-cover-awaiting", String(law.awaiting));
+        host.setAttribute("data-cover-unknown", String(covers.filter((v) => v === "unknown").length));
+        host.setAttribute("data-coverage-status", displaysRef.current || covered === null ? "unknown" : "source-claim");
+        if (first) host.setAttribute("data-foundation-first", first);
+        if (last) host.setAttribute("data-foundation-last", last);
       }
-      // units: one instance per bee (walking model) and one per larva (the alien)
-      bees.forEach((b) => {
-        const walk = modelInstances.get(b.line); const idle = modelInstances.get("larva");
-        if (walk) { const k = (S * 0.3) / walk.footprint; const inst = walk.mesh.createInstance(`unit-${b.slot}`); inst.scaling.set(k, k, k); inst.isPickable = false; inst.isVisible = false; unitInstances.push({ key: b.line, node: inst, k, base: walk.base }); b.bodyModel = inst; b.bodyK = k; b.bodyBase = walk.base; b.body.isVisible = false; b.body.dispose(); }
-        if (idle) { const k = (S * 0.26) / idle.footprint; const inst = idle.mesh.createInstance(`larva-${b.slot}`); inst.scaling.set(k, k, k); inst.isPickable = false; inst.isVisible = false; b.larvaModel = inst; b.larvaK = k; b.larvaBase = idle.base; b.larva.dispose(); }
-      });
-    })();
+    } catch (e) {
+      host.setAttribute("data-foundation-error", e instanceof Error ? e.message : String(e));
+    }
+    // ---- the rings of the hive: a frame per ring directory, drawn flat -------
+    // A ring used to be a stone plinth carrying a tower. In a hive it is a FRAME:
+    // the cells of spiral ring 7 wear their family's colour, and an epic's stage
+    // sets how brightly the frame burns. No geometry, only the comb's own rim.
+    try {
+      const fdNow2 = foundationRef.current;
+      host.setAttribute("data-castle-source", fdNow2 ? fdNow2.source : "none");
+      if (fdNow2 && (fdNow2.rings?.length ?? 0) > 0) {
+        const rings = fdNow2.rings ?? [];
+        const epics = fdNow2.epics ?? [];
+        const places = castlePlaces(rings);
+        const stageOf = (ring: string): TowerStage => {
+          const order: TowerStage[] = ["plinth", "walls", "tower", "wizardTower"];
+          let best: TowerStage = "plinth";
+          for (const e of epics) if (ringOfEpic(e, rings).ring === ring) { const st = towerStage(e); if (order.indexOf(st) > order.indexOf(best)) best = st; }
+          return best;
+        };
+        const BURN: Record<TowerStage, number> = { plinth: 0.3, walls: 0.55, tower: 0.8, wizardTower: 1 };
+        const fl: Vector3[][] = []; const fc: Color4[][] = []; const stages: string[] = [];
+        for (const pl of places) {
+          const c = cells[pl.plinth]; if (!c) continue;
+          const st = stageOf(pl.ring); stages.push(`${pl.ring}:${st}`);
+          const t = familyTint(ringFamily(pl.ring)); const b = BURN[st];
+          const corners = hexCornersAt(c.x, c.y, HEX_R * 0.94, 0);
+          fl.push([...corners, corners[0]].map((q) => new Vector3(q.x, 3, q.y)));
+          const col = new Color4(t[0] * (0.4 + 0.6 * b), t[1] * (0.4 + 0.6 * b), t[2] * (0.4 + 0.6 * b), 0.45 + 0.55 * b);
+          fc.push(Array.from({ length: 7 }, () => col));
+        }
+        if (fl.length > 0) {
+          const frames = CreateLineSystem("frames", { lines: fl, colors: fc, useVertexAlpha: true }, scene);
+          frames.isPickable = false; frames.parent = layerNodes.castle;
+          glow.referenceMeshToUseItsOwnMaterial(frames);
+        }
+        const unassigned = epics.filter((e) => ringOfEpic(e, rings).ring === null).length;
+        castleLinks = { plinthOfRing: new Map(places.map((pl) => [pl.ring, pl.plinth])), ringOfCell: new Map(places.map((pl) => [pl.plinth, pl.ring])), cellsOfRing: new Map(), epics, rings };
+        const cellsOfRing = castleLinks.cellsOfRing;
+        cards.forEach((cd, ci) => { if (!cd) return; const rn = ringOfModulePath(cd.title); if (rn && rings.includes(rn)) cellsOfRing.set(rn, [...(cellsOfRing.get(rn) ?? []), ci]); });
+        host.setAttribute("data-castle-marks", String([...cellsOfRing.values()].reduce((n, l) => n + l.length, 0)));
+        host.setAttribute("data-castle-plates", String(places.length));
+        host.setAttribute("data-castle-banners", String(Math.min((fdNow2.releases ?? []).length, 8)));
+        host.setAttribute("data-castle-rings", String(places.length));
+        host.setAttribute("data-castle-stages", stages.sort().join(";"));
+        host.setAttribute("data-castle-unassigned", String(unassigned));
+        host.setAttribute("data-castle-releases", String((fdNow2.releases ?? []).length));
+        host.setAttribute("data-castle-keep", "1");
+      } else {
+        host.removeAttribute("data-castle-stages"); host.removeAttribute("data-castle-rings");
+        host.removeAttribute("data-castle-unassigned"); host.removeAttribute("data-castle-releases");
+      }
+    } catch (e) {
+      host.setAttribute("data-castle-error", e instanceof Error ? e.message : String(e));
+    }
+    // ---- the Queen at the centre: the mark itself ----------------------------
+    // The user, 2026-09-06: "а королева в центре наш логотип! это и есть королева"
+    {
+      // the mark sits INSIDE the hub cell (the user, 2026-09-06): the Queen is a
+      // cell of the comb like every other fact, not a thing laid over it
+      const k = S_CELL * 0.62;
+      const markLines = EDGES.map(([ax, ay, bx, by]) => [
+        new Vector3(cells[home].x + ax * k, 8, cells[home].y - ay * k),
+        new Vector3(cells[home].x + bx * k, 8, cells[home].y - by * k),
+      ]);
+      const mark = CreateLineSystem("queen-mark", { lines: markLines }, scene);
+      mark.color = new Color3(1, 0.86, 0.42);
+      mark.alpha = 0.95;
+      mark.isPickable = false; mark.parent = fieldRoot;
+      glow.referenceMeshToUseItsOwnMaterial(mark);
+      host.setAttribute("data-queen-mark", String(EDGES.length));
+    }
 
     // ---- event glints: a ring that grows and fades on the issue's cell ----
-    interface Effect { index: number; tone: Tone; start: number; flip: boolean; flare?: string }
+    interface Effect { index: number; tone: Tone; start: number; flip: boolean; flare?: string; signalColor?: string; sourceAt?: number; priority?: number }
     let flaredPick: number | null = null;
     const effects: Effect[] = [];
     const rings: LinesMesh[] = [];
@@ -592,18 +796,35 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
       const pts: Vector3[] = [];
       for (let a = 0; a <= 16; a += 1) pts.push(new Vector3(Math.cos((a / 16) * Math.PI * 2), 0, Math.sin((a / 16) * Math.PI * 2)));
       const m = CreateLineSystem(`fx-${k}`, { lines: [pts], updatable: false }, scene);
-      m.isPickable = false; m.isVisible = false;
+      m.isPickable = false; m.isVisible = false; m.parent = fieldRoot;
       rings.push(m);
     }
     let lastEvents: HudEvent[] | null = null;
+    let lastSignalHealth = '';
     const ingestEvents = (stamp: number) => {
       const list = eventsRef.current;
-      if (list === lastEvents) return;
+      const health=signalHealthRef.current.activity;
+      if (list === lastEvents && lastSignalHealth === health) return;
       lastEvents = list;
+      lastSignalHealth = health;
       const seen = seenEventsRef.current;
       const primed = eventsPrimedRef.current;
       const wall = Date.now();
-      for (const event of list) {
+      if(displaysRef.current) {
+        const delivery=hiveSignalDelivery(list,wall,health,signalCursorRef.current,eventIdentity);
+        signalCursorRef.current=delivery.cursor;
+        for(const event of delivery.events) {
+          const index=event.issue!==null ? indexByNumber.get(event.issue) : undefined;
+          if(index===undefined) continue;
+          const current=effects.find((fx): fx is Effect & HiveEventRing=>fx.index===index && fx.signalColor!==undefined && fx.sourceAt!==undefined && fx.priority!==undefined && stamp-fx.start<3000);
+          const next=hiveSignalRing(current ?? null,event,stamp);
+          if(current) Object.assign(current,next);
+          else effects.push({index,tone:eventTone(event.kind),flip:false,...next});
+        }
+        return;
+      }
+      const candidates = list;
+      for (const event of candidates) {
         // a verdict re-stamped by the tick is the same verdict: no new glint (P0-10)
         const identity = eventIdentity(event);
         if (seen.has(identity)) continue;
@@ -619,35 +840,222 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
 
     // ---- picking and hover ---------------------------------------------------
     const cellUnder = (x: number, y: number) => {
-      const hit = scene.pick(x, y, (m) => m === ground);
-      if (!hit?.hit || !hit.pickedPoint) return -1;
-      return cellAtWorld(cells, hit.pickedPoint.x, hit.pickedPoint.z);
+      const p = planeAt(x, y);
+      return p ? catalogRef.current?catalogCellAt(catalogRef.current,p.x,p.z):hexIndexAt(p.x, p.z, cells.length) : -1;
     };
     let hover = -1;
+    // ---- the cells the swarm is working on (the user, 2026-09-06) ---------
+    // A bee's work names a file path on the wire, and a path belongs to exactly
+    // one module cell: the longest module path that prefixes it. So the field
+    // can show WHICH cells are being worked without ever naming a bee, which
+    // the server withholds by design. An event with no resolvable path marks
+    // nothing rather than guessing a cell.
+    const modulePaths: Array<[string, number]> = [];
+    cards.forEach((c, i) => { if (c && i !== home) modulePaths.push([c.title, i]); });
+    modulePaths.sort((a, b) => b[0].length - a[0].length);
+    // The wire names a path from the repository root ("trios/agent-server/...")
+    // while the module scan is rooted inside it ("agent-server/..."), so a plain
+    // prefix match found only the root module and every bee landed on one cell.
+    // Every suffix of the path is tried and the DEEPEST module wins; the root is
+    // the last resort, so a path that belongs somewhere real never falls to it.
+    const cellOfPath = (path: string): number => {
+      const parts = path.split("/");
+      for (let drop = 0; drop < parts.length; drop += 1) {
+        const rest = parts.slice(drop).join("/");
+        for (const [t, i] of modulePaths) if (t !== "." && (rest === t || rest.startsWith(t + "/"))) return i;
+      }
+      const root = modulePaths.find(([t]) => t === ".");
+      return root ? root[1] : -1;
+    };
+    // Work is a STATE, not an age. Measured 2026-09-06: the wire delivers in
+    // bursts - the median gap between rows is 1 s and the p90 is 38 s - but the
+    // newest row was 18 minutes old while the swarm reported itself working. A
+    // wall-clock window of any length therefore reads 0 for most of the day and
+    // says nothing true. So an issue is being worked when its LAST event on the
+    // wire is not terminal, and the ring's brightness carries how long ago that
+    // was, which is the fact the window was trying and failing to express.
+    const ROUND_MS = 5 * 60 * 1000;
+    let workingSeen: readonly HudEvent[] | null = null;
+    let workingBoardSeen: typeof displays = undefined;
+    let workingHealthSeen = '';
+    let workingCells: number[] = [];
+    let workingAgeOf = new Map<number, number>();
+    let workingRing: LinesMesh | null = null;
+    const refreshWorking = (nowWallMs: number) => {
+      const list = eventsRef.current;
+      const issueRows = displaysRef.current;
+      const boardHealth = signalHealthRef.current.board;
+      if (issueRows ? issueRows === workingBoardSeen && boardHealth === workingHealthSeen : list === workingSeen) return;
+      workingSeen = list;
+      workingBoardSeen = issueRows; workingHealthSeen = boardHealth;
+      // the last event of every issue, oldest first so the newest wins
+      const last = new Map<number, { at: number; kind: string; title: string }>();
+      for (const e of [...list].sort((a, b) => Date.parse(a.at) - Date.parse(b.at))) {
+        if (e.issue === null) continue;
+        const at = Date.parse(e.at);
+        if (Number.isFinite(at)) last.set(e.issue, { at, kind: e.kind, title: e.title });
+      }
+      const ageOf = new Map<number, number>();
+      if (issueRows) {
+        for (const number of hiveRunningIssueNumbers(issueRows.filter((row): row is HiveDisplay=>row!==null),boardHealth==='live')) {
+          const i=indexByNumber.get(number); if(i!==undefined) ageOf.set(i,0);
+        }
+      } else for (const [issueNumber, { at, kind, title }] of last) {
+        if (kind === "finished" || kind === "error") continue;
+        const i = displaysRef.current ? indexByNumber.get(issueNumber) ?? -1 : cellOfPath(title);
+        if (i < 0) continue;
+        const age = nowWallMs - at;
+        const seen = ageOf.get(i);
+        if (seen === undefined || age < seen) ageOf.set(i, age);
+      }
+      const next = [...ageOf.keys()].sort((a, b) => a - b);
+      const newest = next.length === 0 ? null : Math.min(...ageOf.values());
+      host.setAttribute("data-working", String(next.length));
+      host.setAttribute("data-working-age", newest === null ? "-" : String(Math.round(newest / 1000)));
+      host.setAttribute("data-working-quiet", String([...ageOf.values()].filter((a) => a > ROUND_MS).length));
+      workingAgeOf = ageOf;
+      if (next.join(",") === workingCells.join(",")) return;
+      workingCells = next;
+      if (workingRing) { workingRing.dispose(); workingRing = null; }
+      if (workingCells.length > 0) {
+        const lines = workingCells.map((i) => { const p = hexCornersAt(cells[i].x, cells[i].y, HEX_R * 0.86, 0); return [...p, p[0]].map((c) => new Vector3(c.x, 5, c.y)); });
+        const colours = workingCells.map((i) => {
+          // fresh work burns, work silent for more than a round fades: the ring
+          // never claims a bee is busy when the wire has said nothing for an hour
+          const q = Math.max(0, Math.min(1, 1 - (workingAgeOf.get(i) ?? 0) / (12 * ROUND_MS)));
+          const c = issueRows ? new Color4(.39,.86,1,.9) : new Color4(0.25 + 0.3 * q, 0.45 + 0.55 * q, 0.4 + 0.38 * q, 0.35 + 0.6 * q);
+          return Array.from({ length: 7 }, () => c);
+        });
+        workingRing = CreateLineSystem("working", { lines, colors: colours, useVertexAlpha: true }, scene);
+        workingRing.isPickable = false; workingRing.parent = fieldRoot;
+        glow.referenceMeshToUseItsOwnMaterial(workingRing);
+      }
+    };
+
+
+    // the roots (K-5): a picked closed issue that an epic lists draws lines from the epic's tower (the keep when unassigned) to every closed child on the field
+    const drawRoots = (number: number | null) => {
+      if (rootLines) { rootLines.dispose(); rootLines = null; }
+      host.removeAttribute("data-castle-roots");
+      if (number === null || !castleLinks || !fCells) return;
+      const epic = epicOfIssue(number, castleLinks.epics);
+      if (!epic) return;
+      const ringName = ringOfEpic(epic, castleLinks.rings).ring;
+      const from = ringName !== null ? castleLinks.plinthOfRing.get(ringName) ?? home : home;
+      const top = new Vector3(cells[from].x, S * 0.5, cells[from].y);
+      const lines: Vector3[][] = [];
+      for (const ch of epic.children) { if (ch.state !== "closed") continue; const ci = fCells.findIndex((f) => f?.number === ch.number); if (ci < 0) continue; lines.push([top, new Vector3(cells[ci].x, 3, cells[ci].y)]); }
+      if (lines.length > 0) { rootLines = CreateLineSystem("roots", { lines }, scene); rootLines.color = new Color3(1, 0.86, 0.4); rootLines.alpha = 0.9; rootLines.isPickable = false; rootLines.parent = layerNodes.castle; }
+      host.setAttribute("data-castle-roots", `${epic.number}:${lines.length}`);
+    };
     let downAt: [number, number] | null = null;
     let travelled = 0;
     scene.onPointerObservable.add((info) => {
       if (info.type === PointerEventTypes.POINTERDOWN) { downAt = [scene.pointerX, scene.pointerY]; travelled = 0; }
       if (info.type === PointerEventTypes.POINTERMOVE) {
         if (downAt) { travelled += Math.abs(scene.pointerX - downAt[0]) + Math.abs(scene.pointerY - downAt[1]); downAt = [scene.pointerX, scene.pointerY]; }
-        else hover = cellUnder(scene.pointerX, scene.pointerY);
+        else { hover = cellUnder(scene.pointerX, scene.pointerY); pointerXY = [scene.pointerX, scene.pointerY]; }
       }
       if (info.type === PointerEventTypes.POINTERUP) downAt = null;
     });
-    canvas.addEventListener("click", (e) => {
-      if (travelled > 6) { travelled = 0; return; }
+    const onCellClick = (e: MouseEvent) => {
+      if (travelled > 6 || pointers.suppressClick) { travelled = 0; return; }
       const rect = canvas.getBoundingClientRect();
       const index = cellUnder(e.clientX - rect.left, e.clientY - rect.top);
       if (index < 0) { host.setAttribute("data-hit", "off"); return; }
-      const card = cards[index];
-      // a cell with no module is empty ground (P1-10): the click clears the
-      // selection, as on an RTS map, and never picks a cardless cell
-      if (!card && index !== home) { host.setAttribute("data-hit", "void"); onPickRef.current?.(null); return; }
+      if(catalogRef.current){if(layersRef.current.foundation&&(catalogRef.current.cells[index]||displaysRef.current?.[index]))catalogController.current?.inspect(index);else if(index===home)catalogController.current?.overview();host.setAttribute('data-hit',displaysRef.current?.[index]?'display':'resource');return;}
+      if (displaysRef.current?.[index]) { inspectDisplay(index); host.setAttribute('data-hit','display'); return; }
+      // An empty issue cell cannot inherit a colocated legacy module/issue.
+      if (displaysRef.current && index !== home) {
+        host.setAttribute('data-hit','void'); onPickRef.current?.(null); return;
+      }
+      const card = layersRef.current.code ? cards[index] : null;
+      // the top visible layer wins (H-E): the hub, then a module with CODE on,
+      // then a honey cell with FOUNDATION on; anything else is empty ground
+      // (P1-10): the click clears the selection, as on an RTS map
+      if (!card && index !== home) {
+        const issue = fCells?.[index];
+        if (issue && layersRef.current.foundation) {
+          host.setAttribute("data-hit", "issue");
+          drawRoots(issue.number);
+          onPickRef.current?.({ index, isQueen: false, territory: cells[index].own, card: null, bee: null, kind: "issue", issue } as HudPick);
+          return;
+        }
+        host.setAttribute("data-hit", "void"); drawRoots(null); onPickRef.current?.(null); return;
+      }
+      drawRoots(null);
       host.setAttribute("data-hit", index === home ? "queen" : "module");
       const b = beeAt(index);
-      onPickRef.current?.({ index, isQueen: index === home, territory: cells[index].own, card: card ?? null, bee: b ? { slot: b.slot, line: b.line, busy: b.busy } : null } as HudPick);
-    });
-    canvas.addEventListener("pointerleave", () => { hover = -1; });
+      onPickRef.current?.({ index, isQueen: index === home, territory: cells[index].own, card: card ?? null, bee: b ? { slot: b.slot, line: b.line, busy: b.busy } : null, kind: index === home ? "queen" : "module" } as HudPick);
+    };
+    canvas.addEventListener('click', onCellClick);
+    const onCellLeave = () => { hover = -1; showHoverCard(-1); };
+    canvas.addEventListener('pointerleave', onCellLeave);
+
+    // Project a bounded number of visible issue displays into CSS pixels.
+    // Text is browser-native, never a256px texture enlarged by the camera.
+    let displayTick = -Infinity;
+    let displayEventSource: readonly HudEvent[] | null = null;
+    let eventIssueNumbers = new Set<number>();
+    let catalogLinks:LinesMesh|null=null,lastCatalogPick:number|null|undefined=undefined;
+    const projectDisplays = (nowMs: number) => {
+      if (nowMs - displayTick < 100) return;
+      displayTick = nowMs;
+      const width = host.clientWidth, height = host.clientHeight;
+      const viewport = camera.viewport.toGlobal(width,height);
+      const matrix = scene.getTransformMatrix();
+      const world = fieldRoot.computeWorldMatrix(true);
+      const project = (x: number,z: number) => Vector3.Project(new Vector3(x,0,z),world,matrix,viewport);
+      const a = project(0,0), b = project(S_CELL,0), cellWidth = Math.abs(b.x-a.x);
+      if(catalogRef.current){
+        const resourceRows:HiveDisplayProjection[]=[];
+        catalogRef.current.cells.forEach((row,index)=>{const rowWidth=cellWidth*cellScale(index);if(!row||(row.kind!=='repo'&&rowWidth<95))return;const p=project(cells[index].x,cells[index].y);if(p.x<0||p.y<0||p.x>width||p.y>height)return;resourceRows.push({index,x:p.x,y:p.y,width:rowWidth,height:rowWidth*2/Math.sqrt(3)});});
+        resourceRows.sort((a,b)=>Number(catalogRef.current?.cells[b.index]?.kind==='repo')-Number(catalogRef.current?.cells[a.index]?.kind==='repo')||Number(b.index===pickRef.current)-Number(a.index===pickRef.current));
+        const regionRows:HiveDisplayProjection[]=[];
+        for(const region of catalogRef.current.regions??[]){
+          const p=project(region.x,region.y),radius=region.focusRadius*cellWidth/S_CELL;
+          // A small repository heading remains legible at overview, outside its issue cells.
+          if(cellWidth*region.scale>=95||p.x+radius<0||p.x-radius>width||p.y+radius<0||p.y-radius>height)continue;
+          regionRows.push({index:region.portalIndex,x:p.x,y:p.y-radius,width:radius*2,height:0});
+        }
+        catalogProjectRef.current?.(resourceRows.slice(0,40),regionRows);
+        if(lastCatalogPick!==pickRef.current){lastCatalogPick=pickRef.current;catalogLinks?.dispose();const selected=pickRef.current;
+          const selection=catalogSpecSelection(catalogRef.current,selected);
+          const pairs=selection.links.length?selection.links:selected===null?catalogRef.current.cells.flatMap((c,i)=>c?.kind==='repo'?[[0,i] as [number,number]]:[]):catalogRef.current.edges.filter(([from,to])=>from===selected||to===selected);
+          const lines=pairs.map(([from,to])=>[new Vector3(cells[from].x,10,cells[from].y),new Vector3(cells[to].x,10,cells[to].y)]);
+          for(const index of selection.indices){const cell=cells[index],radius=HEX_R*cellScale(index)*.94;lines.push(Array.from({length:7},(_,i)=>{const a=Math.PI/6+i*Math.PI/3;return new Vector3(cell.x+radius*Math.cos(a),12,cell.y+radius*Math.sin(a));}));}
+          // Ownership routes stay visible in the same map, never imply verified spec coverage.
+          if(!selection.links.length)for(const region of catalogRef.current.regions??[]){const portal=cells[region.portalIndex];lines.push([new Vector3(portal.x,10,portal.y),new Vector3(region.x,10,region.y)]);}
+          catalogLinks=lines.length?CreateLineSystem('catalog-source-edges',{lines},scene):null;
+          if(catalogLinks){catalogLinks.parent=layerNodes.foundation;catalogLinks.color=Color3.FromHexString(selected===null||selection.links.length?'#FFD45A':'#64DCFF');catalogLinks.alpha=selected===null ? .3 : .95;catalogLinks.isPickable=false;}
+          host.setAttribute('data-catalog-spec-pair',selection.indices.join(','));
+          host.setAttribute('data-catalog-edges',String(lines.length));
+        }
+      }
+      const projected: HiveDisplayProjection[] = [];
+      displaysRef.current?.forEach((row,index) => {
+        const cell = cells[index]; if (!row || !cell) return;
+        const rowWidth=cellWidth*cellScale(index);
+        if(hiveDisplayLod(rowWidth)==='overview')return;
+        const p = project(cell.x,cell.y), h = rowWidth * 2 / Math.sqrt(3);
+        if (p.x + rowWidth/2 < 0 || p.x-rowWidth/2 > width || p.y+h/2 < 0 || p.y-h/2 > height) return;
+        projected.push({index,x:p.x,y:p.y,width:rowWidth,height:h});
+      });
+      projected.sort((a,b) => Number(b.index===selectedDisplayRef.current)-Number(a.index===selectedDisplayRef.current) || Math.hypot(a.x-width/2,a.y-height/2)-Math.hypot(b.x-width/2,b.y-height/2));
+      const visible = projected.slice(0,32);
+      setProjections(previous => previous.length === visible.length && previous.every((p,i) => {
+        const next = visible[i];
+        return p.index === next.index && Math.abs(p.x-next.x)<.1 && Math.abs(p.y-next.y)<.1 && Math.abs(p.width-next.width)<.1;
+      }) ? previous : visible);
+      host.setAttribute('data-display-visible',String(visible.length));
+      host.setAttribute('data-display-cell-width',cellWidth.toFixed(1));
+      host.setAttribute('data-display-lod',hiveDisplayLod(cellWidth));
+      if(displayEventSource !== eventsRef.current) {
+        displayEventSource = eventsRef.current;
+        eventIssueNumbers = new Set(eventsRef.current.flatMap(e=>e.issue !== null ? [e.issue] : []));
+      }
+      host.setAttribute('data-event-cards',String(visible.filter(p=>eventIssueNumbers.has(displaysRef.current?.[p.index]?.number ?? -1)).length));
+    };
 
     // ---- frame loop ---------------------------------------------------------
     const t0 = performance.now();
@@ -656,37 +1064,54 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
     engine.runRenderLoop(() => {
       const nowMs = performance.now();
       const dt = Math.min(nowMs - lastMs, 32); lastMs = nowMs;
+      // the wall hangs in the air; the drift is small enough not to move a
+      // cell out from under the pointer while the player is reading it
+      fieldRoot.position.y = motionPreference.matches || selectedDisplayRef.current !== null ? 0 : Math.sin(nowMs / 6400) * 7;
+      host.setAttribute('data-reduced-motion',String(motionPreference.matches));
+      // the working cells breathe so a still frame still says which are live
+      refreshWorking(Date.now());
+      if (workingRing) workingRing.alpha = motionPreference.matches ? .8 : .65 + .15 * Math.sin(nowMs / 1600);
+      // the zoom glides instead of snapping, and it glides toward the cursor:
+      // an orthographic frustum is a uniform scale about the target, so moving
+      // the target by (1 - 1/f) toward the anchor keeps that point still
+      if (zoom !== zoomGoal) {
+        const prev = zoom;
+        zoom = motionPreference.matches || Math.abs(zoomGoal - zoom) < 1e-4 ? zoomGoal : zoom + (zoomGoal - zoom) * (1 - Math.pow(2, -dt / 60));
+        const f = zoom / prev;
+        if (anchor && f !== 1) {
+          const k = 1 - 1 / f;
+          const worldAnchor = hiveWallToWorld(anchor.x, anchor.z);
+          camera.target.x += (worldAnchor.x - camera.target.x) * k;
+          camera.target.y += (worldAnchor.y + fieldRoot.position.y - camera.target.y) * k;
+          clampTarget();
+        }
+        fit();
+      }
       // The box can change while no frame runs (a hidden pane, fullscreen,
       // a pane resized before it is shown); a ResizeObserver alone missed
       // that and left the field clipped to the old canvas. Check every frame.
       const cw = canvas.clientWidth, ch = canvas.clientHeight;
-      if ((cw > 0 && ch > 0) && (canvas.width !== cw || canvas.height !== ch)) { engine.resize(); fit(); }
+      const level = pixelBudgetLevel();
+      if ((cw > 0 && ch > 0) && (Math.abs(canvas.width-cw/level)>1 || Math.abs(canvas.height-ch/level)>1)) { engine.setHardwareScalingLevel(level); engine.resize(); fit(); }
       if (insetRef.current !== appliedInset) fit();
+      // the layers: applied on change, no rebuild; the host mirrors the applied state
+      const want = layersRef.current;
+      let changed = false;
+      for (const k of FIELD_LAYERS) { if (layerNodes[k].isEnabled(false) !== want[k]) { layerNodes[k].setEnabled(want[k]); changed = true; } }
+      if (changed || frames === 0) { host.setAttribute("data-layers", FIELD_LAYERS.filter((k) => want[k]).join(",") || "none"); const fc = host.getAttribute("data-foundation-cells"); if (fc !== null) host.setAttribute("data-foundation-shown", want.foundation ? fc : "0"); }
       aimBees();
       bees.forEach((b, k) => {
+        const quiet = motionPreference.matches || (displaysRef.current && signalHealthRef.current.board !== 'live');
+        if(quiet) b.t = 1;
         if (b.t < 1) b.t = Math.min(1, b.t + (b.speed * dt) / 1000);
         const A = cells[b.from], B = cells[b.to];
         if (!A || !B) return;
         const e = b.t < 0.5 ? 2 * b.t * b.t : 1 - 2 * (1 - b.t) * (1 - b.t);
         let x = A.x + (B.x - A.x) * e, z = A.y + (B.y - A.y) * e;
-        if (b.t >= 1 && b.busy) { const ph = nowMs / 700 + b.hover; x = B.x + Math.cos(ph) * S * 0.12; z = B.y + Math.sin(ph * 1.3) * S * 0.08; }
-        const model = b.busy ? b.bodyModel : b.larvaModel;
-        const other = b.busy ? b.larvaModel : b.bodyModel;
-        if (other) other.isVisible = false;
-        if (model) {
-          const mk = (b.busy ? b.bodyK : b.larvaK) ?? 1, mb = (b.busy ? b.bodyBase : b.larvaBase) ?? 0;
-          model.isVisible = true;
-          model.position.set(x, -mb * mk + (b.busy ? Math.abs(Math.sin(nowMs / 140 + k)) * 2 : 0), z);
-          if (b.t < 1) model.rotation.y = Math.atan2(B.x - A.x, B.y - A.y);
-          b.body.isVisible = false; b.larva.isVisible = false;
-        } else {
-          const sprite = b.busy ? b.body : b.larva;
-          b.body.isVisible = b.busy; b.larva.isVisible = !b.busy;
-          sprite.position.x = x; sprite.position.z = z;
-          sprite.position.y = sprite.height / 2 + (b.busy ? 2 + Math.abs(Math.sin(nowMs / 140 + k)) * 3 : 1);
-          sprite.invertU = B.x - A.x < 0;
-        }
-        const ur = unitRings[k]; ur.position.set(x, 1.2, z); ur.isVisible = true;
+        if (b.t >= 1 && b.busy && !quiet) { const ph = nowMs / 700 + b.hover; x = B.x + Math.cos(ph) * S * 0.12; z = B.y + Math.sin(ph * 1.3) * S * 0.08; }
+        b.mote.isVisible = !displaysRef.current || signalHealthRef.current.board === 'live' || !b.busy;
+        b.mote.position.set(x, 4 + (b.busy && !quiet ? Math.abs(Math.sin(nowMs / 140 + k)) * 4 : 0), z);
+        b.mote.scaling.setAll(b.busy ? 1 : 0.62);
         const line = flightLines[k];
         if (b.busy && b.t < 1) { CreateDashedLines(`flight-${b.slot}`, { points: [new Vector3(A.x, 2, A.y), new Vector3(B.x, 2, B.y)], dashSize: 6, gapSize: 4, dashNb: 40, instance: line }, scene); line.isVisible = true; }
         else line.isVisible = false;
@@ -694,49 +1119,141 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
       ingestEvents(nowMs);
       let write = 0;
       for (let i = 0; i < effects.length; i += 1) {
-        const fx = effects[i]; const cell = cells[fx.index]; const life = fx.flare ? 500 : fx.flip ? 900 : 1300; const age = nowMs - fx.start;
-        if (!cell || age > life) continue;
+        const fx = effects[i]; const cell = cells[fx.index]; const life = fx.signalColor ? 3000 : fx.flare ? 500 : fx.flip ? 900 : 1300; const age = nowMs - fx.start;
+        if (!cell || age > life || (fx.signalColor && signalHealthRef.current.activity !== 'live')) continue;
         effects[write] = fx; write += 1;
       }
       effects.length = Math.min(write, RING_POOL);
       for (let k = 0; k < RING_POOL; k += 1) {
         const fx = effects[k]; const ring = rings[k];
         if (!fx) { ring.isVisible = false; continue; }
-        const cell = cells[fx.index]; const life = fx.flare ? 500 : fx.flip ? 900 : 1300; const u2 = (nowMs - fx.start) / life;
+        const cell = cells[fx.index]; const life = fx.signalColor ? 3000 : fx.flare ? 500 : fx.flip ? 900 : 1300; const u2 = motionPreference.matches ? .45 : (nowMs - fx.start) / life;
         const r = fx.flare ? S * (0.9 - 0.6 * u2) : S * (0.12 + 0.5 * u2);
         ring.position.set(cell.x, 1.5, cell.y);
         ring.scaling.set(r, 1, r);
-        ring.color = Color3.FromHexString(fx.flare ?? TONE_HEX[fx.tone]);
+        ring.color = Color3.FromHexString(fx.signalColor ?? fx.flare ?? TONE_HEX[fx.tone]);
         ring.alpha = 0.9 * (1 - u2);
         ring.isVisible = true;
       }
-      const p = pickRef.current;
+      const p = selectedDisplayRef.current ?? pickRef.current;
       if (p !== null && cells[p]) placeRing(picked, p, 1.4); else picked.isVisible = false;
-      if (p !== flaredPick) { flaredPick = p; if (p !== null && cells[p] && effects.length < RING_POOL) effects.push({ index: p, tone: "muted", start: nowMs, flip: false, flare: ringTone(cells[p].own as Territory) }); }
+      if (p !== flaredPick) { flaredPick = p; if (!catalogRef.current && !displaysRef.current && p !== null && cells[p] && effects.length < RING_POOL) effects.push({ index: p, tone: "muted", start: nowMs, flip: false, flare: ringTone(cells[p].own as Territory) }); }
+      // a hovered plinth (K-5) draws the link from the ring's stone to the module cells it owns; nothing is drawn for a ring that owns no placed module
+      const linkRing = !displaysRef.current && hover >= 0 && layersRef.current.castle && castleLinks ? castleLinks.ringOfCell.get(hover) ?? null : null;
+      if (linkRing !== linkFor) {
+        if (linkLines) { linkLines.dispose(); linkLines = null; }
+        linkFor = linkRing;
+        if (linkRing && castleLinks) {
+          const owned = castleLinks.cellsOfRing.get(linkRing) ?? [];
+          const from = new Vector3(cells[hover].x, S * 0.35, cells[hover].y);
+          if (owned.length > 0) { linkLines = CreateLineSystem("ring-link", { lines: owned.map((ci) => [from, new Vector3(cells[ci].x, 4, cells[ci].y)]) }, scene); const tint = familyTint(ringFamily(linkRing)); linkLines.color = new Color3(tint[0], tint[1], tint[2]); linkLines.alpha = 0.85; linkLines.isPickable = false; linkLines.parent = layerNodes.castle; }
+          host.setAttribute("data-castle-link", `${linkRing}:${owned.length}`);
+        } else host.removeAttribute("data-castle-link");
+      }
       // no hover ring on empty ground (P1-10): only modules and the Queen's hub answer the pointer
-      if (hover >= 0 && hover !== p && cells[hover] && (cards[hover] || hover === home)) placeDashed(hover, 1.4); else hovered.isVisible = false;
+      // the cell under the pointer lights up, whatever it holds (the user,
+      // 2026-09-06). It used to light only a module, the hub or a honey cell,
+      // so most of the comb answered nothing and the board felt dead.
+      if (hover >= 0 && hover !== p && cells[hover]) placeDashed(hover, 1.4); else hovered.isVisible = false;
+      // the cell under the hand rises; the picked cell stays up
+      const wantLift = p !== null && cells[p] ? p : hover >= 0 && cells[hover] ? hover : -1;
+      if (wantLift !== liftIndex) { liftIndex = wantLift; if (liftIndex >= 0) {lift.position.set(cells[liftIndex].x, liftY, cells[liftIndex].y);lift.scaling.set(cellScale(liftIndex),1,cellScale(liftIndex));} }
+      const goalY = liftIndex >= 0 ? 16 : 0;
+      liftY = motionPreference.matches ? goalY : liftY + (goalY - liftY) * (1 - Math.pow(2, -dt / 55));
+      if (liftIndex >= 0) { lift.isVisible = true; lift.position.set(cells[liftIndex].x, liftY, cells[liftIndex].y); }
+      else if (liftY < 0.4) lift.isVisible = false; else lift.position.y = liftY;
+      showHoverCard(!catalogRef.current && !displaysRef.current && layersRef.current.foundation && hover >= 0 ? hover : -1);
       scene.render();
+      projectDisplays(nowMs);
+      savedViewRef.current = {zoom,x:camera.target.x,y:camera.target.y,focusKey:focusIndex !== null ? displaysRef.current?.[focusIndex]?.key ?? catalogRef.current?.cells[focusIndex]?.key ?? null : null,connection:focusConnection};
+      viewStore.set(sceneKey,savedViewRef.current);
       frames += 1;
       if (frames === 1) host.setAttribute("data-first-frame-ms", String(Math.round(nowMs - t0)));
       host.setAttribute("data-frames", String(frames));
     });
-    const ro = new ResizeObserver(() => { engine.resize(); fit(); });
+    // A resize keeps the camera where it was, which is right for a window nudged
+    // by a few pixels and wrong when the box changes shape: framing chosen for
+    // 830x527 leaves the hive off-screen at 1440x900, and the only way back was
+    // the Whole map button. A quarter in either dimension is the line between
+    // the two — past it the view is reframed, under it the operator's zoom and
+    // target are left alone.
+    let framedFor = { w: host.clientWidth, h: host.clientHeight };
+    const ro = new ResizeObserver(() => {
+      engine.resize();
+      const w = host.clientWidth, h = host.clientHeight;
+      const reshaped = framedFor.w > 0 && framedFor.h > 0
+        && (Math.abs(w - framedFor.w) / framedFor.w > 0.25 || Math.abs(h - framedFor.h) / framedFor.h > 0.25);
+      if (w > 0 && h > 0) framedFor = { w, h };
+      if (reshaped) cameraRef.current?.fit(); else fit();
+    });
     ro.observe(host);
     const onVisible = () => { engine.resize(); fit(); };
     document.addEventListener("visibilitychange", onVisible);
     document.addEventListener("fullscreenchange", onVisible);
     return () => {
-      disposed = true;
+      viewStore.set(sceneKey,{zoom,x:camera.target.x,y:camera.target.y,focusKey:focusIndex===null?null:viewKey(focusIndex),connection:focusConnection});
+      clearHoverCard();
+      canvas.removeEventListener('click',onCellClick);
+      canvas.removeEventListener('pointerleave',onCellLeave);
+      displayControllerRef.current = null;
       document.removeEventListener("visibilitychange", onVisible);
       document.removeEventListener("fullscreenchange", onVisible);
-      ro.disconnect(); engine.stopRenderLoop(); scene.dispose(); engine.dispose();
+      gestureSurface.removeEventListener("wheel", onWheel as EventListener);
+      gestureSurface.removeEventListener('pointerdown',onDown as EventListener,true);
+      gestureSurface.removeEventListener('click',suppressDraggedClick as EventListener,true);
+      window.removeEventListener('pointermove',onMove);
+      window.removeEventListener('pointerup',onUp);
+      window.removeEventListener('pointercancel',onUp);
+      window.removeEventListener('blur',onBlur);
+      canvas.removeEventListener('webglcontextlost', onContextLost, false);
+      ro.disconnect(); engine.stopRenderLoop(); scene.dispose();
+      // The engine stays. A rebuild is a new scene on the same context, and
+      // StrictMode's unmount is followed by a mount a moment later — releasing
+      // the context in between is what made two of them. If no run claims it,
+      // this is the unmount, and it goes.
+      window.clearTimeout(engineIdleRef.current);
+      engineIdleRef.current = window.setTimeout(() => {
+        if (engineRef.current?.engine !== engine) return;
+        engine.dispose();
+        canvas.remove();
+        engineRef.current = null;
+      }, 2000);
     };
-  }, [signature]);
+  }, [signature,sceneKey]);
+
+  useEffect(()=>{
+    if(!inspectIssueKey){appliedIssueFocus.current=null;return;}
+    const token=`${sceneKey}:${inspectIssueKey}`;
+    if(appliedIssueFocus.current===token)return;
+    const index=displaysRef.current?.findIndex(row=>row?.key===inspectIssueKey)??-1;
+    if(index>=0){appliedIssueFocus.current=token;displayControllerRef.current?.inspect(index);}
+  },[inspectIssueKey,signature,sceneKey]);
+
+  useEffect(()=>{
+    if(!inspectCatalogKey){appliedCatalogFocus.current=null;return;}
+    const token=`${sceneKey}:${inspectCatalogKey}`;
+    if(appliedCatalogFocus.current===token)return;
+    const index=catalogRef.current?.cells.findIndex(row=>row?.key===inspectCatalogKey)??-1;
+    if(index>=0){appliedCatalogFocus.current=token;catalogController.current?.inspect(index,true);}
+  },[inspectCatalogKey,signature,sceneKey]);
 
   return (
     <div className="queen27-comb is-embedded is-babylon">
-      <div className="queen27-comb-field" ref={hostRef} data-engine="babylon" data-look="platform">
-        <canvas ref={canvasRef} style={{ touchAction: "none", outline: "none" }} />
+      <div className="queen27-comb-field" ref={hostRef} data-engine="babylon" data-look="hive" data-grid="hex" data-board-health={signalHealth.board} data-activity-health={signalHealth.activity}>
+        <div className="queen-hive-stage" ref={stageRef} aria-hidden="true" />
+        <QueenStarfield lang={lang}/>
+        <div className="queen27-hover-card" ref={cardRef} aria-hidden="true" />
+        {displays && <QueenHiveDisplays rows={displays} projections={projections} selected={selectedDisplay} events={events} lang={lang} controls={!catalogLayer} showRepository={!!catalogLayer} onIssueOpen={onDisplaySelect} controller={{ inspect: index => displayControllerRef.current?.inspect(index), overview: () => displayControllerRef.current?.overview(), hover: index => displayControllerRef.current?.hover(index) }} />}
+        {displays && !catalogLayer && <QueenHiveTaskLegend rows={displays} lang={lang} health={signalHealth}/>}
+        {!displays && law && (
+          <div className="queen27-hive-law">
+            {t27Coverage === null && <span data-law="unknown"><i />{law.unknown}</span>}
+            <span data-law="t27"><i />{law.t27}</span>
+            <span data-law="manual"><i />{law.manual}</span>
+            <span data-law="awaiting"><i />{law.awaiting}</span>
+            <span data-law="bees"><i />{law.bees} {workers?.slots.filter((slot) => slot.state === "busy").length ?? 0}/{workers?.slots.length ?? 0}</span>
+          </div>
+        )}
       </div>
     </div>
   );

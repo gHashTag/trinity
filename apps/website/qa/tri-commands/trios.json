@@ -1,0 +1,2082 @@
+{
+  "cli": "trios",
+  "repo": "gHashTag/BrowserOS",
+  "source": "trios/bin/tri",
+  "commit": "7366096248dfb09893e9a7d1a0f1c56ced13d16e",
+  "rule": "every top-level case arm of trios/bin/tri and every name `tri help` documents (tools-from-trios-tri.mjs commandSet)",
+  "extractedBy": "apps/website/scripts/tri-commands.mjs",
+  "cardDirs": [
+    "trios/tri"
+  ],
+  "count": 295,
+  "withHelp": 280,
+  "notCounted": [],
+  "notCountedNote": "",
+  "commands": [
+    {
+      "name": "ab",
+      "aliases": [],
+      "help": "whether the difference stands out from noise, or there is just too little data",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 463"
+    },
+    {
+      "name": "accept-rate",
+      "aliases": [],
+      "help": "whether a brief that CAN fail gets accepted less often",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 698"
+    },
+    {
+      "name": "agree",
+      "aliases": [],
+      "help": "two implementations of one rule on real rows: where they diverge and which way",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 675"
+    },
+    {
+      "name": "anom",
+      "aliases": [],
+      "help": "step 0: what broke in production (providers, feed, routes)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 233"
+    },
+    {
+      "name": "anomalies",
+      "aliases": [],
+      "help": "step 0: what broke in production (providers, feed, routes)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 233"
+    },
+    {
+      "name": "author",
+      "aliases": [],
+      "help": "open an issue from a measured shortfall, limit 5 open",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 496"
+    },
+    {
+      "name": "backlog",
+      "aliases": [],
+      "help": "what the backlog CONTAINS, read issue by issue, not inferred from skip counters",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2168"
+    },
+    {
+      "name": "blog",
+      "aliases": [],
+      "help": "the t27.ai blog (trinity apps/website): receipt states, caveats, an HTML preview of a draft with its tables and figures, tsc+vite",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2013"
+    },
+    {
+      "name": "board",
+      "aliases": [],
+      "help": "trios dashboard: latest iteration + STATUS.md measurements",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 261"
+    },
+    {
+      "name": "boundary",
+      "aliases": [],
+      "help": "what a bee was allowed to touch and what it touched; CREATED vs edited",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1495"
+    },
+    {
+      "name": "brief-gate",
+      "aliases": [],
+      "help": "check a task draft with the Queen's own parser",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1505"
+    },
+    {
+      "name": "cast",
+      "aliases": [],
+      "help": "terminal recordings: real commands → .cast → GIF, X/OG card, t27.ai/term/<id>/ share page (publish archives to ~/skills/_state/casts/)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1906"
+    },
+    {
+      "name": "channel",
+      "aliases": [],
+      "help": "whether the single channel into the container is alive",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 584"
+    },
+    {
+      "name": "chat",
+      "aliases": [],
+      "help": "question to the agent (the key is fetched from Railway)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 47"
+    },
+    {
+      "name": "ci-diff",
+      "aliases": [],
+      "help": "which CI failures are NEW and which were red before you",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 714"
+    },
+    {
+      "name": "clocks",
+      "aliases": [],
+      "help": "which fields decisions hang on, and whether someone rewrites them",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 353"
+    },
+    {
+      "name": "close-done",
+      "aliases": [],
+      "help": "close issues with accepted work (leaves epics alone)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 508"
+    },
+    {
+      "name": "container",
+      "aliases": [],
+      "help": "who is PID 1 and how close to process exhaustion",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 563"
+    },
+    {
+      "name": "coverage",
+      "aliases": [],
+      "help": "what share of accepted verdicts the audit can check (cache: 10s vs 217s)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 600"
+    },
+    {
+      "name": "cycle",
+      "aliases": [],
+      "help": "one pass: measure, anomalies, dashboard, log entry (exit 2 = anomalies found; that is an answer)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2041"
+    },
+    {
+      "name": "cycle-anom",
+      "aliases": [],
+      "help": "every anomaly in full: claim, truth, repair (the dashboard fits seven)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2081"
+    },
+    {
+      "name": "cycle-anomalies",
+      "aliases": [],
+      "help": "every anomaly in full: claim, truth, repair (the dashboard fits seven)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2081"
+    },
+    {
+      "name": "cycle-dash",
+      "aliases": [],
+      "help": "show the latest dashboard, with its filesystem age as the first line",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2056"
+    },
+    {
+      "name": "cycle-doctor",
+      "aliases": [],
+      "help": "whether everything the loop needs is in place, and whether every one of its commands is reachable",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2135"
+    },
+    {
+      "name": "cycle-html",
+      "aliases": [],
+      "help": "the same measurement, but wide: every number shows the command that measured it, and every anomaly has its repair next to it. Exit 2 if the measurement is older than one cycle",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2066"
+    },
+    {
+      "name": "cycle-log",
+      "aliases": [],
+      "help": "pass log: how many anomalies, which ones lingered, what was repaired",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2090"
+    },
+    {
+      "name": "cycle-note",
+      "aliases": [],
+      "help": "prose is written by hand; the dashboard draws a blank if nobody wrote it",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2107"
+    },
+    {
+      "name": "cycle-repair",
+      "aliases": [],
+      "help": "the same plus the listed safe repairs (a dead owner's lock, CLEAN trees)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2048"
+    },
+    {
+      "name": "cycle-sense",
+      "aliases": [],
+      "help": "measure only, no drawing",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2086"
+    },
+    {
+      "name": "dash",
+      "aliases": [],
+      "help": "rebuild the production dashboard STATUS.md",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 256"
+    },
+    {
+      "name": "dash2",
+      "aliases": [],
+      "help": "loop dashboard from a FRESH measurement: liveness from two signals, every number has an age, unmeasured shows as '-' (`cycle-dash` shows the one already drawn)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2472"
+    },
+    {
+      "name": "deploy-wait",
+      "aliases": [],
+      "help": "wait until the edit reaches the live render",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1512"
+    },
+    {
+      "name": "devkit",
+      "aliases": [],
+      "help": "the FPGA flow layer by layer: per-layer time, t27 replacements byte-compared, Amdahl ceilings, hours/yr",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1905"
+    },
+    {
+      "name": "drift",
+      "aliases": [],
+      "help": "whether this is the file the timers run, and whether it is in the repository (exit 1 — measured drift, 2 — could not read; --adopt by hand only)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2157"
+    },
+    {
+      "name": "driver",
+      "aliases": [],
+      "help": "whether anyone is driving iterations at all. Exit 1 — no driver (a measured zero), 2 — could not read (this is NOT zero)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2140"
+    },
+    {
+      "name": "exposure",
+      "aliases": [],
+      "help": "what the live service serves to an origin it does not know",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 612"
+    },
+    {
+      "name": "facts",
+      "aliases": [],
+      "help": "measured dashboard numbers; what cannot be measured shows as '-'",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 534"
+    },
+    {
+      "name": "failures",
+      "aliases": [],
+      "help": "which chain steps fail, how often, and with what evidence",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 540"
+    },
+    {
+      "name": "feed",
+      "aliases": [],
+      "help": "feeding only: push, close, open, no audits",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 438"
+    },
+    {
+      "name": "fence",
+      "aliases": [],
+      "help": "which paths stuck jobs hold (boundaries to avoid)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 328"
+    },
+    {
+      "name": "fields",
+      "aliases": [],
+      "help": "whether code reads fields the query does not select",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 346"
+    },
+    {
+      "name": "flaky",
+      "aliases": [],
+      "help": "which red tests fail ALWAYS and which only sometimes",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 706"
+    },
+    {
+      "name": "forked-files",
+      "aliases": [],
+      "help": "a file that lives in two places must not start saying different things",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 721"
+    },
+    {
+      "name": "fp-check",
+      "aliases": [],
+      "help": "whether the checkers accuse known-good work",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 339"
+    },
+    {
+      "name": "fpga",
+      "aliases": [],
+      "help": "where the UART is (behind a hub or direct), openocd, latest runs, git, loop",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1889"
+    },
+    {
+      "name": "fpga-audit",
+      "aliases": [],
+      "help": "anomalies: key in logs, log > 1 MB, unfinished log, a \"verified\" count in a document with no log, uncommitted/unpushed records, two openocds, stale lock (exit 2 = anomalies; --heal only clears a stale lock)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1891"
+    },
+    {
+      "name": "fpga-batch",
+      "aliases": [],
+      "help": "the batched wire protocol design gate: conformance/tern_tc_batch_model.py --self-test (BatchCell reference model of specs/trinet/tern_tc_batch_ax7203.t27 — SETX/DOT6 frames, the RAM-read preimage rule, negative controls incl. RAM drift after SETX); exit 0 PASS",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1935"
+    },
+    {
+      "name": "fpga-batch-cosim",
+      "aliases": [],
+      "help": "conformance/tern_tc_batch_rtl_cosim.py: the rehearsal's recorded request stream replayed through formal/tern_tc_layer_rtl_tb.v under iverilog vs a fresh HuntingBatchCell (byte-for-byte; negative control = blind 24-byte framing). Pre-built red: FAILs on the current core at the first SETX tag (no SETX/DOT6 ops yet); PASS is the TERN_TC_BATCH_RTL_PLAN.md core edit's gate. The walk_answers precondition refuses non-adjudicable streams (out-of-range phantom frames: model drops, RTL will answer) loudly instead of reporting a mystery diff; needs iverilog+vvp",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1937"
+    },
+    {
+      "name": "fpga-batch-rehearsal",
+      "aliases": [],
+      "help": "the batched protocol's job stream: conformance/tern_tc_batch_runner.py --self-test (26 checks — whole passes pipelined through one window, mixed 19/24-byte answers shaped by issued nonces and settled by tag — natural y-nonce collisions hit ~1% of DOT6 frames and resolve without a false stop, loss recovery over RxLoss/TxLoss/the hunting parser, zero-plane skip, per-row recombination vs the int8 oracle, the honest/corrupt rehearsal pair); exit 0 PASS",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1936"
+    },
+    {
+      "name": "fpga-budget",
+      "aliases": [],
+      "help": "wire budget of a finished generation run: request and answer streams in bytes and seconds-alone, each share of the wall clock, in-run jobs/s against the link ceiling, request-bound or answer-bound verdict; REQ_LEN/RESP_LEN/BAUD come from the spec the log cites (the decode chain, stopped at the first spec pinning them), retransmit frames counted into the request stream and labelled approximate; refuses a live, short-verified, elapsed-less or constant-less log",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1912"
+    },
+    {
+      "name": "fpga-build",
+      "aliases": [],
+      "help": "build a node bitstream locally (openXC7, prjxray-db ab1fc60); never touches the board, only prints the flash command (conformance/NODE_TOOLCHAIN_RESTORE.md)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1955"
+    },
+    {
+      "name": "fpga-claim",
+      "aliases": [],
+      "help": "loop iteration lock (exit 75 = held by another)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1908"
+    },
+    {
+      "name": "fpga-cost",
+      "aliases": [],
+      "help": "LUT/FF/CARRY4/DSP/BRAM (B36+B18) under four synth_xilinx flag sets and the spread of the difference: a gap below the spread is the mapper, not the design; BRAM is how an inferred RAM is proven to have inferred (FF inflation means it did not)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1920"
+    },
+    {
+      "name": "fpga-decode",
+      "aliases": [],
+      "help": "the board ids of a generation log as text; refuses unless every receipt verified, exit 0, board ids = CPU_INT_IDS, the model sha is the generation spec's and the tokenizer vocabulary equals the model's (the local results/step2 tokenizer is 32000, the model 8192: refused)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1948"
+    },
+    {
+      "name": "fpga-derive",
+      "aliases": [],
+      "help": "rebuild the kept corpus from its chain (~/t27 at the pinned commit via git archive, the sibling's t27_bench.py + data.py with the held-copy patch, items/tokenizer from the keep blobs) and sha256-verify every MANIFEST.tsv row tagged keep:ft_t27_8k; 91/92 rows byte-identical, manifest.json checked on content, proven fire 29",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1931"
+    },
+    {
+      "name": "fpga-fire",
+      "aliases": [],
+      "help": "open the NEXT fire: lock row + fire-log stub built in memory, linted, written as ONE atomic edit (the fire-18 protocol made mechanical); refuses if a fire is IN-PROGRESS or the file does not lint; numbers above the archive max too; the DONE flip and full log entry stay hand-written",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1927"
+    },
+    {
+      "name": "fpga-firelog",
+      "aliases": [],
+      "help": "move fire-log entries whose fires lost their LOCKS rows to .claude/loop/firelog-archive.md (verbatim, never dropped; archive written first so a crash duplicates rather than loses); the linter counts a fire's entry in either home",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1928"
+    },
+    {
+      "name": "fpga-flash",
+      "aliases": [],
+      "help": "load a bitstream into SRAM (sudo openocd, the owner types the password); refuses without the owner's quoted yes, with openocd running, with an existing log or a foreign payload, or while a board run holds the UART lock (exit 75); records everything in board_runs/NAME.log; the key is wiped after a load",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1953"
+    },
+    {
+      "name": "fpga-genscore",
+      "aliases": [],
+      "help": "score t27_bench gen candidates for a behavioral criterion: literal >=N-line count AND degeneracy-filtered count (unique stripped lines < half the body = repetition loop, fire 35); the verdict rides the FILTERED count at --pass-frac of rows; in the tools self-test sweep",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1932"
+    },
+    {
+      "name": "fpga-hole",
+      "aliases": [],
+      "help": "UART hole size from nonce arithmetic (expected = 0x10000 + verified; every hex header must give the same number), not by eye",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1950"
+    },
+    {
+      "name": "fpga-hostnet",
+      "aliases": [],
+      "help": "before a LAN run: the route to IP is direct on a local interface (no gateway, no VPN tunnel), IP is in its subnet and not this Mac, no ARP entry yet; exit 0 ok, 2 stop; sends nothing",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1942"
+    },
+    {
+      "name": "fpga-ioclients",
+      "aliases": [],
+      "help": "who holds IOKit user clients on the CP2102N (pid, count, alive) and which driver is bound (AppleUSBSLCOM or a vendor one); every fpga-run header gets \"# usb clients\" and \"# usb driver\" lines",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1951"
+    },
+    {
+      "name": "fpga-jtag",
+      "aliases": [],
+      "help": "JTAG chain behind a Xilinx Platform Cable USB II (DLC10, 03fd): fxload only on --load (no sudo), xc3sprog -c xpc -j, each IDCODE named; no chain -> raw TDO shift classified (all ones = nothing drives TDO: VREF/ribbon/orientation; all zeros = TDO held low: cable). Never programs. Exit 0 chain, 1 none, 2 no cable",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1933"
+    },
+    {
+      "name": "fpga-keep",
+      "aliases": [],
+      "help": "keep a volatile /tmp tree durably: every file -> artifacts/model_inputs/blobs/<sha256> (gitignored) + a MANIFEST.tsv row (tracked), pins tag keep:TAG; after that tmpcheck watches the tree and --restore rebuilds it after a reboot (fire 28: the round-1 corpus had no builder, only /tmp and a stopped pod); in the tools self-test sweep",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1930"
+    },
+    {
+      "name": "fpga-keycheck",
+      "aliases": [],
+      "help": "how many times the key occurs in each file (prints counts, never the key); no FILE = every board_runs/ and rehearsal_runs/ log, also flags logs >= 1 MB",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1913"
+    },
+    {
+      "name": "fpga-lesson",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "case arm, line 1918"
+    },
+    {
+      "name": "fpga-loopcheck",
+      "aliases": [],
+      "help": "the standing per-fire sweep in one call: git status (informational), specs, keycheck, audit, one greppable verdict line; exit is the OR of the three real components",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1922"
+    },
+    {
+      "name": "fpga-loopstate",
+      "aliases": [],
+      "help": "lint .claude/loop-state.md (read-only): sections, UART lock paragraph, exactly one fresh IN-PROGRESS row, every table fire in the fire log (live file or the firelog archive); loopcheck runs it as its fifth component, so a broken coordination file fails the sweep instead of being inherited by the next cron fire",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1926"
+    },
+    {
+      "name": "fpga-next",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "case arm, line 1916"
+    },
+    {
+      "name": "fpga-pins",
+      "aliases": [],
+      "help": "the blast radius of editing FILE, before the edit: every spec pinning it by sha256 transitively (L1 direct, L2 pinners of pinners, ...) plus the params generators inside the radius — the exact set fpga-repin will then walk. Reports pin cycles (exit 1); read-only",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1924"
+    },
+    {
+      "name": "fpga-prcheck",
+      "aliases": [],
+      "help": "before a PR: bare #N refs, the Claude Code trailer, estimated stamps, and a fork behind with workflow changes the token cannot push; exit 0 ready, 2 not; posts nothing",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1941"
+    },
+    {
+      "name": "fpga-push",
+      "aliases": [],
+      "help": "fetch, rebase, key check of the outgoing patch, push with the gHashTag token (HANDOFF section 9), no force",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1914"
+    },
+    {
+      "name": "fpga-quiet",
+      "aliases": [],
+      "help": "wait until the 1-min load stays <= X per cpu for HOLD s; exit 0 quiet, 1 if WAIT passes first; starts nothing. Run it before a one-attempt board run",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1940"
+    },
+    {
+      "name": "fpga-rehearse",
+      "aliases": [],
+      "help": "COMMAND... — a no-board rehearsal twice at once into rehearsal_runs/NAME_{1,2}.log; refuses --port, /dev/, the key file, openocd; exit 0 only if both pass with the same events (wall-clock times masked). --compare LOG1 LOG2 compares two logs",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1939"
+    },
+    {
+      "name": "fpga-release",
+      "aliases": [],
+      "help": "loop iteration lock (exit 75 = held by another)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1909"
+    },
+    {
+      "name": "fpga-repin",
+      "aliases": [],
+      "help": "propagate a sha256 change of FILE through the pin graph to a fixpoint: leaf pins, cross-spec pins, params regeneration, params pins. Never guesses: a missing pinned file is skipped with a note, an ambiguous *_SHA256 is refused, a generator PROBLEM stops the walk. Exit 0 = converged, 1 = changes made/pending, 2 = refused/PROBLEM",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1923"
+    },
+    {
+      "name": "fpga-restore",
+      "aliases": [],
+      "help": "the post-power-event chain in one command: probe the JTAG chain (no sudo; idcode 0x13636093 = the XC7A200T answers, all-ones = board power, no device = the FTDI half-enumeration wedge), then the fpga-flash load, then discover_port.py for the UART (status 0x04 after a fresh load is normal: no key yet), then the whole chain as one note on the task",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1954"
+    },
+    {
+      "name": "fpga-run",
+      "aliases": [],
+      "help": "COMMAND... — one board run into board_runs/NAME.log with the standard wrapper; never overwrites an existing log (one attempt, both runs on record)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1910"
+    },
+    {
+      "name": "fpga-runlog",
+      "aliases": [],
+      "help": "one command for a run's progress: grammar-parsed status of a live (polls) or finished board_runs log; --self-test",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1911"
+    },
+    {
+      "name": "fpga-rxcap",
+      "aliases": [],
+      "help": "E3 RX capture at the RX flip-flops in the same SDF (conformance/e3_rx_capture_model.py; spec specs/trinet/e3_rx_capture_model_ax7203.t27; reads /tmp/e3txhold, pinned by sha, runs no tool): with no argument prints the one recorded run (conformance/model_runs/e3_rx_capture_model.log) if it exists, else runs it once (seconds); exit 0 PASS, 1 FAIL, 2 NO VERDICT. PASS 00:21Z 2026-09-28: falling-edge hold 10900 ps on rxctl_n; RXC 2.4 ns behind its data through the BUFG, so rxd_p1 and an RX_ER nibble sample the new value over x -2.5..+0.5 ns (board ed should stay 0)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1946"
+    },
+    {
+      "name": "fpga-rxer",
+      "aliases": [],
+      "help": "E3 RX_ER cases in simulation (conformance/eth_rxer_bench.py, about 4.5 min at nice 19): the pinned TB, model and RTL compiled unchanged plus formal/eth_rxer_inject.v as a second top that forces RX_CTL at one falling RXC edge; expectations fixed in NODE_ETHERNET_PLAN.md; exit 1 if any case disagrees. --gate also runs each case on the yosys netlist (the runner's gate_netlist) and requires every INJ/RXE/TXF/TB/UART| line of the gate log to equal the RTL log; each gate run took 28 to 30 min at nice 19 under load (15/15 at 22:35Z, 91b07fd86). Rerun after any E3 RTL change",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1944"
+    },
+    {
+      "name": "fpga-seeds",
+      "aliases": [],
+      "help": "Fmax as a distribution over nextpnr-xilinx seeds: CSV row per seed (LUT/FF/CARRY4, post-route Fmax, logic/routing ns) + min/median/max; warns when cell counts differ; --run keeps one log per seed, refuses overwrite, writes input sha256s + nextpnr version",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1934"
+    },
+    {
+      "name": "fpga-selftest",
+      "aliases": [],
+      "help": "off-board --self-test of every conformance/*.py a .t27 spec names (RUNNER or *_FILE); refuses a self_test that opens a port (exit 2 = fail/missing/refused)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1938"
+    },
+    {
+      "name": "fpga-specs",
+      "aliases": [],
+      "help": "every conformance/*_from_spec.mjs --check: .t27 specs compile, test blocks pass, generated files have not drifted (exit 2 = drift)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1921"
+    },
+    {
+      "name": "fpga-stamps",
+      "aliases": [],
+      "help": "the audit's stamp check alone: HH:MM stamps that postdate the commit that wrote them, over the claim docs, plus its calibration probe (stamp_probe steps the probe commit back across midnight so it stays inside the check's same-date scope at every instant — the fire-27 bug); in the tools self-test sweep",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1929"
+    },
+    {
+      "name": "fpga-status",
+      "aliases": [],
+      "help": "USB (UART behind a hub?), openocd, lock, what is loaded (from the latest flash log), latest runs (verdict or exit), git",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1890"
+    },
+    {
+      "name": "fpga-steps",
+      "aliases": [],
+      "help": "where a pre-registered board sequence stands (default plan NODE_ETHERNET_PLAN.md, e.g. KEY=E3; FILE is looked up here, then in conformance/; KEY is the start of the heading, e.g. \"The board run\" --plan UART_LOSS_HUBFREE.md): each tri fpga-run/-flash line against its board_runs log, commands that differ from the plan, out-of-order logs, the next step; prints only, runs nothing, judges nothing; exit 2 on a problem",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1943"
+    },
+    {
+      "name": "fpga-task",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "case arm, line 1917"
+    },
+    {
+      "name": "fpga-tmpcheck",
+      "aliases": [],
+      "help": "every file a .t27 spec pins by sha256 under /tmp (emptied at boot): ok / CHANGED / GONE and whether a kept copy exists in trinity-fpga/artifacts/model_inputs/blobs (gitignored; MANIFEST.tsv tracked). --archive keeps present files, --restore puts kept ones back where gone (never over a CHANGED file); fpga-audit flags lost and unkept inputs and --heal does both. Exit 0 all kept, 1 some unkept or unlocated, 2 a pin lost",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1947"
+    },
+    {
+      "name": "fpga-tools",
+      "aliases": [],
+      "help": "every board-tool's own --self-test in one call (runlog, budget, tmpcheck, decode, repin, pins, fire, firelog), one verdict line; loopcheck runs it as its fourth component, so each fire re-verifies the whole tool layer after any edit",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1925"
+    },
+    {
+      "name": "fpga-tristate",
+      "aliases": [],
+      "help": "pads whose output enable comes out inverted (OLOGIC pad pip or routed T1 input without ZINV_T1; exit 1); the archived nextpnr-xilinx drops that bit under router1",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1952"
+    },
+    {
+      "name": "fpga-txhold",
+      "aliases": [],
+      "help": "E3 TX hold and setup at the TX output buffers in nextpnr-xilinx's own SDF of the routed e3z (conformance/e3_tx_hold_model.py; spec specs/trinet/e3_tx_hold_model_ax7203.t27): with no argument prints the one recorded run (conformance/model_runs/e3_tx_hold_model.log) if it exists, else runs it once (about 2.5 min, needs /tmp/trinet-node-build/e3z); exit 0 PASS, 1 FAIL, 2 NO VERDICT. PASS 23:23Z 2026-09-27: smallest hold 3445 ps on TXD1, bench 3000; the model has no clock skew. Another build or RTL needs its own spec",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1945"
+    },
+    {
+      "name": "fpga-usb",
+      "aliases": [],
+      "help": "CP2102N placement: DIRECT/HUB by the locationID rule, cross-checked by the hub-class walk of uart_loss_hubfree_ax7203.py --usb (exit 1 = HUB, 3 = the two rules disagree)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1915"
+    },
+    {
+      "name": "fpga-watch-clients",
+      "aliases": [],
+      "help": "sample IOKit user clients on the CP2102N into board_runs/NAME.clients.log while board_runs/NAME.log is open; passive (ioreg only, never the UART lock); start it just before tri fpga-run NAME",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1949"
+    },
+    {
+      "name": "fpga-wire",
+      "aliases": [],
+      "help": "what the CP2102N actually sends (24 MHz / N) and which requested range gives the same wire rate; a sweep step finer than that range measures nothing",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1919"
+    },
+    {
+      "name": "game",
+      "aliases": [],
+      "help": "game loop for t27.ai/#/queen: state (iteration, tasks, findings)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1888"
+    },
+    {
+      "name": "game-activity",
+      "aliases": [],
+      "help": "sample of /queen/public-activity over N hours: kinds, review verdicts by (issue, state) with all stamps, fresh tick",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1996"
+    },
+    {
+      "name": "game-anomalies",
+      "aliases": [],
+      "help": "live checks: endpoints, apex vs main, publisher, chunk; --heal repairs",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1964"
+    },
+    {
+      "name": "game-bar",
+      "aliases": [],
+      "help": "column widths of the resource bar at four desktop sizes in both languages (the measurement that found the 200 px brand brow)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1993"
+    },
+    {
+      "name": "game-bees",
+      "aliases": [],
+      "help": "live bees from public-board and the age of each one's last word on the activity wire against the round length (warm/COLD)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1986"
+    },
+    {
+      "name": "game-blog",
+      "aliases": [],
+      "help": "does every post in t27.ai's served Blog chunk have its /blog/<slug>/ page and og-blog card on the apex? (verify-site.sh's predicate, asked between publisher runs); exit 1 on drift",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2012"
+    },
+    {
+      "name": "game-branch",
+      "aliases": [],
+      "help": "first action of a cycle: fetch origin and branch NAME from origin/main in the trinity checkout (refuses if the tree has foreign edits)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1998"
+    },
+    {
+      "name": "game-cadence",
+      "aliases": [],
+      "help": "the apex publisher's real cadence vs its */15 cron: fired-slot %, gap median/p99/max, run time, hand dispatches",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2014"
+    },
+    {
+      "name": "game-claim",
+      "aliases": [],
+      "help": "loop lock (exit 75 = another run holds it)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1956"
+    },
+    {
+      "name": "game-clock",
+      "aliases": [],
+      "help": "whether the status endpoint exposes its clock to the browser on t27.ai (Date, Access-Control-Expose-Headers) and the skew against this machine",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1999"
+    },
+    {
+      "name": "game-close",
+      "aliases": [],
+      "help": "close a cycle: task done, anomalies --heal, closed_at, iterate, dash, release, skill commit (the report and CONTEXT.md are edited by hand BEFORE)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2002"
+    },
+    {
+      "name": "game-contract",
+      "aliases": [],
+      "help": "create qa/queen-NAME-contract.mjs from the pick harness, register check:queen-NAME and append it to the full gate list (the tail fails ON PURPOSE)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1997"
+    },
+    {
+      "name": "game-copy",
+      "aliases": [],
+      "help": "English and Russian value of a COPY key from Queen.tsx and how many places use it",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1994"
+    },
+    {
+      "name": "game-dash",
+      "aliases": [],
+      "help": "DASHBOARD.md + dashboard.html (Claude Code design); last step of a cycle",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1968"
+    },
+    {
+      "name": "game-events",
+      "aliases": [],
+      "help": "recent events of one kind on the activity wire with their state, in INTEL FEED words (default: review)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1989"
+    },
+    {
+      "name": "game-feed",
+      "aliases": [],
+      "help": "what the INTEL FEED header should say about a fresh wire response: rows, span between oldest and newest, kinds",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1990"
+    },
+    {
+      "name": "game-finding",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "case arm, line 1960"
+    },
+    {
+      "name": "game-foundation",
+      "aliases": [],
+      "help": "GitHub snapshot for the foundation (closed issues, epics with children and ring, releases, rings) into public/queen/foundation.json; writes only when the content without generatedAt changes, otherwise prints unchanged",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1987"
+    },
+    {
+      "name": "game-gate",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "case arm, line 1961"
+    },
+    {
+      "name": "game-gates",
+      "aliases": [],
+      "help": "the Queen gate chain (full = + 5 headless-Chrome contracts, ~8 min); exit 0 = all green",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2004"
+    },
+    {
+      "name": "game-ingest",
+      "aliases": [],
+      "help": "merge the workflow plan from journal.jsonl into the backlog (idempotent)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1974"
+    },
+    {
+      "name": "game-iterate",
+      "aliases": [],
+      "help": "new cycle: counter + last_run",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1958"
+    },
+    {
+      "name": "game-lesson",
+      "aliases": [],
+      "help": "record a lesson in queen-game-loop/LESSONS.md",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2020"
+    },
+    {
+      "name": "game-lessons",
+      "aliases": [],
+      "help": "index of queen-game-loop lessons (no words), or the lessons containing ALL the words; exit 1 on no match",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2019"
+    },
+    {
+      "name": "game-local",
+      "aliases": [],
+      "help": "\"run it locally\": vite preview of the built site on 127.0.0.1:4173 and open #/queen in the default browser (not in the app panel: the page is hidden there and the engine stalls)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2000"
+    },
+    {
+      "name": "game-measure",
+      "aliases": [],
+      "help": "run ONE headless contract qa/queen-NAME-contract.mjs on the current dist (refuses while the gate chain runs: dist is shared)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1995"
+    },
+    {
+      "name": "game-merged",
+      "aliases": [],
+      "help": "audit the PAST: every merged queen-* PR on t27 against her verdict; flags DELETES-MOST merges (a gutted file). Exit 1 = merges without her accept",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2017"
+    },
+    {
+      "name": "game-models",
+      "aliases": [],
+      "help": "field models (public/queen/models) with sizes and licence; pull fetches a Kenney pack by slug only after the user says so, printing source and size",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1985"
+    },
+    {
+      "name": "game-next",
+      "aliases": [],
+      "help": "top open backlog task",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1963"
+    },
+    {
+      "name": "game-objects",
+      "aliases": [],
+      "help": "field object inventory: what is drawn, on which layer, and which entity stands behind it",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1988"
+    },
+    {
+      "name": "game-plan",
+      "aliases": [],
+      "help": "module building plan from modules.json, by the same pure function that draws the field (core, scale, height, wings, antennas, rotation, hash)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1984"
+    },
+    {
+      "name": "game-prove",
+      "aliases": [],
+      "help": "wait until t27.ai serves the Queen chunk with the marker / the named entry / the entry from the apex index.html (different from --after); exit 0 = proven",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2005"
+    },
+    {
+      "name": "game-release",
+      "aliases": [],
+      "help": "loop lock (exit 75 = another run holds it)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1957"
+    },
+    {
+      "name": "game-report",
+      "aliases": [],
+      "help": "latest cycle report (first N lines)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1979"
+    },
+    {
+      "name": "game-round",
+      "aliases": [],
+      "help": "whether the Queen ticks: lastRoundAt and roundSeconds against the SERVER CLOCK (Date header), not the laptop",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1992"
+    },
+    {
+      "name": "game-selftest",
+      "aliases": [],
+      "help": "run every queen-game-loop script's --self-test (found by grep, not a list); exit 1 if any fails",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2015"
+    },
+    {
+      "name": "game-served",
+      "aliases": [],
+      "help": "do t27.ai's llms.txt/agents.t27 match the trinity commit the apex names as its source? --all lists every top-level public file; exit 1 on drift",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2010"
+    },
+    {
+      "name": "game-ship",
+      "aliases": [],
+      "help": "PATHSPEC... — add by pathspec, commit, push, PR, squash-merge, publisher dispatch (no watch and no prove)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2003"
+    },
+    {
+      "name": "game-site",
+      "aliases": [],
+      "help": "can trinity main build t27.ai? runs the publisher's own prebuild:ci + check:silicon in a loop-owned worktree, cached per main SHA (exit 1 red, 2 could not check)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2007"
+    },
+    {
+      "name": "game-spike",
+      "aliases": [],
+      "help": "engine measurement on the current checkout: canvas2D vs Babylon, rAF p50/p95/p99, vsync misses, chunk brotli (GPU via ANGLE/Metal)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2001"
+    },
+    {
+      "name": "game-status",
+      "aliases": [],
+      "help": "what the status pill and the VERDICTS tile read: swarmState, scheduler, dispatches (running/unreviewed), last tick decision",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1991"
+    },
+    {
+      "name": "game-task",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "case arm, line 1959"
+    },
+    {
+      "name": "game-tick",
+      "aliases": [],
+      "help": "one loop tick: run the anomaly scan and print only what changed since the last (NEW red / CLEARED / one standing line); exit 1 on a NEW red row",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2016"
+    },
+    {
+      "name": "game-vault",
+      "aliases": [],
+      "help": "content-addressed snapshots of the loop's skill dir + tri itself (~/.cache/queen-loop/vault); save runs only when --check finds no loss",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2011"
+    },
+    {
+      "name": "game-verdicts",
+      "aliases": [],
+      "help": "Queen's verdicts on the public board + every ARMED bee PR on t27 checked for her accept at its head (exit 1 = rule broken, 2 = could not check)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2006"
+    },
+    {
+      "name": "game-verify",
+      "aliases": [],
+      "help": "self-check of the game loop state: duplicate ids, unknown statuses and severity, stale lock (exit 1 = the state contradicts itself)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1962"
+    },
+    {
+      "name": "game-wire",
+      "aliases": [],
+      "help": "what the public endpoints actually carry (fields on N cards)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1983"
+    },
+    {
+      "name": "game-writers",
+      "aliases": [],
+      "help": "who wrote t27.ai (ghashtag.github.io) in the last DAYS (7): each commit named by its door (publisher, deploy-site, book-bot, hand, hand-gHashTag); exit 1 on an UNKNOWN door",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2009"
+    },
+    {
+      "name": "handover",
+      "aliases": [],
+      "help": "owner summary from the newest wave: start + options + age",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 64"
+    },
+    {
+      "name": "handover-116-archived",
+      "aliases": [],
+      "help": "frozen wave 116 briefing (archive, not the current state)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 105"
+    },
+    {
+      "name": "heal",
+      "aliases": [],
+      "help": "all swarm repairs in one chain, in the right order",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 502"
+    },
+    {
+      "name": "help",
+      "aliases": [],
+      "help": "tri help: this help",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1608"
+    },
+    {
+      "name": "holds",
+      "aliases": [],
+      "help": "what the swarm holds now and whether two dispatches claim one file",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 401"
+    },
+    {
+      "name": "idle",
+      "aliases": [],
+      "help": "how long the swarm stood idle and what blocked the rounds (golden rule)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 665"
+    },
+    {
+      "name": "iter",
+      "aliases": [],
+      "help": "loop state, dashboard, log",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 297"
+    },
+    {
+      "name": "iter-anchors",
+      "aliases": [],
+      "help": "loop state, dashboard, log",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 306"
+    },
+    {
+      "name": "iter-dash",
+      "aliases": [],
+      "help": "loop state, dashboard, log",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 300"
+    },
+    {
+      "name": "iter-log",
+      "aliases": [],
+      "help": "loop state, dashboard, log",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 303"
+    },
+    {
+      "name": "iter-render",
+      "aliases": [],
+      "help": "measure the swarm, update the anchors, redraw the dashboard",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 309"
+    },
+    {
+      "name": "iter-unlock",
+      "aliases": [],
+      "help": "release the loop lock (only if `tri iter` says stale)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 315"
+    },
+    {
+      "name": "jobs",
+      "aliases": [],
+      "help": "campaign status in one line (guards/urgent/iterations)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1534"
+    },
+    {
+      "name": "jobs-anomalies",
+      "aliases": [],
+      "help": "what is wrong / iteration history",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1545"
+    },
+    {
+      "name": "jobs-board",
+      "aliases": [],
+      "help": "funnel by stage",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1557"
+    },
+    {
+      "name": "jobs-check",
+      "aliases": [],
+      "help": "four guards: leaks, truth, duplicate signature, voice",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1572"
+    },
+    {
+      "name": "jobs-dash",
+      "aliases": [],
+      "help": "rebuild the dashboard (and open it)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1564"
+    },
+    {
+      "name": "jobs-drafts",
+      "aliases": [],
+      "help": "draft triage: what went out, what waits",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1591"
+    },
+    {
+      "name": "jobs-guards",
+      "aliases": [],
+      "help": "prove the guards before sending (exit 1 = do not send)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1541"
+    },
+    {
+      "name": "jobs-journal",
+      "aliases": [],
+      "help": "what is wrong / iteration history",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1548"
+    },
+    {
+      "name": "jobs-leads",
+      "aliases": [],
+      "help": "clients on topic: who is worth writing to",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1596"
+    },
+    {
+      "name": "jobs-lesson",
+      "aliases": [],
+      "help": "record a lesson in correspondence-crm/LESSONS.md",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1583"
+    },
+    {
+      "name": "jobs-next",
+      "aliases": [],
+      "help": "what to do next, by descending payoff",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1551"
+    },
+    {
+      "name": "jobs-owed",
+      "aliases": [],
+      "help": "who is waiting for a reply, oldest debt first",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1554"
+    },
+    {
+      "name": "jobs-run",
+      "aliases": [],
+      "help": "one loop iteration: preflight → sync → anomalies → dashboard",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1537"
+    },
+    {
+      "name": "jobs-show",
+      "aliases": [],
+      "help": "one whole conversation, both sides",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1560"
+    },
+    {
+      "name": "judge-calibration",
+      "aliases": [],
+      "help": "measure the JUDGE on questions whose answer is arithmetic; exit 2 = the judge confirmed a phantom",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2462"
+    },
+    {
+      "name": "judge-packet",
+      "aliases": [],
+      "help": "build a packet for a judge to read",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 377"
+    },
+    {
+      "name": "land",
+      "aliases": [],
+      "help": "land accepted work left on branches outside the base",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 416"
+    },
+    {
+      "name": "latency",
+      "aliases": [],
+      "help": "where the time goes: review vs bee work, and how many tasks per hour",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 483"
+    },
+    {
+      "name": "learn",
+      "aliases": [],
+      "help": "how many memory index pointers lead to a file that does not exist",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2178"
+    },
+    {
+      "name": "lease",
+      "aliases": [],
+      "help": "claim lease with an idle timer, retry cap 2",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 520"
+    },
+    {
+      "name": "lesson",
+      "aliases": [],
+      "help": "quickly record a lesson in loop-opus/LESSONS.md",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 248"
+    },
+    {
+      "name": "lesson-orphans",
+      "aliases": [],
+      "help": "which lessons from state.json reached NOT A SINGLE skill of the trios tree (--all: plus both home skill directories; the command prints which roots it read); exit 2 = orphans",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2506"
+    },
+    {
+      "name": "live-verify",
+      "aliases": [],
+      "help": "live fingerprint of the chain in one run",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 211"
+    },
+    {
+      "name": "live-wait",
+      "aliases": [],
+      "help": "wait until the edit reaches the live render",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1512"
+    },
+    {
+      "name": "locks",
+      "aliases": [],
+      "help": "who holds the trios cassette/e2e locks now",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 279"
+    },
+    {
+      "name": "loop",
+      "aliases": [],
+      "help": "tail of the loop report",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 34"
+    },
+    {
+      "name": "loop-coverage",
+      "aliases": [],
+      "help": "which loop tools have never run their live branch",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 365"
+    },
+    {
+      "name": "loop-lesson",
+      "aliases": [],
+      "help": "record a LOOP lesson in state.json and ledger.jsonl in one command, at the moment of the finding (not the `lesson` command above: that one writes to loop-opus/LESSONS.md)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2483"
+    },
+    {
+      "name": "loop-selftest",
+      "aliases": [],
+      "help": "calibration of the loop's own instruments (no network; the run prints the count, not this line)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 490"
+    },
+    {
+      "name": "mix",
+      "aliases": [],
+      "help": "what KIND of work the swarm is doing: load and acceptance will not show it",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 454"
+    },
+    {
+      "name": "morning",
+      "aliases": [],
+      "help": "morning summary loop/MORNING.md",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 31"
+    },
+    {
+      "name": "mutants-logic-refresh",
+      "aliases": [],
+      "help": "rebuild .trinity/build/QueenCore with the default toolchain and run make mutants-logic (toolchain mismatch)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 162"
+    },
+    {
+      "name": "needs-you",
+      "aliases": [],
+      "help": "what waits for a human and how long it has waited",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 371"
+    },
+    {
+      "name": "next",
+      "aliases": [],
+      "help": "tail of the latest trios wave. MEASURED 2026-09-13: prints it for 44 waves of 78 — its pattern only looks for the English heading, and 15 waves (including the latest) named the tail in Russian, and for them the command prints only the file name. the tail itself is now printed by the handover command below",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 288"
+    },
+    {
+      "name": "proof",
+      "aliases": [],
+      "help": "whether what a document refers to exists (exit 2 if not)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2344"
+    },
+    {
+      "name": "prov",
+      "aliases": [],
+      "help": "live provider status (what the agent can work with)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 241"
+    },
+    {
+      "name": "proven",
+      "aliases": [],
+      "help": "whether fresh work proves anything; --by-source: split by kind of work",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 594"
+    },
+    {
+      "name": "providers",
+      "aliases": [],
+      "help": "live provider status (what the agent can work with)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 241"
+    },
+    {
+      "name": "push-work",
+      "aliases": [],
+      "help": "push bee branches that are missing on the remote",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 514"
+    },
+    {
+      "name": "queue",
+      "aliases": [],
+      "help": "queue depth (not the open count): what nobody has started yet",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 447"
+    },
+    {
+      "name": "reach",
+      "aliases": [],
+      "help": "which step of the heal chain GETS TO run and which is always last",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 648"
+    },
+    {
+      "name": "reap",
+      "aliases": [],
+      "help": "worktree collection at 80/60 thresholds, no --force",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 527"
+    },
+    {
+      "name": "reap-finished",
+      "aliases": [],
+      "help": "remove trees whose work is already published (by age, not by pressure)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 551"
+    },
+    {
+      "name": "reap-local",
+      "aliases": [],
+      "help": "remove merged and clean worktrees from the laptop disk",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 407"
+    },
+    {
+      "name": "regress",
+      "aliases": [],
+      "help": "loop regression check (15 checks)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 28"
+    },
+    {
+      "name": "regression",
+      "aliases": [],
+      "help": "board + locks + live-verify in one command",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 205"
+    },
+    {
+      "name": "rejudge",
+      "aliases": [],
+      "help": "a verdict the current code would no longer repeat (agreement ≠ correctness)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 687"
+    },
+    {
+      "name": "rescue",
+      "aliases": [],
+      "help": "rescue work a bee did not commit before it gets wiped",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 557"
+    },
+    {
+      "name": "salvage",
+      "aliases": [],
+      "help": "what survived from a stale branch: names missing from the base; --brief writes a task",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 588"
+    },
+    {
+      "name": "selftest",
+      "aliases": [],
+      "help": "dependency check",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 228"
+    },
+    {
+      "name": "share-modules",
+      "aliases": [],
+      "help": "one dependency install, linked into every tree",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 546"
+    },
+    {
+      "name": "silent-loop",
+      "aliases": [],
+      "help": "attempts that do not spend the retry limit: the loop has no ceiling",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 627"
+    },
+    {
+      "name": "skills",
+      "aliases": [],
+      "help": "which skills are on disk and which have no SKILL.md of their own",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2295"
+    },
+    {
+      "name": "spec-diag",
+      "aliases": [],
+      "help": "error class of every spec that does not build",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 191"
+    },
+    {
+      "name": "stale-escalations",
+      "aliases": [],
+      "help": "release an escalation whose cause no longer reproduces",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 392"
+    },
+    {
+      "name": "status",
+      "aliases": [],
+      "help": "stack health + feed + loop state",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 21"
+    },
+    {
+      "name": "swarm",
+      "aliases": [],
+      "help": "live Queen state in one line",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 320"
+    },
+    {
+      "name": "t27-gen",
+      "aliases": [],
+      "help": "regenerate ring T27-00 from .t27 (the artifact is not edited by hand)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 735"
+    },
+    {
+      "name": "t27-parity",
+      "aliases": [],
+      "help": "whether the generated ring and its handwritten production twin agree",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 728"
+    },
+    {
+      "name": "t27-tri",
+      "aliases": [],
+      "help": "run t27's own Rust tri (newest built target/*/tri), e.g. `tri t27-tri now add ...`; t27 hooks must not find this tri",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2018"
+    },
+    {
+      "name": "tb",
+      "aliases": [],
+      "help": "TurboBaby: production summary + separation from woody-weed-bot",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2626"
+    },
+    {
+      "name": "tb-deploy",
+      "aliases": [],
+      "help": "safe deploy of turbobaby-bot (link→up→wait→verify)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2645"
+    },
+    {
+      "name": "tb-lint",
+      "aliases": [],
+      "help": "both CI clippy gates locally (+ --test for cargo test)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2676"
+    },
+    {
+      "name": "tb-verify",
+      "aliases": [],
+      "help": "separation invariants: vars/migrations/foreign health",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2693"
+    },
+    {
+      "name": "tc-abpair",
+      "aliases": [],
+      "help": "igla-coder-gpu: paired A/B of two arena final dirs (same items, seed policy, engine): exact McNemar on per-item compile + pass and compiled samples per mask arm. Light, local.   tri tc-abpair final_tuned final_tuned_m12   tri tc-abpair A B A_s12 B_s12      (per seed + POOLED replication test)   tri tc-abpair                      (every tagged arm vs the baseline OF ITS                                       SEED: *_sN -> final_tuned_old_sN, else                                       final_tuned; never pairs across seeds)",
+      "helpSource": "first comment of the `tc-abpair)` case arm, line 1106",
+      "route": "case arm, line 1106"
+    },
+    {
+      "name": "tc-arena",
+      "aliases": [],
+      "help": "igla-coder-gpu: the selection arena -- which checkpoint goes to WARS. Same gates (G1 file, G2 engine, G3 teacher NLL), same items, same seed, same t27c judge for every candidate; rank by diff-checked pass, the champion changes only on McNemar p<0.05 (scripts/tc_arena.py docstring). HEAVY: runs on Railway. Progress streams to the board (tri tc-board).   tri tc-arena up [--workers 40]   stage + deploy the arena job   tri tc-arena fetch               pull results/t27/arena after JOB DONE   tri tc-arena report              local, light: leaderboard table",
+      "helpSource": "first comment of the `tc-arena)` case arm, line 812",
+      "route": "case arm, line 812"
+    },
+    {
+      "name": "tc-ask",
+      "aliases": [],
+      "help": "manual CPU front door: print a tc completion for a prompt",
+      "helpSource": "first comment of the `tc-ask)` case arm, line 1491",
+      "route": "case arm, line 1491"
+    },
+    {
+      "name": "tc-audit",
+      "aliases": [],
+      "help": "igla-coder-gpu: the splice audit (2026-10-01 judge hole). A body that closes its fn itself and keeps going turned its tail into module text; t27c swallowed the spec's own tests -> pair11_d fits_budget FALSE PASS. The judge now refuses these (blocked_splice); this audits RECORDED results with the same rule (t27_bench.splice_exact).   tri tc-audit                   # every results/t27/* dir: EXACT/recorded   tri tc-audit results/t27/x ... # chosen dirs, or cands.jsonl:results.jsonl   tri tc-audit --gold            # gate: all 466 gold bodies exact",
+      "helpSource": "first comment of the `tc-audit)` case arm, line 748",
+      "route": "case arm, line 748"
+    },
+    {
+      "name": "tc-board",
+      "aliases": [],
+      "help": "igla-coder-gpu: the live board (board/, Railway service \"board\" in project igla-judge): https://board-production-2dec.up.railway.app Rebuild board/snapshot.json from committed artifacts and redeploy.   tri tc-board            snapshot + deploy   tri tc-board snap       snapshot only (board/snapshot.json)   tri tc-board open       print the URL   tri tc-board t27 [--out P]  the same board as a t27 module       (queen_igla_board) for app.t27.ai/game/wars; copy it to trinity       apps/website/specs/queen/igla_board.t27, then run       node scripts/igla-board-from-spec.mjs there (recompiles it and       re-derives every McNemar p). LEVERS in scripts/board_t27.py is the       only hand list.",
+      "helpSource": "first comment of the `tc-board)` case arm, line 829",
+      "route": "case arm, line 829"
+    },
+    {
+      "name": "tc-card",
+      "aliases": [],
+      "help": "render a tern_tc release from its card spec, then run its verify.sh on a COPY (never inside the release tree) (igla-coder-gpu, loop 28)   tri tc-card specs/hf/model_card_ft_b.t27 hf_release_ft_b",
+      "helpSource": "first comment of the `tc-card)` case arm, line 1142",
+      "route": "case arm, line 1142"
+    },
+    {
+      "name": "tc-catalog",
+      "aliases": [],
+      "help": "igla-coder-gpu: new judgeable t27 items from the trinity website spec catalog (stage locally -> items on Railway -> decon vs the bench).   tri tc-catalog stage --catalog <trinity>/apps/website/public/t27/files   tri tc-catalog decon | report Remote recipe and leak classes: scripts/t27_catalog.py docstring.",
+      "helpSource": "first comment of the `tc-catalog)` case arm, line 1154",
+      "route": "case arm, line 1154"
+    },
+    {
+      "name": "tc-cathead",
+      "aliases": [],
+      "help": "igla-coder-gpu (loop 30): catalog headline per arm on ALL 57 vs the MS=1 set (44 items whose tests kill every valid mutant): exact compile, logic, spec pass, honest (diff-judged, keyed by item+body), unjudged.   tri tc-cathead [--judge <judge_passes.jsonl>] [run ...]",
+      "helpSource": "first comment of the `tc-cathead)` case arm, line 893",
+      "route": "case arm, line 893"
+    },
+    {
+      "name": "tc-ceiling",
+      "aliases": [],
+      "help": "igla-coder-gpu: the \"sample more and select\" ceiling from committed artifacts -- union of items that EVER passed over every run, with the diff-judge verdict per item. Price a selection lever before spending.   tri tc-ceiling [results/t27/<dir> ...]   (default: arena finals + strict runs)",
+      "helpSource": "first comment of the `tc-ceiling)` case arm, line 1162",
+      "route": "case arm, line 1162"
+    },
+    {
+      "name": "tc-comptime",
+      "aliases": [],
+      "help": "igla-coder-gpu: does the judge's \"compile\" undercount? Re-judges recorded blocked_compile rows with raw capture; a comptime test assertion failure is compile+FAIL, not a compile error. Heavy: queue after `tri tc-loop guard` is idle.   tri tc-comptime rejudge <run>... [--workers 4] [--items F] | report <run>...",
+      "helpSource": "first comment of the `tc-comptime)` case arm, line 780",
+      "route": "case arm, line 780"
+    },
+    {
+      "name": "tc-contract",
+      "aliases": [],
+      "help": "igla-coder-gpu: does the mask the host SENDS constrain what tc_fast DRAWS? (2026-10-01: undeclared VALUE words were completion targets that could never terminate -> EMPTY allow-list -> unconstrained draw; 39/209 m-arm samples in pair11_e, 0 survived.)   tri tc-contract deadends results/t27/<run>        offline census   tri tc-contract repro results/t27/<run> '<substr>' --seed N",
+      "helpSource": "first comment of the `tc-contract)` case arm, line 761",
+      "route": "case arm, line 761"
+    },
+    {
+      "name": "tc-coreleak",
+      "aliases": [],
+      "help": "igla-coder-gpu: is the mask core fitted on the EVAL set? Replays recorded bodies under a train-derived core (T27_CORE_FROM=train).   tri tc-coreleak sets | gold | replay <run> ... [--min-train 53]",
+      "helpSource": "first comment of the `tc-coreleak)` case arm, line 772",
+      "route": "case arm, line 772"
+    },
+    {
+      "name": "tc-cpuft",
+      "aliases": [],
+      "help": "igla-coder-gpu: CPU fine-tune of the 9M tc model on Railway (loop 20), no RunPod key needed. HF TC02 bins -> train.py ckpts (scripts/tc02_to_pt.py, byte gate) -> two arms of remote/cpu_ft.sh -> val.jsonl + exported .tc02. Railway quota is 24 CPUs (nproc lies 48): <=16 torch threads per process. SEED=N [SHUF=0|1] tri tc-cpuft (suffix rule: remote/cpu_ft_env.sh; SHUF=1 default for N>0 = --shuffle_chunks, a real data-order replication) = replication arms, trained AND judged on the 57 catalog items in the same container (remote/cpu_ft_judge.sh): the local uplink cannot ship the 34 MB of bins (loop 21). Ships one file of cpu_ft, never the dir (it holds the local .tc02 bins). Then: tri tc-remote fetch --sub results/t27/cpu_ft results/t27/catalog/sc_cpu_a_sN   results/t27/catalog/sc_cpu_b_sN ; tri tc-remote down",
+      "helpSource": "first comment of the `tc-cpuft)` case arm, line 1062",
+      "route": "case arm, line 1062"
+    },
+    {
+      "name": "tc-cpuft-cmp",
+      "aliases": [],
+      "help": "igla-coder-gpu: a live replication vs its reference run, step by step (train loss + eval bpb deltas) with a verdict SAME-ORDER / INTERLEAVE / REPLICA. Loop 22: \"seed 1\" sat on seed 0's data order.   tri tc-cpuft-cmp b_mix_s1 b_mix [--local]",
+      "helpSource": "first comment of the `tc-cpuft-cmp)` case arm, line 1053",
+      "route": "case arm, line 1053"
+    },
+    {
+      "name": "tc-cpuft-collect",
+      "aliases": [],
+      "help": "igla-coder-gpu: one poll of a tc-cpuft job; when done: fetch ONLY this suffix's arms + judges, down (only after a good fetch), val + tc-disc.   SEED=1 SHUF=0 tri tc-cpuft-collect   (exit 0 ok/1 job fail/2 running/3 fetch fail)",
+      "helpSource": "first comment of the `tc-cpuft-collect)` case arm, line 1046",
+      "route": "case arm, line 1046"
+    },
+    {
+      "name": "tc-curve",
+      "aliases": [],
+      "help": "igla-coder-gpu: compare two selfcheck runs' budget curves from RAW results.jsonl under ONE fixed definition (pass-union / past-parser- union). NEVER compare summary.json curves across runs -- they were built under different definitions (2026-09-30: a strict1 summary said compile@1=68, raw rows give 253; a \"3.7x jump\" claim died only at recomputation).   tri tc-curve <dirA> <dirB> [budgets=1,2,3,5,10,15]",
+      "helpSource": "first comment of the `tc-curve)` case arm, line 924",
+      "route": "case arm, line 924"
+    },
+    {
+      "name": "tc-diffjudge",
+      "aliases": [],
+      "help": "igla-coder-gpu: differential judge IN t27 -- inserts __gold_<fn> and `f(x) == __gold_f(x)` tests on edge inputs the spec never tries; gold vs itself gates each tuple. diff_kill = spec tests pass, diff fails.   tri tc-diffjudge build [--k 12] | judge mutants|passes | report   (scripts/t27_diffjudge.py; heavy, guard sees it)   wider coverage (loop 18): DJ_OUT=diff_d DJ_STRUCT=1 DJ_NULLARY=1 DJ_BOUNDS=48   build -> struct-of-scalars + &str + nullary items; run it remotely.",
+      "helpSource": "first comment of the `tc-diffjudge)` case arm, line 865",
+      "route": "case arm, line 865"
+    },
+    {
+      "name": "tc-disc",
+      "aliases": [],
+      "help": "igla-coder-gpu: paired A/B readout -- EXACT per-item discordants (splice-audited), compute contract counters, chars/sample.   tri tc-disc <base_run> <run> [run ...]     (names under results/t27/)   catalog runs: tri tc-disc catalog/sc_tuned catalog/sc_cpu_b_s1 (own items+tree; exact McNemar)",
+      "helpSource": "first comment of the `tc-disc)` case arm, line 900",
+      "route": "case arm, line 900"
+    },
+    {
+      "name": "tc-draft",
+      "aliases": [],
+      "help": "igla-coder-gpu: tern_tc as a DRAFT MODEL FOR A VERIFIER -- one spec, N masked samples through tc_fast --step-io (prefill paid once), each judged by t27c test-report; first PASS wins and is printed verified, else an honest typed refusal. The editing-time form of the selfcheck loop (scripts/tc_draft.py); its flags pass through after the spec.",
+      "helpSource": "first comment of the `tc-draft)` case arm, line 1472",
+      "route": "case arm, line 1472"
+    },
+    {
+      "name": "tc-gpuft",
+      "aliases": [],
+      "help": "igla-coder-gpu: the B fine-tune on a RunPod 4090 (remote/gpu_ft.sh: 5 arms in ~12 min + the catalog judge on the pod, ~25 min/model). Loop 25.   tri tc-gpuft up|status|collect [pod name, default gpuft] up/collect read the balance (log both in LEDGER.md); pod self-stops.   JOB=gpu_ft2 GPU=\"NVIDIA L4,NVIDIA RTX PRO 4000 Blackwell\" tri tc-gpuft up gpuft2 JOB picks remote/<JOB>.sh (loop 26: param gate + --fim-logic arms, see its docstring); GPU is a priority list (the volume pins EU-RO-1).",
+      "helpSource": "first comment of the `tc-gpuft)` case arm, line 1026",
+      "route": "case arm, line 1026"
+    },
+    {
+      "name": "tc-honest",
+      "aliases": [],
+      "help": "igla-coder-gpu: the honest strict headline from the diff judge (loop 19). computed_pass = fn has args AND agrees with gold on every diff tuple; nullary_pass only confirms a value; splice = judged as another program. Reads results/t27/diff_d/judge_passes.jsonl (refresh it remotely: tri tc-remote up --ship diff_d <model dirs> --job \"DJ_OUT=diff_d python3 scripts/t27_diffjudge.py judge passes --workers 16\"). Light.",
+      "helpSource": "first comment of the `tc-honest)` case arm, line 1087",
+      "route": "case arm, line 1087"
+    },
+    {
+      "name": "tc-loop",
+      "aliases": [],
+      "help": "igla-coder-gpu: the improvement loop's first command every iteration. Live selfcheck runs + progress, finished/dead/untracked results dirs, log Tracebacks, mask-edited-mid-run, journal tail. Exit 1 = anomaly.   tri tc-loop                    # status + anomalies   tri tc-loop run <out> K=V ...  # lock-guarded background selfcheck                                  # (REFUSES while another is live)   tri tc-loop chain \"<out> K=V\" \"<out2> K=V\"  # queue, one at a time,                                  # each waits on guard (use nohup)   tri tc-loop guard              # exit 1 if a run is live (before                                  # editing t27_gen_masked.py!)",
+      "helpSource": "first comment of the `tc-loop)` case arm, line 909",
+      "route": "case arm, line 909"
+    },
+    {
+      "name": "tc-maskcheck",
+      "aliases": [],
+      "help": "igla-coder-gpu: the mask gate. Default = unit battery only (seconds, safe while the MacBook is loaded); --full adds the gold replay (~6 min single core; the remote arena job runs it as its first line anyway).   tri tc-maskcheck [--full] [--mask-src <old mask>]   (negative control)",
+      "helpSource": "first comment of the `tc-maskcheck)` case arm, line 1013",
+      "route": "case arm, line 1013"
+    },
+    {
+      "name": "tc-mutant3",
+      "aliases": [],
+      "help": "igla-coder-gpu: value-pinning audit -- judge `return 2;`/`return 7;` per numeric item; LOOSE = the spec's tests accept a wrong constant.   tri tc-mutant3 cands | report [--model <run> ...]   (scripts/t27_mutant3.py)",
+      "helpSource": "first comment of the `tc-mutant3)` case arm, line 877",
+      "route": "case arm, line 877"
+    },
+    {
+      "name": "tc-mutscore",
+      "aliases": [],
+      "help": "igla-coder-gpu: mutation score per bench item -- operator mutants (<=/<, ==/!=, &&/||, +/-, n+1, true/false) on the gold bodies; WEAK = a valid mutant survives the spec's tests. Re-tags recorded passes.   tri tc-mutscore cands [--max 8] | names [--max 4] | run [--workers 6] | report [--json]   tri tc-mutscore passes   -- every exact pass body: GOLD | CONST | NAME | OTHER   tri tc-mutscore decoys [--max 6] -- return-<in-scope name> bodies; CLEAN = strict minus decoy-passable   (iteration 9: most model passes are bool-constant coincidences)",
+      "helpSource": "first comment of the `tc-mutscore)` case arm, line 790",
+      "route": "case arm, line 790"
+    },
+    {
+      "name": "tc-pair",
+      "aliases": [],
+      "help": "igla-coder-gpu: PAIRED A/B of two selfcheck arms at one seed -- the causal protocol (skill paired-ab-tiny-model; without SC_SEED a 30-item pass count is NOISE, see research/REPAIR_BODY_2026-09-29.md).   tri tc-pair <SEED> [BUDGET=15] [ITEMS=30] Env: PAIR_A / PAIR_B = env-string for arm B's EXTRA knobs, e.g.   PAIR_B=\"SC_REPAIR=1\"        (treatment: repair on)   PAIR_B=\"SC_EARLY=1\"         (treatment: early abort)   PAIR_B=\"SC_PROBE=1 SC_REDRAW=3\"  (probe abort + kill-and-restart) Arm A is always the bare base. Both arms get SC_SEED, same rounds, same items; output dirs results/t27/pair<SEED>_{a,b}. Prints the summary diff + paired-body identity count (0 unexplained = causal).",
+      "helpSource": "first comment of the `tc-pair)` case arm, line 935",
+      "route": "case arm, line 935"
+    },
+    {
+      "name": "tc-podwait",
+      "aliases": [],
+      "help": "igla-coder-gpu: block until the first listed RunPod runq job is DONE (loop 29; scripts/pod_wait.sh). Run it in the background.   tri tc-podwait gpuft5a:gpu_ft5a gpuft5b:gpu_ft5b   (exit 0 done / 2 timeout)",
+      "helpSource": "first comment of the `tc-podwait)` case arm, line 1038",
+      "route": "case arm, line 1038"
+    },
+    {
+      "name": "tc-prefill",
+      "aliases": [],
+      "help": "igla-coder-gpu: prefill A/B bench -- chunked (default C) vs sequential (TC_PREFILL_CHUNK=0) at several prompt sizes x thread counts, using the E8 pair (/tmp/tt8 if present, else model3_q8). Prints the [split:] lines and the speed ratio per cell; the exactness gate lives in tc-speed. Env: PF_SIZES (comma list of prompt ids, default 512,1535,3990),      PF_CHUNKS (default 32), PF_THREADS (default 1,5).",
+      "helpSource": "first comment of the `tc-prefill)` case arm, line 1198",
+      "route": "case arm, line 1198"
+    },
+    {
+      "name": "tc-reach",
+      "aliases": [],
+      "help": "param reach at the return decision, teacher-forced on gold: P_param vs P_const, pre-registered LIVE/PARTIAL/DEAD verdict; run before any 'must read X' rule (igla-coder-gpu)   tri tc-reach --models work/arena/tuned.pt ... [--groups catalog bench]",
+      "helpSource": "first comment of the `tc-reach)` case arm, line 1137",
+      "route": "case arm, line 1137"
+    },
+    {
+      "name": "tc-relabel",
+      "aliases": [],
+      "help": "judge relabeling: probe tests whose expected values t27c observes (igla-coder-gpu)",
+      "helpSource": "first comment of the `tc-relabel)` case arm, line 1151",
+      "route": "case arm, line 1151"
+    },
+    {
+      "name": "tc-remote",
+      "aliases": [],
+      "help": "igla-coder-gpu: heavy judge jobs run on RAILWAY, never on the MacBook (owner's rule after two reboots, 2026-10-01). Image = t27c@3f07e547c + zig 0.16.0 + bench specs@ef7781b52 (remote/Dockerfile).   tri tc-remote up --job \"python3 scripts/t27_diffjudge.py build --workers 4; ...\"   tri tc-remote logs [-n 40] [--build] | wait (exit 0 ok/1 fail/2 timeout) | fetch [--take results/t27/diff] | down",
+      "helpSource": "first comment of the `tc-remote)` case arm, line 802",
+      "route": "case arm, line 802"
+    },
+    {
+      "name": "tc-restore",
+      "aliases": [],
+      "help": "igla-coder-gpu: a reboot wipes /tmp -- the pinned bench tree and the t27c judge live there, and every judge's Pool then respawns workers forever on FileNotFoundError (2026-10-01 night10). Recreate both (worktree prune first: a stale \"prunable\" entry fools `worktree list`).",
+      "helpSource": "first comment of the `tc-restore)` case arm, line 852",
+      "route": "case arm, line 852"
+    },
+    {
+      "name": "tc-retrieve",
+      "aliases": [],
+      "help": "igla-coder-gpu: retrieval ceiling -- copy a same-name train fn body, judge it exactly; identical bodies reported apart (leakage).   tri tc-retrieve index | report [--model <run> ...]   (scripts/t27_retrieval.py)",
+      "helpSource": "first comment of the `tc-retrieve)` case arm, line 885",
+      "route": "case arm, line 885"
+    },
+    {
+      "name": "tc-rounds",
+      "aliases": [],
+      "help": "igla-coder-gpu: poll a selfcheck run WITHOUT touching it -- recompute the budget curves live from results.jsonl (summary.json only refreshes when the run ends) + show round progress from the log. Same curve semantics as scripts/t27_selfcheck.py: COMPILES=(pass,fail), samples sorted by in-round k so arms interleave -- file-order polling UNDERCOUNTS nothing but changes the x-axis meaning. Never a second heavy run while one is live; this is the correct alternative. Usage: tri tc-rounds [dir] [log]",
+      "helpSource": "first comment of the `tc-rounds)` case arm, line 1438",
+      "route": "case arm, line 1438"
+    },
+    {
+      "name": "tc-seen",
+      "aliases": [],
+      "help": "seen-vs-unseen gold-body NLL per item group (did the fine-tune learn its bodies?) (igla-coder-gpu)",
+      "helpSource": "first comment of the `tc-seen)` case arm, line 1134",
+      "route": "case arm, line 1134"
+    },
+    {
+      "name": "tc-soundness",
+      "aliases": [],
+      "help": "igla-coder-gpu: mask SOUNDNESS over a remote taxonomy dump -- every `undeclared identifier` death on a declare-rule arm (m*) is a mask defect or a known gap: glued_decl / static_leak / body_keyword / in_body / type_core / truncated / value_core / other. Light, local.   tri tc-soundness [rows.jsonl cands.jsonl]   (default: arena champion)   tri tc-soundness ab [tag ...]               baseline vs final_tuned_<tag>                                               (default tags: m12 m13) Rows come from t27_error_taxonomy.py --dump (run it via tri tc-remote).",
+      "helpSource": "first comment of the `tc-soundness)` case arm, line 1171",
+      "route": "case arm, line 1171"
+    },
+    {
+      "name": "tc-speed",
+      "aliases": [],
+      "help": "igla-coder-gpu: rebuild c_infer/tc_fast, run the near-parity gate, then the greedy ladder (t1/t4/t5) and one sampled run. The one command for \"did the fast engine survive the night and how fast is it now\" -- the same sequence every speed change is gated by.",
+      "helpSource": "first comment of the `tc-speed)` case arm, line 1230",
+      "route": "case arm, line 1230"
+    },
+    {
+      "name": "tc-sync",
+      "aliases": [],
+      "help": "igla-coder-gpu: is a --diff arena arm an exact pair of its plain arm? Same body on every shared sample; pass->diff_kill the only status change. Run it BEFORE reading `tri tc-abpair` on a diff arm. Light.   tri tc-sync final_tuned_m14 final_tuned_diff",
+      "helpSource": "first comment of the `tc-sync)` case arm, line 1097",
+      "route": "case arm, line 1097"
+    },
+    {
+      "name": "tc-t27bench",
+      "aliases": [],
+      "help": "igla-coder-gpu: the t27 fill-in-the-middle bench on the C engine. Generates 466 items x 10 samples from the t27-tuned tc model via tc_fast (restart-safe, ~80 min first run) and judges them with the exact judge (t27c test-report). Env knobs: T27_ITEMS, TC_MODEL, CANDS, N. Prints the parse/compile/pass summary at the end.",
+      "helpSource": "first comment of the `tc-t27bench)` case arm, line 1259",
+      "route": "case arm, line 1259"
+    },
+    {
+      "name": "tc-t27mask",
+      "aliases": [],
+      "help": "igla-coder-gpu: scope-aware identifier MASKED generation on the t27 bench via tc_fast --step-io (see scripts/t27_gen_masked.py). Same 30 failed items as the feedback arm, so the three arms (plain / feedback / masked) compare back-to-back. Env: MASK_VER (artifact version suffix, default 3 -- v1/v2/v3 must NOT fold into one file), MASK_N, MASK_THREADS, MASK_OFF=1 for the paired no-mask control, MASK_KV_I8=1 for the int8 KV cache (faster, approximate -- the token stream shifts, not comparable to f32-KV artifacts).",
+      "helpSource": "first comment of the `tc-t27mask)` case arm, line 1306",
+      "route": "case arm, line 1306"
+    },
+    {
+      "name": "tc-t27selfcheck",
+      "aliases": [],
+      "help": "igla-coder-gpu: the model verifies ITSELF through t27c -- rounds of (generate one sample per unresolved item -> t27c test-report -> stop the item at its first pass). Arms rotate per round: m<temp> masked, p<temp> plain. MEASURED 2026-09-29: diversity must come from mask RULES, not temperatures (3 rule-arms: compile 15/30 union vs 3/30 for 3 temps); plain arms are dead weight -- defaults are masked-only. Restart-safe: re-run with a larger --rounds to CONTINUE the rotation. Env: SC_OUT (default results/t27/selfcheck1), SC_ROUNDS (5), SC_ARMS (m0.8,w0.8,m0.7,w0.7 -- w = wide VALUE-core rule), SC_ITEMS (30), SC_STOP (pass|compile), SC_SEED=<int> (deterministic per-job sampling seeds; PAIRED A/Bs:   same seed base + same arms = identical streams, a pass delta is   causal; without it tc_fast is time-seeded and 30-item pass counts   are noise -- 2026-09-29 base30 3 vs repair30 0 on same code paths) SC_WORKERS (3), SC_REPAIR=1 (strip module-level lines + unterminated strings; keep ON), SC_EARLY=1 (abort repetition tail-locks mid-decode via engine \"x\", cascade_abort n=6/reps=3 -- gold-safe 0/466, catches 22/218 cascades; measured WEAK, A/B before trusting) SC_ITEMS_FILE=<jsonl> (default t27/items.jsonl): a different item set, e.g. results/t27/selftrain/items.jsonl (train-side yield; use SC_POOL=strict). NOTE the mask core is computed from that file too. SC_POOL=strict = every strict item (both mutants caught) of items.jsonl -- the honest full-bench number; NOTE --n-items still CUTS the pool after picking, so pass SC_ITEMS=500 with strict (the 2026-09-29 trap that silently ran 30 of 391), SC_KV_I8=1 (int8 KV cache: ~1.6x at 1.7K ctx, approximate -- pass numbers not comparable to f32-KV runs). SC_ANALYZE=1: free selector oracle over the committed v1/v2/v3 mask artifacts -- no model, no generation. The mask is FROZEN per run into <SC_OUT>/mask_snapshot.py (workers re-import it each round; editing scripts/ mid-run is now safe). SC_MASK_REV=<commit>: run with the mask as of that commit -- the paired baseline arm of a mask A/B (e.g. 305105e = pre-typed mask). SC_DIFF=1: every spec-test pass is diff-judged vs gold (diff_c tuples); diff_kill = compile, not pass, and the item keeps sampling. Not comparable to plain-pass runs. Heavy: run it remotely.",
+      "helpSource": "first comment of the `tc-t27selfcheck)` case arm, line 1361",
+      "route": "case arm, line 1361"
+    },
+    {
+      "name": "tc-taxonomy",
+      "aliases": [],
+      "help": "igla-coder-gpu: one-command failure taxonomy over mask artifacts -- BOTH halves of the failure mass in one run:   blocked_compile -> scripts/t27_error_taxonomy.py (first zig error:     undeclared 65%, type 12.5%, ...)   blocked_codegen -> scripts/t27_codegen_taxonomy.py (t27 parser:     module keywords in body 30%, brace imbalance 50%, unterminated     strings 9%; see research/REPAIR_BODY_2026-09-29.md) Defaults to the committed v1/v2/v3 sets; TX_SAMPLE caps each run (0 = all codegen; the compile script has its own --sample default 120).",
+      "helpSource": "first comment of the `tc-taxonomy)` case arm, line 984",
+      "route": "case arm, line 984"
+    },
+    {
+      "name": "tc-val",
+      "aliases": [],
+      "help": "igla-coder-gpu: masked val bits/byte of tc ckpts on a data dir (light, 2 threads): tri tc-val --data work/ft_mix8k --ckpt a.pt b.pt [--tokens N]",
+      "helpSource": "first comment of the `tc-val)` case arm, line 1080",
+      "route": "case arm, line 1080"
+    },
+    {
+      "name": "tg-dialogs",
+      "aliases": [],
+      "help": "telegram: unread / chats (read only)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1601"
+    },
+    {
+      "name": "tg-msg",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "case arm, line 1603"
+    },
+    {
+      "name": "tg-search",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "case arm, line 1605"
+    },
+    {
+      "name": "tg-unread",
+      "aliases": [],
+      "help": "telegram: unread / chats (read only)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1602"
+    },
+    {
+      "name": "tg-who",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "case arm, line 1607"
+    },
+    {
+      "name": "trend",
+      "aliases": [],
+      "help": "rate of the counters, not their level",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 359"
+    },
+    {
+      "name": "trinity-report",
+      "aliases": [],
+      "help": "run trinity's OWN work-report validator on a PR body before pushing (from a trinity checkout; exit 1 = CI would fail)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2008"
+    },
+    {
+      "name": "two-views",
+      "aliases": [],
+      "help": "whether /health and the ssh gateway agree at the same moment",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 578"
+    },
+    {
+      "name": "unpark",
+      "aliases": [],
+      "help": "lift a retry cap spent on silence rather than work",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 383"
+    },
+    {
+      "name": "unverdicted",
+      "aliases": [],
+      "help": "dispatches with no VERDICT block: review will never judge them",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 619"
+    },
+    {
+      "name": "unwired",
+      "aliases": [],
+      "help": "a gate that is written but that nobody runs",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 638"
+    },
+    {
+      "name": "verdict-audit",
+      "aliases": [],
+      "help": "check a bee's claimed verdict against its diff",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 606"
+    },
+    {
+      "name": "verdicts",
+      "aliases": [],
+      "help": "share accepted, returned and unjudged: health, not load",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 475"
+    },
+    {
+      "name": "verify",
+      "aliases": [],
+      "help": "whether someone else's merge overwrote the last edit",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 237"
+    },
+    {
+      "name": "vibee-feed",
+      "aliases": [],
+      "help": "last N posts of the vibee feed with stars/views (RENAMED 2026-09-05: its old name now belongs to the loop feeding step — the line with `--act` below, a different command)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 37"
+    },
+    {
+      "name": "wave",
+      "aliases": [],
+      "help": "skeleton of the next wave wave-loop-NNN.md",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 272"
+    },
+    {
+      "name": "wave-plan",
+      "aliases": [],
+      "help": "the whole plan of the CURRENT wave (newest wave-loop-*.md) with its age",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2600"
+    },
+    {
+      "name": "which-board",
+      "aliases": [],
+      "help": "which GitHub board each loop instrument reads and whether it moves; exit 2 = the instruments are split (the `board` command above is different: the trios dashboard)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 2452"
+    },
+    {
+      "name": "why",
+      "aliases": [],
+      "help": "why the swarm is stalled: cause, evidence and what to do about it",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 427"
+    },
+    {
+      "name": "x7-audit",
+      "aliases": [],
+      "help": "spec tests, generated .rs vs .t27 (content), bitwalk CRC 12/12 + frame ECC 32520/32520 on Vivado refs, FAR walk 32520 frames + 72 empty pads, pin sweep 82/82, segbits sweep 4224/4224, far.t27 part table drift, stale lock (exit 2 = anomalies; --heal regenerates .rs, rebuilds bitwalk, drops stale lock)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1895"
+    },
+    {
+      "name": "x7-bench",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "case arm, line 1899"
+    },
+    {
+      "name": "x7-board",
+      "aliases": [],
+      "help": "bitwalk on a real 200T build: byte-compare + timing vs openXC7, SRAM load (--owner-yes), harness receipts",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1904"
+    },
+    {
+      "name": "x7-claim",
+      "aliases": [],
+      "help": "fire lock (exit 75 = held by another fire)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1892"
+    },
+    {
+      "name": "x7-fasm",
+      "aliases": [],
+      "help": "bitwalk --fasm byte-identical to fasm2frames on ~/.cache/x7/fasm (20 entries: 13 real, 5 synth, 2 refuse) + --strict",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1907"
+    },
+    {
+      "name": "x7-lesson",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "case arm, line 1898"
+    },
+    {
+      "name": "x7-mutate",
+      "aliases": [],
+      "help": "mutation catalogue: every defect must fail the spec tests AND the Vivado sweep",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1900"
+    },
+    {
+      "name": "x7-next",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "case arm, line 1896"
+    },
+    {
+      "name": "x7-part",
+      "aliases": [],
+      "help": "far.t27 part table vs prjxray-db part.json (exit 1 = drift; --write regenerates it)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1901"
+    },
+    {
+      "name": "x7-refs",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "case arm, line 1902"
+    },
+    {
+      "name": "x7-release",
+      "aliases": [],
+      "help": "fire lock (exit 75 = held by another fire)",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1893"
+    },
+    {
+      "name": "x7-status",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "case arm, line 1894"
+    },
+    {
+      "name": "x7-task",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "case arm, line 1897"
+    },
+    {
+      "name": "x7-writer",
+      "aliases": [],
+      "help": "bitwalk --write byte-identical to xc7frames2bit on ~/.cache/x7/writer (16 entries) + wrong-part refusal",
+      "helpSource": "`tri help`",
+      "route": "case arm, line 1903"
+    }
+  ]
+}

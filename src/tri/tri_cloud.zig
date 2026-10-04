@@ -1022,7 +1022,7 @@ fn cloudHistory(_: Allocator, args: []const []const u8) !void {
 }
 
 /// tri cloud pipeline <issue> — Full Golden Chain automation
-/// Spawns agent, monitors, verifies PR, auto-merges, cleans up
+/// Spawns agent, monitors, verifies PR, leaves it for a reviewer bee, cleans up
 fn cloudPipeline(allocator: Allocator, args: []const []const u8) !void {
     if (args.len < 1) {
         print("{s}Usage: tri cloud pipeline <issue_number>{s}\n", .{ RED, RESET });
@@ -1178,14 +1178,17 @@ fn cloudPipeline(allocator: Allocator, args: []const []const u8) !void {
                     break;
                 };
 
+                // NO AUTO-MERGE. Owner's rule, 2026-10-02: "the Queen must not
+                // merge by herself!! the Queen only manages!" -- no automation
+                // merges on its own verdict, and a green local build is this
+                // pipeline's own verdict. The PR stays open for a reviewer bee:
+                // an APPROVED review plus the `bee-reviewed` label after the
+                // head commit (gHashTag/t27#5526). `tri cloud merge` is still
+                // there for a person, and it refuses without that gate too.
                 if (verify_result) {
-                    print("\n{s}[5/6] PR verified, auto-merging...{s}\n", .{ CYAN, RESET });
-                    _ = cloudMergePR(allocator, issue_num) catch |err| {
-                        print("  {s}⚠ Auto-merge failed: {s}{s}\n", .{ YELLOW, @errorName(err), RESET });
-                        print("  {s}Manual merge required{s}\n", .{ YELLOW, RESET });
-                    };
+                    print("\n{s}[5/6] PR verified locally; left open for a reviewer bee (bee-reviewed){s}\n", .{ CYAN, RESET });
                 } else {
-                    print("  {s}⚠ PR verification failed, manual merge required{s}\n", .{ YELLOW, RESET });
+                    print("  {s}⚠ PR verification failed; left open for a reviewer bee{s}\n", .{ YELLOW, RESET });
                 }
             }
             break;
@@ -1231,7 +1234,9 @@ fn cloudVerify(allocator: Allocator, args: []const []const u8) !void {
     }
 }
 
-/// tri cloud merge <issue> — Merge PR for issue
+/// tri cloud merge <issue> — Merge PR for issue, by hand. Refuses unless a
+/// reviewer bee passed it (see `GitHubClient.mergePr`); nothing calls it
+/// automatically any more.
 fn cloudMerge(allocator: Allocator, args: []const []const u8) !void {
     if (args.len < 1) {
         print("{s}Usage: tri cloud merge <issue_number>{s}\n", .{ RED, RESET });
@@ -2249,9 +2254,9 @@ fn printUsage() void {
     print("  {s}tri cloud metrics{s}             Show aggregate agent metrics\n", .{ GREEN, RESET });
     print("  {s}tri cloud record-metrics{s}      Record agent completion metrics\n", .{ GREEN, RESET });
     print("\n  {s}Golden Chain Pipeline:{s}\n", .{ BOLD, RESET });
-    print("  {s}tri cloud pipeline <issue>{s}    Full automation: spawn → monitor → verify → merge → cleanup\n", .{ GREEN, RESET });
+    print("  {s}tri cloud pipeline <issue>{s}    Full automation: spawn → monitor → verify → (reviewer bee) → cleanup\n", .{ GREEN, RESET });
     print("  {s}tri cloud verify <issue>{s}      Verify PR locally (zig build)\n", .{ GREEN, RESET });
-    print("  {s}tri cloud merge <issue>{s}       Merge PR for issue\n", .{ GREEN, RESET });
+    print("  {s}tri cloud merge <issue>{s}       Merge PR for issue (needs APPROVED + bee-reviewed)\n", .{ GREEN, RESET });
     print("\n  {s}Agent Diagnostics:{s}\n", .{ BOLD, RESET });
     print("  {s}tri cloud api-check{s}           Test API key connectivity + model routing\n", .{ GREEN, RESET });
     print("  {s}tri cloud redeploy <svc> <N>{s}  Reuse service for new issue\n", .{ GREEN, RESET });

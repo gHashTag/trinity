@@ -117,6 +117,35 @@ section {
   min-height: 60vh;
 }
 
+/* A section centres its children and lets them shrink to fit, so one wide
+   child (a terminal recording is ~104 columns) widened the whole column past a
+   phone screen. The inner column takes the section's width and lets wide
+   children scroll inside themselves instead. */
+.section-inner {
+  width: 100%;
+  min-width: 0;
+}
+
+.section-inner.narrow {
+  max-width: 860px;
+}
+
+.section-inner > * {
+  max-width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 640px) {
+  .foundry-cta {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .foundry-cta .btn {
+    text-align: center;
+  }
+}
+
 /* A list is read down a common left edge; centring destroys that edge. The rule
    above centres everything in a section, so any list that did not happen to sit
    inside a left-aligned wrapper came out ragged — the marker pinned at the flex
@@ -1217,7 +1246,7 @@ input:focus-visible {
   width: 100%;
   height: auto;
   background: #000;
-  border-bottom: 1px solid var(--border, #2a2a2a);
+  border-bottom: 1px solid var(--border, rgba(255, 255, 255, 0.08));
 }
 
 .blog-card-body {
@@ -1231,18 +1260,29 @@ input:focus-visible {
   height: auto;
   margin: 0 0 28px;
   background: #000;
-  border: 1px solid var(--border, #2a2a2a);
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
   border-radius: 10px;
 }
+
+.blog-cover-figure { margin: 0 0 28px; }
+.blog-cover-figure > a { display: block; }
+.blog-cover-figure .blog-lead-cover { margin: 0; object-fit: contain; aspect-ratio: 40 / 21; }
+.blog-cover-figure figcaption { margin-top: 12px; font-size: .86rem; line-height: 1.5; color: var(--text-dim, #8a8a8a); }
+.blog-cover-panels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; list-style: none; margin: .6rem 0 .75rem; padding: 0; }
+.blog-cover-panels li { min-width: 0; margin: 0; overflow-wrap: anywhere; }
+.blog-cover-panels strong, .blog-cover-panels span { display: block; }
+.blog-cover-panels strong { color: var(--text, #FFFFFF); font-size: .8rem; }
+.blog-cover-language { margin: .3rem 0; font-size: .8rem; }
+@media (max-width: 600px) { .blog-cover-panels { grid-template-columns: 1fr; gap: .6rem; } }
 
 /* Кнопка репоста: раньше ссылки шли обычным синим текстом в строку и не
    читались как действие. */
 .share-pill {
   display: inline-block;
   padding: 5px 14px;
-  border: 1px solid var(--border, #2a2a2a);
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
   border-radius: 999px;
-  color: var(--text, #e8e8e8);
+  color: var(--text, #FFFFFF);
   text-decoration: none;
   font-size: 0.9rem;
   transition: border-color 0.2s ease, color 0.2s ease;
@@ -1275,3 +1315,184 @@ input:focus-visible {
   color: #d8bc7a;
   text-transform: none;
 }
+
+/* ==========================================================================
+   Spec Explorer (/specs) — motion tokens and the few animations it uses.
+   Scoped under .spec-x so nothing here can reach another page.
+
+   Durations live in tokens because prefers-reduced-motion then costs one
+   media query instead of a retrofit across every rule.
+   ========================================================================== */
+
+.spec-x {
+  --dur-fast: 90ms;    /* pane content swap */
+  --dur-mid: 160ms;    /* banner enter, pending dim ramp */
+  --dur-flag: 480ms;   /* one-shot failure flash */
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --shift: 4px;        /* the single knob reduced motion zeroes */
+}
+
+/* A 200-300ms compile gets no spinner, no skeleton, no shimmer: all three
+   mount and unmount inside the window and read as a flash, i.e. as jank. The
+   previous pane simply stays on screen. This dim only becomes visible if a
+   compile runs long -- the 200ms delay means a fast one never starts the ramp. */
+@keyframes spec-x-pending {
+  to { opacity: 0.55; }
+}
+.spec-x-pane[data-pending='true'] {
+  animation: spec-x-pending var(--dur-mid) var(--ease-out) 200ms both;
+  pointer-events: none;
+}
+
+/* Enter-only. A cross-fade needs both panes in the DOM at once, which for a
+   code view means double the text nodes and a real chance of a scroll blip. */
+@keyframes spec-x-in {
+  from { opacity: 0; transform: translateY(var(--shift)); }
+  to { opacity: 1; transform: none; }
+}
+.spec-x-swap {
+  animation: spec-x-in var(--dur-fast) var(--ease-out) both;
+}
+
+/* Motion marks the onset; colour and glyph carry the state. Never `infinite`:
+   in a dev tool this failure is on screen for as long as it takes to fix. */
+@keyframes spec-x-flag {
+  0% { background: rgba(248, 81, 73, 0.24); }
+  100% { background: transparent; }
+}
+.spec-x-flag {
+  animation: spec-x-flag var(--dur-flag) var(--ease-out) 1;
+}
+
+@keyframes spec-x-banner {
+  from { opacity: 0; transform: translateY(calc(var(--shift) * -1)); }
+  to { opacity: 1; transform: none; }
+}
+.spec-x-banner {
+  animation: spec-x-banner var(--dur-mid) var(--ease-out) both;
+}
+
+/* A code tab that scrolls next to an AST tab that does not would otherwise
+   shift the whole pane horizontally on every switch. */
+.spec-x-scroll {
+  overflow: auto;
+  scrollbar-gutter: stable;
+  overscroll-behavior: contain;
+}
+
+/* Reduced motion rewrites the tokens rather than the rules. 1ms, not 0s:
+   at zero, animationend may never fire and anything awaiting it hangs. */
+@media (prefers-reduced-motion: reduce) {
+  .spec-x {
+    --dur-fast: 1ms;
+    --dur-mid: 1ms;
+    --dur-flag: 1ms;
+    --shift: 0px;
+  }
+  .spec-x *,
+  .spec-x *::before,
+  .spec-x *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* The spec brief: open and headless on its own page, a collapsed disclosure in
+   the landing's embed, where it was taking 284px of an 826px column and
+   leaving the code 332. Scoped under .spec-x like the rest of the Explorer. */
+.spec-x-brief { min-height: 0; }
+/* This box sits in a column flex with min-height:0, so it shrinks under
+   pressure -- and it has nothing to give. In the embed, collapsed, it is one
+   36px row: at 370px, where the toolbar above wraps to two lines, it was
+   squeezed to 28px and the summary drew itself over the tab strip. On /specs,
+   where it is always open, it was worse -- measured at 404px the box was 0px
+   tall around 636px of content, which then drew straight over the tab strip and
+   the code. The first fix here was scoped to the embed's collapsible variant
+   and left that case exactly as it was.
+   So: no variant shrinks, and any open one takes what it needs up to 45vh and
+   scrolls the rest, leaving the tabs and the code their own height. */
+.spec-x-brief { flex: 0 0 auto; }
+.spec-x-brief:not(.is-collapsible),
+.spec-x-brief.is-collapsible[open] {
+  max-height: 45vh;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.spec-x-brief:not(.is-collapsible) > summary { display: none; }
+.spec-x-brief.is-collapsible > summary {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  margin: 8px 14px 0;
+  padding: 6px 10px;
+  border: 1px solid #2a3138;
+  border-radius: 5px;
+  color: #b9bfc6;
+  font: 600 11.5px/1.2 var(--mono, 'JetBrains Mono', monospace);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  list-style: none;
+}
+.spec-x-brief.is-collapsible > summary::-webkit-details-marker { display: none; }
+.spec-x-brief.is-collapsible > summary::before { content: '▸'; color: #7d8791; }
+.spec-x-brief.is-collapsible[open] > summary::before { content: '▾'; }
+.spec-x-brief.is-collapsible > summary:hover { border-color: #ffd45a; color: #ffd45a; }
+
+/* The source layer is a textarea, and a textarea sizes to nothing in
+   particular: in a pane taller than the visible code it stopped at 368px and
+   left 168px of empty box under it, with the code scrolling inside its own
+   368. The swap now fills the pane and every layer inside it stretches, so the
+   editor is as tall as the box that holds it. Content taller than the pane
+   still scrolls — min-height does not cap anything. */
+.spec-x-pane > .spec-x-swap {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+.spec-x-pane > .spec-x-swap > * {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+/* The stretch has to reach the textarea itself: the source container sits one
+   level further down, and stopping at it left the editor 368px in a 566px box. */
+.spec-x-pane [data-lang-exempt="source"] {
+  flex: 1 1 auto;
+  /* The container carries an inline min-height:100%, which on top of the swap
+     already filling the pane made the editor a header taller than the box and
+     pushed 68px past it on /specs. The flex chain supplies the height now. */
+  min-height: 0 !important;
+  display: flex;
+  flex-direction: column;
+}
+.spec-x-pane [data-lang-exempt="source"] > textarea {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* Embedded, the Explorer is a pane of the game and not a page of its own: its
+   own ground made the SPECS tab a black rectangle over the star map, which is
+   the one thing every other panel had stopped doing. The frame and the document
+   inside it go transparent, and the panels within keep their own translucency. */
+html:has(.spec-x[data-embedded="1"]),
+body:has(.spec-x[data-embedded="1"]),
+body:has(.spec-x[data-embedded="1"]) #root {
+  background: transparent !important;
+}
+
+/* The Explorer's own ground, embedded: a thin frosted veil. The tab strip and
+   the spec list have no panel of their own — they are bare rows on the document
+   — so with the hive drawing underneath they were read against moving hexes.
+   Thin enough that the map is still there, blurred enough that its detail is
+   not in the words. The panes inside keep their darker veil. */
+.spec-x[data-embedded="1"] {
+  background: rgba(2, 8, 6, 0.34) !important;
+  backdrop-filter: blur(4px);
+}
+
+/* Measured 2026-09-09 inside the frame: the document element and the Explorer's
+   own root were solid black over a sky the frame had already been made
+   transparent for. The panes carry their ground in an inline style, so theirs is
+   chosen in SpecExplorer.tsx where that object is built — see `box`. */
