@@ -1044,8 +1044,9 @@ test('the committed recordings: tri x7-board and tri devkit of the trios CLI, tr
   assert.equal(byId.get('gHashTag/BrowserOS:tri/x7-board').cast.src, 'term/x7-board/session.cast')
   assert.equal(byId.get('gHashTag/BrowserOS:tri/devkit').cast.src, 'term/devkit-flow/session.cast')
   assert.equal(byId.get('tri/misread').cast.src, 'term/t27-tri-misread/session.cast')
-  // 17 trios cards from 14 recordings (tri-x7-fasm, tri-fpga-rgmii and tri-fpga-wire each run two
-  // commands) + 8 t27 ones under public/term/; check:tools-coverage says which card each belongs to.
-  assert.equal(r.tools.counts.withCast, 25)
+  // 27 trios cards from 22 recordings (tri-x7-fasm, tri-fpga-rgmii and tri-fpga-status each run two
+  // commands, tri-x7-refs three) + 8 t27 ones under public/term/; check:tools-coverage says which card
+  // each belongs to.
+  assert.equal(r.tools.counts.withCast, 35)
   assert.equal(r.tools.counts.byWitness.runtime, 0)
 })
