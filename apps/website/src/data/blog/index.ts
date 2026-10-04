@@ -3,36 +3,6 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
-    slug: 'one-more-reading-then-it-cleared',
-    title: 'One more reading, then it cleared',
-    summary: 'A disk-halt monitor built to require two consecutive recovery readings before clearing got its first real test on a genuine crisis, not a synthetic one, three days after being written.',
-    date: '2026-09-05',
-    readingMinutes: 6,
-    tags: ['Zig', 'Tooling', 'Reliability', 'Automation'],
-    receipts: [
-      { label: 'trinity-fpga@cc00a282d — the original three tripwires (disk, drift, decision-gridlock) · 2026-09-04', href: 'https://github.com/gHashTag/trinity-fpga/commit/cc00a282df7d6dded97da7a1694e8a1303598486' },
-      { label: 'trinity-fpga@7193c740 — hysteresis and flap detection added, 49 tests · 2026-09-05', href: 'https://github.com/gHashTag/trinity-fpga/commit/7193c7409048ee37cfcb45561f79fec429361684' },
-      { label: 'trinity-fpga@360ce4c1 — the real crisis, and the first live proof · 2026-09-05', href: 'https://github.com/gHashTag/trinity-fpga/commit/360ce4c1fed0d1261a6d8f0439425c6b24bfbe30' },
-    ],
-    openQuestions: [
-      'The confirmation count (2 readings) and the flap window (20 iterations) and threshold (3 episodes) are defaults, not tuned against incident data -- there have only been three halt episodes total across this run, not enough to calibrate against.',
-      'The third crisis\'s root cause and recovery were never identified. Something outside this loop\'s own visibility -- most likely a reboot or an OS-level cache clear -- resolved it. This post shows the state machine behaved correctly against a real reading, not that the underlying disk problem is understood or fixed.',
-      'Flap detection has not actually fired during real operation in this run. It is tested against seeded synthetic data in a scratch copy of the state file, not against a real flapping sequence, because the three real halt episodes so far are spread too far apart in iteration count to cross the default threshold.',
-      'A detected flap currently only prints a warning and persists the episode history -- it does not yet write a formal, durable anomaly record. That is a deliberate, smaller scope than the original ask, not an oversight.',
-    ],
-    published: true,
-    ru: {
-      title: 'Ещё одно показание, и вердикт снялся',
-      summary: 'Монитор остановки диска, требующий два подряд идущих восстановительных показания перед снятием, получил первую настоящую проверку на реальном кризисе, а не на синтетическом, спустя три дня после написания.',
-      openQuestions: [
-        'Число подтверждений (2 показания), окно флаппинга (20 итераций) и порог (3 эпизода) — значения по умолчанию, не откалиброванные по данным реальных инцидентов: за весь прогон было всего три эпизода остановки, этого недостаточно для калибровки.',
-        'Первопричина третьего кризиса и его восстановление так и не были установлены. Что-то вне видимости этого цикла — вероятнее всего перезагрузка или очистка кэша на уровне ОС — разрешило его. Этот текст показывает, что машина состояний повела себя верно на реальном показании, а не то, что основная дисковая проблема понята или решена.',
-        'Обнаружение флаппинга ни разу не сработало в реальной работе за этот прогон. Оно проверено на засеянных синтетических данных в черновой копии файла состояния, а не на настоящей флаппящей последовательности, потому что три реальных эпизода остановки пока разнесены по номерам итераций слишком далеко, чтобы пересечь порог по умолчанию.',
-        'Обнаруженный флаппинг сейчас только печатает предупреждение и сохраняет историю эпизодов — он ещё не пишет формальную, долговременную запись аномалии. Это осознанно более узкий охват, чем исходная просьба, а не недосмотр.',
-      ],
-    },
-  },
-  {
     slug: "a-terminal-for-seven-backends-in-an-x-post",
     title: "A terminal for t27's seven backends, inside an X post",
     summary: "[one spec, hello_world; only JavaScript runs in the browser; the native results are one macOS machine on one day; nothing posted on X] The t27 player now has a terminal: the compiler, as WebAssembly in the page, prints what each of its seven backends emits and runs the spec's tests. Each backend has its own share page. Every word the terminal says lives in the spec. Run natively, hello_world as committed builds in two of the seven languages, and the post says why.",
@@ -938,6 +908,36 @@ export const postsIndex: PostMeta[] = [
         'Работа серверного маршрута /queen/public-foundation не установлена этим merge; контракт записывает 404 маршрута как состояние wire-этапа и использует резервный файл.',
         'Датированный снимок репозитория сам по себе не доказывает полноту или актуальность исходного журнала GitHub.',
         'Изменение не устанавливает развёрнутую интерактивность honeycomb, production deploy, производительность, FPGA-железо, кристалл, скорость, энергию или результат для модели.',
+      ],
+    },
+  },
+  {
+    slug: 'one-more-reading-then-it-cleared',
+    title: 'One more reading, then it cleared',
+    summary: 'A disk-halt monitor built to require two consecutive recovery readings before clearing got its first real test on a genuine crisis, not a synthetic one, three days after being written.',
+    date: '2026-09-05',
+    readingMinutes: 6,
+    tags: ['Zig', 'Tooling', 'Reliability', 'Automation'],
+    receipts: [
+      { label: 'trinity-fpga@cc00a282d — the original three tripwires (disk, drift, decision-gridlock) · 2026-09-04', href: 'https://github.com/gHashTag/trinity-fpga/commit/cc00a282df7d6dded97da7a1694e8a1303598486' },
+      { label: 'trinity-fpga@7193c740 — hysteresis and flap detection added, 49 tests · 2026-09-05', href: 'https://github.com/gHashTag/trinity-fpga/commit/7193c7409048ee37cfcb45561f79fec429361684' },
+      { label: 'trinity-fpga@360ce4c1 — the real crisis, and the first live proof · 2026-09-05', href: 'https://github.com/gHashTag/trinity-fpga/commit/360ce4c1fed0d1261a6d8f0439425c6b24bfbe30' },
+    ],
+    openQuestions: [
+      'The confirmation count (2 readings) and the flap window (20 iterations) and threshold (3 episodes) are defaults, not tuned against incident data -- there have only been three halt episodes total across this run, not enough to calibrate against.',
+      'The third crisis\'s root cause and recovery were never identified. Something outside this loop\'s own visibility -- most likely a reboot or an OS-level cache clear -- resolved it. This post shows the state machine behaved correctly against a real reading, not that the underlying disk problem is understood or fixed.',
+      'Flap detection has not actually fired during real operation in this run. It is tested against seeded synthetic data in a scratch copy of the state file, not against a real flapping sequence, because the three real halt episodes so far are spread too far apart in iteration count to cross the default threshold.',
+      'A detected flap currently only prints a warning and persists the episode history -- it does not yet write a formal, durable anomaly record. That is a deliberate, smaller scope than the original ask, not an oversight.',
+    ],
+    published: true,
+    ru: {
+      title: 'Ещё одно показание, и вердикт снялся',
+      summary: 'Монитор остановки диска, требующий два подряд идущих восстановительных показания перед снятием, получил первую настоящую проверку на реальном кризисе, а не на синтетическом, спустя три дня после написания.',
+      openQuestions: [
+        'Число подтверждений (2 показания), окно флаппинга (20 итераций) и порог (3 эпизода) — значения по умолчанию, не откалиброванные по данным реальных инцидентов: за весь прогон было всего три эпизода остановки, этого недостаточно для калибровки.',
+        'Первопричина третьего кризиса и его восстановление так и не были установлены. Что-то вне видимости этого цикла — вероятнее всего перезагрузка или очистка кэша на уровне ОС — разрешило его. Этот текст показывает, что машина состояний повела себя верно на реальном показании, а не то, что основная дисковая проблема понята или решена.',
+        'Обнаружение флаппинга ни разу не сработало в реальной работе за этот прогон. Оно проверено на засеянных синтетических данных в черновой копии файла состояния, а не на настоящей флаппящей последовательности, потому что три реальных эпизода остановки пока разнесены по номерам итераций слишком далеко, чтобы пересечь порог по умолчанию.',
+        'Обнаруженный флаппинг сейчас только печатает предупреждение и сохраняет историю эпизодов — он ещё не пишет формальную, долговременную запись аномалии. Это осознанно более узкий охват, чем исходная просьба, а не недосмотр.',
       ],
     },
   },
