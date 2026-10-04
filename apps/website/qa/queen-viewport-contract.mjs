@@ -442,6 +442,29 @@ const PROBE = (phone) => `(() => {
     A(b.top >= -0.5 && b.top < de.clientHeight - 40, 'CARD BOX OFF SCREEN', Math.round(b.top), de.clientHeight);
   });
   counts.cards = cards;
+  // 12. On a phone every control in the head is a 44px tile, and every field
+  // in it is at least 16px. The tools row was lifted to 44 and the worlds row
+  // beside it was not: on main the select was 167x26, "+ Repository" 44x26 and
+  // "Shared core" 93x26 at 375x812, and the select computed 9.28px, which iOS
+  // answers by zooming the page into the field on focus (#1316). Counted, so a
+  // head that draws no controls is not a clean pass.
+  if (phone) {
+    const head = shell.querySelector('.queen27-hud-vp-head');
+    const controls = head ? [...head.querySelectorAll('button, select, a, input')].filter(el => {
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.height > 0;
+    }) : [];
+    controls.forEach(el => {
+      const r = el.getBoundingClientRect();
+      const label = (el.getAttribute('aria-label') || el.textContent || '').replace(/\\s+/g, ' ').trim().slice(0, 20);
+      A(r.width >= 43.5 && r.height >= 43.5, 'HEAD TARGET UNDER 44', el.tagName, label, Math.round(r.width) + 'x' + Math.round(r.height));
+      if (el.matches('select, input')) {
+        const fs = parseFloat(getComputedStyle(el).fontSize);
+        A(fs >= 16, 'HEAD FIELD UNDER 16PX', el.tagName, label, fs + 'px');
+      }
+    });
+    counts.headControls = controls.length;
+  }
   return { fail, counts, zeros, live, rawErrors, round: (document.getElementById('stat-round') || {}).textContent || '' };
 })()`;
 
@@ -545,6 +568,8 @@ for (const [w, h] of (DEAD ? SIZES.filter(([w]) => w === 1440 || w === 390) : SI
     if (DEAD) for (const r of result.rawErrors || []) fail.push('RAW ERROR AS CONTENT ' + r);
     if (counts.view !== 1) zero.push(`views=${counts.view}`);
     if (!DEAD && view === 'kanban' && counts.cards < 1) zero.push('cards=0');
+    // the worlds row alone is three controls; a head with fewer drew nothing
+    if (phone && !(counts.headControls >= 3)) zero.push(`headControls=${counts.headControls}`);
     const problems = [...fail, ...zero.map(z => 'COUNT ' + z)];
     if (view === 'comb' || (w === 1440 && h === 900)) {
       const shot = await call('Page.captureScreenshot', { format: 'png' });
@@ -554,7 +579,7 @@ for (const [w, h] of (DEAD ? SIZES.filter(([w]) => w === 1440 || w === 390) : SI
       failures++;
       console.log(`  ${w}x${h} ${view.padEnd(8)} FAIL  ${problems.join(' ; ')}`);
     } else {
-      console.log(`  ${w}x${h} ${view.padEnd(8)} PASS  round=${result.round} cmd=${counts.commands} res=${counts.resources} sectors=${counts.sectors}${view === 'kanban' ? ` cards=${counts.cards}` : ''}`);
+      console.log(`  ${w}x${h} ${view.padEnd(8)} PASS  round=${result.round} cmd=${counts.commands} res=${counts.resources} sectors=${counts.sectors}${view === 'kanban' ? ` cards=${counts.cards}` : ''}${phone ? ` head=${counts.headControls}` : ''}`);
     }
   }
   // The other direction: an address changed from outside (Back, a link, a
