@@ -10,6 +10,8 @@
 //   public/play/site.js            the spec explorer's highlighter and palette (SITE_MODULES),
 //                                  bundled by esbuild from the site's own source, not copied
 //   public/play/<id>/index.html    one share page per play, carrying twitter:card = player
+//   public/play/<id>/<page>/index.html   one more per backend (BACKEND_PAGES), opening the
+//                                  terminal on that backend: a post can link straight to Rust
 //
 // The share page is the address a post links to. X reads its meta tags and, on a click, loads
 // `twitter:player` in an iframe; the page itself shows the same player full-window to anyone who
@@ -21,7 +23,7 @@
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { buildSync } from 'esbuild'
 import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { CYRILLIC, SITE, checkSchema, compilerErrors, constsOf, loadCompiler, readCast, sha256, verdictOf } from './agents-from-specs.mjs'
 import { runSpecTests } from './viewport-from-spec.mjs'
 
@@ -32,7 +34,7 @@ export const SITE_BUNDLE_OUT = 'public/play/site.js'
 export const EXPECTED_MODULE = 'x_player'
 // What the player is built from. A change to any of them is a new player, so it is a new
 // `v=` on the iframe address and a page --check will call stale.
-export const PLAYER_FILES = ['public/play/embed.html', 'public/play/embed.js', 'public/play/t27run.js', 'public/play/rtl.js', 'public/term/player.js', WASM]
+export const PLAYER_FILES = ['public/play/embed.html', 'public/play/embed.js', 'public/play/t27run.js', 'public/play/rtl.js', 'public/play/shell.js', 'public/term/player.js', WASM]
 // The outcomes `public/play/t27run.js` reports, in the order the spec lists them.
 export const RUNNER_OUTCOMES = ['pass', 'fail', 'skip']
 
@@ -49,14 +51,28 @@ export const PLAYER_REQUIRED = {
   SITE_MODULES: 'arr', SITE_IMPORTS: 'arr', SITE_BUNDLE: 'str',
   PLAY_COUNT: 'u8', PLAY_IDS: 'arr', PLAY_SPECS: 'arr', PLAY_CASTS: 'arr',
   PLAY_TITLES: 'arr', PLAY_DESCRIPTIONS: 'arr', PLAY_IMAGE_ALTS: 'arr',
+  BACKENDS: 'arr', BACKEND_NAMES: 'arr', BACKEND_EXTS: 'arr', BACKEND_PAGES: 'arr', BACKEND_RUN_LOCAL: 'arr', RUNS_IN_BROWSER: 'arr',
+  SHELL_COMMANDS: 'arr', SHELL_ARGS: 'arr', SHELL_HELP: 'arr', SHELL_CHIPS: 'arr', SHELL_NOTE: 'str',
+  SHELL_DEMO: 'str', SHELL_TYPE_MS: 'u8', SHELL_DEMO_MAX_CHARS: 'u8',
+  SHELL_PAGE_TITLE: 'str', SHELL_PAGE_DESCRIPTION: 'str', SHELL_PAGE_IMAGE_ALT: 'str',
+  STAGES: 'arr', NATIVE_TOOLS: 'arr', SHELL_GEN_ALIAS: 'str',
 }
+// What the terminal says: any number of SAY_ constants, each a string or an array of strings.
+// shellProblems holds them to public/play/shell.js both ways.
+const sayShapes = (consts) => Object.fromEntries(Object.keys(consts).filter((k) => k.startsWith('SAY_')).map((k) => [k, Array.isArray(consts[k].value) ? 'arr' : 'str']))
 const PLAY_FIELDS = ['PLAY_IDS', 'PLAY_SPECS', 'PLAY_CASTS', 'PLAY_TITLES', 'PLAY_DESCRIPTIONS', 'PLAY_IMAGE_ALTS']
+const BACKEND_FIELDS = ['BACKEND_NAMES', 'BACKEND_EXTS', 'BACKEND_PAGES', 'BACKEND_RUN_LOCAL']
+const SHELL_FIELDS = ['SHELL_ARGS', 'SHELL_HELP']
 // The same two patterns embed.js applies to its query before it fetches anything.
 export const SPEC_PATH_RE = /^specs\/[A-Za-z0-9_\-/.]+\.t27$/
 export const CAST_ID_RE = /^[a-z0-9][a-z0-9-]{0,63}$/
 
-export const pageOut = (id) => `public/play/${id}/index.html`
-export const imageOf = (f, id) => `public/play/${id}/${f.IMAGE_FILE}`
+export const pageOut = (id, sub) => `public/play/${id}/${sub ? sub + '/' : ''}index.html`
+export const imageOf = (f, id, sub) => `public/play/${id}/${sub ? sub + '/' : ''}${f.IMAGE_FILE}`
+// Every file the generator writes, in GENERATED order: per play, its page, then one per backend.
+export const generatedFiles = (f) => [PUBLIC_SPEC_OUT, SITE_BUNDLE_OUT, ...f.PLAY_IDS.flatMap((id) => [pageOut(id), ...f.BACKEND_PAGES.map((sub) => pageOut(id, sub))])]
+// A backend page's title, description and image text: the SHELL_PAGE_* templates, filled in.
+export const fillShell = (template, f, i, j) => template.replaceAll('{spec}', (f.PLAY_SPECS[i] ?? '').split('/').pop()).replaceAll('{lang}', f.BACKEND_NAMES[j] ?? '').replaceAll('{backend}', f.BACKENDS[j] ?? '')
 
 /** Width and height from a PNG's IHDR, or null when the bytes are not a PNG. */
 export function pngSize(bytes) {
@@ -69,7 +85,7 @@ export function pngSize(bytes) {
 // Semantic checks the schema cannot express. `root` is the site, so a test can point it
 // at a fixture; `files` reads a site-relative path or returns null.
 // ---------------------------------------------------------------------------
-export function semanticProblems(f, file, root = SITE) {
+export async function semanticProblems(f, file, root = SITE, { targets = null } = {}) {
   const problems = []
   const p = (m) => problems.push(`${file}: ${m}`)
   if (f.KIND !== 'player') p('KIND must be "player"')
@@ -78,7 +94,7 @@ export function semanticProblems(f, file, root = SITE) {
   if (!/^@[A-Za-z0-9_]{1,15}$/.test(f.SITE_HANDLE)) p(`SITE_HANDLE ${f.SITE_HANDLE} is not an X handle`)
   if (!existsSync(join(root, 'public', f.EMBED))) p(`EMBED public/${f.EMBED} does not exist`)
   for (const k of PLAY_FIELDS) if (f[k].length !== f.PLAY_COUNT) p(`${k} has ${f[k].length} entries, PLAY_COUNT is ${f.PLAY_COUNT}`)
-  const want = [PUBLIC_SPEC_OUT, SITE_BUNDLE_OUT, ...f.PLAY_IDS.map(pageOut)]
+  const want = generatedFiles(f)
   if (f.SITE_BUNDLE !== SITE_BUNDLE_OUT) p(`SITE_BUNDLE must be ${SITE_BUNDLE_OUT}, the module embed.js imports as ./site.js`)
   if (f.SITE_MODULES.length !== f.SITE_IMPORTS.length) p('SITE_MODULES and SITE_IMPORTS must have one entry each per module')
   for (const m of f.SITE_MODULES) if (!/^src\/lib\/[A-Za-z0-9_]+\.ts$/.test(m) || !existsSync(join(root, m))) p(`SITE_MODULES: ${m} is not a module under src/lib/`)
@@ -92,6 +108,7 @@ export function semanticProblems(f, file, root = SITE) {
   for (const t of f.TABS) if (!embed.includes(`id="pane-${t}"`)) p(`tab ${t} has no pane-${t} in public/${f.EMBED}`)
   if (f.COMPILE_ANIMATION_MS > f.AUTOPLAY_LIMIT_MS) p('COMPILE_ANIMATION_MS exceeds AUTOPLAY_LIMIT_MS')
   if (new Set(f.PLAY_IDS).size !== f.PLAY_IDS.length) p('PLAY_IDS repeats an id')
+  problems.push(...(await shellProblems(f, file, root, targets)))
   for (let i = 0; i < f.PLAY_COUNT; i++) {
     const id = f.PLAY_IDS[i]
     const at = `play ${id ?? i}`
@@ -117,6 +134,66 @@ export function semanticProblems(f, file, root = SITE) {
     if (!size) p(`${at}: ${imageOf(f, id)} is not a PNG`)
     else if (size.width !== f.IMAGE_WIDTH || size.height !== f.IMAGE_HEIGHT) p(`${at}: ${imageOf(f, id)} is ${size.width}x${size.height}, the card declares ${f.IMAGE_WIDTH}x${f.IMAGE_HEIGHT}`)
     if (statSync(img).size > f.IMAGE_MAX_BYTES) p(`${at}: ${imageOf(f, id)} is ${statSync(img).size} bytes, over ${f.IMAGE_MAX_BYTES}`)
+    f.BACKEND_PAGES.forEach((sub, j) => {
+      const there = `${at}, backend ${f.BACKENDS[j]}`
+      const fill = (k, max) => { const s = fillShell(f[k], f, i, j); if (!s || s.length > max) p(`${there}: ${k} fills to ${s.length} characters, X allows 1..${max}`) }
+      fill('SHELL_PAGE_TITLE', f.TITLE_MAX)
+      fill('SHELL_PAGE_DESCRIPTION', f.DESCRIPTION_MAX)
+      fill('SHELL_PAGE_IMAGE_ALT', f.IMAGE_ALT_MAX)
+      const card = join(root, imageOf(f, id, sub))
+      if (!existsSync(card)) { p(`${there}: ${imageOf(f, id, sub)} is missing`); return }
+      const sz = pngSize(readFileSync(card))
+      if (!sz) p(`${there}: ${imageOf(f, id, sub)} is not a PNG`)
+      else if (sz.width !== f.IMAGE_WIDTH || sz.height !== f.IMAGE_HEIGHT) p(`${there}: ${imageOf(f, id, sub)} is ${sz.width}x${sz.height}, the card declares ${f.IMAGE_WIDTH}x${f.IMAGE_HEIGHT}`)
+      if (statSync(card).size > f.IMAGE_MAX_BYTES) p(`${there}: ${imageOf(f, id, sub)} is ${statSync(card).size} bytes, over ${f.IMAGE_MAX_BYTES}`)
+    })
+  }
+  return problems
+}
+
+// The terminal: what the spec says it does against what public/play/shell.js does, and the
+// backend list against the compiler's own answer.
+export async function shellProblems(f, file, root = SITE, targets = null) {
+  const problems = []
+  const p = (m) => problems.push(`${file}: ${m}`)
+  const n = f.BACKENDS.length
+  for (const k of BACKEND_FIELDS) if (f[k].length !== n) p(`${k} has ${f[k].length} entries, BACKENDS has ${n}`)
+  if (new Set(f.BACKENDS).size !== n) p('BACKENDS repeats a backend')
+  if (targets) {
+    const have = [...targets].sort().join(', ')
+    if ([...f.BACKENDS].sort().join(', ') !== have) p(`BACKENDS must be the compiler's targets (${have}), is ${f.BACKENDS.join(', ')}`)
+  }
+  if (new Set(f.BACKEND_PAGES).size !== n) p('BACKEND_PAGES repeats a page')
+  for (const sub of f.BACKEND_PAGES) if (!CAST_ID_RE.test(sub)) p(`BACKEND_PAGES: ${sub} must match ${CAST_ID_RE}`)
+  for (const e of f.BACKEND_EXTS) if (!/^(\.[a-z]+)+$/.test(e)) p(`BACKEND_EXTS: ${e} is not a file extension`)
+  f.BACKEND_RUN_LOCAL.forEach((c, j) => { if (!c.includes('{file}')) p(`BACKEND_RUN_LOCAL[${j}] (${f.BACKENDS[j]}) does not name {file}`) })
+  for (const b of f.RUNS_IN_BROWSER) if (!f.BACKENDS.includes(b)) p(`RUNS_IN_BROWSER: ${b} is not a backend`)
+  for (const k of SHELL_FIELDS) if (f[k].length !== f.SHELL_COMMANDS.length) p(`${k} has ${f[k].length} entries, SHELL_COMMANDS has ${f.SHELL_COMMANDS.length}`)
+  for (const c of f.SHELL_CHIPS) if (!f.SHELL_COMMANDS.includes(c)) p(`SHELL_CHIPS: ${c} is not one of SHELL_COMMANDS`)
+  if (!f.SHELL_DEMO.includes('{backend}')) p('SHELL_DEMO must name {backend}')
+  for (const b of f.BACKENDS) {
+    const typed = f.SHELL_DEMO.replaceAll('{backend}', b)
+    if (typed.length > f.SHELL_DEMO_MAX_CHARS) p(`SHELL_DEMO for ${b} is ${typed.length} characters, SHELL_DEMO_MAX_CHARS is ${f.SHELL_DEMO_MAX_CHARS}`)
+    if (!f.SHELL_COMMANDS.some((c) => typed === c || typed.startsWith(c + ' '))) p(`SHELL_DEMO "${typed}" is not one of SHELL_COMMANDS`)
+  }
+  if (f.SHELL_DEMO_MAX_CHARS * f.SHELL_TYPE_MS > f.AUTOPLAY_LIMIT_MS) p('typing SHELL_DEMO would outlast AUTOPLAY_LIMIT_MS')
+  if (f.STAGES.length !== 7) p(`STAGES names ${f.STAGES.length} stages; the compile piece has 7`)
+  if ((f.SAY_CHECK ?? []).length !== f.STAGES.length - 1) p(`SAY_CHECK has ${(f.SAY_CHECK ?? []).length} rows; t27c check prints one per stage but tests, ${f.STAGES.length - 1}`)
+  if (!f.SHELL_GEN_ALIAS.includes('{backend}')) p('SHELL_GEN_ALIAS must name {backend}')
+  let shell = null
+  try { shell = await import(pathToFileURL(join(root, 'public/play/shell.js')).href) } catch (e) { p(`public/play/shell.js does not load: ${e.message}`) }
+  if (shell) {
+    const handled = Object.keys(shell.COMMANDS)
+    for (const c of f.SHELL_COMMANDS) if (!handled.includes(c)) p(`command "${c}" has no handler in public/play/shell.js`)
+    for (const c of handled) if (!f.SHELL_COMMANDS.includes(c)) p(`public/play/shell.js handles "${c}", which SHELL_COMMANDS does not list`)
+    // Every phrase shell.js prints is a SAY_ constant here, and every SAY_ constant is printed.
+    const text = readFileSync(join(root, 'public/play/shell.js'), 'utf8')
+    const said = new Set((text.match(/\bSAY_[A-Z0-9_]*[A-Z0-9]\b/g) ?? []))
+    const have = Object.keys(f).filter((k) => k.startsWith('SAY_'))
+    for (const k of said) if (!have.includes(k)) p(`public/play/shell.js says ${k}, which this spec does not define`)
+    for (const k of have) if (!said.has(k)) p(`${k} is never said by public/play/shell.js`)
+    const runs = Object.keys(shell.RUNNERS).sort().join(', ')
+    if ([...f.RUNS_IN_BROWSER].sort().join(', ') !== runs) p(`RUNS_IN_BROWSER must be what public/play/shell.js runs (${runs})`)
   }
   return problems
 }
@@ -130,15 +207,21 @@ export const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;
 /** The iframe's query, the same for the card and the page; `v` is the player build. */
 export const playQuery = (f, i, build) => `spec=${encodeURIComponent(f.PLAY_SPECS[i])}&cast=${encodeURIComponent(f.PLAY_CASTS[i])}&v=${build}`
 
-export function renderPage(f, i, { specSha, build, imageSha }) {
+/** A backend page's query: the play's, opening the terminal on backend j. */
+export const shellQuery = (f, i, j, build) => `spec=${encodeURIComponent(f.PLAY_SPECS[i])}&cast=${encodeURIComponent(f.PLAY_CASTS[i])}&tab=term&backend=${encodeURIComponent(f.BACKENDS[j])}&v=${build}`
+
+/** j is a backend's index for its page, or undefined for the play's own page. */
+export function renderPage(f, i, { specSha, build, imageSha, j }) {
   const id = f.PLAY_IDS[i]
-  const page = `${f.ORIGIN}play/${id}/`
-  const q = playQuery(f, i, build)
+  const shellPage = j !== undefined
+  const page = `${f.ORIGIN}play/${id}/${shellPage ? f.BACKEND_PAGES[j] + '/' : ''}`
+  const up = shellPage ? '../../../' : '../../'
+  const q = shellPage ? shellQuery(f, i, j, build) : playQuery(f, i, build)
   const player = `${f.ORIGIN}${f.EMBED}?${q}`
   const image = `${page}${f.IMAGE_FILE}?v=${imageSha}`
-  const title = f.PLAY_TITLES[i]
-  const desc = f.PLAY_DESCRIPTIONS[i]
-  const alt = f.PLAY_IMAGE_ALTS[i]
+  const title = shellPage ? fillShell(f.SHELL_PAGE_TITLE, f, i, j) : f.PLAY_TITLES[i]
+  const desc = shellPage ? fillShell(f.SHELL_PAGE_DESCRIPTION, f, i, j) : f.PLAY_DESCRIPTIONS[i]
+  const alt = shellPage ? fillShell(f.SHELL_PAGE_IMAGE_ALT, f, i, j) : f.PLAY_IMAGE_ALTS[i]
   const open = `${f.ORIGIN}${f.SPEC_PAGE}${encodeURIComponent(f.PLAY_SPECS[i])}`
   const meta = (attr, k, v) => `<meta ${attr}="${k}" content="${esc(v)}">`
   return `<!doctype html>
@@ -150,7 +233,7 @@ export function renderPage(f, i, { specSha, build, imageSha }) {
 <title>${esc(title)} &middot; Trinity S&sup3;AI</title>
 ${meta('name', 'description', desc)}
 <link rel="canonical" href="${esc(page)}">
-<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="${up}favicon.svg" type="image/svg+xml">
 ${meta('property', 'og:type', 'website')}
 ${meta('property', 'og:site_name', 'Trinity S³AI')}
 ${meta('property', 'og:url', page)}
@@ -172,7 +255,7 @@ ${meta('name', 'twitter:image:alt', alt)}
 <style>html,body{margin:0;height:100%;background:#000}iframe{display:block;border:0;width:100%;height:100%}noscript p{color:#888;font:15px system-ui;padding:1em}a{color:#00ff88}</style>
 </head>
 <body>
-<iframe src="../../${esc(f.EMBED)}?${esc(q)}&amp;autoplay=1" title="${esc(title)}" allow="clipboard-write"></iframe>
+<iframe src="${up}${esc(f.EMBED)}?${esc(q)}&amp;autoplay=1" title="${esc(title)}" allow="clipboard-write"></iframe>
 <noscript><p>${esc(desc)} <a href="${esc(open)}">Open the spec on t27.ai</a>.</p></noscript>
 </body>
 </html>
@@ -213,11 +296,11 @@ export async function buildPlay({ specText, analyze, root = SITE }) {
   if (analysis.ast?.name !== EXPECTED_MODULE) problems.push(`${PLAYER_SPEC}: module must be ${EXPECTED_MODULE}, is ${analysis.ast?.name ?? 'missing'}`)
   let consts = {}
   try { consts = constsOf(analysis) } catch (e) { problems.push(`${PLAYER_SPEC}: ${e.message}`) }
-  problems.push(...checkSchema(consts, PLAYER_REQUIRED, {}, PLAYER_SPEC))
+  problems.push(...checkSchema(consts, PLAYER_REQUIRED, sayShapes(consts), PLAYER_SPEC))
   const f = Object.fromEntries(Object.entries(consts).map(([k, v]) => [k, v.value]))
   let tests = { tests: 0, asserts: 0, failures: [] }
   if (problems.length === 0) {
-    problems.push(...semanticProblems(f, PLAYER_SPEC, root))
+    problems.push(...(await semanticProblems(f, PLAYER_SPEC, root, { targets: Object.keys(analysis.targets ?? {}) })))
     tests = runSpecTests(analysis, f)
     if (tests.tests === 0) problems.push(`${PLAYER_SPEC}: no test block; the player must test its own limits`)
     problems.push(...tests.failures.map((m) => `${PLAYER_SPEC}: test ${m}`))
@@ -231,6 +314,10 @@ export async function buildPlay({ specText, analyze, root = SITE }) {
   f.PLAY_IDS.forEach((id, i) => {
     const imageSha = sha256(readFileSync(join(root, imageOf(f, id)))).slice(0, 12)
     files.push([pageOut(id), renderPage(f, i, { specSha, build, imageSha })])
+    f.BACKEND_PAGES.forEach((sub, j) => {
+      const cardSha = sha256(readFileSync(join(root, imageOf(f, id, sub)))).slice(0, 12)
+      files.push([pageOut(id, sub), renderPage(f, i, { specSha, build, imageSha: cardSha, j })])
+    })
   })
   return { problems, verdict, fields: f, specSha, tests, build, files }
 }

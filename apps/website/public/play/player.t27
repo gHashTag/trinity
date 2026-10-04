@@ -23,8 +23,12 @@
 ; the spec's own test blocks. Code shows what each backend emitted, coloured the way the spec
 ; explorer colours it. RTL reads the emitted Verilog the way a hardware engineer would before
 ; synthesis: the module's ports and parameters, the bit map of every packed struct, the
-; functions, and what a Verilog-2005 tool will refuse in that text. Term replays a recording of
-; t27c on the same file in a terminal.
+; functions, and what a Verilog-2005 tool will refuse in that text. Term is a terminal over the
+; same compiler: `t27c gen rust` prints the Rust it emits for the spec in the editor, and so for
+; each of the seven backends; `t27c test`, `ls`, `cat` and `save` work on what it made; `run`
+; executes the JavaScript backend's module in the page; `replay` plays a recording of t27c on
+; the same file, made on a real machine. Each backend has a share page of its own, so a post can
+; open the terminal on that backend.
 
 ; WHAT IS DELIBERATELY ABSENT: sound, a sign-in, a cookie, a request to any host but t27.ai,
 ; and a test outcome this page made up. A block the evaluator cannot follow is a skip and says
@@ -37,8 +41,9 @@ pub const KIND : str = "player";
 pub const ID : str = "x/player";
 pub const NAME : str = "t27 in a post";
 ; The derived files the generator rewrites (relative to apps/website): this spec's public copy,
-; then the site modules below as one ES module, then one share page per play, in PLAY_IDS order.
-pub const GENERATED : [3]str = ["public/play/player.t27", "public/play/site.js", "public/play/hello-world/index.html"];
+; then the site modules below as one ES module, then per play, in PLAY_IDS order, its share page
+; and one share page per backend, in BACKENDS order.
+pub const GENERATED : [10]str = ["public/play/player.t27", "public/play/site.js", "public/play/hello-world/index.html", "public/play/hello-world/zig/index.html", "public/play/hello-world/c/index.html", "public/play/hello-world/rust/index.html", "public/play/hello-world/verilog/index.html", "public/play/hello-world/verilog-hir/index.html", "public/play/hello-world/js/index.html", "public/play/hello-world/ts/index.html"];
 
 ; --- What the player takes from the site -------------------------------------------------------
 ; The spec explorer's highlighter and palette, bundled from the site's own source rather than
@@ -101,6 +106,83 @@ pub const OUTCOMES : [3]str = ["pass", "fail", "skip"];
 pub const SKIP_IS_NEVER_PASS : bool = true;
 pub const TESTS_NOTE : str = "Run here, in your browser, by a small evaluator over the compiler's syntax tree. Fail means an assert was false, or the block divided by zero or indexed past the end. Anything the evaluator cannot follow is a skip and names the reason; a skip is never counted as a pass.";
 
+; --- Term: a terminal over the same compiler --------------------------------------------------
+; The compiler's backends, in the order every tab lists them. The generator refuses this list
+; unless it is exactly the set of targets the compiler answers with, so a backend added to t27c
+; and not named here (or named here and gone from t27c) stops the build instead of going unseen.
+pub const BACKENDS : [7]str = ["zig", "c", "rust", "verilog", "verilog_hir", "js", "ts"];
+pub const BACKEND_NAMES : [7]str = ["Zig", "C", "Rust", "Verilog", "Verilog (HIR)", "JavaScript", "TypeScript"];
+; The emitted file's name is the spec's stem plus this; Verilog takes its module's name instead.
+pub const BACKEND_EXTS : [7]str = [".zig", ".c", ".rs", ".v", ".hir.v", ".js", ".ts"];
+; Each backend's share page: public/play/<id>/<page>/, the terminal opened on that backend.
+pub const BACKEND_PAGES : [7]str = ["zig", "c", "rust", "verilog", "verilog-hir", "js", "ts"];
+; What `run` prints for the backends this page cannot run: the command on a machine that has
+; the toolchain. {file} is the emitted file. The terminal prints it; it never claims its outcome.
+pub const BACKEND_RUN_LOCAL : [7]str = ["zig test {file}", "cc -std=c11 -c {file}", "rustc --crate-type lib --edition 2021 {file}", "iverilog -g2012 -o /dev/null {file}", "iverilog -g2012 -o /dev/null {file}", "node {file}", "tsc --noEmit --strict {file}"];
+; The backends whose output this page runs itself. A browser has a JavaScript engine; it has no
+; zig, cc, rustc, iverilog or tsc, and this page fetches nothing from any other host to fake one.
+pub const RUNS_IN_BROWSER : [1]str = ["js"];
+; The commands, what each takes, and the line `help` prints for it. Two words are one command.
+pub const SHELL_COMMANDS : [12]str = ["help", "ls", "cat", "save", "lang", "t27c gen", "t27c test", "t27c check", "run", "replay", "history", "clear"];
+pub const SHELL_ARGS : [12]str = ["", "", "<file>", "<file>", "[backend]", "[backend]", "", "", "[backend]", "", "", ""];
+pub const SHELL_HELP : [12]str = ["this list", "the spec, and the file each backend emitted from it", "print a file", "download a file", "show the backend, or pick one", "compile the spec in the editor and print what the backend emits", "run the spec's test and invariant blocks", "what each compiler stage made of the spec", "run the emitted code, where this page can: JavaScript", "play a recording of t27c on this spec, made on a real machine", "the commands typed so far", "clear the screen"];
+; The commands a tap runs, for a reader with no keyboard; the backends are taps of their own.
+pub const SHELL_CHIPS : [5]str = ["t27c test", "run", "ls", "replay", "help"];
+pub const SHELL_NOTE : str = "Every line here is printed by the t27 compiler running in this page, or by the JavaScript it emitted. Nothing is sent anywhere. A browser has no zig, cc, rustc or iverilog: for those backends, run prints the command for your machine.";
+; Opened on a backend with autoplay, the terminal types this one command and runs it.
+pub const SHELL_DEMO : str = "t27c gen {backend}";
+pub const SHELL_TYPE_MS : u8 = 45;
+pub const SHELL_DEMO_MAX_CHARS : u8 = 32;
+; A backend's share page. {spec} is the play's file name, {lang} its BACKEND_NAMES entry and
+; {backend} its BACKENDS entry. Filled in, each is held to X's limits like any play's.
+pub const SHELL_PAGE_TITLE : str = "{spec} to {lang}, in a terminal inside the post";
+pub const SHELL_PAGE_DESCRIPTION : str = "A terminal in your browser running the t27 compiler as WebAssembly: t27c gen {backend} prints the {lang} it emits for {spec}, and t27c test runs the spec's tests.";
+pub const SHELL_PAGE_IMAGE_ALT : str = "The t27 player's terminal: t27c gen {backend} on {spec}, and the {lang} the compiler emitted, coloured.";
+
+; --- What the terminal says ------------------------------------------------------------------
+; Every word the terminal prints is one of these; public/play/shell.js holds none of its own.
+; It fills the {names} and lays the columns out, nothing more. The generator refuses a SAY_
+; constant that shell.js never says and a phrase shell.js says that is not here, so the two
+; cannot drift. The name sets the colour: SAY_ERR_ red, SAY_WARN_ yellow, SAY_NOTE_ dim.
+; shell.js is JavaScript by hand for one reason, measured: gen-js lowers declarations, not
+; function bodies, so the terminal's logic cannot yet be a t27 spec compiled by this compiler.
+pub const STAGES : [7]str = ["source", "lexer", "parser", "types", "hir", "backends", "tests"];
+pub const SAY_CHECK : [6]str = ["{bytes} bytes, {lines} lines", "{tokens} tokens, {kinds} kinds, {dropped} dropped", "{nodes} nodes, depth {depth}, {top} top-level", "{errors} errors", "{bytes} bytes", "{ok} of {all} emitted, {bytes} bytes"];
+pub const SAY_BANNER : str = "t27 terminal - {spec} - {count} backends";
+pub const SAY_NOTE_START : str = "type help, or tap a command below";
+pub const SAY_NOTE_BACKENDS : str = "backends: {backends}";
+pub const SAY_NOTE_ALSO : str = "also understood: {alias}, the local command of a backend that runs here, and the names of native tools";
+pub const SAY_SPEC_FILE : str = "the spec";
+pub const SAY_RUNS_HERE : str = "runs in this page";
+pub const SAY_FAILED : str = "failed";
+pub const SAY_ERR_WHICH_FILE : str = "{cmd}: which file? ls lists them";
+pub const SAY_ERR_NO_FILE : str = "{cmd}: {file}: no such file; ls lists them";
+pub const SAY_ERR_NOT_EMITTED : str = "{backend} emitted nothing: {error}";
+pub const SAY_SAVED : str = "asked your browser to download {file}, {bytes} bytes";
+pub const SAY_ERR_NO_BACKEND : str = "{cmd}: no backend called {name}; the backends are {backends}";
+pub const SAY_NOTE_GEN : str = "// {file}: {bytes} bytes of {lang}, compiled in {ms} ms by t27_compiler.wasm in this page";
+pub const SAY_ERR_RUNNER : str = "the test runner stopped: {error}";
+pub const SAY_NOTE_NO_TESTS : str = "this spec has no test or invariant block";
+pub const SAY_TESTS : str = "{pass} pass, {fail} fail, {skip} skip";
+pub const SAY_ASSERTS : str = "asserts: {count}";
+pub const SAY_NOTE_CHECKED : str = "compiled in {ms} ms, in this page";
+pub const SAY_NOTE_IMPORTING : str = "importing {file} into this page; its exports are printed, nothing is called";
+pub const SAY_IMPORT_OK : str = "import ok: {count} exports";
+pub const SAY_ERR_IMPORT : str = "import failed: {error}";
+pub const SAY_WARN_NOT_HERE : str = "{lang} does not run in a browser: this page has no {tool}. On a machine that has it:";
+pub const SAY_LOCAL_STEPS : [2]str = ["  $ save {file}", "  $ {command}"];
+pub const SAY_NOTE_NO_CAST : str = "there is no recording of t27c on this spec";
+pub const SAY_NOTE_REPLAY : str = "a recording of t27c on this spec, made on a real machine: the typing is staged, every byte printed is real";
+pub const SAY_WARN_NATIVE : str = "{tool} is not in your browser: this page has the t27 compiler and nothing else";
+pub const SAY_NOTE_NATIVE_RUN : str = "run {backend} prints the command for your machine";
+pub const SAY_ERR_T27C : str = "t27c {sub}: not in this terminal; it has {commands}";
+pub const SAY_ERR_NOT_FOUND : str = "{cmd}: command not found; help lists what this terminal does";
+pub const SAY_ERR_THREW : str = "{cmd} stopped: {error}";
+; Names a reader may type for a toolchain this page does not have, besides the first word of
+; each BACKEND_RUN_LOCAL; and the real t27c's spelling of gen, which the terminal also takes.
+pub const NATIVE_TOOLS : [7]str = ["gcc", "clang", "cargo", "verilator", "yosys", "deno", "bun"];
+pub const SHELL_GEN_ALIAS : str = "t27c gen-{backend}";
+
 ; --- Plays ---------------------------------------------------------------------------------------
 ; One entry per play, the same position in every array. SPEC is a path under public/t27/files/;
 ; CAST names a recording published at public/term/<cast>/.
@@ -109,8 +191,8 @@ pub const PLAY_IDS : [1]str = ["hello-world"];
 pub const PLAY_SPECS : [1]str = ["specs/demos/hello_world.t27"];
 pub const PLAY_CASTS : [1]str = ["t27c-hello-world"];
 pub const PLAY_TITLES : [1]str = ["hello_world.t27, compiled inside the post"];
-pub const PLAY_DESCRIPTIONS : [1]str = ["The t27 compiler, as WebAssembly, running on one spec in your browser: lexer to seven backends in eight seconds, the spec's own tests, the emitted code, its Verilog read for synthesis, and a t27c run."];
-pub const PLAY_IMAGE_ALTS : [1]str = ["The t27 player: hello_world.t27 on the left, the compiler's stages on the right with token, node and backend counts, and tabs for tests, code, RTL and a terminal recording."];
+pub const PLAY_DESCRIPTIONS : [1]str = ["The t27 compiler, as WebAssembly, running on one spec in your browser: lexer to seven backends, the spec's own tests, the emitted code, its Verilog read for synthesis, and a terminal."];
+pub const PLAY_IMAGE_ALTS : [1]str = ["The t27 player: hello_world.t27 on the left, the compiler's stages on the right with token, node and backend counts, and tabs for tests, code, RTL and a terminal."];
 
 test the_player_is_sixteen_by_nine {
     assert PLAYER_WIDTH * 9 == PLAYER_HEIGHT * 16;
@@ -156,8 +238,43 @@ test the_site_bundle_is_generated_with_the_rest {
     assert SITE_MODULES[0] == "src/lib/highlight.ts";
 }
 
+test the_terminal_speaks_every_backend {
+    assert BACKENDS[0] == "zig";
+    assert BACKENDS[2] == "rust";
+    assert BACKENDS[4] == "verilog_hir";
+    assert BACKEND_PAGES[4] == "verilog-hir";
+    assert BACKEND_EXTS[4] == ".hir.v";
+    assert BACKEND_NAMES[5] == "JavaScript";
+}
+
+test only_javascript_runs_in_the_browser {
+    assert RUNS_IN_BROWSER[0] == "js";
+    assert BACKENDS[5] == RUNS_IN_BROWSER[0];
+}
+
+test the_typed_command_ends_inside_the_autoplay_limit {
+    assert SHELL_DEMO_MAX_CHARS * SHELL_TYPE_MS <= AUTOPLAY_LIMIT_MS;
+    assert SHELL_TYPE_MS > 0;
+}
+
+test the_terminal_is_a_tab_and_gen_is_a_command {
+    assert TABS[5] == "term";
+    assert TAB_LABELS[5] == "Term";
+    assert SHELL_COMMANDS[0] == "help";
+    assert SHELL_COMMANDS[5] == "t27c gen";
+    assert SHELL_ARGS[5] == "[backend]";
+    assert SHELL_CHIPS[0] == SHELL_COMMANDS[6];
+}
+
 test the_first_play_is_hello_world {
     assert PLAY_COUNT == 1;
     assert PLAY_IDS[0] == "hello-world";
     assert PLAY_SPECS[0] == "specs/demos/hello_world.t27";
+}
+
+test the_terminal_reads_the_compile_stages {
+    assert STAGES[0] == "source";
+    assert STAGES[5] == "backends";
+    assert STAGES[6] == "tests";
+    assert SAY_CHECK[3] == "{errors} errors";
 }
