@@ -11,7 +11,10 @@ const analyze=await loadCompiler(readFileSync(join(SITE,'public/t27/t27_compiler
 const analysis=analyze(text),v=verdictOf(analysis),constants=constsOf(analysis);
 if(compilerErrors(analysis).length||!v.typecheckOk||!v.hirOk||v.discarded||analysis.ast?.name!==moduleName)throw new Error('Issue proof spec rejected');
 const schema={REPO:'str',ISSUES:'arr-u32',SPEC:'str',SPEC_HASH:'str',SEAL:'str',SEAL_HASH:'str',VECTORS:'str',VECTORS_HASH:'str',VERIFIER:'str',VERIFIER_HASH:'str',MAKEFILE:'str',MAKEFILE_HASH:'str',WORKFLOW:'str',WORKFLOW_HASH:'str',VECTOR_COUNT:'u32',CACHE_MS:'u32',ACCEPT:'arr-u8'};
-const problems=checkSchema(constants,schema,{GDS_WORKFLOW:'str',GDS_WORKFLOW_HASH:'str',EXTRA_PATHS:'arr',EXTRA_HASHES:'arr',EVIDENCE_PATH:'str'},source);
+const profileSchema=moduleName==='queen_issue_proof'
+  ? {...schema,GDS_WORKFLOW:'str',GDS_WORKFLOW_HASH:'str'}
+  : {...schema,EXTRA_PATHS:'arr',EXTRA_HASHES:'arr',EVIDENCE_PATH:'str'};
+const problems=checkSchema(constants,profileSchema,{},source);
 if(problems.length)throw new Error(problems.join('; '));
 const fields=Object.fromEntries(Object.entries(constants).map(([k,v])=>[k,v.value]));
 const result=runSpecTests(analysis,fields);
