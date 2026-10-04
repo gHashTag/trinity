@@ -12,7 +12,7 @@ module trinity_capability_research_unreferenced_sources;
 
 pub const KIND : str = "capability";
 pub const ID : str = "trinity/research.unreferenced-sources";
-pub const TITLE : str = "Source directories that no file named by build.zig reaches through @import: src/phi-engine, src/sacred, src/consciousness, src/brain, src/tvc, src/storm and others";
+pub const TITLE : str = "Source directories that no file named by build.zig reaches through @import: src/phi-engine, src/sacred, src/consciousness, src/tvc, src/storm and others";
 ; Who owns the implementation this card describes.
 pub const OWNER_REPO : str = "gHashTag/trinity";
 ; executable | declared | adapter | external | deprecated | out-of-scope | research | catalog-only
@@ -25,7 +25,7 @@ pub const PROFILE : str = "headless";
 pub const CANONICAL_SPEC : str = "";
 pub const DIALECT : str = "none";
 ; Implementation and generated paths of the pinned tree (trinity: prefix), checked to exist.
-pub const IMPLEMENTATION : [6]str = ["trinity:src/phi-engine", "trinity:src/sacred", "trinity:src/consciousness", "trinity:src/brain", "trinity:src/tvc", "trinity:src/storm"];
+pub const IMPLEMENTATION : [5]str = ["trinity:src/phi-engine", "trinity:src/sacred", "trinity:src/consciousness", "trinity:src/tvc", "trinity:src/storm"];
 pub const GENERATED : [0]str = [];
 ; zig | c | rust | verilog | wasm | ts | swift | python | none; only executable, adapter and research cards claim one.
 pub const BACKEND : str = "zig";
@@ -35,10 +35,10 @@ pub const TARGETS : [0]str = [];
 pub const ACCEPTANCE : str = "";
 ; measured | declared | specified | external | not-claimed, as docs/system/project.md defines them.
 pub const EVIDENCE : str = "not-claimed";
-pub const EVIDENCE_SOURCE : str = "tools/trinity_manifest.py inventory: of 2830 tracked .zig files, 749 are reachable from the 173 files build.zig names and 2081 are not; the per-directory counts are in conformance/trinity/inventory.json (zig_reachability). S03 decides retire or attach.";
+pub const EVIDENCE_SOURCE : str = "tools/trinity_manifest.py inventory: of 2830 tracked .zig files, 748 are reachable from the 173 files build.zig names and 2082 are not (until 2026-10-01 the walk read comments and counted 749: src/background_agent/db/issue_bindings.zig is reached only through a commented-out @import); the per-directory counts are in conformance/trinity/inventory.json (zig_reachability). S03 decides retire or attach.";
 ; The work package of gHashTag/trinity#988 that owns this capability's contract.
 pub const WORK_PACKAGE : str = "S01";
-pub const NOTE : str = "";
+pub const NOTE : str = "src/brain was named here until 2026-10-04 (gHashTag/t27#5953). From gHashTag/trinity#1333 on, build.zig names six of its files as test roots, owned by trinity/brain.regions, so it is no longer a directory build.zig does not reach. Not all of it is reached: at the pin 43 of its 46 .zig files are unreachable and are among the 2082 above, and at gHashTag/trinity@291ac8b24 (the head of #1333) 37 of 46 are.";
 pub const ENABLED : bool = true;
 
 test card_is_bound_to_its_package {
