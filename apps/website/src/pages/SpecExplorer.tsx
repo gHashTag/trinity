@@ -32,7 +32,7 @@ import { HealthBar, HealthDot, PipelineRibbon, HEALTH_COLOR } from '../component
 import { SpecSkillChips } from '../components/SpecChips'
 import TerminalCast from '../components/TerminalCast'
 import { loadToolSpecs, type ToolCast } from '../lib/agentSpecs'
-import { highlightCode, highlightSource, type Span } from '../lib/highlight'
+import { TARGET_LANG, highlightCode, highlightSource, type Span } from '../lib/highlight'
 import {
   analyzeCached,
   analyzeEdited,
@@ -150,8 +150,6 @@ const UI = {
     editing: 'Editing — not the shipped spec',
     unrun: 'not compiled yet',
     runHint: 'RUN or ⌘⏎ to compile',
-    brokeIt: 'broke',
-    fixedIt: 'fixed',
     course: 'Course',
     courseNote: 'Eight lessons, in order, each one clean through every layer.',
     droppedItems: 'dropped',
@@ -255,8 +253,6 @@ const UI = {
     editing: 'Редактирование — это уже не исходная спека',
     unrun: 'ещё не скомпилировано',
     runHint: 'RUN или ⌘⏎ для компиляции',
-    brokeIt: 'сломал',
-    fixedIt: 'починил',
     course: 'Курс',
     courseNote: 'Восемь уроков по порядку, каждый чист на всех слоях.',
     droppedItems: 'отброшено',
@@ -882,13 +878,8 @@ export default function SpecExplorer() {
   const activeTarget = LAYERS.find((l) => l.id === layer)?.kind === 'target' ? result?.targets?.[layer] : undefined
 
   const codeSpans: Span[][] | null = useMemo(() => {
-    if (layer === 'hir' && result?.hir.ok && result.hir.text) return highlightCode(result.hir.text, 'verilog')
-    if (activeTarget?.ok && activeTarget.code) {
-      const langOf: Record<string, string> = {
-        zig: 'zig', verilog: 'verilog', verilog_hir: 'verilog', c: 'c', rust: 'rust', js: 'js', ts: 'ts',
-      }
-      return highlightCode(activeTarget.code, langOf[layer] || 'plain')
-    }
+    if (layer === 'hir' && result?.hir.ok && result.hir.text) return highlightCode(result.hir.text, TARGET_LANG.hir)
+    if (activeTarget?.ok && activeTarget.code) return highlightCode(activeTarget.code, TARGET_LANG[layer] || 'plain')
     return null
   }, [layer, result, activeTarget])
 
@@ -1570,7 +1561,7 @@ export default function SpecExplorer() {
                         result={result}
                         baseline={baseline}
                         ms={ms}
-                        labels={{ ...LAYER_LABEL, tokens: ui.tokens, nodes: ui.nodes, depth: ui.depth, typeErrs: ui.typeErrs, droppedItems: ui.droppedItems, brokeIt: ui.brokeIt, fixedIt: ui.fixedIt }}
+                        labels={{ tokens: ui.tokens, nodes: ui.nodes, depth: ui.depth, typeErrs: ui.typeErrs, droppedItems: ui.droppedItems }}
                       />
                     </div>
                   )}
