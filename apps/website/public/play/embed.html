@@ -10,7 +10,7 @@
 @font-face{font-family:Outfit;src:url(../fonts/outfit-latin.woff2) format('woff2');font-weight:100 900;font-display:swap}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:#000;color:#ebebeb;overflow:hidden}
-html{font-size:clamp(11px,1.9vw,15px)}
+html{font-size:clamp(11px,1.9vw,15px);-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body{font:1rem/1.35 Outfit,system-ui,sans-serif;display:grid;grid-template-rows:auto 1fr auto;height:100vh}
 .mono,pre,textarea,code{font-family:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace}
 a{color:#00ff88;text-decoration:none}a:hover{color:#fff}
@@ -40,10 +40,13 @@ footer a{flex:none}footer #orch{color:#888}footer #orch:hover{color:#fff}
 .ed pre,.ed textarea{margin:0;padding:.6em .8em .6em 3.4em;white-space:pre;tab-size:4;font:inherit;line-height:inherit;border:0}
 .ed pre{pointer-events:none;color:#ebebeb;counter-reset:ln}
 .ed pre .l{display:block;position:relative;min-height:1.45em}
-.ed pre .l::before{counter-increment:ln;content:counter(ln);position:absolute;left:-3.1em;width:2.4em;text-align:right;color:#444}
+/* the line number stays at the pane's left edge when a long line scrolls the pane sideways */
+.ed pre .l::before{counter-increment:ln;content:counter(ln);position:sticky;left:0;z-index:1;display:inline-block;box-sizing:border-box;margin-left:-3.4em;padding:0 .7em 0 .3em;width:3.4em;text-align:right;color:#444;background:#000}
 .ed pre .l.hit{background:rgba(255,92,92,.12)}
 .ed textarea{position:absolute;inset:0;width:100%;height:100%;resize:none;color:transparent;background:transparent;caret-color:#00ff88;outline:none;overflow:hidden}
 .ed textarea::selection{background:rgba(0,255,136,.25)}
+/* on a touch screen the text is never small enough for iOS to zoom into the focused editor */
+@media (pointer:coarse){.ed{font-size:var(--ed-touch-font)}}
 /* token colours: CLS_COLOR from the site's highlighter, set on :root by embed.js from site.js */
 .h-kw{color:var(--h-kw)}.h-num{color:var(--h-num)}.h-str{color:var(--h-str)}.h-ident{color:var(--h-ident)}.h-op{color:var(--h-op)}
 .h-punct{color:var(--h-punct)}.h-comment{color:var(--h-comment);font-style:italic}.h-type{color:var(--h-type)}
@@ -139,16 +142,42 @@ footer a{flex:none}footer #orch{color:#888}footer #orch:hover{color:#fff}
 .rtl h4 .cp:hover{background:rgba(0,255,136,.1)}
 .rtl .note{color:#666;font-size:.74rem;margin:.5em 0 0}
 
-/* term */
-#pane-term{padding:.5em .7em}
+/* term: a terminal over the same compiler (shell.js), and the recording it can replay */
+#pane-term.on{display:flex;flex-direction:column}
 #pane-term .t27t .shr{display:none}
+.sh{display:flex;flex-direction:column;flex:1;min-height:0;font-family:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;font-size:.8rem;line-height:1.4;background:#030303}
+.sh-out{flex:1;min-height:0;overflow:auto;padding:.5em .8em;position:relative;outline:none;white-space:pre-wrap;overflow-wrap:anywhere;color:#ddd}
+.sh-out .ln{min-height:1.4em}
+.sh-out .ln.cmd{margin-top:.35em;color:#fff}
+.sh-out .ln.dim,.sh-out i{color:#777;font-style:normal}
+.sh-out b{font-weight:600;color:#fff}
+.sh-out .g{color:#00ff88}.sh-out .r{color:#ff5c5c}.sh-out .y{color:#ffd700}
+.sh-out s{color:#666}
+.sh-out .ps,.sh-in .ps{color:#00ff88;user-select:none}
+.sh-out pre.blk{margin:.2em 0 .3em;padding:.35em .6em;background:#000;border-left:2px solid rgba(0,255,136,.25);white-space:pre;overflow:auto;font:inherit}
+.sh-out pre.out{color:#00ff88}
+.sh-box{margin:.3em 0}
+.sh-in{display:flex;align-items:center;gap:.5em;padding:.3em .8em;border-top:1px solid rgba(255,255,255,.08)}
+.sh-in input{flex:1;min-width:0;font:inherit;color:#fff;background:transparent;border:0;outline:none;caret-color:#00ff88;padding:.2em 0}
+.sh-chips{flex-wrap:nowrap;overflow-x:auto;padding:.3em .8em .45em;scrollbar-width:none}
+.sh-chips button{white-space:nowrap;font-size:.78rem}
+.sh-chips button.cmd{color:#00ff88;border-color:rgba(0,255,136,.3)}
+/* on a touch screen the prompt is never small enough for iOS to zoom into it */
+@media (pointer:coarse){.sh-in input{font-size:var(--ed-touch-font)}}
 .empty{padding:1em;color:#888}
 
 @media (max-aspect-ratio:1/1){
-  html,body{overflow:auto}
-  body{height:auto;min-height:100vh}
+  /* the page scrolls here, and body must not be a scroller of its own or nothing in it can stick */
+  html{overflow:auto;scroll-padding:3rem 0 2.5rem}
+  body{overflow:visible;height:auto;min-height:100vh}
+  /* so the tabs and the compile verdict stay put while the editor moves; the padding above keeps
+     the caret's line out from under them when the browser scrolls to it */
+  header{position:sticky;top:0;z-index:2}
+  footer{position:sticky;bottom:0;z-index:2}
   .cmp{grid-template-columns:1fr;height:auto}
   .viz svg{height:9em}
+  /* the page scrolls, so the terminal takes the screen between the header and the footer */
+  #pane-term.on{height:calc(100vh - 5rem);min-height:18em}
 }
 @media (prefers-reduced-motion:reduce){.stages li,.bars div i{transition:none}}
 </style>
@@ -160,7 +189,7 @@ footer a{flex:none}footer #orch{color:#888}footer #orch:hover{color:#fff}
   <nav role="tablist" id="tabs" aria-label="Views"></nav>
 </header>
 <main id="main">
-  <section class="pane" id="pane-spec"><div class="ed"><pre id="hl" aria-hidden="true"></pre><textarea id="src" spellcheck="false" autocomplete="off" autocapitalize="off" aria-label="Spec source; edit it and it recompiles"></textarea></div></section>
+  <section class="pane" id="pane-spec"><div class="ed"><pre id="hl" aria-hidden="true"></pre><textarea id="src" wrap="off" spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off" aria-label="Spec source; edit it and it recompiles"></textarea></div></section>
   <section class="pane" id="pane-compile"></section>
   <section class="pane" id="pane-tests"></section>
   <section class="pane" id="pane-code"></section>

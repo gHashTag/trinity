@@ -338,7 +338,8 @@ jobs:
       # The X player card (public/play/) is generated from specs/x/player.t27 through the
       # compiler: X's limits on the card, the tabs the page must carry, and the site bundle
       # built from src/lib/highlight.ts. The tests also hold the RTL tab's reading of the
-      # emitted Verilog to what t27c wrote for hello_world.
+      # emitted Verilog to what t27c wrote for hello_world, and run every command of the
+      # Term tab (public/play/shell.js) on hello_world against the spec's SHELL_* and SAY_*.
       - name: X player spec
         run: npm run check:play && npm run test:play-spec
       # The world scan's contract (specs/catalog/discovery.t27 through the compiler),
@@ -361,6 +362,12 @@ jobs:
       # are byte-for-byte current before Vite packages any of them.
       - name: Queen WARS experiment ledger
         run: npm run check:wars && npm run test:wars-spec
+
+      # The WIDGETS tab: specs/widgets/gallery.t27 names what a reader can lift
+      # out and share; the generator reads each widget's own page for its words
+      # and card, so a widget whose page is gone fails here.
+      - name: Queen WIDGETS gallery
+        run: npm run check:widgets && npm run test:widgets-spec
 
       # The IGLA board on WARS: specs/queen/igla_board.t27 is generated in
       # gHashTag/igla-coder-gpu from committed artifacts. The gate recompiles it,

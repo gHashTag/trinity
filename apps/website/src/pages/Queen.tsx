@@ -98,6 +98,7 @@ import { QueenTri } from "../components/QueenTri";
 import QueenRoadmap from "../components/QueenRoadmap";
 import QueenLeaderboard from "../components/QueenLeaderboard";
 import { QueenWars } from "../components/QueenWars";
+import { QueenWidgets } from "../components/QueenWidgets";
 import QueenToken from "../components/QueenToken";
 import Passport from "./Passport";
 import { QueenBrowser } from "../components/QueenBrowser";
@@ -523,6 +524,8 @@ const COPY = {
     // The seventh layer, on g (the GPU): who sells the compute the ladder spends.
     providersView: "PROVIDERS",
     providersHint: "Who sells compute: the Gonka models, and a GPU or FPGA rented out for TRI (key g)",
+    widgetsView: "WIDGETS",
+    widgetsHint: "Shareable widgets: recordings, the X player, embed code (key v)",
     providersDirective: "PROVIDERS ARE SPECS",
     providersDirectiveBody:
       "The seventh layer: Specs → Skills → Crons → Agents → Tools → Functions → Providers — who sells the compute the rest of the ladder spends. A provider exists when a .t27 spec under specs/providers states it: a model the Gonka chain lists, every number copied from a public chain endpoint on the date the card names (hosts serving it, GPU memory, context, validation threshold, price), or a class of hardware a person could rent out to TRI-NET for TRI — an Artix-7 FPGA measured on three boards, and a 24 GB gaming GPU that is a design and claims no measurement. The page re-reads the Gonka chain from your browser when you ask and prints every difference; it never calls a paid model, never asks for a key and never shows a host's address. Under both families sits specs/providers/tri_gnk_pair.t27: TRI is on testnet, Gonka has no DEX pool, and its bridge goes to Ethereum, not to TON or Solana.",
@@ -1001,6 +1004,8 @@ const COPY = {
       "Слой, где спека встречается с работающим сервисом — шестой на лестнице этого сайта, после инструментов; specs/functions/README.md в t27 называет его пятым, как и specs/tools/README.md — инструменты, и два README расходятся: каждая функция Inngest бота 999-multibots-telegraf заявлена спекой .t27 в specs/functions — триггер, событие и старые события или крон, шаги в порядке исходника, повторы, действие при сбое, побочные эффекты, страж, безопасная проба и её результат — и засвидетельствована копией манифеста функций, прочитанного из репозитория на названном коммите. Где спека и манифест расходятся, карточка говорит об этом. Живые счётчики запусков читаются с бота раз в минуту и не придумываются: недоступный источник статуса показан как недоступный, а счётчик, которого он не прислал, — как «неизвестно», а не ноль.",
     providersView: "ПРОВАЙДЕРЫ",
     providersHint: "Кто продаёт вычисления: модели Gonka и GPU или FPGA в аренду за TRI (клавиша g)",
+    widgetsView: "ВИДЖЕТЫ",
+    widgetsHint: "Виджеты для репоста: записи, X-плеер, код встраивания (клавиша v)",
     providersDirective: "ПРОВАЙДЕРЫ — ЭТО СПЕКИ",
     providersDirectiveBody:
       "Седьмой слой: спеки → скиллы → кроны → агенты → инструменты → функции → провайдеры — кто продаёт вычисления, которые тратит вся остальная лестница. Провайдер существует, когда его заявляет спека .t27 в specs/providers: модель из списка цепи Gonka, где каждое число скопировано с публичного эндпоинта цепи в дату, которую называет карточка (сколько хостов её обслуживают, память GPU, контекст, порог валидации, цена), или класс железа, который человек мог бы сдать в аренду TRI-NET за TRI — FPGA Artix-7, измеренная на трёх платах, и игровая GPU на 24 ГБ, которая пока проект и не заявляет измерений. Страница по вашему запросу перечитывает цепь Gonka из вашего браузера и печатает каждое расхождение; она никогда не вызывает платную модель, не просит ключ и не показывает адрес хоста. Под обоими семействами лежит specs/providers/tri_gnk_pair.t27: TRI в testnet, у Gonka нет пула на DEX, а её мост ведёт в Ethereum, а не в TON или Solana.",
@@ -3693,6 +3698,9 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
     // On the letter g (the GPU): the seventh layer of the ladder, who sells
     // compute. Folded into SPECS like the other layers, so it has no rail button.
     { view: "providers" as const, glyph: "⌬", label: c.providersView, hint: c.providersHint },
+    // On the letter v: what a reader can lift out of t27 and share, from
+    // specs/widgets/gallery.t27. Its own rail door, not folded.
+    { view: "widgets" as const, glyph: "⧉", label: c.widgetsView, hint: c.widgetsHint },
   ].map((item) => ({ ...item, hotkey: hudKeyOf(item.view) }));
   // TRI is drawn as one button per screen, owner's word 2026-09-21: every
   // screen of the app its own tab. The first keeps TRI's key; the rest are
@@ -4334,6 +4342,8 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
             />
           ) : boardView === "wars" ? (
             <QueenWars lang={lang === "ru" ? "ru" : "en"} />
+          ) : boardView === "widgets" ? (
+            <QueenWidgets lang={lang === "ru" ? "ru" : "en"} />
           ) : boardView === "token" ? (
             <QueenToken lang={lang === "ru" ? "ru" : "en"} />
           ) : boardView === "roadmap" ? (

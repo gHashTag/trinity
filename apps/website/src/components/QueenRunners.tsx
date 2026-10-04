@@ -11,6 +11,7 @@ import {
   callRunners,
   type RunnersCall,
   type RunnersEnv,
+  RUNNER_README_URL,
   setupLines,
 } from '../lib/queenRunners'
 import { RUNNERS_COPY } from '../lib/queenRunnersCopy'
@@ -99,6 +100,7 @@ export default function QueenRunners({ lang }: { lang: 'en' | 'ru' }) {
           {c.unavailable}
         </p>
       )}
+      {view?.state === 'pending' && <p className="qr-note">{c.pending}</p>}
 
       {view?.state === 'minted' && (
         <div className="qr-minted" role="status">
@@ -183,7 +185,14 @@ export default function QueenRunners({ lang }: { lang: 'en' | 'ru' }) {
           </p>
         </>
       )}
-      <p className="qr-small">{c.nextStage}</p>
+      {view?.state !== 'pending' && (
+        <p className="qr-small">
+          {c.howItWorks}{' '}
+          <a href={RUNNER_README_URL} target="_blank" rel="noreferrer">
+            {c.readme}
+          </a>
+        </p>
+      )}
     </section>
   )
 }

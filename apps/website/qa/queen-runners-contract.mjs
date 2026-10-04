@@ -17,6 +17,7 @@ import {
   cabinetOf,
   callRunners,
   runnerOf,
+  RUNNER_SCRIPT_URL,
   setupLines,
 } from '../src/lib/queenRunners.ts'
 
@@ -72,6 +73,21 @@ const env = (fetch, token = 'session-token') => ({ base: BASE, fetch, token: () 
   assert.deepEqual(await callRunners(env(a.fetch), { kind: 'list' }), { state: 'signin' })
   const b = recorder([{ status: 503 }])
   assert.deepEqual(await callRunners(env(b.fetch), { kind: 'list' }), { state: 'unavailable' })
+}
+
+// 3b. A Queen without the cabinet yet answers its path 404. That is "not here
+//     yet", not "she did not answer": the panel must not report an outage for
+//     a server that is up, and it must not offer a create form it cannot serve.
+{
+  const a = recorder([{ status: 404 }])
+  assert.deepEqual(await callRunners(env(a.fetch), { kind: 'list' }), { state: 'pending' })
+  const b = recorder([{ status: 404 }])
+  assert.deepEqual(
+    await callRunners(env(b.fetch), { kind: 'create', label: 'laptop' }, { runners: [], limit: 5 }),
+    { state: 'pending' },
+  )
+  const page = readFileSync(new URL('../src/components/QueenRunners.tsx', import.meta.url), 'utf8')
+  assert.ok(page.includes("view?.state === 'pending'"), 'the panel renders the pending state')
 }
 
 // 4. Create: the token is shown once, only in `minted`, and only when it is a
@@ -131,7 +147,24 @@ const env = (fetch, token = 'session-token') => ({ base: BASE, fetch, token: () 
 {
   const lines = setupLines(TOKEN, 'https://queen.invalid').join('\n')
   assert.ok(lines.includes(TOKEN))
-  assert.ok(!/API_KEY|sk-|provider/i.test(lines))
+  // A provider KEY, in any spelling. Not the bare word: the production branch
+  // the script is downloaded from is named fix/queen-worker-provider-and-...
+  const providerKey = /API_KEY|\bsk-|provider[_ -]?key/i
+  assert.ok(!providerKey.test(lines))
+  // ...and the narrower pattern still catches what it is for.
+  for (const leak of ['export ANTHROPIC_API_KEY=x', 'sk-abc', 'PROVIDER_KEY=x', 'your provider key']) {
+    assert.ok(providerKey.test(leak), leak)
+  }
+  // ...and they run the runner, which pushes to the person's own public fork.
+  assert.ok(lines.includes('TRIOS_RUNNER_REMOTE=https://github.com/'))
+  assert.ok(lines.includes('node queen-runner.mjs'))
+  // The production branch, the one the deployed Queen is built from.
+  assert.ok(
+    RUNNER_SCRIPT_URL.startsWith(
+      'https://raw.githubusercontent.com/gHashTag/BrowserOS/fix/queen-worker-provider-and-prompt-size/',
+    ),
+  )
+  assert.ok(RUNNER_SCRIPT_URL.endsWith('/queen-runner.mjs'))
   assert.ok(CABINET_HOME.startsWith('https://app.t27.ai/queen/'))
 }
 

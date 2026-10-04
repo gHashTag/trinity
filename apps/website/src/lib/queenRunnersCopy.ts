@@ -1,7 +1,7 @@
 // MY RUNNERS, in words: what a runner is and how far it goes today. The cabinet
 // (components/QueenRunners.tsx) draws it, and the homepage's GET STARTED quotes
-// its lead and its next stage rather than describing runners a second time, so
-// the day taking tasks ships, one edit here moves both.
+// its lead and how a runner works rather than describing runners a second
+// time, so one edit here moves both.
 export interface RunnersCopy {
   title: string
   lead: string
@@ -9,6 +9,8 @@ export interface RunnersCopy {
   signin: string
   elsewhere: string
   unavailable: string
+  /** The Queen answered, and the cabinet is not on her yet (a 404 on its path). */
+  pending: string
   loading: string
   none: string
   namePlaceholder: string
@@ -24,7 +26,9 @@ export interface RunnersCopy {
   copy: string
   copied: string
   done: string
-  nextStage: string
+  /** What a runner does with a task; the homepage's GET STARTED quotes it. */
+  howItWorks: string
+  readme: string
 }
 
 export const RUNNERS_COPY: Record<'en' | 'ru', RunnersCopy> = {
@@ -35,6 +39,7 @@ export const RUNNERS_COPY: Record<'en' | 'ru', RunnersCopy> = {
     signin: 'Sign in to app.t27.ai to manage your runners.',
     elsewhere: 'Runners are managed on the app’s board, where your session lives:',
     unavailable: 'The Queen did not answer. Try again in a minute.',
+    pending: 'Runners are on their way: the Queen does not offer them yet. This panel switches on by itself the day she does.',
     loading: 'Reading your runners…',
     none: 'No runners yet.',
     namePlaceholder: 'Name, e.g. my laptop',
@@ -50,7 +55,8 @@ export const RUNNERS_COPY: Record<'en' | 'ru', RunnersCopy> = {
     copy: 'Copy',
     copied: 'Copied',
     done: 'I saved it',
-    nextStage: 'Today a runner can connect and show up online. Taking tasks and handing work back is the next stage of the Queen; until it ships there is nothing to take.',
+    howItWorks: 'The runner takes one task at a time, runs your own coding agent on it (Claude Code by default) and pushes the result to your public fork. The Queen fetches that branch and her review judges it like any other bee’s work. Ctrl-C hands the task back.',
+    readme: 'Setup and settings',
   },
   ru: {
     title: 'МОИ РАННЕРЫ',
@@ -59,6 +65,7 @@ export const RUNNERS_COPY: Record<'en' | 'ru', RunnersCopy> = {
     signin: 'Войдите в app.t27.ai, чтобы управлять раннерами.',
     elsewhere: 'Раннеры управляются на доске приложения, где живёт ваша сессия:',
     unavailable: 'Королева не ответила. Попробуйте через минуту.',
+    pending: 'Раннеры скоро появятся: Королева их пока не выдаёт. Панель включится сама, как только это изменится.',
     loading: 'Читаю ваших раннеров…',
     none: 'Раннеров пока нет.',
     namePlaceholder: 'Имя, например «мой ноутбук»',
@@ -74,6 +81,7 @@ export const RUNNERS_COPY: Record<'en' | 'ru', RunnersCopy> = {
     copy: 'Скопировать',
     copied: 'Скопировано',
     done: 'Сохранено',
-    nextStage: 'Сейчас раннер может подключиться и отображаться «на связи». Выдача задач и приём работы — следующий этап Королевы; пока его нет, брать нечего.',
+    howItWorks: 'Раннер берёт по одной задаче, запускает на ней ваш собственный агент (по умолчанию Claude Code) и пушит результат в ваш публичный форк. Королева забирает эту ветку, и её ревью оценивает работу так же, как работу любой другой пчелы. Ctrl-C возвращает задачу.',
+    readme: 'Установка и настройки',
   },
 }

@@ -12,12 +12,13 @@
 //
 // The colours are the spec explorer's: ./site.js is generated from the site's own highlighter and
 // palette (SITE_MODULES in player.t27), so a spec reads the same here as on t27.ai. The RTL tab
-// reads the emitted Verilog with ./rtl.js.
+// reads the emitted Verilog with ./rtl.js; the Term tab is a terminal over the same compiler,
+// ./shell.js.
 //
 // Query: spec=<path under t27/files/>  cast=<recording id under term/>  v=<player build>
 //        autoplay=1 | auto_play=true (X adds both on click)  tab=<one of the spec's TABS>
+//        backend=<one of the spec's BACKENDS, the terminal's first>
 
-import { runSpec } from './t27run.js'
 
 const $ = (sel) => document.querySelector(sel)
 const root = new URL('../', import.meta.url)
@@ -34,6 +35,9 @@ const status = (text, cls = '') => { $('#status').innerHTML = cls ? `<span class
 // reaches the status line.
 let site = null
 let readRtl = null
+let shell = null
+// player.t27's constants, once read.
+let cfg = null
 
 // --- the compiler ---------------------------------------------------------------------------
 async function loadCompiler() {
@@ -76,22 +80,41 @@ function playerConfig(analysis) {
   }
   const cfg = {}
   for (const d of analysis.ast?.children ?? []) if (d.kind === 'ConstDecl' && d.children?.[0]) cfg[d.name] = lit(d.children[0], d.name)
-  const need = ['TABS', 'TAB_LABELS', 'FIRST_TAB', 'WIDE_MIN_PX', 'COMPILE_ANIMATION_MS', 'AUTOPLAY_LIMIT_MS', 'AUTOPLAY_PARAMS', 'RECOMPILE_DEBOUNCE_MS', 'TESTS_NOTE', 'ORIGIN', 'SPEC_PAGE', 'PLAY_SPECS', 'PLAY_CASTS', 'PLAY_IDS', 'HAS_SOUND']
+  const need = ['TABS', 'TAB_LABELS', 'FIRST_TAB', 'WIDE_MIN_PX', 'COMPILE_ANIMATION_MS', 'AUTOPLAY_LIMIT_MS', 'AUTOPLAY_PARAMS', 'RECOMPILE_DEBOUNCE_MS', 'EDITOR_TOUCH_FONT_PX', 'TESTS_NOTE', 'ORIGIN', 'SPEC_PAGE', 'PLAY_SPECS', 'PLAY_CASTS', 'PLAY_IDS', 'HAS_SOUND',
+    'STAGES', 'BACKENDS', 'BACKEND_NAMES', 'BACKEND_EXTS', 'BACKEND_PAGES', 'BACKEND_RUN_LOCAL', 'RUNS_IN_BROWSER', 'SHELL_COMMANDS', 'SHELL_ARGS', 'SHELL_HELP', 'SHELL_CHIPS', 'SHELL_NOTE', 'SHELL_DEMO', 'SHELL_TYPE_MS']
   const missing = need.filter((k) => !(k in cfg))
   if (missing.length) throw new Error(`player.t27 lacks ${missing.join(', ')}`)
   if (cfg.COMPILE_ANIMATION_MS > cfg.AUTOPLAY_LIMIT_MS) throw new Error('player.t27: the compile piece is longer than the autoplay limit')
+  if (cfg.STAGES?.length !== 7) throw new Error('player.t27: STAGES must name the seven compile stages')
   return cfg
 }
 
 // --- highlighting, with the spec explorer's highlighter ----------------------------------------
 const spansHtml = (spans) => spans.map((sp) => (sp.cls === 'plain' ? html(sp.text) : `<span class="h-${sp.cls}">${html(sp.text)}</span>`)).join('')
 
-// The compiler's own tokens, coloured; a line the compiler dropped or rejected is marked.
+// The compiler's own tokens, coloured, one string per line; a line the compiler dropped or
+// rejected is marked.
 function highlight(rows, analysis) {
   const hit = new Set()
   for (const list of [analysis.discarded, analysis.lexerDiscarded, analysis.swallowed]) for (const e of list ?? []) if (e && e.line) hit.add(e.line)
   for (const e of analysis.typecheck?.errors ?? []) { const m = /line (\d+)/.exec(e); if (m) hit.add(Number(m[1])) }
-  return rows.map((spans, i) => `<span class="l${hit.has(i + 1) ? ' hit' : ''}">${spansHtml(spans) || ' '}</span>`).join('')
+  return rows.map((spans, i) => `<span class="l${hit.has(i + 1) ? ' hit' : ''}">${spansHtml(spans) || ' '}</span>`)
+}
+
+// Between compiles: the lines the last compile saw keep its colours, and the lines typed since
+// are drawn plain. The textarea's own text is transparent, so this is the only place a keystroke
+// shows; waiting for the compile left a phone typist looking at nothing for about two seconds.
+function repaint(lines, painted) {
+  const old = painted.lines
+  let head = 0
+  while (head < lines.length && head < old.length && lines[head] === old[head]) head++
+  let tail = 0
+  while (tail < lines.length - head && tail < old.length - head && lines[lines.length - 1 - tail] === old[old.length - 1 - tail]) tail++
+  return lines.map((text, i) => {
+    if (i < head) return painted.html[i]
+    if (i >= lines.length - tail) return painted.html[i - lines.length + old.length]
+    return `<span class="l">${html(text) || ' '}</span>`
+  })
 }
 
 // Tokens per highlight class, for the lexer bar: every token is its own span.
@@ -130,39 +153,10 @@ function download(text, name) {
   a.click()
   setTimeout(() => { URL.revokeObjectURL(a.href); a.remove() }, 0)
 }
-const EXT = { zig: '.zig', c: '.c', rust: '.rs', verilog: '.v', verilog_hir: '.hir.v', js: '.js', ts: '.ts' }
-// Verilog is saved under its module's name, which is what verilator's DECLFILENAME lint expects.
-function fileName(backend, code, stem) {
-  const m = /^\s*module\s+([A-Za-z_][\w$]*)/m.exec(code)
-  return (backend.startsWith('verilog') && m ? m[1] : stem) + EXT[backend]
-}
-
-// --- the facts every tab shows ----------------------------------------------------------------
-const BACKENDS = ['zig', 'c', 'rust', 'verilog', 'verilog_hir', 'js', 'ts']
-
-function factsOf(source, analysis) {
-  const targets = analysis.targets ?? {}
-  const backends = BACKENDS.filter((k) => k in targets).map((k) => ({ name: k, ok: targets[k].ok !== false && typeof targets[k].code === 'string' && targets[k].code.length > 0, bytes: targets[k].bytes ?? (targets[k].code ?? '').length, code: targets[k].code ?? '', error: targets[k].error }))
-  let tests = null
-  try { tests = runSpec(analysis.ast) } catch (e) { tests = { error: e.message, results: [], pass: 0, fail: 0, skip: 0 } }
-  return {
-    bytes: analysis.sourceBytes ?? new TextEncoder().encode(source).length,
-    lines: analysis.sourceLines ?? source.split('\n').length,
-    tokens: analysis.tokenCount ?? (analysis.tokens ?? []).length,
-    kinds: new Set((analysis.tokens ?? []).map((t) => t.kind)).size,
-    nodes: analysis.nodeCount ?? 0,
-    depth: analysis.astDepth ?? 0,
-    topLevel: analysis.topLevel ?? (analysis.ast?.children ?? []).length,
-    discarded: (analysis.discarded?.length ?? 0) + (analysis.lexerDiscarded?.length ?? 0) + (analysis.swallowed?.length ?? 0),
-    typeOk: analysis.typecheck?.ok === true,
-    typeErrors: analysis.typecheck?.errors ?? [],
-    hirOk: analysis.hir?.ok !== false,
-    hirBytes: (analysis.hir?.text ?? '').length,
-    astError: analysis.astError ?? null,
-    backends,
-    tests,
-  }
-}
+// The file a backend's output is saved as, and the facts every tab shows: ./shell.js, which the
+// generator's test runs without a page.
+const fileName = (backend, code, stem) => shell.fileName(cfg, backend, code, stem)
+const factsOf = (source, analysis) => shell.factsOf(cfg, source, analysis)
 
 // --- compile: the run as one short linear piece ---------------------------------------------
 function icicle(ast) {
@@ -190,15 +184,16 @@ function renderCompile(pane, f, analysis, classes) {
   const testLine = t.error ? `<span class="r">${html(t.error)}</span>` : `<span class="g">${t.pass} pass</span> <i>&middot;</i> <span class="${t.fail ? 'r' : ''}">${t.fail} fail</span> <i>&middot;</i> <span class="y">${t.skip} skip</span>`
   const counted = Object.values(classes).reduce((s, n) => s + n, 0)
   const tokbar = Object.entries(classes).sort((a, b) => b[1] - a[1]).map(([c, n]) => `<i style="width:${((n / Math.max(1, counted)) * 100).toFixed(2)}%;background:${site.CLS_COLOR[c]}" title="${c}: ${n}"></i>`).join('')
+  // The stage names are STAGES in player.t27; `t27c check` in the terminal prints the same ones.
   const stages = [
-    ['source', `${fmt(f.bytes)} <i>bytes &middot;</i> ${fmt(f.lines)} <i>lines</i>`],
-    ['lexer', `${fmt(f.tokens)} <i>tokens &middot;</i> ${f.kinds} <i>kinds</i>${f.discarded ? ` <span class="r">&middot; ${f.discarded} dropped</span>` : ''}<div class="tokbar">${tokbar}</div>`],
-    ['parser', f.astError ? `<span class="r">${html(f.astError)}</span>` : `${fmt(f.nodes)} <i>nodes &middot; depth</i> ${f.depth} <i>&middot;</i> <span class="nw">${f.topLevel} <i>top-level</i></span>`],
-    ['types', f.typeOk ? `<span class="g">ok</span> <i>&middot; 0 errors</i>` : `<span class="r">${f.typeErrors.length} error(s)</span> <i>${html(f.typeErrors[0] ?? '')}</i>`],
-    ['hir', f.hirOk ? `<span class="g">ok</span> <i>&middot;</i> ${fmt(f.hirBytes)} <i>bytes</i>` : `<span class="r">failed</span>`],
-    ['backends', `<span class="${okBackends === f.backends.length ? 'g' : 'y'}">${okBackends}/${f.backends.length}</span> <i>&middot;</i> ${fmt(totalBackendBytes)} <i>bytes emitted</i>`],
-    ['tests', testLine],
-  ]
+    `${fmt(f.bytes)} <i>bytes &middot;</i> ${fmt(f.lines)} <i>lines</i>`,
+    `${fmt(f.tokens)} <i>tokens &middot;</i> ${f.kinds} <i>kinds</i>${f.discarded ? ` <span class="r">&middot; ${f.discarded} dropped</span>` : ''}<div class="tokbar">${tokbar}</div>`,
+    f.astError ? `<span class="r">${html(f.astError)}</span>` : `${fmt(f.nodes)} <i>nodes &middot; depth</i> ${f.depth} <i>&middot;</i> <span class="nw">${f.topLevel} <i>top-level</i></span>`,
+    f.typeOk ? `<span class="g">ok</span> <i>&middot; 0 errors</i>` : `<span class="r">${f.typeErrors.length} error(s)</span> <i>${html(f.typeErrors[0] ?? '')}</i>`,
+    f.hirOk ? `<span class="g">ok</span> <i>&middot;</i> ${fmt(f.hirBytes)} <i>bytes</i>` : `<span class="r">failed</span>`,
+    `<span class="${okBackends === f.backends.length ? 'g' : 'y'}">${okBackends}/${f.backends.length}</span> <i>&middot;</i> ${fmt(totalBackendBytes)} <i>bytes emitted</i>`,
+    testLine,
+  ].map((v, i) => [cfg.STAGES[i], v])
   const tree = analysis.ast ? icicle(analysis.ast) : { svg: '<svg></svg>', depth: 0 }
   const maxBytes = Math.max(1, ...f.backends.map((b) => b.bytes))
   pane.innerHTML = `<div class="cmp">
@@ -279,21 +274,7 @@ function renderCode(pane, f, pick, stem) {
   pane.querySelector('[data-k="save"]')?.addEventListener('click', () => download(cur.code, fileName(cur.name, cur.code, stem)))
   const run = pane.querySelector('[data-k="run"]')
   if (run) run.addEventListener('click', async () => {
-    // The emitted module, imported as it is. Its exports are printed, nothing is called.
-    let out
-    try {
-      const url = URL.createObjectURL(new Blob([cur.code], { type: 'text/javascript' }))
-      const mod = await import(url)
-      URL.revokeObjectURL(url)
-      const names = Object.keys(mod)
-      out = `import ok: ${names.length} export(s)\n` + names.map((k) => {
-        const v = mod[k]
-        const s = typeof v === 'function' ? `function(${v.length})` : typeof v === 'bigint' ? `${v}n` : (() => { try { return JSON.stringify(v, (_, x) => (typeof x === 'bigint' ? `${x}n` : x)) } catch { return String(v) } })()
-        return `  ${k} = ${String(s).slice(0, 160)}`
-      }).join('\n')
-    } catch (e) {
-      out = `import failed: ${e.message}`
-    }
+    const out = await shell.importJs(cur.code, cfg)
     let pre = pane.querySelector('pre.out')
     if (!pre) { pre = document.createElement('pre'); pre.className = 'out'; pane.querySelector('.code').appendChild(pre) }
     pre.textContent = out
@@ -379,26 +360,23 @@ ${fns ? `<h4>Functions <span>inputs<sub>bits</sub> &middot; result bits &middot;
   pane.querySelector('[data-k="cmds"]').addEventListener('click', (e) => copyText(tryCmds.join('\n'), e.currentTarget))
 }
 
-// --- term: a recording of t27c on the same file ------------------------------------------------
-let termMounted = null
-async function renderTerm(pane, cast, specName) {
-  if (termMounted) return
-  termMounted = true
+// --- term: a terminal over the same compiler (./shell.js), and the recording of t27c ------------
+async function replayCast(el, cast, specName) {
   try {
     const { mount } = await import(at('term/player.js').href)
-    pane.innerHTML = '<div></div>'
-    mount(pane.firstChild, { src: new URL(`term/${cast}/session.cast`, root).href, title: `t27c on ${specName}`, share: new URL(`term/${cast}/`, root).href })
+    mount(el, { src: new URL(`term/${cast}/session.cast`, root).href, title: `t27c on ${specName}`, share: new URL(`term/${cast}/`, root).href })
   } catch (e) {
-    pane.innerHTML = `<p class="empty">The recording did not load: ${html(e.message)}</p>`
+    el.innerHTML = `<p class="empty">The recording did not load: ${html(e.message)}</p>`
   }
 }
 
 // --- the page -----------------------------------------------------------------------------------
 async function main() {
   const v = build ? `?v=${build}` : ''
-  ;[site, { readRtl }] = await Promise.all([
+  ;[site, { readRtl }, shell] = await Promise.all([
     import(new URL('site.js' + v, import.meta.url).href).catch((e) => { throw new Error(`site.js did not load: ${e.message}`) }),
     import(new URL('rtl.js' + v, import.meta.url).href).catch((e) => { throw new Error(`rtl.js did not load: ${e.message}`) }),
+    import(new URL('shell.js' + v, import.meta.url).href).catch((e) => { throw new Error(`shell.js did not load: ${e.message}`) }),
   ])
   for (const [k, c] of Object.entries(site.CLS_COLOR)) document.documentElement.style.setProperty(`--h-${k}`, c)
   for (const [k, c] of Object.entries(site.C)) if (typeof c === 'string' && !/[;{}]/.test(c)) document.documentElement.style.setProperty(`--c-${k}`, c)
@@ -406,7 +384,8 @@ async function main() {
   status('compiling player.t27&hellip;')
   const orchRes = await fetch(new URL('player.t27' + (build ? `?v=${build}` : ''), import.meta.url))
   if (!orchRes.ok) throw new Error(`player.t27 did not load (HTTP ${orchRes.status})`)
-  const cfg = playerConfig(analyze(await orchRes.text(), 'player.t27'))
+  cfg = playerConfig(analyze(await orchRes.text(), 'player.t27'))
+  document.documentElement.style.setProperty('--ed-touch-font', `${cfg.EDITOR_TOUCH_FONT_PX}px`)
 
   const specPath = query.get('spec') || cfg.PLAY_SPECS[0]
   if (!SPEC_PATH_RE.test(specPath) || specPath.includes('..')) throw new Error(`not a spec path: ${specPath}`)
@@ -424,8 +403,8 @@ async function main() {
   if (!res.ok) throw new Error(`${specPath} is not published (HTTP ${res.status})`)
   let source = await res.text()
 
-  // Tabs, from the spec. Term only when there is a recording to show.
-  const tabs = cfg.TABS.map((id, i) => ({ id, label: cfg.TAB_LABELS[i] })).filter((t) => t.id !== 'term' || cast)
+  // Tabs, from the spec.
+  const tabs = cfg.TABS.map((id, i) => ({ id, label: cfg.TAB_LABELS[i] }))
   const nav = $('#tabs')
   nav.innerHTML = tabs.map((t) => `<button role="tab" type="button" data-tab="${t.id}"${t.id === 'spec' ? ' class="tab-spec"' : ''}>${html(t.label)}</button>`).join('')
   const wideQuery = matchMedia(`(min-width: ${cfg.WIDE_MIN_PX}px) and (min-aspect-ratio: 4/3)`)
@@ -435,7 +414,7 @@ async function main() {
     current = id
     for (const b of nav.querySelectorAll('button')) b.setAttribute('aria-selected', String(b.dataset.tab === id))
     for (const p of document.querySelectorAll('.pane')) p.classList.toggle('on', p.id === `pane-${id}`)
-    if (id === 'term' && cast) renderTerm($('#pane-term'), cast, specName)
+    if (id === 'term') openTerm()
     if (id !== 'compile' && player) player.end()
   }
   const layout = () => {
@@ -452,6 +431,7 @@ async function main() {
   let rtlPick = null
   const openCode = (backend) => { codePick = backend; renderCode($('#pane-code'), last, codePick, stem); select('code') }
   let last = null
+  let painted = { lines: [], html: [] }
   const draw = (animate) => {
     const t0 = performance.now()
     const analysis = analyze(source, specName)
@@ -459,7 +439,8 @@ async function main() {
     last = f
     const ms = performance.now() - t0
     const rows = site.highlightSource(source, analysis.tokens ?? [])
-    $('#hl').innerHTML = highlight(rows, analysis)
+    painted = { lines: source.split('\n'), html: highlight(rows, analysis) }
+    $('#hl').innerHTML = painted.html.join('')
     const depth = renderCompile($('#pane-compile'), f, analysis, classCounts(rows))
     if (player) player.pause()
     player = piece($('#pane-compile'), depth, cfg.COMPILE_ANIMATION_MS)
@@ -478,6 +459,11 @@ async function main() {
   src.value = source
   let timer = 0
   src.addEventListener('input', () => {
+    $('#hl').innerHTML = repaint(src.value.split('\n'), painted).join('')
+    // The textarea never scrolls itself; the pane does. Before the coloured layer has grown, a new
+    // longest line or a new last line can scroll it, and its caret drifts off the drawn text.
+    src.scrollLeft = 0
+    src.scrollTop = 0
     clearTimeout(timer)
     timer = setTimeout(() => { source = src.value; draw(false) }, cfg.RECOMPILE_DEBOUNCE_MS)
   })
@@ -488,6 +474,21 @@ async function main() {
     src.setRangeText('    ', a, b, 'end')
     src.dispatchEvent(new Event('input'))
   })
+
+  // The terminal, mounted the first time its tab opens. On a backend's share page with autoplay,
+  // it types SHELL_DEMO for that backend, at SHELL_TYPE_MS a character, and runs it.
+  let term = null
+  const openTerm = () => {
+    if (term) return
+    term = shell.mountShell($('#pane-term'), {
+      cfg, specName, stem, analyze, download, codeHtml,
+      source: () => src.value,
+      specHtml: (analysis) => site.highlightSource(src.value, analysis.tokens ?? []).map(spansHtml).join('\n'),
+      replay: cast ? (el) => replayCast(el, cast, specName) : null,
+      backend: query.get('backend'),
+    })
+    if (autoplay && !reduced && query.get('tab') === 'term') term.type(cfg.SHELL_DEMO.replaceAll('{backend}', cfg.BACKENDS.includes(query.get('backend')) ? query.get('backend') : cfg.BACKENDS[0]), cfg.SHELL_TYPE_MS)
+  }
 
   const autoplay = cfg.AUTOPLAY_PARAMS.some((k) => ['1', 'true'].includes(query.get(k)))
   layout()

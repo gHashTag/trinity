@@ -43,6 +43,13 @@ export interface Cabinet {
 /** What the panel can be showing. A token appears only in `minted`, once. */
 export type CabinetView =
   | { state: 'signin' }
+  /**
+   * The Queen answered, and the cabinet is not on her yet: a 404 on its path.
+   * A server that has the cabinet answers that path 200, 401 or 503 and never
+   * 404, so this is "not deployed", not "down" - and saying "she did not
+   * answer" to someone she just answered is the one wrong thing to show.
+   */
+  | { state: 'pending' }
   | { state: 'unavailable' }
   | { state: 'ready'; cabinet: Cabinet }
   | { state: 'minted'; cabinet: Cabinet; token: string; runner: RunnerView }
@@ -111,6 +118,7 @@ export async function callRunners(env: RunnersEnv, call: RunnersCall, previous?:
   const list = async (): Promise<CabinetView> => {
     const res = await env.fetch(base, { method: 'GET', credentials: 'omit', headers })
     if (res.status === 401) return { state: 'signin' }
+    if (res.status === 404) return { state: 'pending' }
     if (!res.ok) return { state: 'unavailable' }
     return { state: 'ready', cabinet: cabinetOf(await res.json().catch(() => ({}))) }
   }
@@ -135,6 +143,7 @@ export async function callRunners(env: RunnersEnv, call: RunnersCall, previous?:
     body: JSON.stringify({ label }),
   })
   if (res.status === 401) return { state: 'signin' }
+  if (res.status === 404) return { state: 'pending' }
   if (res.status === 409) return { state: 'refused', cabinet: kept, reason: 'limit' }
   if (res.status === 400) return { state: 'refused', cabinet: kept, reason: 'label' }
   if (!res.ok) return { state: 'unavailable' }
@@ -148,14 +157,26 @@ export async function callRunners(env: RunnersEnv, call: RunnersCall, previous?:
 }
 
 /**
- * The lines a person pastes on their own machine. The provider key is named as
- * an environment variable THEY set there and is never part of anything this
- * page writes, stores or sends.
+ * The branch the Queen's production service is built from, so the script a
+ * person downloads is the one the server they connect to speaks.
+ */
+export const RUNNER_BRANCH = 'fix/queen-worker-provider-and-prompt-size'
+
+/** The runner script and its instructions, in the Queen's own repository. */
+export const RUNNER_SCRIPT_URL = `https://raw.githubusercontent.com/gHashTag/BrowserOS/${RUNNER_BRANCH}/trios/agent-server/tools/queen-runner/queen-runner.mjs`
+export const RUNNER_README_URL = `https://github.com/gHashTag/BrowserOS/blob/${RUNNER_BRANCH}/trios/agent-server/tools/queen-runner/README.md`
+
+/**
+ * The lines a person pastes on their own machine. The provider key is never
+ * part of anything this page writes, stores or sends: the runner's agent uses
+ * whatever key the person already has set up there.
  */
 export function setupLines(token: string, base: string): string[] {
   return [
     `export TRIOS_QUEEN_URL=${base}`,
     `export TRIOS_RUNNER_TOKEN=${token}`,
-    `curl -fsS -X POST -H "Authorization: Bearer $TRIOS_RUNNER_TOKEN" "$TRIOS_QUEEN_URL/queen/runner/heartbeat"`,
+    'export TRIOS_RUNNER_REMOTE=https://github.com/<you>/<your-public-fork>.git',
+    `curl -fsSLO ${RUNNER_SCRIPT_URL}`,
+    'node queen-runner.mjs',
   ]
 }
