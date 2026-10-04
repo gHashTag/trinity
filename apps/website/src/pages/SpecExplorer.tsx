@@ -40,6 +40,7 @@ import {
   loadCompiler,
   loadSpecSource,
   prefetchSpec,
+  TARGET_LABEL,
   type Health,
   type TargetId,
   type SpecEntry,
@@ -320,19 +321,15 @@ type LayerId = (typeof LAYERS)[number]['id']
 const _everyBackendHasALayer: TargetId extends LayerId ? true : never = true
 void _everyBackendHasALayer
 
+// The backend names come from t27Compiler's TARGET_LABEL, which every other
+// page that names t27's outputs reads too -- one list, not one per page.
 const LAYER_LABEL: Record<LayerId, string> = {
   source: 'Source',
   tokens: 'Tokens',
   ast: 'AST',
   typecheck: 'Types',
   hir: 'HIR',
-  zig: 'Zig',
-  verilog: 'Verilog',
-  verilog_hir: 'Verilog (HIR)',
-  c: 'C',
-  rust: 'Rust',
-  js: 'JavaScript',
-  ts: 'TypeScript',
+  ...TARGET_LABEL,
   chip: 'Chip',
 }
 
