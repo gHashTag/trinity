@@ -164,9 +164,9 @@ tri notify "TEEN GRADUATED! Full autonomy achieved."
 
 ## Related Documentation
 
-- [Main Plan](../../TRINITY_TAMAGOTCHI_PLAN.md) — Original Russian specification
-- [Queen Architecture](../../docs/docs/architecture/agents-v2.md) — Technical details
-- [Phoenix System](../../docs/docs/architecture/bogatyrs-decomposition.md) — Brain modules
+- Main Plan (historical path `../../TRINITY_TAMAGOTCHI_PLAN.md`; not present in this checkout) — Original Russian specification
+- [Queen Architecture](docs/architecture/agents-v2.md) — Technical details
+- [Phoenix System](docs/architecture/bogatyrs-decomposition.md) — Brain modules
 
 ---
 

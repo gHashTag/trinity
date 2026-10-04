@@ -46,6 +46,9 @@ jobs:
         with:
           submodules: recursive
 
+      - name: CI gate specification and conformance
+        run: node scripts/ci-gate-from-spec.mjs --check && node qa/ci-corona-pr-gate.mjs
+
       - name: Build TRI Binary
         run: |
           # `zig build tri` is a RUN step -- build.zig declares it as
@@ -134,7 +137,7 @@ jobs:
           fi
 
       - name: Comment Health on PR
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
         uses: actions/github-script@v7
         with:
           script: |
@@ -355,7 +358,7 @@ jobs:
           echo "brain stress: $TESTS_PASSED/$TESTS_TOTAL tests passed, 0 leaked"
 
       - name: Comment Stress Test on PR
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
         uses: actions/github-script@v7
         with:
           script: |
@@ -488,38 +491,15 @@ jobs:
     if: always()
     timeout-minutes: 5
     steps:
-      - name: Generate Health Report
-        run: |
-          echo "# 🧠 S³AI Brain Health Report" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          # Each row shows the job's real result (success / failure /
-          # cancelled / skipped). The old table printed "FAIL" for anything
-          # but success, so a job that never ran because an earlier one failed
-          # read as a second failure. Jobs here have no `if:` of their own, so
-          # "skipped" means an upstream job failed.
-          echo "| Phase | Result | Details |" >> $GITHUB_STEP_SUMMARY
-          echo "|-------|--------|---------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Health Check | ${{ needs.brain-health-check.result }} | tri stress --health score vs threshold |" >> $GITHUB_STEP_SUMMARY
-          echo "| Build | ${{ needs.build-check.result }} | zig build -Dci=true |" >> $GITHUB_STEP_SUMMARY
-          echo "| Unit Tests | ${{ needs.brain-unit.result }} | test-basal-ganglia, test-reticular-formation, test-locus-coeruleus |" >> $GITHUB_STEP_SUMMARY
-          echo "| Integration | ${{ needs.brain-integration.result }} | test-brain |" >> $GITHUB_STEP_SUMMARY
-          echo "| Stress Test | ${{ needs.brain-stress.result }} | test-brain-stress, all tests pass, none leak |" >> $GITHUB_STEP_SUMMARY
-          echo "| CLI Smoke | ${{ needs.cli-smoke.result }} | tri stress --health, every probe passes |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
+      - name: Checkout Trinity
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
-          echo "## Verdict" >> $GITHUB_STEP_SUMMARY
-          if [ "${{ needs.brain-health-check.result }}" == "success" ] && \
-             [ "${{ needs.build-check.result }}" == "success" ] && \
-             [ "${{ needs.brain-unit.result }}" == "success" ] && \
-             [ "${{ needs.brain-integration.result }}" == "success" ] && \
-             [ "${{ needs.brain-stress.result }}" == "success" ] && \
-             [ "${{ needs.cli-smoke.result }}" == "success" ]; then
-            echo "### X Brain Circuit HEALTHY — Safe to merge" >> $GITHUB_STEP_SUMMARY
-            exit 0
-          else
-            echo "### ! Brain Circuit DAMAGE — Fix required before merge" >> $GITHUB_STEP_SUMMARY
-            exit 1
-          fi
+      - name: Generate Health Report
+        env:
+          BRAIN_RESULTS: ${{ toJSON(needs) }}
+        run: node scripts/ci-gate-from-spec.mjs --check && node scripts/ci-brain-gate.mjs
 
       # On a push there is no PR, so context.issue.number is undefined and the
       # call becomes POST /repos/.../issues//comments -> 404.
@@ -531,7 +511,7 @@ jobs:
       # "the health check did not pass". Guarding it removes the noise, not the
       # signal -- the aggregator still fails the job on its own.
       - name: Critical State Notification
-        if: failure() && github.event_name == 'pull_request'
+        if: failure() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
         uses: actions/github-script@v7
         with:
           script: |

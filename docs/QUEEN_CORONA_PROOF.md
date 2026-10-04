@@ -56,3 +56,38 @@ The existing TypeScript ratchet has 179 baseline errors across 26 files; the
 new change must add none. The game embedding at app.t27.ai has a separate Queen
 source pin and requires deployment verification after the source PR is accepted.
 This change establishes neither a fabricated chip nor reward/payment settlement.
+## CI dependencies for fork contributions
+
+The fork CI contract is in [corona_pr_gate.t27](../specs/ci/corona_pr_gate.t27).
+Its [native seal](../.trinity/seals/ci_ci_corona_pr_gate.json) and
+[68 vectors](../conformance/ci_corona_pr_gate.json) accompany the
+[consumer and workflow regressions](../qa/ci-corona-pr-gate.mjs).
+Optional comments and labels require a writable same-repository PR.
+Build, unit, integration, stress, health and CLI phases remain required;
+missing, failed, cancelled or skipped phases block the Brain merge gate.
+The documentation consistency check follows T-JEPA to the immutable source
+revision specified there; source presence does not establish model inference.
+
+The documentation reference contract is in
+[docs_reference_gate.t27](../specs/ci/docs_reference_gate.t27), with its
+[native seal](../.trinity/seals/ci_ci_docs_reference_gate.json),
+[14 vectors](../conformance/ci_docs_reference_gate.json) and
+[executed consumer regressions](../qa/docs-reference-gate.mjs).
+It checks tracked Markdown/MDX targets against files and the actual built
+Docusaurus routes. Missing targets, malformed URLs and HTTP400/404/410 block
+the source gate. Authorization/rate limits and network/server failures are
+explicitly unconfirmed observations, never verified links. The CI artifact
+lists each observation and its time; a successful source gate does not prove
+every external page is available. Fragment anchors are not measured here.
+
+To reproduce these CI checks from the repository root:
+
+```sh
+node scripts/ci-gate-from-spec.mjs --check
+node qa/ci-corona-pr-gate.mjs
+npm ci --prefix docs --ignore-scripts
+npm run build --prefix docs
+node scripts/docs-gate-from-spec.mjs --check
+node qa/docs-reference-gate.mjs
+node scripts/docs-reference-check.mjs --external --report work/docs-reference-report.json
+```

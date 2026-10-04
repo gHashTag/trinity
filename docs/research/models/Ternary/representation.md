@@ -30,7 +30,7 @@ Trinity uses ternary representations with trits {-1, 0, +1}. Efficient memory re
 
 The full representation analysis is in:
 
-**[docs/docs/concepts/balanced-ternary.md](../../docs/concepts/balanced-ternary.md)**
+**[docs/docs/concepts/balanced-ternary.md](../../../docs/concepts/balanced-ternary.md)**
 
 ## Related
 

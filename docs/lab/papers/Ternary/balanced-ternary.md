@@ -8,7 +8,7 @@ Balanced ternary computing uses values {-1, 0, +1} (trits) instead of {0, 1} (bi
 
 Complete balanced ternary documentation is available at:
 
-**[docs/docs/concepts/balanced-ternary.md](../../docs/concepts/balanced-ternary.md)**
+**[docs/docs/concepts/balanced-ternary.md](../../../docs/concepts/balanced-ternary.md)**
 
 This document contains:
 - Ternary arithmetic operations
@@ -33,5 +33,5 @@ This document contains:
 
 ## Related
 
-- [ADR for representation: docs/docs/adr/002-ternary-representation.md](../../docs/adr/002-ternary-representation.md)
+- [ADR for representation: docs/docs/adr/002-ternary-representation.md](../../../docs/adr/002-ternary-representation.md)
 - [Hybrid operations: ../Hybrid/api.md](../Hybrid/api.md)
