@@ -13,6 +13,7 @@
 
 import { useEffect, useState } from 'react'
 import { QUEEN_API } from '../lib/queenApi'
+import { githubLogin } from '../lib/githubLogin'
 import './QueenSpecEarnings.css'
 
 interface Earner {
@@ -70,8 +71,6 @@ const SPEC_EARNINGS_COPY: Record<'en' | 'ru', SpecEarningsCopy> = {
   },
 }
 
-const GITHUB_LOGIN = /^[a-zA-Z\d](?:[a-zA-Z\d]|-(?=[a-zA-Z\d])){0,38}$/
-
 export default function QueenSpecEarnings({ lang }: { lang: 'en' | 'ru' }) {
   const c = SPEC_EARNINGS_COPY[lang]
   const [ledger, setLedger] = useState<Ledger | null | 'absent'>(null)
@@ -109,7 +108,7 @@ export default function QueenSpecEarnings({ lang }: { lang: 'en' | 'ru' }) {
           ) : (
             <ol className="ql-rows">
               {ledger.earners.map((row, i) => {
-                const login = row.github && GITHUB_LOGIN.test(row.github) ? row.github : null
+                const login = githubLogin(row.github)
                 return (
                   <li key={row.name} className={`ql-row${row.claimed ? '' : ' is-unclaimed'}`}>
                     <span className="ql-rank">{i + 1}</span>

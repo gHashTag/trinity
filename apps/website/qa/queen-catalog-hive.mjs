@@ -55,6 +55,12 @@ assert.doesNotMatch(stage,/target="_blank"|window\.open/,'the stage keeps the co
 assert.match(stage,/role="dialog" aria-modal="true"/,'the close-up is a dialog, so Escape and focus behave');
 assert.match(stage,/collab\.capabilities\.comment && \(/,'the GitHub write button exists only while the service says it can write');
 assert.match(stage,/loadWorldIssueDetailsCached\(repo, number, abort\.signal, retry > 0\)/,'reopening a cell reuses the cached read; only Retry spends a request');
+// #1392: a failed read withdraws proof in every layer that showed it; the
+// behaviour of retainObservation/withdrawWorldProof is tested in queen-repository-worlds.
+assert.match(stage,/setFetched\(\{ key: request, row: null, error: true \}\)\n\s*\/\/[^\n]*\n\s*withdraw\.current\?\.\(repo, number\)/,'a failed cell read withdraws what the cell observed before');
+assert.match(ui,/onUnverified=\{\(r,n\)=>setObserved\(prev=>\{.*retainObservation\(row,false,true\)/,'the hive drops the withdrawn cell proof');
+assert.match(ui,/if\(!request\.signal\.aborted\)setObserved\(prev=>withdrawWorldProof\(prev,repo\)\)/,'a failed world reload withdraws that world\'s proof');
+assert.match(readFileSync('src/pages/QueenUniverse.tsx','utf8'),/setSnapshot\(prev=>prev&&\{\.\.\.prev,rows:prev\.rows\.map\(row=>retainObservation\(row,false,true\)\)\}\)/,'a stale universe snapshot keeps lifecycle, not proof');
 assert.match(stage,/live\.boardRead \? '—' : '…'/,'a figure the board has not answered for is a dash, never a fabricated zero');
 const css=readFileSync('src/pages/Queen.css','utf8');
 const surface=css.match(/\.queen-hive-display:is\(\[data-kind="spec"\],\[data-task-tone="honey"\]\) \{([^}]+)\}/)[1];

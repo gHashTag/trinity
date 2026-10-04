@@ -155,7 +155,7 @@ function EventRow({ event, now, ago }: { event: CellEvent; now: number; ago: str
 export type CellSpecLink = { path: string; label: string; note: string }
 
 export default function QueenCellStage({
-  repo, number, title, lang, onClose, cellHref, specs, onSpec, packet, onObserved,
+  repo, number, title, lang, onClose, cellHref, specs, onSpec, packet, onObserved, onUnverified,
 }: {
   repo: string
   number: number
@@ -173,6 +173,8 @@ export default function QueenCellStage({
   packet?: () => string
   /** The GitHub row, handed back so the map can redraw the cell it just read. */
   onObserved?: (row: WorldIssue) => void
+  /** The live read failed: the map must stop showing proof this cell observed earlier. */
+  onUnverified?: (repo: string, number: number) => void
 }) {
   const t = COPY[lang === 'ru' ? 'ru' : 'en']
   const live = useCellLive(number)
@@ -212,6 +214,8 @@ export default function QueenCellStage({
   // on every render cannot turn one GitHub read into a request per render.
   const observe = useRef(onObserved)
   useEffect(() => { observe.current = onObserved }, [onObserved])
+  const withdraw = useRef(onUnverified)
+  useEffect(() => { withdraw.current = onUnverified }, [onUnverified])
 
   useEffect(() => {
     const abort = new AbortController()
@@ -221,7 +225,12 @@ export default function QueenCellStage({
         setFetched({ key: request, row, error: false })
         observe.current?.(row)
       })
-      .catch(() => { if (!abort.signal.aborted) setFetched({ key: request, row: null, error: true }) })
+      .catch(() => {
+        if (abort.signal.aborted) return
+        setFetched({ key: request, row: null, error: true })
+        // A failed read withdraws what this cell told the map before (#1392).
+        withdraw.current?.(repo, number)
+      })
     return () => abort.abort()
   }, [repo, number, retry, request])
 

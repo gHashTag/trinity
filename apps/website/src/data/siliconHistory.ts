@@ -239,6 +239,7 @@ export const EXCLUDED: Record<string, string> = {
   // dmitrii-f-t27/trinity-memory RTL (issues #103-#113 there), vendored by the first scan
   // after those merged. Each says in its own header what it is; none declares the format.
   'dmitrii-f-t27/trinity-memory/t27/rtl/gf16_codec.t27': 'an RNE converter between FP32 and GF16 bit patterns, not a declaration of the format',
+  'dmitrii-f-t27/trinity-memory/t27/rtl/gf16_attn.t27': 'a Q16.16 layer-0 attention/residual controller (Memory #115), not a GF16 format declaration',
   'dmitrii-f-t27/trinity-memory/t27/rtl/gf16_ffn.t27': 'an FFN controller that computes in GF16, not a declaration of the format',
   'dmitrii-f-t27/trinity-memory/t27/rtl/gf16_scalar.t27': 'clocked scalar arithmetic on GF16 operands, not a declaration of the format',
   'dmitrii-f-t27/trinity-memory/t27/rtl/gf16_wide_norm.t27': 'a wide product and normalization unit over GF16, not a declaration of the format',

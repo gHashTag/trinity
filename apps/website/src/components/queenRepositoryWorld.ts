@@ -1,5 +1,6 @@
 import type { HiveDisplay } from './queenHiveDisplay';
 import {proveWorldIssues,invalidateIssueProof,type IssueProof} from '../lib/queenIssueProof.ts';
+import {issueProofRefreshPolicy as refresh} from '../lib/queenIssueProofRefresh.generated.ts';
 
 export const PINNED_WORLDS = ['ghashtag/trios', 'ghashtag/t27'];
 export const WORLD_STORAGE = 'queen.public-worlds.v1';
@@ -77,12 +78,29 @@ export async function loadWorldIssue(repo:string,number:number,signal:AbortSigna
 // inspector aside until the stage replaced it, and it is shared rather than
 // copied because two caches of the same reads is how they drift.
 const detailsCache=new Map<string,{at:number;row:WorldIssue}>();
+const detailsTicket=new Map<string,number>();
 const DETAILS_TTL_MS=60_000,DETAILS_MAX=100;
+/** specs/queen/issue_proof_refresh.t27 RETAIN: only a successful, latest refresh
+ * keeps coverage and proof; anything else keeps the lifecycle alone (#1392). */
+export function retainObservation<T extends WorldIssue>(row:T,succeeded:boolean,latest:boolean):T {
+  return refresh.RETAIN[Number(succeeded)+2*Number(latest)]===1?row:{...row,coverage:'unknown',proof:undefined};
+}
+/** A failed world read withdraws what that world's rows claimed; other worlds keep theirs. */
+export function withdrawWorldProof<T extends WorldIssue>(rows:Record<string,T>,repo:string):Record<string,T> {
+  return Object.fromEntries(Object.entries(rows).map(([key,row])=>[key,row.repo===repo?retainObservation(row,false,true):row]));
+}
 export async function loadWorldIssueDetailsCached(repo:string,number:number,signal:AbortSignal,fresh=false,fetcher:Fetcher=fetch) {
   const key=`${repo}#${number}`,cached=detailsCache.get(key);
   if(!fresh&&cached&&Date.now()-cached.at<DETAILS_TTL_MS)return cached.row;
-  if(fresh)invalidateIssueProof(repo);
+  // A refresh starts from nothing: whatever happens next, the old row is not
+  // served again. A deliberate reload resets the repository proof, so it also
+  // drops every cached row of that world that may still carry it.
+  detailsCache.delete(key);
+  if(fresh){invalidateIssueProof(repo);for(const k of [...detailsCache.keys()])if(k.startsWith(`${repo}#`))detailsCache.delete(k);}
+  const ticket=(detailsTicket.get(key)??0)+1;detailsTicket.set(key,ticket);
   const row=await loadWorldIssueDetails(repo,number,signal,fetcher);
+  const latest=detailsTicket.get(key)===ticket&&!signal.aborted;
+  if(!latest)return retainObservation(row,true,false);
   if(detailsCache.size>=DETAILS_MAX)detailsCache.delete(detailsCache.keys().next().value!);
   detailsCache.set(key,{at:Date.now(),row});
   return row;
