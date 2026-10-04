@@ -1,0 +1,67 @@
+// GENERATED from specs/queen/memory_issue_proof.t27; sha256 7875901e265be6cca4915b21f6d9dad525922383406f9243ea5891e56f8056e9
+export const memoryIssueProofPolicy = {
+  "REPO": "dmitrii-f-t27/trinity-memory",
+  "ISSUES": [
+    115,
+    122
+  ],
+  "SPEC": "specs/memory/attention_evidence.t27",
+  "SPEC_HASH": "560789fe32c0014bf6f1fddba5439a431915f3610369c00b63290e356d393d90",
+  "SEAL": ".trinity/seals/memory_TrinityMemoryAttentionEvidence.json",
+  "SEAL_HASH": "9201e4399ad59b5e6db2dea2ce9fa892e3f985f4309512ed19c9f3ad8a2029dd",
+  "VECTORS": "conformance/memory_attention_evidence.json",
+  "VECTORS_HASH": "b48802780057c1cebacb7af5bc6cb856df3074e777a0ad4ec711a85eb906bcc7",
+  "VERIFIER": "tools/attention-proof.py",
+  "VERIFIER_HASH": "08c7f3353aeb2865eafabb00a969484237b87de82b5b8f2b5ef075b53164fc4f",
+  "MAKEFILE": "Makefile",
+  "MAKEFILE_HASH": "c2d239674ff7f9099e565eaa7207de2475fa743758f81159c9522e710ef7ba16",
+  "WORKFLOW": ".github/workflows/ci.yml",
+  "WORKFLOW_HASH": "18f4e51a3a693e8a4e70ff092a2f68e6899f2ebde3eaef54e215e3fbb9337af3",
+  "EXTRA_PATHS": [
+    "reports/fpga/attn-2026-10-03/evidence-manifest.json",
+    "reports/fpga/attn-2026-10-03/verify-evidence.py",
+    "reports/fpga/attn-2026-10-03/physical-results.json",
+    "tools/verify_gf16_attn_board.py",
+    "tools/gf16_attn_vectors.py",
+    "tools/ffn_vectors.py",
+    "tools/uart_loader_protocol.py",
+    "t27/rtl/gf16_attn.t27",
+    "rtl/t27/gf16_attn.v",
+    "native/compiler.lock",
+    "tools/check-specs.sh"
+  ],
+  "EXTRA_HASHES": [
+    "878b51fb012000987f23054189a8d99f269d76b09c95be8af4ad3b32d0ebf60e",
+    "ed309122a32aa0d79e582618348ea11072bd14d1418aa90a93c20e311d6765d6",
+    "245c044a0e73f6c00f51cd25015e8a0036363784a2ab3545ab41014b47c4f73c",
+    "6848d6aba67a1260592b940b2babb781df6222113830271c527f9660ae22dd62",
+    "81b43b09af5f082f2fab843a60395389b584c0e2708ca9a9b06b47dfd4d65792",
+    "bc761b54b67bed94ce3e5ab0bf8517a34006a0a060ab3181ef9a459b951f0d83",
+    "e00bbb2e505b2be80dd039939d099b9657449ee269e92b33ce058e95161b224e",
+    "f2f0c4ff9c50a0095f247452fdaaf0d2531376f76bf77f8a59654099c9bf1ed9",
+    "6291c77520f8d760e15f302ed275b724741e60e506516f1fc920f47d4c932ed4",
+    "33cf8dadd036536da00813b3e105a0ff67f3a2bce9ae201a0a9bb51b77175c06",
+    "4efc41c6152276aa356f610164de38ade1544f28c631ca37b073fc33b2b361cc"
+  ],
+  "EVIDENCE_PATH": "reports/fpga/attn-2026-10-03/evidence-manifest.json",
+  "VECTOR_COUNT": 512,
+  "CACHE_MS": 60000,
+  "ACCEPT": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1
+  ]
+} as const;

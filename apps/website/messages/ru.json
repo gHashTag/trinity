@@ -317,8 +317,8 @@
       },
       "core-002": {
         "name": "Мультиязычный Codegen",
-        "description": "Генерация кода для Zig, Python, Rust, Verilog и еще 38 целей",
-        "metrics": "42 цели"
+        "description": "Генерация кода для {backends}",
+        "metrics": "бэкендов: {count}"
       },
       "core-003": {
         "name": "Байткод ВМ",

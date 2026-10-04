@@ -371,8 +371,8 @@
       },
       "core-002": {
         "name": "Multi-Lang Codegen",
-        "description": "Code generation for Zig, Python, Rust, Verilog and 38 more",
-        "metrics": "42 targets"
+        "description": "Code generation for {backends}",
+        "metrics": "{count} backends"
       },
       "core-003": {
         "name": "Bytecode VM",
