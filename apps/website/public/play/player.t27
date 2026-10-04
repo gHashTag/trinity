@@ -85,7 +85,13 @@ pub const TAB_LABELS : [6]str = ["Compile", "Spec", "Tests", "Code", "RTL", "Ter
 pub const FIRST_TAB : str = "compile";
 ; At this width and above the spec stays beside the active tab instead of being a tab of its own.
 pub const WIDE_MIN_PX : u16 = 900;
+; The editor's text is transparent; what a reader sees is the coloured layer under it. That layer
+; is redrawn on every keystroke, so typing shows at once. Only the compile waits for this pause.
 pub const RECOMPILE_DEBOUNCE_MS : u16 = 250;
+; iOS Safari zooms the page in whenever a field whose text is smaller than this takes focus, and
+; does not zoom back out. On a touch screen the editor's text is never smaller.
+pub const IOS_FOCUS_ZOOM_BELOW_PX : u8 = 16;
+pub const EDITOR_TOUCH_FONT_PX : u8 = 16;
 
 ; --- Honesty ------------------------------------------------------------------------------------
 ; There is no other runner for these test blocks today: the Zig test report does not build for
@@ -120,6 +126,10 @@ test nothing_starts_by_itself_for_longer_than_the_limit {
     assert COMPILE_ANIMATION_MS <= AUTOPLAY_LIMIT_MS;
     assert COMPILE_ANIMATION_MS > 0;
     assert HAS_SOUND == false;
+}
+
+test focusing_the_editor_on_a_phone_does_not_zoom {
+    assert EDITOR_TOUCH_FONT_PX >= IOS_FOCUS_ZOOM_BELOW_PX;
 }
 
 test a_skip_is_never_a_pass {

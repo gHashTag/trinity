@@ -76,7 +76,7 @@ function playerConfig(analysis) {
   }
   const cfg = {}
   for (const d of analysis.ast?.children ?? []) if (d.kind === 'ConstDecl' && d.children?.[0]) cfg[d.name] = lit(d.children[0], d.name)
-  const need = ['TABS', 'TAB_LABELS', 'FIRST_TAB', 'WIDE_MIN_PX', 'COMPILE_ANIMATION_MS', 'AUTOPLAY_LIMIT_MS', 'AUTOPLAY_PARAMS', 'RECOMPILE_DEBOUNCE_MS', 'TESTS_NOTE', 'ORIGIN', 'SPEC_PAGE', 'PLAY_SPECS', 'PLAY_CASTS', 'PLAY_IDS', 'HAS_SOUND']
+  const need = ['TABS', 'TAB_LABELS', 'FIRST_TAB', 'WIDE_MIN_PX', 'COMPILE_ANIMATION_MS', 'AUTOPLAY_LIMIT_MS', 'AUTOPLAY_PARAMS', 'RECOMPILE_DEBOUNCE_MS', 'EDITOR_TOUCH_FONT_PX', 'TESTS_NOTE', 'ORIGIN', 'SPEC_PAGE', 'PLAY_SPECS', 'PLAY_CASTS', 'PLAY_IDS', 'HAS_SOUND']
   const missing = need.filter((k) => !(k in cfg))
   if (missing.length) throw new Error(`player.t27 lacks ${missing.join(', ')}`)
   if (cfg.COMPILE_ANIMATION_MS > cfg.AUTOPLAY_LIMIT_MS) throw new Error('player.t27: the compile piece is longer than the autoplay limit')
@@ -86,12 +86,29 @@ function playerConfig(analysis) {
 // --- highlighting, with the spec explorer's highlighter ----------------------------------------
 const spansHtml = (spans) => spans.map((sp) => (sp.cls === 'plain' ? html(sp.text) : `<span class="h-${sp.cls}">${html(sp.text)}</span>`)).join('')
 
-// The compiler's own tokens, coloured; a line the compiler dropped or rejected is marked.
+// The compiler's own tokens, coloured, one string per line; a line the compiler dropped or
+// rejected is marked.
 function highlight(rows, analysis) {
   const hit = new Set()
   for (const list of [analysis.discarded, analysis.lexerDiscarded, analysis.swallowed]) for (const e of list ?? []) if (e && e.line) hit.add(e.line)
   for (const e of analysis.typecheck?.errors ?? []) { const m = /line (\d+)/.exec(e); if (m) hit.add(Number(m[1])) }
-  return rows.map((spans, i) => `<span class="l${hit.has(i + 1) ? ' hit' : ''}">${spansHtml(spans) || ' '}</span>`).join('')
+  return rows.map((spans, i) => `<span class="l${hit.has(i + 1) ? ' hit' : ''}">${spansHtml(spans) || ' '}</span>`)
+}
+
+// Between compiles: the lines the last compile saw keep its colours, and the lines typed since
+// are drawn plain. The textarea's own text is transparent, so this is the only place a keystroke
+// shows; waiting for the compile left a phone typist looking at nothing for about two seconds.
+function repaint(lines, painted) {
+  const old = painted.lines
+  let head = 0
+  while (head < lines.length && head < old.length && lines[head] === old[head]) head++
+  let tail = 0
+  while (tail < lines.length - head && tail < old.length - head && lines[lines.length - 1 - tail] === old[old.length - 1 - tail]) tail++
+  return lines.map((text, i) => {
+    if (i < head) return painted.html[i]
+    if (i >= lines.length - tail) return painted.html[i - lines.length + old.length]
+    return `<span class="l">${html(text) || ' '}</span>`
+  })
 }
 
 // Tokens per highlight class, for the lexer bar: every token is its own span.
@@ -407,6 +424,7 @@ async function main() {
   const orchRes = await fetch(new URL('player.t27' + (build ? `?v=${build}` : ''), import.meta.url))
   if (!orchRes.ok) throw new Error(`player.t27 did not load (HTTP ${orchRes.status})`)
   const cfg = playerConfig(analyze(await orchRes.text(), 'player.t27'))
+  document.documentElement.style.setProperty('--ed-touch-font', `${cfg.EDITOR_TOUCH_FONT_PX}px`)
 
   const specPath = query.get('spec') || cfg.PLAY_SPECS[0]
   if (!SPEC_PATH_RE.test(specPath) || specPath.includes('..')) throw new Error(`not a spec path: ${specPath}`)
@@ -452,6 +470,7 @@ async function main() {
   let rtlPick = null
   const openCode = (backend) => { codePick = backend; renderCode($('#pane-code'), last, codePick, stem); select('code') }
   let last = null
+  let painted = { lines: [], html: [] }
   const draw = (animate) => {
     const t0 = performance.now()
     const analysis = analyze(source, specName)
@@ -459,7 +478,8 @@ async function main() {
     last = f
     const ms = performance.now() - t0
     const rows = site.highlightSource(source, analysis.tokens ?? [])
-    $('#hl').innerHTML = highlight(rows, analysis)
+    painted = { lines: source.split('\n'), html: highlight(rows, analysis) }
+    $('#hl').innerHTML = painted.html.join('')
     const depth = renderCompile($('#pane-compile'), f, analysis, classCounts(rows))
     if (player) player.pause()
     player = piece($('#pane-compile'), depth, cfg.COMPILE_ANIMATION_MS)
@@ -478,6 +498,11 @@ async function main() {
   src.value = source
   let timer = 0
   src.addEventListener('input', () => {
+    $('#hl').innerHTML = repaint(src.value.split('\n'), painted).join('')
+    // The textarea never scrolls itself; the pane does. Before the coloured layer has grown, a new
+    // longest line or a new last line can scroll it, and its caret drifts off the drawn text.
+    src.scrollLeft = 0
+    src.scrollTop = 0
     clearTimeout(timer)
     timer = setTimeout(() => { source = src.value; draw(false) }, cfg.RECOMPILE_DEBOUNCE_MS)
   })
