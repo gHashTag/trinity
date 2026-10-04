@@ -1,11 +1,11 @@
 {
-  "measuredAt": "2026-10-03T10:37:52.568Z",
+  "measuredAt": "2026-10-04T00:57:52.960Z",
   "method": "Commits touching a directory that holds .t27 files, in every public gHashTag repository that has one (published mirrors and vendored copies excluded), each commit counted once. Credited to a GitHub account: for a squash of the swarm's queen-<issue> pull request, the person whose provider key the accepted bee ran on (the Queen's record); otherwise the commit author, else whoever opened the merged pull request carrying it, else the committer. A measure of work on the spec corpus: not every file under those directories is a spec, and a commit is not a file.",
   "laneCredits": {
     "read": true,
     "source": "https://trios-agent-server-production.up.railway.app/queen/public-credits",
-    "issues": 1190,
-    "queenSquashes": 564
+    "issues": 1255,
+    "queenSquashes": 574
   },
   "sources": [
     {
@@ -242,17 +242,17 @@
     {
       "login": "gHashTag",
       "avatar": "https://github.com/gHashTag.png?size=96",
-      "commits": 2953,
+      "commits": 2960,
       "via": {
-        "author": 2323,
+        "author": 2330,
         "pr": 624,
         "name": 6
       },
       "repos": [
         "agent-mail-mcp",
         "t27",
-        "tri-net",
         "trinity",
+        "tri-net",
         "trinity-fpga",
         "trios",
         "tt-trinity-corona",
@@ -265,17 +265,18 @@
     {
       "login": "dmitrii-f-t27",
       "avatar": "https://github.com/dmitrii-f-t27.png?size=96",
-      "commits": 358,
+      "commits": 378,
       "via": {
-        "author": 42,
-        "lane": 311,
+        "author": 52,
+        "lane": 321,
         "pr": 5
       },
       "repos": [
         "t27",
-        "tri-net",
         "trinity",
+        "tri-net",
         "trios",
+        "tt-trinity-corona",
         "tt-trinity-euler",
         "tt-trinity-gamma",
         "turbobaby-user-bot"
