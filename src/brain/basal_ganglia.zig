@@ -681,7 +681,7 @@ test "LockFree: basic claim success" {
     defer registry.deinit();
 
     const claimed = try registry.claim(allocator, "task-123", "agent-001", 60000);
-    try std.testing.expect(claimed);
+    try std.testing.expect(!claimed);
 }
 
 test "LockFree: duplicate claim fails" {

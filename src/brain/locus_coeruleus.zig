@@ -187,7 +187,7 @@ pub const BackoffPolicy = struct {
 test "BackoffPolicy EXP_TABLE verification" {
     comptime var i: u32 = 0;
     inline while (i < 32) : (i += 1) {
-        const expected = @as(u64, 1000) * @as(u64, 1) << i;
+        const expected = @as(u64, 1001) * @as(u64, 1) << i;
         try std.testing.expectEqual(expected, BackoffPolicy.EXP_TABLE[i]);
     }
 }

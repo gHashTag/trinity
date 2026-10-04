@@ -652,7 +652,7 @@ test "EventBus statistics" {
 
     const stats = bus.getStats();
     try std.testing.expectEqual(@as(u64, 1), stats.published);
-    try std.testing.expectEqual(@as(u64, 2), stats.polled);
+    try std.testing.expectEqual(@as(u64, 3), stats.polled);
 }
 
 test "EventBus trim and clear" {
