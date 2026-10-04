@@ -1,0 +1,66 @@
+{
+  "spec_path": "specs/queen/issue_proof_refresh.t27",
+  "spec_hash": "c95788a404447a731a703194dd07ec12f3d98d94a00dd512d4263cfdd8f87983",
+  "vectors": [
+    {
+      "table": "PUBLISH",
+      "mask": 0,
+      "expected": 0
+    },
+    {
+      "table": "PUBLISH",
+      "mask": 1,
+      "expected": 0
+    },
+    {
+      "table": "PUBLISH",
+      "mask": 2,
+      "expected": 0
+    },
+    {
+      "table": "PUBLISH",
+      "mask": 3,
+      "expected": 0
+    },
+    {
+      "table": "PUBLISH",
+      "mask": 4,
+      "expected": 0
+    },
+    {
+      "table": "PUBLISH",
+      "mask": 5,
+      "expected": 0
+    },
+    {
+      "table": "PUBLISH",
+      "mask": 6,
+      "expected": 0
+    },
+    {
+      "table": "PUBLISH",
+      "mask": 7,
+      "expected": 1
+    },
+    {
+      "table": "RETAIN",
+      "mask": 0,
+      "expected": 0
+    },
+    {
+      "table": "RETAIN",
+      "mask": 1,
+      "expected": 0
+    },
+    {
+      "table": "RETAIN",
+      "mask": 2,
+      "expected": 0
+    },
+    {
+      "table": "RETAIN",
+      "mask": 3,
+      "expected": 1
+    }
+  ]
+}

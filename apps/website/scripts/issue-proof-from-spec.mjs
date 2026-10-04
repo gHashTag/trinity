@@ -39,3 +39,31 @@ for(const [path,bytes] of Object.entries(outputs)){
 }
 console.log(`Issue proof spec: ${result.tests} tests, ${result.asserts} assertions; 16 conformance rows`);
 }
+// When a verdict may be published or kept (issue #1392): shared by both policies.
+{
+const source='specs/queen/issue_proof_refresh.t27',moduleName='queen_issue_proof_refresh';
+const text=readFileSync(join(SITE,source),'utf8');
+const analyze=await loadCompiler(readFileSync(join(SITE,'public/t27/t27_compiler.wasm')));
+const analysis=analyze(text),v=verdictOf(analysis),constants=constsOf(analysis);
+if(compilerErrors(analysis).length||!v.typecheckOk||!v.hirOk||v.discarded||analysis.ast?.name!==moduleName)throw new Error('Issue proof refresh spec rejected');
+const problems=checkSchema(constants,{PUBLISH:'arr-u8',RETAIN:'arr-u8'},{},source);
+if(problems.length)throw new Error(problems.join('; '));
+const fields=Object.fromEntries(Object.entries(constants).map(([k,v])=>[k,v.value]));
+const result=runSpecTests(analysis,fields);
+if(result.tests!==2||result.asserts!==12||result.failures.length)throw new Error(JSON.stringify(result));
+// Only the all-true row may publish or retain a positive; anything less is unknown.
+for(const [name,size] of [['PUBLISH',8],['RETAIN',4]])if(fields[name].length!==size||fields[name].some((x,i)=>x!==Number(i===size-1)))throw new Error(`Incomplete ${name} truth table`);
+if(process.argv.includes('--check')){
+  const seal=JSON.parse(readFileSync(join(SITE,`.trinity/seals/queen_${moduleName}.json`),'utf8'));
+  if(seal.spec_path!==source||seal.spec_hash!==`sha256:${sha256(Buffer.from(text))}`||seal.tests?.blocked||seal.tests?.failed)throw new Error('Missing or stale native issue proof refresh seal');
+}
+const outputs={
+  'src/lib/queenIssueProofRefresh.generated.ts':`// GENERATED from ${source}; sha256 ${sha256(Buffer.from(text))}\nexport const issueProofRefreshPolicy = ${JSON.stringify(fields,null,2)} as const;\n`,
+  [`conformance/${moduleName}.json`]:JSON.stringify({spec_path:source,spec_hash:sha256(Buffer.from(text)),vectors:[...fields.PUBLISH.map((expected,mask)=>({table:'PUBLISH',mask,expected})),...fields.RETAIN.map((expected,mask)=>({table:'RETAIN',mask,expected}))]},null,2)+'\n',
+};
+for(const [path,bytes] of Object.entries(outputs)){
+  if(process.argv.includes('--check')){if(readFileSync(join(SITE,path),'utf8')!==bytes)throw new Error(`Stale ${path}`);}
+  else {mkdirSync(join(SITE,path,'..'),{recursive:true});writeFileSync(join(SITE,path),bytes);}
+}
+console.log(`Issue proof refresh spec: ${result.tests} tests, ${result.asserts} assertions; 12 conformance rows`);
+}

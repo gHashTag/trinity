@@ -1,11 +1,16 @@
 import {issueProofPolicy as policy} from './queenIssueProof.generated.ts';
 import {memoryIssueProofPolicy} from './queenMemoryIssueProof.generated.ts';
+import {issueProofRefreshPolicy as refresh} from './queenIssueProofRefresh.generated.ts';
 
 export type IssueProof = {commit:string;specUrl:string;ciUrl:string;gdsUrl?:string;evidenceUrl?:string;observedAt:number};
 type Row = {repo:string;number:number;state:string;coverage:'unknown'|'t27';proof?:IssueProof};
 type Fetcher=typeof fetch;
 type Run = {id?:number;head_sha?:string;event?:string;path?:string;status?:string;conclusion?:string;html_url?:string;repository?:{full_name?:string}};
 export type IssueProofPolicy={REPO:string;ISSUES:readonly number[];SPEC:string;SEAL:string;VECTORS:string;VERIFIER:string;MAKEFILE:string;WORKFLOW:string;GDS_WORKFLOW?:string;SPEC_HASH:string;SEAL_HASH:string;VECTORS_HASH:string;VERIFIER_HASH:string;MAKEFILE_HASH:string;WORKFLOW_HASH:string;GDS_WORKFLOW_HASH?:string;EXTRA_PATHS?:readonly string[];EXTRA_HASHES?:readonly string[];EVIDENCE_PATH?:string;VECTOR_COUNT:number;CACHE_MS:number;ACCEPT:readonly number[]};
+/** specs/queen/issue_proof_refresh.t27 PUBLISH: verified, current generation, live caller. */
+export function publishesProof(verified:boolean,current:boolean,live:boolean):boolean{
+  return refresh.PUBLISH[Number(verified)+2*Number(current)+4*Number(live)]===1;
+}
 const hex=async(bytes:ArrayBuffer)=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),x=>x.toString(16).padStart(2,'0')).join('');
 
 async function read(url:string,signal:AbortSignal,fetcher:Fetcher):Promise<Response>{
@@ -25,12 +30,34 @@ function acceptedRun(raw:unknown,repo:string,commit:string,path:string):Run|null
 /** Policy comes from the checked-in spec; never from a URL or API response. */
 export function createIssueProofReader(policy:IssueProofPolicy){
 const cache=new Map<string,IssueProof>();
+// Deleting a cache entry does not stop a check already on its way to refill it.
+// Every check carries the generation it began in; invalidate and each new check
+// advance it, and only a check that is still current may publish (#1392).
+const generation=new Map<string,number>();
+const flights=new Map<string,{ticket:number;controller:AbortController;proof:Promise<IssueProof|null>}>();
+const advance=(repo:string)=>{const next=(generation.get(repo)??0)+1;generation.set(repo,next);return next;};
 function supportsIssueProof(repo:string):boolean{return repo===policy.REPO;}
-function invalidateIssueProof(repo:string):void{cache.delete(repo);}
-async function repositoryProof(repo:string,signal:AbortSignal,fetcher:Fetcher):Promise<IssueProof>{
+function invalidateIssueProof(repo:string):void{advance(repo);cache.delete(repo);flights.get(repo)?.controller.abort();flights.delete(repo);}
+async function repositoryProof(repo:string,signal:AbortSignal,fetcher:Fetcher):Promise<IssueProof|null>{
   const held=cache.get(repo);
   if(held&&Date.now()-held.observedAt<policy.CACHE_MS)return held;
   cache.delete(repo); // A failed refresh must not reuse an old positive verdict.
+  let flight=flights.get(repo);
+  if(!flight||flight.ticket!==generation.get(repo)){
+    // Callers of one generation share its single check, so two views of one world agree.
+    const ticket=advance(repo),controller=new AbortController();
+    const proof=verify(repo,controller.signal,fetcher).then(found=>{
+      if(!publishesProof(true,generation.get(repo)===ticket,!controller.signal.aborted))return null;
+      cache.set(repo,found);
+      return found;
+    }).finally(()=>{if(flights.get(repo)?.ticket===ticket)flights.delete(repo);});
+    flight={ticket,controller,proof};
+    flights.set(repo,flight);
+  }
+  const found=await flight.proof;
+  return publishesProof(found!==null,generation.get(repo)===flight.ticket,!signal.aborted)?found:null;
+}
+async function verify(repo:string,signal:AbortSignal,fetcher:Fetcher):Promise<IssueProof>{
   const api=`https://api.github.com/repos/${repo}`;
   const head=await (await read(`${api}/commits/HEAD`,signal,fetcher)).json() as {sha?:string};
   const commit=head.sha;
@@ -54,7 +81,6 @@ async function repositoryProof(repo:string,signal:AbortSignal,fetcher:Fetcher):P
   const ci=acceptedRun(runs,repo,commit,policy.WORKFLOW),gds=policy.GDS_WORKFLOW?acceptedRun(runs,repo,commit,policy.GDS_WORKFLOW):null;
   if(!ci||(policy.GDS_WORKFLOW&&!gds))throw new Error('canonical required CI is not successful at current HEAD');
   const proof={commit,specUrl:`https://github.com/${repo}/blob/${commit}/${policy.SPEC}`,ciUrl:ci.html_url!,...(gds?{gdsUrl:gds.html_url!}:{}),...(policy.EVIDENCE_PATH?{evidenceUrl:`https://github.com/${repo}/blob/${commit}/${policy.EVIDENCE_PATH}`} : {}),observedAt:Date.now()};
-  cache.set(repo,proof);
   return proof;
 }
 
@@ -63,9 +89,9 @@ async function proveWorldIssues<T extends Row>(rows:T[],repo:string,signal:Abort
   // Reopened/unsupported observations cannot retain a previous positive proof.
   rows=rows.map(row=>({...row,coverage:'unknown' as const,proof:undefined}));
   if(!supportsIssueProof(repo)||!rows.some(r=>r.repo===repo&&r.state==='closed'&&(policy.ISSUES as readonly number[]).includes(r.number)))return rows;
-  let proof:IssueProof;
-  try{proof=await repositoryProof(repo,signal,fetcher);}catch{return rows.map(r=>({...r,coverage:'unknown' as const,proof:undefined}));}
-  if(signal.aborted)return rows;
+  let proof:IssueProof|null;
+  try{proof=await repositoryProof(repo,signal,fetcher);}catch{return rows;}
+  if(!proof||signal.aborted)return rows;
   return rows.map(row=>{
     const mask=Number(row.state==='closed')+2*Number(row.repo===repo&&(policy.ISSUES as readonly number[]).includes(row.number))+4+8;
     return policy.ACCEPT[mask]===1?{...row,coverage:'t27' as const,proof}:row;

@@ -52,6 +52,18 @@ const f=fixture(),accepted=(await f.reader.proveWorldIssues([row()],repo,signal,
 f.reader.invalidateIssueProof(repo);
 const missing=async()=>new Response('unavailable',{status:403});
 assert.equal((await f.reader.proveWorldIssues([accepted],repo,signal,missing))[0].coverage,'unknown','failed refresh cannot keep an old proof');cases++;
+{
+  // #1392: a check that began before the reset cannot bring the old proof back.
+  const g=fixture();let arrive,release;const arrived=new Promise(r=>arrive=r),gate=new Promise(r=>release=r);
+  const slow=async(url,options)=>{if(url.includes('/actions/runs?')){arrive();await gate;}return g.fetcher(url,options);};
+  const a=g.reader.proveWorldIssues([row()],repo,signal,slow);
+  await arrived;g.reader.invalidateIssueProof(repo);
+  assert.equal((await g.reader.proveWorldIssues([row()],repo,signal,missing))[0].coverage,'unknown');
+  release();
+  assert.equal((await a)[0].coverage,'unknown','superseded Memory check ends as unknown');
+  assert.equal((await g.reader.proveWorldIssues([row()],repo,signal,missing))[0].coverage,'unknown','superseded Memory check did not refill the cache');
+  cases+=2;
+}
 const matrix=JSON.parse(readFileSync(new URL('../conformance/queen_memory_issue_proof.json',import.meta.url)));
 for(const v of matrix.vectors)assert.equal(production.ACCEPT[v.mask],v.expected);
 assert.equal(matrix.vectors.length,16);

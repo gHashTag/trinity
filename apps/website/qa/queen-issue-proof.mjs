@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {readFileSync} from 'node:fs';
-import {createIssueProofReader} from '../src/lib/queenIssueProof.ts';
+import {createIssueProofReader,publishesProof} from '../src/lib/queenIssueProof.ts';
+import {issueProofRefreshPolicy as refreshPolicy} from '../src/lib/queenIssueProofRefresh.generated.ts';
 import {issueProofPolicy as production} from '../src/lib/queenIssueProof.generated.ts';
 import {hiveTaskPaint} from '../src/components/queenHiveDisplay.ts';
 
@@ -66,8 +67,42 @@ assert.equal((await f.reader.proveWorldIssues([{...accepted,state:'open'}],repo,
 assert.equal((await f.reader.proveWorldIssues([row({number:99})],repo,signal,f.fetcher))[0].coverage,'unknown','other issues never inherit proof');
 const unbound=fixture();await unbound.reader.proveWorldIssues([row({repo:'another/repo'})],'another/repo',signal,unbound.fetcher);assert.equal(unbound.reads.length,0);
 cases+=5;
+// #1392: time is part of the proof. A check superseded by invalidate (or by a
+// newer check) must not refill the cache it was cleared from, nor return honey.
+// Driven with deferred promises: A is held at its CI read until B has failed.
+{
+  const f=fixture(),limited=async()=>new Response('limited',{status:429});
+  let arrive,release;const arrived=new Promise(r=>arrive=r),gate=new Promise(r=>release=r);
+  const slow=async(url,opts)=>{if(url.includes('/actions/runs?')){arrive();await gate;}return f.fetcher(url,opts);};
+  const a=f.reader.proveWorldIssues([row()],repo,signal,slow);
+  await arrived;
+  f.reader.invalidateIssueProof(repo);
+  assert.equal((await f.reader.proveWorldIssues([row()],repo,signal,limited))[0].coverage,'unknown','B: the refresh after the reset fails');
+  release();
+  const late=(await a)[0];
+  assert.equal(late.coverage,'unknown','A: a superseded check ends as unknown');assert.equal(late.proof,undefined);
+  assert.equal((await f.reader.proveWorldIssues([row()],repo,signal,limited))[0].coverage,'unknown','A did not refill the cleared cache');
+  cases+=3;
+}
+{
+  // Callers of one generation share its single check, so two views agree.
+  const f=fixture(),both=await Promise.all([1,2].map(()=>f.reader.proveWorldIssues([row()],repo,signal,f.fetcher)));
+  for(const r of both)assert.equal(r[0].coverage,'t27','concurrent callers of one generation both see the verdict');
+  assert.equal(f.reads.filter(r=>r.url.endsWith('/commits/HEAD')).length,1,'one shared in-flight check');
+  // A caller that leaves does not break the one that stays, and gets no honey itself.
+  const g=fixture(),gone=new AbortController();
+  const left=g.reader.proveWorldIssues([row()],repo,gone.signal,g.fetcher),stayed=g.reader.proveWorldIssues([row()],repo,signal,g.fetcher);
+  gone.abort();
+  assert.equal((await left)[0].coverage,'unknown','an aborted caller never publishes');
+  assert.equal((await stayed)[0].coverage,'t27','the remaining caller keeps the shared verdict');
+  cases+=4;
+}
+const refresh=JSON.parse(readFileSync(new URL('../conformance/queen_issue_proof_refresh.json',import.meta.url)));
+assert.equal(refresh.vectors.length,12);
+for(const v of refresh.vectors)assert.equal(refreshPolicy[v.table][v.mask],v.expected,`refresh conformance ${v.table}[${v.mask}]`);
+for(const mask of [0,1,2,3,4,5,6,7])assert.equal(publishesProof(Boolean(mask&1),Boolean(mask&2),Boolean(mask&4)),refreshPolicy.PUBLISH[mask]===1,`publishesProof mask ${mask}`);
 const matrix=JSON.parse(readFileSync(new URL('../conformance/queen_issue_proof.json',import.meta.url)));
 assert.equal(matrix.vectors.length,16);
 for(const v of matrix.vectors)assert.equal(production.ACCEPT[v.mask],v.expected,`conformance mask ${v.mask}`);
-console.log(`Issue proof reader: ${cases} cases and ${matrix.vectors.length} conformance vectors PASS`);
+console.log(`Issue proof reader: ${cases} cases, ${matrix.vectors.length} policy and ${refresh.vectors.length} refresh conformance vectors PASS`);
 await import('./queen-memory-proof.mjs');

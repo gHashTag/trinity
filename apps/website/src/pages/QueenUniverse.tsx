@@ -8,7 +8,7 @@ import type {UniverseAtlas} from '../lib/queenUniverseAtlas';
 import {loadCorpus} from '../lib/queenCorpus';
 import { placeHiveDisplays } from '../components/queenHiveDisplay';
 import { hexField, type CombHandle } from '../components/queenHud';
-import { COLLAB_ORIGIN, PINNED_WORLDS, WORLD_STORAGE, loadWorldIssues, loadWorldMetadata, mergeWorldIssues, parseWorldRepository, savedWorlds, type WorldIssue, type WorldMetadata } from '../components/queenRepositoryWorld';
+import { COLLAB_ORIGIN, PINNED_WORLDS, WORLD_STORAGE, loadWorldIssues, loadWorldMetadata, mergeWorldIssues, parseWorldRepository, retainObservation, savedWorlds, type WorldIssue, type WorldMetadata } from '../components/queenRepositoryWorld';
 import './Queen.css';
 import './QueenUniverse.css';
 
@@ -149,7 +149,9 @@ function RepositoryWorld({repo,lang}:{repo:string;lang:'en'|'ru'}) {
       const result=meta.issuesEnabled?await loadWorldIssues(repo,page,abort.signal):{rows:[],hasMore:false};
       if(abort.signal.aborted)return;
       setSnapshot(prev=>({meta,rows:page===1?result.rows:mergeWorldIssues(prev?.rows??[],result.rows),page,hasMore:result.hasMore,at:new Date().toISOString()}));
-    } catch(e) {if(!abort.signal.aborted){const code=e instanceof Error?e.message:'load-failed';setError(code);if(code==='rate-limit')nextAllowed.current=Date.now()+60_000;}}
+    } catch(e) {if(!abort.signal.aborted){const code=e instanceof Error?e.message:'load-failed';setError(code);if(code==='rate-limit')nextAllowed.current=Date.now()+60_000;
+      // A stale snapshot stays on show, but without the proof it can no longer back (#1392).
+      setSnapshot(prev=>prev&&{...prev,rows:prev.rows.map(row=>retainObservation(row,false,true))});}}
     finally{if(!abort.signal.aborted)setBusy(false);}
   },[repo]);
   useEffect(()=>{void load(1,true);return()=>request.current?.abort();},[load]);

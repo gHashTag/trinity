@@ -9,7 +9,7 @@ import {SELECTION_KEY,validSelection} from '../lib/queenEmbed';
 import {atlasAgentPacket,type UniverseAtlas,type AtlasIssue} from '../lib/queenUniverseAtlas';
 import type {CombHandle} from './queenHud';
 import type {HiveDisplayProjection,HiveDisplay} from './queenHiveDisplay';
-import {loadWorldIssues,type WorldIssue} from './queenRepositoryWorld';
+import {loadWorldIssues,retainObservation,withdrawWorldProof,type WorldIssue} from './queenRepositoryWorld';
 import {supportsIssueProof} from '../lib/queenIssueProof';
 import './QueenCatalogHive.css';
 
@@ -27,7 +27,11 @@ export function QueenCatalogHive({atlas,lang,handleRef,foundationVisible=true,fi
       if(request.signal.aborted)return;
       setObserved(prev=>({...Object.fromEntries(Object.entries(prev).filter(([,row])=>row.repo!==repo)),...Object.fromEntries(rows.map(row=>[row.key,row]))}));
       setCompleteWorlds(prev=>[...prev.filter(r=>r!==repo),...(!hasMore?[repo]:[])]);
-    }).catch(()=>{/* The dated atlas remains explicitly a snapshot on failure. */});
+    }).catch(()=>{
+      // The dated atlas remains explicitly a snapshot on failure, but proof this
+      // world showed earlier is withdrawn: only its lifecycle stays (#1392).
+      if(!request.signal.aborted)setObserved(prev=>withdrawWorldProof(prev,repo));
+    });
     return()=>request.abort();
   },[repo]);
   const world=useMemo(()=>catalogUniverse(atlas,Object.values(observed),completeWorlds),[atlas,observed,completeWorlds]),map=world.map;
@@ -153,7 +157,7 @@ export function QueenCatalogHive({atlas,lang,handleRef,foundationVisible=true,fi
       {packet&&<><p role="status">{copied?(ru?'Скопировано':'Copied'):(ru?'Скопируйте пакет ниже':'Copy the packet below')}</p><textarea readOnly aria-label="Agent packet" value={packet}/></>}
       <small>{ru?'Наблюдение':'Observed'}: {new Date(atlas.at).toLocaleString(lang)} · {ru?'не live':'not live'}</small>
     </aside>}
-    {!specPath&&repo&&focus?.number&&<QueenCellStage key={issueKey} repo={repo} number={focus.number} title={snapshot?.title} lang={lang} onClose={()=>enter(repo)} cellHref={new URL(catalogFocusHash({repo,number:focus.number}),location.href).href} specs={cellSpecs} onSpec={openSpec} packet={cellPacket} onObserved={row=>setObserved(prev=>prev[row.key]===row?prev:{...prev,[row.key]:row})}/>}
+    {!specPath&&repo&&focus?.number&&<QueenCellStage key={issueKey} repo={repo} number={focus.number} title={snapshot?.title} lang={lang} onClose={()=>enter(repo)} cellHref={new URL(catalogFocusHash({repo,number:focus.number}),location.href).href} specs={cellSpecs} onSpec={openSpec} packet={cellPacket} onObserved={row=>setObserved(prev=>prev[row.key]===row?prev:{...prev,[row.key]:row})} onUnverified={(r,n)=>setObserved(prev=>{const k=`${r}#${n}`,row=prev[k];return row?{...prev,[k]:retainObservation(row,false,true)}:prev;})}/>}
     {specPath&&<QueenCatalogSpec key={specPath} atlas={atlas} path={specPath} lang={lang} onClose={()=>setSpecPath(null)}/>}
   </div>;
 }
