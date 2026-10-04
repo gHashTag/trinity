@@ -1,0 +1,86 @@
+# Record `tri <command> --help` for every command of one tri program, as asciicast v2.
+#
+# Manual only. Hundreds of short runs belong on a runner, not a laptop. The job
+# builds or fetches the binary at the commit qa/tri-commands/<cli>.json pins, then
+# runs apps/website/scripts/tri-help-casts.mjs. That script passes no secret of
+# this runner to the commands it records.
+#
+# It publishes nothing. The recordings are uploaded as an artifact. A person
+# copies the ones that exited 0 under apps/website/public/term/, checks them with
+# termgif.py check, and regenerates the cards. Only then does a card get a CAST.
+# A name that more than one tri has never gets one.
+name: tri help casts
+
+on:
+  workflow_dispatch:
+    inputs:
+      cli:
+        description: 'Which tri: t27 (gHashTag/t27 Rust), trinity (this repo, Zig) or trios (gHashTag/BrowserOS)'
+        required: true
+        type: choice
+        options: [t27, trinity, trios]
+      only:
+        description: 'Comma-separated command names (empty = every command of the snapshot)'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Read the pinned commit
+        id: pin
+        working-directory: apps/website
+        run: node -e "const s=require('./qa/tri-commands/${{ inputs.cli }}.json'); console.log('commit=' + s.commit)" >> "$GITHUB_OUTPUT"
+
+      # t27: the Rust tri of gHashTag/t27 (cli/tri), built at the pinned commit.
+      - if: inputs.cli == 't27'
+        uses: actions/checkout@v4
+        with:
+          repository: gHashTag/t27
+          ref: ${{ steps.pin.outputs.commit }}
+          path: ext/t27
+      - if: inputs.cli == 't27'
+        name: Build the t27 tri
+        run: |
+          cargo build --release --manifest-path ext/t27/cli/tri/Cargo.toml
+          echo "TRI_BIN=$(cargo metadata --format-version 1 --manifest-path ext/t27/cli/tri/Cargo.toml | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>console.log(JSON.parse(d).target_directory))")/release/tri" >> "$GITHUB_ENV"
+
+      # trinity: this repository's Zig tri, built the way docker-cli.yml builds it.
+      - if: inputs.cli == 'trinity'
+        uses: mlugg/setup-zig@v2
+        with:
+          version: 0.15.2
+      - if: inputs.cli == 'trinity'
+        name: Build the Trinity tri
+        run: |
+          zig build -Dci=true -Doptimize=ReleaseFast
+          echo "TRI_BIN=$PWD/zig-out/bin/tri" >> "$GITHUB_ENV"
+
+      # trios: the trios/bin/tri program of gHashTag/BrowserOS at the pinned commit.
+      - if: inputs.cli == 'trios'
+        uses: actions/checkout@v4
+        with:
+          repository: gHashTag/BrowserOS
+          ref: ${{ steps.pin.outputs.commit }}
+          path: ext/browseros
+      - if: inputs.cli == 'trios'
+        name: Point at the trios tri
+        run: echo "TRI_BIN=$PWD/ext/browseros/trios/bin/tri" >> "$GITHUB_ENV"
+
+      - name: Record --help for every command
+        working-directory: apps/website
+        run: node scripts/tri-help-casts.mjs --cli "${{ inputs.cli }}" --bin "$TRI_BIN" --out "$RUNNER_TEMP/tri-help-casts" --only "${{ inputs.only }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tri-help-casts-${{ inputs.cli }}
+          path: ${{ runner.temp }}/tri-help-casts
+          retention-days: 30

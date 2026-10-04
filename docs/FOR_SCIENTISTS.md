@@ -30,7 +30,7 @@ where:
 | α family fit | <0.01% | 5-15% | ❌ Rejected |
 | √(8/3) ≈ φ | 1.63299 | 1.61803 | ❌ Rejected |
 
-**DELTA-001 Full Report:** [docs/docs/research/delta_001_final_report.md](delta_001_final_report.md)
+**DELTA-001 Full Report:** [docs/docs/research/delta_001_final_report.md](docs/research/delta_001_final_report.md)
 
 ## Why This Matters
 

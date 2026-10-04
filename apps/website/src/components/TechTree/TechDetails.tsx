@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useI18n } from '../../i18n/context';
 import type { TechNode } from './techTreeData';
-import { getNodeById, techBranches } from './techTreeData';
+import { fillBackends, getNodeById, techBranches } from './techTreeData';
 
 interface TechDetailsProps {
   node: TechNode | null;
@@ -27,8 +27,8 @@ export default function TechDetails({ node, onClose }: TechDetailsProps) {
   // Localized content
   const localized = t.techTree.nodes?.[node.id] || {};
   const name = localized.name || node.name;
-  const description = localized.description || node.description;
-  const metrics = localized.metrics || node.metrics;
+  const description = fillBackends(localized.description || node.description);
+  const metrics = fillBackends(localized.metrics || node.metrics);
 
   return (
     <AnimatePresence>

@@ -61,8 +61,9 @@
 ;   2. "An attendee reachout is a queue row" is refuted at both of the tree's two reachouts.
 ;      send_event_reminders sends directly at src/api/events.rs:2130 and send_event_bookings sends
 ;      directly at :2026. A grep for `notification` over src/api/events.rs returns 0, and
-;      src/db/notifications.rs declares exactly three enqueue functions (:16, :38, :52), all three
-;      referral. The consequence is not cosmetic: the queue retries three times
+;      src/db/notifications.rs declared exactly three enqueue functions (:16, :38, :52), all three
+;      referral; since 2026-09-26 (R3) it declares one (:16), and the other two are dated comments
+;      where they stood. The consequence is not cosmetic: the queue retries three times
 ;      (src/notification_queue.rs:21, was :20) and a direct send has one attempt and a `continue`
 ;      (src/api/events.rs:2134-2142). The edge to notification-queue is still taken below, as the
 ;      owner of the shape these two reachouts do NOT use.
@@ -137,7 +138,11 @@ pub const SAME_DAY_WITNESS : str = "tests/integration_events_same_day.rs";
 ; would make the quote say something it never said. Corrected 2026-09-21 by this file's
 ; adversarial review, which found the sentence above claiming ALL citations were post-change
 ; while four quoted ones were not.
-pub const HTTP_SOURCE_LINES : u16 = 2545;
+; CORRECTED 2026-09-26: 2545 until that day's reversal of the reminder (REMINDER_REVERSED_AT), which
+; changed the reminder's join and doc comment in place and appended one database test at the end of
+; the test module, below every line this file cites; no citation moved.
+pub const HTTP_SOURCE_LINES : u16 = 2680;
+pub const HTTP_SOURCE_LINES_BEFORE_2026_09_26 : u16 = 2545;
 ; CORRECTED 2026-09-24: HTTP_SOURCE_LINES was 2496. The owner's ruling of that day added 49 lines to
 ; src/api/events.rs, every one of them BELOW the last line this file cites -- the EVENTS_PUBLISHABLE
 ; constant, the storable_public_flag gate and one test, all after spawn_event_reminder_loop -- and
@@ -359,9 +364,35 @@ pub const EVENT_SHARE_REFUSAL_ARMS : u8 = 1;
 ; of which 088 leaves none and the admin API can make none. The promo sweeper's event scans filter
 ; the same flag and are therefore dormant, not removed. None of the kept paths filters the flag, so
 ; 088 changes none of them. Whether any of these should go too is the owner's question.
+; REVERSED 2026-09-26 for the reminder, by the operator, under the owner's answer 3 of 2026-09-25
+; (quoted verbatim in the rules' module, src/trios/legacy_view.rs; this file stays ASCII), read as:
+; analyse all the previous shop's content a customer can still see and take it out of sight. The reminder was kept because it carries a promise already made. But since 085 and 088
+; every event is hidden, and every event that can still be reminded is one the previous shop made:
+; the reminder mailed its stored title and venue to the seat holder, a message a customer reads in
+; Telegram, outside any screen the ruling of 2026-09-24 closed. So it now joins public events only
+; (REMINDER_FILTERS_THE_FLAG, the join in send_event_reminders): a hidden event is never reminded,
+; its booking keeps reminder_sent_at empty, and nothing is written for it. A public event is reminded
+; exactly as before, so flipping EVENTS_PUBLISHABLE back brings the reminder back with it. The two
+; kept HTTP paths -- the customer's bookings list and self-cancel with its Stars refund -- and the
+; admin's guest list and cancel with theirs are not touched: a seat already held can still be
+; cancelled and refunded as before (REMINDER_REVERSAL_TOUCHES_A_REFUND).
 pub const KEPT_CUSTOMER_EVENT_HTTP_PATHS : u8 = 2;
 pub const PUBLIC_EVENT_PATHS_GATED_ON_THE_FLAG : u8 = 4;
-pub const REMINDER_KEPT_FOR_SEATS_ALREADY_HELD : bool = true;
+pub const REMINDER_KEPT_FOR_SEATS_ALREADY_HELD : bool = false;
+pub const REMINDER_KEPT_FOR_SEATS_ALREADY_HELD_BEFORE_2026_09_26 : bool = true;
+pub const REMINDER_REVERSED_AT : str = "2026-09-26";
+pub const REMINDER_REVERSED_BY : str = "operator, under the owner's answer 3 of 2026-09-25";
+pub const REMINDER_REVERSAL_READS : str = "Hidden events are the previous shop's, and the reminder mailed their stored titles and venues to seat holders.";
+pub const REMINDER_FILTERS_THE_FLAG : bool = true;
+pub const REMINDER_FLAG_FILTERED_JOINS : u8 = 1;
+pub const REMINDER_REVERSAL_TOUCHES_A_REFUND : bool = false;
+pub const REMINDER_REVERSAL_WRITES_A_ROW : bool = false;
+
+; Whether the 24-hour reminder is sent for a confirmed, unreminded booking of an event starting in
+; its window: only when the event is public.
+pub fn reminder_is_sent(event_is_public: bool) bool {
+  return event_is_public;
+}
 pub const CUSTOMER_BOOKINGS_SCREEN_IS_MOUNTED : bool = false;
 pub const CUSTOMER_BOOKINGS_SCREEN_IS_MOUNTED_BEFORE_2026_09_24 : bool = true;
 
@@ -1523,7 +1554,31 @@ test the_screens_left_on_the_ruling_and_the_router_did_not {
   assert EVENT_SCREENS_RETIRED_BY_THE_HIDE == 0;
   assert CUSTOMER_BOOKINGS_SCREEN_IS_MOUNTED == false;
   assert CUSTOMER_BOOKINGS_SCREEN_IS_MOUNTED_BEFORE_2026_09_24 == true;
-  assert REMINDER_KEPT_FOR_SEATS_ALREADY_HELD == true;
+  // kept until 2026-09-26, reversed that day for hidden events (next test)
+  assert REMINDER_KEPT_FOR_SEATS_ALREADY_HELD_BEFORE_2026_09_26 == true;
+  assert REMINDER_KEPT_FOR_SEATS_ALREADY_HELD == false;
+}
+
+test a_hidden_event_is_never_reminded_and_a_held_seat_keeps_its_refund {
+  assert REMINDER_REVERSED_AT == "2026-09-26";
+  assert REMINDER_REVERSED_BY != "";
+  assert REMINDER_REVERSAL_READS != "";
+  assert REMINDER_FILTERS_THE_FLAG == true;
+  assert REMINDER_FLAG_FILTERED_JOINS == 1;
+  assert reminder_is_sent(false) == false;
+  assert reminder_is_sent(true) == true;
+  // every event is hidden since 088 and the admin API can make none public, so none is reminded
+  assert EVENTS_PUBLISHABLE == false;
+  assert reminder_is_sent(a_public_row_survives(true, true, false, EVENTS_PUBLISHABLE)) == false;
+  assert reminder_is_sent(new_event_is_stored_public(true, true, EVENTS_PUBLISHABLE)) == false;
+  // flipped back, a public event is reminded again
+  assert reminder_is_sent(new_event_is_stored_public(true, true, EVENTS_PUBLISHABLE_BEFORE_2026_09_24)) == true;
+  assert REMINDER_REVERSAL_TOUCHES_A_REFUND == false;
+  assert KEPT_CUSTOMER_EVENT_HTTP_PATHS == 2;
+  assert REMINDER_REVERSAL_WRITES_A_ROW == false;
+  // the reversal changed the reminder in place and added a test below every cited line
+  assert HTTP_SOURCE_LINES_BEFORE_2026_09_26 == 2545;
+  assert HTTP_SOURCE_LINES > HTTP_SOURCE_LINES_BEFORE_2026_09_26;
 }
 
 test a_hidden_event_is_never_rendered_into_a_share_card {
@@ -1686,3 +1741,6 @@ invariant no_client_path_mounts_an_events_screen_and_every_path_stays_declared
 
 invariant no_public_event_row_survives_a_deployed_088
   assert a_public_row_survives(true, true, false, EVENTS_PUBLISHABLE) == false and a_public_row_survives(false, true, true, EVENTS_PUBLISHABLE) == false and RULING_HIDE_ROW_DELETES == 0 and RULING_HIDE_TABLE_DROPS == 0
+
+invariant a_hidden_event_is_never_reminded
+  assert reminder_is_sent(false) == false and REMINDER_FILTERS_THE_FLAG == true and REMINDER_REVERSAL_WRITES_A_ROW == false and REMINDER_REVERSAL_TOUCHES_A_REFUND == false

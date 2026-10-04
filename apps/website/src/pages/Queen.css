@@ -817,8 +817,7 @@
 }
 
 .queen27-card:hover {
-  border-color: rgba(0, 255, 136, 0.5);
-  background: rgba(0, 255, 136, 0.04);
+  border-color: rgba(255, 255, 255, 0.22);
 }
 
 .is-running .queen27-card {
@@ -901,9 +900,11 @@
   box-shadow: none;
 }
 
-/* The tint is an inset shadow and not a border, so turning it on moves nothing:
-   a filter that reflows the board costs the reader the place they were looking
-   at. 7% keeps the card a dark card — this is a hue, not a highlight.
+/* The card is black. It carried a 7% wash of its direction colour, and on a
+   board that is mostly code that read as a green board: the owner asked for the
+   cards black again, 2026-10-03. Direction keeps three signs that are not a
+   surface — the dot, the tag in words, and the inset rule down the right edge,
+   which is a shadow and not a border, so it moves nothing.
 
    THE SECOND SELECTOR IS NOT A DUPLICATE. The shell layout states
    `.queen27-page.is-shell .queen27-card { background: transparent }` far below,
@@ -913,21 +914,17 @@
    and the right edge rendered and the colour did not. Measured in the browser,
    not guessed. Naming the shell explicitly wins the cascade whatever the source
    order, and qa/queen-direction-contract.mjs fails the build if this selector
-   goes missing again.
-
-   It also keeps the shell's argument intact. The mix is against `transparent`,
-   not against the old card's white: this adds ONE layer, the hue itself at 7%,
-   over whatever ground the layout chose. It is not a second veil. */
+   goes missing again, or if a direction colour comes back as a card surface. */
 .queen27-card[data-dir],
 .queen27-page.is-shell .queen27-card[data-dir] {
-  background: color-mix(in srgb, var(--queen-dir) 7%, transparent);
+  background: #000;
   box-shadow: inset -3px 0 0 var(--queen-dir);
 }
 
 .queen27-card[data-dir]:hover,
 .queen27-page.is-shell .queen27-card[data-dir]:hover {
   border-color: var(--queen-dir);
-  background: color-mix(in srgb, var(--queen-dir) 16%, transparent);
+  background: #000;
 }
 
 /* The topline was a one-line row with the issue number at the left and, on the
@@ -1232,7 +1229,7 @@
   align-items: center;
   padding: 1rem 1.25rem;
   border-bottom: 1px solid var(--border);
-  background: linear-gradient(90deg, rgba(0, 255, 136, 0.06), transparent 48%);
+  background: #000;
 }
 
 .queen27-factory-command > div {
@@ -2583,7 +2580,7 @@
 .queen27-worker-slots .is-busy {
   border-color: rgba(0, 255, 136, 0.52);
   color: var(--q-green);
-  background: rgba(0, 255, 136, 0.05);
+  background: #000;
 }
 
 .queen27-worker-slots .is-busy i {
@@ -4310,8 +4307,16 @@ main:where(.queen27-page.is-shell) section {
    later in the file and wins where both apply. The phone's icon row is not this
    rail. */
 @media (max-height: 919px) {
+  /* Nineteen commands (TOKEN, 2026-10-02) at 6 px gaps put the last one 4 px
+     under COLLAPSE at 1272x806 (measured by the viewport contract); 4 px gaps
+     give back 36 px. WIDGETS (2026-10-05) made it twenty and put the last
+     one 22 px under COLLAPSE again; 3 px gaps and 0.26 rem rows give back
+     about 60 px more. */
+  .queen27-page.is-shell .queen27-hud-command:not(.is-compact) {
+    gap: 3px;
+  }
   .queen27-page.is-shell .queen27-hud-command:not(.is-compact) > .queen27-hud-cmd {
-    padding: 0.35rem 0.65rem;
+    padding: 0.26rem 0.65rem;
   }
   .queen27-page.is-shell .queen27-hud-command:not(.is-compact) > .queen27-hud-cmd small {
     display: none;
@@ -4338,15 +4343,17 @@ main:where(.queen27-page.is-shell) section {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     grid-template-rows: repeat(var(--queen-tile-rows, 6), max-content) minmax(0, 1fr) max-content;
-    gap: 4px;
+    gap: 3px;
     padding: 6px;
   }
+  /* ten tile rows (twenty commands) overran COLLAPSE by 10 px at 1280x600;
+     0.24 rem tiles and 3 px gaps give back about 45 px */
   .queen27-page.is-shell .queen27-hud-command > .queen27-hud-cmd {
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto auto;
-    gap: 0.15rem;
+    gap: 0.1rem;
     justify-items: center;
-    padding: 0.35rem 0.3rem;
+    padding: 0.24rem 0.3rem;
     text-align: center;
   }
   .queen27-page.is-shell .queen27-hud-command > .queen27-hud-cmd > i {
@@ -5287,6 +5294,14 @@ main:where(.queen27-page.is-shell) section {
   font-size: 0.58rem;
   font-variant-numeric: tabular-nums;
   cursor: pointer;
+}
+
+/* The dash shown before the board answers sits in the same one-line strip, so
+   it takes the rows' metrics: with the panel's 0.6rem padding it was 35px in a
+   29px strip, an undeclared scroller at 1440x900 with the API dead. */
+.queen27-page.is-shell .queen27-hud-sectors .queen27-sectors-empty {
+  padding: 0;
+  font-size: 0.58rem;
 }
 
 .queen27-page.is-shell .queen27-hud-sectors .queen27-sectors-row[aria-pressed="true"] {
@@ -7112,6 +7127,14 @@ body.queen-shell .phi-starfield {
   font-size: 0.56rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  /* One line each, the rest an ellipsis and the whole list on hover. At
+     1280x600 the "missing:" list wrapped to six lines in a 97px card: the
+     first card was 204px in a 194px box and the column showed no card whole
+     (qa/queen-viewport-contract.mjs, check 11). The phone made the same cut
+     in queen-phone.css. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* A card is as wide as its column, not as its longest word. The list's implicit
@@ -7171,7 +7194,8 @@ body.queen-shell .queen-starfield-source {
 }
 
 .queen27-page.is-shell .queen27-card:hover {
-  background: rgba(0, 255, 136, 0.05);
+  background: #000;
+  border-color: rgba(255, 255, 255, 0.22);
 }
 
 /* And it speaks in the same hand: the titles were the page's proportional face
@@ -7447,18 +7471,21 @@ body.queen-shell .queen-starfield-source {
    automatic -- as many as arrive, each no narrower than a card needs to be
    legible, and the lane scrolls sideways when they do not fit, which is what
    the six fixed ones already do. */
-.queen27-clients-lane {
+.queen27-clients-lane,
+.queen27-ball-lane {
   grid-template-columns: none;
   grid-auto-flow: column;
   grid-auto-columns: minmax(210px, 1fr);
 }
 
-.queen27-page.is-shell .queen27-clients-lane {
+.queen27-page.is-shell .queen27-clients-lane,
+.queen27-page.is-shell .queen27-ball-lane {
   grid-auto-columns: minmax(160px, 1fr);
 }
 
 @media (max-width: 760px) {
-  .queen27-clients-lane {
+  .queen27-clients-lane,
+  .queen27-ball-lane {
     grid-auto-columns: minmax(78vw, 1fr);
   }
 }
@@ -7860,4 +7887,90 @@ body.queen-shell .queen-starfield-source {
   background: var(--hud-veil, rgba(2, 8, 6, 0.72));
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
+}
+
+/* CALM BARE MODE: THE MAP IS THE SCREEN (owner, 2026-10-02: "make the
+   interface more minimal so the map is visible").
+   The bare rules above hide panels that are children of the page, but the top
+   bar, the command rail, the Queen's column and the view rail are children of
+   the viewport -- so on a phone bare mode still drew all four, and the head
+   stayed in the flow (the phone head is `position: static !important` above).
+   Measured at 375x812 in the app's Game tab: head 176px, map 499px. Here the
+   head floats over the map and shows only the sector name until "more" opens
+   it, and the body takes the whole viewport. These selectors carry .is-bare,
+   one class more than every rule they override, so the order of this file and
+   of queen-phone.css after it does not decide them. */
+.queen27-page.is-shell.is-bare .queen27-hud-viewport > :is(.queen27-hud-top, .queen27-hud-command, .queen27-hud-intel, .queen27-hud-bottom, .queen27-hud-commands),
+.queen27-page.is-shell.is-bare .queen-catalog-toolbar {
+  display: none;
+}
+
+.queen27-page.is-shell.is-bare .queen27-hud-viewport {
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.queen27-page.is-shell.is-bare .queen27-hud-viewport > .queen27-hud-vp-head {
+  position: absolute !important;
+  z-index: 5;
+  top: 0;
+  right: 52px;
+  left: 0;
+  margin: 0;
+  min-height: 0;
+}
+
+.queen27-page.is-shell.is-bare .queen27-hud-viewport > .queen27-hud-vp-body {
+  grid-area: 1 / 1 / -1 / -1;
+  padding: 0;
+}
+
+/* Only the MAP may run under the floating head. Every other view starts with a
+   title of its own, and the head above sat on it: the phone showed "SECTOR:
+   GHASHTAG/T27" over "LEADERBOARD" and over the first row of every panel
+   (owner, 2026-10-03: "the title is not visible in the header"). So off the
+   comb the body starts below the band the head and the "more" button take:
+   8px top + 44px button = 52px, the taller of the two. */
+.queen27-page.is-shell.is-bare:not([data-view="comb"]) .queen27-hud-viewport > .queen27-hud-vp-body {
+  padding-top: 52px;
+}
+
+.queen27-page.is-shell.is-bare:not(.is-tools) .queen27-hud-viewport > .queen27-hud-vp-head {
+  padding: 10px 12px;
+  border: 0;
+  background: none;
+  pointer-events: none;
+}
+
+.queen27-page.is-shell.is-bare:not(.is-tools) .queen27-hud-vp-head > :not(.queen27-hud-vp-title) {
+  display: none;
+}
+
+.queen27-page.is-shell.is-bare:not(.is-tools) .queen27-hud-vp-title {
+  opacity: 0.7;
+}
+
+.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-more {
+  position: absolute;
+  z-index: 6;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid #ffffff2e;
+  border-radius: 22px;
+  background: #0000008c;
+  color: #fff;
+  font: 600 20px/1 system-ui, sans-serif;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+/* The iOS app drew its own "more" before the board had one (see the COMPAT
+   note in Queen.tsx); two buttons in one corner is one too many. */
+.vibee-board-more {
+  display: none !important;
 }

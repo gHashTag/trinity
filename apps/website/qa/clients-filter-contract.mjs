@@ -342,7 +342,8 @@ A(attributeOf(search, 'aria-label'), 'and the find box says what it is to somebo
 // built only inside a test that reads the CHOSEN board, and the chosen board
 // starts as the public one. Either half alone is worth nothing: a guard whose
 // state starts at 'clients' guards the door of an open room.
-function guardedByChosenBoard(node) {
+function guardedByChosenBoard(node, chosen = 'clients') {
+  const word = new RegExp(`\\bboard\\s*===\\s*['"]${chosen}['"]`)
   for (let at = node.parent; at; at = at.parent) {
     if (!ts.isJsxExpression(at) || !at.expression) continue
     const expression = at.expression
@@ -352,18 +353,35 @@ function guardedByChosenBoard(node) {
         : ts.isConditionalExpression(expression)
           ? expression.condition
           : null
-    if (test && /\bboard\s*===\s*['"]clients['"]/.test(test.getText(source))) return true
+    if (test && word.test(test.getText(source))) return true
+  }
+  return false
+}
+
+// The mail lane (qa/ball-board-contract.mjs) wears the same private heading,
+// behind its own panel: `{ball && board === "ball" && …}`. It is held to the
+// same rule -- drawn only when chosen -- and counted apart from the clients'.
+function insideBallPanel(node) {
+  for (let at = node.parent; at; at = at.parent) {
+    if (!ts.isJsxExpression(at) || !at.expression) continue
+    let first = at.expression
+    while (ts.isBinaryExpression(first) && first.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken) first = first.left
+    if (ts.isIdentifier(first) && first.text === 'ball') return true
   }
   return false
 }
 
 for (const className of ['queen27-clients-lane', 'queen27-lane-head is-private']) {
-  const built = elementsWithClass(className)
+  const built = elementsWithClass(className).filter((node) => !insideBallPanel(node))
   EQ(built.length, 1, `${className} is built in exactly one place`)
   A(
     guardedByChosenBoard(built[0]),
     `and only when the reader has chosen the clients board — ${className} is names, money and silences, and a private thing is private because it is not drawn unbidden, not only because a server would refuse a stranger who asked`,
   )
+}
+
+for (const node of [...elementsWithClass('queen27-ball-lane'), ...elementsWithClass('queen27-lane-head is-private').filter(insideBallPanel)]) {
+  A(guardedByChosenBoard(node, 'ball'), 'the mail lane, too, is drawn only when the reader chose it')
 }
 
 let initialBoard = null

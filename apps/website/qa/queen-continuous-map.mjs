@@ -52,6 +52,9 @@ assert.equal(hiveEpicProgress(epic,[{...issue,number:7,state:'open'},{...issue,r
 const before=new Map(world.displays.flatMap((row,i)=>row?[[row.key,world.map.positions[i]]]:[]));
 updated.displays.forEach((row,i)=>{if(row)assert.deepEqual(updated.map.positions[i],before.get(row.key),'Observation must not teleport other cells');});
 assert.equal(updated.displays.find(i=>i?.key===issue.key).state,'closed');
+const complete=data.catalogUniverse(atlas,[{...issue,state:'closed'}],[issue.repo]);
+assert.equal(complete.map.cells.find(c=>c?.kind==='repo'&&c.repo===issue.repo).open,0,'complete observed backlog replaces dated open count');
+assert.equal(updated.map.cells.find(c=>c?.kind==='repo'&&c.repo===issue.repo).open,core.cells.find(c=>c?.kind==='repo'&&c.repo===issue.repo).open,'partial observation keeps snapshot backlog count');
 const extra={...issue,key:`${issue.repo}#999999`,number:999999,state:'closed'};
 const extended=data.catalogUniverse(atlas,[extra]);
 for(const [i,row] of extended.displays.entries())if(row&&before.has(row.key))assert.deepEqual(extended.map.positions[i],before.get(row.key),'An observed old issue appends without moving snapshot cells');

@@ -88,6 +88,14 @@ Trinity Project currently has Zig code scattered across `src/` with `.tri` specs
 3. **Zero Zig in Specs** — Specifications are hardware- and language-agnostic
 4. **Multi-Target Generation** — One .t27 spec → Zig, C, Verilog, Python, Rust, Go
 
+> **Correction (2026-10-04).** Item 4 named backends the compiler does not have.
+> `t27c` emits Zig, Verilog, Verilog (HIR), C, Rust, JavaScript and TypeScript —
+> the seven targets of `t27_compiler.wasm`, listed as `TARGET_IDS` in
+> `apps/website/src/lib/t27Compiler.ts`. A Python backend is planned for
+> gHashTag/t27 and not yet shipped. Go, C++ and VHDL were never t27c
+> backends (Go, Java, Kotlin, Swift and SQL generators belonged to VIBEE). The
+> decision above is left as written; this note records what it shipped as.
+
 ---
 
 ## The t27 Language

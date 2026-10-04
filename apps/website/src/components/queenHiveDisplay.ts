@@ -9,8 +9,8 @@ export interface HiveDisplay {
   state: string;
   closedAt: string | null;
   children: EpicRecord['children'];
-  /** The public issue ledger supplies no issue-to-module coverage proof. */
-  coverage: 'unknown';
+  /** GitHub lifecycle alone is unknown; only the separate native-proof reader may promote it. */
+  coverage: 'unknown' | 't27';
 }
 type Snapshot = { repo: string; closedIssues: FoundationIssue[]; epics: EpicRecord[] };
 

@@ -349,7 +349,7 @@ architectures beyond standard transformer.
 
 ## 9. README Template for All TRIOS Crates
 
-```markdown
+````markdown
 # ![trios-<crate>](https://img.shields.io/badge/trios_<crate>_build_status-success?style=flat-square&logo=rust)
 
 ## trios-<crate>
@@ -403,7 +403,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
 
 - Issues: [trinity/trios/issues](https://github.com/gHashTag/trinity/issues)
 - Discussions: [trinity/trios/discussions](https://github.com/gHashTag/trinity/discussions)
-```
+````
 
 ---
 

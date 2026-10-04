@@ -72,7 +72,7 @@
 
 **Sources:**
 - [RFC 3453: f16 and f128](https://rust-lang.github.io/rfcs/3453-f16-and-f128.html)
-- [half crate docs](https://docs.rs/crates/half/latest)
+- [half crate docs](https://docs.rs/half/latest/half/)
 - [PyTorch bf16 discussion](https://discuss.pytorch.org/t/bfloat16-native-support/117155)
 
 **Verdict:** Rust moving toward native f16, but ML-specific features require external crates. zig-half comparable to `half` crate + additional ML ops.

@@ -11,7 +11,8 @@ import { motion } from "framer-motion";
 import { Link, useSearchParams } from "react-router-dom";
 import { QueenSpecs } from "../components/QueenSpecs";
 import { QueenAgents } from "../components/QueenAgents";
-import { SELECTION_KEY, isExplorerTab } from "../lib/queenEmbed";
+import { SELECTION_KEY, isExplorerTab, leaveTabSelections } from "../lib/queenEmbed";
+import { specsChatSpec } from "../lib/queenSpecsChat";
 import { openCardInApp, openCardMessage } from "../lib/queenCardChat";
 import { hiveFeedHealth, hiveDisplayRecords, hiveSameRepositorySnapshot, placeHiveDisplays, type HiveDisplay } from "../components/queenHiveDisplay";
 import { QueenComb } from "../components/QueenComb";
@@ -58,7 +59,6 @@ import {
   spiralOrder,
   hexCellSummaries,
   HEX_HOME,
-  type FoundationIssue,
   FIELD_LAYERS,
   layersFromSearch,
   type FieldLayer,
@@ -99,6 +99,8 @@ import { QueenTri } from "../components/QueenTri";
 import QueenRoadmap from "../components/QueenRoadmap";
 import QueenLeaderboard from "../components/QueenLeaderboard";
 import { QueenWars } from "../components/QueenWars";
+import { QueenWidgets } from "../components/QueenWidgets";
+import QueenToken from "../components/QueenToken";
 import Passport from "./Passport";
 import { QueenBrowser } from "../components/QueenBrowser";
 import { QueenIdentity } from "../components/QueenIdentity";
@@ -107,6 +109,7 @@ import { OPEN_TARGETS, screenExcerpt } from "../lib/queenDirectives";
 import { sendToAgentAsMe } from "../services/queenModel";
 import { triIdentity } from "../lib/triIdentity";
 import { clientsLane, loadHiveBoard, type ClientsLane, type HiveBoard, type HiveBoardReason } from "../lib/hiveBoard";
+import { ballLane, loadBallBoard, type BallBoard, type BallLane } from "../lib/ballBoard";
 import {
   REVIEW_STATES,
   publicIssueTitle,
@@ -132,6 +135,8 @@ import "./queen-phone.css";
 // The address moved to lib/queenApi so the homepage can ask the same server
 // this page asks, rather than carry a second copy of the literal.
 import { BOUNDARY_EXAMPLE_ISSUE, QUEEN_API } from "../lib/queenApi";
+import { worldParam } from "../lib/queenCorpusCheck";
+import { useCorpus, type CorpusSource, type FoundationSnapshot, type ManifestPart, type ModulesSnapshot } from "../lib/queenCorpus";
 import { deriveT27Evolution } from "../lib/t27Evolution";
 const LIVE_POLL_MS = 5_000;
 // The clients lane is asked far less often than the public board. It is one
@@ -368,9 +373,9 @@ const COPY = {
     combHint: "The board as a field of marks",
     specsView: "SPECS",
     specsHint: "The corpus she is generated from",
-    // The SPECS module's own sub-navigation: the six layers of the ladder,
-    // which used to be six buttons of the rail.
-    ladderAria: "The ladder: specs, skills, crons, agents, tools, functions",
+    // The SPECS module's own sub-navigation: the seven layers of the ladder,
+    // six of which used to be buttons of the rail.
+    ladderAria: "The ladder: specs, skills, crons, agents, tools, functions, providers",
     skillsView: "SKILLS",
     skillsHint: "Agent skills, each stated by a .t27 spec",
     cronsView: "CRONS",
@@ -382,7 +387,7 @@ const COPY = {
     cronsDirectiveBody:
       "A scheduled job exists when a .t27 spec under specs/crons states it: host, schedule, what it runs, what happens on failure, whether it is on. The workflow, Inngest function or timer the sync script found is the witness. “Run now” goes to the host that owns the job; a timer inside a process has no outside handle and the card says so. No live control plane is deployed.",
     agentsView: "AGENTS",
-    agentsHint: "The 27-letter alphabet, each agent stated by a .t27 spec",
+    agentsHint: "Who holds the skills",
     agentsDirective: "AGENTS ARE SPECS",
     agentsDirectiveBody:
       "Level by level the system is built: Specs → Skills → Crons → Agents. An agent exists when a .t27 spec under specs/agents states it — its letter, domain, archetype, the skills it holds, its entry and exit invariant — bound by SOUL.md and AGENTS.md at the repository root. Its crons are derived from the crons' RUNS, never listed by hand. Its experience is joined from the episode log only when an episode names its letter; an agent no episode names says so, and the episodes that name no one are counted as unattributed, not assigned.",
@@ -407,22 +412,24 @@ const COPY = {
     // group, and the three measured cases of ours that pay for it.
     roadmapView: "ROADMAP",
     roadmapHint: "The game: the whole stack rewritten in .t27, by language and stage (key m)",
-    // The fifteenth view: every bee runs on somebody's provider token, and this
-    // is the work each of those lanes did. The score is derived from the
-    // dispatches on every read, so it can be checked against the board.
+    // The fifteenth view: who wrote the specs, and the runners lent to the
+    // swarm. Lanes are counted on TOKEN, not ranked here.
     leaderboardView: "LEADERBOARD",
-    leaderboardHint: "Who lends the swarm a lane, and the XP its bees earned there (key l)",
+    leaderboardHint: "Who wrote the specs, and the runners lent to the swarm (key l)",
     warsView: "WARS",
     warsHint: "Real-task agent benchmarks generated from one .t27 ledger (key x)",
+    tokenView: "TOKEN",
+    tokenHint: "TRI on TON testnet, and who earned it, by GitHub account (key k)",
     passportView: "PASSPORT",
     passportHint: "What must travel with a result: the record proposed to the OCP working group (key b)",
     // The fifteenth view: the person's own remote browser, the one the agent drives.
     browserView: "BROWSER",
     browserHint: "Your own browser, the one your agent drives (key w)",
     browserPreview: "Your own browser on a server, the one your agent drives. It opens on the board itself, never in a preview.",
-    browserNested: "You are already inside the app, and the app has its own Browser tab.",
     browserSignin: "Your browser belongs to your account. Sign in to the app, then come back to this tab.",
     browserOpenInApp: "Open in the app",
+    browserFullscreen: "Fullscreen",
+    browserExitFullscreen: "Exit fullscreen",
     browserNone: "Your browser is closed. Opening it starts a machine for you; your logins are kept between openings.",
     browserOpen: "Open browser",
     browserStarting: "Starting your browser...",
@@ -435,6 +442,40 @@ const COPY = {
     browserJournal: "What the agent did here",
     browserDriving: "You are driving. The agent watches and waits.",
     browserHandBack: "Hand back to the agent",
+    browserGuideTitle: "What this tab does once you are signed in",
+    browserGuideLive: "It shows your own browser, running on a server, and your agent drives it.",
+    browserGuideJournal: "Every step the agent takes is listed under the window. Press inside the window and you drive while the agent waits, until you hand it back or leave it untouched for ten minutes.",
+    browserGuidePasswords: "This page never asks for a password. You type passwords yourself, inside the window.",
+    browserGuideSpec: "This address names a spec:",
+    browserGuideReadSpec: "read it on SPECS, no sign-in needed",
+    browserWatchInvite: "Invite to watch",
+    browserWatchNote: "A watch link shows this browser live and read-only: no clicks, no typing, no agent. A bank, a mail box and the sites on your ask or block list are held, not shown -- but a payment form framed inside a shop page is shown with the page. Two viewers per link; revoke it any time.",
+    browserWatchFor: "For",
+    browserWatchHour: "h",
+    browserWatchLabel: "Who is it for (optional)",
+    browserWatchCreate: "Make a link",
+    browserWatchOnce: "Shown once: copy it now. Anyone who has it can watch until it ends or you revoke it.",
+    browserWatchCopy: "Copy",
+    browserWatchCopied: "Copied",
+    browserWatchRevoke: "Revoke",
+    browserWatchWatching: "watching now",
+    browserWatchViews: "opened",
+    browserWatchNone: "No live links.",
+    browserWatchFull: "Five links are live already: revoke one first.",
+    browserWatchFailed: "The server did not make it. Try again.",
+    browserWatchHide: "Hide",
+    browserLanesAdd: "+ Task side by side",
+    browserLanesAddTitle: "A second task in a window of its own, in the same browser. The chat stays on the first.",
+    browserLanesRegion: "Tasks side by side",
+    browserLanesPlaceholder: "A task for its own window, e.g. find the opening hours on example.org",
+    browserLanesSend: "Send",
+    browserLanesWorking: "working...",
+    browserLanesLimit: "Three tasks at once is the most, the chat included, and another device or the bot may hold one. Close a card, or wait: a task idle for 30 min is let go.",
+    browserLanesOld: "This browser server does not run tasks apart yet: the answer came from the main conversation, in the same window.",
+    browserLanesSignedOut: "Sign in again to send this.",
+    browserLanesFailed: "The server did not answer. Try again.",
+    browserLanesClose: "Close",
+    browserLanesCloseTitle: "The card goes. Its window stays until a new card takes it or 30 min pass.",
     triScreens: "App screens",
     triFeed: "Feed",
     triAgent: "Agent",
@@ -481,6 +522,16 @@ const COPY = {
     functionsDirective: "FUNCTIONS ARE SPECS",
     functionsDirectiveBody:
       "The layer where a spec meets a running service — sixth on this site's ladder, after Tools; t27 specs/functions/README.md calls it layer 5, as specs/tools/README.md does for tools, and the two READMEs disagree: each Inngest function of 999-multibots-telegraf is stated by a .t27 spec under specs/functions — its trigger, event and legacy events or cron, its steps in source order, retries, what happens on failure, its side effects, guard, safe probe and probe result — and witnessed by a vendored copy of the functions manifest read from the repository at a named commit. Where spec and manifest disagree the card says so. Live run counts are read from the bot once a minute and never invented: an offline status source is shown as offline, and a count it did not send is unknown, not zero.",
+    // The seventh layer, on g (the GPU): who sells the compute the ladder spends.
+    providersView: "PROVIDERS",
+    providersHint: "Who sells compute: the Gonka models, and a GPU or FPGA rented out for TRI (key g)",
+    widgetsView: "WIDGETS",
+    widgetsHint: "Shareable widgets: recordings, the X player, embed code (key v)",
+    providersDirective: "PROVIDERS ARE SPECS",
+    providersDirectiveBody:
+      "The seventh layer: Specs → Skills → Crons → Agents → Tools → Functions → Providers — who sells the compute the rest of the ladder spends. A provider exists when a .t27 spec under specs/providers states it: a model the Gonka chain lists, every number copied from a public chain endpoint on the date the card names (hosts serving it, GPU memory, context, validation threshold, price), or a class of hardware a person could rent out to TRI-NET for TRI — an Artix-7 FPGA measured on three boards, and a 24 GB gaming GPU that is a design and claims no measurement. The page re-reads the Gonka chain from your browser when you ask and prints every difference; it never calls a paid model, never asks for a key and never shows a host's address. Under both families sits specs/providers/tri_gnk_pair.t27: TRI is on testnet, Gonka has no DEX pool, and its bridge goes to Ethereum, not to TON or Solana.",
+    providersRead: "read from a chain or a bench",
+    providersDesign: "design only",
     specsTitle: "SPEC CORPUS",
     specsDirective: "STANDING DIRECTIVE",
     specsDirectiveBody:
@@ -590,6 +641,22 @@ const COPY = {
     clientsWaiting: "waiting for a reply",
     clientsQuiet: "days quiet",
     clientsTouched: "last touch",
+    // The third board: the owner's mail, CRM and open work by client, with
+    // whose move it is (lib/ballBoard.ts). Drawn only when the hive sent the
+    // mail -- to the owner, or to somebody the owner granted it to.
+    laneBall: "MAIL",
+    ballLaneAria: "Mail and whose move it is",
+    ballPrivateHint: "the owner's mail — shown to the owner and to whom they allowed",
+    ballOurs: "our move",
+    ballDue: "promised",
+    ballTheirs: "their move",
+    ballNone: "nobody's",
+    ballSourceMail: "mail",
+    ballSourceCrm: "chat",
+    ballSourceGithub: "code",
+    ballDays: "d",
+    ballEmpty: "Nothing waiting.",
+    ballStale: "The mailbox snapshot is old; the owner's machine has not pushed a new one.",
     command: "LIVE COMMAND ROOM",
     commandTitle: "Queen reviews the swarm herself.",
     commandCopy:
@@ -720,6 +787,8 @@ const COPY = {
     hudZoomOut: "ZOOM OUT",
     hudFullscreen: "FULLSCREEN",
     hudExitFullscreen: "EXIT FULLSCREEN",
+    hudTools: "Map tools",
+    hudToolsClose: "Hide map tools",
     hudCollapse: "COLLAPSE",
     hudExpand: "EXPAND",
     hudNoEvents: "No recorded Bee event yet.",
@@ -792,7 +861,7 @@ const COPY = {
     combHint: "Доска как поле из меток",
     specsView: "СПЕКИ",
     specsHint: "Корпус, из которого её порождают",
-    ladderAria: "Лестница: спеки, скиллы, кроны, агенты, инструменты, функции",
+    ladderAria: "Лестница: спеки, скиллы, кроны, агенты, инструменты, функции, провайдеры",
     skillsView: "СКИЛЛЫ",
     skillsHint: "Скиллы агентов, каждый заявлен спекой .t27",
     cronsView: "КРОНЫ",
@@ -804,7 +873,7 @@ const COPY = {
     cronsDirectiveBody:
       "Задание по расписанию существует, когда его заявляет спека .t27 в specs/crons: хост, расписание, что запускает, что при сбое, включено ли. Workflow, функция Inngest или таймер, найденные скриптом синхронизации, — свидетель. «Запустить сейчас» ведёт к хосту, которому задание принадлежит; у таймера внутри процесса внешней ручки нет, и карточка так и говорит. Живой контур управления не развёрнут.",
     agentsView: "АГЕНТЫ",
-    agentsHint: "Алфавит из 27 букв, каждый агент заявлен спекой .t27",
+    agentsHint: "Кто держит скиллы",
     agentsDirective: "АГЕНТЫ — ЭТО СПЕКИ",
     agentsDirectiveBody:
       "Уровень за уровнем мы создаём систему: спеки → скиллы → кроны → агенты. Агент существует, когда его заявляет спека .t27 в specs/agents — буква, домен, архетип, скиллы, которые он держит, входной и выходной инвариант, — под законом SOUL.md и AGENTS.md в корне репозитория. Его кроны выводятся из RUNS кронов, а не пишутся руками. Его опыт присоединяется из журнала эпизодов только когда эпизод называет его букву; агент, которого не называет ни один эпизод, говорит об этом сам, а эпизоды без имени считаются неатрибутированными, а не приписываются.",
@@ -828,17 +897,20 @@ const COPY = {
     roadmapView: "ДОРОЖНАЯ КАРТА",
     roadmapHint: "Игра: весь стек на .t27 — по языкам и этапам (клавиша m)",
     leaderboardView: "ЛИДЕРБОРД",
-    leaderboardHint: "Кто дал рою полосу и сколько XP на ней заработали пчёлы (клавиша l)",
+    leaderboardHint: "Кто писал спеки, и раннеры, одолженные рою (клавиша l)",
     warsView: "ВОЙНЫ",
     warsHint: "Бенчмарки агентов на реальных задачах из единого журнала .t27 (клавиша x)",
+    tokenView: "ТОКЕН",
+    tokenHint: "TRI в TON testnet и кто его заработал, по аккаунтам GitHub (клавиша k)",
     passportView: "ПАСПОРТ",
     passportHint: "Что обязано ехать вместе с результатом: запись, поданная в рабочую группу OCP (клавиша b)",
     browserView: "БРАУЗЕР",
     browserHint: "Ваш собственный браузер, которым водит ваш агент (клавиша w)",
     browserPreview: "Ваш собственный браузер на сервере, которым водит ваш агент. Открывается на самой доске, никогда в превью.",
-    browserNested: "Вы уже внутри приложения, а у приложения есть своя вкладка «Браузер».",
     browserSignin: "Браузер принадлежит вашему аккаунту. Войдите в приложение и вернитесь на эту вкладку.",
     browserOpenInApp: "Открыть в приложении",
+    browserFullscreen: "На весь экран",
+    browserExitFullscreen: "Свернуть",
     browserNone: "Браузер закрыт. Открытие запускает для вас машину; входы сохраняются между открытиями.",
     browserOpen: "Открыть браузер",
     browserStarting: "Запускаю ваш браузер...",
@@ -851,6 +923,40 @@ const COPY = {
     browserJournal: "Что здесь делал агент",
     browserDriving: "Руль у вас. Агент смотрит и ждёт.",
     browserHandBack: "Вернуть агенту",
+    browserGuideTitle: "Что делает эта вкладка после входа",
+    browserGuideLive: "Здесь виден ваш собственный браузер, запущенный на сервере, и им водит ваш агент.",
+    browserGuideJournal: "Каждый шаг агента записывается под окном. Нажмите внутри окна, и руль ваш, а агент ждёт, пока вы не вернёте руль или десять минут ничего не трогаете.",
+    browserGuidePasswords: "Эта страница никогда не спрашивает пароль. Пароли вы вводите сами, внутри окна.",
+    browserGuideSpec: "Этот адрес называет спеку:",
+    browserGuideReadSpec: "прочитать её во вкладке СПЕКИ, без входа",
+    browserWatchInvite: "Пригласить посмотреть",
+    browserWatchNote: "Ссылка для просмотра показывает этот браузер вживую и только для чтения: без кликов, без ввода, без агента. Банк, почта и сайты из вашего списка «спросить» или «запретить» скрыты -- но платёжная форма, встроенная в страницу магазина, видна вместе со страницей. До двух зрителей на ссылку; отозвать можно в любой момент.",
+    browserWatchFor: "На",
+    browserWatchHour: "ч",
+    browserWatchLabel: "Для кого (необязательно)",
+    browserWatchCreate: "Создать ссылку",
+    browserWatchOnce: "Показывается один раз: скопируйте сейчас. Любой, у кого она есть, может смотреть, пока она не закончится или вы её не отзовёте.",
+    browserWatchCopy: "Скопировать",
+    browserWatchCopied: "Скопировано",
+    browserWatchRevoke: "Отозвать",
+    browserWatchWatching: "смотрят сейчас",
+    browserWatchViews: "открытий",
+    browserWatchNone: "Живых ссылок нет.",
+    browserWatchFull: "Уже пять живых ссылок: сначала отзовите одну.",
+    browserWatchFailed: "Сервер не создал ссылку. Попробуйте ещё раз.",
+    browserWatchHide: "Скрыть",
+    browserLanesAdd: "+ Задача рядом",
+    browserLanesAddTitle: "Вторая задача в своём окне того же браузера. Чат остаётся на первой.",
+    browserLanesRegion: "Задачи рядом",
+    browserLanesPlaceholder: "Задача для отдельного окна, например: найди часы работы на example.org",
+    browserLanesSend: "Отправить",
+    browserLanesWorking: "работает...",
+    browserLanesLimit: "Не больше трёх задач сразу, считая чат, и одну может держать другое устройство или бот. Закройте карточку или подождите: задача без дела 30 минут освобождается.",
+    browserLanesOld: "Этот сервер браузера пока не ведёт задачи раздельно: ответ пришёл из основного разговора, в том же окне.",
+    browserLanesSignedOut: "Войдите заново, чтобы отправить.",
+    browserLanesFailed: "Сервер не ответил. Попробуйте ещё раз.",
+    browserLanesClose: "Закрыть",
+    browserLanesCloseTitle: "Карточка закроется. Её окно останется, пока его не займёт новая карточка или не пройдут 30 минут.",
     triScreens: "Экраны приложения",
     triFeed: "Лента",
     triAgent: "Агент",
@@ -897,6 +1003,15 @@ const COPY = {
     functionsDirective: "ФУНКЦИИ — ЭТО СПЕКИ",
     functionsDirectiveBody:
       "Слой, где спека встречается с работающим сервисом — шестой на лестнице этого сайта, после инструментов; specs/functions/README.md в t27 называет его пятым, как и specs/tools/README.md — инструменты, и два README расходятся: каждая функция Inngest бота 999-multibots-telegraf заявлена спекой .t27 в specs/functions — триггер, событие и старые события или крон, шаги в порядке исходника, повторы, действие при сбое, побочные эффекты, страж, безопасная проба и её результат — и засвидетельствована копией манифеста функций, прочитанного из репозитория на названном коммите. Где спека и манифест расходятся, карточка говорит об этом. Живые счётчики запусков читаются с бота раз в минуту и не придумываются: недоступный источник статуса показан как недоступный, а счётчик, которого он не прислал, — как «неизвестно», а не ноль.",
+    providersView: "ПРОВАЙДЕРЫ",
+    providersHint: "Кто продаёт вычисления: модели Gonka и GPU или FPGA в аренду за TRI (клавиша g)",
+    widgetsView: "ВИДЖЕТЫ",
+    widgetsHint: "Виджеты для репоста: записи, X-плеер, код встраивания (клавиша v)",
+    providersDirective: "ПРОВАЙДЕРЫ — ЭТО СПЕКИ",
+    providersDirectiveBody:
+      "Седьмой слой: спеки → скиллы → кроны → агенты → инструменты → функции → провайдеры — кто продаёт вычисления, которые тратит вся остальная лестница. Провайдер существует, когда его заявляет спека .t27 в specs/providers: модель из списка цепи Gonka, где каждое число скопировано с публичного эндпоинта цепи в дату, которую называет карточка (сколько хостов её обслуживают, память GPU, контекст, порог валидации, цена), или класс железа, который человек мог бы сдать в аренду TRI-NET за TRI — FPGA Artix-7, измеренная на трёх платах, и игровая GPU на 24 ГБ, которая пока проект и не заявляет измерений. Страница по вашему запросу перечитывает цепь Gonka из вашего браузера и печатает каждое расхождение; она никогда не вызывает платную модель, не просит ключ и не показывает адрес хоста. Под обоими семействами лежит specs/providers/tri_gnk_pair.t27: TRI в testnet, у Gonka нет пула на DEX, а её мост ведёт в Ethereum, а не в TON или Solana.",
+    providersRead: "прочитано с цепи или стенда",
+    providersDesign: "только проект",
     specsTitle: "КОРПУС СПЕК",
     specsDirective: "ПОСТОЯННАЯ ДИРЕКТИВА",
     specsDirectiveBody:
@@ -999,6 +1114,19 @@ const COPY = {
     clientsWaiting: "ждёт ответа",
     clientsQuiet: "дней тишины",
     clientsTouched: "последний контакт",
+    laneBall: "ПОЧТА",
+    ballLaneAria: "Почта и чей ход",
+    ballPrivateHint: "почта владельца — видит владелец и те, кому он разрешил",
+    ballOurs: "наш ход",
+    ballDue: "обещано",
+    ballTheirs: "их ход",
+    ballNone: "ничей",
+    ballSourceMail: "почта",
+    ballSourceCrm: "чат",
+    ballSourceGithub: "код",
+    ballDays: "дн.",
+    ballEmpty: "Ничего не ждёт.",
+    ballStale: "Снимок почты устарел: машина владельца давно не присылала новый.",
     command: "ЖИВОЙ КОМАНДНЫЙ ЦЕНТР",
     commandTitle: "Королева сама ревьюит работу роя.",
     commandCopy:
@@ -1127,6 +1255,8 @@ const COPY = {
     hudZoomOut: "ОТДАЛИТЬ",
     hudFullscreen: "ВО ВЕСЬ ЭКРАН",
     hudExitFullscreen: "ВЫЙТИ ИЗ ПОЛНОГО ЭКРАНА",
+    hudTools: "Инструменты карты",
+    hudToolsClose: "Скрыть инструменты карты",
     hudCollapse: "СВЕРНУТЬ",
     hudExpand: "РАЗВЕРНУТЬ",
     hudNoEvents: "Записанных событий Bee пока нет.",
@@ -1182,78 +1312,26 @@ function useQueenStatus(): LoadState {
 }
 
 /**
- * The repository's modules (M-2): public/queen/modules.json, a scan stamped
- * with its commit, until /queen/public-modules exists on the server (M-1).
+ * The repository's modules (M-2): the server's scan (/queen/public-modules,
+ * M-1) first, public/queen/modules.json -- a scan stamped with its commit --
+ * when the wire has none. Read through the corpus store like every other part.
  */
-function useQueenModules(): { data: { repo?: string; commit: string | null; generatedAt: string; modules: HudModule[]; source: "wire" | "file" } | null; error: string | null } {
-  const [data, setData] = useState<{ repo?: string; commit: string | null; generatedAt: string; modules: HudModule[]; source: "wire" | "file" } | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  useEffect(() => {
-    let active = true;
-    // The server's scan first (/queen/public-modules, M-1); the loop's
-    // snapshot in public/queen/modules.json only when the wire has none.
-    const readFrom = async (url: string, source: "wire" | "file") => {
-      const response = await fetch(url, { headers: { Accept: "application/json" }, cache: "no-store" });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const next = (await response.json()) as { commit: string | null; generatedAt: string; modules: HudModule[] };
-      if (!Array.isArray(next.modules) || next.modules.length === 0) throw new Error("no modules");
-      return { ...next, source };
-    };
-    const read = () =>
-      readFrom(`${QUEEN_API}/queen/public-modules`, "wire")
-        .catch(() => readFrom("./queen/modules.json", "file"))
-        .then((next) => { if (active) { setData(next); setError(null); } })
-        .catch((nextError: unknown) => { if (active) setError(nextError instanceof Error ? nextError.message : String(nextError)); });
-    void read();
-    const timer = window.setInterval(read, MODULES_POLL_MS);
-    return () => { active = false; window.clearInterval(timer); };
-  }, []);
+function useQueenModules(): { data: (ModulesSnapshot & { source: CorpusSource }) | null; error: string | null } {
+  const { part, error } = useCorpus("modules", { wire: `${QUEEN_API}/queen/public-modules`, pollMs: MODULES_POLL_MS });
+  const data = useMemo(() => (part ? { ...part.data, source: part.source } : null), [part]);
   return { data, error };
 }
 
 /**
- * The vendored corpus index, fetched once for the whole page.
- *
- * It is 1.4 MB, and two different parts of this page read it: the hive's
- * coverage and the tech tree's evolution. Asking for it twice would put two
- * concurrent requests for the same megabyte on the wire, because the HTTP cache
- * can only serve the second one after the first has finished. The promise is
- * module-level rather than component-level for the same reason: a remount must
- * not start a third.
- *
- * A failed read stays null, and every caller must read null as "unknown".
+ * The corpus index, from the store every tab and the Explorer frame share
+ * (src/lib/queenCorpus.ts): 1.8 MB, read once per window tree. Its failure is
+ * reported separately from the supervisor's: the TECH TREE is drawn from this
+ * file, so a tree with no index is offline even while the wire is healthy, and
+ * a tree with an index is complete even while the wire is down.
  */
-let t27ManifestPromise: Promise<unknown> | null = null;
-
-/**
- * The corpus index, fetched once for the whole page. Its failure is reported
- * separately from the supervisor's: the TECH TREE is drawn from this file, so
- * a tree with no index is offline even while the wire is healthy, and a tree
- * with an index is complete even while the wire is down.
- */
-function useT27Manifest(): { manifest: unknown; error: string | null } {
-  const [manifest, setManifest] = useState<unknown>(null);
-  const [error, setError] = useState<string | null>(null);
-  useEffect(() => {
-    let active = true;
-    t27ManifestPromise ??= fetch("t27/manifest.json", {
-      headers: { Accept: "application/json" },
-      cache: "default",
-    }).then((response) => {
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      return response.json() as Promise<unknown>;
-    });
-    t27ManifestPromise
-      .then((next) => { if (active) { setManifest(next); setError(null); } })
-      .catch((nextError: unknown) => {
-        t27ManifestPromise = null;
-        if (active) {
-          setError(nextError instanceof Error ? nextError.message : String(nextError));
-        }
-      });
-    return () => { active = false; };
-  }, []);
-  return { manifest, error };
+function useT27Manifest(): { manifest: unknown; part: ManifestPart | null; error: string | null } {
+  const { part, error } = useCorpus("manifest");
+  return { manifest: part?.data ?? null, part, error };
 }
 
 /**
@@ -1266,16 +1344,6 @@ function useT27Coverage(repository: string | null): ReadonlySet<string> | null {
   return useMemo(() => hiveCoverageFromManifest(manifest, repository), [manifest, repository]);
 }
 
-/** The loop's GitHub snapshot: closed issues (the foundation), epics (the castle), rings, releases. */
-interface FoundationSnapshot {
-  generatedAt: string;
-  repo: string;
-  rings: string[];
-  closedIssues: FoundationIssue[];
-  epics: Array<{ number: number; title: string; state: string; closedAt: string | null; labels: string[]; ring: string | null; ringBy: string | null; children: Array<{ number: number; title: string; state: string; closedAt: string | null }> }>;
-  releases: Array<{ tag: string; name: string; publishedAt: string | null; prerelease: boolean }>;
-}
-
 /**
  * The honeycomb's facts from GitHub: the server's route first
  * (/queen/public-foundation, when it exists), the loop's dated snapshot in
@@ -1283,27 +1351,9 @@ interface FoundationSnapshot {
  * labels or epics, so this is the only honest source; absent, the layers
  * read a dash and draw nothing.
  */
-function useQueenFoundation(): { data: (FoundationSnapshot & { source: "wire" | "file" }) | null; error: string | null } {
-  const [data, setData] = useState<(FoundationSnapshot & { source: "wire" | "file" }) | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  useEffect(() => {
-    let active = true;
-    const readFrom = async (url: string, source: "wire" | "file") => {
-      const response = await fetch(url, { headers: { Accept: "application/json" }, cache: "no-cache" });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const next = (await response.json()) as FoundationSnapshot;
-      if (!Array.isArray(next.closedIssues) || typeof next.generatedAt !== "string") throw new Error("no snapshot");
-      return { ...next, rings: Array.isArray(next.rings) ? next.rings : [], epics: Array.isArray(next.epics) ? next.epics : [], releases: Array.isArray(next.releases) ? next.releases : [], source };
-    };
-    const read = () =>
-      readFrom(`${QUEEN_API}/queen/public-foundation`, "wire")
-        .catch(() => readFrom("./queen/foundation.json", "file"))
-        .then((next) => { if (active) { setData(next); setError(null); } })
-        .catch((nextError: unknown) => { if (active) setError(nextError instanceof Error ? nextError.message : String(nextError)); });
-    void read();
-    const timer = window.setInterval(read, FOUNDATION_POLL_MS);
-    return () => { active = false; window.clearInterval(timer); };
-  }, []);
+function useQueenFoundation(): { data: (FoundationSnapshot & { source: CorpusSource }) | null; error: string | null } {
+  const { part, error } = useCorpus("foundation", { wire: `${QUEEN_API}/queen/public-foundation`, pollMs: FOUNDATION_POLL_MS });
+  const data = useMemo(() => (part ? { ...part.data, source: part.source } : null), [part]);
   return { data, error };
 }
 
@@ -1415,6 +1465,44 @@ function useHiveBoard(enabled: boolean): {
   }, [enabled, identity, signedIn]);
 
   return { showing: enabled && signedIn, board, reason };
+}
+
+/**
+ * The mail lane's data: ball_board, asked as the person who is signed in.
+ *
+ * The same life as useHiveBoard's, with one rule made stricter: ANY failure
+ * that says who may see it -- refused, signed out -- drops the board, and so
+ * does a board that came back without the mail (lib/ballBoard.ts ballLane).
+ * An owner who revokes a grant takes the lane off the viewer's screen at the
+ * next poll; offline keeps the last true board rather than blanking it.
+ */
+function useBallBoard(enabled: boolean): { showing: boolean; board: BallBoard | null } {
+  const identity = triIdentity();
+  const me = useSyncExternalStore(identity.subscribe, identity.getSnapshot);
+  const signedIn = me.state === "signed-in";
+  const [board, setBoard] = useState<BallBoard | null>(null);
+
+  useEffect(() => {
+    if (!enabled || !signedIn) {
+      setBoard(null);
+      return;
+    }
+    let active = true;
+    const read = async () => {
+      const answer = await loadBallBoard(identity);
+      if (!active) return;
+      if (answer.ok) setBoard(answer.board);
+      else if (answer.reason === "refused" || answer.reason === "signed-out") setBoard(null);
+    };
+    void read();
+    const timer = window.setInterval(read, HIVE_BOARD_POLL_MS);
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+    };
+  }, [enabled, identity, signedIn]);
+
+  return { showing: enabled && signedIn, board };
 }
 
 function useQueenActivity(): {
@@ -2264,6 +2352,7 @@ function KanbanView({
   c,
   lang,
   clients,
+  ball,
   onNarrow,
   search,
   onSearch,
@@ -2278,6 +2367,8 @@ function KanbanView({
   lang: string;
   /** The signed-in visitor's own pipeline. Null is signed out: see above. */
   clients: ClientsPanel | null;
+  /** The owner's mail by client, whose move it is. Null unless the hive sent it. */
+  ball: BallLane | null;
   /**
    * The view's own narrowing: the clients being watched, empty for all of
    * them. It never reaches the hive; see lib/hiveBoard.ts.
@@ -2328,14 +2419,16 @@ function KanbanView({
   //
   // So: one lane at a time, and 'tasks' first. The private board is one press
   // away and is never the thing that happens to be on screen.
-  const [board, setBoard] = useState<"tasks" | "clients">("tasks");
+  const [board, setBoard] = useState<"tasks" | "clients" | "ball">("tasks");
   // Signing out takes the lane with it, and a view pointing at a board that no
   // longer exists would render as an empty screen with no way back. The switch
   // itself disappears at the same moment, so nothing else could return it.
+  // A revoked grant takes the mail lane the same way.
   useEffect(() => {
-    if (!clients) setBoard("tasks");
-  }, [clients]);
-  const showTasks = board === "tasks" || !clients;
+    if (!clients && board === "clients") setBoard("tasks");
+    if (!ball && board === "ball") setBoard("tasks");
+  }, [clients, ball, board]);
+  const showTasks = board === "tasks" || (board === "clients" && !clients) || (board === "ball" && !ball);
   // How deep into each column the reader has asked to go. Per column, because
   // BACKLOG holding 569 and REVIEW holding 9 are not one question: opening the
   // long one should not silently build the short one's tail as well.
@@ -2375,7 +2468,7 @@ function KanbanView({
     : null;
   return (
     <>
-      {clients && (
+      {(clients || ball) && (
         // The switch only exists when there are two boards to tell apart. One
         // board needs no label, and offering a signed-out reader a way to reach
         // a clients board would put a word about clients on a page that has
@@ -2394,18 +2487,31 @@ function KanbanView({
           >
             {c.laneTasks} <small>{loaded ? shownCards.length : "—"}</small>
           </button>
-          <button
-            type="button"
-            className="queen27-chip queen27-lane-private-chip"
-            aria-pressed={board === "clients"}
-            onClick={() => setBoard("clients")}
-          >
-            {c.laneClients} <small>{lane ? lane.shown : "—"}</small>
-            {/* The word rides on the control that opens the board, not only on
-                the board itself: the reader decides whether to show it before
-                it is drawn, and that decision is worth one word of warning. */}
-            <em>{c.lanePrivate}</em>
-          </button>
+          {clients && (
+            <button
+              type="button"
+              className="queen27-chip queen27-lane-private-chip"
+              aria-pressed={board === "clients"}
+              onClick={() => setBoard("clients")}
+            >
+              {c.laneClients} <small>{lane ? lane.shown : "—"}</small>
+              {/* The word rides on the control that opens the board, not only on
+                  the board itself: the reader decides whether to show it before
+                  it is drawn, and that decision is worth one word of warning. */}
+              <em>{c.lanePrivate}</em>
+            </button>
+          )}
+          {ball && (
+            <button
+              type="button"
+              className="queen27-chip queen27-lane-private-chip"
+              aria-pressed={board === "ball"}
+              onClick={() => setBoard("ball")}
+            >
+              {c.laneBall} <small>{ball.shown}</small>
+              <em>{c.lanePrivate}</em>
+            </button>
+          )}
         </div>
       )}
       {showTasks && (
@@ -2568,7 +2674,8 @@ function KanbanView({
                     </span>
                   )}
                   {card.needs && card.needs.length > 0 && (
-                    <span>
+                    // Cut to one line by the shell; the whole list is here.
+                    <span title={`${c.missing}: ${card.needs.join(", ")}`}>
                       {c.missing}: {card.needs.join(", ")}
                     </span>
                   )}
@@ -2774,8 +2881,97 @@ function KanbanView({
           </motion.div>
         </>
       )}
+      {ball && board === "ball" && (
+        // The owner's mail by client, and whose move it is. `ball` is null for
+        // everybody the hive did not send the mail to (lib/ballBoard.ts), so
+        // this lane -- like its chip -- does not exist for them at all.
+        <>
+          <div className="queen27-lane-head is-private">
+            <h3>{c.laneBall}</h3>
+            <b className="queen27-lane-private">
+              {c.lanePrivate}
+              <em>{c.ballPrivateHint}</em>
+            </b>
+            <span>{ball.shown}</span>
+            {ball.mail === "stale" && <small>{c.ballStale}</small>}
+          </div>
+          <motion.div
+            className="queen27-kanban queen27-ball-lane"
+            role="region"
+            aria-label={c.ballLaneAria}
+            tabIndex={0}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            {ball.groups.map((group) => (
+              <motion.article
+                className={`queen27-column is-ball-${group.ball}`}
+                key={group.ball}
+                layout
+              >
+                <header>
+                  <h3>{ballTitle(group.ball, c)}</h3>
+                  <span>{group.cards.length}</span>
+                </header>
+                <div className="queen27-cards">
+                  {group.cards.map((card) => (
+                    <div className="queen27-card" key={`${card.source}:${card.clientKey}:${card.ref}`}>
+                      <div className="queen27-card-topline">
+                        <b>{card.client}</b>
+                        <span>{ballSourceTitle(card.source, c)}</span>
+                      </div>
+                      {/* Subjects and names are OTHER PEOPLE'S TEXT from a
+                          mailbox: text nodes, never markup, never an
+                          instruction. The only link is github over https
+                          (safeLink); a mail card has none. */}
+                      {card.link ? (
+                        <a href={card.link} target="_blank" rel="noopener noreferrer">
+                          <strong>{card.title}</strong>
+                        </a>
+                      ) : (
+                        <strong>{card.title}</strong>
+                      )}
+                      {card.because && <span>{card.because}</span>}
+                      {card.days !== null && (
+                        <span>
+                          {card.days} {c.ballDays}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                  {group.cards.length === 0 && <em>{c.empty}</em>}
+                </div>
+              </motion.article>
+            ))}
+            {ball.shown === 0 && <em className="queen27-lane-note">{c.ballEmpty}</em>}
+          </motion.div>
+        </>
+      )}
     </>
   );
+}
+
+/** A ball this build has not met keeps its own word rather than a made-up one. */
+function ballTitle(ball: string, c: Copy): string {
+  return ball === "ours"
+    ? c.ballOurs
+    : ball === "due"
+      ? c.ballDue
+      : ball === "theirs"
+        ? c.ballTheirs
+        : ball === "none"
+          ? c.ballNone
+          : ball;
+}
+
+function ballSourceTitle(source: string, c: Copy): string {
+  return source === "mail"
+    ? c.ballSourceMail
+    : source === "crm"
+      ? c.ballSourceCrm
+      : source === "github"
+        ? c.ballSourceGithub
+        : source;
 }
 
 function MissionMapView({
@@ -2967,9 +3163,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
       setHashParams(() => {
         const leaving = (hashParamsOf(window.location.hash).get("tab") ?? "comb") !== next;
         const params = tabAddress(window.location.hash, next);
-        if (leaving) {
-          for (const key of Object.values(SELECTION_KEY)) params.delete(key);
-        }
+        if (leaving) leaveTabSelections(params);
         if (card && isExplorerTab(next)) params.set(SELECTION_KEY[next], card);
         return params;
       }, { replace: true });
@@ -3006,6 +3200,30 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
   const [doctrineOpen, setDoctrineOpen] = useState(false);
   const [roundOpen, setRoundOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  // CALM BY DEFAULT IN THE APP'S FRAME (owner, 2026-10-02: "make the interface
+  // more minimal so the map is visible"). Bare mode rode on the Fullscreen API,
+  // which the Telegram Mini App's WebView does not have and a phone browser
+  // only grants on a tap -- so in the app's Game tab the map stayed 499px of
+  // 812 under a 176px head. The page keeps a bare state of its own: on by
+  // default when this board is framed (app.t27.ai/game; a top-level /queen/ is
+  // sent there by its nginx) at phone width, and set by the FULLSCREEN button
+  // wherever the API is missing. The iOS app shimmed the API to get the same
+  // effect; this is that behaviour, owned here, on every platform.
+  const framed = useMemo(() => {
+    try {
+      return window.self !== window.top;
+    } catch {
+      return true;
+    }
+  }, []);
+  const [pageBare, setPageBare] = useState(
+    () => framed && !embedded && window.matchMedia("(max-width: 900px)").matches,
+  );
+  const bare = isFullscreen || pageBare;
+  // In bare mode the head shows the sector name and nothing else until "more"
+  // opens it; every tool, EXIT FULLSCREEN included, is one tap away.
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const toolsShown = bare && toolsOpen;
   const [activeSector, setActiveSector] = useState<string | null>(null);
   const [pick, setPick] = useState<HudPick | null>(null);
   const [agentCopy, setAgentCopy] = useState<"idle" | "copied" | "error">(
@@ -3105,6 +3323,13 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
           }
         : null,
     [hive.showing, hive.board, hive.reason, clientsNarrow, clientsSearch, lang],
+  );
+  // The third lane, the owner's mail. Null -- no chip, no lane, no word about
+  // mail -- unless the hive sent the mail to this person (lib/ballBoard.ts).
+  const ballBoard = useBallBoard(boardView === "kanban");
+  const ballPanel = useMemo<BallLane | null>(
+    () => (ballBoard.showing ? ballLane(ballBoard.board) : null),
+    [ballBoard.showing, ballBoard.board],
   );
   const runningCards = useMemo(
     () => cards.filter((card) => card.column === "running"),
@@ -3315,7 +3540,12 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
   }, [setView, keyShortcuts]);
 
   useEffect(() => {
-    const onChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    const onChange = () => {
+      const on = Boolean(document.fullscreenElement);
+      setIsFullscreen(on);
+      // Leaving from the tools closes them, so the next entry starts calm.
+      if (!on) setToolsOpen(false);
+    };
     document.addEventListener("fullscreenchange", onChange);
     return () => document.removeEventListener("fullscreenchange", onChange);
   }, []);
@@ -3335,6 +3565,14 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
     );
     return () => { live = false; };
   }, []);
+  // The SPECS rung is the corpus store's count, the number the Explorer frame
+  // prints from the same part; the catalogs' generated ladder is the fallback
+  // until the manifest arrives. qa/queen-spec-sync-contract.mjs holds them equal.
+  const corpus = useT27Manifest().part;
+  const rungCounts = useMemo<LadderCounts | null>(
+    () => (ladderCounts && corpus ? { ...ladderCounts, specs: corpus.identity.specCount } : ladderCounts),
+    [ladderCounts, corpus],
+  );
 
   useEffect(
     () => () => {
@@ -3355,12 +3593,39 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
   }, []);
 
   const toggleFullscreen = () => {
-    if (document.fullscreenElement) {
-      void document.exitFullscreen();
+    if (bare) {
+      setPageBare(false);
+      setToolsOpen(false);
+      if (document.fullscreenElement) void document.exitFullscreen();
+    } else if ((framed && isPhone) || !document.fullscreenEnabled) {
+      setPageBare(true);
     } else {
       void viewportRef.current?.requestFullscreen?.();
     }
   };
+
+  // The scene measures itself on resize. Entering or leaving bare mode changes
+  // the viewport's box without one, and the map stayed fitted to the old box.
+  // Twice: the layout settles over a frame or two after the class lands.
+  useEffect(() => {
+    const timers = [60, 400].map((ms) =>
+      window.setTimeout(() => window.dispatchEvent(new Event("resize")), ms),
+    );
+    return () => timers.forEach((t) => window.clearTimeout(t));
+  }, [bare]);
+
+  // COMPAT, REMOVE ONCE NO INSTALLED iOS BUILD PREDATES THIS: the Vibee iOS app
+  // (999-multibots-telegraf, AppWebView.swift boardFullscreen) injects its own
+  // calm rules, which hide the head's tools with !important unless the root
+  // carries this class. Setting it keeps the board's own "more" working there.
+  // The shim left the app in 999-multibots-telegraf#3351 (bf9edb835), so the
+  // first build without it is CFBundleVersion 8033 cut from main (the build
+  // number is the commit count). TestFlight testers can still run older ones,
+  // and the app's web view does not say its build, so "none older is
+  // installed" cannot be measured from here yet: until it can, keep this.
+  useEffect(() => {
+    document.documentElement.classList.toggle("vibee-board-tools", toolsShown);
+  }, [toolsShown]);
 
   // The address says the language too, as the header's LanguageSwitcher already
   // makes it: measured before this, /?lang=ru stayed in the address after the toggle
@@ -3439,6 +3704,13 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
     // On the letter l: whose token each bee ran on, and what that lane earned.
     { view: "leaderboard" as const, glyph: "⚙", label: c.leaderboardView, hint: c.leaderboardHint },
     { view: "wars" as const, glyph: "⚔", label: c.warsView, hint: c.warsHint },
+    { view: "token" as const, glyph: "¤", label: c.tokenView, hint: c.tokenHint },
+    // On the letter g (the GPU): the seventh layer of the ladder, who sells
+    // compute. Folded into SPECS like the other layers, so it has no rail button.
+    { view: "providers" as const, glyph: "⌬", label: c.providersView, hint: c.providersHint },
+    // On the letter v: what a reader can lift out of t27 and share, from
+    // specs/widgets/gallery.t27. Its own rail door, not folded.
+    { view: "widgets" as const, glyph: "⧉", label: c.widgetsView, hint: c.widgetsHint },
   ].map((item) => ({ ...item, hotkey: hudKeyOf(item.view) }));
   // TRI is drawn as one button per screen, owner's word 2026-09-21: every
   // screen of the app its own tab. The first keeps TRI's key; the rest are
@@ -3502,7 +3774,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
       current={view}
       onSelect={setView}
       aria={c.ladderAria}
-      counts={ladderCounts}
+      counts={rungCounts}
     />
   );
   const boardNav = (
@@ -3598,7 +3870,11 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
         context={{
           view: boardView,
           repo,
-          spec: boardView === "specs" ? "specs/demos/hello_world.t27" : null,
+          // On SPECS, the spec the frame shows, when its path may go into the
+          // Queen's prompt (lib/queenSpecsChat.ts). On BROWSER, the address's
+          // own spec= (raw: askQueenInBrowser names it to the agent only if it
+          // is a catalog entry, queenBrowserPage.ts).
+          spec: boardView === "specs" ? specsChatSpec(hashParams.get("spec")) : boardView === "browser" ? hashParams.get("spec") : null,
           label: railLabelNow,
           screen: boardView === "tri" ? triScreenNow : null,
           sees: screenNow,
@@ -3770,15 +4046,21 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
 
   return (
     <main
-      className={`queen27-page is-shell${commandCollapsed ? " is-command-collapsed" : ""}${isFullscreen ? " is-bare" : ""}${embedded ? " is-embed" : ""}`}
+      className={`queen27-page is-shell${commandCollapsed ? " is-command-collapsed" : ""}${bare ? " is-bare" : ""}${toolsShown ? " is-tools" : ""}${embedded ? " is-embed" : ""}`}
       data-view={view}
       // Which module the reader is in, as against which layer of it: for the
-      // six layers of the ladder this is "specs" for all six. A rule that
+      // seven layers of the ladder this is "specs" for all seven. A rule that
       // wants "inside the SPECS module" -- the map's command row does not
       // belong there, and the body must not reserve its height -- asks this,
       // not data-view, which said "specs" on one of the six and left the other
       // five reserving 66px for a row that is not rendered on any of them.
       data-rail-view={railViewOf(view)}
+      // The corpus every tab is reading, from the one store: the Explorer frame
+      // stamps the same three on its root, and qa/queen-spec-sync-contract.mjs
+      // reads both on every tab and requires them equal.
+      data-spec-count={corpus?.identity.specCount}
+      data-corpus-version={corpus?.version}
+      data-corpus-source={corpus?.source}
     >
       <section
         className="queen27-hud-viewport"
@@ -3934,13 +4216,25 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
               type="button"
               data-tool="full"
               onClick={toggleFullscreen}
-              aria-pressed={isFullscreen}
-              title={isFullscreen ? c.hudExitFullscreen : c.hudFullscreen}
+              aria-pressed={bare}
+              title={bare ? c.hudExitFullscreen : c.hudFullscreen}
             >
-              {isFullscreen ? c.hudExitFullscreen : c.hudFullscreen}
+              {bare ? c.hudExitFullscreen : c.hudFullscreen}
             </button>
           </div>
         </header>
+        {bare && (
+          <button
+            type="button"
+            className="queen27-hud-more"
+            onClick={() => setToolsOpen((open) => !open)}
+            aria-expanded={toolsOpen}
+            aria-label={toolsOpen ? c.hudToolsClose : c.hudTools}
+            title={toolsOpen ? c.hudToolsClose : c.hudTools}
+          >
+            <span aria-hidden="true">{toolsOpen ? "\u00d7" : "\u22ef"}</span>
+          </button>
+        )}
 
         {/* Why free bees are idle used to be a line floating here, over the top
             of the map. It is a notification about the round, and the round's tile
@@ -3973,6 +4267,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                 c={c}
                 lang={lang}
                 clients={clientsPanel}
+                ball={ballPanel}
                 onNarrow={setClientsNarrow}
                 search={clientsSearch}
                 onSearch={setClientsSearch}
@@ -3995,6 +4290,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
             <QueenSpecs
               showDirective={isNarrow}
               onNavigate={setView}
+              world={sharedCatalog ? worldParam(hashParams.get("world")) : null}
               ladder={ladderNav}
               c={{
                 directive: c.specsDirective,
@@ -4006,7 +4302,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                 broken: c.specsBroken,
               }}
             />
-          ) : boardView === "skills" || boardView === "crons" || boardView === "agents" || boardView === "functions" || boardView === "tools" || boardView === "project" ? (
+          ) : boardView === "skills" || boardView === "crons" || boardView === "agents" || boardView === "functions" || boardView === "tools" || boardView === "providers" || boardView === "project" ? (
             <QueenAgents
               kind={boardView}
               showDirective={isNarrow}
@@ -4015,8 +4311,8 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
               // it keeps its own rail button and gets no rung row.
               ladder={isSpecLayer(boardView) ? ladderNav : boardView === "project" ? projectNav : undefined}
               c={{
-                directive: boardView === "skills" ? c.skillsDirective : boardView === "crons" ? c.cronsDirective : boardView === "functions" ? c.functionsDirective : boardView === "tools" ? c.toolsDirective : boardView === "project" ? c.projectDirective : c.agentsDirective,
-                directiveBody: boardView === "skills" ? c.skillsDirectiveBody : boardView === "crons" ? c.cronsDirectiveBody : boardView === "functions" ? c.functionsDirectiveBody : boardView === "tools" ? c.toolsDirectiveBody : boardView === "project" ? c.projectDirectiveBody : c.agentsDirectiveBody,
+                directive: boardView === "skills" ? c.skillsDirective : boardView === "crons" ? c.cronsDirective : boardView === "functions" ? c.functionsDirective : boardView === "tools" ? c.toolsDirective : boardView === "providers" ? c.providersDirective : boardView === "project" ? c.projectDirective : c.agentsDirective,
+                directiveBody: boardView === "skills" ? c.skillsDirectiveBody : boardView === "crons" ? c.cronsDirectiveBody : boardView === "functions" ? c.functionsDirectiveBody : boardView === "tools" ? c.toolsDirectiveBody : boardView === "providers" ? c.providersDirectiveBody : boardView === "project" ? c.projectDirectiveBody : c.agentsDirectiveBody,
                 open: c.specsOpen,
                 loading: c.agentsLoading,
                 specs: c.agentsSpecs,
@@ -4030,6 +4326,8 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                 projectChapters: c.projectChapters,
                 projectRu: c.projectRu,
                 projectSources: c.projectSources,
+                providersRead: c.providersRead,
+                providersDesign: c.providersDesign,
               }}
             />
           ) : boardView === "tri" ? (
@@ -4054,6 +4352,10 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
             />
           ) : boardView === "wars" ? (
             <QueenWars lang={lang === "ru" ? "ru" : "en"} />
+          ) : boardView === "widgets" ? (
+            <QueenWidgets lang={lang === "ru" ? "ru" : "en"} />
+          ) : boardView === "token" ? (
+            <QueenToken lang={lang === "ru" ? "ru" : "en"} />
           ) : boardView === "roadmap" ? (
             <QueenRoadmap lang={lang === "ru" ? "ru" : "en"} />
           ) : boardView === "leaderboard" ? (
@@ -4069,11 +4371,17 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
             <QueenBrowser
               embedded={embedded}
               lang={lang === 'ru' ? 'ru' : 'en'}
+              // The spec the address names (kept across tab switches, lib/queenEmbed
+              // leaveTabSelections); the signed-out guide links to it on SPECS
+              // through the same setView every tab switch uses.
+              spec={hashParams.get("spec")}
+              onReadSpec={(named) => setView("specs", named)}
               c={{
                 preview: c.browserPreview,
-                nested: c.browserNested,
                 signin: c.browserSignin,
                 openInApp: c.browserOpenInApp,
+                fullscreen: c.browserFullscreen,
+                exitFullscreen: c.browserExitFullscreen,
                 none: c.browserNone,
                 open: c.browserOpen,
                 starting: c.browserStarting,
@@ -4086,6 +4394,44 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                 journal: c.browserJournal,
                 driving: c.browserDriving,
                 handBack: c.browserHandBack,
+                guideTitle: c.browserGuideTitle,
+                guideLive: c.browserGuideLive,
+                guideJournal: c.browserGuideJournal,
+                guidePasswords: c.browserGuidePasswords,
+                guideSpec: c.browserGuideSpec,
+                guideReadSpec: c.browserGuideReadSpec,
+                watch: {
+                  invite: c.browserWatchInvite,
+                  note: c.browserWatchNote,
+                  forHours: c.browserWatchFor,
+                  hour: c.browserWatchHour,
+                  label: c.browserWatchLabel,
+                  create: c.browserWatchCreate,
+                  once: c.browserWatchOnce,
+                  copy: c.browserWatchCopy,
+                  copied: c.browserWatchCopied,
+                  revoke: c.browserWatchRevoke,
+                  watching: c.browserWatchWatching,
+                  views: c.browserWatchViews,
+                  none: c.browserWatchNone,
+                  full: c.browserWatchFull,
+                  failed: c.browserWatchFailed,
+                  hide: c.browserWatchHide,
+                },
+                lanes: {
+                  add: c.browserLanesAdd,
+                  addTitle: c.browserLanesAddTitle,
+                  region: c.browserLanesRegion,
+                  placeholder: c.browserLanesPlaceholder,
+                  send: c.browserLanesSend,
+                  working: c.browserLanesWorking,
+                  limit: c.browserLanesLimit,
+                  old: c.browserLanesOld,
+                  signedout: c.browserLanesSignedOut,
+                  failed: c.browserLanesFailed,
+                  close: c.browserLanesClose,
+                  closeTitle: c.browserLanesCloseTitle,
+                },
               }}
             />
           ) : boardView === "comb" ? (
@@ -4548,6 +4894,8 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                       ? c.functionsDirective
                     : boardView === "tools"
                       ? c.toolsDirective
+                    : boardView === "providers"
+                      ? c.providersDirective
                       : boardView === "project"
                         ? c.projectDirective
                         : c.hudIntel

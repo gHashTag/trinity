@@ -32,11 +32,11 @@ pub const RETRIES : u8 = 3;
 ; "admin-telegram" (onFailure handler messages the admin chat), "log" (no handler) or "refund+notify"
 pub const ON_FAILURE : str = "log";
 ; what a run touches outside the function, from a fixed vocabulary (see README)
-pub const SIDE_EFFECTS : [3]str = ["charges-balance", "paid-api", "messages-user"];
+pub const SIDE_EFFECTS : [2]str = ["paid-api", "messages-user"];
 ; the first step that stops a bad payload; "none" when the first step already acts, "unknown" when not probed
 pub const GUARD : str = "check-user-exists";
 ; JSON payload of the 2026-09-09 safe probe and what it reached ("" / "skipped" when none was sent; "not-deployed" when the function is not on the probed build)
 pub const SAFE_PROBE : str = "{\"telegram_id\": \"0\", \"bot_name\": \"e2e_nonexistent_bot\", \"is_ru\": true, \"job_id\": \"e2e-probe\", \"image_files\": [], \"extraction_path\": \"/nonexistent/e2e\", \"morphing_type\": \"seamless\", \"model\": \"kling-v1.6-pro\"}";
 pub const PROBE_RESULT : str = "FAILED-at-guard";
 pub const CONTROL : str = "spec+code";
-pub const NOTE : str = "Guard is check-user-exists. A second, unregistered copy of this function exists in the tree (src/inngest_app/functions/morphImages.ts); the registered one is the file named in SERVICE.";
+pub const NOTE : str = "Guard is check-user-exists. A second, unregistered copy of this function exists in the tree (src/inngest_app/functions/morphImages.ts); the registered one is the file named in SERVICE. 2026-09-17: charges-balance removed from SIDE_EFFECTS -- the file imports getUserBalance only; check-balance reads the balance against a constant of 50 and nothing in the file deducts it, so the manifest and this spec overstated what the function does with money. deliver-result: video_url is a path on the worker written by concatenate-all-videos, not a URL; the code passed the bare string to sendVideo and sendDocument (read by Telegram as file_id or URL), fell into the catch and sent the user that same path as a download link while returning delivered. Now the file is streamed as { source }, and a failed delivery rethrows so the step is retried and, after RETRIES, onFailure tells the admin. Not verified: a live morph run; the paid Kling calls in process-all-pairs remain unmetered. Test: 999-multibots-telegraf src/__tests__/render/deliveryIsNotSwallowed.test.ts.";

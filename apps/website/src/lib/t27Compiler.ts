@@ -15,6 +15,7 @@
 // lives at `bindings/wasm-explorer/` in t27 and both numbers are zero.
 
 import {resolveManifestSpec,specExplorerHash} from './specCatalog.ts'
+import {loadCorpus} from './queenCorpus.ts'
 
 export interface T27Node {
   kind: string
@@ -87,6 +88,26 @@ export interface T27Analysis {
 export const TARGET_IDS = ['zig', 'verilog', 'verilog_hir', 'c', 'rust', 'js', 'ts'] as const
 
 export type TargetId = (typeof TARGET_IDS)[number]
+
+/**
+ * What each backend is called on the page. A Record over TargetId, so a backend
+ * added to TARGET_IDS without a name stops this file compiling.
+ *
+ * This lived inside SpecExplorer's layer labels until 2026-10-04, when the
+ * pages that named t27's outputs by hand were found claiming Python, Go, C++,
+ * VHDL and "38 more". Those pages now read the names from here -- the same ids
+ * the wasm compiler keys its `targets` object by -- instead of keeping a list
+ * of their own.
+ */
+export const TARGET_LABEL: Record<TargetId, string> = {
+  zig: 'Zig',
+  verilog: 'Verilog',
+  verilog_hir: 'Verilog (HIR)',
+  c: 'C',
+  rust: 'Rust',
+  js: 'JavaScript',
+  ts: 'TypeScript',
+}
 
 export type Health = 'ok' | 'warn' | 'fail'
 
@@ -294,13 +315,9 @@ export async function prefetchSpec(path: string): Promise<void> {
   }
 }
 
-let manifestPromise:Promise<SpecManifest>|null=null
+/** The corpus index, from the one store every Queen tab reads (src/lib/queenCorpus.ts). */
 export function loadManifest(): Promise<SpecManifest> {
-  if(!manifestPromise)manifestPromise=fetch('t27/manifest.json',{credentials:'omit'}).then(async res=>{
-    if (!res.ok) throw new Error(`could not fetch spec manifest (${res.status})`)
-    return res.json() as Promise<SpecManifest>
-  }).catch(error=>{manifestPromise=null;throw error})
-  return manifestPromise
+  return loadCorpus('manifest').then(part=>part.data)
 }
 
 export async function loadSpecSource(path: string,expectedSha256?:string): Promise<string> {

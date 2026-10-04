@@ -25,7 +25,7 @@ Bundle-specific documentation for Trinity research publications on Zenodo.
 
 ## PARENT Bundle
 
-The [PARENT](../ZENODO_HUB.md) bundle ([10.5281/zenodo.19227879](https://doi.org/10.5281/zenodo.19227879)) aggregates all 7 bundles into a unified framework with:
+The [PARENT](../../ZENODO_HUB.md) bundle ([10.5281/zenodo.19227879](https://doi.org/10.5281/zenodo.19227879)) aggregates all 7 bundles into a unified framework with:
 - 4,571 total LOC across all bundles
 - Cross-bundle citation analysis (h-index: 7, g-index: 8)
 - 14 bidirectional dependency edges
@@ -90,7 +90,7 @@ All bundles enhanced with:
 ## Quick Links
 
 - **[QUICK_REFERENCE.md](QUICK_REFERENCE.md)** — Stats cards, citations, metrics
-- **[Zenodo Hub](../ZENODO_HUB.md)** — Complete reference
+- **[Zenodo Hub](../../ZENODO_HUB.md)** — Complete reference
 - **[Research Framework](../TRINITY_S3AI_UNIFIED_FRAMEWORK.md)** — Scientific foundation
 - **[GitHub](https://github.com/gHashTag/trinity)** — Source code
 

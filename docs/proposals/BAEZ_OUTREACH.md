@@ -83,9 +83,9 @@ Professor of Mathematics at UC Riverside:
 |----------|------|
 | **Email** | baez@math.ucr.edu |
 | **Personal Blog** | https://johncarlosbaez.wordpress.com/ |
-| **Azimuth Project** | https://math.ucr.edu/home/baez/azimuth/ |
+| **Azimuth Blog** | https://johncarlosbaez.wordpress.com/ |
 | **UC Riverside** | Department of Mathematics |
-| **Google Scholar** | https://scholar.google.com/citations?user=JF-wvQUAAAAJ |
+| **Official academic profile** | https://math.ucr.edu/home/baez/ (the former Scholar identifier was not verified) |
 
 ---
 

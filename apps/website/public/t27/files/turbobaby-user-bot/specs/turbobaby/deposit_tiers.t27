@@ -21,7 +21,7 @@
 ; files, three of which name THIS file and all three of which are gates, two of them reading a
 ; deposit. WIRING_REMEASURED_NOTE below has the list; still no shipped surface.) The catalog
 ; screen renders deposit_thb as it arrives from the API (the field at
-; src/ui/screens/catalog_screen.rs:123 rendered through money_thb at :822 -- :124 and :834 until
+; src/ui/screens/catalog_screen.rs:123 rendered through money_thb at :821 (:822 until 2026-09-26) -- :124 and :834 until
 ; the 2026-09-24 availability edit -- and the field at src/ui/components/bike_card.rs:115 rendered
 ; through thb_or_dash at :203 (:107 and :195 before the 2026-09-21 published_money edit); all four
 ; addresses re-verified 2026-09-24, and both pairs had drifted from the :126 and :102 this
@@ -278,7 +278,7 @@ pub const DEPOSIT_DISCOUNT_APPLIES : bool = false;
 ;       turbobaby/market owns EXCHANGE_RATES_PUBLISHED, declared as [0]str = [], and
 ;       DECISIONS.md:347 states that no exchange rate enters this repository without a source.
 ;   (b) THE REFUND DOES NOT NEED ONE, and the record it needs already exists. Measured in
-;       src/db/orders.rs:621-656: enum DepositForm { Money { amount: Option<f64>,
+;       src/db/orders.rs:551-586: enum DepositForm { Money { amount: Option<f64>,
 ;       currency: Option<String>, method: Option<String> }, Passport }. Its own doc comment
 ;       (orders.rs:622-624) says the money "must be returned by the same method and at the
 ;       same fixed amount that was agreed, which is why the method is recorded next to the
@@ -301,7 +301,7 @@ pub const REUSES_MARKET_PROFILE_ID : str = "turbobaby/market";
 ; above used to cite it as market_profile.t27:135, and a line number into a sibling is stale the
 ; day that sibling is edited; the owner plus the declaration name is not.
 pub const MARKET_FX_DECLARATION : str = "EXCHANGE_RATES_PUBLISHED";
-pub const REFUND_SOURCE_ENUM : str = "src/db/orders.rs:621-656 enum DepositForm { Money { amount, currency, method }, Passport }";
+pub const REFUND_SOURCE_ENUM : str = "src/db/orders.rs:551-586 enum DepositForm { Money { amount, currency, method }, Passport }";
 ; This file's own naming of the rule, like DEPOSIT_FORMS above, and NOT presented as a
 ; quotation: the seed's own sentence is DEPOSIT_FOREIGN_CURRENCY_RULE and stays byte for byte.
 pub const REFUND_RULE : str = "A deposit comes back in the form it was taken: the passport as the document and no money at all, money by the method it arrived by, in the currency it was agreed in and at the figure that was agreed. A request that changes the method, the currency or the amount is not a refund this contract authorizes.";
@@ -520,7 +520,7 @@ pub fn money_method_index_of(method: str) u8 {
 
 ; The refund of one deposit, decided from what was agreed and what is being asked for.
 ;   money_taken, passport_held   the two form discriminants deposit_form_is_legal() judges
-;   agreed_*                     what src/db/orders.rs:621-656 recorded when the bike went out
+;   agreed_*                     what src/db/orders.rs:551-586 recorded when the bike went out
 ;   requested_*                  what is being asked for now
 ; agreed_amount and requested_amount are figures in their own currency -- THB for the six
 ; published rungs, the door's agreed USD/EUR figure for a foreign-currency deposit -- and this
@@ -998,7 +998,7 @@ test money_comes_back_by_the_method_it_arrived_by_at_the_agreed_figure {
 }
 
 ; USDT in, cash out is not a refund of this deposit, and neither is the reverse. The method is
-; recorded next to the figure (src/db/orders.rs:648-651) for exactly this reason.
+; recorded next to the figure (src/db/orders.rs:578-581) for exactly this reason.
 test a_changed_method_is_not_a_refund_this_contract_authorizes {
     assert refund_decision(true, false, TIER_2_THB, "THB", "USDT", TIER_2_THB, "THB", "cash THB") == REFUND_REFUSED_METHOD_CHANGED;
     assert refund_decision(true, false, TIER_2_THB, "THB", "cash THB", TIER_2_THB, "THB", "bank transfer") == REFUND_REFUSED_METHOD_CHANGED;

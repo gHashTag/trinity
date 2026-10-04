@@ -346,8 +346,8 @@ pub const CURSOR_OCCURRENCES_IN_THE_API_MODULE : u8 = 0;
 ;   src/api/referrals.rs:208 -- default 10, clamped into 1..50, no offset.
 ; Two of the six carry an offset; every one of the six floors at 1; not one of the six carries a
 ; cursor, which is the claim this census exists to make and the only one the wrong count did not
-; damage. src/api/bikes.rs:755 and src/api/orders.rs:2502 are NOT in the census: both are fixed
-; caps the handler chooses, not a number the client supplies.
+; damage. src/api/bikes.rs:755 and src/api/orders.rs:2503 (:2502 until 2026-09-26) are NOT in the
+; census: both are fixed caps the handler chooses, not a number the client supplies.
 pub const SHIPPED_PAGE_LADDERS : u8 = 6;
 pub const SHIPPED_CURSOR_LADDERS : u8 = 0;
 pub const SHIPPED_PAGE_LADDER_DEFAULTS : [6]u16 = [50, 100, 20, 50, 100, 10];
@@ -374,6 +374,10 @@ pub const CURSOR_WORD_LINES_IN_SRC : u16 = 185;
 pub const CURSOR_WORD_LINES_AS_CSS_PROPERTY : u16 = 183;
 pub const CURSOR_WORD_LINES_AS_CSS_IDENTIFIER : u16 = 2;
 pub const CURSOR_WORD_LINES_AS_PAGINATION : u16 = 0;
+; RE-POINTED 2026-09-26, not re-measured: cursor_style, cited twice above at
+; src/ui/game/shop_game.rs:1710, stands at :1415 since the shop game's farm left that file on that
+; date (legacy_retirement.t27, LEFTOVERS_2026_09_26_*); the function itself did not change. The
+; three counts above keep the reading of the tree they were taken on.
 
 ; REFUTED 2026-09-21: this file used to assert that no shipped ladder agrees with the budget it
 ; chose, and offered that as the proof the budget was not derived. One does, and it agrees on all

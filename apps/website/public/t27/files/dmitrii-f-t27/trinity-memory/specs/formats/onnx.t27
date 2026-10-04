@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // specs/formats/onnx.t27 -- ONNX Runtime com.microsoft.MatMulNBits with bits = 2
-// Restates upstream microsoft/onnxruntime@2ecddca37183e39694d02f2dae222bed9931c9af:
+// Restates upstream microsoft/onnxruntime@2b758bc652dc122fbbbc033664ffca69991a7e63:
 // docs/ContribOperators.md:3756-3830 (MatMulNBits: :3762 dequantized_weight =
 // (quantized_weight - zero_point) * scale; :3767 block_size a power of two,
 // at least 16; :3787 bits 2, 4 or 8; :3800 B uint8 (N, k_blocks, blob_size),

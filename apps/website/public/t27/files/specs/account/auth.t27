@@ -211,7 +211,7 @@ module AccountAuth {
         ]);
     }
 
-    // ConfigValueKind / ConfigEntry carry one key/value pair of an org
+    // ConfigValueKind / OrgConfigEntry carry one key/value pair of an org
     // configuration. The original typed the configuration as the map
     // [str: any]; t27 has no map type and no `any`, so the map is an array of
     // entries, and each entry keeps its value in the field for its kind (the
@@ -223,7 +223,7 @@ module AccountAuth {
         StrList,
     }
 
-    struct ConfigEntry {
+    struct OrgConfigEntry {
         key: str,
         kind: ConfigValueKind,
         str_value: str,
@@ -234,8 +234,8 @@ module AccountAuth {
 
     // config_str / config_bool / config_int / config_list build one entry;
     // they stand in for the `"key" = value` items of the original map literal.
-    fn config_str(key: str, value: str) -> ConfigEntry {
-        return ConfigEntry {
+    fn config_str(key: str, value: str) -> OrgConfigEntry {
+        return OrgConfigEntry {
             key = key,
             kind = ConfigValueKind::Str,
             str_value = value,
@@ -245,8 +245,8 @@ module AccountAuth {
         };
     }
 
-    fn config_bool(key: str, value: bool) -> ConfigEntry {
-        return ConfigEntry {
+    fn config_bool(key: str, value: bool) -> OrgConfigEntry {
+        return OrgConfigEntry {
             key = key,
             kind = ConfigValueKind::Bool,
             str_value = "",
@@ -256,8 +256,8 @@ module AccountAuth {
         };
     }
 
-    fn config_int(key: str, value: i64) -> ConfigEntry {
-        return ConfigEntry {
+    fn config_int(key: str, value: i64) -> OrgConfigEntry {
+        return OrgConfigEntry {
             key = key,
             kind = ConfigValueKind::Int,
             str_value = "",
@@ -267,8 +267,8 @@ module AccountAuth {
         };
     }
 
-    fn config_list(key: str, value: [str]) -> ConfigEntry {
-        return ConfigEntry {
+    fn config_list(key: str, value: [str]) -> OrgConfigEntry {
+        return OrgConfigEntry {
             key = key,
             kind = ConfigValueKind::StrList,
             str_value = "",
@@ -281,7 +281,7 @@ module AccountAuth {
     // config_get_str / config_get_bool look a key up in a configuration and
     // return its value, or null when the key is absent or holds another kind.
     // They stand in for the original map index `config["key"]`.
-    fn config_get_str(entries: [ConfigEntry], key: str) -> ?str {
+    fn config_get_str(entries: [OrgConfigEntry], key: str) -> ?str {
         for entry in entries {
             if (entry.key == key and entry.kind == ConfigValueKind::Str) {
                 return entry.str_value;
@@ -290,7 +290,7 @@ module AccountAuth {
         return null;
     }
 
-    fn config_get_bool(entries: [ConfigEntry], key: str) -> ?bool {
+    fn config_get_bool(entries: [OrgConfigEntry], key: str) -> ?bool {
         for entry in entries {
             if (entry.key == key and entry.kind == ConfigValueKind::Bool) {
                 return entry.bool_value;
@@ -300,7 +300,7 @@ module AccountAuth {
     }
 
     // config retrieves configuration for an account/org
-    fn config(account_id: AccountID, org_id: OrgID) -> Result<[ConfigEntry]?, AccountError> {
+    fn config(account_id: AccountID, org_id: OrgID) -> Result<[OrgConfigEntry]?, AccountError> {
         // Implementation: Fetch config from API
         // In a real implementation, this would:
         // 1. Verify the account has access to the organization

@@ -46,8 +46,9 @@ FPGA accelerator achieving **zero DSP utilization** while maintaining comparable
 
 Recent FPGA acceleration research demonstrates:
 
-> "DSP-less inference achieves 2.8× power reduction with <5% accuracy loss"
-> — [2024 IEEE FPL, "DSP-Free Neural Acceleration"](https://doi.org/10.1109/FPL61098.2024.00045)
+The previously quoted FPL power/accuracy claim has no verified source:
+the supplied DOI `10.1109/FPL61098.2024.00045` does not resolve.
+Do not use its 2.8× or <5% figures as evidence.
 
 > "LUT-only arithmetic reduces area by 57% vs DSP-based implementations"
 > — [2023 ACM FPGA, "Area-Efficient Ternary Computing"](https://dl.acm.org/doi/10.1145/3583678)

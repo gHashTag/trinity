@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import os
-os.environ['KAGGLE_API_TOKEN'] = 'KGAT_c178a7497385fc3a63aed579e53e5ef9'
-
+# KAGGLE_API_TOKEN is read from the environment (Railway/Infisical); never hardcode it.
 try:
     import kaggle_benchmarks as kbench
     print("✅ kaggle_benchmarks imported")

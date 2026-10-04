@@ -243,8 +243,110 @@ for (const owner of ['.queen-chat-log', '.queen-chat-net', '.queen-chat-chips'])
   assert.ok(viewport.includes(`'${owner}'`), `${owner} must be declared as a scroll owner`)
 }
 
+// ── 7. No zoom on a phone ────────────────────────────────────────────────────
+// iOS Safari zooms the whole page into a focused text field whose font-size is
+// under 16px and does not zoom back out, so a 14px composer zoomed the board on
+// every tap. Each field this panel draws gets 16px on a coarse pointer: the
+// draft (13px) and the log filter (11px) by this file's own rules, ChatInput's
+// message (14px) and two attachment paths (11px) by id, over inline styles that
+// only !important outranks. 16px widens an input (its size is counted in its
+// own characters), and the composer sits in a <section> that index.css centres,
+// so it is as wide as its widest row: at 16px the open attachment row needed
+// 486px on a 375px phone. width: 100% on those three gives way to the panel
+// (349px), measured in BrowserOS at 375 with touch emulation.
+// Each pin is run on the file and on broken copies of
+// it, and every broken copy has to fail -- a pin no mutation turns red is a pin
+// nobody has seen work.
+const input = readFileSync(new URL('../src/components/chat/ChatInput.tsx', import.meta.url), 'utf8')
+const COARSE_HEAD = '@media (pointer: coarse) {'
+const coarseRules = (sheet) => {
+  const rules = []
+  for (let at = sheet.indexOf(COARSE_HEAD); at >= 0; at = sheet.indexOf(COARSE_HEAD, at + 1)) {
+    let depth = 1
+    let i = at + COARSE_HEAD.length
+    while (depth > 0 && i < sheet.length) {
+      if (sheet[i] === '{') depth++
+      else if (sheet[i] === '}') depth--
+      i++
+    }
+    const body = sheet.slice(at + COARSE_HEAD.length, i - 1).replace(/\/\*[\s\S]*?\*\//g, '')
+    for (const r of body.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+      rules.push({ at, selectors: r[1].split(',').map((s) => s.trim()), decls: r[2] })
+    }
+  }
+  return rules
+}
+const onCoarse = (sheet, selector) => coarseRules(sheet).find((r) => r.selectors.includes(selector))
+const OWN_FIELDS = ['.queen-chat .queen-chat-draft textarea', '.queen-chat .queen-chat-find input']
+// ChatInput's <input> ids, read from the component rather than listed here, so
+// a fourth field there is a field this gate asks about.
+const inputIds = (src) => [...src.matchAll(/<input\b[\s\S]*?\/>/g)].map((m) => m[0].match(/\bid="([^"]+)"/)?.[1] ?? '(no id)')
+const PINS = {
+  'the draft and the log filter are 16px on a coarse pointer': ({ css }) =>
+    OWN_FIELDS.every((s) => /(^|;)\s*font-size: 16px\s*(;|$)/.test(onCoarse(css, s)?.decls ?? '')),
+  "ChatInput's inline sizes lose to 16px !important on a coarse pointer": ({ css, input }) =>
+    inputIds(input).length === 3 &&
+    inputIds(input).every((id) => /font-size: 16px !important/.test(onCoarse(css, `.queen-chat #${id}`)?.decls ?? '')),
+  "ChatInput's 16px fields take the panel's width, not their own": ({ css, input }) =>
+    inputIds(input).length === 3 &&
+    inputIds(input).every((id) => /(^|;)\s*width: 100%\s*(;|$)/.test(onCoarse(css, `.queen-chat #${id}`)?.decls ?? '')) &&
+    !/\bwidth:/.test(input.match(/<input\b[\s\S]*?\/>/g).join('')),
+  'the coarse rules come after the sizes they replace': ({ css }) =>
+    OWN_FIELDS.every((s) => (onCoarse(css, s)?.at ?? -1) > css.indexOf(`${s.replace('.queen-chat ', '')} {`)) &&
+    css.indexOf('.queen-chat-draft textarea {') >= 0 && css.indexOf('.queen-chat-find input {') >= 0,
+  // The panel's own fields are the two above and the composer is ChatInput: a
+  // field added anywhere else in QueenChat.tsx is a field nobody sized.
+  'every field the panel draws is one of these': ({ panel }) =>
+    (panel.match(/<input\b/g) ?? []).length === 1 &&
+    (panel.match(/<textarea\b/g) ?? []).length === 1 &&
+    /<div className="queen-chat-find">\s*<input\b/.test(panel) &&
+    /<div className=\{`queen-chat-draft is-\$\{draft\.state\}`\}>\s*<p className="queen-chat-draft-title">\{t\.draftTitle\}<\/p>\s*<textarea\b/.test(panel) &&
+    /<ChatInput onSend=\{send\}/.test(panel),
+}
+const files = { css, input, panel }
+const edit = (key, fn) => (f) => ({ ...f, [key]: fn(f[key]) })
+const coarseBlock = css.slice(css.indexOf('/* NO ZOOM ON A PHONE.'), css.indexOf('}\n}', css.indexOf(COARSE_HEAD)) + 4)
+const MUTATIONS = {
+  'the draft and the log filter are 16px on a coarse pointer': [
+    edit('css', (s) => s.replace(/(\.queen-chat \.queen-chat-find input \{\s*font-size: )16px/, '$113px')),
+    edit('css', (s) => s.replace(coarseBlock, '')),
+    edit('css', (s) => s.replace(COARSE_HEAD, '@media (pointer: fine) {')),
+    edit('css', (s) => s.replace('  .queen-chat .queen-chat-draft textarea,', '  .queen-chat-draft textarea,')),
+  ],
+  "ChatInput's inline sizes lose to 16px !important on a coarse pointer": [
+    edit('css', (s) => s.replace('font-size: 16px !important;', 'font-size: 16px;')),
+    edit('css', (s) => s.replace(coarseBlock, '')),
+    edit('input', (s) => s.replace('id="chat-audio-input"', 'id="chat-audio-path"')),
+  ],
+  "ChatInput's 16px fields take the panel's width, not their own": [
+    edit('css', (s) => s.replace('    font-size: 16px !important;\n    width: 100%;\n', '    font-size: 16px !important;\n')),
+    edit('css', (s) => s.replace('    width: 100%;\n  }\n}', '    max-width: 100%;\n  }\n}')),
+    // an inline width would beat the rule without !important
+    edit('input', (s) => s.replace("fontSize: 14,\n            fontFamily: 'monospace',\n          }}", "fontSize: 14,\n            fontFamily: 'monospace',\n            width: 120,\n          }}")),
+  ],
+  'the coarse rules come after the sizes they replace': [
+    edit('css', (s) => coarseBlock + '\n' + s.replace(coarseBlock, '')),
+  ],
+  'every field the panel draws is one of these': [
+    edit('panel', (s) => s.replace('<span className="queen-chat-count">{t.filterShowing}', '<textarea /><span className="queen-chat-count">{t.filterShowing}')),
+    edit('panel', (s) => s.replace('<ChatInput onSend={send}', '<input onChange={send}')),
+  ],
+}
+assert.ok(coarseBlock.startsWith('/* NO ZOOM ON A PHONE.') && coarseBlock.endsWith('}\n}\n'), 'QueenChat.css: no whole "NO ZOOM ON A PHONE" @media (pointer: coarse) block -- under 16px iOS zooms the page into the field')
+let controls = 0
+for (const [name, pin] of Object.entries(PINS)) {
+  assert.ok(pin(files), `QueenChat: ${name}`)
+  for (const [n, mutate] of MUTATIONS[name].entries()) {
+    const broken = mutate(files)
+    assert.ok(Object.keys(files).some((k) => broken[k] !== files[k]), `negative control ${n + 1} for "${name}" changed nothing -- its anchor moved`)
+    assert.ok(!pin(broken), `negative control ${n + 1}: "${name}" still passes on a broken copy`)
+    controls++
+  }
+}
+
 console.log(
   `queen-chat-tabs: 3 tabs (conversation first), ${counts.length} filter chips counted over the whole window, ` +
     `${net.links.length} links from ${net.messages} messages (${net.toWorker} down, ${net.toQueen} up, ${net.unattributed} with no issue), ` +
-    `0 agent names invented`,
+    `0 agent names invented; ${OWN_FIELDS.length + inputIds(input).length} fields 16px on a coarse pointer, ` +
+    `${Object.keys(PINS).length} pins red on all ${controls} broken copies`,
 )

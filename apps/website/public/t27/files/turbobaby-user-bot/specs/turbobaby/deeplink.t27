@@ -30,8 +30,8 @@
 ; src/ui/screens/home_screen.rs:177-204. The fifth, `Referrals`, has none. `parse_start_param`
 ; answers None for every non-product target (src/ui/share.rs:105-121, the `_` arm at :119) and no
 ; other reader exists: `grep -rn "Target::Referrals" src/` returns eleven hits, ten inside
-; `src/trios/deeplink.rs` itself and one comment at src/notification_queue.rs:157 (was :113; the 2026-09-21 drain rewrite moved it, the comment is unchanged). So the payload a
-; live notification button sends (src/notification_queue.rs:161-164, was :116-119, one per friend-joined,
+; `src/trios/deeplink.rs` itself and one comment at src/notification_queue.rs:174 (was :113; the 2026-09-21 drain rewrite moved it, the comment is unchanged; re-pinned 2026-09-26, when the held-kinds guard moved it 16 lines and the base's :157 was found one line short of it). So the payload a
+; live notification button sends (src/notification_queue.rs:177-180, was :116-119 and then :161-164, one per friend-joined,
 ; friend-ordered and milestone message) is classified as answerable, the bot renders a Mini App
 ; button for it (src/bot/commands.rs:232-252), the app sets no signal, and the customer lands on
 ; the application root. That is precisely the shape the file itself condemns at
@@ -382,9 +382,9 @@ pub const WHICH_SCREEN_A_KIND_LANDS_ON_IS_NOT_DECLARED_HERE : bool = true;
 ; counts paths kept RESOLVABLE for links already sent, a link-compatibility set, which is why
 ; /skate is a member here and not there. A future edit that adds or drops an alias must move both
 ; numbers, and they are not equal by construction.
-pub const LEGACY_ALIAS_COUNT : u8 = 6;
-pub const LEGACY_ROUTE_ALIASES : [6]str = ["/skate", "/sets", "/sommelier", "/events", "/events/:id", "/my-bookings"];
-pub const LEGACY_ALIAS_SURFACES : [6]str = ["ride", "catalog", "catalog", "catalog", "catalog", "catalog"];
+pub const LEGACY_ALIAS_COUNT : u8 = 13;
+pub const LEGACY_ROUTE_ALIASES : [13]str = ["/skate", "/sets", "/sommelier", "/events", "/events/:id", "/my-bookings", "/accessories", "/tea", "/game", "/treasure-hunt", "/ar-hunt", "/location-quest", "/tech-tree"];
+pub const LEGACY_ALIAS_SURFACES : [13]str = ["ride", "catalog", "catalog", "catalog", "catalog", "catalog", "catalog", "catalog", "catalog", "catalog", "catalog", "catalog", "catalog"];
 pub const A_LEGACY_ALIAS_NEVER_MOUNTS_THE_RETIRED_SCREEN : bool = true;
 pub const LEGACY_LINKS_DO_NOT_EXPIRE : bool = true;
 ; CORRECTED 2026-09-24: the compatibility set was three paths and is six. On the owner's ruling of
@@ -402,6 +402,22 @@ pub const LEGACY_ALIAS_COUNT_BEFORE_2026_09_24 : u8 = 3;
 pub const LEGACY_ROUTE_ALIASES_BEFORE_2026_09_24 : [3]str = ["/skate", "/sets", "/sommelier"];
 pub const LEGACY_ALIAS_SURFACES_BEFORE_2026_09_24 : [3]str = ["ride", "catalog", "catalog"];
 pub const EVENT_PAYLOAD_STAYS_ANSWERABLE : bool = true;
+; CORRECTED 2026-09-25: the compatibility set was six paths and is thirteen. On the owner's answer of
+; that day (REUSES_LEGACY_RETIREMENT_ID records it and splits the eight legacy paths) seven more
+; client paths -- /accessories, /tea, /game, /treasure-hunt, /ar-hunt, /location-quest and
+; /tech-tree -- stopped mounting their screens and render the live catalog; each is declared in
+; src/ui/routes.rs as before and answered by the handler of the same name there (fn Accessories,
+; fn Tea, fn Game, fn TreasureHunt, fn ArHunt, fn LocationQuest, fn TechTree), for the reason this
+; set exists: a link already sent never expires. They are appended after the events paths, so every
+; index above keeps its member. The adjudication above held again: this set grew by seven, and so did
+; turbobaby/legacy-retirement's REPOINTED_ROUTE_COUNT, whose value is that file's and is not
+; restated here. The eighth legacy path, /quest/:id, is not a member: the owner kept its screen, so
+; it is a live route and not an alias. What a shared accessory or tea payload lands on did not
+; change: the shipped landing (SHIPPED_LANDING_SITE) already sent every product kind to the fleet.
+pub const LEGACY_ALIAS_COUNT_BEFORE_2026_09_25 : u8 = 6;
+pub const LEGACY_ROUTE_ALIASES_BEFORE_2026_09_25 : [6]str = ["/skate", "/sets", "/sommelier", "/events", "/events/:id", "/my-bookings"];
+pub const LEGACY_ALIAS_SURFACES_BEFORE_2026_09_25 : [6]str = ["ride", "catalog", "catalog", "catalog", "catalog", "catalog"];
+pub const LEGACY_ALIASES_ADDED_ON_2026_09_25 : u8 = 7;
 
 ; The counter-member, and it is the more important half. One retired surface is deliberately given
 ; NO alias and NO parse, because nothing survives behind it to render: src/ui/routes.rs:57-61 draws
@@ -693,10 +709,21 @@ test deeplink_one_declared_target_in_five_has_no_landing_today {
 }
 
 test deeplink_compatibility_set_keeps_three_paths_on_live_surfaces {
-  // Three paths until 2026-09-24; the three events paths made it six. The name is the old reading.
+  // Three paths until 2026-09-24; the three events paths made it six, and the seven legacy paths
+  // of 2026-09-25 made it thirteen. The name is the old reading.
   assert LEGACY_ROUTE_ALIASES.len == LEGACY_ALIAS_COUNT;
   assert LEGACY_ALIAS_SURFACES.len == LEGACY_ALIAS_COUNT;
-  assert LEGACY_ALIAS_COUNT == 6;
+  assert LEGACY_ALIAS_COUNT == 13;
+  assert LEGACY_ALIAS_COUNT_BEFORE_2026_09_25 == 6;
+  assert LEGACY_ROUTE_ALIASES_BEFORE_2026_09_25.len == LEGACY_ALIAS_COUNT_BEFORE_2026_09_25;
+  assert LEGACY_ALIAS_SURFACES_BEFORE_2026_09_25.len == LEGACY_ALIAS_COUNT_BEFORE_2026_09_25;
+  assert LEGACY_ALIAS_COUNT == LEGACY_ALIAS_COUNT_BEFORE_2026_09_25 + LEGACY_ALIASES_ADDED_ON_2026_09_25;
+  assert LEGACY_ROUTE_ALIASES[6] == "/accessories";
+  assert LEGACY_ROUTE_ALIASES[8] == "/game";
+  assert LEGACY_ROUTE_ALIASES[12] == "/tech-tree";
+  assert LEGACY_ALIAS_SURFACES[6] == "catalog";
+  assert LEGACY_ALIAS_SURFACES[8] == "catalog";
+  assert LEGACY_ALIAS_SURFACES[12] == "catalog";
   assert LEGACY_ALIAS_COUNT_BEFORE_2026_09_24 == 3;
   assert LEGACY_ROUTE_ALIASES_BEFORE_2026_09_24.len == LEGACY_ALIAS_COUNT_BEFORE_2026_09_24;
   assert LEGACY_ALIAS_SURFACES_BEFORE_2026_09_24.len == LEGACY_ALIAS_COUNT_BEFORE_2026_09_24;
@@ -827,4 +854,7 @@ invariant deeplink_every_stage_is_load_bearing
   assert deeplink_chain_survives(false, true, true, true) == false and deeplink_chain_survives(true, false, true, true) == false and deeplink_chain_survives(true, true, false, true) == false and deeplink_chain_survives(true, true, true, false) == false
 
 invariant deeplink_every_alias_of_a_retired_events_path_lands_on_the_catalog
-  assert LEGACY_ALIAS_SURFACES[3] == "catalog" and LEGACY_ALIAS_SURFACES[4] == "catalog" and LEGACY_ALIAS_SURFACES[5] == "catalog" and LEGACY_ALIAS_COUNT == 6
+  assert LEGACY_ALIAS_SURFACES[3] == "catalog" and LEGACY_ALIAS_SURFACES[4] == "catalog" and LEGACY_ALIAS_SURFACES[5] == "catalog" and LEGACY_ALIAS_COUNT_BEFORE_2026_09_25 == 6
+
+invariant deeplink_every_alias_of_a_previous_shop_path_lands_on_the_catalog
+  assert LEGACY_ALIAS_SURFACES[6] == "catalog" and LEGACY_ALIAS_SURFACES[7] == "catalog" and LEGACY_ALIAS_SURFACES[8] == "catalog" and LEGACY_ALIAS_SURFACES[9] == "catalog" and LEGACY_ALIAS_SURFACES[10] == "catalog" and LEGACY_ALIAS_SURFACES[11] == "catalog" and LEGACY_ALIAS_SURFACES[12] == "catalog" and LEGACY_ALIAS_COUNT == 13

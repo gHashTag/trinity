@@ -42,5 +42,5 @@ See [parameters.md](./parameters.md) for full configuration details.
 
 ## References
 
-- [Daily Report: docs/lab/papers/2026-03-15-hslm-tjepa.md](../../../lab/papers/2026-03-15-hslm-tjepa.md)
-- [Full Summary: docs/experiments/FOUND_EXPERIMENTS_SUMMARY.md](../../../experiments/FOUND_EXPERIMENTS_SUMMARY.md)
+- [Daily Report: docs/lab/papers/2026-03-15-hslm-tjepa.md](../../lab/papers/2026-03-15-hslm-tjepa.md)
+- [Full Summary: docs/experiments/FOUND_EXPERIMENTS_SUMMARY.md](../../experiments/FOUND_EXPERIMENTS_SUMMARY.md)

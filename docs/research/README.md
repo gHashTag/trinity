@@ -39,7 +39,7 @@ This directory consolidates all documentation about model architectures and trai
 ## Related Documentation
 
 - [HSLM Training: ../../experiments/FOUND_EXPERIMENTS_SUMMARY.md](../experiments/FOUND_EXPERIMENTS_SUMMARY.md)
-- [SEVO Method: ../../lab/papers/sevo-method.md](../../lab/papers/sevo-method.md)
+- [SEVO Method: ../../lab/papers/sevo-method.md](../lab/papers/sevo-method.md)
 - [Framework: ../../research/TRINITY_S3AI_UNIFIED_FRAMEWORK.md](../research/TRINITY_S3AI_UNIFIED_FRAMEWORK.md)
 - [Glossary: ../../glossary.md](../glossary.md)
 

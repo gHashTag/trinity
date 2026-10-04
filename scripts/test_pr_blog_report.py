@@ -84,7 +84,7 @@ class ValidationTests(unittest.TestCase):
                 self.assertFalse(post["published"])
                 self.assertEqual(len(post["receipts"]), receipts)
                 self.assertIn(phrase, report.make_markdown(normalized, post))
-                self.assertIn("not independently rerun", post["body"][0]["text"])
+                self.assertIn("not independently rerun", post["body"][-1]["text"])
                 self.assertEqual(post["title"], valid_report()["blog"]["title"])
 
     def test_missing_malformed_and_duplicate_blocks(self):
@@ -221,6 +221,70 @@ class ValidationTests(unittest.TestCase):
         self.assertNotIn("figure", {block["kind"] for block in post["body"]})
 
 
+class TemplateTests(unittest.TestCase):
+    """The draft is shaped for readers: result first, evidence after, provenance last."""
+
+    def test_result_leads_and_provenance_closes(self):
+        payload = valid_report()
+        post = report.make_post(report.validate_event(valid_event(payload)))
+        body = post["body"]
+        self.assertEqual(body[0], {"kind": "p", "text": payload["summary"]})
+        self.assertIn("1 passed", body[1]["text"])
+        self.assertIn("did not rerun", body[1]["text"])
+        headings = [block["text"] for block in body if block["kind"] == "h"]
+        self.assertEqual(headings, ["The problem", "How it works", "What changed", "How we checked",
+                                    "What this does not show", "How this post was made"])
+        self.assertEqual(body[3]["text"], payload["blog"]["outline"][0])
+
+    def test_checks_are_a_table_that_keeps_failures_visible(self):
+        payload = valid_report()
+        payload["tests"].append({"command": "npm run build", "status": "not_run",
+                                 "result": "Left to CI because the laptop is overloaded.",
+                                 "evidence": "Website checks workflow on this PR head."})
+        payload["tests"].append({"command": "zig test src/a.zig", "status": "failed",
+                                 "result": "Two cases fail | on the new parser.",
+                                 "evidence": "Local run log saved as logs/a.txt today."})
+        normalized = report.validate_event(valid_event(payload))
+        post = report.make_post(normalized)
+        table = next(block for block in post["body"] if block["kind"] == "table")
+        self.assertEqual(table["head"], ["Check", "Status", "Result", "Evidence"])
+        self.assertEqual([row[1] for row in table["rows"]], ["passed", "not run", "FAILED"])
+        self.assertEqual(table["rows"][1][0], "`npm run build`")
+        self.assertIn("1 passed, 1 FAILED, 1 not run", post["body"][1]["text"])
+        markdown = report.make_markdown(normalized, post)
+        self.assertIn("Two cases fail \\| on the new parser", markdown)
+
+    def test_optional_cast_and_reproduce(self):
+        payload = valid_report()
+        payload["blog"]["cast"] = "term/x7-board/session.cast"
+        payload["blog"]["reproduce"] = ["tri x7-board --dry-run", "tri cast check x7.cast"]
+        normalized = report.validate_event(valid_event(payload))
+        post = report.make_post(normalized)
+        headings = [block["text"] for block in post["body"] if block["kind"] == "h"]
+        self.assertIn("See it run", headings)
+        self.assertIn("Try it yourself", headings)
+        code = next(block for block in post["body"] if block["kind"] == "code")
+        self.assertEqual(code["text"], "tri x7-board --dry-run\ntri cast check x7.cast")
+        self.assertEqual(post["receipts"][-1], {"label": "Terminal recording",
+                                                "href": "https://t27.ai/term/x7-board/"})
+        markdown = report.make_markdown(normalized, post)
+        self.assertNotIn("```", markdown)
+
+    def test_optional_keys_are_checked_and_others_still_refused(self):
+        for key, value, error in [
+            ("cast", "https://evil.example/x.cast", "published recording"),
+            ("cast", "term/../secrets/session.cast", "published recording"),
+            ("reproduce", [], "reproduce"),
+            ("reproduce", ["ls"] * 9, "reproduce"),
+            ("hero", "anything at all", "unsupported keys"),
+        ]:
+            with self.subTest(key=key, value=value):
+                payload = valid_report()
+                payload["blog"][key] = value
+                with self.assertRaisesRegex(report.ReportError, error):
+                    report.validate_event(valid_event(payload))
+
+
 class ArtifactTests(unittest.TestCase):
     def test_idempotent_fixed_artifacts_and_no_outside_writes(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -284,6 +348,116 @@ class ArtifactTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("2 MiB", result.stderr)
             self.assertFalse(output.exists())
+
+
+def dependabot_event(body="Bumps lodash from 4.17.20 to 4.17.21."):
+    event = valid_event()
+    pr = event["pull_request"]
+    pr.update({
+        "body": body, "title": "deps: bump lodash from 4.17.20 to 4.17.21 in /docs",
+        "user": {"login": "dependabot[bot]", "type": "Bot"}, "changed_files": 2, "commits": 1,
+        "head": {"sha": HEAD, "ref": "dependabot/npm_and_yarn/docs/lodash-4.17.21",
+                 "repo": {"full_name": "gHashTag/trinity"}},
+    })
+    return event
+
+
+def bump_files():
+    return [{"filename": "docs/package.json", "status": "modified"},
+            {"filename": "docs/package-lock.json", "status": "modified"}]
+
+
+def bump_commits():
+    return [{"sha": HEAD, "author": "dependabot[bot]", "committer": "web-flow", "verified": True}]
+
+
+class DependencyBumpTests(unittest.TestCase):
+    def refusal(self, event=None, files=None, commits=None):
+        return report.dependency_bump_refusal(event or dependabot_event(),
+                                              bump_files() if files is None else files,
+                                              bump_commits() if commits is None else commits)
+
+    def test_pure_dependabot_manifest_bump_is_its_own_report(self):
+        self.assertIsNone(self.refusal())
+        bump = report.dependency_bump_report(dependabot_event(), bump_files(), bump_commits())
+        self.assertEqual(bump["kind"], "dependency-bump")
+        self.assertEqual(bump["head_sha"], HEAD)
+        self.assertIn("No tests are claimed", bump["note"])
+
+    def test_humans_and_agents_stay_strict(self):
+        event = dependabot_event()
+        event["pull_request"]["user"] = {"login": "gHashTag", "type": "User"}
+        self.assertIn("not dependabot", self.refusal(event))
+        event["pull_request"]["user"] = {"login": "dependabot[bot]", "type": "User"}
+        self.assertIn("not dependabot", self.refusal(event))
+
+    def test_non_manifest_file_or_removed_file_needs_a_report(self):
+        for files, reason in (
+            (bump_files() + [{"filename": "docs/src/index.ts", "status": "modified"}], "not a dependency manifest"),
+            ([{"filename": ".github/workflows/ci.yml", "status": "modified"}], "not a dependency manifest"),
+            ([{"filename": "docs/package.json", "status": "removed"}], "not a version bump"),
+        ):
+            event = dependabot_event()
+            event["pull_request"]["changed_files"] = len(files)
+            self.assertIn(reason, self.refusal(event, files=files))
+
+    def test_incomplete_lists_fail_closed(self):
+        self.assertIn("incomplete", self.refusal(files=bump_files()[:1]))
+        self.assertIn("incomplete", self.refusal(files=[]))
+        self.assertIn("incomplete", self.refusal(commits=[]))
+
+    def test_a_pushed_or_unsigned_commit_needs_a_report(self):
+        for commit in ({"author": "gHashTag"}, {"committer": "gHashTag"}, {"verified": False}):
+            self.assertIn("not a GitHub-signed Dependabot commit",
+                          self.refusal(commits=[{**bump_commits()[0], **commit}]))
+        self.assertIn("does not end at the PR head",
+                      self.refusal(commits=[{**bump_commits()[0], "sha": MERGE}]))
+
+    def test_fork_or_foreign_branch_is_refused(self):
+        event = dependabot_event()
+        event["pull_request"]["head"]["repo"] = {"full_name": "someone/trinity"}
+        self.assertIn("not in the base repository", self.refusal(event))
+        event = dependabot_event()
+        event["pull_request"]["head"]["ref"] = "feature/x"
+        self.assertIn("not a dependabot/ branch", self.refusal(event))
+
+    def run_cli(self, event, files, commits, directory):
+        root = Path(directory)
+        (root / "event.json").write_text(json.dumps(event))
+        (root / "files.jsonl").write_text("\n".join(json.dumps(item) for item in files) + "\n")
+        (root / "commits.jsonl").write_text("\n".join(json.dumps(item) for item in commits) + "\n")
+        command = [sys.executable, str(Path(report.__file__)), "validate", "--event", str(root / "event.json"),
+                   "--output", str(root / "out"), "--files", str(root / "files.jsonl"),
+                   "--commits", str(root / "commits.jsonl")]
+        return subprocess.run(command, capture_output=True, text=True)
+
+    def test_cli_writes_only_the_bump_report(self):
+        with tempfile.TemporaryDirectory() as directory:
+            result = self.run_cli(dependabot_event(), bump_files(), bump_commits(), directory)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(sorted(p.name for p in (Path(directory) / "out").iterdir()), ["report.json"])
+            self.assertEqual(json.loads((Path(directory) / "out" / "report.json").read_text())["kind"],
+                             "dependency-bump")
+
+    def test_cli_refuses_a_mixed_bump_and_says_why(self):
+        files = bump_files() + [{"filename": "docs/build.sh", "status": "modified"}]
+        event = dependabot_event()
+        event["pull_request"]["changed_files"] = 3
+        with tempfile.TemporaryDirectory() as directory:
+            result = self.run_cli(event, files, bump_commits(), directory)
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("exemption does not apply", result.stderr)
+            self.assertIn("exactly one", result.stderr)
+            self.assertFalse((Path(directory) / "out").exists())
+
+    def test_a_report_block_is_validated_normally_even_from_dependabot(self):
+        bad = valid_report()
+        bad["head_sha"] = MERGE
+        event = dependabot_event(valid_event(bad)["pull_request"]["body"])
+        with tempfile.TemporaryDirectory() as directory:
+            result = self.run_cli(event, bump_files(), bump_commits(), directory)
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("stale", result.stderr)
 
 
 if __name__ == "__main__":

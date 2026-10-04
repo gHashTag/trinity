@@ -268,21 +268,6 @@ module TriBase64;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test "standard_returns_valid_codec"
-        true
-
-    test "url_safe_returns_valid_codec"
-        true
-
-    test "encode_basic_functionality"
-        true
-
-    test "decode_basic_functionality"
-        true
-
-    test "encoded_length_calculation"
-        true
-
-    test "decoded_length_calculation"
-        true
-
+    // The six tests that stood here had a body of `true` and nothing else; the parser
+    // discarded every one, so they never checked anything. Removed rather than turned
+    // into `assert true`, which the assertionless-test gate counts as a test that cannot fail.

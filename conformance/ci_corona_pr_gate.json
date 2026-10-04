@@ -1,0 +1,280 @@
+{
+  "spec_path": "specs/ci/corona_pr_gate.t27",
+  "spec_hash": "047077fb240de41e41e83b0b4c8ae67b5146ee30f9ce112fe604972dbde12734",
+  "notifications": [
+    {
+      "mask": 0,
+      "expected": 0
+    },
+    {
+      "mask": 1,
+      "expected": 0
+    },
+    {
+      "mask": 2,
+      "expected": 0
+    },
+    {
+      "mask": 3,
+      "expected": 1
+    }
+  ],
+  "brain": [
+    {
+      "mask": 0,
+      "expected": 0
+    },
+    {
+      "mask": 1,
+      "expected": 0
+    },
+    {
+      "mask": 2,
+      "expected": 0
+    },
+    {
+      "mask": 3,
+      "expected": 0
+    },
+    {
+      "mask": 4,
+      "expected": 0
+    },
+    {
+      "mask": 5,
+      "expected": 0
+    },
+    {
+      "mask": 6,
+      "expected": 0
+    },
+    {
+      "mask": 7,
+      "expected": 0
+    },
+    {
+      "mask": 8,
+      "expected": 0
+    },
+    {
+      "mask": 9,
+      "expected": 0
+    },
+    {
+      "mask": 10,
+      "expected": 0
+    },
+    {
+      "mask": 11,
+      "expected": 0
+    },
+    {
+      "mask": 12,
+      "expected": 0
+    },
+    {
+      "mask": 13,
+      "expected": 0
+    },
+    {
+      "mask": 14,
+      "expected": 0
+    },
+    {
+      "mask": 15,
+      "expected": 0
+    },
+    {
+      "mask": 16,
+      "expected": 0
+    },
+    {
+      "mask": 17,
+      "expected": 0
+    },
+    {
+      "mask": 18,
+      "expected": 0
+    },
+    {
+      "mask": 19,
+      "expected": 0
+    },
+    {
+      "mask": 20,
+      "expected": 0
+    },
+    {
+      "mask": 21,
+      "expected": 0
+    },
+    {
+      "mask": 22,
+      "expected": 0
+    },
+    {
+      "mask": 23,
+      "expected": 0
+    },
+    {
+      "mask": 24,
+      "expected": 0
+    },
+    {
+      "mask": 25,
+      "expected": 0
+    },
+    {
+      "mask": 26,
+      "expected": 0
+    },
+    {
+      "mask": 27,
+      "expected": 0
+    },
+    {
+      "mask": 28,
+      "expected": 0
+    },
+    {
+      "mask": 29,
+      "expected": 0
+    },
+    {
+      "mask": 30,
+      "expected": 0
+    },
+    {
+      "mask": 31,
+      "expected": 0
+    },
+    {
+      "mask": 32,
+      "expected": 0
+    },
+    {
+      "mask": 33,
+      "expected": 0
+    },
+    {
+      "mask": 34,
+      "expected": 0
+    },
+    {
+      "mask": 35,
+      "expected": 0
+    },
+    {
+      "mask": 36,
+      "expected": 0
+    },
+    {
+      "mask": 37,
+      "expected": 0
+    },
+    {
+      "mask": 38,
+      "expected": 0
+    },
+    {
+      "mask": 39,
+      "expected": 0
+    },
+    {
+      "mask": 40,
+      "expected": 0
+    },
+    {
+      "mask": 41,
+      "expected": 0
+    },
+    {
+      "mask": 42,
+      "expected": 0
+    },
+    {
+      "mask": 43,
+      "expected": 0
+    },
+    {
+      "mask": 44,
+      "expected": 0
+    },
+    {
+      "mask": 45,
+      "expected": 0
+    },
+    {
+      "mask": 46,
+      "expected": 0
+    },
+    {
+      "mask": 47,
+      "expected": 0
+    },
+    {
+      "mask": 48,
+      "expected": 0
+    },
+    {
+      "mask": 49,
+      "expected": 0
+    },
+    {
+      "mask": 50,
+      "expected": 0
+    },
+    {
+      "mask": 51,
+      "expected": 0
+    },
+    {
+      "mask": 52,
+      "expected": 0
+    },
+    {
+      "mask": 53,
+      "expected": 0
+    },
+    {
+      "mask": 54,
+      "expected": 0
+    },
+    {
+      "mask": 55,
+      "expected": 0
+    },
+    {
+      "mask": 56,
+      "expected": 0
+    },
+    {
+      "mask": 57,
+      "expected": 0
+    },
+    {
+      "mask": 58,
+      "expected": 0
+    },
+    {
+      "mask": 59,
+      "expected": 0
+    },
+    {
+      "mask": 60,
+      "expected": 0
+    },
+    {
+      "mask": 61,
+      "expected": 0
+    },
+    {
+      "mask": 62,
+      "expected": 0
+    },
+    {
+      "mask": 63,
+      "expected": 1
+    }
+  ]
+}

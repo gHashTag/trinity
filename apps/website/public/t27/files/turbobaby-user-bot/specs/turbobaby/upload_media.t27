@@ -14,7 +14,7 @@
 ; WHY (measured 2026-09-21). Fifteen refusal sites live in the 317 production lines of
 ; src/api/upload.rs, and they are the whole of the boundary: no other route in this repository
 ; takes a body it did not itself define the shape of. The route is also the single exception to
-; the general body limit -- src/api/mod.rs:102-105 merges it AFTER the limit layer on purpose,
+; the general body limit -- src/api/mod.rs:103-106 merges it AFTER the limit layer on purpose,
 ; so its own ceiling at src/api/upload.rs:20 admits a body 55 times the general one and its
 ; handler ceiling at :23 admits 50 times. A boundary that large, with fifteen ways to say no and
 ; one way to say yes, had no contract. What is on the far side of the yes is a filename the
@@ -22,10 +22,10 @@
 ; characters, 32 bits of the 122 the draw produced, and src/s3.rs:48 makes that the object key.
 ; On the local branch that key is the entire access control: src/main.rs:935 serves
 ; /data/uploads through a static directory service carrying a cache header and a nosniff header
-; and no gate of any kind, while the write at src/api/upload.rs:108 is admin-only. Nothing in
-; src/ or migrations/ ever deletes a stored object -- delete_object and DeleteObject both return
-; 0 occurrences across src/ on 2026-09-21 -- and no migration declares an uploads table, so the
-; repository records who wrote an object nowhere and cannot unwrite one.
+; and no gate of any kind (until 2026-09-26: see the owner's answer below), while the write at
+; src/api/upload.rs:108 is admin-only. Nothing in src/ or migrations/ ever deletes a stored object
+; -- delete_object and DeleteObject both return 0 occurrences across src/ on 2026-09-21 -- and no
+; migration declares an uploads table, so it records who wrote an object nowhere, and unwrites none.
 ; --
 ; WHERE THE BRIEF IS REFUTED. Four corrections, each measured, each with its line.
 ;   1. "The only write route behind a feature gate" is wrong about the gate twice over. There is
@@ -37,9 +37,9 @@
 ;      non-wasm target, and Cargo.toml:65 makes the server binary require it. Its default is OFF
 ;      -- Cargo.toml:174 reads default = [] -- so on a default build this route does not exist,
 ;      and neither does any other API route. Nothing here is upload's own.
-;   2. The survey's src/api/mod.rs:105 is a real and load-bearing line, but it is not a gate. It
-;      is the merge that places this route AFTER the body-limit layer set at :104, and the two
-;      comment lines at :102-103 say so. Mistaking it for a gate inverts its meaning: it does not
+;   2. The survey's src/api/mod.rs:105 (:106 since 2026-09-26) is load-bearing, but not a gate. It
+;      is the merge that places this route AFTER the body-limit layer set at :105, and the two
+;      comment lines at :103-104 say so. Mistaking it for a gate inverts its meaning: it does not
 ;      restrict this route, it is the single line that exempts it.
 ;   3. "The content-type allowlist" does not exist in the form the phrase implies. The multipart
 ;      part's declared content type is never read: content_type() returns 0 occurrences across
@@ -51,7 +51,7 @@
 ;      check inside the streaming loop at src/api/upload.rs:181 already guarantees the buffer
 ;      never exceeds the ceiling, so the too-large branch of validate_filename, reached at :226,
 ;      cannot refuse anything a real request produced; only its empty-file branch can. That
-;      branch is covered by a unit test at :445-452 and by no request.
+;      branch is covered by a unit test at :562-569 (:445-452 until 2026-09-26) and by no request.
 ; --
 ; WHAT THIS FILE NEVER DOES. It names no bucket, no endpoint, no region, no public URL base and
 ; no credential: every one of those is read from the environment at src/config.rs:150-158 and is
@@ -89,9 +89,9 @@ pub const COMPILE_GATE_SOURCE : str = "src/lib.rs";
 pub const SWITCH_SOURCE : str = "src/config.rs";
 pub const READ_SIDE_SOURCE : str = "src/main.rs";
 pub const CALLER_SOURCE : str = "src/ui/screens/admin_screen.rs";
-; wc -l over the tracked sources, 2026-09-21, so "the whole file" is a measurement.
-pub const ROUTE_SOURCE_LINES : u16 = 489;
-pub const ROUTE_PRODUCTION_LINES : u16 = 317;
+; wc -l over the tracked sources, 2026-09-21; the route file 2026-09-26 (489/317 before its read-back).
+pub const ROUTE_SOURCE_LINES : u16 = 722;
+pub const ROUTE_PRODUCTION_LINES : u16 = 434;
 pub const STORAGE_SOURCE_LINES : u16 = 260;
 
 ; --- Ownership edges ------------------------------------------------------------------------
@@ -298,7 +298,7 @@ pub const SHORTEST_PREFIX_SIGNATURE_BYTES : u8 = 3;
 pub const LONGEST_PREFIX_SIGNATURE_BYTES : u8 = 8;
 pub const CONTAINER_CHECK_MIN_BYTES : u8 = 12;
 pub const ISO_CONTAINER_CHECK_IGNORES_THE_BOX_SIZE : bool = true;
-pub const ISO_CONTAINER_NOTE : str = "The mp4 and mov arm at src/api/upload.rs:93 tests bytes 4..8 for ftyp and places no constraint on bytes 0..4, which the ISO Base Media File Format uses for the box size. Any twelve-byte run whose fifth through eighth bytes spell ftyp is therefore accepted under a .mp4 or .mov name, and the two unit tests at :379-380 both supply a well-formed box size so neither exercises the gap. This is recorded as a shape of the shipped check and not as a severity: closing it needs a decision about which box sizes and brands are admissible, which the repository has not made.";
+pub const ISO_CONTAINER_NOTE : str = "The mp4 and mov arm at src/api/upload.rs:93 tests bytes 4..8 for ftyp and places no constraint on bytes 0..4, which the ISO Base Media File Format uses for the box size. Any twelve-byte run whose fifth through eighth bytes spell ftyp is therefore accepted under a .mp4 or .mov name, and the two unit tests at :496-497 (:379-380 until 2026-09-26) both supply a well-formed box size so neither exercises the gap. This is recorded as a shape of the shipped check and not as a severity: closing it needs a decision about which box sizes and brands are admissible, which the repository has not made.";
 
 pub fn type_is_accepted(extension_in_allow_list: bool, signature_matches: bool) bool {
   return extension_in_allow_list and signature_matches;
@@ -410,14 +410,82 @@ pub fn name_survives_the_sanitizer_unchanged(name_chars: u16, contains_separator
 ; src/main.rs:816-827 and no authorization of any kind. Knowing the key is therefore the whole of
 ; the read permission. The object store's own read policy is not a fact this repository holds and
 ; is refused below rather than guessed.
+; CORRECTED 2026-09-26, on the owner's answer below: the key is no longer the whole of the local
+; read permission. The same line of src/main.rs now nests served_uploads (src/api/upload.rs), which
+; serves a name only when the rental data references it; the headers and the ungated identity are
+; unchanged, so the read is still not authenticated.
 pub const LOCAL_BRANCH_READ_PATH_IS_SERVED : bool = true;
 pub const LOCAL_BRANCH_READ_IS_AUTHENTICATED : bool = false;
 pub const READ_RESPONSE_SETS_NOSNIFF : bool = true;
 pub const READ_RESPONSE_IS_BROWSER_CACHEABLE : bool = true;
-pub const KEY_IS_THE_WHOLE_READ_PERMISSION : bool = true;
+pub const KEY_IS_THE_WHOLE_READ_PERMISSION : bool = false;
+pub const KEY_IS_THE_WHOLE_READ_PERMISSION_BEFORE_2026_09_26 : bool = true;
 
 pub fn access_requires_identity(is_write: bool) bool {
   return is_write;
+}
+
+; --- The previous shop's media: stop serving it (owner, 2026-09-26) ---------------------------------
+; Asked about the previous shop's media still reachable by a direct link -- files under /uploads on
+; the server's volume, and objects in the bucket -- the owner asked what he needs them for at all
+; (verbatim, in Russian, beside the read path in src/api/upload.rs; this file stays ASCII). The
+; operator read it as OWNER_MEDIA_ANSWER_READ_AS: stop serving them. Deleting the files themselves
+; is the owner's own irreversible act and is NOT done here: nothing in this change deletes, moves or
+; rewrites a file or an object, and no row is written (A_STORED_OBJECT_IS_EVER_DELETED_BY_THIS_
+; REPOSITORY stays false).
+; WHAT WRITES TO THE FOLDER TODAY. The local branch of the upload handler, whenever no object store
+; is configured (storage_branch above); every current admin form that uploads -- the bike form, the
+; event form and the broadcast photo -- goes through it. So the read path cannot simply go: a
+; deployment without a store would lose the pictures of its own bikes. It serves instead only what
+; the rental data references (LOCAL_READ_REQUIRES_A_RENTAL_REFERENCE): a name is served when some
+; bike's stored picture is exactly /uploads/<name> (LOCAL_READ_REFERENCE_COLUMN,
+; LOCAL_READ_REFERENCE_SHAPE), the value the local branch returns and the bike form stores. The
+; bikes are the rental catalogue, and the picture is the one media column a rental row holds.
+; Every other name answers exactly as a missing file does, not found
+; (LOCAL_READ_UNREFERENCED_ANSWERS_AS_A_MISSING_FILE): what the previous shop left on the volume, an
+; event poster, a broadcast photo, and anything a name alone used to open. These answers belong to
+; the read path, not to the write route, so none of them is a refusal site or a numeral counted
+; below (REFUSAL_SITE_COUNT, HTTP_STATUSES_DECLARED_HERE); a failed reference lookup answers the
+; server's own error and is logged. A name that is not one path segment of ASCII letters, digits, dot, dash
+; and underscore, or starts with a dot, or holds two dots, or is longer than the sanitizer's clamp,
+; is refused before the database or the disk is asked (LOCAL_READ_NAME_MAX_CHARS). The reference is
+; read on every request, so a bike whose picture is replaced stops serving the old file at once.
+; The broadcast photo loses nothing it had: the admin broadcast parses the photo address as an
+; absolute URL before Telegram sees it (src/api/admin.rs), and a bare /uploads/<name> never parses,
+; so a local-branch photo was refused there before this change too.
+; THE OBJECT STORE. This server does not serve the bucket: an object's address is the bucket's own
+; public base plus its key (src/s3.rs), fetched from the store directly, so no line here can stop
+; serving one (OBJECT_STORE_IS_SERVED_BY_THIS_SERVER). And the previous shop's objects cannot be
+; told apart by code: every upload of this code -- the previous shop's bot and this shop alike,
+; since the first commit -- writes under the one key prefix KEY_PREFIX with an eight-hex name, and
+; the rental catalogue's own pictures sit under a folder no code writes (migration 084, placed by
+; hand). Telling them apart needs a PRODUCTION LISTING of the bucket's uploads/ keys against the
+; keys the rental rows reference, and stopping them is a change to the bucket's read policy, a
+; deployment fact (OBJECT_STORE_READ_POLICY_IS_A_REPOSITORY_FACT). Neither was done here.
+pub const OWNER_MEDIA_ANSWER_AT : str = "2026-09-26";
+pub const OWNER_MEDIA_ANSWER_READ_AS : str = "Stop serving the previous shop's media; deleting the files is the owner's own act, not done here.";
+pub const LOCAL_UPLOAD_FOLDER_HAS_A_CURRENT_WRITER : bool = true;
+pub const LOCAL_READ_REQUIRES_A_RENTAL_REFERENCE : bool = true;
+pub const LOCAL_READ_REFERENCE_COLUMN : str = "bikes.image_url";
+pub const LOCAL_READ_REFERENCE_LOOKUPS_ON_BIKES : u8 = 1;
+pub const LOCAL_READ_SERVICE_NESTS : u8 = 1;
+pub const LOCAL_READ_REFERENCE_SHAPE : str = "/uploads/<name>";
+pub const LOCAL_READ_UNREFERENCED_ANSWERS_AS_A_MISSING_FILE : bool = true;
+pub const LOCAL_READ_NAME_MAX_CHARS : u16 = 255;
+pub const LOCAL_READ_SITE : str = "served_uploads, src/api/upload.rs";
+pub const LOCAL_READ_WITNESS : str = "only_a_file_a_bike_references_is_served, src/api/upload.rs";
+pub const MEDIA_ANSWER_DELETES_A_FILE : bool = false;
+pub const MEDIA_ANSWER_WRITES_A_ROW : bool = false;
+pub const OBJECT_STORE_IS_SERVED_BY_THIS_SERVER : bool = false;
+pub const OBJECT_STORE_PREVIOUS_SHOP_KEYS_TELL_APART_BY_CODE : bool = false;
+pub const OBJECT_STORE_NEEDS_A_PRODUCTION_LISTING : bool = true;
+
+; Whether the local read serves a name: only a well-formed name the rental data references.
+pub fn local_read_is_served(name_is_well_formed: bool, referenced_by_a_bike: bool) bool {
+  if (!name_is_well_formed) {
+    return false;
+  }
+  return referenced_by_a_bike;
 }
 
 ; --- What a rejected upload returns ---------------------------------------------------------------
@@ -428,7 +496,7 @@ pub fn access_requires_identity(is_write: bool) bool {
 ; already declares, so this file counts the SITE and leaves the NUMBER where it is owned. That is
 ; why refusal_status_is_declared_here answers false for a status this route really does send. Every refusal body is the same one-key JSON object built at :36-39, and its
 ; message is an English ASCII sentence written in this file -- never a localized key, and never
-; the raw error, which a source-scanning regression test at :333-363 pins to the log instead.
+; the raw error, which a source-scanning regression test at :450-480 (:333-363 until 2026-09-26) pins to the log instead.
 pub const REFUSAL_SITE_COUNT : u8 = 15;
 pub const REFUSAL_SITES_WITH_A_LITERAL_STATUS : u8 = 14;
 pub const REFUSAL_SITES_DELEGATING_THE_STATUS : u8 = 1;
@@ -691,8 +759,39 @@ test the_write_is_gated_and_the_local_read_is_not {
   assert access_requires_identity(false) == false;
   assert ANONYMOUS_UPLOAD_IS_ADMITTED == false;
   assert LOCAL_BRANCH_READ_IS_AUTHENTICATED == false;
-  assert KEY_IS_THE_WHOLE_READ_PERMISSION == true;
+  // until 2026-09-26 the key was the whole read permission; since then a rental reference is too
+  assert KEY_IS_THE_WHOLE_READ_PERMISSION_BEFORE_2026_09_26 == true;
+  assert KEY_IS_THE_WHOLE_READ_PERMISSION == false;
   assert READ_RESPONSE_SETS_NOSNIFF == true;
+}
+
+test the_local_read_serves_only_what_a_bike_references_and_deletes_nothing {
+  assert OWNER_MEDIA_ANSWER_AT == "2026-09-26";
+  assert OWNER_MEDIA_ANSWER_READ_AS != "";
+  assert LOCAL_UPLOAD_FOLDER_HAS_A_CURRENT_WRITER == true;
+  assert LOCAL_BRANCH_READ_PATH_IS_SERVED == true;
+  assert LOCAL_READ_REQUIRES_A_RENTAL_REFERENCE == true;
+  assert LOCAL_READ_REFERENCE_COLUMN == "bikes.image_url";
+  assert LOCAL_READ_REFERENCE_LOOKUPS_ON_BIKES == 1;
+  assert LOCAL_READ_SERVICE_NESTS == 1;
+  assert LOCAL_READ_REFERENCE_SHAPE == "/uploads/<name>";
+  assert local_read_is_served(true, true) == true;
+  assert local_read_is_served(true, false) == false;
+  assert local_read_is_served(false, true) == false;
+  assert local_read_is_served(false, false) == false;
+  assert LOCAL_READ_UNREFERENCED_ANSWERS_AS_A_MISSING_FILE == true;
+  assert LOCAL_READ_NAME_MAX_CHARS == SANITIZER_CLAMP_CHARS;
+  assert MEDIA_ANSWER_DELETES_A_FILE == false;
+  assert MEDIA_ANSWER_DELETES_A_FILE == A_STORED_OBJECT_IS_EVER_DELETED_BY_THIS_REPOSITORY;
+  assert MEDIA_ANSWER_WRITES_A_ROW == false;
+}
+
+test the_bucket_needs_a_production_listing_and_is_not_this_servers_to_gate {
+  assert OBJECT_STORE_IS_SERVED_BY_THIS_SERVER == false;
+  assert OBJECT_STORE_PREVIOUS_SHOP_KEYS_TELL_APART_BY_CODE == false;
+  assert OBJECT_STORE_NEEDS_A_PRODUCTION_LISTING == true;
+  assert OBJECT_STORE_READ_POLICY_IS_A_REPOSITORY_FACT == false;
+  assert KEY_PREFIX == "uploads/";
 }
 
 test fifteen_refusal_sites_and_four_numerals_of_our_own {
@@ -838,6 +937,9 @@ invariant reflected_caller_text_stays_inside_the_extension_bound
 
 invariant nothing_in_this_repository_removes_a_stored_object
   assert A_STORED_OBJECT_IS_EVER_DELETED_BY_THIS_REPOSITORY == false and ORPHAN_SWEEP_EXISTS == false
+
+invariant a_local_upload_nothing_rental_references_is_never_served
+  assert local_read_is_served(true, false) == false and local_read_is_served(false, true) == false and LOCAL_READ_REQUIRES_A_RENTAL_REFERENCE == true and MEDIA_ANSWER_DELETES_A_FILE == false
 
 invariant no_deployment_value_is_declared_as_a_contract
   assert DEPLOYMENT_VALUES_ARE_DECLARED_HERE == false and OBJECT_STORE_READ_POLICY_IS_A_REPOSITORY_FACT == false

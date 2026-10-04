@@ -1,0 +1,12 @@
+{
+  "gen_hash_c": "sha256:b02f5751bc7a7e0f235466d05f6a65bcae9facbd16aa66952782c51e86021ed9",
+  "gen_hash_rust": "sha256:3012c8a8ace08b4d8b5b6c34d48a087967f1688cb642f489f906d0e978174ad8",
+  "gen_hash_verilog": "sha256:11d561f8530eb497610ca1089bc6feef492030cc4e211e8b66c05d8649ee93b1",
+  "gen_hash_zig": "sha256:15b0cc5880133be2ca49e08eb98d5c9fcf745ad0503dbec0363e7df5984e66ac",
+  "module": "ci_corona_pr_gate",
+  "ring": 12,
+  "sealed_at": "2026-10-04T14:33:38Z",
+  "sealed_by": "t27c-bootstrap@0.4.0",
+  "spec_hash": "sha256:047077fb240de41e41e83b0b4c8ae67b5146ee30f9ce112fe604972dbde12734",
+  "spec_path": "specs/ci/corona_pr_gate.t27"
+}

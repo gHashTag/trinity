@@ -21,6 +21,7 @@
 // Run:      node scripts/onboarding-from-spec.mjs            (write)
 //           node scripts/onboarding-from-spec.mjs --check    (fail if the committed files are stale)
 //           node scripts/onboarding-from-spec.mjs --json     (print the constants as JSON)
+//           node scripts/onboarding-from-spec.mjs --sync     (write the manifest's counts into the spec, then write)
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -154,10 +155,11 @@ export function semanticProblems(f, file) {
 const DECLARATIONS_ONLY = ['js', 'ts']
 const sameSet = (a, b) => a.length === b.length && [...a].sort().join() === [...b].sort().join()
 
-export function corpusProblems(f, file, manifest) {
-  const p = []
-  const backends = [...new Set(manifest.specs.flatMap((s) => Object.keys(s.outBytes ?? {})))].sort()
-  const want = {
+// What the manifest measures for each numeric constant the spec states about the corpus.
+// corpusProblems compares against it and syncSpecCounts writes it -- one function, so the value
+// the gate asks for and the value the sync writes cannot drift apart.
+export function measuredCounts(manifest) {
+  return {
     SPEC_COUNT: manifest.specCount,
     SPEC_LINES: manifest.totalLines,
     HEALTH_OK: manifest.health.ok,
@@ -186,13 +188,23 @@ export function corpusProblems(f, file, manifest) {
     // measured from the corpus or it is not published.
     HEALTH_PARTIAL: manifest.specs.filter((s) => (s.partialBackends ?? []).length > 0).length,
   }
-  // The spec claims codegen_ts shares codegen_js's value layer. That is falsifiable over the
-  // corpus and therefore gets falsified here rather than believed: a spec that loses one of
-  // the two and keeps the other is drift, whatever the comment upstream says.
-  const divergent = manifest.specs.filter((s) => {
+}
+
+// The spec claims codegen_ts shares codegen_js's value layer. That is falsifiable over the
+// corpus and therefore gets falsified here rather than believed: a spec that loses one of
+// the two and keeps the other is drift, whatever the comment upstream says.
+export function divergentSpecs(manifest) {
+  return manifest.specs.filter((s) => {
     const failed = new Set(s.failedBackends ?? [])
     return failed.has('js') !== failed.has('ts')
   })
+}
+
+export function corpusProblems(f, file, manifest) {
+  const p = []
+  const backends = [...new Set(manifest.specs.flatMap((s) => Object.keys(s.outBytes ?? {})))].sort()
+  const want = measuredCounts(manifest)
+  const divergent = divergentSpecs(manifest)
   if (f.JS_TS_DIVERGENCES !== divergent.length) {
     p.push(`${file}: JS_TS_DIVERGENCES says ${f.JS_TS_DIVERGENCES}, the manifest has ${divergent.length}` +
       (divergent.length ? ` (e.g. ${divergent.slice(0, 3).map((s) => s.path).join(', ')})` : ''))
@@ -205,6 +217,40 @@ export function corpusProblems(f, file, manifest) {
     p.push(`${file}: BACKENDS is ${JSON.stringify(named)}, the manifest emits ${JSON.stringify(backends)}`)
   }
   return p
+}
+
+// The corpus moves almost every day, and the gate above refuses a spec that states yesterday's
+// counts -- correctly, since the document calls the manifest live truth. But nothing wrote
+// today's: the world scan rebuilt the manifest, stopped at check:onboarding, and the catalog
+// stopped refreshing (2026-10-02, 1737 stated against 1771 measured). The scan now calls
+// `--sync`, which writes exactly the values corpusProblems asks for, from the manifest that is
+// about to be published, plus the day they were measured. What it does not write -- BACKENDS,
+// a constant it has no line for, a value its declared type cannot hold -- still stops the gate.
+const UINT_MAX = { u8: 255, u16: 65535, u32: 4294967295 }
+
+export function syncSpecCounts(specText, manifest, today) {
+  const want = { ...measuredCounts(manifest), JS_TS_DIVERGENCES: divergentSpecs(manifest).length }
+  let text = specText
+  const changed = []
+  for (const [k, v] of Object.entries(want)) {
+    const re = new RegExp(`^(pub const ${k} : (u8|u16|u32) = )(\\d+)(;)`, 'm')
+    const m = text.match(re)
+    if (!m) throw new Error(`${ONBOARDING_SPEC}: no \`pub const ${k} : u8|u16|u32 = <n>;\` line to write ${v} into`)
+    if (!Number.isInteger(v) || v < 0 || v > UINT_MAX[m[2]]) {
+      throw new Error(`${ONBOARDING_SPEC}: ${k} = ${v} does not fit its declared ${m[2]}; widen the type by hand`)
+    }
+    if (Number(m[3]) !== v) {
+      changed.push([k, Number(m[3]), v])
+      text = text.replace(re, (_, head, _type, _old, tail) => `${head}${v}${tail}`)
+    }
+  }
+  if (changed.length) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(today)) throw new Error(`syncSpecCounts: "${today}" is not an ISO date`)
+    const re = /^(pub const MEASURED_AT : str = ")([^"]*)(";)/m
+    if (!re.test(text)) throw new Error(`${ONBOARDING_SPEC}: no MEASURED_AT line to date the counts with`)
+    text = text.replace(re, (_, head, _old, tail) => `${head}${today}${tail}`)
+  }
+  return { text, changed }
 }
 
 // ---------------------------------------------------------------------------
@@ -282,6 +328,8 @@ export async function buildOnboarding({ specText, analyze, shippedExports = null
 async function main() {
   const check = process.argv.includes('--check')
   const json = process.argv.includes('--json')
+  const sync = process.argv.includes('--sync')
+  if (sync && (check || json)) { console.error('onboarding-from-spec: --sync writes; it does not combine with --check or --json'); process.exit(2) }
   const specPath = join(SITE, ONBOARDING_SPEC)
   if (!existsSync(specPath)) { console.error(`onboarding-from-spec: ${ONBOARDING_SPEC} is missing`); process.exit(1) }
   const wasmBytes = readFileSync(join(SITE, WASM))
@@ -291,7 +339,15 @@ async function main() {
   const manifestPath = join(SITE, MANIFEST)
   if (!existsSync(manifestPath)) { console.error(`onboarding-from-spec: ${MANIFEST} is missing; the corpus snapshot cannot be checked against anything`); process.exit(1) }
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
-  const specText = readFileSync(specPath, 'utf8')
+  let specText = readFileSync(specPath, 'utf8')
+  if (sync) {
+    const { text, changed } = syncSpecCounts(specText, manifest, new Date().toISOString().slice(0, 10))
+    if (changed.length) {
+      writeFileSync(specPath, text)
+      specText = text
+    }
+    console.log(`onboarding-from-spec --sync: ${changed.length ? changed.map(([k, a, b]) => `${k} ${a} -> ${b}`).join(', ') : 'the spec already states the manifest'}`)
+  }
   const out = await buildOnboarding({ specText, analyze, shippedExports, manifest })
   if (out.problems.length) {
     console.error(`onboarding-from-spec: ${out.problems.length} problem(s)`)

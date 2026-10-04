@@ -55,10 +55,10 @@ ISBN: 978-0262111324
 *Cognitive Computation* 1(2):139-159
 [DOI:10.1007/s12559-009-9009-8](https://doi.org/10.1007/s12559-009-9009-8)
 
-**Kanerva, P. (2014)**
+**Kanerva, P. (2019)**
 "Computing with High-Dimensional Vectors"
-*Cognitive Computation* 6(3):373-388
-[DOI:10.1007/s12559-014-9258-3](https://doi.org/10.1007/s12559-014-9258-3)
+*IEEE Design & Test* 36(3):7-14
+[DOI:10.1109/MDAT.2018.2890221](https://doi.org/10.1109/MDAT.2018.2890221)
 
 **Plate, T. A. (2003)**
 "Holographic Reduced Representations: Distributed Representation for Cognitive Structures"
@@ -76,10 +76,10 @@ ISBN: 978-1575864303
 *IEEE International Symposium on Low Power Electronics and Design (ISLPED)*
 [DOI:10.1145/2934583.2934624](https://doi.org/10.1145/2934583.2934624)
 
-**Rahimi, A., Kanerva, P., Benini, L., & Rabaey, J. M. (2020)**
-"Efficient Biosignal Processing Using Hyperdimensional Computing"
-*IEEE Transactions on Biomedical Circuits and Systems* 13(5):1234-1245
-[DOI:10.1109/TBCAS.2019.2934624](https://doi.org/10.1109/TBCAS.2019.2934624)
+**Rahimi, A., Kanerva, P., Benini, L., & Rabaey, J. M. (2019)**
+"Efficient Biosignal Processing Using Hyperdimensional Computing: Network Templates for Combined Learning and Classification of ExG Signals"
+*Proceedings of the IEEE* 107(1):123-143
+[DOI:10.1109/JPROC.2018.2871163](https://doi.org/10.1109/JPROC.2018.2871163)
 
 ### Surveys
 

@@ -4,7 +4,7 @@
    a desktop, without a media query naming any of them. */
 .modules-block {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  background: #020605;
+  background: #000;
   color: var(--text, #FFFFFF);
 }
 
@@ -171,7 +171,7 @@
 }
 
 .modules-block-all:hover {
-  background: rgba(0, 255, 136, 0.08);
+  border-color: #7dffc0;
 }
 
 /* Under a finger every card is a target of its own, and the 44px floor is the

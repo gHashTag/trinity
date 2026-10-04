@@ -17,10 +17,11 @@
 // intel feed, i.e. another view's content -- and the frame takes the height
 // back. Narrow screens have no such column, so there the directive stays put.
 
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 import { QueenLoading } from './QueenLoading'
 import { useQueenExplorerFrame } from './useQueenExplorerFrame'
 import { FEATURED_SPEC as FEATURED, type ExplorerTab } from '../lib/queenEmbed'
+import { useCorpus } from '../lib/queenCorpus'
 
 export interface SpecsCopy {
   directive: string
@@ -38,16 +39,8 @@ interface Health { ok: number; warn: number; fail: number }
 /** The directive, its corpus counts and the way out to the full page. Rendered
  *  in the HUD's right column on a wide screen, above the frame on a narrow one. */
 export function QueenSpecsDirective({ c, collapsible = false }: { c: SpecsCopy; collapsible?: boolean }) {
-  const [health, setHealth] = useState<Health | null>(null)
-
-  useEffect(() => {
-    let alive = true
-    fetch('t27/manifest.json')
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
-      .then((d) => { if (alive) setHealth(d.health) })
-      .catch(() => {})
-    return () => { alive = false }
-  }, [])
+  // The same part the shell and the Explorer frame read: one corpus, one count.
+  const health: Health | null = useCorpus('manifest').part?.data.health ?? null
 
   const body = (
     <>
@@ -92,14 +85,15 @@ export function QueenSpecsDirective({ c, collapsible = false }: { c: SpecsCopy; 
   )
 }
 
-export function QueenSpecs({ c, showDirective = true, onNavigate, ladder }: { c: SpecsCopy; showDirective?: boolean; onNavigate: (tab: ExplorerTab, card: string | null) => void; ladder?: ReactNode }) {
+export function QueenSpecs({ c, showDirective = true, onNavigate, ladder, world = null }: { c: SpecsCopy; showDirective?: boolean; onNavigate: (tab: ExplorerTab, card: string | null) => void; ladder?: ReactNode; world?: string | null }) {
   const [ready, setReady] = useState(false)
   // The spec in the frame is the spec= of the Queen address (lib/queenEmbed); with
   // none, the featured one. The frame carries ?lang= in its search, where the i18n
   // provider reads it: without it the frame booted on whatever localStorage held and
   // never heard the switch -- the shell in English with a Russian Explorer inside it.
   const frameRef = useRef<HTMLIFrameElement>(null)
-  const frame = useQueenExplorerFrame('specs', onNavigate, frameRef)
+  // The header's world narrows the frame's list (lib/queenEmbed explorerFrameHash).
+  const frame = useQueenExplorerFrame('specs', onNavigate, frameRef, world)
 
   return (
     <div className={`queen27-specs${ladder ? ' has-ladder' : ''}`} data-directive={showDirective ? 'above' : 'aside'}>

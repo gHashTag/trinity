@@ -161,7 +161,7 @@ Bangkok, Thailand
 |----------|------|
 | **Email** | baez@math.ucr.edu |
 | **Blog** | https://johncarlosbaez.wordpress.com/ |
-| **Azimuth** | https://math.ucr.edu/home/baez/azimuth/ |
+| **Azimuth Blog** | https://johncarlosbaez.wordpress.com/ |
 
 ### Sabine Hossenfelder (Alternative)
 | Platform | Link |
