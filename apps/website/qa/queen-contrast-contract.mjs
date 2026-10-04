@@ -232,6 +232,9 @@ const REACHED = {
     /* MY RUNNERS, the cabinet inside that tab: a veil over the hive, blurred,
        like the leaderboard rows it sits beside. */
     'src/components/QueenRunners.css',
+    /* SPEC EARNINGS, the record of accepted .t27 commits in the same tab:
+       its rows carry the leaderboard's veil and blur. */
+    'src/components/QueenSpecEarnings.css',
     /* LEVEL II, the comb on the ROADMAP view: five for five. It renders inside
        .rm, whose opaque gradient already grounds it, and its own panel is
        opaque on top of that. */

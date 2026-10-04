@@ -1,7 +1,7 @@
 name: Trinity Agent Cron Cleanup
 on:
-  schedule:
-    - cron: '0 */2 * * *'  # Every 2 hours
+  # No schedule: block. The Queen (Inngest app t27-queen) dispatches this workflow
+  # on '0 */2 * * *' UTC from the card specs/crons/trinity-agent-cron-cleanup.t27 in gHashTag/t27.
   workflow_dispatch: {}
 
 jobs:
