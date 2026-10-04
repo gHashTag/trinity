@@ -1,12 +1,12 @@
 {
   "version": 1,
-  "generatedAt": "2026-09-09T08:11:47.735Z",
+  "generatedAt": "2026-09-23T04:25:08.667Z",
   "generatedFrom": [
     {
       "repo": "gHashTag/999-multibots-telegraf",
-      "commit": "a9c08b4ebdfab947c81c94a1b37a08265d665bdb",
-      "shortCommit": "a9c08b4eb",
-      "branch": "main",
+      "commit": "3f3590eef5e288cb9f0e08d2d5096de84ff9a8ba",
+      "shortCommit": "3f3590eef",
+      "branch": "main-snapshot",
       "dirty": false,
       "private": true
     },
@@ -20,32 +20,32 @@
     },
     {
       "repo": "gHashTag/trinity",
-      "commit": "5a495eef12f087ba8c474122c5824fe4ed0d05a1",
-      "shortCommit": "5a495eef1",
-      "branch": "feat/explorer-tabs-skills-clients-crons",
-      "dirty": false,
+      "commit": "cb59206f2cf5b1522140dbf43ee0bc597ca36447",
+      "shortCommit": "cb59206f2",
+      "branch": "docs/taps-lessons",
+      "dirty": true,
       "private": false
     }
   ],
-  "specManifestCommit": "1cd2877f9",
-  "skillCount": 26,
-  "withheld": 53,
+  "specManifestCommit": "6e13d65c4",
+  "skillCount": 27,
+  "withheld": 63,
   "bySource": {
-    "SKILL.md": 24,
+    "SKILL.md": 25,
     "skill.md": 2
   },
   "langs": {
     "ru": 0,
-    "en": 26,
+    "en": 27,
     "mixed": 0
   },
   "tags": {
-    "lang/en": 26,
-    "has/frontmatter": 24,
-    "link/unbound": 23,
-    "src/trinity": 20,
+    "lang/en": 27,
+    "has/frontmatter": 25,
+    "link/unbound": 24,
+    "src/trinity": 21,
     "has/code": 18,
-    "size/small": 12,
+    "size/small": 13,
     "size/tiny": 10,
     "has/live-shell": 6,
     "src/t27": 6,
@@ -133,6 +133,7 @@
           "via": "body",
           "to": null,
           "candidates": [
+            "dmitrii-f-t27/trinity-memory/t27/http.t27",
             "specs/server/http.t27",
             "specs/tri/net/http.t27"
           ],
@@ -244,9 +245,9 @@
           "via": "body",
           "to": null,
           "candidates": [
-            "chips/euler/specs/numeric/gf16.t27",
             "specs/numeric/gf16.t27",
-            "trinity-fpga/t27/specs/numeric/gf16.t27"
+            "trinity-fpga/t27/specs/numeric/gf16.t27",
+            "tt-trinity-euler/specs/numeric/gf16.t27"
           ],
           "status": "ambiguous"
         }
@@ -1336,6 +1337,80 @@
         "has/code",
         "has/frontmatter",
         "has/live-shell",
+        "lang/en",
+        "link/unbound",
+        "size/small",
+        "src/trinity"
+      ],
+      "link": "unbound",
+      "health": "warn"
+    },
+    {
+      "id": "trinity/connect-accounts",
+      "repo": "trinity",
+      "dir": "connect-accounts",
+      "path": "trinity/connect-accounts/SKILL.md",
+      "source": "SKILL.md",
+      "name": "connect-accounts",
+      "description": "Sign a person into their own accounts (LinkedIn, X, job boards, social networks) through THEIR remote browser, as an agent the person watches -- SSO buttons pressed by label, every case of a sign-in with the move that fits it, the person...",
+      "frontmatter": {
+        "name": "connect-accounts",
+        "description": "Sign a person into their own accounts (LinkedIn, X, job boards, social networks) through THEIR remote browser, as an agent the person watches -- SSO buttons pressed by label, every case of a sign-in with the move that fits it, the person's consent and secrets kept theirs, and the honesty rule that an agent reports only what its tools did. Use when asked to \"connect my accounts\", \"sign in to LinkedIn/X through Google\", or when an agent is stuck on a sign-in page."
+      },
+      "hasFrontmatter": true,
+      "lang": "en",
+      "bytes": 6616,
+      "lines": 110,
+      "sha256": "c7eadb87f1ed3348ba5ce78b71776c1db855e5e72cd070961f04663bba28d85d",
+      "headings": [
+        {
+          "level": 1,
+          "text": "Connect accounts through the person's own browser",
+          "line": 6
+        },
+        {
+          "level": 2,
+          "text": "When to use this skill",
+          "line": 17
+        },
+        {
+          "level": 2,
+          "text": "The moves, case by case",
+          "line": 23
+        },
+        {
+          "level": 2,
+          "text": "Rules that do not bend",
+          "line": 41
+        },
+        {
+          "level": 2,
+          "text": "When a tap reaches nothing",
+          "line": 58
+        },
+        {
+          "level": 2,
+          "text": "Quick diagnosis",
+          "line": 93
+        },
+        {
+          "level": 2,
+          "text": "Related",
+          "line": 106
+        }
+      ],
+      "codeBlocks": [],
+      "links": [],
+      "hosts": [],
+      "dates": [
+        "2026-09-22"
+      ],
+      "extras": [],
+      "liveShell": false,
+      "specsDeclared": [],
+      "specRefs": [],
+      "tags": [
+        "has/frontmatter",
         "lang/en",
         "link/unbound",
         "size/small",

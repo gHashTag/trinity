@@ -553,7 +553,7 @@ Quick reference for all Trinity CLI commands used during development.
 ### Getting Help
 
 - **GitHub Issues**: [github.com/gHashTag/trinity/issues](https://github.com/gHashTag/trinity/issues) -- bug reports, feature requests, and questions.
-- **GitHub Discussions**: [github.com/gHashTag/trinity/discussions](https://github.com/gHashTag/trinity/discussions) -- open-ended conversations and ideas.
+- **GitHub Issues**: [github.com/gHashTag/trinity/discussions](https://github.com/gHashTag/trinity/issues) -- questions and proposals; Discussions is unavailable.
 - **Telegram**: Join the Trinity community chat for real-time discussion and support.
 
 ### Submitting a Pull Request

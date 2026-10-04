@@ -40,6 +40,7 @@ import { createServer } from 'node:http';
 import { readFileSync, existsSync, mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join, extname, normalize } from 'node:path';
 import { tmpdir } from 'node:os';
+import { readToolCatalog } from '../scripts/agents-from-specs.mjs';
 
 const ROOT = new URL('..', import.meta.url).pathname;
 const DIST = join(ROOT, 'dist');
@@ -71,10 +72,18 @@ if (SIZES.length !== 6) { console.error(`  VIEWPORTS has ${SIZES.length} sizes, 
 // card), it does not pass quietly.
 const EXPLORERS = [
   { name: 'tools', route: '#/tools?tool=mcp%2Fgitbutler', card: 'mcp/gitbutler' },
+  // No deep link: the card the explorer opens by itself, which is what the Queen's
+  // Tools tab (#/tools?embed=1) shows. Every deep link above was a short id, so the
+  // default card — a schema-2 qualified id with the `registry-export` witness —
+  // threw on every boot and left the tab blank while this contract stayed green.
+  // The site joins spec-tools.json with its parts before picking that card, so this
+  // does too: the head file's own tools[0] is not what the page opens.
+  { name: 'tools-default', route: '#/tools', card: readToolCatalog().tools[0].id, listOnPhone: true },
   { name: 'skills', route: '#/skills?skill=t27%2Ftri-pipeline', card: 't27/tri-pipeline' },
   { name: 'crons', route: '#/crons?cron=github-actions%2Ft27%2Fpr-dashboard', card: 'github-actions/t27/pr-dashboard' },
   { name: 'agents', route: '#/agents?agent=D', card: 't27/D' },
   { name: 'functions', route: '#/functions?function=content-detailed-script-generate', card: 'content-detailed-script-generate' },
+  { name: 'providers', route: '#/providers?provider=gonka%2Fminimax-m2-7', card: 'gonka/minimax-m2-7' },
   // The spec explorer marks no card; its open detail is the code view.
   { name: 'specs', route: '#/specs?spec=specs%2Ftutorial%2F02_functions.t27', card: null, detail: '.spec-x main' },
 ];
@@ -237,7 +246,10 @@ for (const [w, h] of SIZES) {
   const compact = tier === 'phone' || tier === 'tablet';
   await call('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: 1, mobile: compact });
   for (const x of EXPLORERS) {
-    await call('Page.navigate', { url: `${ORIGIN}/?lang=en${x.route}` });
+    // A distinct search per explorer forces a full load. With one search for all,
+    // #/tools?tool=… then #/tools is a hash change inside one document, and the
+    // explorer (which reads its deep link on mount) keeps the previous card.
+    await call('Page.navigate', { url: `${ORIGIN}/?lang=en&explorer=${x.name}${x.route}` });
     await sleep(SETTLE_MS);
     let r;
     try { r = await evaluate(PROBE); } catch (e) { failures++; console.log(`  ${w}x${h} ${x.name.padEnd(9)} FAIL  ${e.message}`); continue; }
@@ -250,12 +262,17 @@ for (const [w, h] of SIZES) {
     if (r.doc.sh > r.doc.ch) (compact && !SPEC.DOCUMENT_SCROLLS ? fail : warn).push(`document scrolls: scrollHeight ${r.doc.sh} > clientHeight ${r.doc.ch}`);
     // Panes: phone shows one, the others two.
     if (r.panes !== PANES[tier]) fail.push(`${r.panes} pane(s) visible (aside ${r.asides}, main ${r.mains}), spec says ${PANES[tier]}`);
+    // Without a deep link a phone shows the list pane, by design: the default card
+    // is selected but not opened, so there is no card and no back control to see.
+    const listPane = x.listOnPhone && tier === 'phone';
     // The deep link opened its card, inside the viewport.
-    if (x.card !== null) {
+    if (listPane) {
+      // nothing to check beyond the root, the tier and the single pane above
+    } else if (x.card !== null) {
       if (r.card !== x.card) fail.push(`card ${JSON.stringify(r.card)} open, deep link named ${JSON.stringify(x.card)}`);
       else if (!r.cardRect || r.cardRect.top < 0 || r.cardRect.top >= r.doc.vh || r.cardRect.left < 0 || r.cardRect.right > r.doc.vw + 1) fail.push(`card not in viewport: ${JSON.stringify(r.cardRect)}`);
     } else if (r.mains !== 1) fail.push(`detail pane not open (${r.mains} main)`);
-    if (tier === 'phone') {
+    if (tier === 'phone' && !listPane) {
       if (!r.back) fail.push('no .spec-x-back control on the card');
       else if (r.back.h < SPEC.BACK_CONTROL_MIN_PX || r.back.w < SPEC.BACK_CONTROL_MIN_PX) fail.push(`back control ${r.back.w}x${r.back.h} < ${SPEC.BACK_CONTROL_MIN_PX}`);
     }

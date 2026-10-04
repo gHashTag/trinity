@@ -196,7 +196,7 @@ module Assembler {
         if (alignment == 0) {
             return addr;
         }
-        var remainder : u32 = addr % alignment;
+        const remainder : u32 = addr % alignment;
         if (remainder == 0) {
             return addr;
         }

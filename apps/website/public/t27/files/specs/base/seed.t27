@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
-; seed.t27 -- Minimal Golden Seed for E2E CI (#150)
-; phi^2 + 1/phi^2 = 3 | TRINITY
+; seed.t27 — Minimal Golden Seed for E2E CI (#150)
+; φ² + 1/φ² = 3 | TRINITY
 
 module seed;
 

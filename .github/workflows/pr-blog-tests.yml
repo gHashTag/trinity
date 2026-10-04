@@ -1,0 +1,25 @@
+name: PR blog pipeline tests
+on:
+  pull_request:
+    paths:
+      - 'scripts/pr_blog*.py'
+      - 'scripts/test_pr_blog*.py'
+      - '.github/workflows/pr-blog-*.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/pr_blog*.py'
+      - 'scripts/test_pr_blog*.py'
+      - '.github/workflows/pr-blog-*.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - run: python3 -m unittest discover -s scripts -p 'test_pr_blog*.py' -v

@@ -9,7 +9,7 @@
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
-const ArrayList = std.ArrayList;
+const ArrayList = std.array_list.Managed;
 const bytecode = @import("bytecode.zig");
 const Opcode = bytecode.Opcode;
 const Value = bytecode.Value;

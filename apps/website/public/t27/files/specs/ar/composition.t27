@@ -404,7 +404,7 @@ spec Composition {
         for v in values {
             sum = sum + v
         }
-        return sum / len(values) as float
+        return sum / len(values) as f64
     }
 
     // Map float values to trits
@@ -546,25 +546,87 @@ spec Composition {
         assert confidence > 0.0
     }
 
+    test compose_cnn_rules_basic {
+        let cnn = MLComponent {
+            component_type: ComponentType::ML_CNN,
+            name: "test_cnn",
+            parameters: [],
+            output_dim: 3
+        };
+        let rules = ARComponent {
+            component_type: ComponentType::AR_K3,
+            name: "test_rules",
+            max_steps: 10,
+            proof_trace_required: true
+        };
+        let pipeline = compose_cnn_rules(cnn, rules);
+        
+        assert pipeline.ml_components.len == 1;
+        assert pipeline.ar_components.len == 1;
+        assert pipeline.pattern == CompositionPattern::CNN_RULES;
+        assert pipeline.fused == true;
+    }
+
     // BENCHMARKS
 
     bench execute_pipeline_latency {
         // Target: <100μs for simple composition
+        let cnn = MLComponent {
+            component_type: ComponentType::ML_CNN,
+            name: "benchmark_cnn",
+            parameters: [],
+            output_dim: 3
+        };
+        let rules = ARComponent {
+            component_type: ComponentType::AR_K3,
+            name: "benchmark_rules",
+            max_steps: 10,
+            proof_trace_required: false
+        };
+        let pipeline = compose_cnn_rules(cnn, rules);
+        let _result = execute_pipeline(pipeline, [0.5, 0.6, 0.7]);
+        // Benchmark execution happens here
     }
 
     bench fuse_results_latency {
         // Target: <10μs for fusion operation
+        let ml_outputs = [K_TRUE, K_FALSE, K_UNKNOWN];
+        let ar_output = K_TRUE;
+        let pattern = CompositionPattern::CNN_RULES;
+        let _result = fuse_results(ml_outputs, ar_output, pattern);
+        // Benchmark execution happens here
     }
 
     bench majority_vote_latency {
         // Target: <5μs for 10-element vote
+        let votes = [K_TRUE, K_TRUE, K_FALSE, K_UNKNOWN, K_TRUE, K_FALSE, K_TRUE, K_UNKNOWN, K_FALSE, K_TRUE];
+        let _result = majority_vote(votes);
+        // Benchmark execution happens here
     }
 
     bench execute_ml_component_latency {
         // Target: <50μs (depends on model size)
+        let ml = MLComponent {
+            component_type: ComponentType::ML_MLP,
+            name: "benchmark_mlp",
+            parameters: [],
+            output_dim: 3
+        };
+        let input = [0.8, 0.2, 0.7];
+        let _result = execute_ml_component(ml, input);
+        // Benchmark execution happens here
     }
 
     bench execute_ar_component_latency {
         // Target: <20μs for K3 reasoning
+        let ar = ARComponent {
+            component_type: ComponentType::AR_K3,
+            name: "benchmark_ar",
+            max_steps: 10,
+            proof_trace_required: false
+        };
+        let ml_outputs = [K_TRUE, K_FALSE, K_UNKNOWN];
+        let _result = execute_ar_component(ar, ml_outputs);
+        // Benchmark execution happens here
     }
 }

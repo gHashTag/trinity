@@ -4,33 +4,33 @@
 // Ring 053 - Defines reusable property testing patterns
 // This spec provides templates for property-based testing of T27 formats
 // Properties: mathematical invariants that must hold for ALL valid inputs
-// phi^2 + 1/phi^2 = 3 | TRINITY
+// φ² + 1/φ² = 3 | TRINITY
 
 module PropertyTestTemplate {
     use math::constants;
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 1. Property Test Types
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // Property test strategies
-    const STRATEGY_RANDOM : i32 = 0;      // Random generation with N samples
-    const STRATEGY_EXHAUSTIVE : i32 = 1;  // Exhaustive for small domains
-    const STRATEGY_BOUNDARY : i32 = 2;    // Focus on boundary conditions
+    const STRATEGY_RANDOM : i32 = 0      // Random generation with N samples
+    const STRATEGY_EXHAUSTIVE : i32 = 1  // Exhaustive for small domains
+    const STRATEGY_BOUNDARY : i32 = 2    // Focus on boundary conditions
 
     // Sample sizes for random testing
-    const SAMPLE_SIZE_SMALL : i32 = 100;
-    const SAMPLE_SIZE_MEDIUM : i32 = 1000;
-    const SAMPLE_SIZE_LARGE : i32 = 10000;
+    const SAMPLE_SIZE_SMALL : i32 = 100
+    const SAMPLE_SIZE_MEDIUM : i32 = 1000
+    const SAMPLE_SIZE_LARGE : i32 = 10000
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 2. Property Definitions (as test generators)
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // Test associativity: (a op b) op c = a op (b op c) for all a,b,c
     // Domain: binary operations
     // Examples: addition, multiplication, trit-add
-    fn test_associative_add(values: []const f64, len: usize) -> bool {
+    fn test_associative_add(values: []f64, len: usize) -> bool {
         var i : usize = 0
         while (i < len) {
             var j : usize = 0
@@ -55,7 +55,7 @@ module PropertyTestTemplate {
     }
 
     // Test associativity for multiplication
-    fn test_associative_mul(values: []const f64, len: usize) -> bool {
+    fn test_associative_mul(values: []f64, len: usize) -> bool {
         var i : usize = 0
         while (i < len) {
             var j : usize = 0
@@ -81,7 +81,7 @@ module PropertyTestTemplate {
 
     // Test commutativity: a op b = b op a for all a,b
     // Domain: binary operations
-    fn test_commutative_add(values: []const f64, len: usize) -> bool {
+    fn test_commutative_add(values: []f64, len: usize) -> bool {
         var i : usize = 0
         while (i < len) {
             var j : usize = 0
@@ -100,7 +100,7 @@ module PropertyTestTemplate {
         return true
     }
 
-    fn test_commutative_mul(values: []const f64, len: usize) -> bool {
+    fn test_commutative_mul(values: []f64, len: usize) -> bool {
         var i : usize = 0
         while (i < len) {
             var j : usize = 0
@@ -120,7 +120,7 @@ module PropertyTestTemplate {
     }
 
     // Test distributivity: a * (b + c) = (a * b) + (a * c)
-    fn test_distributive_mul_add(values: []const f64, len: usize) -> bool {
+    fn test_distributive_mul_add(values: []f64, len: usize) -> bool {
         var i : usize = 0
         while (i < len) {
             var j : usize = 0
@@ -145,7 +145,7 @@ module PropertyTestTemplate {
     }
 
     // Test identity: a + 0 = a, a * 1 = a
-    fn test_identity_add(values: []const f64, len: usize) -> bool {
+    fn test_identity_add(values: []f64, len: usize) -> bool {
         var i : usize = 0
         while (i < len) {
             const a = values[i]
@@ -158,7 +158,7 @@ module PropertyTestTemplate {
         return true
     }
 
-    fn test_identity_mul(values: []const f64, len: usize) -> bool {
+    fn test_identity_mul(values: []f64, len: usize) -> bool {
         var i : usize = 0
         while (i < len) {
             const a = values[i]
@@ -172,7 +172,7 @@ module PropertyTestTemplate {
     }
 
     // Test inverse: a + (-a) = 0, a * (1/a) = 1 (for a != 0)
-    fn test_inverse_add(values: []const f64, len: usize) -> bool {
+    fn test_inverse_add(values: []f64, len: usize) -> bool {
         var i : usize = 0
         while (i < len) {
             const a = values[i]
@@ -185,7 +185,7 @@ module PropertyTestTemplate {
         return true
     }
 
-    fn test_inverse_mul(values: []const f64, len: usize) -> bool {
+    fn test_inverse_mul(values: []f64, len: usize) -> bool {
         var i : usize = 0
         while (i < len) {
             const a = values[i]
@@ -201,7 +201,7 @@ module PropertyTestTemplate {
     }
 
     // Test idempotence: min(a,a) = a, max(a,a) = a
-    fn test_idempotent_min(values: []const f64, len: usize) -> bool {
+    fn test_idempotent_min(values: []f64, len: usize) -> bool {
         var i : usize = 0
         while (i < len) {
             const a = values[i]
@@ -215,7 +215,7 @@ module PropertyTestTemplate {
         return true
     }
 
-    fn test_idempotent_max(values: []const f64, len: usize) -> bool {
+    fn test_idempotent_max(values: []f64, len: usize) -> bool {
         var i : usize = 0
         while (i < len) {
             const a = values[i]
@@ -238,9 +238,9 @@ module PropertyTestTemplate {
         return result as i64
     }
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 3. Helper Functions
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // Absolute value
     fn abs(x: f64) -> f64 {
@@ -253,31 +253,31 @@ module PropertyTestTemplate {
     // Power function
     fn pow(x: f64, n: f64) -> f64 {
         if (x < 0.0 and n != floor(n)) {
-            return std.math.nan(f64) // NaN
+            return 0.0 / 0.0 // NaN
         }
         if (x == 0.0) {
             if (n > 0.0) { return 0.0 }
             if (n == 0.0) { return 1.0 }
-            return std.math.inf(f64)
+            return 1.0 / 0.0
         }
         if (n == 0.0) { return 1.0 }
 
-        const negative = n < 0.0
-        const exp = if (negative) { -n } else { n }
-        const is_integer = exp == floor(exp)
+        let negative = n < 0.0
+        let exp = if (negative) { -n } else { n }
+        let is_integer = exp == floor(exp)
 
         if (is_integer) {
-            const exp_int = exp as i64
-            var result : f64 = 1.0
+            let exp_int = exp as i64
+            var result = 1.0
             var base = x
             var e = exp_int
 
             while (e > 0) {
-                if (@rem(e, 2) == 1) {
+                if (e % 2 == 1) {
                     result = result * base
                 }
                 base = base * base
-                e = @divTrunc(e, 2)
+                e = e / 2
             }
 
             if (negative) { result = 1.0 / result }
@@ -285,9 +285,9 @@ module PropertyTestTemplate {
         }
 
         // Fractional: use log/exp approximation
-        const ln_x = ln(x)
-        var result : f64 = 1.0
-        var term : f64 = 1.0
+        let ln_x = ln(x)
+        var result = 1.0
+        var term = 1.0
         var i : u32 = 1
         while (i <= 12) {
             term = term * exp * ln_x / @as(f64, @floatFromInt(i))
@@ -302,31 +302,31 @@ module PropertyTestTemplate {
     // Natural logarithm
     fn ln(x: f64) -> f64 {
         if (x <= 0.0) {
-            return std.math.nan(f64)
+            return 0.0 / 0.0
         }
         if (x == 1.0) {
             return 0.0
         }
-        const t = (x - 1.0) / (x + 1.0)
-        const t2 = t * t
-        const t3 = t2 * t
-        const t5 = t3 * t2
-        const t7 = t5 * t2
+        let t = (x - 1.0) / (x + 1.0)
+        let t2 = t * t
+        let t3 = t2 * t
+        let t5 = t3 * t2
+        let t7 = t5 * t2
         return 2.0 * (t + t3 / 3.0 + t5 / 5.0 + t7 / 7.0)
     }
 
     // Floor function
     fn floor(x: f64) -> f64 {
-        const xi = x as i64
+        let xi = x as i64
         if (x >= 0.0 or x == xi as f64) {
             return xi as f64
         }
         return (xi - 1) as f64
     }
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 4. TDD - Tests
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     test associative_addition
         given values = [_]f64{1.0, 2.0, 3.0, -1.5, 0.5, 0.0}
@@ -419,9 +419,9 @@ module PropertyTestTemplate {
         when result = test_tritspace_dimension(n)
         then result == 243
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 5. TDD - Invariants
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     invariant associative_invariant
         // Associativity is a fundamental property for many operations
@@ -457,9 +457,9 @@ module PropertyTestTemplate {
         assert test_tritspace_dimension(4) == 81
         // Rationale: N trits can represent 3^N distinct states
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 6. TDD - Benchmarks
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     bench property_test_associative
         // Measure: cycles to test associativity on 10 values

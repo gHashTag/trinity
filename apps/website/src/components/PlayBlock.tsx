@@ -106,9 +106,9 @@ export default function PlayBlock() {
           <p>{t.lede}</p>
         </header>
 
-        <ol className="play-block-steps">
+        <ol className="play-block-steps site-card-row">
           {t.steps.map((step) => (
-            <li key={step.n}>
+            <li className="site-card" key={step.n}>
               <span className="play-step-n">{step.n}</span>
               <strong>{step.name}</strong>
               <p>{step.body}</p>

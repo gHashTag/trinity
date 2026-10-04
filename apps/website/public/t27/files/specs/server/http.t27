@@ -103,7 +103,7 @@ pub const ServerConfig = struct {
 /// Middleware context
 pub const MiddlewareContext = struct {
     request : HttpRequest,
-    response : ?*HttpResponse,
+    response : *HttpResponse,
     metadata : []u8,
 };
 
@@ -177,7 +177,7 @@ pub fn request_empty() HttpRequest {
 pub fn middleware_context_create(req: HttpRequest) MiddlewareContext {
     return MiddlewareContext{
         .request = req,
-        .response = null,
+        .response = @ptrFromNull(HttpResponse{}),
         .metadata = "",
     };
 }

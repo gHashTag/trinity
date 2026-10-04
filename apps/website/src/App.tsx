@@ -1,15 +1,38 @@
 import Navigation from './components/Navigation'
 import GameHero from './components/GameHero'
+import GetStartedBlock from './components/GetStartedBlock'
 import Footer from './components/Footer'
 import ServiceEntry from './components/ServiceEntry'
 import QueenHeroBlock from './components/QueenHeroBlock'
 import SpecHeroBlock from './components/SpecHeroBlock'
 import ModuleHeroBlock from './components/ModuleHeroBlock'
-import { MODULES } from './lib/queenModules'
 import PlayBlock from './components/PlayBlock'
+import TriMineBlock from './components/TriMineBlock'
+import AgiGameBlock from './components/AgiGameBlock'
+import FaqBlock from './components/FaqBlock'
+import ModulesBlock from './components/ModulesBlock'
+import DevKitBlock from './components/DevKitBlock'
 
-// Главная — это игра. Первый экран: карта, на которой лежат спеки, затем сама
-// спека, затем шесть модулей, каждый показан собой же.
+// Модулей на главной три, а не одиннадцать: доску, корпус и этот показ ведут
+// собственные блоки, остальные лежат указателем в конце.
+const SHOWCASE = ['kanban', 'factory', 'agents'] as const
+
+// Главная — это игра, и читается она как воронка: марка и девиз, три входа,
+// живая доска, зачем ею управлять, как сделать ход, что спрашивают перед
+// ходом, вход — и только потом глубина: корпус, три модуля в полный рост и
+// указатель на все остальные.
+//
+// Корпус и модули не запускаются сами. Каждый из них — целое приложение во
+// фрейме, и пока они монтировались при прокрутке, один проход по главной
+// загружал четыре копии сайта: 218 запросов, около 8 МБ, и каждая доска
+// опрашивала супервизор (замер на t27.ai, 2026-10-04). Теперь фрейм
+// запускается кнопкой в нём самом.
+//
+// Порядок такой не по вкусу. Страницу измерили: 20 962px, 27 экранов, из них
+// восемнадцать подряд — одиннадцать одинаковых блоков модулей с одной и той же
+// кнопкой, а единственный шаг, где посетитель может назваться, стоял двадцать
+// пятым. Возражения не разбирались нигде. Всё перечисленное — известные
+// причины терять читателя, и все три исправлены здесь, а не переписаны словами.
 //
 // Число и заявление о форматах — r² = r + 1 и всё, что из него следует, — были
 // здесь первым экраном и переехали на /trinity целиком. Тот, кто пришёл за
@@ -35,26 +58,66 @@ export default function App() {
     <main>
       <Navigation />
 
-      {/* The mark first, and then in one line what the site is. The number the
-          game exists to build lives on /trinity and is linked from here. */}
+      {/* The mark, the motto under it, and in one line what the site is. The
+          number the game exists to build lives on /trinity and is linked from
+          here. */}
       <GameHero />
+
+      {/* Three ways in, one per kind of visitor, before anything asks them to
+          read: someone who writes code, someone with a machine to lend, someone
+          who wants to work on the core. Each button opens a place that works
+          today; what is not built yet is said on its card. */}
+      <GetStartedBlock />
+
+      {/* The board itself, right after the ways in. It is the strongest thing
+          this page has — the live scene the /queen route mounts, not a
+          picture of it — and it
+          used to sit at the seventh screen, behind the argument for it. Show
+          the board, then argue for it. */}
+      <QueenHeroBlock />
+
+      {/* Why a swarm is worth directing, before how to contribute to it. It
+          carries the move the site never named — writing the boundary that
+          lets the Queen dispatch an issue — and the supervisor's own refusal
+          count as the evidence that the move is needed. Its first card hands
+          the reader down to PlayBlock, so it sits above it. */}
+      <AgiGameBlock />
       {/* The point of the front door: a developer arrives, and the four moves
           that put a cell of the core in their hands are named before the
           modules are. The core is built by playing it. */}
       <PlayBlock />
+      {/* What the moves earn, right after the moves: the token's live figures
+          and one button that hands a visitor's own agent the work order. */}
+      <TriMineBlock />
 
-      {/* The comb and the corpus keep their own blocks: each mounts something
-          particular — the live scene, the Explorer — rather than a frame of the
-          shell. Every other module is that same shape, at that same size,
-          rendered from the list, so a seventh module is a seventh entry in
-          lib/queenModules and nothing here changes. */}
-      <QueenHeroBlock />
-      <SpecHeroBlock />
-      {MODULES.filter((module) => module.tab !== 'comb' && module.tab !== 'specs').map((module) => (
-        <ModuleHeroBlock key={module.tab} tab={module.tab} />
-      ))}
-
+      {/* What the reader is thinking once the moves are named: what it costs,
+          whether the language has to come first, what happens after they send.
+          Objections are answered where they are raised, and the ask comes
+          straight after them rather than twenty screens later. */}
+      <FaqBlock />
       <ServiceEntry />
+
+      {/* The newest measured work and the club, after the ask: the FPGA flow
+          timed layer by layer (#/devkit, the flow post) and the TRI DEV
+          developer agent at the club's one price. */}
+      <DevKitBlock />
+
+      {/* Then the depth, for the reader still going: the corpus through the
+          real compiler, three modules shown at full size, and an index of all
+          of them.
+          This place carried eleven identical blocks — eighteen consecutive
+          screens of one layout and one button. The header comment above said
+          "затем шесть модулей" and had stopped being true. The showcase is now
+          a named list, and every other module stands as a card at the end, so
+          none is lost and none is repeated. */}
+      <SpecHeroBlock />
+      {SHOWCASE.map((tab) => (
+        <ModuleHeroBlock key={tab} tab={tab} />
+      ))}
+      {/* Every module is reachable from the homepage: ModulesBlock draws all
+          MODULES.length cards, TRI included — whose full-size preview would
+          load a whole third-party app for everyone who scrolled past it. */}
+      <ModulesBlock />
 
       <Footer />
     </main>

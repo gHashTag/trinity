@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { reportExplorerAddress } from '../lib/queenFrame'
 
 /**
  * The query part of a hash route.
@@ -35,6 +36,8 @@ export function useHashParams() {
   /** Rewrite the address bar without a history entry, so browsing does not pile up entries. */
   const set = useCallback((hash: string) => {
     window.history.replaceState(null, '', hash)
+    // In a Queen tab's frame the Queen's address names the card too (lib/queenEmbed).
+    reportExplorerAddress(hash)
   }, [])
   // Memoised: the pages hold callbacks that close over this object, and a new
   // identity on every render would rebuild every one of them for nothing.

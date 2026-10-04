@@ -20,6 +20,8 @@ pub const ENV : [1]str = ["GITBUTLER_REPO"];
 ; The .mcp.json that registers the server ("" when it is not registered at this commit).
 pub const CONFIG : str = ".mcp.json";
 pub const REPO : str = "gHashTag/t27";
+pub const QUALIFIED_ID : str = "gHashTag/t27:mcp/gitbutler";
+pub const SCHEMA : u32 = 2;
 pub const SOURCE : str = ".mcp.json";
 pub const ABOUT : str = "External GitButler MCP server launched as `but mcp`; the repository only registers it in .mcp.json.";
 pub const ABOUT_SOURCE : str = ".mcp.json entry; no tool list in this repository";

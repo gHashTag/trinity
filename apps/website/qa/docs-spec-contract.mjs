@@ -21,7 +21,7 @@ import { join, resolve } from 'node:path'
 import {
   CHAPTER_DIR, DIAGRAMS, DOCS_OUT, DOCS_SPEC, FORBIDDEN_EN, FORBIDDEN_RU, I18N_FIELDS, STATUS_TAGS, TABLES, generate, parseLawTable, parsePhases, t27CheckoutRoot,
 } from '../scripts/docs-from-specs.mjs'
-import { REPO_ROOT } from '../scripts/agents-from-specs.mjs'
+import { REPO_ROOT, readToolCatalog } from '../scripts/agents-from-specs.mjs'
 import { MODULES } from '../src/lib/queenModules.ts'
 import { HUD_VIEWS, HUD_KEYS } from '../src/components/queenHud.ts'
 
@@ -143,11 +143,12 @@ assert.deepEqual([...seenDiagrams].sort(), [...docs.document.diagrams].sort(), '
 
 // 4. Generated tables and figures carry the numbers the catalogs carry.
 const agents = JSON.parse(readFileSync('public/agents/spec-agents.json', 'utf8'))
-const tools = JSON.parse(readFileSync('public/tools/spec-tools.json', 'utf8'))
+const tools = readToolCatalog()
 const skills = JSON.parse(readFileSync('public/skills/spec-skills.json', 'utf8'))
 const crons = JSON.parse(readFileSync('public/crons/spec-crons.json', 'utf8'))
+const functions = JSON.parse(readFileSync('public/functions/spec-functions.json', 'utf8'))
 const manifest = JSON.parse(readFileSync('public/t27/manifest.json', 'utf8'))
-assert.deepEqual(docs.ladder, { specs: manifest.specs.length, skills: skills.counts.specs, crons: crons.counts.specs, agents: agents.counts.specs, tools: tools.counts.specs, docsChapters: docs.chapters.length })
+assert.deepEqual(docs.ladder, { specs: manifest.specs.length, skills: skills.counts.specs, crons: crons.counts.specs, agents: agents.counts.specs, tools: tools.counts.specs, functions: functions.counts.specs, docsChapters: docs.chapters.length })
 assert.deepEqual(docs.figures.ladder.counts, docs.ladder)
 assert.equal(docs.figures['agent-ring'].agents.length, agents.agents.length)
 assert.deepEqual(docs.figures['agent-ring'].agents.map((a) => a.letter), agents.agents.slice().sort((a, b) => a.ordinal - b.ordinal).map((a) => a.letter))
@@ -156,7 +157,7 @@ const tableOf = (kind) => docs.chapters.find((c) => c.table?.kind === kind)?.tab
 const agentsTable = tableOf('agents'), toolsTable = tableOf('tools'), lawsTable = tableOf('laws'), phasesTable = tableOf('phases'), claimsTable = tableOf('claims'), ladderTable = tableOf('ladder-counts'), witnessTable = tableOf('witnesses')
 if (agentsTable) { assert.equal(agentsTable.rows.length, agents.agents.length); for (const r of agentsTable.rows) { const a = agents.agents.find((x) => x.letter === r.letter); assert.ok(a, r.letter); assert.deepEqual(r.skills, a.skills.map((s) => s.id)); assert.deepEqual(r.tools, a.tools.map((t) => t.id)) } }
 if (toolsTable) { assert.equal(toolsTable.rows.length, tools.tools.length); for (const r of toolsTable.rows) { const t = tools.tools.find((x) => x.id === r.id); assert.ok(t, r.id); assert.equal(r.witness, t.fields.WITNESS); assert.deepEqual(r.agents, t.agents.map((a) => a.letter)) } }
-if (ladderTable) assert.deepEqual(ladderTable.rows.map((r) => r.count), [docs.ladder.specs, docs.ladder.skills, docs.ladder.crons, docs.ladder.agents, docs.ladder.tools])
+if (ladderTable) assert.deepEqual(ladderTable.rows.map((r) => r.count), [docs.ladder.specs, docs.ladder.skills, docs.ladder.crons, docs.ladder.agents, docs.ladder.tools, docs.ladder.functions])
 if (witnessTable) {
   const row = (layer, label) => witnessTable.rows.find((r) => r.layer === layer && r.label === label)?.count
   assert.equal(row('Skills', 'spec+code'), skills.counts.specPlusCode)
@@ -169,8 +170,11 @@ if (witnessTable) {
 const constitution = readFileSync(join(CORPUS, 'docs/T27-CONSTITUTION.md'), 'utf8')
 const alphabet = readFileSync(join(CORPUS, 'docs/agents/AGENTS_ALPHABET.md'), 'utf8')
 const laws = parseLawTable(constitution), phases = parsePhases(alphabet)
-assert.equal(laws.rows.length, 7, 'the constitution defines L1-L7')
-assert.deepEqual(laws.rows.map((l) => l.law), ['L1', 'L2', 'L3', 'L4', 'L5', 'L6', 'L7'])
+// L0 PURPOSE (adopted 2026-09-23) opens the table and sits outside the L1-L7
+// ordering by the constitution's own words; L1-L7 follow in order, unchanged.
+const lawIds = laws.rows.map((l) => l.law)
+const orderedLaws = lawIds[0] === 'L0' ? lawIds.slice(1) : lawIds
+assert.deepEqual(orderedLaws, ['L1', 'L2', 'L3', 'L4', 'L5', 'L6', 'L7'], 'the constitution defines L1-L7, optionally preceded by L0 PURPOSE')
 if (lawsTable) assert.deepEqual(lawsTable.rows, laws.rows)
 assert.deepEqual(docs.figures['law-hierarchy'].laws.map((l) => l.law), laws.rows.map((l) => l.law))
 assert.equal(phases.length, 7, 'the alphabet draws six phases plus GIT WORKFLOW')

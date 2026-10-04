@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-# NN BENCHMARK -- Small NN Inference
+# NN BENCHMARK — Small NN Inference
 
 ## Specification
 
@@ -9,7 +9,7 @@ Tests ternary vs FP16/BF16/GF16 on MNIST-like workload.
 ## Mathematical Foundation
 
 ```
-phi^2 + 1/phi^2 = 3 = TRINITY
+φ² + 1/φ² = 3 = TRINITY
 ```
 
 ## Format Conversion

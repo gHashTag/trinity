@@ -10,6 +10,3 @@ module AutonomousUniverse;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test "autonomous_universe_smoke_test" {
-        expect(true)
-    }

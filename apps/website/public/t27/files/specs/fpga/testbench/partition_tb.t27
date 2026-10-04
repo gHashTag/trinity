@@ -79,6 +79,11 @@ module Partition_Testbench {
         invariant TOTAL_RESOURCES == 2000;
     }
 
+    test test_tick {
+        tick();
+        invariant clk == true;
+    }
+
     invariant max_partitions_positive : MAX_PARTITIONS > 0;
     invariant total_resources_positive : TOTAL_RESOURCES > 0;
 

@@ -10,6 +10,3 @@ module TriCosmology;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test "cosmology_smoke_test" {
-        expect(true)
-    }

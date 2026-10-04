@@ -4,7 +4,8 @@ import { createPortal } from 'react-dom';
 import { useSearchParams } from 'react-router-dom';
 import { useI18n } from '../i18n/context';
 import { TrinityLogo } from '../components/TrinityLogo';
-import {validateAtlas,type UniverseAtlas} from '../lib/queenUniverseAtlas';
+import type {UniverseAtlas} from '../lib/queenUniverseAtlas';
+import {loadCorpus} from '../lib/queenCorpus';
 import { placeHiveDisplays } from '../components/queenHiveDisplay';
 import { hexField, type CombHandle } from '../components/queenHud';
 import { COLLAB_ORIGIN, PINNED_WORLDS, WORLD_STORAGE, loadWorldIssues, loadWorldMetadata, mergeWorldIssues, parseWorldRepository, savedWorlds, type WorldIssue, type WorldMetadata } from '../components/queenRepositoryWorld';
@@ -41,7 +42,8 @@ export default function QueenUniverse() {
   const dialog=useRef<HTMLDialogElement>(null),pending=useRef<AbortController|null>(null);
   useEffect(()=>{document.body.classList.add('queen-universe-shell');return()=>{document.body.classList.remove('queen-universe-shell');pending.current?.abort();};},[]);
   useEffect(()=>{try{localStorage.setItem(WORLD_STORAGE,JSON.stringify([...new Set([...saved,repo])]));}catch{/* optional local preference */}},[saved,repo]);
-  useEffect(()=>{const abort=new AbortController();fetch('t27/universe-atlas.json',{signal:abort.signal,credentials:'omit'}).then(async r=>{if(!r.ok)throw new Error('atlas');return validateAtlas(await r.json());}).then(data=>{if(!abort.signal.aborted){setAtlas(data);setAtlasError(false);}}).catch(()=>{if(!abort.signal.aborted)setAtlasError(true);});return()=>abort.abort();},[atlasRetry]);
+  // The atlas from the corpus store (lib/queenCorpus), the copy every tab reads; a retry reads it again.
+  useEffect(()=>{let live=true;loadCorpus('atlas',{fresh:atlasRetry>0}).then(part=>{if(live){setAtlas(part.data);setAtlasError(false);}}).catch(()=>{if(live)setAtlasError(true);});return()=>{live=false;};},[atlasRetry]);
   useEffect(()=>{const abort=new AbortController();fetch(`${COLLAB_ORIGIN}/health`,{signal:abort.signal,credentials:'omit'}).then(r=>r.ok?r.json():null).then(v=>setAuthReady(v?.capabilities?.queenRepositoryPicker===true)).catch(()=>{});return()=>abort.abort();},[]);
   function choose(value:string) { setParams(p=>{const n=new URLSearchParams(p);n.delete('issue');n.delete('task');if(!coreView&&atlas?.worlds.some(w=>w.repo===value&&w.specCount>0)){n.delete('repo');n.delete('view');n.set('world',value);}else{n.set('repo',value);n.delete('world');if(n.get('view')==='atlas')n.delete('view');}return n;}); }
   async function connect() {
@@ -69,7 +71,16 @@ export default function QueenUniverse() {
       {repo!==PINNED_WORLDS[1]&&<button className="queen-world-shortcut" onClick={()=>choose(PINNED_WORLDS[1])}>T27 ↗</button>}
       <button className="queen-world-connect" onClick={()=>dialog.current?.showModal()}>{c.connect}</button>
       <button aria-pressed={atlasView} onClick={()=>setParams(new URLSearchParams())}>{lang==='ru'?'◈ Главная игры':'◈ Game home'}</button>
-      <button aria-pressed={coreView} onClick={()=>setParams(p=>{const n=new URLSearchParams(p);if(coreView)n.delete('view');else n.set('view','core');return n;})}>{coreView?(lang==='ru'?'← Карта':'← Map'):(lang==='ru'?'Общее ядро':'Shared core')}</button>
+      {/* Leaving the core view must not leave its selection behind. choose()
+          writes world= off the core view and repo= on it, because the core
+          names one repository while the map names a world; "← Map" deleted
+          only view=, so the repo= stayed and the map it returned to was the
+          legacy single-repository comb. That was four clicks from the default
+          board and the only in-app route to it - the board the phantom CONTEXT
+          chip belonged to. Convert the selection back on the way out, by the
+          same test choose() uses; a repository the atlas does not carry is a
+          world of its own and keeps its repo=. */}
+      <button aria-pressed={coreView} onClick={()=>setParams(p=>{const n=new URLSearchParams(p);if(coreView){n.delete('view');const r=n.get('repo');if(r&&atlas?.worlds.some(w=>w.repo===r&&w.specCount>0)){n.delete('repo');n.set('world',r);}}else n.set('view','core');return n;})}>{coreView?(lang==='ru'?'← Карта':'← Map'):(lang==='ru'?'Общее ядро':'Shared core')}</button>
     </nav>;
 
   // Where the nav goes when there is no slot yet.
@@ -87,13 +98,24 @@ export default function QueenUniverse() {
 
   return <div className="queen-universe" data-world={repo}>
     {slot ? createPortal(nav, slot) : shellIsComing ? null : nav}
-    <div className="queen-universe-content"><Suspense fallback={<p role="status">{c.loading}</p>}>
+    {/* The wait is the shell's own loader, not a sentence. A line of text
+        appearing on a black page reads as an error message; the mark and the
+        bar read as work in progress, which is what this is. */}
+    <div className="queen-universe-content"><Suspense fallback={<QueenLoading label={c.loading}/>}>
       {/* Loading is not failing. This paragraph carried the error class either
           way, so every cold load opened with the failure colour on a black
           page — which reads as "it did not load", because that is what it
-          looks like. */}
-      {commonHive&&!atlas?(atlasError?<p className="queen-world-error" role="alert">{c.failed}<button onClick={()=>setAtlasRetry(n=>n+1)}>{c.retry}</button></p>:<QueenLoading label={c.loading}/>):atlasView?<Atlas key={repo} atlas={atlas} error={atlasError} retry={()=>setAtlasRetry(n=>n+1)} lang={lang} initialRepo={repo} saved={saved}/>:coreView?<SharedCore key={`${repo}:${issueNumber}`} repo={repo} lang={lang} initialIssue={Number.isSafeInteger(issueNumber)&&issueNumber>0?issueNumber:undefined}/>:repo===PINNED_WORLDS[0]?<Runtime key={repo} sharedCatalog={commonHive?atlas??undefined:undefined}/>:<RepositoryWorld key={repo} repo={repo} lang={lang}/>}
+          looks like.
+          Nor is a failed atlas a failed shell. This branch used to return the
+          error in place of <Runtime/>, so one unreachable JSON file took all
+          thirteen tabs down with it — Kanban, the Spec Explorer, Agents, Tools,
+          none of which read the atlas at all. Queen takes sharedCatalog as
+          optional and falls back to the older hive without it, which is the
+          same path a connected repository already uses, so the shell mounts and
+          the failure is reported over it instead of in place of it. */}
+      {commonHive&&!atlas&&!atlasError?<QueenLoading label={c.loading}/>:atlasView?<Atlas key={repo} atlas={atlas} error={atlasError} retry={()=>setAtlasRetry(n=>n+1)} lang={lang} initialRepo={repo} saved={saved}/>:coreView?<SharedCore key={`${repo}:${issueNumber}`} repo={repo} lang={lang} initialIssue={Number.isSafeInteger(issueNumber)&&issueNumber>0?issueNumber:undefined}/>:repo===PINNED_WORLDS[0]?<Runtime key={repo} sharedCatalog={commonHive?atlas??undefined:undefined}/>:<RepositoryWorld key={repo} repo={repo} lang={lang}/>}
     </Suspense></div>
+    {commonHive&&atlasError&&!atlas&&<p className="queen-atlas-offline" role="alert">{c.failed}<button onClick={()=>setAtlasRetry(n=>n+1)}>{c.retry}</button></p>}
     <dialog className="queen-world-dialog" ref={dialog} aria-labelledby="world-connect-title">
       <header><h2 id="world-connect-title">{c.title}</h2><button onClick={()=>dialog.current?.close()} aria-label={c.close}>×</button></header>
       {authReady?<a className="queen-world-connect" href={`${COLLAB_ORIGIN}/queen/connect`} target="_blank" rel="noopener noreferrer">{c.login} ↗</a>:<p className="queen-world-auth-pending">{c.authPending}</p>}
@@ -141,7 +163,7 @@ function RepositoryWorld({repo,lang}:{repo:string;lang:'en'|'ru'}) {
     </div>
     {error&&<p className="queen-world-error" role="alert">{snapshot?c.stale:c.failed}: {errorCopy(error,c)}</p>}
     <div className="queen-world-stage" data-source="github-public" aria-busy={busy}>
-      {!snapshot?<p role="status">{busy?c.loading:c.failed}</p>:rows.length===0?<p>{snapshot.meta.issuesEnabled?c.empty:c.disabled}</p>:view==='hive'?<Suspense fallback={<p>{c.loading}</p>}><Hive displays={displays} cards={cards} workers={null} events={EMPTY_EVENTS} handleRef={handle} lang={lang} signalHealth={{board:error?'stale':'live',activity:'unknown'}} layers={{foundation:true,castle:false,code:false}}/></Suspense>:<div className="queen-world-list">{rows.map(row=><a key={row.key} href={`https://github.com/${repo}/issues/${row.number}`} target="_blank" rel="noopener noreferrer"><b>#{row.number}</b><span data-lang-exempt="github-title">{row.title}</span><small>{row.state==='closed'?(lang==='ru'?'Закрыта · T27 не подтверждено':'Closed · T27 unproven'):row.state==='dropped'?(lang==='ru'?'Отложена':'Paused'):(lang==='ru'?'Открыта':'Open')}</small></a>)}</div>}
+      {!snapshot?(busy?<QueenLoading label={c.loading}/>:<p role="status">{c.failed}</p>):rows.length===0?<p>{snapshot.meta.issuesEnabled?c.empty:c.disabled}</p>:view==='hive'?<Suspense fallback={<QueenLoading label={c.loading}/>}><Hive displays={displays} cards={cards} workers={null} events={EMPTY_EVENTS} handleRef={handle} lang={lang} signalHealth={{board:error?'stale':'live',activity:'unknown'}} layers={{foundation:true,castle:false,code:false}}/></Suspense>:<div className="queen-world-list">{rows.map(row=><a key={row.key} href={`https://github.com/${repo}/issues/${row.number}`} target="_blank" rel="noopener noreferrer"><b>#{row.number}</b><span data-lang-exempt="github-title">{row.title}</span><small>{row.state==='closed'?(lang==='ru'?'Закрыта · T27 не подтверждено':'Closed · T27 unproven'):row.state==='dropped'?(lang==='ru'?'Отложена':'Paused'):(lang==='ru'?'Открыта':'Open')}</small></a>)}</div>}
     </div>
     <footer><span>{c.scope}</span><time dateTime={snapshot?.at}>{snapshot?new Date(snapshot.at).toLocaleTimeString(lang):'—'}</time></footer>
   </main>;

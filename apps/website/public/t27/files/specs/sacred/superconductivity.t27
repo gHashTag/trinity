@@ -10,6 +10,3 @@ module TriSuperconductivity;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test "superconductivity_smoke_test" {
-        expect(true)
-    }

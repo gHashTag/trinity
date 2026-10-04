@@ -301,4 +301,4 @@ Agent management, experience tracking, GitHub issues, health monitoring, and FPG
 - **Cycle Commands**: 37 demos + 36 benchmarks = 73
 - **Operational**: 110+ (farm, cloud, dev, train, loop, job, research)
 
-For detailed command documentation, use `tri <command> --help` or see the [CLI Reference](/cli/index.md).
+For detailed command documentation, use `tri <command> --help` or see the [CLI Reference](index.md).

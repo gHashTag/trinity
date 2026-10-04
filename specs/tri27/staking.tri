@@ -1,3 +1,12 @@
+# SUPERSEDED (2026-09-24) -- not the TRI token-economics rule. Kept as history.
+# Source of truth: gHashTag/trinity-fpga @ d7e9718e9,
+#   specs/trinet/mint_on_acceptance.t27 and docs/docs/depin/tokenomics.md:
+#   100% of TRI is mined by accepted work; genesis supply 0; no pre-mine,
+#   no allocation, no sale; cap 3^21 = 10,460,353,203 TRI; TON + Solana;
+#   nothing deployed.
+# Contradiction here: REWARD_EMISSION_RATE mints per second of time,
+#   not per accepted piece of work.
+#
 # TRI-27 Staking Module — Source of Truth
 # Issue: #443
 # phi^2 + 1/phi^2 = 3 | TRINITY

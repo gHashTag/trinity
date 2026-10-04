@@ -1,0 +1,32 @@
+/* LEADERBOARD: who builds t27, and the runners lent to it. Grounds are opaque
+   or blurred, the way the contrast contract requires of anything carrying text
+   over the lit hive (qa/queen-contrast-contract.mjs). */
+.ql {
+  height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 20px max(16px, calc((100% - 1100px) / 2)) 48px;
+  color: #e8f5ee;
+  background: radial-gradient(ellipse at top, #06140d 0%, #020806 70%);
+}
+.ql > * {
+  flex-shrink: 0;
+}
+.ql-head h2 {
+  margin: 0 0 6px;
+  font-size: clamp(20px, 2.4vw, 28px);
+  letter-spacing: 0.02em;
+  color: var(--hud-green, #00ff88);
+}
+/* The way out of this tab and into the instructions. */
+.ql-howto {
+  display: inline-block;
+  margin-top: 10px;
+  color: var(--hud-cyan, #64dcff);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(100, 220, 255, 0.4);
+}
+.ql-howto:hover,
+.ql-howto:focus-visible {
+  border-bottom-color: var(--hud-cyan, #64dcff);
+}

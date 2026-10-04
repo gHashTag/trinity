@@ -30,6 +30,16 @@ export interface LastRun {
   endedAt: string | null
 }
 
+/**
+ * Newest run that WAS invoked by hand (probe suite, dashboard Invoke), with the manifest
+ * expectation beside it. `asExpected` is judged from the run status only; null when the
+ * manifest says `skip` or the run has not ended. Never a health signal.
+ */
+export interface LastProbe extends LastRun {
+  expect: string | null
+  asExpected: boolean | null
+}
+
 export interface FunctionStatus {
   id: string
   slug: string | null
@@ -38,7 +48,11 @@ export interface FunctionStatus {
   runs7d: RunCounts
   /** Per-day counts for the last seven days, oldest first, when the endpoint sends them; null otherwise. */
   daily7d: { day: string; completed: number | null; failed: number | null }[] | null
+  /** Newest run NOT invoked by hand (event or cron traffic) - the health dot. */
   lastRun: LastRun | null
+  lastProbe: LastProbe | null
+  /** `probe_expect` from the bot manifest: COMPLETED | FAILED-at-guard | skip. */
+  probeExpect: string | null
   lastError: string | null
 }
 
@@ -75,6 +89,7 @@ export function parseFunctionsStatus(body: unknown): FunctionsStatus | null {
     const id = str(f?.id)
     if (!f || !id) continue
     const last = rec(f.lastRun)
+    const probe = rec(f.lastProbe)
     const daily = Array.isArray(f.daily7d)
       ? f.daily7d
           .map((d) => rec(d))
@@ -89,6 +104,16 @@ export function parseFunctionsStatus(body: unknown): FunctionsStatus | null {
       runs7d: counts(f.runs7d),
       daily7d: daily,
       lastRun: last ? { id: str(last.id), status: str(last.status), endedAt: str(last.endedAt) } : null,
+      lastProbe: probe
+        ? {
+            id: str(probe.id),
+            status: str(probe.status),
+            endedAt: str(probe.endedAt),
+            expect: str(probe.expect),
+            asExpected: typeof probe.asExpected === 'boolean' ? probe.asExpected : null,
+          }
+        : null,
+      probeExpect: str(f.probeExpect),
       lastError: str(f.lastError),
     })
   }

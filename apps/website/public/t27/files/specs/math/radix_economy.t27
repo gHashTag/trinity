@@ -1,35 +1,35 @@
 // SPDX-License-Identifier: Apache-2.0
 // t27/specs/math/radix_economy.t27
-// Radix Economy Formal Spec -- Information-Theoretic Basis for Base-3 Computing
-// E(b) = ln(b)/b, maximized at b = e ~= 2.71828
+// Radix Economy Formal Spec — Information-Theoretic Basis for Base-3 Computing
+// E(b) = ln(b)/b, maximized at b = e ≈ 2.71828
 // E(3)/E(e) >= 99.5%, E(3)/E(2) = 1.054 (5.4% advantage)
 
 module RadixEconomy {
     use Constants;
 
-    // ===========================================================================
+    // ═══════════════════════════════════════════════════════════════════════════
     // 1. Radix Economy Constants
-    // =========================================================================================
+    // ═════════════════════════════════════════════════════════════════════════════════════════
 
-    // E(b) = ln(b) / b -- information per digit
-    // E(2) = ln(2)/2 ~= 0.34657 -- binary radix economy
+    // E(b) = ln(b) / b — information per digit
+    // E(2) = ln(2)/2 ≈ 0.34657 — binary radix economy
     const E_BASE2 : f64 = 0.34657359027997264; // ln(2)/2
 
-    // E(3) = ln(3)/3 ~= 0.36620 -- ternary radix economy
+    // E(3) = ln(3)/3 ≈ 0.36620 — ternary radix economy
     const E_BASE3 : f64 = 0.3662040962227032; // ln(3)/3
 
-    // E(e) = 1/e ~= 0.36788 -- optimal radix economy (theoretical maximum)
+    // E(e) = 1/e ≈ 0.36788 — optimal radix economy (theoretical maximum)
     const E_OPTIMAL : f64 = 0.36787944117144233; // 1/e
 
-    // log2(3) ~= 1.58496 -- bits per trit (information density)
+    // log2(3) ≈ 1.58496 — bits per trit (information density)
     const LOG2_3 : f64 = 1.584962500721156;
 
-    // log3(2) ~= 0.63093 -- trits per bit (inverse density)
+    // log3(2) ≈ 0.63093 — trits per bit (inverse density)
     const LOG3_2 : f64 = 0.6309297535714574;
 
-    // ===========================================================================
+    // ═══════════════════════════════════════════════════════════════════════════
     // 2. Radix Economy Functions
-    // =========================================================================================
+    // ═════════════════════════════════════════════════════════════════════════════════════════
 
     // Compute radix economy for base b
     fn radix_economy(b: f64) -> f64 {
@@ -61,9 +61,9 @@ module RadixEconomy {
         return (pow(2.0, n as f64) - 1.0) as i64;
     }
 
-    // ===========================================================================
+    // ═══════════════════════════════════════════════════════════════════════════
     // 3. Helper Functions (logarithms)
-    // =========================================================================================
+    // ═════════════════════════════════════════════════════════════════════════════════════════
 
     // Natural logarithm
     fn ln(x: f64) -> f64 {
@@ -159,9 +159,9 @@ module RadixEconomy {
         return (xi - 1) as f64;
     }
 
-    // ===========================================================================
+    // ═══════════════════════════════════════════════════════════════════════════
     // 4. TDD-Inside-Spec: Tests for Radix Economy
-    // =========================================================================================
+    // ═════════════════════════════════════════════════════════════════════════════════════════
 
     test e_base3_near_optimal
         given e3 = E_BASE3
@@ -254,9 +254,9 @@ module RadixEconomy {
         and   abs(log2_4 - 2.0) < 1e-6
         and   abs(log2_8 - 3.0) < 1e-6
 
-    // ===========================================================================
-    // 5. Formal Invariants -- Mathematical Truths
-    // =========================================================================================
+    // ═══════════════════════════════════════════════════════════════════════════
+    // 5. Formal Invariants — Mathematical Truths
+    // ═════════════════════════════════════════════════════════════════════════════════════════
 
     invariant base3_995_percent_optimal
         assert E_BASE3 / E_OPTIMAL >= 0.995
@@ -272,7 +272,7 @@ module RadixEconomy {
 
     invariant log2_3_in_range
         assert LOG2_3 >= 1.58496 and LOG2_3 <= 1.58497
-        // Rationale: log2(3) ~= 1.584962500721156
+        // Rationale: log2(3) ≈ 1.584962500721156
 
     invariant trit_info_density
         assert LOG2_3 > 1.5 and LOG2_3 < 2.0
@@ -297,20 +297,20 @@ module RadixEconomy {
     invariant range_equivalence_27trit_43bit
         assert ternary_range(27) <= binary_range(43)
         and   ternary_range(27) > binary_range(42)
-        // Rationale: (3^27-1)/2 ~= 3.8e12, 2^42 ~= 4.4e12, 2^43 ~= 8.8e12
+        // Rationale: (3^27-1)/2 ≈ 3.8e12, 2^42 ≈ 4.4e12, 2^43 ≈ 8.8e12
 
     invariant range_equivalence_18trit_29bit
         assert ternary_range(18) <= binary_range(29)
         and   ternary_range(18) > binary_range(28)
-        // Rationale: 3^18 ~= 3.9e8, 2^28 ~= 2.7e8, 2^29 ~= 5.4e8
+        // Rationale: 3^18 ≈ 3.9e8, 2^28 ≈ 2.7e8, 2^29 ≈ 5.4e8
 
     invariant log_reciprocal_identity
-        assert LOG3_2 * LOG2_3 = 1.0 within 1e-6
+        assert abs(LOG3_2 * LOG2_3 - 1.0) < 1e-6
         // Rationale: log_a(b) * log_b(a) = 1 for any valid bases
 
-    // ===========================================================================
-    // 6. Benchmarks -- Performance Targets
-    // =========================================================================================
+    // ═══════════════════════════════════════════════════════════════════════════
+    // 6. Benchmarks — Performance Targets
+    // ═════════════════════════════════════════════════════════════════════════════════════════
 
     bench radix_economy_computation
         measure: cycles to compute radix_economy(3.0)

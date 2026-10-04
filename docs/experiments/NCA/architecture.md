@@ -36,11 +36,11 @@ The NCA system uses entropy bands to control rule complexity:
 - **Default band** (1.5-2.3): Moderate complexity
 - **High entropy** (2.5-3.0): Near max possible complexity
 
-See [entropy-bands.md](./entropy-bands.md) for Wave 8.5 G1-G8 sweep details.
+See [entropy-bands.md](../../research/models/NCA/entropy-bands.md) for Wave 8.5 G1-G8 sweep details.
 
 ## References
 
-- [Source: docs/experiments/FOUND_EXPERIMENTS_SUMMARY.md](../../../experiments/FOUND_EXPERIMENTS_SUMMARY.md)
-- [Source: src/tri/evolution.zig](../../../../../src/tri/evolution.zig)
-- [Source: src/tri/tri_farm.zig](../../../../../src/tri/tri_farm.zig)
-- [Source: src/brain/evolution_simulation.zig](../../../../../src/brain/evolution_simulation.zig)
+- [Source: docs/experiments/FOUND_EXPERIMENTS_SUMMARY.md](../FOUND_EXPERIMENTS_SUMMARY.md)
+- [Source: src/tri/evolution.zig](../../../src/tri/evolution.zig)
+- [Source: src/tri/tri_farm.zig](../../../src/tri/tri_farm.zig)
+- [Source: src/brain/evolution_simulation.zig](../../../src/brain/evolution_simulation.zig)

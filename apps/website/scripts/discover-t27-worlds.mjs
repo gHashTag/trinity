@@ -34,7 +34,7 @@ import { execFileSync } from 'node:child_process'
 import { dirname, join, relative, resolve } from 'node:path'
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
-import { SITE, checkSchema, constsOf, loadCompiler, sha256 } from './agents-from-specs.mjs'
+import { SITE, checkSchema, compilerErrors, constsOf, loadCompiler, sha256 } from './agents-from-specs.mjs'
 import { runSpecTests } from './viewport-from-spec.mjs'
 import { corpusAggregates, corpusEntry, registerDescriptionExceptions } from './t27-corpus.mjs'
 
@@ -64,7 +64,7 @@ export function loadDiscoverySpec(analyze, specText, file = SPEC) {
   const problems = []
   if (/[^\x00-\x7f]/.test(specText)) problems.push(`${file}: non-ASCII byte in the spec (L3)`)
   const analysis = analyze(specText)
-  if (analysis.astError) problems.push(`${file}: ${analysis.astError}`)
+  problems.push(...compilerErrors(analysis).map((m) => `${file}: ${m}`))
   const moduleName = analysis.ast?.name ?? null
   if (moduleName !== EXPECTED_MODULE) problems.push(`${file}: module must be ${EXPECTED_MODULE}, is ${moduleName}`)
   const dropped = (analysis.discarded?.length ?? 0) + (analysis.lexerDiscarded?.length ?? 0) + (analysis.swallowed?.length ?? 0)
@@ -198,13 +198,21 @@ export function mergeWorld(manifest, world, entries, f) {
     worlds: [...prior, ...(entries.length ? [{ repo: world.repo, label, commit: world.commit, branch: world.branch, specs: entries.length, files: world.files ?? entries.length, duplicatesSkipped: world.duplicatesSkipped ?? 0, skippedLarge: world.skippedLarge ?? 0, at: world.at }] : [])]
       .sort((a, b) => (a.repo < b.repo ? -1 : a.repo > b.repo ? 1 : 0)),
   }
-  const { generatedFrom, wasmBytes, duplicatesSkipped, featured } = manifest
+  const { generatedFrom, wasmBytes, duplicatesSkipped, duplicates, featured } = manifest
   return {
     generatedFrom, wasmBytes,
     specCount: specs.length,
     totalLines: aggregates.totalLines,
     categories: aggregates.categories,
     repos, duplicatesSkipped,
+    // The founding sync records which file was dropped for which, and this
+    // rebuild would otherwise drop the list itself -- the one place that knows
+    // a spec lives in more than one repository. A world's own pairs are added
+    // here and its previous ones replaced, the same way its entries are.
+    duplicates: [
+      ...(duplicates ?? []).filter((d) => d.repo !== label),
+      ...(world.duplicates ?? []),
+    ].sort((x, y) => x.path.localeCompare(y.path)),
     tags: aggregates.tags,
     health: aggregates.health,
     backendFailures: aggregates.backendFailures,
@@ -345,13 +353,14 @@ export async function vendor({ report: reportPath }) {
         .split('\n').filter(Boolean).sort().slice(0, f.MAX_FILES_PER_WORLD)
       const entries = []
       let duplicates = 0, skippedLarge = 0
+      const duplicatePairs = []
       const staged = []
       for (const abs of found) {
         const bytes = readFileSync(abs)
         if (bytes.length > f.MAX_FILE_BYTES) { skippedLarge++; continue }
         const hash = sha256(bytes)
-        if (known.has(hash)) { duplicates++; continue }
         const rel = `${label}/${relative(inner, abs)}`
+        if (known.has(hash)) { duplicates++; duplicatePairs.push({ path: rel, repo: label, sameAs: known.get(hash) }); continue }
         if (rel.split('/').some((s) => !/^[A-Za-z0-9_.-]+$/.test(s) || s === '.' || s === '..')) { skippedLarge++; continue }
         known.set(hash, rel)
         staged.push([rel, bytes])
@@ -360,7 +369,7 @@ export async function vendor({ report: reportPath }) {
       // Replace the world on disk only after every file of it was read and compiled.
       rmSync(join(root, label), { recursive: true, force: true })
       for (const [rel, bytes] of staged) { mkdirSync(dirname(join(root, rel)), { recursive: true }); writeFileSync(join(root, rel), bytes) }
-      manifest = mergeWorld(manifest, { repo: world.repo, commit: world.commit, branch: world.branch, at: report.at, specSha256: spec.sha256, files: found.length, duplicatesSkipped: duplicates, skippedLarge }, entries, f)
+      manifest = mergeWorld(manifest, { repo: world.repo, commit: world.commit, branch: world.branch, at: report.at, specSha256: spec.sha256, files: found.length, duplicatesSkipped: duplicates, duplicates: duplicatePairs, skippedLarge }, entries, f)
       summary.push({ repo: world.repo, label, commit: world.commit.slice(0, 9), files: found.length, specs: entries.length, duplicates, skippedLarge, health: entries.reduce((h, e) => ({ ...h, [e.health]: (h[e.health] ?? 0) + 1 }), {}) })
     } finally { rmSync(dir, { recursive: true, force: true }) }
   }

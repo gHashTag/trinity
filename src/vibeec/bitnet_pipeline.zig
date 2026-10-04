@@ -752,7 +752,7 @@ pub const BitNetModel = struct {
 
     /// Generate text autoregressively
     pub fn generate(self: *BitNetModel, prompt_tokens: []const u32, max_new_tokens: usize, temperature: f32, top_p: f32) ![]u32 {
-        var tokens = std.ArrayList(u32).init(self.allocator);
+        var tokens = std.array_list.Managed(u32).init(self.allocator);
         try tokens.appendSlice(prompt_tokens);
 
         // Clear KV caches

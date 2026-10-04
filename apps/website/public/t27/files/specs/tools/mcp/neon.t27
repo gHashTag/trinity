@@ -20,6 +20,8 @@ pub const ENV : [1]str = ["NEON_API_KEY"];
 ; The .mcp.json that registers the server ("" when it is not registered at this commit).
 pub const CONFIG : str = ".mcp.json";
 pub const REPO : str = "gHashTag/trinity";
+pub const QUALIFIED_ID : str = "gHashTag/trinity:mcp/neon";
+pub const SCHEMA : u32 = 2;
 pub const SOURCE : str = ".mcp.json";
 pub const ABOUT : str = "External MCP server `neon` registered in .mcp.json; launched as `npx -y @neondatabase/mcp-server-neon start`.";
 pub const ABOUT_SOURCE : str = ".mcp.json entry; no tool list in this repository";

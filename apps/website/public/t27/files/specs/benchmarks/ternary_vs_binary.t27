@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: Apache-2.0
-# TERNARY VS BINARY -- Format Comparison Benchmark
+# TERNARY VS BINARY — Format Comparison Benchmark
 
 ## Specification
 
-Minimal research benchmark for TRI-27 algorithms.
-Compares accuracy degradation when using different number formats.
+// Minimal research benchmark for TRI-27 algorithms.
+// Compares accuracy degradation when using different number formats.
 
 ## Mathematical Foundation
 
 ```
-phi^2 + 1/phi^2 = 3 = TRINITY
+// φ² + 1/φ² = 3 = TRINITY
 ```
 
 ## Format Functions
@@ -17,30 +17,30 @@ phi^2 + 1/phi^2 = 3 = TRINITY
 ### Quantization Functions
 
 ```
-quantizeTernary(x: f32) -> i2
-    Quantize f32 to ternary {-1, 0, +1}
+// quantizeTernary(x: f32) -> i2
+//     Quantize f32 to ternary {-1, 0, +1}
 
-quantizeFP16(x: f32) -> u16
-    Quantize f32 to FP16 (truncate mantissa to 10 bits)
+// quantizeFP16(x: f32) -> u16
+//     Quantize f32 to FP16 (truncate mantissa to 10 bits)
 
-quantizeBF16(x: f32) -> u16
-    Quantize f32 to BF16 (truncate mantissa to 7 bits)
+// quantizeBF16(x: f32) -> u16
+//     Quantize f32 to BF16 (truncate mantissa to 7 bits)
 
-decodeFP16(bits: u16) -> f32
-    Simple FP16 decode (for testing)
+// decodeFP16(bits: u16) -> f32
+//     Simple FP16 decode (for testing)
 
-decodeBF16(bits: u16) -> f32
-    Simple BF16 decode (for testing)
+// decodeBF16(bits: u16) -> f32
+//     Simple BF16 decode (for testing)
 ```
 
 ## Neural Network
 
 ```
-relu(x: f32) -> f32
-    ReLU activation function
+// relu(x: f32) -> f32
+//     ReLU activation function
 
-mlpForward(input, w1, b1, w2, b2, hidden, output, config) -> void
-    Two-layer MLP forward pass with ReLU activations
+// mlpForward(input, w1, b1, w2, b2, hidden, output, config) -> void
+//     Two-layer MLP forward pass with ReLU activations
 ```
 
 ## Configuration
@@ -71,21 +71,21 @@ test "Ternary-Binary: quantization accuracy" {
 ## Benchmarks
 
 ```
-Experiment 1: FP32 Baseline
-    Baseline inference with f32 weights
+// Experiment 1: FP32 Baseline
+//     Baseline inference with f32 weights
 
-Experiment 2: Ternary Weights
-    Weights quantized to ternary {-1, 0, +1}
+// Experiment 2: Ternary Weights
+//     Weights quantized to ternary {-1, 0, +1}
 
-Experiment 3: FP16 Weights (not implemented)
-    Requires full FP16 arithmetic
+// Experiment 3: FP16 Weights (not implemented)
+//     Requires full FP16 arithmetic
 
-Experiment 4: BF16 Weights (not implemented)
-    Requires full BF16 arithmetic
+// Experiment 4: BF16 Weights (not implemented)
+//     Requires full BF16 arithmetic
 
-Results Summary:
+// Results Summary:
     Format | Output[0] | Output[1] | Output[2]
-    -------+-------+------
-    FP32    |   x.xx    |   x.xx    |   x.xx
-    Ternary  |   x.xx    |   x.xx    |   x.xx
+    ───────┼───────┼──────
+//     FP32    |   x.xx    |   x.xx    |   x.xx
+//     Ternary  |   x.xx    |   x.xx    |   x.xx
 ```

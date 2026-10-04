@@ -20,6 +20,8 @@ pub const ENV : [1]str = ["TRINITY_MCP_PORT"];
 ; The .mcp.json that registers the server ("" when it is not registered at this commit).
 pub const CONFIG : str = ".mcp.json";
 pub const REPO : str = "gHashTag/trinity";
+pub const QUALIFIED_ID : str = "gHashTag/trinity:mcp/trinity";
+pub const SCHEMA : u32 = 2;
 pub const SOURCE : str = "tools/mcp/trinity_mcp/server.zig";
 pub const ABOUT : str = "Zig MCP server (JSON-RPC over stdio, Content-Length framing) that exposes the tri pipeline, Golden Chain links, swarm, cloud/farm, FPGA, doctor, job, issue, deploy, experience, oracle and needle tools; the static list in writeToolsList plus cell-generated tools loaded at runtime.";
 pub const ABOUT_SOURCE : str = "derived from tools/mcp/trinity_mcp/server.zig writeToolsList and .claude/rules/mcp-servers.md";

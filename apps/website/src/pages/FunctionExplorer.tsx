@@ -58,13 +58,14 @@ const UI = {
     filterAll: 'All',
     filterEvent: 'event',
     filterCron: 'cron',
-    ladder: 'Specs → Skills → Crons → Agents → Functions',
+    ladder: 'ladder',
     ladderSpecs: 'Specs',
     ladderSkills: 'Skills',
     ladderCrons: 'Crons',
     ladderAgents: 'Agents',
     ladderTools: 'Tools',
     ladderFunctions: 'Functions',
+    ladderProviders: 'Providers',
     copyLink: 'Copy link',
     copied: 'Copied',
     notDeployed: 'not deployed',
@@ -116,6 +117,11 @@ const UI = {
     unknown: 'unknown',
     lastRun: 'last run',
     lastError: 'last error',
+    lastProbe: 'last probe',
+    probeAsExpected: 'as expected',
+    probeUnexpected: 'not as expected',
+    probeExpects: 'expects',
+    noProbeYet: 'no probe reported',
     noRunsYet: 'no run reported',
     healthRing: 'HEALTH, 24 H',
     healthRingHint: 'Completed against failed runs across every reported function, last 24 hours.',
@@ -159,13 +165,14 @@ const UI = {
     filterAll: 'Все',
     filterEvent: 'событие',
     filterCron: 'крон',
-    ladder: 'Спеки → Скиллы → Кроны → Агенты → Функции',
+    ladder: 'лестница',
     ladderSpecs: 'Спеки',
     ladderSkills: 'Скиллы',
     ladderCrons: 'Кроны',
     ladderAgents: 'Агенты',
     ladderTools: 'Инструменты',
     ladderFunctions: 'Функции',
+    ladderProviders: 'Провайдеры',
     copyLink: 'Скопировать ссылку',
     copied: 'Скопировано',
     notDeployed: 'не развёрнута',
@@ -217,6 +224,11 @@ const UI = {
     unknown: 'неизвестно',
     lastRun: 'последний запуск',
     lastError: 'последняя ошибка',
+    lastProbe: 'последняя проба',
+    probeAsExpected: 'как ожидалось',
+    probeUnexpected: 'не как ожидалось',
+    probeExpects: 'ожидание',
+    noProbeYet: 'проб не сообщено',
     noRunsYet: 'запусков не сообщено',
     healthRing: 'ЗДОРОВЬЕ, 24 Ч',
     healthRingHint: 'Завершённые против упавших запусков по всем сообщённым функциям за последние 24 часа.',
@@ -632,8 +644,9 @@ export default function FunctionExplorer() {
       { key: 'agents', label: ui.ladderAgents, count: l?.agents ?? null, href: `#/agents${embed}` },
       { key: 'tools', label: ui.ladderTools, count: l?.tools ?? null, href: `#/tools${embed}` },
       { key: 'functions', label: ui.ladderFunctions, count: l?.functions ?? null, href: `#/functions${embed}`, current: true },
+      { key: 'providers', label: ui.ladderProviders, count: l?.providers ?? null, href: `#/providers${embed}` },
     ]
-  }, [catalog, embedded, ui.ladderSpecs, ui.ladderSkills, ui.ladderCrons, ui.ladderAgents, ui.ladderTools, ui.ladderFunctions])
+  }, [catalog, embedded, ui.ladderSpecs, ui.ladderSkills, ui.ladderCrons, ui.ladderAgents, ui.ladderTools, ui.ladderFunctions, ui.ladderProviders])
 
   const triggerSegments: StackSegment[] = useMemo(
     () => [
@@ -741,7 +754,8 @@ export default function FunctionExplorer() {
           right={liveBadge}
         />
       )}
-      <LayerLadder steps={ladderSteps} caption={ui.ladder} />
+      {/* One ladder per screen -- see components/LayerLadder. */}
+      {!embedded && <LayerLadder steps={ladderSteps} caption={ui.ladder} />}
 
       <div style={{ flex: 1, display: 'flex', minHeight: 0, minWidth: 0 }}>
         {showList && (
@@ -884,6 +898,17 @@ export default function FunctionExplorer() {
                         selectedLive?.lastRun
                           ? mono(`${selectedLive.lastRun.status ?? ui.unknown} · ${shortDate(selectedLive.lastRun.endedAt)}${selectedLive.lastRun.id ? ` · ${selectedLive.lastRun.id}` : ''}`)
                           : liveText(selectedLive ? ui.noRunsYet : ui.unknown),
+                      )}
+                      {row(
+                        ui.lastProbe,
+                        selectedLive?.lastProbe
+                          ? mono(
+                              `${selectedLive.lastProbe.status ?? ui.unknown} · ${shortDate(selectedLive.lastProbe.endedAt)} · ${ui.probeExpects} ${selectedLive.lastProbe.expect ?? selectedLive.probeExpect ?? ui.unknown}${
+                                selectedLive.lastProbe.asExpected === null ? '' : ` · ${selectedLive.lastProbe.asExpected ? ui.probeAsExpected : ui.probeUnexpected}`
+                              }`,
+                              selectedLive.lastProbe.asExpected === false ? C.bad : undefined,
+                            )
+                          : liveText(selectedLive ? ui.noProbeYet : ui.unknown),
                       )}
                       {row(ui.lastError, selectedLive?.lastError ? mono(selectedLive.lastError, C.bad) : liveText(selectedLive ? '—' : ui.unknown))}
                     </div>

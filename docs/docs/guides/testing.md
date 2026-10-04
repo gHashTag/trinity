@@ -667,4 +667,4 @@ Before committing code:
 
 ---
 
-**Happy testing!** For more help, join the [community forum](https://github.com/gHashTag/trinity/discussions).
+**Happy testing!** For more help, join the [issue tracker](https://github.com/gHashTag/trinity/issues).

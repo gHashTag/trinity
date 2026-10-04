@@ -6,6 +6,16 @@ description: 'Supply, vesting, staking — everything about $TRI'
 
 # $TRI Token Economics
 
+:::danger[Superseded on 2026-09-24]
+The allocation, vesting and Sepolia deployment on this page are no longer the
+$TRI design. The design of record is in
+[gHashTag/trinity-fpga](https://github.com/gHashTag/trinity-fpga/blob/main/docs/docs/depin/tokenomics.md)
+(commit `d7e9718e9`, with `specs/trinet/mint_on_acceptance.t27`): 100% of $TRI is
+mined by accepted work, zero pre-mine, no allocation, no sale; cap
+3^21 = 10,460,353,203 TRI; chains TON and Solana; nothing is deployed. This page
+is kept as history.
+:::
+
 $TRI is the native token of the Trinity DePIN network. It rewards node operators, governs protocol parameters, and serves as the unit of account for all on-chain operations.
 
 ## Total Supply

@@ -11,6 +11,9 @@ module tool_tri_one_away;
 pub const KIND : str = "tool";
 pub const FAMILY : str = "tri-cli";
 pub const ID : str = "tri/one-away";
+pub const REPO : str = "gHashTag/t27";
+pub const QUALIFIED_ID : str = "gHashTag/t27:tri/one-away";
+pub const SCHEMA : u32 = 2;
 pub const COMMAND : str = "tri one-away";
 ; clap enum variant and where the dispatch lands
 pub const VARIANT : str = "Commands::OneAway";

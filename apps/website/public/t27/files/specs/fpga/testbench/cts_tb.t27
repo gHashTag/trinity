@@ -24,8 +24,8 @@ module CTS_Testbench {
     var test_failed : u32 = 0;
 
     fn tick() {
-        clk = false;
-        clk = true;
+        // Toggle clock signal for simulation
+        clk = !clk;
     }
 
     fn reset() {
@@ -105,6 +105,13 @@ module CTS_Testbench {
 
     invariant max_skew_positive : MAX_SKEW_PS > 0;
     invariant buffer_delay_positive : BUFFER_DELAY_PS > 0;
+
+    test "test_tick_function" {
+        // Test that tick() toggles the clock signal
+        var original_clk : bool = clk;
+        tick();
+        invariant clk != original_clk;
+    }
 
     bench bench_cts {
         reset();

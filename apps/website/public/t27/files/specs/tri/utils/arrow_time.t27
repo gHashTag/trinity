@@ -2,7 +2,7 @@
 // t27/specs/
 //  | φ² + 1/φ² = 3 | TRINITY
 
-module arrow_time;
+module ArrowTime;
     use base::types;
     use math::constants;
 
@@ -10,6 +10,3 @@ module arrow_time;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test "arrow_time_smoke_test" {
-        expect(true)
-    }

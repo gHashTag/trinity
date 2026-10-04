@@ -24,7 +24,14 @@
 .queen-catalog-cell strong {display:block;font:500 .8rem/1.2 var(--font);overflow-wrap:anywhere;color:var(--text);}
 .queen-catalog-cell small {display:block;font:.7rem/1.3 var(--mono,'JetBrains Mono',monospace);color:rgb(var(--hive-task-rgb));margin-top:.25rem;}
 .queen-catalog-cell:focus-visible {outline:2px solid #ffd45a;outline-offset:-8px;}
-.queen-catalog-region {position:absolute;transform:translate(-50%,-100%);pointer-events:auto;min-height:44px;padding:.25rem .5rem;border:0;border-bottom:1px solid #64dcff66;background:#000b;color:var(--text);font:.75rem var(--font);cursor:pointer;}
+/* The region label rides on the field itself. It is pinned to a repository's
+   place on the map and re-projected every frame that the camera moves. Nothing
+   above it is frosted -- .queen-catalog-labels and .queen-hive-displays are
+   bare positioned boxes with no ground of their own. At 0.73 this label passed
+   27% of the hive through the repository name with every hexagon edge intact,
+   and an edge that crosses a letterform is read as part of the letter. 8px
+   rather than 6px, because the label is read while the board is moving. */
+.queen-catalog-region {position:absolute;transform:translate(-50%,-100%);pointer-events:auto;min-height:44px;padding:.25rem .5rem;border:0;border-bottom:1px solid #64dcff66;background:#000b;backdrop-filter:blur(8px);color:var(--text);font:.75rem var(--font);cursor:pointer;}
 .queen-catalog-region strong,.queen-catalog-region small {display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .queen-catalog-region small {font-size:.62rem;color:#aebfb8;}
 .queen-catalog-region .queen-catalog-gold {color:#ffd45a;}
@@ -46,11 +53,25 @@
 .queen-catalog-level {position:absolute;top:0;left:1rem;right:1rem;display:flex;align-items:center;flex-wrap:wrap;gap:.5rem;padding:.5rem 0;font:.75rem var(--font);color:#d8ebe3;}
 .queen-catalog-level small {width:100%;color:#acbcb5;font-size:.68rem;}
 .queen-catalog-level button,.queen-catalog-share button,.queen-catalog-spec button {border:1px solid #397d80;background:#000b;color:#d8ebe3;padding:.4rem .7rem;min-height:40px;font:inherit;cursor:pointer;}
+/* Of the three button grounds on the line above only the level row's answers
+   for itself. .queen-catalog-share and .queen-catalog-spec each paint a ground
+   and carry a blur, so their buttons already sit on a low-passed field, and a
+   second blur there would buy a compositing layer and no readability.
+   .queen-catalog-level is a bare flex row over the live hive with no ground --
+   it never had one -- so each of its buttons is its own surface at 0.73, and
+   passes 27% of the lattice through the label. Frosting the row instead would
+   blur a band of map with nothing drawn on it. */
+.queen-catalog-level button {backdrop-filter:blur(8px);}
 .queen-catalog-level strong {overflow-wrap:anywhere;}
 .queen-catalog-detail pre {font:.75rem/1.5 var(--mono,'JetBrains Mono',monospace);white-space:pre-wrap;overflow-wrap:anywhere;color:#d8ebe3;max-height:240px;overflow:auto;}
 .queen-catalog-detail summary {cursor:pointer;min-height:40px;display:flex;align-items:center;}
 .queen-catalog-actions {display:flex;gap:.5rem;margin-top:.5rem;}
-.queen-catalog-share {position:absolute;bottom:1rem;left:1rem;right:1rem;z-index:20;display:flex;gap:.6rem;align-items:center;background:#00130feb;border:1px solid #397d80;padding:.6rem;font:.8rem var(--font);}
+/* The share strip floats over the field at the foot of the layer. Its ground is
+   0.92, and that still let 8% of the hive reach a link the reader is meant to
+   copy character by character, with the hexagon edges at full sharpness. The
+   blur makes the strip a backdrop root, so the input and the buttons inside it
+   take none of their own. */
+.queen-catalog-share {position:absolute;bottom:1rem;left:1rem;right:1rem;z-index:20;display:flex;gap:.6rem;align-items:center;background:#00130feb;backdrop-filter:blur(6px);border:1px solid #397d80;padding:.6rem;font:.8rem var(--font);}
 .queen-catalog-share input {min-width:0;flex:1;background:#000;color:#d8ebe3;border:1px solid #397d80;padding:.5rem;}
 .queen-catalog-spec {position:absolute;inset:1rem;z-index:25;background:#060c0df5;backdrop-filter:blur(12px);border:1px solid #ffda783f;display:flex;flex-direction:column;padding:1rem;color:#e7ece7;min-width:0;}
 .queen-catalog-spec header {display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;font:500 .85rem var(--font);overflow-wrap:anywhere;}
@@ -122,7 +143,15 @@
 @media (max-height:500px) and (orientation:landscape) {
   .queen-catalog-layer {grid-template-rows:minmax(0,1fr);}
   .queen-catalog-layer>.queen27-comb.is-embedded {grid-row:1;}
-  .queen-catalog-toolbar {position:absolute;top:var(--hud-vp-head-float,0px);right:0;left:0;z-index:14;background:#000000b8;}
+  /* The one layout where this bar is over the field rather than beside it, and
+     therefore the one that needs the low pass. In the default layer the toolbar
+     owns the headroom row of .queen-catalog-layer, whose ground is opaque black
+     and whose hive is the row BELOW it, so nothing shows through; in the Queen's
+     shell the roster in Queen.css frosts it. Floating, at 0.72, it passed 28% of
+     a moving hex field through a search field and a law line. The shell roster
+     would not have caught this: it is scoped to .queen27-page.is-shell and this
+     component also mounts on the landing. */
+  .queen-catalog-toolbar {position:absolute;top:var(--hud-vp-head-float,0px);right:0;left:0;z-index:14;background:#000000b8;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);}
   /* the toolbar no longer starts at the layer's top edge, so the labels clear both bars */
   .queen-catalog-labels {top:calc(var(--hud-vp-head-float,0px) + var(--catalog-headroom));}
 }

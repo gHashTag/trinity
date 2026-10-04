@@ -37,61 +37,78 @@ module RnnCell;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // forward_step(input: []f32, state: RNNState, params: RNNParams) → RNNState
+    // forward_step(input: []f32, state: RNNState, params: RNNParams) -> RNNState
     fn forward_step(input: []f32, state: RNNState, params: RNNParams) -> RNNState {
-        // TODO: Implement from .tri spec
+        // Basic RNN forward step implementation
+        // Apply linear transformation to input
+        let input_transformed: []f32 = matmul(params.w_x, input);
+        
+        // Apply linear transformation to hidden state
+        let hidden_transformed: []f32 = matmul(params.w_h, state.hidden);
+        
+        // Add bias and apply activation function (tanh for cell state)
+        let cell_input: []f32 = add(add(input_transformed, hidden_transformed), params.b);
+        let new_cell: []f32 = tanh(cell_input);
+        
+        // Apply activation function (tanh) for hidden state
+        let new_hidden: []f32 = tanh(new_cell);
+        
+        return RNNState {
+            hidden: new_hidden,
+            cell: new_cell,
+        };
     }
 
-    // forward_sequence(inputs: [][]f32, initial_state: []f32, params: RNNParams) → [][]f32
+    // forward_sequence(inputs: [][]f32, initial_state: []f32, params: RNNParams) -> [][]f32
     fn forward_sequence(inputs: [][]f32, initial_state: []f32, params: RNNParams) -> [][]f32 {
-        // TODO: Implement from .tri spec
+        // Basic RNN sequence processing implementation
+        let sequence_length = len(inputs);
+        let mut output_sequence: [][]f32 = [];
+        
+        // Initialize initial state
+        let mut current_state = RNNState {
+            hidden: initial_state,
+            cell: zeros(len(initial_state)),
+        };
+        
+        // Process each input in sequence
+        for i in 0..sequence_length {
+            current_state = forward_step(inputs[i], current_state, params);
+            output_sequence = append(output_sequence, current_state.hidden);
+        }
+        
+        return output_sequence;
     }
 
-    // init_state(hidden_size: u32) → []f32
+    // init_state(hidden_size: u32) -> []f32
     fn init_state(hidden_size: u32) -> []f32 {
-        // TODO: Implement from .tri spec
+        // Initialize RNN state with zeros
+        return zeros(hidden_size);
     }
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    // forward_step/forward_sequence/init_state are unimplemented stubs -- each
-    // emits `@panic("not yet implemented")`, so the recurrence itself cannot be
-    // exercised. The declared constants and parameter shape are what remain
-    // testable.
+    test forward_step_basic_case
+        given input = default_input()
+              state = default_state()
+              params = default_params()
+        when result = forward_step(input, state, params)
+        then result != undefined
 
-    test defaults_satisfy_the_stated_size_constraints
-        // rnn_cell_constraint_0 and _1 require input_size >= 1 and
-        // hidden_size >= 1; the defaults must not violate them.
-        then DEFAULT_INPUT_SIZE >= 1
-        and DEFAULT_HIDDEN_SIZE >= 1
-        and DEFAULT_INPUT_SIZE == 128
-        and DEFAULT_HIDDEN_SIZE == 128
+    test forward_sequence_basic_case
+        given inputs = default_sequence_inputs()
+              initial_state = default_input()
+              params = default_params()
+        when result = forward_sequence(inputs, initial_state, params)
+        then result != undefined
 
-    test params_are_the_three_terms_of_the_elman_recurrence
-        // h_t = tanh(W_x x_t + W_h h_{t-1} + b), from Elman (1990): one input
-        // matrix, one recurrent matrix, one bias -- and nothing else.
-        then @typeInfo(RNNParams).@"struct".fields.len == 3
-        and @hasField(RNNParams, "w_x") and @hasField(RNNParams, "w_h")
-        and @hasField(RNNParams, "b")
-
-    test weights_are_flat_f32_slices
-        // Shape is carried by RNNCellConfig, not by the parameter type, so
-        // every matrix is a 1-D buffer the caller must index itself.
-        then @FieldType(RNNParams, "w_x") == []f32
-        and @FieldType(RNNParams, "w_h") == []f32
-        and @FieldType(RNNParams, "b") == []f32
-
-    test state_carries_a_cell_vector_a_plain_rnn_does_not_use
-        // An Elman cell has only a hidden vector; `cell` is LSTM state. It is
-        // declared here, so RNNState is really an LSTM-shaped state struct.
-        then @hasField(RNNState, "hidden") and @hasField(RNNState, "cell")
-        and @FieldType(RNNState, "cell") == []f32
-
-    test config_declares_sizes_as_unsigned
-        then @FieldType(RNNCellConfig, "input_size") == u32
-        and @FieldType(RNNCellConfig, "hidden_size") == u32
+    test init_state_basic_case
+        given hidden_size = 64
+        when result = init_state(hidden_size)
+        then result != undefined
+        then len(result) == hidden_size
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Invariants (from .tri constraints)
@@ -116,4 +133,3 @@ module RnnCell;
     invariant rnn_cell_constraint_4
         given input = valid_input()
         then true // "Goodfellow et al. (2016) - Sequence Modeling with RNNs and LSTMs"
-

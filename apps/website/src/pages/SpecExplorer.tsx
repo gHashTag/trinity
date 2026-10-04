@@ -25,18 +25,24 @@ import { SpecMetrics } from '../components/SpecMetrics'
 import { SpecShare } from '../components/SpecShare'
 import { SpecContribute } from '../components/SpecContribute'
 import {resolveManifestSpec,specExplorerHash} from '../lib/specCatalog'
+import { reportExplorerAddress } from '../lib/queenFrame'
+import { loadCorpus, type ManifestPart } from '../lib/queenCorpus'
+import { specWorld, worldParam } from '../lib/queenCorpusCheck'
 import { HealthBar, HealthDot, PipelineRibbon, HEALTH_COLOR } from '../components/SpecGraphics'
 import { SpecSkillChips } from '../components/SpecChips'
-import { highlightCode, highlightSource, type Span } from '../lib/highlight'
+import TerminalCast from '../components/TerminalCast'
+import { loadToolSpecs, type ToolCast } from '../lib/agentSpecs'
+import { TARGET_LANG, highlightCode, highlightSource, type Span } from '../lib/highlight'
 import {
   analyzeCached,
   analyzeEdited,
   cachedAnalysis,
   loadCompiler,
-  loadManifest,
   loadSpecSource,
   prefetchSpec,
+  TARGET_LABEL,
   type Health,
+  type TargetId,
   type SpecEntry,
   type SpecManifest,
   type T27Analysis,
@@ -52,19 +58,22 @@ const UI = {
     subtitle: 'Every .t27 spec, layer by layer',
     metaTitle: 'Spec Explorer',
     metaDescription:
-      'Browse the whole t27 spec corpus and watch each spec through the real compiler: tokens, AST, HIR and five codegen backends.',
+      'Browse the whole t27 spec corpus and watch each spec through the real compiler: tokens, AST, HIR and every codegen backend.',
     search: 'Search specs',
     allCategories: 'All categories',
     specs: 'specs',
+    world: 'World',
+    worldClear: 'Show every world',
     loading: 'Loading compiler…',
     compiling: 'Analysing…',
     back: '← Home',
     backToLibrary: 'All specs',
+    alsoIn: 'The same bytes are also vendored at:',
     chipTitle: 'ON THE CHIP',
     chipDerived:
       'Derived from what this spec declares: the bit width of every constant, the field layout of every packed struct, and the parameter and return widths of every function. Those are hardware facts the language requires you to state.',
     chipNotSynth:
-      'Not a placed-and-routed netlist. The .t27 → Verilog backend currently emits module shells: of 676 specs, 361 produce Verilog yosys accepts, and every one yields 0 LUTs and 0 flip-flops. There is no cell placement to show, so none is drawn.',
+      'Not a placed-and-routed netlist. The .t27 → Verilog backend emits module shells: in the yosys sweep of 2026-09-06, over a corpus of 676 specs, 361 produced Verilog yosys accepts and every one yielded 0 LUTs and 0 flip-flops. The corpus has grown since; the sweep has not been re-run, so that is the last measurement rather than a count of today. There is no cell placement to show, so none is drawn.',
     chipEmpty:
       'This spec declares nothing with a fixed bit width, so there is no datapath to draw. Nothing is inferred to fill the space.',
     chipConsts: 'constants',
@@ -75,6 +84,9 @@ const UI = {
     chipOmitted:
       '{n} further declaration(s) are not drawn. The diagram scales to the panel, so past about a dozen rows every label stops being readable; the remainder is counted here rather than rendered too small to read.',
     source: 'Source',
+    castHeading: 'RECORDED RUN',
+    castHint: 'This tool card names a terminal recording of its command (the CAST constant). It shows that the command ran and that every step exited 0; it is not a test of the text above.',
+    castNone: 'No recording yet: this command card names no CAST, so no published tri cast session is attached to it.',
     tokens: 'Tokens',
     ast: 'AST',
     hir: 'HIR',
@@ -139,8 +151,6 @@ const UI = {
     editing: 'Editing — not the shipped spec',
     unrun: 'not compiled yet',
     runHint: 'RUN or ⌘⏎ to compile',
-    brokeIt: 'broke',
-    fixedIt: 'fixed',
     course: 'Course',
     courseNote: 'Eight lessons, in order, each one clean through every layer.',
     droppedItems: 'dropped',
@@ -151,19 +161,22 @@ const UI = {
     subtitle: 'Каждая .t27-спека, слой за слоем',
     metaTitle: 'Обозреватель спек',
     metaDescription:
-      'Просмотр всего корпуса спек t27 и каждой спеки через настоящий компилятор: токены, AST, HIR и пять бэкендов кодогенерации.',
+      'Просмотр всего корпуса спек t27 и каждой спеки через настоящий компилятор: токены, AST, HIR и все бэкенды кодогенерации.',
     search: 'Поиск по спекам',
     allCategories: 'Все категории',
     specs: 'спек',
+    world: 'Мир',
+    worldClear: 'Показать все миры',
     loading: 'Загрузка компилятора…',
     compiling: 'Анализ…',
     back: '← На главную',
     backToLibrary: 'Все спеки',
+    alsoIn: 'Те же байты лежат также в:',
     chipTitle: 'НА КРИСТАЛЛЕ',
     chipDerived:
       'Построено из того, что объявляет спека: разрядность каждой константы, раскладка полей каждой packed-структуры, ширины параметров и возврата каждой функции. Это аппаратные факты, которые язык требует указать явно.',
     chipNotSynth:
-      'Это не размещённый и не разведённый нетлист. Бэкенд .t27 → Verilog сейчас выдаёт оболочки модулей: из 676 спек 361 даёт Verilog, который принимает yosys, и каждая — 0 LUT и 0 триггеров. Размещать нечего, поэтому ничего и не нарисовано.',
+      'Это не размещённый и не разведённый нетлист. Бэкенд .t27 → Verilog выдаёт оболочки модулей: в прогоне yosys от 2026-09-06 по корпусу из 676 спек 361 дала Verilog, который принимает yosys, и каждая — 0 LUT и 0 триггеров. Корпус с тех пор вырос, а прогон не повторяли, так что это последнее измерение, а не счёт на сегодня. Размещать нечего, поэтому ничего и не нарисовано.',
     chipEmpty:
       'Эта спека не объявляет ничего с фиксированной разрядностью, поэтому тракт данных рисовать не из чего. Ничего не додумано.',
     chipConsts: 'константы',
@@ -174,6 +187,9 @@ const UI = {
     chipOmitted:
       'Ещё {n} объявлений не нарисованы. Схема масштабируется под панель, и после десятка строк подписи перестают читаться; остаток посчитан здесь, а не отрисован нечитаемо мелко.',
     source: 'Исходник',
+    castHeading: 'ЗАПИСАННЫЙ ПРОГОН',
+    castHint: 'Эта карточка инструмента называет терминальную запись своей команды (константа CAST). Запись показывает, что команда запускалась и каждый шаг завершился с кодом 0; проверкой текста выше она не является.',
+    castNone: 'Записи пока нет: в карточке команды нет CAST, и опубликованная сессия tri cast к ней не привязана.',
     tokens: 'Токены',
     ast: 'AST',
     hir: 'HIR',
@@ -238,8 +254,6 @@ const UI = {
     editing: 'Редактирование — это уже не исходная спека',
     unrun: 'ещё не скомпилировано',
     runHint: 'RUN или ⌘⏎ для компиляции',
-    brokeIt: 'сломал',
-    fixedIt: 'починил',
     course: 'Курс',
     courseNote: 'Восемь уроков по порядку, каждый чист на всех слоях.',
     droppedItems: 'отброшено',
@@ -292,22 +306,30 @@ const LAYERS = [
   { id: 'verilog_hir', kind: 'target' },
   { id: 'c', kind: 'target' },
   { id: 'rust', kind: 'target' },
+  { id: 'js', kind: 'target' },
+  { id: 'ts', kind: 'target' },
   { id: 'chip', kind: 'chip' },
 ] as const
 
 type LayerId = (typeof LAYERS)[number]['id']
 
+// LAYERS stays written out -- half of it is not a backend, and a spread of
+// TARGET_IDS would widen every `id` to `string` and take LayerId with it. So
+// the list is checked instead of derived: add a backend without a layer to show
+// it in and this line stops compiling. LAYER_LABEL, being a Record<LayerId,_>,
+// already refuses a layer with no name.
+const _everyBackendHasALayer: TargetId extends LayerId ? true : never = true
+void _everyBackendHasALayer
+
+// The backend names come from t27Compiler's TARGET_LABEL, which every other
+// page that names t27's outputs reads too -- one list, not one per page.
 const LAYER_LABEL: Record<LayerId, string> = {
   source: 'Source',
   tokens: 'Tokens',
   ast: 'AST',
   typecheck: 'Types',
   hir: 'HIR',
-  zig: 'Zig',
-  verilog: 'Verilog',
-  verilog_hir: 'Verilog (HIR)',
-  c: 'C',
-  rust: 'Rust',
+  ...TARGET_LABEL,
   chip: 'Chip',
 }
 
@@ -410,6 +432,11 @@ export default function SpecExplorer() {
   const [verifiedHash,setVerifiedHash]=useState<string|null>(null)
 
   const [manifest, setManifest] = useState<SpecManifest | null>(null)
+  // The store's part, for the corpus identity this frame prints on its root.
+  const [corpus, setCorpus] = useState<ManifestPart | null>(null)
+  // The world the address names (#/specs?world=ghashtag/t27): in the Queen, the one
+  // its header has chosen. The list shows that repository's specs only.
+  const [world, setWorld] = useState<string | null>(() => worldParam(new URLSearchParams(window.location.hash.split('?')[1] || '').get('world')))
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState<string>('')
   // The course first, by default. Someone arriving here has no way to know
@@ -451,6 +478,12 @@ export default function SpecExplorer() {
    */
   const [mobilePane, setMobilePane] = useState<'list' | 'detail'>('list')
   const [source, setSource] = useState('')
+  // The recorded run a tool card ends with. Read from the tool catalog, where
+  // scripts/agents-from-specs.mjs castProblems() already held the CAST to its files,
+  // so this page carries no second copy of the rule; null for every other spec.
+  const [cast, setCast] = useState<ToolCast | null>(null)
+  // True when the selected spec is a tri command card the catalog lists without a CAST.
+  const [castMissing, setCastMissing] = useState(false)
   const [result, setResult] = useState<T27Analysis | null>(null)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState<string | null>(null)
@@ -479,19 +512,25 @@ export default function SpecExplorer() {
     // dominates a cold compile, and paying it here makes the first selection
     // as fast as every later one.
     void loadCompiler().catch(()=>{/* The selected spec surfaces compiler failures. */})
-    loadManifest()
-      .then((m) => {
+    loadCorpus('manifest')
+      .then((part) => {
+        const m = part.data
+        setCorpus(part)
         setManifest(m)
         // A shared link names its spec; honour it before falling back to the
         // teaching spec. Without this a share would only ever say "the
         // explorer, go find it yourself".
-        const wanted = new URLSearchParams(window.location.hash.split('?')[1] || '').get('spec')
+        const named = new URLSearchParams(window.location.hash.split('?')[1] || '')
+        const wanted = named.get('spec')
         const target = resolveManifestSpec(m,wanted)
         if (target) {
-          // A deep-linked spec is usually outside the course, and landing on a
-          // filter that excludes the very spec the link named would show an
-          // empty list next to an open file.
-          if (!target.tutorial) setHealthFilter('all')
+          // An address that names a spec is someone asking for the corpus at
+          // that spec, so the library beside it is the whole library. This used
+          // to lift the course filter only for a spec outside the course, and
+          // the homepage frame opens hello_world -- lesson 0 -- so it kept the
+          // course chip on and read "9 specs" beside a map saying 856. The
+          // course default is for an arrival that names nothing.
+          if (wanted || worldParam(named.get('world'))) setHealthFilter('all')
           // A shared link names a spec on purpose, so on a phone it opens that
           // spec. The featured-spec fallback does not: nobody asked for it, and
           // the library is the honest landing view.
@@ -500,6 +539,49 @@ export default function SpecExplorer() {
         }
       })
       .catch((e) => {setErr(String(e));setMobilePane('detail')})
+  }, [])
+
+  // In a frame, a spec named by a later hash -- the Queen moving its frame after Back
+  // or a link -- opens that spec; the address used to be read once at mount, so a
+  // changed ?spec= left the old spec open under it. The page on its own still reads
+  // its address once, as before.
+  useEffect(() => {
+    if (!manifest || !embedded) return
+    const onHash = () => {
+      const wanted = new URLSearchParams(window.location.hash.split('?')[1] || '').get('spec')
+      if (!wanted || wanted === selected?.path) return
+      try {
+        const target = resolveManifestSpec(manifest, wanted)
+        setHealthFilter('all')
+        setMobilePane('detail')
+        void pickRef.current?.(target)
+      } catch {
+        // An unknown path in a later hash: keep the spec that is open.
+      }
+    }
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [manifest, selected, embedded])
+
+  // The world follows the address on every page, in a frame or not: the Queen moves
+  // its frame's fragment when the header picks a world, and nothing else would tell
+  // this page. A world narrows the list, so the course default would leave it empty.
+  useEffect(() => {
+    const onHash = () => {
+      const next = worldParam(new URLSearchParams(window.location.hash.split('?')[1] || '').get('world'))
+      setWorld(next)
+      if (next) setHealthFilter('all')
+    }
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [])
+  const inWorld = useCallback((s: SpecEntry) => !world || specWorld(s.repo) === world, [world])
+  /** On its own page the chip clears the world; in the Queen the header owns it. */
+  const clearWorld = useCallback(() => {
+    setWorld(null)
+    const p = new URLSearchParams(window.location.hash.split('?')[1] || '')
+    p.delete('world')
+    window.history.replaceState(null, '', `#/specs?${p}`)
   }, [])
 
   // Inline styles cannot carry media queries, and the header has three pieces
@@ -529,10 +611,25 @@ export default function SpecExplorer() {
     return () => { body.style.paddingBottom = previous }
   }, [embedded])
 
+  // Which specs are also somewhere else, byte for byte. Vendoring keeps the
+  // first copy it sees and discards the rest, so the corpus shows one entry for
+  // a file that may live in four repositories -- true, and until now invisible.
+  // Keyed by the path that was kept, which is the one a reader has open.
+  const copiesOf = useMemo(() => {
+    const index = new Map<string, { path: string; repo: string }[]>()
+    for (const d of manifest?.duplicates ?? []) {
+      const list = index.get(d.sameAs)
+      if (list) list.push({ path: d.path, repo: d.repo })
+      else index.set(d.sameAs, [{ path: d.path, repo: d.repo }])
+    }
+    return index
+  }, [manifest])
+
   const filtered = useMemo(() => {
     if (!manifest) return []
     const q = query.trim().toLowerCase()
     return manifest.specs.filter((s) => {
+      if (!inWorld(s)) return false
       if (healthFilter === 'course') {
         if (!s.tutorial) return false
       } else if (healthFilter !== 'all' && s.health !== healthFilter) return false
@@ -546,7 +643,7 @@ export default function SpecExplorer() {
         (s.description ? s.description.toLowerCase().includes(q) : false)
       )
     })
-  }, [manifest, query, category, healthFilter, tagSel])
+  }, [manifest, query, category, healthFilter, tagSel, inWorld])
 
   /**
    * Counts for each tag *given the rest of the filter*, so a facet never
@@ -559,6 +656,7 @@ export default function SpecExplorer() {
     if (!manifest) return {}
     const q = query.trim().toLowerCase()
     const base = manifest.specs.filter((s) => {
+      if (!inWorld(s)) return false
       if (healthFilter === 'course') { if (!s.tutorial) return false }
       else if (healthFilter !== 'all' && s.health !== healthFilter) return false
       if (category && s.category !== category) return false
@@ -580,7 +678,7 @@ export default function SpecExplorer() {
       }
     }
     return out
-  }, [manifest, query, category, healthFilter, tagSel])
+  }, [manifest, query, category, healthFilter, tagSel, inWorld])
 
   const toggleTag = useCallback((t: string) => {
     setTagSel((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]))
@@ -602,7 +700,9 @@ export default function SpecExplorer() {
     const expectedSha256=spec.path===viewContext.path?viewContext.sha256:undefined
     setBusy(true)
     try {
-      window.history.replaceState(null,'',specExplorerHash(spec.path,{embedded,sha256:expectedSha256}))
+      const address=specExplorerHash(spec.path,{embedded,sha256:expectedSha256,world})
+      window.history.replaceState(null,'',address)
+      reportExplorerAddress(address)
       const text = await loadSpecSource(spec.path,expectedSha256)
       if(request!==requestRef.current)return
       const warm=cachedAnalysis(spec.path,text)
@@ -627,7 +727,7 @@ export default function SpecExplorer() {
     } finally {
       if(request===requestRef.current)setBusy(false)
     }
-  }, [embedded,viewContext])
+  }, [embedded,viewContext,world])
 
   pickRef.current = pick
 
@@ -753,17 +853,30 @@ export default function SpecExplorer() {
 
   /** True once the draft diverges from the file as shipped. */
   const edited = draft !== null && draft !== source
+  const selectedPath = selected?.path ?? null
+  useEffect(() => {
+    setCast(null)
+    setCastMissing(false)
+    const isToolCard = selectedPath !== null && selectedPath.startsWith('specs/tools/')
+    if (!isToolCard) return
+    let live = true
+    loadToolSpecs()
+      .then((catalog) => {
+        const card = catalog.tools.find((t) => t.specPath === selectedPath)
+        if (!live) return
+        setCast(card?.cast ?? null)
+        const isCommandWithoutCast = card !== undefined && card.family === 'tri-cli' && !card.cast
+        setCastMissing(isCommandWithoutCast)
+      })
+      .catch(() => { /* No catalog, no recording: the source still renders. */ })
+    return () => { live = false }
+  }, [selectedPath])
 
   const activeTarget = LAYERS.find((l) => l.id === layer)?.kind === 'target' ? result?.targets?.[layer] : undefined
 
   const codeSpans: Span[][] | null = useMemo(() => {
-    if (layer === 'hir' && result?.hir.ok && result.hir.text) return highlightCode(result.hir.text, 'verilog')
-    if (activeTarget?.ok && activeTarget.code) {
-      const langOf: Record<string, string> = {
-        zig: 'zig', verilog: 'verilog', verilog_hir: 'verilog', c: 'c', rust: 'rust',
-      }
-      return highlightCode(activeTarget.code, langOf[layer] || 'plain')
-    }
+    if (layer === 'hir' && result?.hir.ok && result.hir.text) return highlightCode(result.hir.text, TARGET_LANG.hir)
+    if (activeTarget?.ok && activeTarget.code) return highlightCode(activeTarget.code, TARGET_LANG[layer] || 'plain')
     return null
   }, [layer, result, activeTarget])
 
@@ -788,6 +901,12 @@ export default function SpecExplorer() {
   return (
     <div
       className="spec-x" data-tier={viewport.tier} data-embedded={embedded ? "1" : undefined}
+      // The corpus on show, from the store the Queen shell reads: the shell's root
+      // carries the same three, and qa/queen-spec-sync-contract.mjs compares them.
+      data-spec-count={corpus?.identity.specCount}
+      data-corpus-version={corpus?.version}
+      data-corpus-source={corpus?.source}
+      data-spec-world={world ?? undefined}
       style={{
         height: '100dvh',
         display: 'flex',
@@ -1098,7 +1217,16 @@ export default function SpecExplorer() {
                 )}
               </div>
             )}
-            <div style={{ fontSize: 11, color: C.muted, fontFamily: C.mono }}>
+            {world && (
+              <div className="spec-x-world" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11.5, color: C.text, fontFamily: C.mono }}>
+                <span style={{ color: C.muted }}>◈ {ui.world}</span>
+                <span data-lang-exempt="live" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{world}</span>
+                {!embedded && (
+                  <button type="button" onClick={clearWorld} aria-label={ui.worldClear} title={ui.worldClear} style={{ background: 'none', border: 0, color: C.muted, cursor: 'pointer', padding: '0 4px', fontSize: 13 }}>✕</button>
+                )}
+              </div>
+            )}
+            <div className="spec-x-listed" data-spec-listed={manifest ? filtered.length : undefined} style={{ fontSize: 11, color: C.muted, fontFamily: C.mono }}>
               {filtered.length} {ui.specs}
             </div>
           </div>
@@ -1370,6 +1498,20 @@ export default function SpecExplorer() {
                         {selected.description}
                       </p>
                     )}
+                    {/* The same bytes, somewhere else. One entry can stand for
+                        copies in several repositories, and a reader deciding
+                        where a spec really lives needs to be told that. */}
+                    {(copiesOf.get(selected.path)?.length ?? 0) > 0 && (
+                      <p style={{ margin: 0, fontSize: 11.5, lineHeight: 1.5, color: C.golden, maxWidth: 'none' }}>
+                        {ui.alsoIn}{' '}
+                        {copiesOf.get(selected.path)!.map((c, i) => (
+                          <span key={c.path}>
+                            {i > 0 ? ', ' : ''}
+                            <code style={{ fontFamily: C.mono, fontSize: 11 }}>{c.path}</code>
+                          </span>
+                        ))}
+                      </p>
+                    )}
                     {/* Derived from the compile, not written by hand -- so it
                         cannot drift from the artifact it describes. */}
                     {selected.summary && (
@@ -1416,7 +1558,7 @@ export default function SpecExplorer() {
                         result={result}
                         baseline={baseline}
                         ms={ms}
-                        labels={{ ...LAYER_LABEL, tokens: ui.tokens, nodes: ui.nodes, depth: ui.depth, typeErrs: ui.typeErrs, droppedItems: ui.droppedItems, brokeIt: ui.brokeIt, fixedIt: ui.fixedIt }}
+                        labels={{ tokens: ui.tokens, nodes: ui.nodes, depth: ui.depth, typeErrs: ui.typeErrs, droppedItems: ui.droppedItems }}
                       />
                     </div>
                   )}
@@ -1577,6 +1719,21 @@ export default function SpecExplorer() {
                         onRun={() => void run()}
                         ariaLabel={ui.source}
                       />
+                      {cast && (
+                        <div style={{ padding: '12px 10px', borderTop: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          <div style={{ fontSize: 11, color: C.muted, fontFamily: C.mono }}>{ui.castHeading}</div>
+                          <div style={{ fontSize: 11.5, color: C.muted, lineHeight: 1.5 }}>{ui.castHint}</div>
+                          <div data-lang-exempt="live">
+                            <TerminalCast key={cast.src} src={cast.src} title={cast.title} share={cast.share} caption={cast.recorded ? `${cast.title} · ${cast.recorded}` : cast.title} />
+                          </div>
+                        </div>
+                      )}
+                      {castMissing && (
+                        <div data-cast-state="none" style={{ padding: '12px 10px', borderTop: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          <div style={{ fontSize: 11, color: C.muted, fontFamily: C.mono }}>{ui.castHeading}</div>
+                          <div style={{ fontSize: 11.5, color: C.muted, lineHeight: 1.5 }}>{ui.castNone}</div>
+                        </div>
+                      )}
                     </div>
                   )}
 

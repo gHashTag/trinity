@@ -2,9 +2,9 @@
 // spec: Restraint
 // Bounded rationality and restraint mechanisms for neuro-symbolic reasoning
 
-spec Restraint {
-    use tritype-base::Trit;
+use base::types;
 
+spec Restraint {
     // Restraint type
     enum RestraintType {
         UNKNOWN_TO_FALSE = 0,  // K_UNKNOWN becomes K_FALSE
@@ -224,7 +224,7 @@ spec Restraint {
             }
         }
 
-        return unknown_count as float / len(values) as float
+        return unknown_count as f64 / len(values) as f64
     }
 
     // Check if unknown ratio exceeds threshold

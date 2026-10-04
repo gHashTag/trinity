@@ -364,7 +364,7 @@ documentation:
 
 ### 6.4 DARPA CLARA Proposal
 
-**Program**: DARPA CLARA (Collaborative Learning and Reasoning Architecture)
+**Program**: DARPA CLARA (Compositional Learning-And-Reasoning for AI Complex Systems Engineering)
 
 **Topic**: TA1 Software Package — NN + VSA Composition
 
@@ -398,14 +398,14 @@ documentation:
 
 ## References
 
-1. NeurIPS 2025: https://neurips.cc/Conferences/2025/DatasetTrack
-2. ICLR 2025: https://iclr.cc/Conferences/2025/reproducibility-checklist
-3. MLSys 2025: https://mlsys.org/Conferences/2025/artifact-evaluation
+1. NeurIPS 2025: https://neurips.cc/Conferences/2025/CallForDatasetsBenchmarks
+2. ICLR 2025: https://iclr.cc/Conferences/2025/AuthorGuide
+3. MLSys 2025: https://mlsys.org/Conferences/2025/CallForAE
 4. FAIR Principles: https://www.go-fair.org/fair-principles/
-5. CFF 1.2.0: https://citation-file-format.github.io/1.2.0/
+5. CFF 1.2.0: https://github.com/citation-file-format/citation-file-format/blob/1.2.0/schema-guide.md
 6. ORCID: https://info.orcid.org/
 7. OpenAlex: https://openalex.org/
-8. DARPA CLARA: https://www.darpa.mil/program/clara
+8. DARPA CLARA: https://www.darpa.mil/research/programs/clara
 
 ---
 

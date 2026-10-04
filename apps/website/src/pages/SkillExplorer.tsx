@@ -19,6 +19,7 @@ import { useHashParams } from '../hooks/useHashParams'
 import { useDocumentLock, useViewport } from '../lib/useViewport'
 import { HEADER_CHROME_MAX } from '../lib/viewport.generated'
 import { ExplorerHeader } from '../components/ExplorerHeader'
+import { LayerLadder, type LadderStep } from '../components/LayerLadder'
 import { ExplorerLibrary, type ExplorerItem } from '../components/ExplorerLibrary'
 import { SpecCodeView } from '../components/SpecCodeView'
 import { AgentSpecPanel } from '../components/AgentSpecPanel'
@@ -60,7 +61,7 @@ const UI = {
     loading: 'Loading the catalog…',
     linkAll: 'All',
     linkBound: 'Bound',
-    linkUnbound: 'No spec',
+    linkUnbound: 'Unbound',
     linkBroken: 'Broken',
     layerSpec: 'Spec',
     layerSource: 'Skill',
@@ -69,7 +70,7 @@ const UI = {
     layerSpecs: 'Specs',
     layerCoverage: 'Coverage',
     healthOk: 'Declares a spec, and it resolves',
-    healthWarn: 'No spec declared yet',
+    healthWarn: 'No spec binding declared yet',
     healthFail: 'Declares a spec that does not resolve',
     declared: 'declared',
     candidate: 'mentioned in the text',
@@ -83,9 +84,9 @@ const UI = {
     specsHint:
       'A declared spec is a claim the build checks: if it stops resolving, the site fails to build. A mentioned one is only evidence.',
     coverageTitle: 'Coverage',
-    skillsWithoutSpec: 'Skills without a spec',
+    skillsWithoutSpec: 'Skills that declare no spec binding',
     specsWithSkill: 'Specs a skill stands on',
-    baseline: 'without a spec: {n}, at most {max}',
+    baseline: 'unbound: {n}, at most {max}',
     baselineHint: 'That ceiling may only come down. A change that raises it fails the build.',
     proposeSpec: 'Propose a spec',
     edit: 'Edit on GitHub',
@@ -115,6 +116,14 @@ const UI = {
     filters: 'Filters',
     detail: 'Skill',
     failed: 'The catalog could not be read:',
+    ladder: 'ladder',
+    ladderSpecs: 'Specs',
+    ladderSkills: 'Skills',
+    ladderCrons: 'Crons',
+    ladderAgents: 'Agents',
+    ladderTools: 'Tools',
+    ladderFunctions: 'Functions',
+    ladderProviders: 'Providers',
   },
   ru: {
     title: 'Обозреватель скилов',
@@ -134,8 +143,8 @@ const UI = {
     pickSkill: 'Выберите скил слева — он откроется целиком, вместе со спеками, на которых стоит.',
     loading: 'Загружаю каталог…',
     linkAll: 'Все',
-    linkBound: 'Со спекой',
-    linkUnbound: 'Без спеки',
+    linkBound: 'С привязкой',
+    linkUnbound: 'Без привязки',
     linkBroken: 'Битые',
     layerSpec: 'Спека',
     layerSource: 'Скил',
@@ -144,7 +153,7 @@ const UI = {
     layerSpecs: 'Спеки',
     layerCoverage: 'Покрытие',
     healthOk: 'Спека объявлена и найдена',
-    healthWarn: 'Спека ещё не объявлена',
+    healthWarn: 'Привязка к спеке ещё не объявлена',
     healthFail: 'Объявлена спека, которой нет',
     declared: 'объявлена',
     candidate: 'упомянута в тексте',
@@ -158,9 +167,9 @@ const UI = {
     specsHint:
       'Объявленная спека — это заявление, которое проверяет сборка: перестанет находиться — сборка упадёт. Упомянутая — только свидетельство.',
     coverageTitle: 'Покрытие',
-    skillsWithoutSpec: 'Скилы без спеки',
+    skillsWithoutSpec: 'Скилы, не объявившие привязку к спеке',
     specsWithSkill: 'Спеки, на которых стоят скилы',
-    baseline: 'без спеки: {n}, не больше {max}',
+    baseline: 'без привязки: {n}, не больше {max}',
     baselineHint: 'Этот потолок можно только опускать. Правка, которая его поднимает, роняет сборку.',
     proposeSpec: 'Предложить спеку',
     edit: 'Править на GitHub',
@@ -190,6 +199,14 @@ const UI = {
     filters: 'Фильтры',
     detail: 'Скил',
     failed: 'Каталог не прочитан:',
+    ladder: 'лестница',
+    ladderSpecs: 'Спеки',
+    ladderSkills: 'Скиллы',
+    ladderCrons: 'Кроны',
+    ladderAgents: 'Агенты',
+    ladderTools: 'Инструменты',
+    ladderFunctions: 'Функции',
+    ladderProviders: 'Провайдеры',
   },
 } as const
 
@@ -436,6 +453,21 @@ export default function SkillExplorer() {
     return `${base}?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`
   }
 
+  // The ladder every Explorer stands on, with the counts the spec catalog carries.
+  const ladderSteps: LadderStep[] = useMemo(() => {
+    const l = specs?.ladder
+    const embed = embedded ? '?embed=1' : ''
+    return [
+      { key: 'specs', label: ui.ladderSpecs, count: l?.specs ?? null, href: `#/specs${embed}` },
+      { key: 'skills', label: ui.ladderSkills, count: l?.skills ?? null, href: `#/skills${embed}`, current: true },
+      { key: 'crons', label: ui.ladderCrons, count: l?.crons ?? null, href: `#/crons${embed}` },
+      { key: 'agents', label: ui.ladderAgents, count: l?.agents ?? null, href: `#/agents${embed}` },
+      { key: 'tools', label: ui.ladderTools, count: l?.tools ?? null, href: `#/tools${embed}` },
+      { key: 'functions', label: ui.ladderFunctions, count: l?.functions ?? null, href: `#/functions${embed}` },
+      { key: 'providers', label: ui.ladderProviders, count: l?.providers ?? null, href: `#/providers${embed}` },
+    ]
+  }, [specs, embedded, ui.ladderSpecs, ui.ladderSkills, ui.ladderCrons, ui.ladderAgents, ui.ladderTools, ui.ladderFunctions, ui.ladderProviders])
+
   const box = panelBox(embedded)
   const showList = !phone || pane === 'list'
   const showDetail = !phone || pane === 'detail'
@@ -468,6 +500,8 @@ export default function SkillExplorer() {
           phone={phone}
         />
       )}
+      {/* One ladder per screen -- see components/LayerLadder. */}
+      {!embedded && <LayerLadder steps={ladderSteps} caption={ui.ladder} />}
 
       <div style={{ flex: 1, display: 'flex', minHeight: 0, minWidth: 0 }}>
         {showList && (

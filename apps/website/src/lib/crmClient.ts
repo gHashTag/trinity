@@ -23,6 +23,8 @@
 // credentials:'omit' throughout: the service answers CORS with origin '*', which
 // is safe only while no cookie rides along. Never switch this to 'include'.
 
+import { mcpPayload } from './mcpAnswer.ts'
+
 const RENDER_BASE = 'https://vibee-render-production.up.railway.app'
 
 /**
@@ -204,18 +206,13 @@ export async function callTool<T = unknown>(name: string, args: Record<string, u
     const message = String(body.error.message ?? '')
     throw new CrmError({ reason: classify(message), detail: message })
   }
-  const structured = body.result?.structuredContent
-  if (structured !== undefined) return structured as T
-  // Some servers send only the text block; parse it when it is JSON, hand it
-  // back as text otherwise. Either way it is DATA, and the page renders it as
-  // text nodes -- never as markup, never as an instruction.
-  const text = body.result?.content?.find((c) => c.type === 'text')?.text
-  if (text === undefined) return {} as T
-  try {
-    return JSON.parse(text) as T
-  } catch {
-    return text as unknown as T
-  }
+  // structuredContent, or the text block parsed as JSON, or that text as it
+  // stands: mcpAnswer.ts knows where an MCP answer keeps its payload, because
+  // three files knowing it separately is three chances to disagree about what
+  // an empty answer is. Either way it is DATA, and the page renders it as text
+  // nodes -- never as markup, never as an instruction.
+  const payload = mcpPayload(body.result)
+  return (payload === undefined ? {} : payload) as T
 }
 
 export { RENDER_BASE, TOOL_ALLOWLIST }

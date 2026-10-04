@@ -1,19 +1,36 @@
 import {useEffect,useMemo,useRef,useState,type Ref,type CSSProperties} from 'react';
 import {useSearchParams} from 'react-router-dom';
 import {QueenCombBabylon} from './QueenCombBabylon';
-import {catalogUniverse,catalogFocus,catalogFocusHash,catalogPortalSize,catalogSpecSelection,type CatalogController} from './queenCatalogData';
-import {QueenCatalogInspector,QueenCatalogSpec} from './QueenCatalogInspector';
+import {catalogUniverse,catalogFocus,catalogFocusHash,catalogLabelField,catalogPortalSize,catalogSpecSelection,type CatalogController} from './queenCatalogData';
+import {QueenCatalogSpec} from './QueenCatalogSpec';
+import {QueenEvidence} from './QueenEvidence';
+import QueenCellStage,{type CellSpecLink} from './QueenCellStage';
+import {SELECTION_KEY,validSelection} from '../lib/queenEmbed';
 import {atlasAgentPacket,type UniverseAtlas,type AtlasIssue} from '../lib/queenUniverseAtlas';
 import type {CombHandle} from './queenHud';
 import type {HiveDisplayProjection,HiveDisplay} from './queenHiveDisplay';
-import type {WorldIssue} from './queenRepositoryWorld';
+import {loadWorldIssues,type WorldIssue} from './queenRepositoryWorld';
+import {supportsIssueProof} from '../lib/queenIssueProof';
 import './QueenCatalogHive.css';
 
 export function QueenCatalogHive({atlas,lang,handleRef,foundationVisible=true,fitInset=0,onInspect}:{atlas:UniverseAtlas;lang:'ru'|'en';handleRef:Ref<CombHandle>;foundationVisible?:boolean;fitInset?:number;onInspect?:()=>void}) {
   const ru=lang==='ru';
   const [params,setParams]=useSearchParams(),focus=catalogFocus(`#/queen?${params}`,atlas),repo=focus?.repo??null;
   const [observed,setObserved]=useState<Record<string,WorldIssue>>({});
-  const world=useMemo(()=>catalogUniverse(atlas,Object.values(observed)),[atlas,observed]),map=world.map;
+  const [completeWorlds,setCompleteWorlds]=useState<string[]>([]);
+  useEffect(()=>{
+    if(!repo||!supportsIssueProof(repo))return;
+    const request=new AbortController();
+    // Refresh this small supported world when selected; a static atlas predating
+    // closure must not override the exact GitHub/native-proof observation.
+    loadWorldIssues(repo,1,request.signal).then(({rows,hasMore})=>{
+      if(request.signal.aborted)return;
+      setObserved(prev=>({...Object.fromEntries(Object.entries(prev).filter(([,row])=>row.repo!==repo)),...Object.fromEntries(rows.map(row=>[row.key,row]))}));
+      setCompleteWorlds(prev=>[...prev.filter(r=>r!==repo),...(!hasMore?[repo]:[])]);
+    }).catch(()=>{/* The dated atlas remains explicitly a snapshot on failure. */});
+    return()=>request.abort();
+  },[repo]);
+  const world=useMemo(()=>catalogUniverse(atlas,Object.values(observed),completeWorlds),[atlas,observed,completeWorlds]),map=world.map;
   const issueRows=world.displays.filter(row=>row?.repo===repo);
   const cards=useMemo(()=>world.displays.map(row=>row?{number:row.number,title:row.title,column:row.state}:null),[world]);
   const issueKey=focus?.number?`${repo}#${focus.number}`:null;
@@ -27,9 +44,9 @@ export function QueenCatalogHive({atlas,lang,handleRef,foundationVisible=true,fi
   // trinity-fpga rendered at left:-31 and read as "ity-fpga". The label box is
   // clamped into the measured layer instead.
   const labels=useRef<HTMLDivElement>(null);
-  const [field,setField]=useState({width:0,height:0});
+  const [field,setField]=useState({left:0,top:0,right:0,bottom:0});
   const [regionHeight,setRegionHeight]=useState(49);
-  useEffect(()=>{const node=labels.current;if(!node)return;const measure=()=>setField(prev=>prev.width===node.clientWidth&&prev.height===node.clientHeight?prev:{width:node.clientWidth,height:node.clientHeight});const observer=new ResizeObserver(measure);observer.observe(node);measure();return()=>observer.disconnect();},[]);
+  useEffect(()=>{const node=labels.current;if(!node)return;const measure=()=>{const box=node.getBoundingClientRect();const next=catalogLabelField({left:box.left,top:box.top,width:box.width,height:box.height},node.parentElement?.getBoundingClientRect()??null,toolbar.current?.getBoundingClientRect()??null);setField(prev=>prev.left===next.left&&prev.top===next.top&&prev.right===next.right&&prev.bottom===next.bottom?prev:next);};const observer=new ResizeObserver(measure);observer.observe(node);if(node.parentElement)observer.observe(node.parentElement);if(toolbar.current)observer.observe(toolbar.current);measure();return()=>observer.disconnect();},[]);
   const [selected,setSelected]=useState<number|null>(null),[projections,setProjections]=useState<HiveDisplayProjection[]>([]),[query,setQuery]=useState(''),[limit,setLimit]=useState(8),[packet,setPacket]=useState(''),[copied,setCopied]=useState(false);
   const [regionProjections,setRegionProjections]=useState<HiveDisplayProjection[]>([]);
   const resource=selected===null?null:map.cells[selected];
@@ -48,8 +65,9 @@ export function QueenCatalogHive({atlas,lang,handleRef,foundationVisible=true,fi
       const row=map.cells[p.index];
       if(row?.kind!=='repo')return [];
       const cap=Math.max(90,Math.min(200,p.width)),half=cap/2;
-      const x=field.width>=cap+8?Math.min(Math.max(p.x,half+4),field.width-half-4):p.x;
-      const floor=regionHeight+4,ceil=field.height?field.height-4:Number.POSITIVE_INFINITY;
+      const width=field.right-field.left,height=field.bottom-field.top;
+      const x=width>=cap+8?Math.min(Math.max(p.x,field.left+half+4),field.right-half-4):p.x;
+      const floor=field.top+regionHeight+4,ceil=height?field.bottom-4:Number.POSITIVE_INFINITY;
       for(const lift of lifts){
         const y=Math.min(Math.max(p.y+lift,floor),ceil);
         if(lift&&Math.abs(y-p.y)<Math.abs(lift)-0.5)continue;      // the clamp swallowed the lift, so it is not a new slot
@@ -72,6 +90,29 @@ export function QueenCatalogHive({atlas,lang,handleRef,foundationVisible=true,fi
   function enter(nextRepo:string,number:number|null=null){setSpecPath(null);setPacket('');setCopied(false);if(nextRepo===repo&&number===focus?.number)return;setParams(p=>{const next=new URLSearchParams(p);next.set('world',nextRepo);if(number===null)next.delete('task');else next.set('task',String(number));return next;},{replace:nextRepo===repo});onInspect?.();}
   function home(){setSpecPath(null);setPacket('');setCopied(false);setParams(p=>{const next=new URLSearchParams(p);next.delete('world');next.delete('task');return next;});}
   function openIssue(row:HiveDisplay){enter(row.repo,row.number);}
+  // A spec opened here is the corpus's selected spec: it goes into the Queen
+  // address, which a tab switch keeps, so SPECS opens the Explorer on it.
+  function openSpec(path:string){setSpecPath(path);const id=validSelection('specs',path);if(id)setParams(p=>{const next=new URLSearchParams(p);next.set(SELECTION_KEY.specs,id);return next;},{replace:true});}
+  // The cell, opened: the stage takes the whole display, so everything it needs
+  // that only this component holds -- the atlas -- is handed to it as data. The
+  // snapshot is the catalog's own row; the live GitHub read happens inside the
+  // stage and comes back through onObserved, which is what redraws the map cell.
+  const snapshot=issueKey?atlas.issues.find(i=>i.key===issueKey)??null:null;
+  const cellSpecs=useMemo(()=>{
+    const links=new Map<string,CellSpecLink>();
+    for(const hit of snapshot?.hits??[]){
+      const note=hit.relation==='reference'?(ru?'Путь / символ, не подтверждено':'Path / symbol, unverified'):(ru?'Кандидат, не подтверждено':'Candidate, unverified');
+      for(const source of atlas.specs.find(s=>s.id===hit.specId)?.sources??[])if(!links.has(source.path))links.set(source.path,{path:source.path,label:`${source.repo} · ${source.path}`,note});
+    }
+    return [...links.values()];
+  },[snapshot,atlas.specs,ru]);
+  function cellPacket(){
+    const number=focus?.number;
+    if(!repo||!number)return '';
+    const row=observed[`${repo}#${number}`]??null;
+    return atlasAgentPacket(atlas,snapshot??{key:`${repo}#${number}`,repo,number,title:row?.title??'',hits:[]})+
+      `\nPublic issue observation (not a task lease): ${JSON.stringify(row?{key:row.key,title:row.title,state:row.state,updatedAt:row.updatedAt,assignees:row.assignees??null}:null)}\nCheck assignments and active PRs before taking work. Coordinate ownership in the existing issue; this copy action does not reserve it.\n`;
+  }
   const previousRepo=useRef(repo);
   useEffect(()=>{if(previousRepo.current&&!repo&&resource?.kind!=='spec')control.current?.overview();previousRepo.current=repo;},[repo,resource?.kind]);
   function project(next:HiveDisplayProjection[],regions:HiveDisplayProjection[]){
@@ -87,6 +128,7 @@ export function QueenCatalogHive({atlas,lang,handleRef,foundationVisible=true,fi
       <span>{repo??'TRI-27 · S³AI DNA'}</span><span>{repo?issueRows.length:world.displays.filter(Boolean).length} issues</span><span>{atlas.specs.length} .t27</span><span>{map.regions?.length} {ru?'репозиториев':'repositories'}</span>
       <small>{ru?'Публичный снимок, не live · золото = спека, не закрытая issue':'Public snapshot, not live · gold = spec, not a resolved issue'}</small>
     </div>
+    <QueenEvidence lang={lang}/>
     <button className="queen-catalog-search-toggle" aria-controls="queen-catalog-search-controls" aria-expanded={toolsOpen} onClick={()=>setToolsOpen(v=>!v)}>{toolsOpen?(ru?'Скрыть поиск':'Hide search'):(ru?'Поиск сот':'Find cells')}</button>
     <div className="queen-hive-inspect-tools queen-catalog-tools" id="queen-catalog-search-controls">
       <input aria-label={ru?'Найти спеку, репозиторий или задачу':'Find spec, repository or issue'} placeholder=".t27 / repo / #issue" value={query} onChange={e=>setQuery(e.target.value)}/>
@@ -103,7 +145,7 @@ export function QueenCatalogHive({atlas,lang,handleRef,foundationVisible=true,fi
     {!specPath&&resource&&(!repo||!focus?.number)&&<aside className="queen-catalog-detail" aria-label={ru?'Выбранная сота':'Selected cell'}>
       <button className="queen-catalog-close" aria-label={ru?'Закрыть детали':'Close details'} onClick={()=>control.current?.overview()}>×</button>
       <h3>{resource.title}</h3>
-      {resource.kind==='repo'?<><button className="queen-catalog-enter" onClick={()=>{if(selected!==null)control.current?.inspect(selected,true);}}>{ru?'Рассмотреть задачи репозитория':'Inspect repository issues'} →</button><button onClick={copyGameLink}>{ru?'Копировать ссылку':'Copy game link'}</button><p>{resource.count} .t27 · {resource.open??'?'} {ru?'открытых задач':'open issues'}</p></>:<><p>{ru?'Одна спека: общее ядро ↔ репозиторий-источник. Золотая линия связывает её соты.':'One spec: shared core ↔ source repository. The gold line connects its cells.'}</p><div className="queen-catalog-spec-links"><button onClick={()=>{if(selected!==null)control.current?.inspect(selected);}}>{ru?'Показать связь':'Show connection'}</button>{selection.indices.map(index=>{const cell=map.cells[index];return cell?.kind==='spec'?<button key={cell.key} data-spec-jump={cell.placement} onClick={()=>control.current?.inspect(index,true)}>{cell.placement==='core'?(ru?'Ядро':'Core'):cell.sourceRepo}</button>:null;})}</div>{spec?.sources.map(s=><div key={`${s.repo}:${s.path}`}><button onClick={()=>enter(s.repo)}>{s.repo}</button><br/><button onClick={()=>setSpecPath(s.path)}>{s.path}</button></div>)}</>}
+      {resource.kind==='repo'?<><button className="queen-catalog-enter" onClick={()=>{if(selected!==null)control.current?.inspect(selected,true);}}>{ru?'Рассмотреть задачи репозитория':'Inspect repository issues'} →</button><button onClick={copyGameLink}>{ru?'Копировать ссылку':'Copy game link'}</button><p>{resource.count} .t27 · {resource.open??'?'} {ru?'открытых задач':'open issues'}</p></>:<><p>{ru?'Одна спека: общее ядро ↔ репозиторий-источник. Золотая линия связывает её соты.':'One spec: shared core ↔ source repository. The gold line connects its cells.'}</p><div className="queen-catalog-spec-links"><button onClick={()=>{if(selected!==null)control.current?.inspect(selected);}}>{ru?'Показать связь':'Show connection'}</button>{selection.indices.map(index=>{const cell=map.cells[index];return cell?.kind==='spec'?<button key={cell.key} data-spec-jump={cell.placement} onClick={()=>control.current?.inspect(index,true)}>{cell.placement==='core'?(ru?'Ядро':'Core'):cell.sourceRepo}</button>:null;})}</div>{spec?.sources.map(s=><div key={`${s.repo}:${s.path}`}><button onClick={()=>enter(s.repo)}>{s.repo}</button><br/><button onClick={()=>openSpec(s.path)}>{s.path}</button></div>)}</>}
       <p>{ru?'Совпадение со спекой не закрывает issue. Нужны генерация, тесты и ревью.':'A spec match does not close an issue. Generation, tests and review are required.'}</p>
       <h4>{ru?'Связанные задачи':'Related issues'} · {linked.length}</h4>
       {linked.slice(0,limit).map(i=><div className="queen-catalog-issue" key={i.key}><button data-lang-exempt="github-title" onClick={()=>enter(i.repo,i.number)}>{i.repo} #{i.number} · {i.title}</button><small>{i.hits.some(h=>h.relation==='reference'&&(!spec||h.specId===spec.id))?(ru?'Ссылка / символ · не подтверждено':'Path / symbol · unverified'):(ru?'Кандидат / связь не подтверждена':'Candidate / relation unverified')}</small><button className="queen-catalog-copy" onClick={()=>void copy(i)}>COPY TO AGENT</button></div>)}
@@ -111,7 +153,7 @@ export function QueenCatalogHive({atlas,lang,handleRef,foundationVisible=true,fi
       {packet&&<><p role="status">{copied?(ru?'Скопировано':'Copied'):(ru?'Скопируйте пакет ниже':'Copy the packet below')}</p><textarea readOnly aria-label="Agent packet" value={packet}/></>}
       <small>{ru?'Наблюдение':'Observed'}: {new Date(atlas.at).toLocaleString(lang)} · {ru?'не live':'not live'}</small>
     </aside>}
-    {!specPath&&repo&&focus?.number&&<QueenCatalogInspector key={issueKey} atlas={atlas} repo={repo} number={focus.number} lang={lang} onClose={()=>enter(repo)} onSpec={setSpecPath} onObserved={row=>setObserved(prev=>prev[row.key]===row?prev:{...prev,[row.key]:row})}/>}
+    {!specPath&&repo&&focus?.number&&<QueenCellStage key={issueKey} repo={repo} number={focus.number} title={snapshot?.title} lang={lang} onClose={()=>enter(repo)} cellHref={new URL(catalogFocusHash({repo,number:focus.number}),location.href).href} specs={cellSpecs} onSpec={openSpec} packet={cellPacket} onObserved={row=>setObserved(prev=>prev[row.key]===row?prev:{...prev,[row.key]:row})}/>}
     {specPath&&<QueenCatalogSpec key={specPath} atlas={atlas} path={specPath} lang={lang} onClose={()=>setSpecPath(null)}/>}
   </div>;
 }

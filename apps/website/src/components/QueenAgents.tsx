@@ -11,17 +11,21 @@
 // backed by code, how many cards have code and no spec yet, and how many the
 // compiler accepted. It counts; it does not grade.
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useI18n } from '../i18n/context'
 import { QueenLoading } from './QueenLoading'
-import { loadAgentSpecs, loadCronSpecs, loadFunctionSpecs, loadSkillSpecs, loadToolSpecs } from '../lib/agentSpecs'
-import { loadSystemDocs, systemDocsHash } from '../lib/systemDocs'
+import { useQueenExplorerFrame } from './useQueenExplorerFrame'
+import { loadAgentSpecs, loadCronSpecs, loadFunctionSpecs, loadProviderSpecs, loadSkillSpecs, loadToolSpecs } from '../lib/agentSpecs'
+import { loadSystemDocs } from '../lib/systemDocs'
+import { QueenMcp, mcpCopy } from './QueenMcp'
+import type { ExplorerTab } from '../lib/queenEmbed'
 
-export type AgentsKind = 'skills' | 'crons' | 'agents' | 'functions' | 'tools' | 'project'
+export type AgentsKind = 'skills' | 'crons' | 'agents' | 'functions' | 'tools' | 'providers' | 'project'
 
-// PROJECT frames #/docs?embed=1. The quick jumps above the frame rewrite the
-// frame's hash to a chapter; the page inside follows hashchange, so a jump is a
-// chapter switch, not a reload. Chapter stems are those of specs/docs/chapters.
+// PROJECT frames #/docs?embed=1. A quick jump above the frame is a chapter written
+// to the Queen address (chapter=), like a pick inside the frame; the frame's hash
+// follows, and the page inside answers hashchange, so a jump is a chapter switch,
+// not a reload. Chapter stems are those of specs/docs/chapters.
 export const PROJECT_JUMPS: readonly { stem: string; en: string; ru: string }[] = [
   { stem: 'project', en: 'Project', ru: 'Проект' },
   { stem: 'rules', en: 'Rules of the game', ru: 'Правила игры' },
@@ -29,6 +33,16 @@ export const PROJECT_JUMPS: readonly { stem: string; en: string; ru: string }[] 
   { stem: 'alphabet', en: 'Alphabet', ru: 'Алфавит' },
   { stem: 'tooling', en: 'Tools', ru: 'Инструменты' },
   { stem: 'evidence', en: 'Evidence', ru: 'Свидетели' },
+] as const
+
+// TOOLS answers two questions, so it has two faces and one tab. The Explorer is
+// the spec catalogue: what a tool is declared to be. The fleet is whether the
+// MCP servers behind those tools answer right now, read live from a hub on the
+// owner's own machine. A declared server that is offline and a healthy one are
+// the same text in a spec, which is the half the catalogue cannot show.
+export const TOOL_FACES: readonly { id: 'specs' | 'mcp'; en: string; ru: string }[] = [
+  { id: 'specs', en: 'Specs', ru: 'Спеки' },
+  { id: 'mcp', en: '🔌 MCP fleet', ru: '🔌 Парк MCP' },
 ] as const
 
 export interface AgentsCopy {
@@ -50,12 +64,17 @@ export interface AgentsCopy {
   projectChapters?: string
   projectRu?: string
   projectSources?: string
+  /** Providers only: cards whose numbers were read (from a chain or a bench), and cards that are a design. */
+  providersRead?: string
+  providersDesign?: string
 }
 
 // For skills and crons the third figure is code-only cards; for agents it is
 // the episodes no letter claims (`unattributed`), which is a fact about the log,
 // not a defect of any agent. For tools the pair is owned / not yet owned: an
-// unbound tool is a gap in the alphabet's bindings, not a broken spec.
+// unbound tool is a gap in the alphabet's bindings, not a broken spec. For
+// providers the pair is read / design: a card copied from the Gonka chain or
+// measured on a bench, and a card that is a plan and claims no number.
 interface Counts { specs: number; specPlusCode: number; codeOnly: number; typecheckOk: number; typecheckTotal?: number }
 
 async function loadCounts(kind: AgentsKind): Promise<Counts> {
@@ -77,6 +96,11 @@ async function loadCounts(kind: AgentsKind): Promise<Counts> {
   if (kind === 'tools') {
     const c = (await loadToolSpecs()).counts
     return { specs: c.specs, specPlusCode: c.withAgents, codeOnly: c.specs - c.withAgents, typecheckOk: c.typecheckOk }
+  }
+  if (kind === 'providers') {
+    const c = (await loadProviderSpecs()).counts
+    const read = c.byWitness['chain-read'] + c.byWitness['bench-measured']
+    return { specs: c.specs, specPlusCode: read, codeOnly: c.byWitness['design-only'], typecheckOk: c.typecheckOk }
   }
   const c = kind === 'skills' ? (await loadSkillSpecs()).counts : (await loadCronSpecs()).counts
   return { specs: c.specs, specPlusCode: c.specPlusCode, codeOnly: c.codeOnly, typecheckOk: c.typecheckOk }
@@ -102,10 +126,10 @@ export function QueenAgentsDirective({ kind, c, collapsible = false }: { kind: A
           <b style={{ color: '#00FF88' }}>{counts.specs}</b> {kind === 'project' ? c.projectChapters ?? c.specs : c.specs}
           {' · '}
           <b style={{ color: (kind === 'agents' || kind === 'tools') && counts.specPlusCode === 0 ? '#8b9490' : '#00FF88' }}>{counts.specPlusCode}</b>{' '}
-          {kind === 'agents' ? c.specPlusExperience ?? c.specPlusCode : kind === 'tools' ? c.toolsOwned ?? c.specPlusCode : kind === 'project' ? c.projectRu ?? c.specPlusCode : c.specPlusCode}
+          {kind === 'agents' ? c.specPlusExperience ?? c.specPlusCode : kind === 'tools' ? c.toolsOwned ?? c.specPlusCode : kind === 'providers' ? c.providersRead ?? c.specPlusCode : kind === 'project' ? c.projectRu ?? c.specPlusCode : c.specPlusCode}
           {' · '}
           <b style={{ color: kind === 'project' ? '#00FF88' : counts.codeOnly ? '#f0a020' : '#8b9490' }}>{counts.codeOnly}</b>{' '}
-          {kind === 'agents' ? c.unattributed ?? c.codeOnly : kind === 'tools' ? c.toolsUnowned ?? c.codeOnly : kind === 'project' ? c.projectSources ?? c.codeOnly : c.codeOnly}
+          {kind === 'agents' ? c.unattributed ?? c.codeOnly : kind === 'tools' ? c.toolsUnowned ?? c.codeOnly : kind === 'providers' ? c.providersDesign ?? c.codeOnly : kind === 'project' ? c.projectSources ?? c.codeOnly : c.codeOnly}
           {' · '}
           <b style={{ color: counts.typecheckOk === (counts.typecheckTotal ?? counts.specs) ? '#00FF88' : '#f85149' }}>
             {counts.typecheckOk}/{counts.typecheckTotal ?? counts.specs}
@@ -136,32 +160,43 @@ export function QueenAgentsDirective({ kind, c, collapsible = false }: { kind: A
   )
 }
 
-export function QueenAgents({ kind, c, showDirective = true }: { kind: AgentsKind; c: AgentsCopy; showDirective?: boolean }) {
+export function QueenAgents({ kind, c, showDirective = true, onNavigate, ladder }: { kind: AgentsKind; c: AgentsCopy; showDirective?: boolean; onNavigate: (tab: ExplorerTab, card: string | null) => void; ladder?: ReactNode }) {
   const { lang } = useI18n()
   const [ready, setReady] = useState(false)
-  const [jump, setJump] = useState<string>(PROJECT_JUMPS[0].stem)
+  // The card in the frame is the card in the Queen address: skill=, cron=, agent=,
+  // function=, tool=, provider= or chapter= (lib/queenEmbed). PROJECT opens on the first chapter.
   const frameRef = useRef<HTMLIFrameElement>(null)
-
-  // ?lang= rides in the search, where the i18n provider reads it, so the frame
-  // follows the shell's language instead of whatever localStorage held.
-  // PROJECT is the docs page at #/docs; the first chapter is the initial frame.
-  const src = kind === 'project'
-    ? `${window.location.pathname}?lang=${lang}${systemDocsHash(PROJECT_JUMPS[0].stem, { embedded: true })}`
-    : `${window.location.pathname}?lang=${lang}#/${kind}?embed=1`
-
-  // A quick jump changes only the frame's fragment (same document, same origin),
-  // which the docs page answers by switching chapter without reloading.
-  const jumpTo = (stem: string) => {
-    setJump(stem)
-    const win = frameRef.current?.contentWindow
-    if (win) {
-      try { win.location.hash = systemDocsHash(stem, { embedded: true }).slice(1) } catch { /* cross-origin never happens: same document */ }
-    }
-  }
+  const frame = useQueenExplorerFrame(kind, onNavigate, frameRef)
+  const jump = frame.card ?? PROJECT_JUMPS[0].stem
+  // TOOLS only. `seenMcp` keeps the fleet from probing the hub for a reader who
+  // never asks for it, and keeps it mounted once they have: both faces stay in
+  // the tree and are hidden rather than unmounted, because the Explorer boots
+  // the compiler wasm and a face switch must not pay for that twice.
+  const [face, setFace] = useState<'specs' | 'mcp'>('specs')
+  const [seenMcp, setSeenMcp] = useState(false)
+  const hasFaces = kind === 'tools'
+  const showMcp = hasFaces && face === 'mcp'
 
   return (
-    <div className={`queen27-specs${kind === 'project' ? ' has-jumps' : ''}`} data-directive={showDirective ? 'above' : 'aside'}>
+    <div className={`queen27-specs${kind === 'project' || hasFaces ? ' has-jumps' : ''}${ladder ? ' has-ladder' : ''}`} data-directive={showDirective ? 'above' : 'aside'}>
+      {ladder}
       {showDirective && <QueenAgentsDirective kind={kind} c={c} collapsible />}
+
+      {hasFaces && (
+        <nav className="queen27-docs-jumps" aria-label={lang === 'ru' ? 'Что показывает вкладка инструментов' : 'What the tools view shows'}>
+          {TOOL_FACES.map((f) => (
+            <button
+              type="button"
+              key={f.id}
+              className={`queen27-docs-jump${face === f.id ? ' is-active' : ''}`}
+              aria-pressed={face === f.id}
+              onClick={() => { setFace(f.id); if (f.id === 'mcp') setSeenMcp(true) }}
+            >
+              {lang === 'ru' ? f.ru : f.en}
+            </button>
+          ))}
+        </nav>
+      )}
 
       {kind === 'project' && (
         <nav className="queen27-docs-jumps" aria-label={lang === 'ru' ? 'Быстрые переходы по документации' : 'Documentation quick jumps'}>
@@ -171,7 +206,7 @@ export function QueenAgents({ kind, c, showDirective = true }: { kind: AgentsKin
               key={j.stem}
               className={`queen27-docs-jump${jump === j.stem ? ' is-active' : ''}`}
               aria-pressed={jump === j.stem}
-              onClick={() => jumpTo(j.stem)}
+              onClick={() => frame.show(j.stem)}
             >
               {lang === 'ru' ? j.ru : j.en}
             </button>
@@ -179,18 +214,27 @@ export function QueenAgents({ kind, c, showDirective = true }: { kind: AgentsKin
         </nav>
       )}
 
-      <div className="queen27-specs-frame-wrap">
+      {seenMcp && (
+        // Its own copy table travels with the component: "answering" and the
+        // hub-down command are this view's vocabulary and nothing else's.
+        <QueenMcp c={mcpCopy(lang)} lang={lang} hidden={!showMcp} />
+      )}
+
+      <div className="queen27-specs-frame-wrap" hidden={showMcp}>
         {!ready && (
           <div className="queen27-specs-loading">
-            <QueenLoading title={c.loading} facts={[kind === 'project' ? 'specs/docs/system.t27' : `specs/${kind}/*.t27`]} />
+            {/* The mark and the bar, no words: see components/QueenLoading. */}
+            <QueenLoading label={c.loading} />
           </div>
         )}
         <iframe
+          key={frame.frameKey}
           ref={frameRef}
+          name={frame.frameName}
           className="queen27-specs-frame"
-          src={src}
-          title={kind === 'skills' ? 'Skill Explorer' : kind === 'crons' ? 'Cron Explorer' : kind === 'agents' ? 'Agent Explorer' : kind === 'functions' ? 'Function Explorer' : kind === 'tools' ? 'Tool Explorer' : 'System documentation'}
-          onLoad={() => setReady(true)}
+          src={frame.src}
+          title={kind === 'skills' ? 'Skill Explorer' : kind === 'crons' ? 'Cron Explorer' : kind === 'agents' ? 'Agent Explorer' : kind === 'functions' ? 'Function Explorer' : kind === 'tools' ? 'Tool Explorer' : kind === 'providers' ? 'Provider Explorer' : 'System documentation'}
+          onLoad={() => { setReady(true); frame.onFrameLoad() }}
           loading="lazy"
         />
       </div>

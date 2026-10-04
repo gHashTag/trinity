@@ -41,6 +41,6 @@ See [entropy-bands.md](./entropy-bands.md) for Wave 8.5 G1-G8 sweep details.
 ## References
 
 - [Source: docs/experiments/FOUND_EXPERIMENTS_SUMMARY.md](../../../experiments/FOUND_EXPERIMENTS_SUMMARY.md)
-- [Source: src/tri/evolution.zig](../../../../../src/tri/evolution.zig)
-- [Source: src/tri/tri_farm.zig](../../../../../src/tri/tri_farm.zig)
-- [Source: src/brain/evolution_simulation.zig](../../../../../src/brain/evolution_simulation.zig)
+- [Source: src/tri/evolution.zig](../../../../src/tri/evolution.zig)
+- [Source: src/tri/tri_farm.zig](../../../../src/tri/tri_farm.zig)
+- [Source: src/brain/evolution_simulation.zig](../../../../src/brain/evolution_simulation.zig)

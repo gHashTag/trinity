@@ -11,6 +11,9 @@ module tool_tri_fpga;
 pub const KIND : str = "tool";
 pub const FAMILY : str = "tri-cli";
 pub const ID : str = "tri/fpga";
+pub const REPO : str = "gHashTag/t27";
+pub const QUALIFIED_ID : str = "gHashTag/t27:tri/fpga";
+pub const SCHEMA : u32 = 2;
 pub const COMMAND : str = "tri fpga";
 ; clap enum variant and where the dispatch lands
 pub const VARIANT : str = "Commands::Fpga";

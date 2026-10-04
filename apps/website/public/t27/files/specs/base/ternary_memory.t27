@@ -3,14 +3,14 @@
 // Ternary Memory Specification
 // Ring 066 - Ternary memory cell and array operations
 // Defines how trits are stored and accessed in memory
-// phi^2 + 1/phi^2 = 3 | TRINITY
+// φ² + 1/φ² = 3 | TRINITY
 
 module TernaryMemory {
     use base::types;
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 1. Memory Constants
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // Trit values
     const TRIT_NEG : i32 = -1;
@@ -28,9 +28,9 @@ module TernaryMemory {
     const STATE_LOCKED : u8 = 2;
     const STATE_DIRTY : u8 = 3;
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 2. Trit Memory Cell
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // TritCell: Single trit storage with metadata
     struct TritCell {
@@ -40,9 +40,9 @@ module TernaryMemory {
         access_count : u32,
     }
 
-    // trit_cell_init() -> TritCell
+    // trit_cell_init() → TritCell
     // Initialize a trit cell
-    fn trit_cell_init() -> TritCell {
+    fn trit_cell_init() → TritCell {
         return TritCell{
             .value = TRIT_ZERO,
             .state = STATE_FREE,
@@ -51,9 +51,9 @@ module TernaryMemory {
         };
     }
 
-    // trit_cell_write(cell: *TritCell, value: i32) -> bool
+    // trit_cell_write(cell: *TritCell, value: i32) → bool
     // Write a value to a trit cell
-    fn trit_cell_write(cell: *TritCell, value: i32) -> bool {
+    fn trit_cell_write(cell: *TritCell, value: i32) → bool {
         if (cell.state == STATE_LOCKED) {
             return false;
         }
@@ -64,17 +64,17 @@ module TernaryMemory {
         return true;
     }
 
-    // trit_cell_read(cell: *TritCell) -> i32
+    // trit_cell_read(cell: *TritCell) → i32
     // Read a value from a trit cell
-    fn trit_cell_read(cell: *TritCell) -> i32 {
+    fn trit_cell_read(cell: *TritCell) → i32 {
         cell.last_access = get_timestamp();
         cell.access_count = cell.access_count + 1;
         return cell.value;
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 3. Ternary Word
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // TernaryWord: 27 trits
     struct TernaryWord {
@@ -83,9 +83,9 @@ module TernaryMemory {
         checksum : u32,
     }
 
-    // ternary_word_init() -> TernaryWord
+    // ternary_word_init() → TernaryWord
     // Initialize a ternary word
-    fn ternary_word_init() -> TernaryWord {
+    fn ternary_word_init() → TernaryWord {
         var word : TernaryWord = undefined;
         word.state = STATE_FREE;
         word.checksum = 0;
@@ -99,9 +99,9 @@ module TernaryMemory {
         return word;
     }
 
-    // ternary_word_write_trit(word: *TernaryWord, index: usize, value: i32) -> bool
+    // ternary_word_write_trit(word: *TernaryWord, index: usize, value: i32) → bool
     // Write a single trit in a word
-    fn ternary_word_write_trit(word: *TernaryWord, index: usize, value: i32) -> bool {
+    fn ternary_word_write_trit(word: *TernaryWord, index: usize, value: i32) → bool {
         if (index >= TRIT_CAPACITY) {
             return false;
         }
@@ -117,18 +117,18 @@ module TernaryMemory {
         return result;
     }
 
-    // ternary_word_read_trit(word: *TernaryWord, index: usize) -> i32
+    // ternary_word_read_trit(word: *TernaryWord, index: usize) → i32
     // Read a single trit from a word
-    fn ternary_word_read_trit(word: *TernaryWord, index: usize) -> i32 {
+    fn ternary_word_read_trit(word: *TernaryWord, index: usize) → i32 {
         if (index >= TRIT_CAPACITY) {
             return TRIT_ZERO;
         }
         return trit_cell_read(&word.trits[index]);
     }
 
-    // compute_checksum(word: *TernaryWord) -> u32
+    // compute_checksum(word: *TernaryWord) → u32
     // Compute checksum for a word
-    fn compute_checksum(word: *TernaryWord) -> u32 {
+    fn compute_checksum(word: *TernaryWord) → u32 {
         var checksum : u32 = 0;
         var i : usize = 0;
 
@@ -141,9 +141,9 @@ module TernaryMemory {
         return checksum;
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 4. Ternary Memory Bank
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // TernaryMemoryBank: Array of ternary words
     struct TernaryMemoryBank {
@@ -152,9 +152,9 @@ module TernaryMemory {
         total_accesses : u64,
     }
 
-    // ternary_memory_bank_init() -> TernaryMemoryBank
+    // ternary_memory_bank_init() → TernaryMemoryBank
     // Initialize a memory bank
-    fn ternary_memory_bank_init() -> TernaryMemoryBank {
+    fn ternary_memory_bank_init() → TernaryMemoryBank {
         var bank : TernaryMemoryBank = undefined;
         bank.allocated = 0;
         bank.total_accesses = 0;
@@ -168,10 +168,10 @@ module TernaryMemory {
         return bank;
     }
 
-    // ternary_memory_alloc(bank: *TernaryMemoryBank) -> usize
+    // ternary_memory_alloc(bank: *TernaryMemoryBank) → usize
     // Allocate a word in memory bank
     // Returns word index or -1 if full
-    fn ternary_memory_alloc(bank: *TernaryMemoryBank) -> usize {
+    fn ternary_memory_alloc(bank: *TernaryMemoryBank) → usize {
         if (bank.allocated >= WORD_CAPACITY) {
             return 0xFFFFFFFFFFFFFFFF;  // -1 in usize
         }
@@ -182,9 +182,9 @@ module TernaryMemory {
         return index;
     }
 
-    // ternary_memory_free(bank: *TernaryMemoryBank, index: usize) -> bool
+    // ternary_memory_free(bank: *TernaryMemoryBank, index: usize) → bool
     // Free a word in memory bank
-    fn ternary_memory_free(bank: *TernaryMemoryBank, index: usize) -> bool {
+    fn ternary_memory_free(bank: *TernaryMemoryBank, index: usize) → bool {
         if (index >= bank.allocated) {
             return false;
         }
@@ -192,9 +192,9 @@ module TernaryMemory {
         return true;
     }
 
-    // ternary_memory_read(bank: *TernaryMemoryBank, word_index: usize, trit_index: usize) -> i32
+    // ternary_memory_read(bank: *TernaryMemoryBank, word_index: usize, trit_index: usize) → i32
     // Read a trit from memory bank
-    fn ternary_memory_read(bank: *TernaryMemoryBank, word_index: usize, trit_index: usize) -> i32 {
+    fn ternary_memory_read(bank: *TernaryMemoryBank, word_index: usize, trit_index: usize) → i32 {
         bank.total_accesses = bank.total_accesses + 1;
 
         if (word_index >= bank.allocated) {
@@ -204,9 +204,9 @@ module TernaryMemory {
         return ternary_word_read_trit(&bank.words[word_index], trit_index);
     }
 
-    // ternary_memory_write(bank: *TernaryMemoryBank, word_index: usize, trit_index: usize, value: i32) -> bool
+    // ternary_memory_write(bank: *TernaryMemoryBank, word_index: usize, trit_index: usize, value: i32) → bool
     // Write a trit to memory bank
-    fn ternary_memory_write(bank: *TernaryMemoryBank, word_index: usize, trit_index: usize, value: i32) -> bool {
+    fn ternary_memory_write(bank: *TernaryMemoryBank, word_index: usize, trit_index: usize, value: i32) → bool {
         bank.total_accesses = bank.total_accesses + 1;
 
         if (word_index >= bank.allocated) {
@@ -216,25 +216,25 @@ module TernaryMemory {
         return ternary_word_write_trit(&bank.words[word_index], trit_index, value);
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 5. Helper Functions
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // get_timestamp() -> u64
+    // get_timestamp() → u64
     // Get current timestamp (placeholder)
-    fn get_timestamp() -> u64 {
+    fn get_timestamp() → u64 {
         return 0;
     }
 
-    // validate_trit(value: i32) -> bool
+    // validate_trit(value: i32) → bool
     // Validate trit value
-    fn validate_trit(value: i32) -> bool {
+    fn validate_trit(value: i32) → bool {
         return value >= TRIT_NEG and value <= TRIT_POS;
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 6. TDD - Tests
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     test trit_cell_initialization
         const cell = trit_cell_init();
@@ -299,9 +299,9 @@ module TernaryMemory {
         assert ternary_memory_write(&bank, index, 0, TRIT_POS) == true
         assert ternary_memory_read(&bank, index, 0) == TRIT_POS
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 7. TDD - Invariants
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     invariant trit_cell_read_increments_count
         // Reading a cell should increment access count
@@ -358,9 +358,9 @@ module TernaryMemory {
         _ = ternary_word_write_trit(&word, 0, TRIT_POS);
         assert word.state == STATE_DIRTY
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 8. TDD - Benchmarks
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     bench trit_cell_write_performance
         // Measure: cycles to write 1000 trit cells

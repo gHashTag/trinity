@@ -13,28 +13,36 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="TRINITY" />
-  <meta name="description"
-    content="GFTernary and TNF: a reference format pair for the ternary datapath. 52 theorems, 16 retractions, and every hardware number measured on an open flow on XC7A200T." />
+  <meta name="apple-mobile-web-app-title" content="TRINITY S³AI" />
+  <!-- What a link to t27.ai shows: site name, title, description, picture.
+       The same words as the page's first screen -- GameHero's wordmark, the
+       caption from lib/motto, the headline from lib/motto + GameHero -- and
+       qa/og-preview-contract.mjs fails if they part. Until 2026-10-04 these
+       tags described the GFTernary/TNF page the site used to open on. The
+       picture is og/og-image.svg, rendered by scripts/og-image.mjs. -->
+  <meta name="description" content="Play, direct, earn: the core is a game, and the board is public" />
   <meta name="theme-color" content="#000000" />
   <meta name="keywords" content="ternary computing, AI hardware, SU(3), quantum computing, FPGA, ASIC, energy efficient AI, BitNet, inference acceleration" />
   <meta name="author" content="Dmitrii Vasilev" />
-  <title>TRINITY | GFTernary · TNF — a reference format pair for the ternary datapath</title>
+  <title>TRINITY S³AI — AGI game — play, direct, earn</title>
   
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://t27.ai/" />
-  <meta property="og:title" content="TRINITY | GFTernary · TNF — a reference format pair for the ternary datapath" />
-  <meta property="og:description" content="GFTernary closes the weight, TNF closes the accumulator. GFTernary decoder 66 LUT at 974.66 MHz; 0.1797 MHz/LUT in a whole ternary neuron. Measured on a binary FPGA, which is stated rather than smoothed." />
+  <meta property="og:title" content="AGI game — play, direct, earn" />
+  <meta property="og:description" content="Play, direct, earn: the core is a game, and the board is public" />
   <meta property="og:image" content="https://t27.ai/og-image.png" />
-  <meta property="og:site_name" content="TRINITY" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="TRINITY S³AI. AGI game — play, direct, earn. Play, direct, earn: the core is a game, and the board is public." />
+  <meta property="og:site_name" content="TRINITY S³AI" />
   <meta property="og:locale" content="en_US" />
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://t27.ai/" />
-  <meta name="twitter:title" content="TRINITY | GFTernary · TNF — a reference format pair for the ternary datapath" />
-  <meta name="twitter:description" content="52 theorems, 16 retractions. GFTernary decoder 66 LUT at 974.66 MHz on XC7A200T, open flow, median of 5 seeds." />
+  <meta name="twitter:title" content="AGI game — play, direct, earn" />
+  <meta name="twitter:description" content="Play, direct, earn: the core is a game, and the board is public" />
   <meta name="twitter:image" content="https://t27.ai/og-image.png" />
 
   <!-- Canonical URL -->
@@ -53,7 +61,7 @@
   {
     "@context": "https://schema.org",
     "@type": "Organization",
-    "name": "TRINITY",
+    "name": "TRINITY S³AI",
     "url": "https://t27.ai/",
     "logo": "https://t27.ai/trinity-logo-with-label.svg",
     "description": "Numeric formats and arithmetic cores for the ternary datapath: GFTernary and TNF, with bit-exact conformance vectors and open-flow FPGA measurements.",
@@ -136,28 +144,51 @@
     /* First-paint shell. #root was empty, so nothing at all was on screen until
        the JS had downloaded, parsed and mounted, and anything that does not run
        JS saw an empty document. React clears these children on its first render.
-       The copy is injected at build time from messages/en.json by the
-       prerender-hero plugin in vite.config.ts, so it cannot drift from the hero
-       it stands in for — what is written below is only the fallback for `vite`
+       The shell is written at build time by scripts/boot-shell.ts, from the
+       lib/motto words GameHero renders, so it cannot drift from the first screen
+       it stands in for -- what is written below is only the fallback for `vite`
        runs where the plugin has not replaced it. */
     html { background: #000; }
     #boot { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.25rem; padding: 2rem; text-align: center; }
-    #boot img { width: min(46vw, 240px); height: auto; }
-    #boot h1 { font-family: 'Outfit', system-ui, sans-serif; font-weight: 600; font-size: clamp(0.7rem, 2.2vw, 0.85rem); letter-spacing: 0.14em; text-transform: uppercase; color: #00FF88; max-width: 42ch; margin: 0; }
-    #boot .eq { font-family: 'Outfit', system-ui, sans-serif; font-size: clamp(1.6rem, 5vw, 2.4rem); font-weight: 700; color: #fff; margin: 0; }
-    #boot .sub { font-family: 'Outfit', system-ui, sans-serif; font-size: clamp(0.85rem, 2vw, 1rem); color: #888; max-width: 56ch; margin: 0; line-height: 1.5; }
-    #boot .btns { display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; }
-    #boot .btns a { font-family: 'Outfit', system-ui, sans-serif; font-size: 0.9rem; font-weight: 600; padding: 0.7rem 1.4rem; border-radius: 999px; text-decoration: none; border: 1px solid rgba(255,255,255,0.16); color: #fff; }
-    #boot .btns a.primary { background: #00FF88; border-color: #00FF88; color: #000; }
+    /* `hidden` is a UA rule of one element-type's weight; `#boot` is an id, so
+       the flex above wins and the attribute does nothing. Stated here so that
+       hiding the hero inside the Queen's frame (the script at the end of the
+       body) actually hides it. */
+    #boot[hidden] { display: none; }
+    #boot img { width: min(30vw, 150px); height: auto; border-radius: 18%; }
+    #boot .mark { font-family: 'Outfit', system-ui, sans-serif; font-weight: 700; font-size: clamp(1.1rem, 3.4vw, 1.5rem); letter-spacing: 0.08em; color: #fff; margin: 0; }
+    #boot .cap { font-family: 'Outfit', system-ui, sans-serif; font-weight: 600; font-size: clamp(0.7rem, 2.2vw, 0.85rem); letter-spacing: 0.14em; text-transform: uppercase; color: #00FF88; margin: 0; }
+    #boot h1 { font-family: 'Outfit', system-ui, sans-serif; font-size: clamp(1.4rem, 4.4vw, 2.2rem); font-weight: 700; color: #fff; max-width: 24ch; margin: 0; line-height: 1.2; }
+    #boot nav { display: flex; flex-wrap: wrap; gap: 0.5rem 1.1rem; justify-content: center; max-width: 64ch; }
+    #boot nav a { font-family: 'Outfit', system-ui, sans-serif; font-size: 0.85rem; color: #9fb3ab; text-decoration: none; padding: 0.35rem 0; }
+    #boot nav a:hover, #boot nav a:focus-visible { color: #00FF88; }
   </style>
 </head>
 <body>
   <div id="root">
     <div id="boot">
-      <img src="trinity-logo-with-label.svg" alt="TRINITY" width="1080" height="1080" />
-      <h1>GFTernary · TNF — a reference pair for the ternary datapath</h1>
+      <img src="favicon.svg" alt="" width="512" height="512" />
+      <h1>TRINITY S³AI</h1>
     </div><!-- /boot -->
   </div>
+  <script>
+    // This hero is what the page says before React mounts: the right thing for a
+    // reader, a crawler, or a browser with no script. Inside the Queen's shell it
+    // is none of those. An Explorer is framed there with ?embed=1, and the shell
+    // already draws one loader over the frame -- so the wait showed two at once,
+    // the shell's mark and bar on top of a full-bleed logo and a headline about
+    // the ternary datapath, which is not what is loading. Hidden only when framed;
+    // every other visitor still gets it.
+    //
+    // embed=1 is in the HASH, not the search: the shell builds the frame's src as
+    // `<path>?lang=xx#/<route>?...&embed=1` (lib/queenEmbed.explorerFrameHash), so
+    // reading location.search here found nothing and the hero kept painting under
+    // the shell's loader. href covers both, and being framed is checked as well so
+    // that a reader who types embed=1 at the top level still gets a page.
+    if (window.self !== window.top && window.location.href.indexOf('embed=1') !== -1) {
+      document.getElementById('boot').hidden = true;
+    }
+  </script>
   <!-- GitHub Pages SPA redirect handler -->
   <script>
     (function(l) {

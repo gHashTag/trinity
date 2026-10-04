@@ -12,10 +12,10 @@ module TriCircularBuffer;
 
     pub const CircularBuffer = struct {
         data : []i64,
-        head : usize,
-        tail : usize,
-        capacity : usize,
-        allocator : std.mem.Allocator,
+        head : "usize",
+        tail : "usize",
+        capacity : "usize",
+        allocator : "std.mem.Allocator",
     };
 
     // ═══════════════════════════════════════════════════════════
@@ -24,55 +24,111 @@ module TriCircularBuffer;
 
     // init(allocator: std.mem.Allocator, capacity: usize) → CircularBuffer
     fn init(allocator: std.mem.Allocator, capacity: usize) -> CircularBuffer {
-        // TODO: Implement from .tri spec
+        var data = allocator.alloc(i64, capacity);
+        var buffer = CircularBuffer{};
+        buffer.data = data;
+        buffer.head = 0;
+        buffer.tail = 0;
+        buffer.capacity = capacity;
+        buffer.allocator = allocator;
+        return buffer;
     }
 
     // write(buf: *CircularBuffer, value: i64) → !void
     fn write(buf: *CircularBuffer, value: i64) -> !void {
-        // TODO: Implement from .tri spec
+        // Check if buffer is full
+        if ((buf.tail + 1) % buf.capacity == buf.head) {
+            return error.BufferFull;
+        }
+        
+        // Write the value at tail position
+        buf.data[buf.tail] = value;
+        
+        // Advance tail (with wrap-around)
+        buf.tail = (buf.tail + 1) % buf.capacity;
     }
 
     // read(buf: *CircularBuffer) → i64
     fn read(buf: *CircularBuffer) -> i64 {
-        // TODO: Implement from .tri spec
+        // Check if buffer is empty
+        if (buf.head == buf.tail) {
+            @panic("Attempted to read from empty circular buffer");
+        }
+        
+        // Read the value at head position
+        const value = buf.data[buf.head];
+        
+        // Advance head (with wrap-around)
+        buf.head = (buf.head + 1) % buf.capacity;
+        
+        return value;
     }
 
     // is_empty(buf: *CircularBuffer) → bool
     fn is_empty(buf: *CircularBuffer) -> bool {
-        // TODO: Implement from .tri spec
+        return buf.head == buf.tail;
     }
 
     // deinit(buf: *CircularBuffer) → void
     fn deinit(buf: *CircularBuffer) -> void {
-        // TODO: Implement from .tri spec
+        buf.allocator.free(buf.data);
+        // Reset the buffer state
+        buf.* = CircularBuffer{
+            .data = undefined,
+            .head = 0,
+            .tail = 0,
+            .capacity = 0,
+            .allocator = undefined,
+        };
     }
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    // Every function above has no body yet, so it panics when called; and
-    // write(buf) / read(buf) carry no value in or out, so no write/read round
-    // trip can be stated until those signatures grow one. What can be stated
-    // is the shape of the CircularBuffer value itself.
+    test init_basic_case
+        given input = default_input()
+        when result = init(input, 10)
+        then result != undefined
+        and result.data.len == 10
+        and result.head == 0
+        and result.tail == 0
+        and result.capacity == 10
 
-    test circular_buffer_empty_state_has_head_meeting_tail
-        given empty = CircularBuffer{.data=&[_]i64{},.head=0,.tail=0,.capacity=0,.allocator=std.testing.allocator}
-        then empty.head == empty.tail
-        and empty.capacity == 0
-        and empty.data.len == 0
+    test write_basic_case {
+        var buffer = init(std.testing.allocator, 5);
+        write(&buffer, 42);
+        assert(buffer.data[0] == 42);
+        assert(buffer.head == 0);
+        assert(buffer.tail == 1);
+    }
 
-    test circular_buffer_capacity_matches_its_backing_array
-        given buf = CircularBuffer{.data=@constCast(&[_]i64{7,8,9,10}),.head=3,.tail=1,.capacity=4,.allocator=std.testing.allocator}
-        then buf.capacity == buf.data.len
-        and buf.head != buf.tail
-        and buf.data[buf.tail] == 8
+    test read_basic_case
+        given input = default_input()
+        when buffer = init(input, 5)
+        and write_result = write(&buffer, 42)
+        and read_result = read(&buffer)
+        then read_result == 42
+        and buffer.head == 1
+        and buffer.tail == 1
 
-    test circular_buffer_indices_stay_inside_the_capacity
-        // head and tail are ring positions, so both are < capacity in either
-        // order -- head above tail is just as legal as head below it
-        given wrapped = CircularBuffer{.data=@constCast(&[_]i64{1,2,3,4}),.head=3,.tail=1,.capacity=4,.allocator=std.testing.allocator}
-        then wrapped.head > wrapped.tail
-        and wrapped.head < wrapped.capacity
-        and wrapped.tail < wrapped.capacity
+    test is_empty_basic_case
+        given input = default_input()
+        when buffer = init(input, 5)
+        and empty_result1 = is_empty(&buffer)
+        and write_result = write(&buffer, 42)
+        and empty_result2 = is_empty(&buffer)
+        and read_result = read(&buffer)
+        and empty_result3 = is_empty(&buffer)
+        then empty_result1 == true
+        and empty_result2 == false
+        and empty_result3 == true
+
+    test deinit_basic_case {
+        var buffer = init(std.testing.allocator, 5);
+        write(&buffer, 42);
+        assert(buffer.tail == 1);
+        deinit(&buffer);
+        // Note: After deinit, buffer state is undefined, so we can't test specific values
+    }
 

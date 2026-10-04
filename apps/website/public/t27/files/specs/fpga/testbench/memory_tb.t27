@@ -70,10 +70,10 @@ module Memory_Testbench {
         invariant val == 0xCAFEBABE;
     }
 
-    test test_write_read_multiple {
-        reset();
-        var i : u32 = 0;
-        while i < 16 {
+test test_write_read_multiple {
+         reset();
+         
+         while i < 16 {
             mem_write(MEM_BASE + i * 4, i * 0x11);
             i = i + 1;
         }
@@ -119,6 +119,25 @@ module Memory_Testbench {
 
     invariant mem_size_positive : MEM_SIZE > 0;
 
+    test test_tick_toggles_clock {
+        reset();
+        // Clock should start in false state after reset
+        invariant clk == false;
+        // After first tick, clock should be true
+        tick();
+        invariant clk == true;
+        // After second tick, clock should be false again
+        tick();
+        invariant clk == false;
+}
+    
+    test test_on_comb_returns_mem_read {
+        reset();
+        mem_write(0x100, 0xDEADBEEF);
+        var val : u32 = on_comb(0x100);
+        invariant val == 0xDEADBEEF;
+    }
+    
     bench bench_memory_bandwidth {
         reset();
         var i : u32 = 0;
@@ -133,3 +152,17 @@ module Memory_Testbench {
         }
     }
 }
+
+// W696: the hardware boundary, DERIVED -- not chosen.
+//
+// T187 measured an exact equivalence over 617 specs: a module gets a data
+// port iff the spec declares `on_comb` or `on_clock`. Without one the
+// compiler emits `NO DATA PORTS -- this module cannot move a value across
+// its boundary`, and synthesis optimises the whole thing away.
+//
+// The standing rule is that the default must NOT be guessed. Here no guess
+// was made: `t27c entry-points` found exactly ONE function in this spec that
+// takes a parameter, returns a value, has a body, and whose types all have a
+// known width. With one candidate the choice is forced, so this forwards and
+// invents nothing. 11 of 387 port-less specs qualified.
+fn on_comb(addr: u32) -> u32 { return mem_read(addr); }

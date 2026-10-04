@@ -34,7 +34,7 @@
 
 - **Zenodo deposits exist** for the Trinity software description stubs B001–B007 and the
   parent collection — these are described in
-  [`docs/research/.zenodo.B00*_v9.0.json`](../research/) and the cross-sibling registry
+  [`docs/research/.zenodo.B00*_v9.0.json`](../) and the cross-sibling registry
   [`gHashTag/trios/docs/infrastructure/zenodo-registry.md`](https://github.com/gHashTag/trios/blob/main/docs/infrastructure/zenodo-registry.md).
   These are **software description stubs, NOT peer-reviewed papers**.
 - **No arXiv submission has been made** by this account under the Trinity name.

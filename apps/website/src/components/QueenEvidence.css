@@ -1,0 +1,27 @@
+.queen-evidence {grid-column:1/-1;grid-row:2;color:#d8ebe3;font:.75rem/1.5 var(--font);min-width:0;}
+.queen-catalog-toolbar .queen-catalog-search-toggle {grid-row:1;grid-column:2;}
+.queen-evidence summary {display:flex;align-items:center;flex-wrap:wrap;gap:.3rem .8rem;min-height:44px;cursor:pointer;padding:.25rem .6rem;border-bottom:1px solid #397d80;}
+.queen-evidence summary::before {content:'+';color:#64dcff;font-size:1rem;}
+.queen-evidence[open] summary::before {content:'-';}
+.queen-evidence summary strong {font-weight:600;}
+.queen-evidence summary span {color:#aebfb8;font-variant-numeric:tabular-nums;}
+.queen-evidence summary:hover,.queen-evidence summary:focus-visible {color:#64dcff;outline:1px solid #64dcff;outline-offset:-1px;}
+.queen-evidence-body {display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;padding:.8rem .6rem;max-height:36vh;overflow:auto;background:#060c0d;scrollbar-color:#397d80 #060c0d;}
+.queen-evidence-body section {min-width:0;}
+.queen-evidence h3 {font:600 .85rem/1.4 var(--font);margin:0 0 .5rem;display:flex;flex-wrap:wrap;gap:.3rem .7rem;}
+.queen-evidence time {color:#aebfb8;font:400 .7rem/1.6 var(--font);font-variant-numeric:tabular-nums;}
+.queen-evidence p {margin:.5rem 0;max-width:72ch;}
+.queen-evidence dl {margin:.5rem 0;}
+.queen-evidence dl div {display:flex;justify-content:space-between;gap:1rem;padding:.2rem 0;}
+.queen-evidence dd {margin:0;font-variant-numeric:tabular-nums;text-align:right;}
+.queen-evidence-note {color:#aebfb8;}
+.queen-evidence nav {display:flex;flex-wrap:wrap;gap:.2rem .8rem;}
+.queen-evidence a {display:inline-flex;align-items:center;min-height:44px;color:#64dcff;text-underline-offset:.2em;overflow-wrap:anywhere;}
+.queen-evidence a:hover {color:#ffd45a;}
+.queen-evidence a:focus-visible {outline:2px solid #ffd45a;outline-offset:2px;}
+.queen-evidence-levels {grid-column:1/-1;}
+.queen-evidence-levels dl {display:flex;flex-wrap:wrap;gap:.2rem 1rem;}
+.queen-evidence-levels dl div {justify-content:flex-start;gap:.4rem;}
+.queen-evidence-levels dt {color:#ffd45a;}
+.queen-evidence ::selection {background:#397d80;color:#fff;}
+@media(max-width:760px) {.queen-evidence-body {grid-template-columns:1fr;max-height:32vh;gap:1rem;}.queen-evidence summary {font-size:.7rem;gap:.15rem .5rem;}.queen-evidence summary span {flex-basis:100%;padding-left:1rem;}}

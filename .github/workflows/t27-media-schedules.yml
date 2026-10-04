@@ -1,0 +1,83 @@
+name: t27 media schedules (Inngest)
+
+# Переезд расписаний из внешнего агент-раннера в собственную инфраструктуру.
+# Расписание живёт здесь, работу выполняет приложение t27-queen на Inngest
+# (https://inngestinngest-production-c468.up.railway.app), событие доставляется
+# через /e/<event key>.
+#
+# Ключ события берётся из secrets.INNGEST_EVENT_KEY. Если секрет не задан,
+# workflow пытается прочитать переменную INNGEST_EVENT_KEY у сервиса
+# trios-agent-server через Railway API существующим секретом RAILWAY_API_TOKEN.
+# Если ключ не найден ни там, ни там — job падает с явной причиной и НЕ
+# сообщает об отправке события.
+
+on:
+  schedule:
+    # Ежедневный пост в блог t27.ai — 15:00 UTC = 22:00 Asia/Bangkok
+    - cron: '0 15 * * *'
+    # Ежедневный аудит TNF/t27.ai — 03:00 UTC = 10:00 Asia/Bangkok
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    inputs:
+      event:
+        description: 'Имя события Inngest'
+        required: true
+        default: 'skill/trinity/blog-post.run'
+
+concurrency:
+  group: t27-media-schedules
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    env:
+      INNGEST_URL: https://inngestinngest-production-c468.up.railway.app
+      RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+      RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+      EVENT_KEY: ${{ secrets.INNGEST_EVENT_KEY }}
+    steps:
+      - name: Выбрать событие по расписанию
+        id: pick
+        run: |
+          set -euo pipefail
+          case "${{ github.event.schedule }}" in
+            "0 15 * * *") EV="skill/trinity/blog-post.run" ;;
+            "0 3 * * *")  EV="skill/t27/wave-audit.run" ;;
+            *)            EV="${{ inputs.event }}" ;;
+          esac
+          [ -n "$EV" ] || { echo "событие не определено"; exit 1; }
+          echo "event=$EV" >> "$GITHUB_OUTPUT"
+          echo "Событие: $EV"
+
+      - name: Получить ключ события
+        id: key
+        run: |
+          set -euo pipefail
+          if [ -n "${EVENT_KEY:-}" ]; then
+            echo "источник: secrets.INNGEST_EVENT_KEY"
+          elif [ -n "${RAILWAY_API_TOKEN:-}" ] && [ -n "${RAILWAY_PROJECT_ID:-}" ]; then
+            echo "источник: Railway API (переменные сервиса)"
+            RESP=$(curl -sS -X POST https://backboard.railway.com/graphql/v2 \
+              -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
+              -H "Content-Type: application/json" \
+              -d "{\"query\":\"query(\$p:String!,\$s:String!,\$e:String!){variables(projectId:\$p,serviceId:\$s,environmentId:\$e)}\",\"variables\":{\"p\":\"${RAILWAY_PROJECT_ID}\",\"s\":\"40d67e62-08bd-4eea-b709-7201242e9d82\",\"e\":\"${{ secrets.RAILWAY_ENVIRONMENT_ID }}\"}}")
+            EVENT_KEY=$(printf '%s' "$RESP" | jq -r '.data.variables.INNGEST_EVENT_KEY // empty')
+          fi
+          if [ -z "${EVENT_KEY:-}" ]; then
+            echo "::error::Ключ события Inngest не найден: задайте secrets.INNGEST_EVENT_KEY. Событие НЕ отправлено."
+            exit 1
+          fi
+          echo "::add-mask::$EVENT_KEY"
+          echo "key=$EVENT_KEY" >> "$GITHUB_OUTPUT"
+
+      - name: Отправить событие в Inngest
+        run: |
+          set -euo pipefail
+          CODE=$(curl -sS -o /tmp/resp.json -w '%{http_code}' \
+            -X POST "${INNGEST_URL}/e/${{ steps.key.outputs.key }}" \
+            -H 'content-type: application/json' \
+            -d "{\"name\":\"${{ steps.pick.outputs.event }}\",\"data\":{\"source\":\"github-actions\",\"repo\":\"${{ github.repository }}\",\"run\":\"${{ github.run_id }}\",\"lang\":\"ru\"}}")
+          echo "HTTP $CODE"
+          cat /tmp/resp.json
+          [ "$CODE" = "200" ] || { echo "::error::Inngest отклонил событие (HTTP $CODE)"; exit 1; }

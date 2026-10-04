@@ -99,6 +99,12 @@ module Placement_Testbench {
         invariant total <= GRID_COLS;
     }
 
+    test test_tick {
+        var initial_clk : bool = clk;
+        tick();
+        invariant clk != initial_clk;
+    }
+
     invariant grid_positive : GRID_COLS > 0 && GRID_ROWS > 0;
     invariant max_util_valid : MAX_UTILIZATION_PCT <= 100;
 

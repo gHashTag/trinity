@@ -12,8 +12,8 @@ module TriSegmentTree;
 
     pub const SegmentTree = struct {
         data : []i64,
-        size : usize,
-        allocator : std.mem.Allocator,
+        size : "usize",
+        allocator : "std.mem.Allocator",
     };
 
     // ═══════════════════════════════════════════════════════════
@@ -22,45 +22,91 @@ module TriSegmentTree;
 
     // init(allocator: std.mem.Allocator, values: []const i64) → SegmentTree
     fn init(allocator: std.mem.Allocator, values: []const i64) -> SegmentTree {
-        // TODO: Implement from .tri spec
+        let size = values.len;
+        let data = allocator.alloc(i64, size * 2) ?? panic("Out of memory");
+        
+        // Build the segment tree
+        for (0..size) |i| {
+            data[size + i] = values[i];
+        }
+        
+        for ((size - 1)..0) |i| {
+            data[i] = data[2 * i] + data[2 * i + 1];
+        }
+        
+        return SegmentTree {
+            .data = data,
+            .size = size,
+            .allocator = allocator,
+        };
     }
 
     // query(tree: *SegmentTree, left: usize, right: usize) → i64
     fn query(tree: *SegmentTree, left: usize, right: usize) -> i64 {
-        // TODO: Implement from .tri spec
+        let mut result = 0;
+        let mut left_idx = left + tree.size;
+        let mut right_idx = right + tree.size;
+        
+        while (left_idx <= right_idx) {
+            if (left_idx % 2 == 1) {
+                result += tree.data[left_idx];
+                left_idx += 1;
+            }
+            if (right_idx % 2 == 0) {
+                result += tree.data[right_idx];
+                right_idx -= 1;
+            }
+            left_idx = left_idx / 2;
+            right_idx = right_idx / 2;
+        }
+        
+        return result;
     }
 
     // update(tree: *SegmentTree, index: usize, value: i64) → void
     fn update(tree: *SegmentTree, index: usize, value: i64) -> void {
-        // TODO: Implement from .tri spec
+        let mut i = index + tree.size;
+        tree.data[i] = value;
+        
+        while (i > 1) {
+            i = i / 2;
+            tree.data[i] = tree.data[2 * i] + tree.data[2 * i + 1];
+        }
     }
 
     // deinit(tree: *SegmentTree) → void
     fn deinit(tree: *SegmentTree) -> void {
-        // TODO: Implement from .tri spec
+        tree.allocator.free(tree.data);
     }
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    // Every function above has no body yet, so it panics when called; and
-    // query(tree) names no range while update(tree) names no index or value,
-    // so no sum-query behaviour can be stated until those signatures grow
-    // their arguments. What can be stated is the shape of the tree value.
+    test init_basic_case
+        given allocator = std.mem.allocator, values = [1, 2, 3, 4]
+        when result = init(allocator, values)
+        then result != undefined
+        then result.size == 4
+        then result.data[4] == 1  // First leaf node
 
-    test segment_tree_empty_state_holds_no_nodes
-        given empty = SegmentTree{.data=&[_]i64{},.size=0,.allocator=std.testing.allocator}
-        then empty.size == 0
-        and empty.data.len == 0
+    test query_basic_case
+        given allocator = std.mem.allocator, values = [1, 2, 3, 4]
+        when tree = init(allocator, values)
+        when result = query(tree, 0, 2)  // Query first 3 elements: 1 + 2 + 3 = 6
+        then result == 6
 
-    test segment_tree_node_array_and_size_are_separate_fields
-        // size counts the elements the tree covers; data is the node storage,
-        // and the spec fixes no relation between the two, so this only holds
-        // them to carrying what they were built with
-        given tree = SegmentTree{.data=@constCast(&[_]i64{1,3,2,4}),.size=4,.allocator=std.testing.allocator}
-        then tree.size == 4
-        and tree.data.len == 4
-        and tree.data[0] == 1
-        and tree.data[3] == 4
+    test update_basic_case {
+        var values = [1, 2, 3, 4];
+        var tree = init(std.testing.allocator, &values);
+        update(&tree, 1, 5);  // Update index 1 to value 5
+        assert(query(&tree, 0, 3) == 13);  // 1 + 5 + 3 + 4
+    }
+
+    test deinit_basic_case {
+        var values = [1, 2, 3, 4];
+        var tree = init(std.testing.allocator, &values);
+        assert(query(&tree, 0, 3) == 10);
+        deinit(&tree);
+    }
 

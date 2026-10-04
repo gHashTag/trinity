@@ -34,7 +34,7 @@ const UI = {
     title: 'System documentation',
     subtitle: 'The project, the rules of the game for its agents, and the system in detail',
     metaTitle: 'System documentation',
-    metaDescription: 'The t27 / Trinity system as one declared document: what the project claims and how each claim is tagged, the constitution and the rules its agents follow, the five-layer ladder, the 27-letter alphabet, the Queen cycle, the tools, and how every number on the site is witnessed.',
+    metaDescription: 'The t27 / Trinity system as one declared document: what the project claims and how each claim is tagged, the constitution and the rules its agents follow, the six-step ladder, the 27-letter alphabet, the Queen cycle, the tools, and how every number on the site is witnessed.',
     note: 'Generated from specs/docs/**.t27; prose from docs/system/*.md',
     back: '← Home',
     contents: 'Contents',
@@ -67,7 +67,7 @@ const UI = {
     title: 'Документация системы',
     subtitle: 'Проект, правила игры для агентов и система в деталях',
     metaTitle: 'Документация системы',
-    metaDescription: 'Система t27 / Trinity как один объявленный документ: что проект утверждает и как помечено каждое утверждение, конституция и правила для агентов, пятислойная лестница, алфавит из 27 букв, цикл Королевы, инструменты и то, как засвидетельствовано каждое число на сайте.',
+    metaDescription: 'Система t27 / Trinity как один объявленный документ: что проект утверждает и как помечено каждое утверждение, конституция и правила для агентов, лестница из шести ступеней, алфавит из 27 букв, цикл Королевы, инструменты и то, как засвидетельствовано каждое число на сайте.',
     note: 'Порождено из specs/docs/**.t27; проза из docs/system/*.md',
     back: '← На главную',
     contents: 'Содержание',
@@ -267,6 +267,14 @@ export default function SystemDocs({ embed = false }: { embed?: boolean }) {
 
   const chapter = useMemo(() => (docs ? resolveChapter(docs, stem) : null), [docs, stem])
   const idx = docs && chapter ? docs.chapters.indexOf(chapter) : -1
+
+  // An unknown chapter opens the first one. In a frame the address then names the
+  // chapter on show, so the Queen's address (chapter=, lib/queenEmbed) does not keep
+  // naming a chapter nobody sees. The page on its own leaves its address as it was.
+  useEffect(() => {
+    if (!embedded || !chapter || !stem || chapter.stem === stem) return
+    params.set(systemDocsHash(chapter.stem, { embedded }))
+  }, [embedded, chapter, stem, params])
 
   useEffect(() => {
     if (!chapter) return

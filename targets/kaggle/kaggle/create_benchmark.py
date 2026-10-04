@@ -5,8 +5,7 @@ import os
 import subprocess
 import json
 
-os.environ["KAGGLE_API_TOKEN"] = "KGAT_2ea86c02d9642bed9a4a7b713f5b9a62"
-
+# KAGGLE_API_TOKEN is read from the environment (Railway/Infisical); never hardcode it.
 # Dataset ID (now confirmed to be playra/)
 DATASET_ID = "playra/trinity-cognitive-probes-thlp"
 DATASET_URL = "https://www.kaggle.com/datasets/playra/trinity-cognitive-probes-thlp"

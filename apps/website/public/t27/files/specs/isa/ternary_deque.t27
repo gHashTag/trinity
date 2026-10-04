@@ -3,14 +3,14 @@
 // Ternary Deque Operations Specification
 // Ring 088 - Double-ended queue operations for ternary data
 // Defines deque with push/pop from both ends
-// phi^2 + 1/phi^2 = 3 | TRINITY
+// φ² + 1/φ² = 3 | TRINITY
 
 module TernaryDeque {
     use base::types;
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 1. Deque Constants
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // Trit values
     const TRIT_NEG : i32 = -1;
@@ -20,13 +20,13 @@ module TernaryDeque {
     // Deque limits
     const DEQUE_MAX_SIZE : usize = 27;
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 2. Deque Structure (Circular Buffer)
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // deque_init(data: []i32, front: *usize, back: *usize, count: *usize) -> void
+    // deque_init(data: []i32, front: *usize, back: *usize, count: *usize) → void
     // Initialize empty deque
-    fn deque_init(data: []i32, front: *usize, back: *usize, count: *usize) -> void {
+    fn deque_init(data: []i32, front: *usize, back: *usize, count: *usize) → void {
         var i : usize = 0;
         while (i < DEQUE_MAX_SIZE and i < data.len) {
             data[i] = TRIT_ZERO;
@@ -37,9 +37,9 @@ module TernaryDeque {
         count.* = 0;
     }
 
-    // deque_push_front(data: []i32, front: *usize, back: *usize, count: *usize, value: i32) -> bool
+    // deque_push_front(data: []i32, front: *usize, back: *usize, count: *usize, value: i32) → bool
     // Add element to front of deque
-    fn deque_push_front(data: []i32, front: *usize, back: *usize, count: *usize, value: i32) -> bool {
+    fn deque_push_front(data: []i32, front: *usize, back: *usize, count: *usize, value: i32) → bool {
         if (count.* >= DEQUE_MAX_SIZE) {
             return false;
         }
@@ -59,9 +59,9 @@ module TernaryDeque {
         return true;
     }
 
-    // deque_push_back(data: []i32, front: *usize, back: *usize, count: *usize, value: i32) -> bool
+    // deque_push_back(data: []i32, front: *usize, back: *usize, count: *usize, value: i32) → bool
     // Add element to back of deque
-    fn deque_push_back(data: []i32, front: *usize, back: *usize, count: *usize, value: i32) -> bool {
+    fn deque_push_back(data: []i32, front: *usize, back: *usize, count: *usize, value: i32) → bool {
         if (count.* >= DEQUE_MAX_SIZE) {
             return false;
         }
@@ -78,9 +78,9 @@ module TernaryDeque {
         return true;
     }
 
-    // deque_pop_front(data: []i32, front: *usize, back: *usize, count: *usize, value: *i32) -> bool
+    // deque_pop_front(data: []i32, front: *usize, back: *usize, count: *usize, value: *i32) → bool
     // Remove element from front of deque
-    fn deque_pop_front(data: []i32, front: *usize, back: *usize, count: *usize, value: *i32) -> bool {
+    fn deque_pop_front(data: []i32, front: *usize, back: *usize, count: *usize, value: *i32) → bool {
         if (count.* == 0) {
             return false;
         }
@@ -97,9 +97,9 @@ module TernaryDeque {
         return true;
     }
 
-    // deque_pop_back(data: []i32, front: *usize, back: *usize, count: *usize, value: *i32) -> bool
+    // deque_pop_back(data: []i32, front: *usize, back: *usize, count: *usize, value: *i32) → bool
     // Remove element from back of deque
-    fn deque_pop_back(data: []i32, front: *usize, back: *usize, count: *usize, value: *i32) -> bool {
+    fn deque_pop_back(data: []i32, front: *usize, back: *usize, count: *usize, value: *i32) → bool {
         if (count.* == 0) {
             return false;
         }
@@ -117,9 +117,9 @@ module TernaryDeque {
         return true;
     }
 
-    // deque_peek_front(data: []i32, front: *usize, count: usize, value: *i32) -> bool
+    // deque_peek_front(data: []i32, front: *usize, count: usize, value: *i32) → bool
     // Look at element at front without removing
-    fn deque_peek_front(data: []i32, front: *usize, count: usize, value: *i32) -> bool {
+    fn deque_peek_front(data: []i32, front: *usize, count: usize, value: *i32) → bool {
         if (count == 0) {
             return false;
         }
@@ -129,9 +129,9 @@ module TernaryDeque {
         return true;
     }
 
-    // deque_peek_back(data: []i32, back: *usize, count: usize, value: *i32) -> bool
+    // deque_peek_back(data: []i32, back: *usize, count: usize, value: *i32) → bool
     // Look at element at back without removing
-    fn deque_peek_back(data: []i32, back: *usize, count: usize, value: *i32) -> bool {
+    fn deque_peek_back(data: []i32, back: *usize, count: usize, value: *i32) → bool {
         if (count == 0) {
             return false;
         }
@@ -147,27 +147,27 @@ module TernaryDeque {
         return true;
     }
 
-    // deque_is_empty(count: usize) -> bool
+    // deque_is_empty(count: usize) → bool
     // Check if deque is empty
-    fn deque_is_empty(count: usize) -> bool {
+    fn deque_is_empty(count: usize) → bool {
         return count == 0;
     }
 
-    // deque_is_full(count: usize) -> bool
+    // deque_is_full(count: usize) → bool
     // Check if deque is full
-    fn deque_is_full(count: usize) -> bool {
+    fn deque_is_full(count: usize) → bool {
         return count >= DEQUE_MAX_SIZE;
     }
 
-    // deque_size(count: usize) -> usize
+    // deque_size(count: usize) → usize
     // Get number of elements in deque
-    fn deque_size(count: usize) -> usize {
+    fn deque_size(count: usize) → usize {
         return count;
     }
 
-    // deque_clear(data: []i32, front: *usize, back: *usize, count: *usize) -> void
+    // deque_clear(data: []i32, front: *usize, back: *usize, count: *usize) → void
     // Clear all elements from deque
-    fn deque_clear(data: []i32, front: *usize, back: *usize, count: *usize) -> void {
+    fn deque_clear(data: []i32, front: *usize, back: *usize, count: *usize) → void {
         var i : usize = 0;
         while (i < DEQUE_MAX_SIZE and i < data.len) {
             data[i] = TRIT_ZERO;
@@ -178,9 +178,9 @@ module TernaryDeque {
         count.* = 0;
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 3. TDD - Tests
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     test deque_init_empty
         var data : [10]i32 = undefined;
@@ -299,9 +299,9 @@ module TernaryDeque {
 
         assert deque_is_empty(count)
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 4. TDD - Invariants
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     invariant deque_size_matches_operations
         // Size equals pushes minus pops
@@ -395,9 +395,9 @@ module TernaryDeque {
 
         assert deque_size(count) == 2
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 5. TDD - Benchmarks
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     bench deque_push_back_performance
         // Measure: cycles for 1000 push_back operations

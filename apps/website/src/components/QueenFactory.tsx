@@ -112,10 +112,14 @@ export function QueenFactory({
       <div className="queen27-factory-bays">
         <div>
           <span>{labels.workerBays}</span>
-          <b>
-            {effectiveWorkers
-              ? `${effectiveWorkers.active}/${effectiveWorkers.capacity}`
-              : labels.offline}
+          {/* The em dash the three readings directly above use when their
+              number is not there. This slot used to take `labels.offline`
+              instead -- a whole sentence, set at 20px in a 130px column, which
+              wrapped onto three lines and made the bay strip the tallest thing
+              on the tab. The sentence has not been lost: it is the row inside
+              the list beside this, and the reason is the title here. */}
+          <b title={effectiveWorkers ? undefined : (researchError ?? error ?? labels.offline)}>
+            {effectiveWorkers ? `${effectiveWorkers.active}/${effectiveWorkers.capacity}` : "—"}
           </b>
         </div>
         <ol>

@@ -29,7 +29,7 @@
 #### For B001 (HSLM):
 
 - [x] **Dataset** — TinyStories (10M tokens)
-  - URL: https://github.com/formcept/TinyStories
+  - URL: https://huggingface.co/datasets/roneneldan/TinyStories
   - Preprocessing: Tokenization via B002 sacred formats
   - Splits: Train/Validation/Test (80/10/10)
 
@@ -139,9 +139,9 @@
 
 ### 3. NeurIPS 2025 Datasets & Code
 
-- [x] **Link to dataset** — https://github.com/formcept/TinyStories
+- [x] **Link to dataset** — https://huggingface.co/datasets/roneneldan/TinyStories
 - [x] **Link to code** — https://github.com/gHashTag/trinity
-- [x] **License** — MIT (permissive)
+- [x] **Code license** — MIT; **dataset license** — CDLA-Sharing 1.0, as listed by the TinyStories publisher above
 - [x] **Compute requirements** — Documented above
 
 ---
@@ -204,10 +204,10 @@
 
 ## References
 
-1. NeurIPS 2025: https://neurips.cc/Conferences/2025/DatasetTrack
-2. ICLR 2025: https://iclr.cc/Conferences/2025/reproducibility-checklist
-3. MLSys 2025: https://mlsys.org/Conferences/2025/artifact-evaluation
-4. TinyStories: https://github.com/formcept/TinyStories
+1. NeurIPS 2025: https://neurips.cc/Conferences/2025/CallForDatasetsBenchmarks
+2. ICLR 2025: https://iclr.cc/Conferences/2025/AuthorGuide
+3. MLSys 2025: https://mlsys.org/Conferences/2025/CallForAE
+4. TinyStories: https://huggingface.co/datasets/roneneldan/TinyStories
 5. Zig 0.15: https://ziglang.org/
 
 ---

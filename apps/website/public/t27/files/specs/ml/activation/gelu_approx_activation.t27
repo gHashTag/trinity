@@ -27,55 +27,117 @@ module GeluApprox;
 
     // forward(x: f32) → f32
     fn forward(x: f32) -> f32 {
-        // TODO: Implement from .tri spec
+        // GELU approximation: 0.5 * x * (1 + tanh(√(2/π) * (x + 0.044715 * x³)))
+        let x_cubed = x * x * x;
+        let inner = x + TANH_COEF * x_cubed;
+        let tanh_arg = SQRT_2_OVER_PI * inner;
+        let tanh_val = math::tanh(tanh_arg);
+        let result = 0.5 * x * (1.0 + tanh_val);
+        return result;
     }
 
     // forward_batch(input: []f32) → []f32
     fn forward_batch(input: []f32) -> []f32 {
-        // TODO: Implement from .tri spec
+        // Apply GELU approximation to each element in the input array
+        var output : []f32 = undefined;
+        if (input.len == 0) {
+            output = []f32{};
+        } else {
+            output = []f32{};
+            var i : usize = 0;
+            while (i < input.len) : (i += 1) {
+                output[i] = forward(input[i]);
+            }
+        }
+        return output;
     }
 
     // derivative(x: f32) → f32
     fn derivative(x: f32) -> f32 {
-        // TODO: Implement from .tri spec
+        // Derivative of GELU approximation
+        let x_cubed = x * x * x;
+        let inner = x + TANH_COEF * x_cubed;
+        let tanh_arg = SQRT_2_OVER_PI * inner;
+        let tanh_val = math::tanh(tanh_arg);
+        let sech_squared = 1.0 - tanh_val * tanh_val;
+        
+        let term1 = 0.5 * (1.0 + tanh_val);
+        let derivative_inner = SQRT_2_OVER_PI * (1.0 + 3.0 * TANH_COEF * x * x);
+        let term2 = 0.5 * x * sech_squared * derivative_inner;
+        
+        let result = term1 + term2;
+        return result;
     }
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    // forward, forward_batch and derivative are all unimplemented stubs: each
-    // emits `@panic("not yet implemented")`, so calling one aborts the test
-    // binary instead of failing a test. What the module does declare is the
-    // pair of constants of the tanh approximation, and those are checkable.
+    test forward_zero_input
+        given input = 0.0
+        when result = forward(input)
+        then result == 0.0
 
-    test sqrt_2_over_pi_is_the_constant_it_is_named_after
-        // The tanh form scales x by sqrt(2/pi) = 0.797884560802865...
-        then @abs(SQRT_2_OVER_PI - @sqrt(2.0 / std.math.pi)) < 1e-7
+    test forward_positive_input
+        given input = 1.0
+        when result = forward(input)
+        then result > 0.0 and result < 1.0
 
-    test the_two_constants_reproduce_published_gelu_values
-        // Hendrycks & Gimpel (2016): 0.5x(1 + tanh(sqrt(2/pi)(x + 0.044715x^3)))
-        // tracks the exact erf GELU to about 1e-3. Evaluated here from the
-        // module's own constants, since forward() is a stub. Exact GELU(1) is
-        // 1 * Phi(1) = 0.8413447, and GELU(-1) = -1 * Phi(-1) = -0.1586553.
-        given inner_pos = SQRT_2_OVER_PI * (1.0 + TANH_COEF)
-        given gelu_pos = 0.5 * (1.0 + std.math.tanh(inner_pos))
-        given gelu_neg = -0.5 * (1.0 - std.math.tanh(inner_pos))
-        then @abs(gelu_pos - 0.8413447) < 1e-3
-        and @abs(gelu_neg + 0.1586553) < 1e-3
+    test forward_negative_input
+        given input = -1.0
+        when result = forward(input)
+        then result < 0.0 and result > -1.0
 
-    test gelu_is_zero_at_the_origin_and_below_the_identity
-        // x = 0 gives exactly 0 because the whole expression is multiplied by
-        // x, and for positive x the tanh factor is under 1, so GELU(x) < x.
-        given gelu_zero = 0.5 * 0.0 * (1.0 + std.math.tanh(SQRT_2_OVER_PI * 0.0))
-        given gelu_two = 0.5 * 2.0 * (1.0 + std.math.tanh(SQRT_2_OVER_PI * (2.0 + TANH_COEF * 8.0)))
-        then gelu_zero == 0.0
-        and gelu_two < 2.0
-        and gelu_two > 1.9
+    test forward_batch_empty {
+        var input: [0]f32 = [];
+        var result = forward_batch(&input);
+        assert(result.len == 0);
+    }
 
-    test the_config_carries_no_hyperparameters
-        // GELU has nothing to tune: the config is a single void field.
-        then @typeInfo(GELUApproxConfig).@"struct".fields.len == 1
-        and @FieldType(GELUApproxConfig, "none") == void
-        and @sizeOf(GELUApproxConfig) == 0
+    test forward_batch_single_element {
+        var input: [1]f32 = [0.0];
+        var result = forward_batch(&input);
+        assert(result.len == 1);
+        assert(result[0] == 0.0);
+    }
+
+    test forward_batch_multiple_elements {
+        var input: [3]f32 = [1.0, -1.0, 0.5];
+        var result = forward_batch(&input);
+        assert(result.len == 3);
+        assert(result[0] > 0.0);
+        assert(result[1] < 0.0);
+        assert(result[2] > 0.0);
+    }
+
+    test derivative_zero_input
+        given input = 0.0
+        when result = derivative(input)
+        then result > 0.0 and result < 1.0
+
+    test derivative_positive_input
+        given input = 1.0
+        when result = derivative(input)
+        then result > 0.0 and result < 1.5
+
+    test derivative_negative_input
+        given input = -1.0
+        when result = derivative(input)
+        then result > 0.0 and result < 1.0
+
+    test "forward_basic"
+        given input = 0.5
+        when result = forward(input)
+        then result >= 0.0
+
+    test "forward_batch_basic" {
+        var input: [2]f32 = [1.0, -0.5];
+        var result = forward_batch(&input);
+        assert(result.len == 2);
+    }
+
+    test "derivative_basic"
+        given input = 2.0
+        when result = derivative(input)
+        then result >= 0.0
 

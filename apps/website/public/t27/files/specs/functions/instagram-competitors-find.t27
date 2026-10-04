@@ -39,4 +39,4 @@ pub const GUARD : str = "validate-input";
 pub const SAFE_PROBE : str = "{}";
 pub const PROBE_RESULT : str = "FAILED-at-guard";
 pub const CONTROL : str = "spec+code";
-pub const NOTE : str = "RETRIES is not declared in the code, so the Inngest JS SDK v3 default of 4 applies. Guard is validate-input.";
+pub const NOTE : str = "RETRIES is not declared in the code, so the Inngest JS SDK v3 default of 4 applies. Guard is validate-input. Withdrawn from registerFunctions on 2026-09-17 (999-multibots-telegraf): saveCompetitors in src/core/instagram/index.ts is a stub that reports saved: N without writing, while the run makes paid RapidAPI calls. Code kept; re-register once the write is real and RapidAPI errors are classified.";

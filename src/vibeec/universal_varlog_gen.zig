@@ -444,7 +444,7 @@ pub fn main() !void {
     const specs_dir = if (args.len > 1) args[1] else "specs/tri";
     const output_dir = if (args.len > 2) args[2] else "trinity/varlog";
 
-    const stdout = std.io.getStdOut().writer();
+    const stdout = std.fs.File.stdout().deprecatedWriter();
 
     try stdout.print(
         \\

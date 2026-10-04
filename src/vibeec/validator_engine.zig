@@ -90,7 +90,7 @@ pub const ValidatorEngine = struct {
     pub fn printReport(self: *const ValidatorEngine, report: *const ValidatorReport, spec_path: []const u8) !void {
         _ = self;
 
-        const stdout = std.io.getStdOut().writer();
+        const stdout = std.fs.File.stdout().deprecatedWriter();
 
         try stdout.print("╔══════════════════════════════════════════════════════════════════════════╗\n", .{});
         try stdout.print("║              VIBEE VALIDATION REPORT                         ║\n", .{});

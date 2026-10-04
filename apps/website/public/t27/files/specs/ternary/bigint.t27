@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: Apache-2.0
 // t27/specs/ternary/bigint.t27
 // TVC BigInt - Balanced Ternary Arbitrary Precision Arithmetic
-// 01234 567891011: V = n 12 3^k 13 14^m 15 16^p 17 e^q
-// phi^2 + 1/phi^2 = 3 | TRINITY
+// ⲤⲀⲔⲢⲀ ⲪⲞⲢⲘⲨⲖⲀ: V = n × 3^k × π^m × φ^p × e^q
+// φ² + 1/φ² = 3 | TRINITY
 //
 // Balanced Ternary representation:
 // - Each trit has value {-1, 0, +1}
-// - Number = Sigma(trit[i] * 3^i) for i = 0..n-1
+// - Number = Σ(trit[i] × 3^i) for i = 0..n-1
 // - No separate sign bit needed (inherent in representation)
 // - Rounding is simpler (truncation = rounding to nearest)
 //
 // Supports:
-// - Arbitrary precision integers up to 3^256 ~= 10^122
+// - Arbitrary precision integers up to 3^256 ≈ 10^122
 // - SIMD-optimized operations (32 trits in parallel)
 // - Karatsuba multiplication O(n^1.585)
 // - Newton-Raphson division for large numbers
@@ -30,7 +30,7 @@ use tritype-base::trit_multiply;
 // Constants
 // ============================================================================
 
-/// Maximum trits for BigInt (supports numbers up to 3^256 ~= 10^122)
+/// Maximum trits for BigInt (supports numbers up to 3^256 ≈ 10^122)
 pub const MAX_TRITS : usize = 256;
 
 /// Trit constants for convenience
@@ -123,7 +123,7 @@ pub const BigInt = struct {
     // ========================================================================
 
     /// Convert BigInt to i64 (may overflow for large numbers)
-    /// Algorithm: Sigma(trit[i] * 3^i)
+    /// Algorithm: Σ(trit[i] × 3^i)
     /// Complexity: O(len)
     pub fn to_i64(self: Self) i64 {
         var result : i64 = 0;
@@ -200,15 +200,12 @@ pub const BigInt = struct {
         return result;
     }
 
-    /// Absolute value
-    /// Returns: self if positive, negate(self) if negative
-    /// Complexity: O(len) worst case, O(1) for positive
-    pub fn abs(self: Self) Self {
-        if (self.is_negative()) {
-            return self.negate();
-        }
-        return self;
-    }
+/// Absolute value
+/// Returns: self if positive, negate(self) if negative
+/// Complexity: O(len) worst case, O(1) for positive
+pub fn abs(self: Self) Self {
+    return @abs(self);
+}
 
     // ========================================================================
     // Addition
@@ -403,7 +400,7 @@ pub const BigInt = struct {
     /// Karatsuba multiplication for large numbers
     /// Recursively splits numbers: a = a1*3^m + a0, b = b1*3^m + b0
     /// Uses 3 multiplications: z0 = a0*b0, z2 = a1*b1, z1 = (a0+a1)*(b0+b1) - z0 - z2
-    /// Complexity: O(n^log2(3)) ~= O(n^1.585)
+    /// Complexity: O(n^log2(3)) ≈ O(n^1.585)
     fn mul_karatsuba(a: Self, b: Self) Self {
         // Base case: use simple multiplication
         if (a.len <= KARATSUBA_THRESHOLD or b.len <= KARATSUBA_THRESHOLD) {
@@ -488,7 +485,7 @@ pub const BigInt = struct {
 
     /// Compare absolute values
     /// Returns: -1 if |a| < |b|, 0 if |a| == |b|, +1 if |a| > |b|
-    pub fn compare_abs(a: Self, b: Self) i8 {
+    fn compare_abs(a: Self, b: Self) i8 {
         const a_abs = a.abs();
         const b_abs = b.abs();
 
@@ -531,6 +528,11 @@ pub const BigInt = struct {
         }
 
         return cmp;
+    }
+
+    /// Compare absolute values (public wrapper)
+    pub fn compare_abs(a: Self, b: Self) i8 {
+        return a.compare_abs(b);
     }
 
     // ========================================================================
@@ -1136,8 +1138,8 @@ invariant big_int_zero_is_neutral_add {
     inline for (values) |val| {
         const a = BigInt.from_i64(val);
         const z = BigInt.zero();
-        @compileAssert(a.add(z).compare(a) == 0);
-        @compileAssert(z.add(a).compare(a) == 0);
+        a.add(z).compare(a) == 0;
+        z.add(a).compare(a) == 0;
     }
 }
 
@@ -1147,7 +1149,7 @@ invariant big_int_zero_is_annihilator_mul {
     inline for (values) |val| {
         const a = BigInt.from_i64(val);
         const z = BigInt.zero();
-        @compileAssert(a.mul(z).is_zero() == true);
+        a.mul(z).is_zero() == true;
     }
 }
 
@@ -1159,7 +1161,7 @@ invariant big_int_add_commutative {
         inline for (vals_b) |b_val| {
             const a = BigInt.from_i64(a_val);
             const b = BigInt.from_i64(b_val);
-            @compileAssert(a.add(b).compare(b.add(a)) == 0);
+            a.add(b).compare(b.add(a)) == 0;
         }
     }
 }
@@ -1169,7 +1171,7 @@ invariant big_int_add_associative {
     const a = BigInt.from_i64(12);
     const b = BigInt.from_i64(34);
     const c = BigInt.from_i64(56);
-    @compileAssert(a.add(b).add(c).compare(a.add(b.add(c))) == 0);
+    a.add(b).add(c).compare(a.add(b.add(c))) == 0;
 }
 
 invariant big_int_mul_commutative {
@@ -1180,7 +1182,7 @@ invariant big_int_mul_commutative {
         inline for (vals_b) |b_val| {
             const a = BigInt.from_i64(a_val);
             const b = BigInt.from_i64(b_val);
-            @compileAssert(a.mul(b).compare(b.mul(a)) == 0);
+            a.mul(b).compare(b.mul(a)) == 0;
         }
     }
 }
@@ -1190,7 +1192,7 @@ invariant big_int_mul_associative {
     const a = BigInt.from_i64(3);
     const b = BigInt.from_i64(5);
     const c = BigInt.from_i64(7);
-    @compileAssert(a.mul(b).mul(c).compare(a.mul(b.mul(c))) == 0);
+    a.mul(b).mul(c).compare(a.mul(b.mul(c))) == 0;
 }
 
 invariant big_int_distributive {
@@ -1198,7 +1200,7 @@ invariant big_int_distributive {
     const a = BigInt.from_i64(3);
     const b = BigInt.from_i64(5);
     const c = BigInt.from_i64(7);
-    @compileAssert(a.mul(b.add(c)).compare(a.mul(b).add(a.mul(c))) == 0);
+    a.mul(b.add(c)).compare(a.mul(b).add(a.mul(c))) == 0;
 }
 
 invariant big_int_negate_twice {
@@ -1206,7 +1208,7 @@ invariant big_int_negate_twice {
     const values = [_]i64{ 1, -1, 42, -42, 100 };
     inline for (values) |val| {
         const a = BigInt.from_i64(val);
-        @compileAssert(a.negate().negate().compare(a) == 0);
+        a.negate().negate().compare(a) == 0;
     }
 }
 
@@ -1215,7 +1217,7 @@ invariant big_int_abs_idempotent {
     const values = [_]i64{ 1, -1, 42, -42, 100, -100 };
     inline for (values) |val| {
         const a = BigInt.from_i64(val);
-        @compileAssert(a.abs().abs().compare(a.abs()) == 0);
+        a.abs().abs().compare(a.abs()) == 0;
     }
 }
 
@@ -1227,7 +1229,7 @@ invariant big_int_sub_equals_add_negate {
         inline for (vals_b) |b_val| {
             const a = BigInt.from_i64(a_val);
             const b = BigInt.from_i64(b_val);
-            @compileAssert(a.sub(b).compare(a.add(b.negate())) == 0);
+            a.sub(b).compare(a.add(b.negate())) == 0;
         }
     }
 }
@@ -1242,8 +1244,8 @@ invariant big_int_division_invariant {
             const b = BigInt.from_i64(b_val);
             const result = a.div_rem(b);
             const reconstructed = result.q.mul(b).add(result.r);
-            @compileAssert(reconstructed.compare(a) == 0);
-            @compileAssert(result.r.compare_abs(b) < 0 or result.r.is_zero());
+            reconstructed.compare(a) == 0;
+            result.r.compare_abs(b) < 0 or result.r.is_zero();
         }
     }
 }
@@ -1253,9 +1255,9 @@ invariant big_int_compare_transitive {
     const a = BigInt.from_i64(1);
     const b = BigInt.from_i64(10);
     const c = BigInt.from_i64(100);
-    @compileAssert(a.compare(b) < 0);
-    @compileAssert(b.compare(c) < 0);
-    @compileAssert(a.compare(c) < 0);
+    a.compare(b) < 0;
+    b.compare(c) < 0;
+    a.compare(c) < 0;
 }
 
 invariant big_int_compare_total_ordering {
@@ -1267,7 +1269,7 @@ invariant big_int_compare_total_ordering {
             const a = BigInt.from_i64(a_val);
             const b = BigInt.from_i64(b_val);
             const cmp = a.compare(b);
-            @compileAssert(cmp == -1 or cmp == 0 or cmp == 1);
+            cmp == -1 or cmp == 0 or cmp == 1;
         }
     }
 }

@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: Apache-2.0
 // t27/specs/test_framework/graph_drift_detection.t27
-// Ring 054 -- Graph Drift Detection for Structural Change Detection
+// Ring 054 — Graph Drift Detection for Structural Change Detection
 // Monitors structural changes in mathematical and physics specifications over time
 
 module GraphDriftDetection {
     use test_framework::core::{TestResult, Verdict, ToleranceTier, EngineeringStatus};
     use std::collections::{HashMap, HashSet};
     
-    // -----------------------------------------------------
+    // ─────────────────────────────────────────────────────
     // 1. Drift Detection Configuration
-    // -----------------------------------------------------
+    // ─────────────────────────────────────────────────────
     
     // Graph node representing a mathematical/physics entity
     struct GraphNode {
@@ -87,9 +87,9 @@ module GraphDriftDetection {
         };
     }
     
-    // -----------------------------------------------------
+    // ─────────────────────────────────────────────────────
     // 2. Graph Construction and Parsing
-    // -----------------------------------------------------
+    // ─────────────────────────────────────────────────────
     
     // Parse T27 spec file and extract graph structure
     fn parse_t27_spec_to_graph(file_path: string) -> DriftGraph {
@@ -191,9 +191,9 @@ module GraphDriftDetection {
         };
     }
     
-    // -----------------------------------------------------
+    // ─────────────────────────────────────────────────────
     // 3. Drift Detection Algorithms
-    // -----------------------------------------------------
+    // ─────────────────────────────────────────────────────
     
     // Drift detection result
     struct DriftResult {
@@ -360,9 +360,9 @@ module GraphDriftDetection {
         return 0.0;
     }
     
-    // -----------------------------------------------------
+    // ─────────────────────────────────────────────────────
     // 4. Drift Monitoring and Alerting
-    // -----------------------------------------------------
+    // ─────────────────────────────────────────────────────
     
     // Drift monitoring system
     struct DriftMonitor {
@@ -411,9 +411,9 @@ module GraphDriftDetection {
         // send_alert_to_monitoring_system(alert_message);
     }
     
-    // -----------------------------------------------------
+    // ─────────────────────────────────────────────────────
     // 5. Integration with Test Framework
-    // -----------------------------------------------------
+    // ─────────────────────────────────────────────────────
     
     // Run drift detection as part of test suite
     fn run_drift_detection_tests() -> [TestResult] {
@@ -460,9 +460,9 @@ module GraphDriftDetection {
         measure: milliseconds to run run_drift_detection_tests()
         target: < 1000ms
     
-    // -----------------------------------------------------
+    // ─────────────────────────────────────────────────────
     // 6. TDD-Inside-Spec: Drift Detection Tests
-    // -----------------------------------------------------
+    // ─────────────────────────────────────────────────────
     
     test drift_config_creation
         given config = default_drift_config()

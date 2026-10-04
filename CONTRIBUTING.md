@@ -232,7 +232,7 @@ Closes #N
 
 - **Documentation**: [docs/DOCUMENTATION_INDEX.md](docs/DOCUMENTATION_INDEX.md)
 - **Issues**: [GitHub Issues](https://github.com/gHashTag/trinity/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/gHashTag/trinity/discussions)
+- **Discussions**: [GitHub Issues](https://github.com/gHashTag/trinity/issues)
 
 ### Asking Questions
 

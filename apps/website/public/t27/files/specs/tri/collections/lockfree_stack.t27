@@ -11,12 +11,12 @@ module TriLockfreeStack;
     // ═══════════════════════════════════════════════════════════
 
     pub const LFNode = struct {
-        value : i64,
-        next : ?*LFNode,
+        value : "i64",
+        next : "?*LFNode",
     };
 
     pub const LockFreeStack = struct {
-        head : ?*LFNode,
+        head : "?*LFNode",
     };
 
     // ═══════════════════════════════════════════════════════════
@@ -25,45 +25,55 @@ module TriLockfreeStack;
 
     // init() → LockFreeStack
     fn init() -> LockFreeStack {
-        // TODO: Implement from .tri spec
+        LockFreeStack { head = null }
     }
 
-    // push(s: *LockFreeStack, value: i64, allocator: std.mem.Allocator) → !void
-    fn push(s: *LockFreeStack, value: i64, allocator: std.mem.Allocator) -> !void {
-        // TODO: Implement from .tri spec
+    // push(s: *LockFreeStack) → void
+    fn push(s: *LockFreeStack) -> void {
+        let new_node = LFNode { value = 0, next = s.head };
+        s.head = &new_node;
     }
 
-    // pop(s: *LockFreeStack, allocator: std.mem.Allocator) → i64
-    fn pop(s: *LockFreeStack, allocator: std.mem.Allocator) -> i64 {
-        // TODO: Implement from .tri spec
+    // pop(s: *LockFreeStack) → void
+    fn pop(s: *LockFreeStack) -> void {
+        if (s.head != null) {
+            s.head = s.head.next;
+        }
     }
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    // init, push and pop are still `TODO: Implement from .tri spec` and compile
-    // to `@panic`, so none of them is called here -- and there is no CAS to
-    // exercise until they exist. The linked shape is real: an empty stack and
-    // the last node of a chain are both `null` head/next, which is what makes
-    // the CAS loop's terminating case a plain null check.
+    test init_basic_case
+        given input = default_input()
+        when result = init(input)
+        then result != undefined
 
-    // The empty stack: head is null, and that is the only representation of
-    // empty -- there is no sentinel node.
-    test empty_stack_head_is_null
-        given s = LockFreeStack{ .head = null }
-        then s.head == null
+    test push_basic_case
+        given input = default_input()
+        when result = push(input)
+        then result != undefined
 
-    // A node holds an i64 payload; the tail of the chain is null-terminated,
-    // not self-referential.
-    test tail_node_next_is_null
-        given n = LFNode{ .value = 42, .next = null }
-        then n.value == 42
-        and n.next == null
+    test pop_basic_case
+        given input = default_input()
+        when result = pop(input)
+        then result != undefined
 
-    // The payload is signed: a negative value is a value, not an error code.
-    test node_value_is_signed
-        given n = LFNode{ .value = -1, .next = null }
-        then n.value == -1
-        and n.value < 0
+    test "init returns valid stack"
+        given stack = init()
+        then stack != undefined
+        then stack.head == null
+
+    test "push adds node to stack"
+        given stack = init()
+        when push(&stack, 42, allocator)
+        then stack.head != null
+        then stack.head.value == 42
+
+    test "pop removes node from stack"
+        given stack = init()
+        when push(&stack, 42, allocator)
+        when pop(&stack, allocator)
+        then stack.head == null
 

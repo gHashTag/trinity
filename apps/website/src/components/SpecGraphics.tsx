@@ -1,6 +1,7 @@
 // Inline SVG for the spec explorer. No chart library: every shape here is a
 // handful of rects, which stays sharp at 12px and adds nothing to the bundle.
 
+import { TARGET_IDS } from '../lib/t27Compiler'
 import type { Health, T27Analysis } from '../lib/t27Compiler'
 
 export const HEALTH_COLOR: Record<Health, string> = {
@@ -131,7 +132,7 @@ export function PipelineRibbon({
     { key: 'ast', label: labels.ast, value: result.nodeCount ?? null, ok: !result.astError },
     { key: 'typecheck', label: labels.typecheck, value: result.typecheck?.errorCount ?? 0, ok: (result.typecheck?.errorCount ?? 0) === 0 },
     { key: 'hir', label: labels.hir, value: result.hir.ok ? result.hir.text?.length ?? 0 : null, ok: result.hir.ok },
-    ...['zig', 'verilog', 'verilog_hir', 'c', 'rust'].map((k) => ({
+    ...TARGET_IDS.map((k) => ({
       key: k,
       label: labels[k],
       value: result.targets[k]?.ok ? result.targets[k].bytes ?? 0 : null,

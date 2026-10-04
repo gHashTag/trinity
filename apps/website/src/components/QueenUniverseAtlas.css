@@ -1,4 +1,4 @@
-.queen-atlas {height:100%;overflow:auto;box-sizing:border-box;padding:1.2rem;color:#e4f2ed;background:radial-gradient(ellipse at 35% 25%,#08473733,transparent 62%),#020806;font-family:var(--font,'Outfit',sans-serif);font-size:.9rem;}
+.queen-atlas {height:100%;overflow:auto;box-sizing:border-box;padding:1.2rem;color:#e4f2ed;background:radial-gradient(ellipse at 35% 25%,#08473733,transparent 62%),#020806;font-family:var(--font, 'Outfit', system-ui, -apple-system, sans-serif);font-size:.9rem;}
 .queen-atlas * {box-sizing:border-box;}
 .queen-atlas :where(section) {display:block;min-height:0;max-width:none;width:auto;padding:0;margin:0;}
 .queen-atlas h1,.queen-atlas h2,.queen-atlas h3,.queen-atlas p {margin:0;}
@@ -61,7 +61,17 @@
 .atlas-owners small {color:#a6c6bd;}
 .atlas-scope {font-size:.75rem;}
 .atlas-scope code {overflow-wrap:anywhere;}
-.atlas-inspector {position:sticky;top:0;background:#07120feb;border:1px solid #355d4b;border-radius:10px;padding:1rem;min-width:0;max-height:calc(100dvh - 90px);overflow:auto;display:grid;gap:.8rem;scrollbar-width:thin;}
+/* Grounded at eb (0.92) and carrying text -- every issue title, hash and packet
+   on this page -- with nothing low-passing the 8% that still comes through.
+   Alpha scales the backdrop and leaves its spatial frequency where it was, so a
+   hex edge crosses the letterforms at full sharpness however dark this gets;
+   blur() is the only declaration here that takes the edges out. It is also the
+   backdrop root for everything in the aside, so the rows inside pay nothing.
+   Nothing in here is position:fixed -- the route's only dialog is rendered by
+   QueenUniverse, outside this element -- and the ground is painted in every
+   state, including the static one under 760px, so there is no transparent state
+   for the blur to draw a band over. */
+.atlas-inspector {position:sticky;top:0;background:#07120feb;backdrop-filter:blur(6px);border:1px solid #355d4b;border-radius:10px;padding:1rem;min-width:0;max-height:calc(100dvh - 90px);overflow:auto;display:grid;gap:.8rem;scrollbar-width:thin;}
 .atlas-inspector h2 {font-size:1.2rem;font-weight:400;overflow-wrap:anywhere;}
 .atlas-inspector h3 {font-size:1rem;font-weight:500;line-height:1.4;}
 .atlas-inspector h2 code {font-size:.9rem;}

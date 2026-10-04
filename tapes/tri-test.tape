@@ -1,17 +1,20 @@
 # VHS tape for tri test
 # Proof: 74/74 tests passing
 
-Output tri-test.gif
+Output recordings/tri-test.gif
 Set FontSize 26
 Set Width 1400
 Set Height 800
 Set Theme "Catppuccin Mocha"
 Set TypingSpeed 50ms
 
-# Start with clean terminal
-Type "cd ~/trinity-w1"
+# Run from the repository root after `zig build -Dci=true`. The hidden lines put
+# the tri this checkout built first on PATH; nothing is recorded until Show.
+Hide
+Type "export PATH=$PWD/zig-out/bin:$PATH && clear"
 Enter
 Sleep 500ms
+Show
 
 # Run all tests
 Type "tri test"

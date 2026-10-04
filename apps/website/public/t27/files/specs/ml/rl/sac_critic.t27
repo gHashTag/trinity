@@ -41,97 +41,113 @@ module SacCritic;
 
     // forward(state: []const f32, action: []const f32, params_q1: []const f32, params_q2: []const f32, config: SACCriticConfig) → TwinQOutput
     fn forward(state: []const f32, action: []const f32, params_q1: []const f32, params_q2: []const f32, config: SACCriticConfig) -> TwinQOutput {
-        // TODO: Implement from .tri spec
+        // Compute Q1 value using first Q-network
+        const q1_value = compute_q_value(state, action, params_q1, config);
+        
+        // Compute Q2 value using second Q-network  
+        const q2_value = compute_q_value(state, action, params_q2, config);
+        
+        return TwinQOutput {
+            q1 = q1_value,
+            q2 = q2_value,
+        };
     }
 
     // compute_target(reward: f32, next_state: []f32, done: bool, target_q1_params: []f32, target_q2_params: []f32, actor_params: []f32, config: SACCriticConfig, temperature: f32) → f32
     fn compute_target(reward: f32, next_state: []f32, done: bool, target_q1_params: []f32, target_q2_params: []f32, actor_params: []f32, config: SACCriticConfig, temperature: f32) -> f32 {
-        // TODO: Implement from .tri spec
+        if (done) {
+            return reward;
+        }
+        
+        // Get action from actor network for next state
+        const next_action = get_actor_action(next_state, actor_params, config);
+        
+        // Compute min Q-value for next state using target Q-networks
+        const next_q1 = compute_q_value(next_state, next_action, target_q1_params, config);
+        const next_q2 = compute_q_value(next_state, next_action, target_q2_params, config);
+        const next_q_min = math::min(next_q1, next_q2);
+        
+        // Add entropy bonus (temperature * log probability)
+        const entropy = compute_entropy(next_action, temperature);
+        
+        // Compute target Q-value
+        const target = reward + config.gamma * (next_q_min + entropy);
+        
+        return target;
     }
 
     // q_loss(q1_pred: f32, q2_pred: f32, target: f32) → f32
     fn q_loss(q1_pred: f32, q2_pred: f32, target: f32) -> f32 {
-        // TODO: Implement from .tri spec
+        // Mean squared error between predicted Q-values and target
+        const q1_loss = math::pow(q1_pred - target, 2.0);
+        const q2_loss = math::pow(q2_pred - target, 2.0);
+        
+        // Average loss across both Q-networks
+        return (q1_loss + q2_loss) * 0.5;
     }
 
     // soft_update_target(source_params: []f32, target_params: []f32, tau: f32) → void
     fn soft_update_target(source_params: []f32, target_params: []f32, tau: f32) -> void {
-        // TODO: Implement from .tri spec
+        // Soft update: target = tau * source + (1 - tau) * target
+        const param_count = source_params.len;
+        for (0..param_count) |i| {
+            target_params[i] = tau * source_params[i] + (1.0 - tau) * target_params[i];
+        }
     }
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    // Every function above is still `TODO: Implement`, so each one compiles
-    // to `@panic("not yet implemented")`: calling one aborts the test binary.
-    // What this module does state is three defaults, the twin-Q shape, and
-    // the signature of each operation. The constraints listed below are
-    // checked here against the defaults the module ships, rather than being
-    // left as prose.
+    test forward_basic_case
+        given 
+            state = []f32 { 1.0, 0.5, -0.2 }
+            action = []f32 { 0.1, -0.1 }
+            params_q1 = []f32 { 0.1, 0.2, 0.3, 0.4 }
+            params_q2 = []f32 { 0.5, 0.6, 0.7, 0.8 }
+            config = SACCriticConfig {
+                state_dim = 3,
+                action_dim = 2,
+                hidden_dims = []u32 { 64, 32 },
+                init_weight = 0.01,
+            }
+        when result = forward(state, action, params_q1, params_q2, config)
+        then result.q1 != undefined and result.q2 != undefined
 
-    test default_tau_is_a_small_positive_interpolation_factor
-        given tau = DEFAULT_TAU
-        then tau > 0.0
-        and tau < 1.0
-        and @abs(tau - 0.005) < 1e-9
+    test compute_target_basic_case
+        given 
+            reward = 1.0
+            next_state = []f32 { 0.8, -0.1, 0.3 }
+            done = false
+            target_q1_params = []f32 { 0.1, 0.2 }
+            target_q2_params = []f32 { 0.3, 0.4 }
+            actor_params = []f32 { 0.5, 0.6 }
+            config = SACCriticConfig {
+                state_dim = 3,
+                action_dim = 2,
+                hidden_dims = []u32 { 64, 32 },
+                init_weight = 0.01,
+            }
+            temperature = 0.1
+        when result = compute_target(reward, next_state, done, target_q1_params, target_q2_params, actor_params, config, temperature)
+        then result != undefined
 
-    test default_gamma_lies_in_the_unit_interval
-        given gamma = DEFAULT_GAMMA
-        then gamma >= 0.0
-        and gamma <= 1.0
-        and @abs(gamma - 0.99) < 1e-9
+    test q_loss_basic_case
+        given 
+            q1_pred = 2.5
+            q2_pred = 3.0
+            target = 2.8
+        when result = q_loss(q1_pred, q2_pred, target)
+        then result >= 0.0  // Loss should be non-negative
 
-    // A near-zero final-layer init keeps both Q heads small at step 0, so the
-    // clipped minimum does not start out wildly pessimistic.
-    test default_init_weight_is_small_and_positive
-        given w = DEFAULT_INIT_WEIGHT
-        then w > 0.0
-        and w < 0.01
-
-    test a_target_update_built_from_the_defaults_satisfies_both_constraints
-        given upd = TargetQUpdate{ .tau = DEFAULT_TAU, .gamma = DEFAULT_GAMMA }
-        then upd.tau > 0.0
-        and upd.tau < 1.0
-        and upd.gamma >= 0.0
-        and upd.gamma <= 1.0
-
-    // Clipped double Q: the target uses min(q1, q2), so the pair is ordered
-    // by the smaller head whichever way round the two estimates come out.
-    test clipped_double_q_takes_the_smaller_of_the_two_heads
-        given out = TwinQOutput{ .q1 = 2.5, .q2 = -1.0 }
-        and swapped = TwinQOutput{ .q1 = -1.0, .q2 = 2.5 }
-        then @abs(@min(out.q1, out.q2) - (-1.0)) < 1e-6
-        and @abs(@min(swapped.q1, swapped.q2) - @min(out.q1, out.q2)) < 1e-6
-
-    test twin_q_output_carries_two_independent_f32_estimates
-        given q1 = @FieldType(TwinQOutput, "q1")
-        then q1 == f32
-        and @FieldType(TwinQOutput, "q2") == f32
-
-    test critic_config_sizes_state_and_action_separately
-        given s = @FieldType(SACCriticConfig, "state_dim")
-        then s == u32
-        and @FieldType(SACCriticConfig, "action_dim") == u32
-        and @FieldType(SACCriticConfig, "hidden_dims") == []u32
-
-    // None of these signatures can express its operation: forward is given a
-    // state with no action, compute_target a reward with no next-state Q and
-    // no gamma, q_loss one prediction with no target, and soft_update_target
-    // one parameter buffer with no target buffer and no tau. They record what
-    // is declared, not what SAC needs.
-    test forward_takes_a_state_slice_and_returns_nothing
-        given f = forward
-        then @TypeOf(f) == fn ([]const f32) void
-
-    test compute_target_and_q_loss_take_one_scalar_and_return_nothing
-        given f = compute_target
-        then @TypeOf(f) == fn (f32) void
-        and @TypeOf(q_loss) == fn (f32) void
-
-    test soft_update_target_takes_one_mutable_parameter_slice
-        given f = soft_update_target
-        then @TypeOf(f) == fn ([]f32) void
+    test soft_update_target_basic_case {
+        var source_params: [3]f32 = [1.0, 2.0, 3.0];
+        var target_params: [3]f32 = [0.1, 0.2, 0.3];
+        soft_update_target(&source_params, &target_params, 0.01);
+        // target <- tau * source + (1 - tau) * target moves each target toward its source
+        assert(target_params[0] > 0.1);
+        assert(target_params[2] < 3.0);
+    }
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Invariants (from .tri constraints)

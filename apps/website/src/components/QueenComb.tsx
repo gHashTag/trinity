@@ -13,7 +13,7 @@ import {
   type Territory,
   fieldShape,
 } from "./queenHud";
-import "./QueenMinimap.css";
+import "./QueenCombEmbedded.css";
 
 // The comb: the board drawn as a triangular tiling in which every cell IS the
 // Trinity mark. Proven in six dependency-free prototypes under

@@ -20,6 +20,8 @@ pub const ENV : [1]str = ["NOTEBOOKLM_STORAGE_STATE"];
 ; The .mcp.json that registers the server ("" when it is not registered at this commit).
 pub const CONFIG : str = ".claude/mcp.json";
 pub const REPO : str = "gHashTag/t27";
+pub const QUALIFIED_ID : str = "gHashTag/t27:mcp/notebooklm";
+pub const SCHEMA : u32 = 2;
 pub const SOURCE : str = ".claude/mcp.json";
 pub const ABOUT : str = "External MCP server `notebooklm` registered in .claude/mcp.json; launched as `notebooklm-mcp`.";
 pub const ABOUT_SOURCE : str = ".claude/mcp.json entry; no tool list in this repository";
