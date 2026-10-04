@@ -66,18 +66,6 @@ test on_clock_basic {
     assert_eq(acc_out, 12);
 }
 
-test on_clock_reset {
-    // After reset, acc_out should be 0 regardless of inputs.
-    // We simulate reset by setting the var to its initial value? 
-    // Actually, the reset is implicit: when rst_n is low, the var takes its declared init value.
-    // In the test, we can just set it to 0 and then not call on_clock? 
-    // But we want to test that on_clock does not change the state when reset is active? 
-    // However, the on_clock function is only called when en is high and rst_n is high (in the hardware).
-    // In the test, we are simulating the clocked process by calling on_clock, which assumes !rst_n and en.
-    // So to test reset, we would need to not call on_clock and check that the var is 0.
-    // We'll do a separate test for the initial value.
-}
-
 test initial_value {
     assert_eq(acc_out, 0);
 }

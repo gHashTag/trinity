@@ -91,7 +91,12 @@ export const PLAYER_CALL_TIMEOUT_MS = 8000
  * whoami is deliberately absent: it is this module's own call, made once per
  * person from loadProfile, not something a component asks for.
  */
-export const PLAYER_TOOLS = ['hive_board'] as const
+// ball_board (lib/ballBoard.ts) is the owner's mail and open work: the render
+// service refuses it to the t27.ai game token outright (GAME_TOKEN_TOOLS) and
+// opens it to the app's own session only for the owner and whoever the owner
+// granted it to (t27 automation/ball-grants). Listed here so the app session
+// may ask; the answer is the server's.
+export const PLAYER_TOOLS = ['hive_board', 'ball_board'] as const
 export type PlayerTool = (typeof PLAYER_TOOLS)[number]
 
 /**

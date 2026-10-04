@@ -72,11 +72,11 @@ module TriLogger;
         when result = log(input.0, input.1, input.2)
         then result != undefined
 
-    test with_field_basic_case
+    test with_field_basic_case {
         var entry: LogEntry;
         entry.level = Info;
         entry.message = "Test entry";
-        given input = (&entry, "key", "value")
-        when result = with_field(input.0, input.1, input.2)
-        then result != undefined
+        with_field(&entry, "key", "value");
+        assert(entry.level == Info);
+    }
 

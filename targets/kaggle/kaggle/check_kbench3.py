@@ -1,6 +1,5 @@
 import os
-os.environ['KAGGLE_API_TOKEN'] = 'KGAT_c178a7497385fc3a63aed579e53e5ef9'
-
+# KAGGLE_API_TOKEN is read from the environment (Railway/Infisical); never hardcode it.
 import kaggle_benchmarks as kb
 print("=== KaggleClient ===")
 client = kb.kaggle.KaggleClient()

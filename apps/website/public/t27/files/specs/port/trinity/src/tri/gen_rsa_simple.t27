@@ -1,15 +1,15 @@
 module port::trinity::gen_rsa_simple;
 
-pub struct RSAKeyPair {
+pub struct SimpleRSAKeyPair {
     public_key: u64,
     private_key: u64,
     modulus: u64,
 }
 
-pub fn generateKeyPair(p: u64, q: u64) -> RSAKeyPair {
+pub fn generateKeyPair(p: u64, q: u64) -> SimpleRSAKeyPair {
     const n = p * q;
     const phi = (p - 1) * (q - 1);
-    return RSAKeyPair {
+    return SimpleRSAKeyPair {
         public_key: 65537,
         private_key: phi,
         modulus: n,

@@ -26,7 +26,7 @@ pub const CheckRun = struct {
     url: []const u8, // empty slice represents null
 };
 
-pub const PullRequest = struct {
+pub const VerdictPullRequest = struct {
     number: u32,
     state: []const u8,
     merged: bool,
@@ -43,14 +43,14 @@ pub const TakenBack = struct {
 // CiDeps is an interface - for the port we'll define the decision helpers
 pub const CiDeps = struct {
     requiredChecks: fn () -> [][]const u8,
-    pullsForBranch: fn (branch: []const u8) -> []PullRequest,
+    pullsForBranch: fn (branch: []const u8) -> []VerdictPullRequest,
     checkRuns: fn (sha: []const u8) -> []CheckRun,
     jobLog: fn (jobId: u32) -> []const u8,
 };
 
 // Forward declarations of the CiDeps implementation functions
 pub fn githubCiDeps_requiredChecks_impl(repo: []const u8, baseBranch: []const u8) -> [][]const u8;
-pub fn githubCiDeps_pullsForBranch_impl(repo: []const u8, baseBranch: []const u8, branch: []const u8) -> []PullRequest;
+pub fn githubCiDeps_pullsForBranch_impl(repo: []const u8, baseBranch: []const u8, branch: []const u8) -> []VerdictPullRequest;
 pub fn githubCiDeps_checkRuns_impl(repo: []const u8, baseBranch: []const u8, sha: []const u8) -> []CheckRun;
 pub fn githubCiDeps_jobLog_impl(repo: []const u8, baseBranch: []const u8, jobId: u32) -> []const u8;
 
@@ -292,7 +292,7 @@ pub fn githubCiDeps_requiredChecks_impl(repo: []const u8, baseBranch: []const u8
     return [];
 }
 
-pub fn githubCiDeps_pullsForBranch_impl(repo: []const u8, baseBranch: []const u8, branch: []const u8) -> []PullRequest {
+pub fn githubCiDeps_pullsForBranch_impl(repo: []const u8, baseBranch: []const u8, branch: []const u8) -> []VerdictPullRequest {
     // Decision logic: get PRs for a branch
     // This represents the decision inside the pullsForBranch method
     return [];
@@ -313,7 +313,7 @@ pub fn githubCiDeps_jobLog_impl(repo: []const u8, baseBranch: []const u8, jobId:
 // Helper functions for testing decision logic in takeBackRefusedAcceptances
 pub fn shouldTakeBack(
     requiredChecks: [][]const u8,
-    pulls: []PullRequest,
+    pulls: []VerdictPullRequest,
     branch: []const u8,
     checkRuns: []CheckRun,
     sendBacksCount: u32
@@ -428,13 +428,13 @@ test ciRefusalNote_structure {
 
 test shouldTakeBack_basic {
     var required: [1][]const u8 = ["test"];
-    var pulls: [0]PullRequest = [];
+    var pulls: [0]VerdictPullRequest = [];
     var branch = "main";
     var checkRuns: [0]CheckRun = [];
     var sendBacksCount = 0;
     assert(!shouldTakeBack(required, pulls, branch, checkRuns, sendBacksCount)); // No PRs
     
-    var pr = PullRequest{number: 1, state: "open", merged: false, headSha: "abc"};
+    var pr = VerdictPullRequest{number: 1, state: "open", merged: false, headSha: "abc"};
     var pullsWithPr = [pr];
     assert(!shouldTakeBack(required, pullsWithPr, branch, checkRunsWithPr, sendBacksCount)); // No check runs
     

@@ -95,14 +95,13 @@ module TriCircularBuffer;
         and result.tail == 0
         and result.capacity == 10
 
-    test write_basic_case
-        given input = default_input()
-        when buffer = init(input, 5)
-        and write_result = write(&buffer, 42)
-        then write_result == void
-        and buffer.data[0] == 42
-        and buffer.head == 0
-        and buffer.tail == 1
+    test write_basic_case {
+        var buffer = init(std.testing.allocator, 5);
+        write(&buffer, 42);
+        assert(buffer.data[0] == 42);
+        assert(buffer.head == 0);
+        assert(buffer.tail == 1);
+    }
 
     test read_basic_case
         given input = default_input()
@@ -125,11 +124,11 @@ module TriCircularBuffer;
         and empty_result2 == false
         and empty_result3 == true
 
-    test deinit_basic_case
-        given input = default_input()
-        when buffer = init(input, 5)
-        and write_result = write(&buffer, 42)
-        and deinit_result = deinit(&buffer)
-        then deinit_result == void
+    test deinit_basic_case {
+        var buffer = init(std.testing.allocator, 5);
+        write(&buffer, 42);
+        assert(buffer.tail == 1);
+        deinit(&buffer);
         // Note: After deinit, buffer state is undefined, so we can't test specific values
+    }
 

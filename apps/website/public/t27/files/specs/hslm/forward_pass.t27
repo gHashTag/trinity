@@ -71,6 +71,15 @@ module ForwardPass {
         loss : ?f64,            // Optional loss for training mode
     }
 
+    // Shared result for the currently unimplemented forward/attention paths.
+    // Preserve the existing empty vector and absent loss; this is not inference.
+    fn emptyForwardOutput() -> ForwardOutput {
+        return ForwardOutput{
+            .output = PackedBigInt{},
+            .loss = null,
+        };
+    }
+
     // ========================================================================
     // 5. Attention Functions
     // ========================================================================
@@ -93,11 +102,7 @@ module ForwardPass {
     // Computes separate Q/K/V attention heads, merges via bundle3
     // Complexity: O(n * h) where n = ROLE_DIM, h = HEAD_COUNT
     pub fn multiHeadAttention(context: []HyperVector, roles: []RoleVector, num_heads: usize) -> ForwardOutput {
-        var output = ForwardOutput{
-            .output = PackedBigInt{},
-            .loss = null,
-        };
-        return output;
+        return emptyForwardOutput();
     }
 
     // ========================================================================
@@ -109,11 +114,7 @@ module ForwardPass {
     // Uses Q/K/V attention to compute value = bind(Q/K/V)
     // Complexity: O(n) where n = ROLE_DIM (VSA operations)
     pub fn forwardPass(context: []HyperVector, roles: []RoleVector, target: &HyperVector) -> ForwardOutput {
-        var output = ForwardOutput{
-            .output = PackedBigInt{},
-            .loss = null,
-        };
-        return output;
+        return emptyForwardOutput();
     }
 
     // forwardPassMultiHead(context: []HyperVector, roles: []RoleVector) -> ForwardOutput
@@ -121,11 +122,7 @@ module ForwardPass {
     // Uses independent Q/K/V attention heads, merges via bundle3
     // Complexity: O(n * h) where n = ROLE_DIM, h = HEAD_COUNT
     pub fn forwardPassMultiHead(context: []HyperVector, roles: []RoleVector) -> ForwardOutput {
-        var output = ForwardOutput{
-            .output = PackedBigInt{},
-            .loss = null,
-        };
-        return output;
+        return emptyForwardOutput();
     }
 
     // ========================================================================

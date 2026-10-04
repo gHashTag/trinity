@@ -33,6 +33,7 @@
  */
 
 import type { AppSessionVerdict } from './appSessionIdentity.ts'
+import { AgentLaneRefused, laneField, laneOfStep, refusalOf } from './queenBrowserLanes.ts'
 
 /** The broker lives on the render server, like /mcp (triIdentity.RENDER_BASE). */
 export const BROKER_BASE = 'https://vibee-render-production.up.railway.app'
@@ -58,17 +59,21 @@ export interface BrowserView {
  *
  *   preview  -- a homepage block (?embed=1). Many previews on one page; none
  *               of them may touch a person's browser, not even to read it.
- *   nested   -- the board is itself inside the app (the Hive tab). The app
- *               already has a Browser tab; a pod window inside a board inside
- *               the app is a stamp, so this points there instead.
  *   signin   -- no app session in this tab. Not an error: the ordinary visit.
  *   ready    -- signed in, on the app's own copy of the board.
+ *
+ * The board inside the app (the Hive tab) used to be a fourth mode, 'nested':
+ * a note pointing at the app's own Browser tab, on the theory that a pod
+ * window inside a board inside the app was one layer too many. The owner
+ * reversed that on 2026-09-29: the browser OPENS in this window, embedded,
+ * and the full screen is a button rather than a takeover. Framing changes
+ * nothing about the stream itself: /live/ is same-origin under the app, and
+ * the session the panel reads is the app's own.
  */
-export type PanelMode = 'preview' | 'nested' | 'signin' | 'ready'
+export type PanelMode = 'preview' | 'signin' | 'ready'
 
-export function panelMode(input: { embedded: boolean; nested: boolean; session: AppSessionVerdict }): PanelMode {
+export function panelMode(input: { embedded: boolean; session: AppSessionVerdict }): PanelMode {
   if (input.embedded) return 'preview'
-  if (input.nested) return 'nested'
   // `bridge` means this is not the app's copy of the board (t27.ai, a local
   // build). There is no first-party /live/ there, so nothing to show but the
   // way to the app.
@@ -201,6 +206,8 @@ export interface AgentAnswer {
   tools: string[]
   model: string | null
   error: string | null
+  /** The lane the render confirmed on its first line; null from main or from a render before lanes. */
+  lane: string | null
 }
 
 /**
@@ -210,7 +217,7 @@ export interface AgentAnswer {
  * parse is skipped rather than failing the answer that surrounds it.
  */
 export function readAgentStream(raw: string): AgentAnswer {
-  const answer: AgentAnswer = { text: '', tools: [], model: null, error: null }
+  const answer: AgentAnswer = { text: '', tools: [], model: null, error: null, lane: null }
   for (const line of raw.split('\n')) readAgentLine(answer, line)
   answer.text = answer.text.trim()
   return answer
@@ -230,6 +237,7 @@ export function readAgentLine(answer: AgentAnswer, line: string): boolean {
   else if (kind === 'инструмент' && typeof e['имя'] === 'string') answer.tools.push(e['имя'])
   else if (kind === 'провайдер' && typeof e.id === 'string') answer.model = typeof e.model === 'string' ? `${e.id}/${e.model}` : e.id
   else if (kind === 'ошибка' && typeof e['текст'] === 'string') answer.error = e['текст']
+  else if (kind === 'lane' && typeof e.lane === 'string') answer.lane = e.lane
   else return false
   return true
 }
@@ -244,7 +252,7 @@ export async function readAgentBody(
   body: ReadableStream<Uint8Array>,
   onProgress?: (soFar: AgentAnswer) => void,
 ): Promise<AgentAnswer> {
-  const answer: AgentAnswer = { text: '', tools: [], model: null, error: null }
+  const answer: AgentAnswer = { text: '', tools: [], model: null, error: null, lane: null }
   const reader = body.getReader()
   const decoder = new TextDecoder()
   let rest = ''
@@ -279,6 +287,10 @@ export interface AgentEnv {
  * One question to the person's agent. The token goes in one header with
  * credentials omitted, as everywhere in this file. 401 is "signed out", not
  * a failure; any other refusal is thrown with the server's own words.
+ *
+ * `lane` runs the question in a lane of its own (lib/queenBrowserLanes.ts): left out,
+ * or `main`, the request is exactly what it was before lanes. A lane the
+ * render refuses -- the cap, or the shape -- is thrown as AgentLaneRefused.
  */
 export async function askBrowserAgent(
   env: AgentEnv,
@@ -286,6 +298,7 @@ export async function askBrowserAgent(
   question: string,
   lang: 'ru' | 'en',
   onProgress?: (soFar: AgentAnswer) => void,
+  lane?: string,
 ): Promise<AgentAnswer> {
   const token = env.token()
   if (!token) throw new AgentSignedOut()
@@ -293,11 +306,13 @@ export async function askBrowserAgent(
     method: 'POST',
     credentials: 'omit',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ messages: agentMessages(history, question, lang) }),
+    body: JSON.stringify({ messages: agentMessages(history, question, lang), ...laneField(lane) }),
   })
   if (res.status === 401) throw new AgentSignedOut()
   if (!res.ok) {
     const raw = await res.text().catch(() => '')
+    const refusal = lane === undefined ? null : refusalOf(res.status, raw)
+    if (refusal) throw new AgentLaneRefused(refusal, raw)
     throw new Error(`agent ${res.status}${raw ? `: ${raw.slice(0, 300)}` : ''}`)
   }
   const answer = res.body
@@ -417,6 +432,21 @@ const VERB: Record<string, { ru: string; en: string }> = {
   browser_status: { ru: 'проверил вкладки', en: 'checked tabs' },
   browser_close_tab: { ru: 'закрыл вкладку', en: 'closed a tab' },
   browser_ask_permission: { ru: 'спросил разрешения', en: 'asked permission' },
+  /*
+   * The two asks. browser_ask_input is the agent stopping at a sign-in
+   * field and pointing at it: the words it asked with are the step's text
+   * (d.what below), so the throne reads the question right in the journal
+   * strip -- and answers by typing into the picture, the wheel theirs on
+   * touch. browser_logins says which networks hold a cookie, never which.
+   */
+  browser_ask_input: { ru: 'попросил ввести', en: 'asked for input' },
+  browser_logins: { ru: 'проверил входы', en: 'checked logins' },
+  /*
+   * Not the agent: a person opened one of the owner's watch links (render
+   * watch-link.ts noteView). The journal is where the owner learns their
+   * screen has an audience -- the link's short id, never the token.
+   */
+  watch_link: { ru: 'открыли ссылку', en: 'watch link opened' },
 }
 
 /**
@@ -437,6 +467,7 @@ export function journalLine(step: JournalStep, lang: 'ru' | 'en'): { time: strin
   else if (typeof d.chars === 'number') text = `${d.chars} ${chars}`
   else if (typeof d.x === 'number' && typeof d.y === 'number') text = `${d.x}, ${d.y}`
   else if (typeof d.pages === 'number') text = String(d.pages)
+  else if (typeof d.link === 'string') text = d.link
   const t = new Date(step.at)
   const time = Number.isNaN(t.getTime())
     ? ''
@@ -451,7 +482,9 @@ export interface FoldedStep extends JournalStep {
 /**
  * Twenty identical looks in a row pushed every other step off a six-line
  * list. Consecutive steps with the same tool, outcome and line fold into one,
- * counted, keeping the newest time (the journal is newest first). Pure.
+ * counted, keeping the newest time (the journal is newest first). Steps from
+ * two lanes never fold: two tasks looking at the same page are two looks.
+ * Pure.
  */
 export function foldRepeats(steps: JournalStep[], lang: 'ru' | 'en', max = JOURNAL_SHOWN): FoldedStep[] {
   const out: FoldedStep[] = []
@@ -461,6 +494,7 @@ export function foldRepeats(steps: JournalStep[], lang: 'ru' | 'en', max = JOURN
       prev &&
       prev.tool === step.tool &&
       prev.ok === step.ok &&
+      laneOfStep(prev.detail) === laneOfStep(step.detail) &&
       journalLine(prev, lang).text === journalLine(step, lang).text
     ) {
       prev.times += 1

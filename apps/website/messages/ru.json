@@ -1418,39 +1418,29 @@
       ]
     },
     "distribution": {
-      "title": "Распределение Токенов",
+      "title": "Распределение токенов: 100% намывается",
       "items": [
         {
-          "name": "Награды Нодам",
-          "percent": "40%",
-          "amount": "4,184,141,281"
+          "name": "Намывается за принятую работу",
+          "percent": "100%",
+          "amount": "≤ 10,460,353,203"
         },
         {
-          "name": "Основатель",
-          "percent": "20%",
-          "amount": "2,092,070,640"
+          "name": "Премайн / основатель / команда",
+          "percent": "0%",
+          "amount": "0"
         },
         {
-          "name": "Казначейство",
-          "percent": "15%",
-          "amount": "1,569,052,980"
-        },
-        {
-          "name": "Публичная Продажа",
-          "percent": "15%",
-          "amount": "1,569,052,980"
-        },
-        {
-          "name": "Экосистема",
-          "percent": "10%",
-          "amount": "1,046,035,320"
+          "name": "Продажа / казна / ликвидность",
+          "percent": "0%",
+          "amount": "0"
         }
       ],
-      "total": "ИТОГО: 3²¹ = 10,460,353,203 $TRI"
+      "total": "ПОТОЛОК: 3²¹ = 10,460,353,203 $TRI · начеканено на старте: 0 · не развёрнут"
     },
     "quote": "«Математика вселенной благоволит Троице.»",
     "cta": "Полная Токеномика",
-    "ctaUrl": "https://github.com/gHashTag/trinity/blob/main/docs/docs/depin/tokenomics.md"
+    "ctaUrl": "https://github.com/gHashTag/trinity-fpga/blob/main/docs/docs/depin/tokenomics.md"
   },
   "mysticism": {
     "title": "Математические Основы",

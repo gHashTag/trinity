@@ -75,6 +75,10 @@ jobs:
           node scripts/docs-from-specs.mjs
           npm run atlas -- scan --discovery "$RUNNER_TEMP/discovery.json" --out "$RUNNER_TEMP/atlas-report.json"
           npm run atlas -- build --report "$RUNNER_TEMP/atlas-report.json"
+          # onboarding.t27 states the corpus counts this refresh just moved. Write the manifest's
+          # into it, dated today, and regenerate /agents.t27 and /llms.txt from it, so the gate
+          # below compares a published document with the manifest it is published beside.
+          node scripts/onboarding-from-spec.mjs --sync
           node -e "const r=require('$RUNNER_TEMP/discovery.json');console.log('worlds: '+r.worlds.join(', ')+'; founding: '+r.founding.length+'; code search: '+r.codeSearch.status)" >> "$GITHUB_STEP_SUMMARY"
 
       # The same gates a PR runs on the catalog, against the tree about to be committed.
@@ -95,7 +99,9 @@ jobs:
           npm run check:docs
           # onboarding.t27 states the corpus counts and the publish refuses them when they
           # disagree with the manifest. #1176 refreshed the manifest without this check and
-          # t27.ai stopped publishing; a refresh that moves the counts now stops here instead.
+          # t27.ai stopped publishing. The scan step now writes the counts (--sync), so this
+          # stops a refresh only for what the sync does not own: BACKENDS, a constant with no
+          # line to write, a value its declared type cannot hold.
           npm run check:onboarding
           # #1176 also vendored two gf16 ports that check:silicon requires to be classified.
           npm run check:silicon
@@ -115,7 +121,7 @@ jobs:
           set -euo pipefail
           git config user.name  't27 world scan'
           git config user.email 'admin@t27.ai'
-          git add public/t27 public/skills public/crons public/agents public/tools public/functions public/docs qa/language-exceptions.json
+          git add public/t27 public/skills public/crons public/agents public/tools public/functions public/docs qa/language-exceptions.json specs/catalog/onboarding.t27 public/agents.t27 public/llms.txt
           if git diff --cached --quiet; then
             echo "- no change" >> "$GITHUB_STEP_SUMMARY"
             exit 0
@@ -155,9 +161,13 @@ jobs:
           # against the head it reads from the API, as it would for a person.
           gh workflow run pr-blog-report.yml --ref main -f pr="$PR"
           echo "- started the work-report check for PR #$PR" >> "$GITHUB_STEP_SUMMARY"
-          # Auto-merge lands it once "T27 work report" goes green. Without the
-          # repository setting it stays an open pull request for a person to
-          # merge, which is a worse outcome but not a failed run.
-          if ! gh pr merge "$PR" --squash --auto; then
-            echo "- auto-merge unavailable; PR #$PR is open and waiting" >> "$GITHUB_STEP_SUMMARY"
-          fi
+          # NO SELF-ARMED MERGE. Owner's rule, 2026-10-02: "the Queen must not
+          # merge by herself!! the Queen only manages!" -- no automation merges
+          # on its own verdict. This job used to arm `gh pr merge --squash
+          # --auto` on the pull request it had just opened, so its own green
+          # check was the merge. Now the refresh stays open for a reviewer bee:
+          # an APPROVED review plus the `bee-reviewed` label added after the
+          # head commit (the gate of gHashTag/t27#5526). If an earlier run left
+          # auto-merge armed, take it back -- a new head is unreviewed code.
+          gh pr merge "$PR" --disable-auto >/dev/null 2>&1 || true
+          echo "- PR #$PR is open and waits for a reviewer bee (bee-reviewed); this job does not merge it" >> "$GITHUB_STEP_SUMMARY"

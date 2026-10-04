@@ -6,7 +6,7 @@ import json
 import requests
 
 # Kaggle credentials
-KAGGLE_TOKEN = "KGAT_2ea86c02d9642bed9a4a7b713f5b9a62"
+KAGGLE_TOKEN = os.environ.get("KAGGLE_API_TOKEN", "")
 
 # Dataset info
 DATASET_ID = "playra/trinity-cognitive-probes-thlp"

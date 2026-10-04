@@ -36,7 +36,7 @@ module gft_dup2_jtag {
 
     // === State structures ===
 
-    pub struct CounterState {
+    pub struct Dup2CounterState {
         count : u32,
         max_val : u32,
     }
@@ -77,8 +77,8 @@ module gft_dup2_jtag {
 
     // === Constructor functions ===
 
-    fn initial_counter_state(max_val: u32) -> CounterState {
-        return CounterState{
+    fn initial_counter_state(max_val: u32) -> Dup2CounterState {
+        return Dup2CounterState{
             .count = 0,
             .max_val = max_val,
         };

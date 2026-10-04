@@ -35,13 +35,15 @@ name: Website checks
 # apps/queen-proxy/** is in the triggers because one of the gates below reads
 # it. The proxy is the server half of the rule that only registered people
 # write to the Queen, and a proxy-only edit that removed the gate would
-# otherwise touch no watched path and run no check at all.
+# otherwise touch no watched path and run no check at all. The five src/tri and
+# src/registry files are in for the same reason: check:tools-coverage re-reads
+# the dispatcher, and a new `tri` command must not land without its card.
 on:
   pull_request:
-    paths: ['apps/website/**', 'apps/queen-proxy/**', '.github/workflows/website-checks.yml']
+    paths: ['apps/website/**', 'apps/queen-proxy/**', '.github/workflows/website-checks.yml', 'src/tri/main.zig', 'src/tri/tri_namespace.zig', 'src/tri/tri_utils.zig', 'src/registry/command_table.zig', 'src/tri/tri_register.zig']
   push:
     branches: [main]
-    paths: ['apps/website/**', 'apps/queen-proxy/**']
+    paths: ['apps/website/**', 'apps/queen-proxy/**', 'src/tri/main.zig', 'src/tri/tri_namespace.zig', 'src/tri/tri_utils.zig', 'src/registry/command_table.zig', 'src/tri/tri_register.zig']
   workflow_dispatch:
 
 jobs:
@@ -101,6 +103,10 @@ jobs:
       # qualified ids the site did not know, and the Queen's Tools tab was blank.
       - name: Tool cards open on the site
         run: npm run check:tools-site
+      # Every command of the three tri programs (qa/tri-commands/) has a card, and
+      # a published recording reaches the card of the command it ran.
+      - name: Every tri command has a card
+        run: npm run check:tools-coverage && npm run test:tri-commands
       # The console reads one person's correspondence in a browser tab. This
       # asserts the four properties that keep that from being a leak: no service
       # key anywhere under src/, exactly one identity header per request, three
@@ -127,6 +133,22 @@ jobs:
       # memory only; whoami never carries X-Agent-Key. Pure, no browser.
       - name: TRI identity
         run: npm run check:tri-identity
+      # The TOKEN tab counts TRI by the leaderboard (owner, 2026-10-03): spec
+      # commits per author plus accepted .t27 specs per lane, times the
+      # ledger's rate, one row per GitHub account. Pure, no browser.
+      - name: TRI board
+        run: npm run check:tri-board
+      # MINE TRI on the landing: the "Copy to agent" prompt says testnet, no
+      # price, NOT trustless, asks the human before a PR and never prints a
+      # rate the ledger did not state; the block reads its figures. Pure.
+      - name: TRI mine
+        run: npm run check:tri-mine
+      # The PROVIDERS tab re-reads the Gonka chain in the browser. Recorded
+      # responses rebuilt from the model cards must come back with zero
+      # differences, each bent value alone; a host's address, seed or key never
+      # leaves the parser, and the page sends nothing to a model. Pure, no network.
+      - name: Providers (Gonka live read)
+        run: npm run check:providers
       # The Queen's kanban grew a second lane, and it is the first thing on that
       # page that differs per person. Signed in, it asks the hive for the
       # clients this visitor answers for — on the game token, one identity
@@ -137,6 +159,14 @@ jobs:
       # the page parsed with the real parser. Pure, no browser.
       - name: Hive board is per person
         run: npm run check:hive-board
+      # The third lane is the owner's MAIL by client, whose move it is. Who
+      # may see it is the render service's decision (the owner, and whoever
+      # the owner granted it to); this holds that the page sends no argument
+      # to widen it, reads no count, draws NO lane when the mail was not sent,
+      # keeps only github links, and puts the lane, its heading and its chip
+      # behind `{ball && …}`.
+      - name: The mail lane is the owner's, or granted
+        run: npm run check:ball-board
       # The lane's filter can watch several clients at once and search within
       # them, which is two more ways for a control to describe rows the server
       # did not send. One property over every hostile input anyone has thought
@@ -178,6 +208,18 @@ jobs:
       # only our own /live/ is framed. Pure, no browser.
       - name: The BROWSER view
         run: npm run check:queen-browser
+      # Invite to watch: the render's read-only watch links on the live bar.
+      # The session token rides only in a header, a minted address is shown
+      # only if it is https://<host>/watch/<token> and revoked on the spot if
+      # it is not, an id that is not one is never sent, and a sixth link is
+      # never asked for. Pure, no browser.
+      - name: Invite to watch
+        run: npm run check:queen-watch
+      # Tasks side by side: a card is one more lane of the person's agent in a
+      # window of its own; the chat never names a lane, a render that answered
+      # from main is believed, and two lanes' steps never fold. Pure, no browser.
+      - name: Browser tasks side by side
+        run: npm run check:queen-browser-lanes
       # The runner cabinet: the session token rides only in a header with
       # credentials omitted, a runner token is shown once and kept nowhere, and
       # the page has no field for a provider key. Pure, no browser.
@@ -202,6 +244,11 @@ jobs:
       # both languages instead of drawing names nobody published.
       - name: The Queen's three tabs
         run: npm run check:queen-chat-tabs
+      # On BROWSER the person's own agent answers, not the Queen server whose
+      # health the chat polls: the chip and the empty sentence say so, and the
+      # first questions offered never ask the agent to pay, send or delete.
+      - name: The Queen on the BROWSER tab
+        run: npm run check:queen-browser-help
       # "it is dim" (the owner, 2026-09-21, with a photograph of the clients
       # strip). The board draws every panel over a live hive, so each colour
       # here has two contrasts and only one of them gets looked at. This does
@@ -262,7 +309,13 @@ jobs:
       # the four consent constants from being edited into an instruction
       # addressed at somebody else's agent.
       - name: Agent onboarding spec
-        run: npm run check:onboarding
+        run: npm run check:onboarding && npm run test:onboarding-spec
+      # The X player card (public/play/) is generated from specs/x/player.t27 through the
+      # compiler: X's limits on the card, the tabs the page must carry, and the site bundle
+      # built from src/lib/highlight.ts. The tests also hold the RTL tab's reading of the
+      # emitted Verilog to what t27c wrote for hello_world.
+      - name: X player spec
+        run: npm run check:play && npm run test:play-spec
       # The world scan's contract (specs/catalog/discovery.t27 through the compiler),
       # its pure decisions, and the manifest merge that must never touch a founding
       # source. The scan itself runs against GitHub in t27-world-scan.yml.
@@ -297,8 +350,20 @@ jobs:
       - name: Roadmap game rules
         run: npm run check:roadmap-game
 
+      # What a link to t27.ai says in a chat preview: the name, the caption and
+      # the description, from lib/motto.ts -- in the head tags, in the i18n
+      # provider that rewrites them after load, and in og/og-image.svg.
+      - name: Link preview words
+        run: npm run check:og-preview
+
       - name: Build
         run: npx vite build
+
+      # What a crawler reads on the home page before any script runs: the
+      # lib/motto words GameHero renders, and absolute links to every static
+      # section. After the build, so the shell is checked in dist/ as shipped.
+      - name: Home page shell a crawler reads
+        run: npm run check:boot-shell
 
       # Skips itself if no Chrome is found rather than failing: a missing
       # browser is an environment fact, not a defect in the change.
@@ -358,6 +423,16 @@ jobs:
           CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
         run: npm run check:render -- --no-build
 
+      # The landing in a browser that cannot create a WebGL context, and in one
+      # whose engine is refused after the probe: the page must render whole and
+      # only the scene may go. On 2026-10-03 a GPU-less Chromium got a blank
+      # t27.ai/ from one uncaught "WebGL not supported". Skips itself without
+      # Chrome.
+      - name: Landing without WebGL
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
+        run: npm run check:home-no-webgl -- --no-build
+
       # The five explorers and the spec explorer at every size in the spec's
       # matrix: one pane on a phone, two above, the deep-linked card open and
       # on screen, 44px controls where a finger is the pointer, one scroller
@@ -366,6 +441,14 @@ jobs:
         env:
           CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
         run: npm run check:explorer-viewport -- --no-build
+
+      # Real touch events through CDP on the built board: a tap selects a unit,
+      # a drag pans, two fingers zoom. It exits 2 (NOT MEASURED) when the page
+      # does not answer a probe in 20 s, which on a runner is a failure too.
+      - name: Queen touch contract
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
+        run: npm run check:queen-touch -- --no-build
 
       # A51: four PRs merged, every check green, and the live site changed
       # nothing -- this app deploys from a second repository that holds build
@@ -379,3 +462,12 @@ jobs:
       - name: Is the live site this build?
         continue-on-error: true
         run: npm run check:deployed
+
+      # Last, because it rebuilds dist/ against an address that refuses every
+      # connection: with the API dead, no tile may show a bare number and the
+      # pill may never read LIVE. It went red on main and nobody saw,
+      # because only a person running it by hand on a laptop could.
+      - name: Queen with a dead API
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
+        run: npm run check:queen-dead-api

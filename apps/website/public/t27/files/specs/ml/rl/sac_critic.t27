@@ -140,16 +140,14 @@ module SacCritic;
         when result = q_loss(q1_pred, q2_pred, target)
         then result >= 0.0  // Loss should be non-negative
 
-    test soft_update_target_basic_case
-        given 
-            source_params = []f32 { 1.0, 2.0, 3.0 }
-            target_params = []f32 { 0.1, 0.2, 0.3 }
-            tau = 0.01
-        when 
-            // Create mutable copy for the test
-            const mutable_target = []f32 { target_params[0], target_params[1], target_params[2] }
-            result = soft_update_target(source_params, mutable_target, tau)
-        then true  // Void function, just check it executes without error
+    test soft_update_target_basic_case {
+        var source_params: [3]f32 = [1.0, 2.0, 3.0];
+        var target_params: [3]f32 = [0.1, 0.2, 0.3];
+        soft_update_target(&source_params, &target_params, 0.01);
+        // target <- tau * source + (1 - tau) * target moves each target toward its source
+        assert(target_params[0] > 0.1);
+        assert(target_params[2] < 3.0);
+    }
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Invariants (from .tri constraints)

@@ -54,8 +54,3 @@ module TriHtml;
         when parse(html)
         then true
 
-    test "query_selector_function"
-        given node = HtmlNode{tag: "div", attributes: std.StringHashMap([]const u8).init(), children: [], inner_text: ""}
-        when query_selector(node)
-        then true
-

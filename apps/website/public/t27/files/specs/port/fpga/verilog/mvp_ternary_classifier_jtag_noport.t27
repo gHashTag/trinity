@@ -53,12 +53,12 @@ module mvp_ternary_classifier_jtag_noport {
     pub const MAGIC_28BIT : u32 = 0xA5A5A5Au32;
     pub const INITIAL_SR : u32 = 0xA5A5A5A4u32;  // {MAGIC_28BIT, 4'b0100}
 
-    pub struct JtagShiftRegister {
+    pub struct ClassifierShiftRegister {
         data : u32,
     }
 
-    fn initial_shift_register() -> JtagShiftRegister {
-        return JtagShiftRegister{
+    fn initial_shift_register() -> ClassifierShiftRegister {
+        return ClassifierShiftRegister{
             .data = INITIAL_SR,
         };
     }
@@ -70,21 +70,21 @@ module mvp_ternary_classifier_jtag_noport {
         return (MAGIC_28BIT << 4) | (0u32 << 3) | (1u32 << 2) | (beat_bit << 1) | ok_bit;
     }
 
-    fn shift_register_capture(reg: JtagShiftRegister, beat: bool, ok: bool) -> JtagShiftRegister {
-        return JtagShiftRegister{
+    fn shift_register_capture(reg: ClassifierShiftRegister, beat: bool, ok: bool) -> ClassifierShiftRegister {
+        return ClassifierShiftRegister{
             .data = capture_verdict_word(beat, ok),
         };
     }
 
-    fn shift_register_shift(reg: JtagShiftRegister, tdi: bool) -> JtagShiftRegister {
+    fn shift_register_shift(reg: ClassifierShiftRegister, tdi: bool) -> ClassifierShiftRegister {
         let tdi_bit: u32 = if (tdi) 0x80000000u32 else 0u32;
         let shifted: u32 = (reg.data >> 1) | tdi_bit;
-        return JtagShiftRegister{
+        return ClassifierShiftRegister{
             .data = shifted,
         };
     }
 
-    fn shift_register_tdo(reg: JtagShiftRegister) -> bool {
+    fn shift_register_tdo(reg: ClassifierShiftRegister) -> bool {
         return (reg.data & 1u32) != 0;
     }
 
@@ -99,11 +99,11 @@ module mvp_ternary_classifier_jtag_noport {
     }
 
     fn next_shift_register_and_tdo(
-        reg: JtagShiftRegister,
+        reg: ClassifierShiftRegister,
         beat: bool,
         ok: bool,
         sig: JtagSignals
-    ) -> (JtagShiftRegister, bool) {
+    ) -> (ClassifierShiftRegister, bool) {
         let tdo = shift_register_tdo(reg);
         
         if (sig.drck && sig.sel) {
@@ -203,22 +203,22 @@ module mvp_ternary_classifier_jtag_noport {
     }
 
     test shift_register_shift_with_tdi_high {
-        let reg = JtagShiftRegister{ .data = 0x12345678u32 };
+        let reg = ClassifierShiftRegister{ .data = 0x12345678u32 };
         let new_reg = shift_register_shift(reg, true);
         // {1, 0x12345678 >> 1} = {1, 0x091A2B3C} = 0x891A2B3C
         assert(new_reg.data == 0x891A2B3Cu32);
     }
 
     test shift_register_shift_with_tdi_low {
-        let reg = JtagShiftRegister{ .data = 0x12345678u32 };
+        let reg = ClassifierShiftRegister{ .data = 0x12345678u32 };
         let new_reg = shift_register_shift(reg, false);
         // {0, 0x12345678 >> 1} = 0x091A2B3C
         assert(new_reg.data == 0x091A2B3Cu32);
     }
 
     test shift_register_tdo_is_lsb {
-        let reg0 = JtagShiftRegister{ .data = 0x12345678u32 }; // LSB = 0
-        let reg1 = JtagShiftRegister{ .data = 0x12345679u32 }; // LSB = 1
+        let reg0 = ClassifierShiftRegister{ .data = 0x12345678u32 }; // LSB = 0
+        let reg1 = ClassifierShiftRegister{ .data = 0x12345679u32 }; // LSB = 1
         assert(shift_register_tdo(reg0) == false);
         assert(shift_register_tdo(reg1) == true);
     }
@@ -235,7 +235,7 @@ module mvp_ternary_classifier_jtag_noport {
     }
 
     test next_state_shift_cycle {
-        let reg = JtagShiftRegister{ .data = 0xA5A5A5A7u32 };
+        let reg = ClassifierShiftRegister{ .data = 0xA5A5A5A7u32 };
         let beat = false;
         let ok = false;
         let sig = JtagSignals{ .drck = true, .sel = true, .shift = true, .capture = false, .tdi = true };
@@ -247,7 +247,7 @@ module mvp_ternary_classifier_jtag_noport {
     }
 
     test next_state_no_change_when_drck_low {
-        let reg = JtagShiftRegister{ .data = 0xFFFFFFFFu32 };
+        let reg = ClassifierShiftRegister{ .data = 0xFFFFFFFFu32 };
         let beat = true;
         let ok = true;
         let sig = JtagSignals{ .drck = false, .sel = true, .shift = true, .capture = false, .tdi = true };
@@ -257,7 +257,7 @@ module mvp_ternary_classifier_jtag_noport {
     }
 
     test next_state_no_change_when_sel_low {
-        let reg = JtagShiftRegister{ .data = 0xFFFFFFFFu32 };
+        let reg = ClassifierShiftRegister{ .data = 0xFFFFFFFFu32 };
         let beat = true;
         let ok = true;
         let sig = JtagSignals{ .drck = true, .sel = false, .shift = true, .capture = false, .tdi = true };

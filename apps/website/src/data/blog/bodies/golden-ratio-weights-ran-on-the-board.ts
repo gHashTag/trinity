@@ -1,4 +1,5 @@
 import type { Block } from '../types'
+import { X7_BOARD } from '../../casts'
 
 export const body: Block[] = [
   {
@@ -58,6 +59,13 @@ export const body: Block[] = [
   {
     kind: 'p',
     text: "The node's own Verilog, unchanged, also ran a request stream of the same kind in simulation, with synthetic weights for one matrix: 7,680 of 7,680 receipts and 128 of 128 rows.",
+  },
+  {
+    kind: 'terminal',
+    src: X7_BOARD.src,
+    share: X7_BOARD.share,
+    title: X7_BOARD.title,
+    caption: "A later recording of the same receipt harness on the same board, with int8 activations rather than this post's Z[phi] ones, so its counts are not this run." + ' ' + X7_BOARD.caption.en,
   },
   {
     kind: 'h',
@@ -145,6 +153,13 @@ export const ruBody: Block[] = [
   {
     kind: 'p',
     text: 'Собственный Verilog узла без изменений тоже прогнал в симуляции поток запросов того же вида, с синтетическими весами для одной матрицы: 7 680 из 7 680 квитанций и 128 из 128 строк.',
+  },
+  {
+    kind: 'terminal',
+    src: X7_BOARD.src,
+    share: X7_BOARD.share,
+    title: X7_BOARD.title,
+    caption: 'Более поздняя запись того же харнесса квитанций на той же плате, с активациями int8, а не Z[phi], как в этом посте, так что её счёт — не этот прогон.' + ' ' + X7_BOARD.caption.ru,
   },
   {
     kind: 'h',

@@ -116,6 +116,15 @@
 // seller's card named no price at all, though the seller's own press is paid from the seller's
 // balance (story_payer: not the client's press -- the one who pressed). Her page names the
 // price or that it is a gift above her button; the seller's card names its price above his.
+// v17 (2026-10-02, owner: "more frames"): a reel runs up to six scenes. Four lines of 2-4 s
+// already filled the 15 s story, so a fifth frame had nowhere to go. SCENES_MAX is six and
+// REEL_MAX_SEC is 24 -- six lines of up to 3.5 s and the pause; the default stays three. Her own
+// voice notes stay capped at NOTES_MAX_SEC: a longer reel cuts the same twelve seconds into more,
+// shorter pieces, each still at least NOTES_PART_MIN_MS, so nothing new is put in her mouth.
+// v18 (2026-10-02, owner: "users in the chat with the agent should see this widget"): the
+// link under a finished reel leads to the chat with the agent, not to a page of its own. The
+// chat now shows the same reels widget above the talk when her template is ready, so the next
+// reel and the agent who makes it stand on one screen. PAGE_ROUTE is "chat".
 // Delivered live on 2026-09-26 (two reels for one client, forwarded by the owner). On
 // 2026-09-27 the voice provider answered HTTP 402 (no credit): the voice leg is BLOCKED by
 // money, not by code, and Kie has no voice cloning to fall back to.
@@ -126,7 +135,7 @@ module automation::crm_story_reel {
     pub const KIND : str = "automation";
     pub const ID : str = "crm-story-reel";
     pub const REPO : str = "999-multibots-telegraf";
-    pub const VERSION : u8 = 16;
+    pub const VERSION : u8 = 18;
 
     // ---- Who qualifies ------------------------------------------------------------------
     // Both halves, nothing else. A profile only overrides the look, the call and who pays.
@@ -143,13 +152,13 @@ module automation::crm_story_reel {
     // ---- What is made -------------------------------------------------------------------
     pub const SCENES_DEFAULT : u16 = 3;
     pub const SCENES_MIN : u16 = 1;
-    pub const SCENES_MAX : u16 = 4;
+    pub const SCENES_MAX : u16 = 6;
     pub const NEW_SETTING_EACH_SCENE : bool = true;  // the source photo's background never repeats
     pub const PAUSE_SEC : u16 = 3;
     pub const PAUSE_SEC_MIN : u16 = 1;
     pub const PAUSE_SEC_MAX : u16 = 4;
     pub const BREATH_MS : u16 = 250;  // between scenes
-    pub const REEL_MAX_SEC : u16 = 15;  // a story
+    pub const REEL_MAX_SEC : u16 = 24;  // six lines of up to 3.5 s and the pause
     pub const COMPOSITION : str = "StoryReel";
     pub const ASPECT_RATIO : str = "9:16";
     pub const TOPIC_MAX : u16 = 200;
@@ -234,7 +243,7 @@ module automation::crm_story_reel {
     pub const NOTES_WORDS_ARE_HERS : bool = true;  // the audio is hers, uncut words, never a synthesis
     pub const NOTES_FROM_SELLER_DM_ONLY : bool = true;  // read with the seller's own session
     pub const NOTES_MIN_SEC : u16 = 5;  // less than this is not a story
-    pub const NOTES_MAX_SEC : u16 = 12;  // REEL_MAX_SEC minus the pause
+    pub const NOTES_MAX_SEC : u16 = 12;  // her notes, at most; within REEL_MAX_SEC minus the pause
     pub const NOTES_CUT_WINDOW_MS : u32 = 1500;  // a pause this near the even cut wins
     pub const NOTES_PART_MIN_MS : u32 = 1500;  // no scene shorter than this
     // ---- Her clone refused by its provider (v5) -----------------------------------------
@@ -340,7 +349,7 @@ module automation::crm_story_reel {
 
     // ---- Who asks, who pays -------------------------------------------------------------
     pub const START_PARAM : str = "reel";  // t.me/<bot>?start=reel, the client's own press
-    pub const PAGE_ROUTE : str = "story";  // t.me/<bot>?start=app_story, "my reels"
+    pub const PAGE_ROUTE : str = "chat";  // t.me/<bot>?start=app_chat, her reels above the talk (v18)
     pub const SELLER_SCRIPT_ACCEPTED : bool = true;  // scenes/style/cta made exactly as given
 
     // ---- Where the finished reel goes ---------------------------------------------------
@@ -653,13 +662,14 @@ module automation::crm_story_reel {
         assert(REFUND_ON_PROVIDER_FAILURE);
     }
 
-    test "a script of one to four scenes is made as given; five is refused" {
+    test "a script of one to six scenes is made as given; seven is refused" {
         assert(SELLER_SCRIPT_ACCEPTED);
         assert(scenes_ok(SCENES_DEFAULT));
         assert(scenes_ok(1));
         assert(scenes_ok(4));
+        assert(scenes_ok(6));
         assert(!scenes_ok(0));
-        assert(!scenes_ok(5));
+        assert(!scenes_ok(7));
         assert(NEW_SETTING_EACH_SCENE);
     }
 
@@ -667,7 +677,7 @@ module automation::crm_story_reel {
         assert(pause_of(PAUSE_SEC) == 3);
         assert(pause_of(0) == 1);
         assert(pause_of(9) == 4);
-        assert(REEL_MAX_SEC == 15);
+        assert(REEL_MAX_SEC == 24);
     }
 
     test "a job whose process died is claimed by the sweep and continued, not redone" {
@@ -744,7 +754,8 @@ module automation::crm_story_reel {
         assert(!NOTES_NEED_REPLICATE);
         assert(NOTES_WORDS_ARE_HERS);
         assert(NOTES_FROM_SELLER_DM_ONLY);
-        assert(NOTES_MAX_SEC + PAUSE_SEC == REEL_MAX_SEC);
+        assert(NOTES_MAX_SEC + PAUSE_SEC <= REEL_MAX_SEC);
+        assert(SCENES_MAX * NOTES_PART_MIN_MS <= NOTES_MAX_SEC * 1000);
         assert(NOTES_MIN_SEC <= NOTES_MAX_SEC);
     }
 
@@ -945,7 +956,7 @@ module automation::crm_story_reel {
     }
 
     test "VERSION says what the header's last note says" {
-        assert(VERSION == 16);
+        assert(VERSION == 18);
     }
 
     test "every reel for a client is a story reel; the silent plan reel only when the owner names it" {

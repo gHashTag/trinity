@@ -96,17 +96,17 @@ module TriSegmentTree;
         when result = query(tree, 0, 2)  // Query first 3 elements: 1 + 2 + 3 = 6
         then result == 6
 
-    test update_basic_case
-        given allocator = std.mem.allocator, values = [1, 2, 3, 4]
-        when tree = init(allocator, values)
-        when result = update(tree, 1, 5)  // Update index 1 to value 5
-        then result == void
-        when query_result = query(tree, 0, 3)  // Should now be 1 + 5 + 3 + 4 = 13
-        then query_result == 13
+    test update_basic_case {
+        var values = [1, 2, 3, 4];
+        var tree = init(std.testing.allocator, &values);
+        update(&tree, 1, 5);  // Update index 1 to value 5
+        assert(query(&tree, 0, 3) == 13);  // 1 + 5 + 3 + 4
+    }
 
-    test deinit_basic_case
-        given allocator = std.mem.allocator, values = [1, 2, 3, 4]
-        when tree = init(allocator, values)
-        when result = deinit(tree)
-        then result == void
+    test deinit_basic_case {
+        var values = [1, 2, 3, 4];
+        var tree = init(std.testing.allocator, &values);
+        assert(query(&tree, 0, 3) == 10);
+        deinit(&tree);
+    }
 

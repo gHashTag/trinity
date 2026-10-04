@@ -2,7 +2,7 @@
    idea, and a divider there made two slabs out of one pair. */
 .queen-hero-block {
   border-top: 1px solid rgba(0, 255, 136, .24);
-  background: #020605;
+  background: #000;
   color: var(--text, #FFFFFF);
 }
 
@@ -48,7 +48,7 @@
   font: 600 .82rem/1.2 "JetBrains Mono", monospace;
   text-decoration: none;
 }
-.queen-hero-block-primary { background: #00ff88; color: #001b0e; border: 1px solid #00ff88; }
+.queen-hero-block-primary { background: #000; color: #00ff88; border: 1px solid #00ff88; }
 .queen-hero-block-secondary { color: #ffd45a; border: 1px solid #ffd45a88; background: transparent; }
 .queen-hero-block-primary:hover, .queen-hero-block-secondary:hover { filter: brightness(1.12); }
 

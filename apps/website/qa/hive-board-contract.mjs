@@ -177,7 +177,9 @@ try {
   const before6 = world.log.fetches.length
   EQ(await world.client.callAsPlayer('crm_history'), { ok: false, reason: 'refused' }, 'a tool the token may not ask for is refused')
   EQ(world.log.fetches.length, before6, 'and refused BEFORE a request is made')
-  EQ([...PLAYER_TOOLS], ['hive_board'], 'the game token asks for exactly one tool')
+  // Two tools, both identity-scoped by the server. ball_board is the mail lane,
+  // held to its own contract in qa/ball-board-contract.mjs.
+  EQ([...PLAYER_TOOLS], ['hive_board', 'ball_board'], 'the token asks for exactly these tools')
 } finally {
   undoTraps()
 }
@@ -234,8 +236,9 @@ function elementsWithClass(name) {
   return found
 }
 
-/** Is this node inside `{clients && …}` or `{clients ? … : …}`? */
-function guardedByClients(node) {
+/** Is this node inside `{<name> && …}` or `{<name> ? … : …}`? */
+function guardedBy(node, name) {
+  const word = new RegExp(`\\b${name}\\b`)
   for (let at = node.parent; at; at = at.parent) {
     if (!ts.isJsxExpression(at) || !at.expression) continue
     const expression = at.expression
@@ -245,10 +248,11 @@ function guardedByClients(node) {
         : ts.isConditionalExpression(expression)
           ? expression.condition
           : null
-    if (test && /\bclients\b/.test(test.getText(source))) return true
+    if (test && word.test(test.getText(source))) return true
   }
   return false
 }
+const guardedByClients = (node) => guardedBy(node, 'clients')
 
 const lane = elementsWithClass('queen27-clients-lane')
 EQ(lane.length, 1, 'the clients lane is drawn in exactly one place')
@@ -256,13 +260,16 @@ A(guardedByClients(lane[0]), 'the clients lane is inside a conditional on the si
 
 const heads = elementsWithClass('queen27-lane-head')
 A(heads.length > 0, 'the lanes are labelled once there are two of them')
-for (const head of heads) A(guardedByClients(head), 'a lane heading is itself client-scoped: one lane needs no label')
+// The mail lane's heading is scoped by its own panel, `ball`, which the page
+// only has when the hive sent the mail (qa/ball-board-contract.mjs).
+for (const head of heads) A(guardedByClients(head) || guardedBy(head, 'ball'), 'a lane heading is itself person-scoped: one lane needs no label')
 
 // The other half of the same contract, and the half that is easy to lose: the
 // PUBLIC board must NOT be behind that gate. A refactor that tidied both lanes
 // into one conditional would pass every assertion above and would blank the
 // task board for every visitor who is not signed in.
-const publicBoard = elementsWithClass('queen27-kanban').filter((node) => !elementsWithClass('queen27-clients-lane').includes(node))
+const privateLanes = [...elementsWithClass('queen27-clients-lane'), ...elementsWithClass('queen27-ball-lane')]
+const publicBoard = elementsWithClass('queen27-kanban').filter((node) => !privateLanes.includes(node))
 EQ(publicBoard.length, 1, 'there is one public task board')
 A(!guardedByClients(publicBoard[0]), 'and it is drawn for everybody, signed in or not, exactly as it was')
 

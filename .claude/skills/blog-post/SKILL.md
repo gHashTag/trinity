@@ -102,6 +102,52 @@ field or omit `ru` entirely. A hedge that softens in translation —
 "submitted upstream" becoming "accepted", "inferred" becoming "measured" — is a
 false claim in a second language and harder to catch.
 
+## How a post reads
+
+Readers look at the first lines and the headings, and decide there. Every rule
+below follows from that. The PR draft generator (`make_post()` in
+`scripts/pr_blog_report.py`) already lays a post out this way. Keep the order
+when you turn a draft into an article.
+
+1. **Result first.** The opening paragraph says what is true now that was not
+   before, with the number if there is one. No preamble, no "in this post".
+   Context, history and provenance come later; provenance closes the post.
+2. **One idea per paragraph, key sentence first.** If a paragraph needs two
+   headings' worth of ideas, split it. Headings name what the section
+   *shows* ("How we checked"), not a category ("Verification").
+3. **Problem, then solution.** Say what was broken or unknown, for whom,
+   and why it mattered, before explaining the fix. A reader who does not feel
+   the problem skips the solution.
+4. **Concrete before abstract.** Show the real command, the real output and
+   the real file. A terminal recording (`blog.cast`, the `terminal` block) beats
+   a description of one. Never use an invented example where a real one exists.
+5. **Let the reader check it.** Every claim has a receipt or a command the
+   reader can run (`blog.reproduce`). Results that were not measured, and tests
+   that failed or did not run, stay in the post as visibly as the ones that
+   passed. The "How we checked" table makes that the default.
+6. **Keep the wrong turns.** A dead end that cost time is often the most
+   useful part. Tell it as what was tried, what happened and what it ruled
+   out, not as a confession.
+7. **Explain why, not only what.** The reader can read the diff. What the diff
+   cannot tell them is why this approach won over the alternatives.
+8. **Write for one person:** an engineer who knows the field but not this
+   repository. Spell out an internal name the first time, or leave it out.
+9. **Narrow and short.** One topic, roughly 1,000–1,500 words (5–7 minutes).
+   A second topic is a second post.
+10. **Titles say what the reader learns,** with the words they would search
+    for. No teaser titles, no scale claims (see below).
+11. **Accessible by default.** Figures get captions that say what to look at.
+    Links say where they go ("the nextpnr-xilinx PR"), never "here".
+12. **Read it as the reader.** Before publishing, read the post top to bottom
+    as someone outside the project, and cut every sentence they would skip.
+
+Sources this list is distilled from:
+[Google developer style guide, paragraph structure](https://developers.google.com/style/paragraph-structure),
+[Julia Evans, patterns in confusing explanations](https://jvns.ca/blog/confusing-explanations/),
+[Mixmax, how to write an engineering blog post](https://www.mixmax.com/engineering/how-to-write-an-engineering-blog-post),
+[Criteo engineering, tips and tricks](https://medium.com/criteo-engineering/writing-a-tech-blog-post-tips-and-tricks-from-the-criteo-engineers-27682ffee1c),
+[Collaborne, how to write an engineering blog](https://medium.com/collaborne-engineering/how-to-write-an-engineering-blog-4e20280c0aa6).
+
 ## The honesty rules the file imposes
 
 They are written at the top of `posts.ts` and they bind every post:
