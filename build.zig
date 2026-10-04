@@ -2993,23 +2993,36 @@ pub fn build(b: *std.Build) void {
     });
 
     // One step per region: the region file is the test root, so the step
-    // runs exactly that file's own test blocks.
-    const brain_region_steps = [_]struct { step: []const u8, desc: []const u8, mod: *std.Build.Module }{
-        .{ .step = "test-basal-ganglia", .desc = "Run Basal Ganglia tests (src/brain/basal_ganglia.zig)", .mod = bg_mod },
-        .{ .step = "test-reticular-formation", .desc = "Run Reticular Formation tests (src/brain/reticular_formation.zig)", .mod = rf_mod },
-        .{ .step = "test-locus-coeruleus", .desc = "Run Locus Coeruleus tests (src/brain/locus_coeruleus.zig)", .mod = lc_mod },
-    };
-    for (brain_region_steps) |r| {
-        const region_tests = b.addTest(.{ .root_module = r.mod });
-        b.step(r.step, r.desc).dependOn(&b.addRunArtifact(region_tests).step);
-    }
+    // runs exactly that file's own test blocks. Each test root is spelled out
+    // as b.createModule(.{ .root_source_file = b.path(...) }) and each step
+    // name is a literal, because the S01 capability checker
+    // (external/t27/tools/trinity_manifest.py) finds build targets by those
+    // patterns; a root passed through a helper or a loop is invisible to it.
+    const bg_tests = b.addTest(.{ .root_module = b.createModule(.{
+        .root_source_file = b.path("src/brain/basal_ganglia.zig"),
+        .target = target,
+        .optimize = optimize,
+    }) });
+    b.step("test-basal-ganglia", "Run Basal Ganglia tests (src/brain/basal_ganglia.zig)").dependOn(&b.addRunArtifact(bg_tests).step);
+    const rf_tests = b.addTest(.{ .root_module = b.createModule(.{
+        .root_source_file = b.path("src/brain/reticular_formation.zig"),
+        .target = target,
+        .optimize = optimize,
+    }) });
+    b.step("test-reticular-formation", "Run Reticular Formation tests (src/brain/reticular_formation.zig)").dependOn(&b.addRunArtifact(rf_tests).step);
+    const lc_tests = b.addTest(.{ .root_module = b.createModule(.{
+        .root_source_file = b.path("src/brain/locus_coeruleus.zig"),
+        .target = target,
+        .optimize = optimize,
+    }) });
+    b.step("test-locus-coeruleus", "Run Locus Coeruleus tests (src/brain/locus_coeruleus.zig)").dependOn(&b.addRunArtifact(lc_tests).step);
 
     // test-brain: the aggregator src/brain/brain.zig (AgentCoordination over
     // the regions above) plus src/brain/integration_test.zig (cross-region
     // scenarios). brain.zig also names intraparietal_sulcus, perf_dashboard
     // and benchmarks; none of its tests reference them, and Zig analyses an
     // @import only when it is referenced, so they are not wired here.
-    const brain_agg_mod = brainModule(b, target, optimize, "src/brain/brain.zig", &.{
+    const brain_agg_imports: []const std.Build.Module.Import = &.{
         .{ .name = "basal_ganglia", .module = bg_mod },
         .{ .name = "reticular_formation", .module = rf_mod },
         .{ .name = "locus_coeruleus", .module = lc_mod },
@@ -3032,10 +3045,10 @@ pub fn build(b: *std.Build) void {
         .{ .name = "learning", .module = learning_b_mod },
         .{ .name = "federation", .module = federation_b_mod },
         .{ .name = "async_processor", .module = async_b_mod },
-    });
+    };
     // integration_test.zig reaches metrics_dashboard.zig by file path, so that
     // file is compiled as part of this module and needs its imports here too.
-    const brain_integration_mod = brainModule(b, target, optimize, "src/brain/integration_test.zig", &.{
+    const brain_integration_imports: []const std.Build.Module.Import = &.{
         .{ .name = "basal_ganglia", .module = bg_mod },
         .{ .name = "reticular_formation", .module = rf_mod },
         .{ .name = "locus_coeruleus", .module = lc_mod },
@@ -3049,17 +3062,31 @@ pub fn build(b: *std.Build) void {
         .{ .name = "federation", .module = federation_b_mod },
         .{ .name = "async_processor", .module = async_b_mod },
         .{ .name = "microglia", .module = microglia_b_mod },
-    });
+    };
+    const brain_agg_tests = b.addTest(.{ .root_module = b.createModule(.{
+        .root_source_file = b.path("src/brain/brain.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = brain_agg_imports,
+    }) });
+    const brain_integration_tests = b.addTest(.{ .root_module = b.createModule(.{
+        .root_source_file = b.path("src/brain/integration_test.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = brain_integration_imports,
+    }) });
     const brain_tests_step = b.step("test-brain", "Run brain aggregator + cross-region integration tests (src/brain/brain.zig, src/brain/integration_test.zig)");
-    brain_tests_step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = brain_agg_mod })).step);
-    brain_tests_step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = brain_integration_mod })).step);
+    brain_tests_step.dependOn(&b.addRunArtifact(brain_agg_tests).step);
+    brain_tests_step.dependOn(&b.addRunArtifact(brain_integration_tests).step);
 
     // test-brain-stress: src/brain/stress_test.zig, 10,000-claim and
     // 20,000-event load tests over basal_ganglia, reticular_formation,
     // locus_coeruleus, telemetry and alerts. It imports them by file path, so
     // it is a single module with no imports of its own.
-    const brain_stress_tests = b.addTest(.{
-        .root_module = brainModule(b, target, optimize, "src/brain/stress_test.zig", &.{}),
-    });
+    const brain_stress_tests = b.addTest(.{ .root_module = b.createModule(.{
+        .root_source_file = b.path("src/brain/stress_test.zig"),
+        .target = target,
+        .optimize = optimize,
+    }) });
     b.step("test-brain-stress", "Run brain stress tests (src/brain/stress_test.zig)").dependOn(&b.addRunArtifact(brain_stress_tests).step);
 }
