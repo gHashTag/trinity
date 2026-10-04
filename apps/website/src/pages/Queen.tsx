@@ -3775,7 +3775,9 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
         context={{
           view: boardView,
           repo,
-          spec: boardView === "specs" ? "specs/demos/hello_world.t27" : null,
+          // On BROWSER, the address's own spec= (raw: askQueenInBrowser names
+          // it to the agent only if it is a catalog entry, queenBrowserPage.ts).
+          spec: boardView === "specs" ? "specs/demos/hello_world.t27" : boardView === "browser" ? hashParams.get("spec") : null,
           label: railLabelNow,
           screen: boardView === "tri" ? triScreenNow : null,
           sees: screenNow,
