@@ -12,7 +12,10 @@ on:
 
 env:
   BRAIN_HEALTH_THRESHOLD: "80"  # Minimum health score for merge
-  STRESS_TEST_THRESHOLD: "270"  # Minimum stress test score (270/300 = 90%)
+  # STRESS_TEST_THRESHOLD ("270", i.e. 270/300) is gone. Nothing ever printed a
+  # score out of 300: test-brain-stress is a zig test binary, and the parser
+  # read the first integer on a "Score:" line that never appeared, or "0".
+  # The stress gate is now "every test in the binary passed, none leaked".
 
 # The repository's default GITHUB_TOKEN is read-only, so every github-script
 # step here that comments on the PR (health, stress, critical state) failed
@@ -177,11 +180,10 @@ jobs:
               });
             }
 
-      - name: Record Health Snapshot
-        if: always()
-        run: |
-          ./zig-out/bin/tri stress --record || echo "Health record skipped"
-          echo "X Health snapshot recorded to Hippocampus" >> $GITHUB_STEP_SUMMARY
+      # "Record Health Snapshot" is gone. It ran `tri stress --record`, which
+      # prints "stress-test: TODO - not implemented yet" and exits 0, and then
+      # wrote "Health snapshot recorded to Hippocampus" into the job summary
+      # unconditionally. Nothing was recorded; the summary line was false.
 
   # =========================================================================
   # Phase 1: Build Check (compile validation)
@@ -214,6 +216,18 @@ jobs:
   # =========================================================================
   # Phase 2: Unit Tests — Individual Brain Regions
   # =========================================================================
+  # Each entry is `zig build test-<region>`; build.zig declares the steps in
+  # its "Brain CI test steps" section. #517 (42490a222) removed every one of
+  # them while this matrix kept calling them, so every leg failed with "no
+  # step named ..." and nothing below Unit Tests ever ran.
+  #
+  # Not restored, on purpose:
+  # - intraparietal: src/brain/intraparietal_sulcus.zig does not compile. It
+  #   is a stub (GF16 and TF3 are `f32`, PHI is 3.0) whose TF3 type exists
+  #   nowhere else, wrapped around the hslm model that left this repository.
+  #   A green leg would be a leg for code that cannot be built.
+  # - hslm: the HSLM model moved to gHashTag/trinity-training; its tests run
+  #   there. build.zig never had a test-hslm step.
   brain-unit:
     name: 🧠 Unit Tests
     runs-on: ubuntu-latest
@@ -226,8 +240,6 @@ jobs:
           - basal-ganglia
           - reticular-formation
           - locus-coeruleus
-          - intraparietal
-          - hslm
     steps:
       - name: Setup Zig
         uses: mlugg/setup-zig@v2
@@ -241,7 +253,10 @@ jobs:
 
       - name: Test ${{ matrix.region }}
         run: |
-          zig build test-${{ matrix.region }} -Dci=true
+          # The exit code is the gate: zig build fails on any failed or leaking
+          # test. --summary all prints "N/M tests passed" so the log shows how
+          # many tests ran, not just that the step ended.
+          zig build test-${{ matrix.region }} -Dci=true --summary all
 
   # =========================================================================
   # Phase 3: Integration Test — Brain Aggregator
@@ -264,7 +279,12 @@ jobs:
 
       - name: Test Brain Integration
         run: |
-          zig build test-brain -Dci=true
+          # test-brain runs two binaries: src/brain/brain.zig (the aggregator
+          # that re-exports every region) and src/brain/integration_test.zig
+          # (cross-region scenarios; it imports metrics_dashboard.zig by path,
+          # so the dashboard's own tests run in that binary too). The exit code
+          # is the gate.
+          zig build test-brain -Dci=true --summary all
 
   # =========================================================================
   # Phase 4: Stress Test — "Functional MRI" Gate
@@ -288,50 +308,72 @@ jobs:
       - name: Run Stress Test
         id: stress
         run: |
-          # Run stress test and capture output
-          zig build test-brain-stress -Dci=true 2>&1 | tee /tmp/stress-output.txt
+          # What is measured: `zig build test-brain-stress` compiles
+          # src/brain/stress_test.zig (10k-claim, 20k-event, concurrent and
+          # edge-case tests) together with the region files it imports by path,
+          # whose own tests run in the same binary. The result is the test
+          # count zig prints: "Build Summary: ...; <passed>/<total> tests
+          # passed[; <f> failed][; <l> leaked]".
+          #
+          # What used to be here: the output went through `| tee` without
+          # pipefail, so a failed build still exited 0; "Score:" was grepped
+          # out of output that never contains it and `|| echo "0"` turned the
+          # missing line into the number 0; and the 270/300 threshold compared
+          # that 0 against a scale nothing produces. As in the health step
+          # above: an absent measurement is NOT MEASURED, never 0.
+          set +e
+          zig build test-brain-stress -Dci=true --summary all 2>&1 | tee /tmp/stress-output.txt
+          BUILD_EXIT=${PIPESTATUS[0]}
+          set -e
+          echo "BUILD_EXIT=$BUILD_EXIT" >> $GITHUB_OUTPUT
 
-          # Extract score from output
-          STRESS_SCORE=$(grep "Score:" /tmp/stress-output.txt | tail -1 | grep -oE "[0-9]+" || echo "0")
-          echo "STRESS_SCORE=$STRESS_SCORE" >> $GITHUB_OUTPUT
+          SUMMARY=$(grep -m1 "^Build Summary:" /tmp/stress-output.txt || true)
+          TESTS_PASSED=$(printf '%s\n' "$SUMMARY" | sed -nE 's#.* ([0-9]+)/([0-9]+) tests passed.*#\1#p')
+          TESTS_TOTAL=$(printf '%s\n' "$SUMMARY" | sed -nE 's#.* ([0-9]+)/([0-9]+) tests passed.*#\2#p')
+          TESTS_LEAKED=$(printf '%s\n' "$SUMMARY" | sed -nE 's#.*; ([0-9]+) leaked.*#\1#p')
 
-          # Check if passed
-          if grep -q "PASS" /tmp/stress-output.txt; then
-            echo "PASSED=true" >> $GITHUB_OUTPUT
-          else
-            echo "PASSED=false" >> $GITHUB_OUTPUT
-          fi
-
-          # Fail if below threshold
-          if [ "$STRESS_SCORE" -lt "$STRESS_TEST_THRESHOLD" ]; then
-            echo "::error::Stress test score $STRESS_SCORE below threshold $STRESS_TEST_THRESHOLD"
+          if [ -z "$TESTS_PASSED" ] || [ -z "$TESTS_TOTAL" ] || [ "$TESTS_TOTAL" -eq 0 ]; then
+            echo "RESULT=not-measured" >> $GITHUB_OUTPUT
+            echo "::error::brain stress was NOT MEASURED -- the build summary carries no '<passed>/<total> tests passed' count (zig build exit $BUILD_EXIT), so no test result exists. This is not a score of 0. Summary line: ${SUMMARY:-<none>}"
+            tail -40 /tmp/stress-output.txt
             exit 1
           fi
+
+          echo "TESTS_PASSED=$TESTS_PASSED" >> $GITHUB_OUTPUT
+          echo "TESTS_TOTAL=$TESTS_TOTAL" >> $GITHUB_OUTPUT
+          echo "TESTS_LEAKED=${TESTS_LEAKED:-0}" >> $GITHUB_OUTPUT
+
+          # The exit code is checked as well as the count: when the test binary
+          # crashes (a segfault, a panic) zig can still print "N/N tests
+          # passed", and only the non-zero exit says the run did not finish.
+          if [ "$BUILD_EXIT" -ne 0 ] || [ "$TESTS_PASSED" -ne "$TESTS_TOTAL" ] || [ "${TESTS_LEAKED:-0}" -ne 0 ]; then
+            echo "RESULT=fail" >> $GITHUB_OUTPUT
+            echo "::error::brain stress FAILED: $TESTS_PASSED/$TESTS_TOTAL tests passed, ${TESTS_LEAKED:-0} leaked, zig build exit $BUILD_EXIT (a non-zero exit with every test passed means the test binary crashed -- see the log above)"
+            exit 1
+          fi
+          echo "RESULT=pass" >> $GITHUB_OUTPUT
+          echo "brain stress: $TESTS_PASSED/$TESTS_TOTAL tests passed, 0 leaked"
 
       - name: Comment Stress Test on PR
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
-            const score = '${{ steps.stress.outputs.STRESS_SCORE }}';
-            const passed = '${{ steps.stress.outputs.PASSED }}' === 'true';
-            const threshold = '${{ env.STRESS_TEST_THRESHOLD }}';
+            // Every number below comes from the step outputs, i.e. from
+            // zig's own build summary. The old body hard-coded a per-region
+            // table of "100/100" that no step ever measured.
+            const passedCount = '${{ steps.stress.outputs.TESTS_PASSED }}';
+            const total = '${{ steps.stress.outputs.TESTS_TOTAL }}';
+            const leaked = '${{ steps.stress.outputs.TESTS_LEAKED }}';
+            const passed = '${{ steps.stress.outputs.RESULT }}' === 'pass';
 
-            const emoji = passed ? 'white_check_mark' : 'x';
             const status = passed ? 'PASS' : 'FAIL';
             const color = passed ? 'green' : 'red';
 
             const body = `## 🧪 Brain Stress Test Results\n\n` +
-              `**Score:** ${score}/300\n` +
+              `**Tests:** ${passedCount}/${total} passed, ${leaked} leaked\n` +
               `**Status:** :${color}_circle: ${status}\n` +
-              `**Threshold:** ${threshold}/300\n\n` +
-              `### Test Phases\n` +
-              `| Phase | Score |\n` +
-              `|-------|-------|\n` +
-              `| Basal Ganglia | 100/100 |\n` +
-              `| Locus Coeruleus | 100/100 |\n` +
-              `| Reticular Formation | 100/100 |\n\n` +
-              `${passed ? 'X' : 'x'} Stress test ${passed ? 'passed' : 'failed'}`;
+              `**Gate:** every test in \`zig build test-brain-stress\` passes and none leaks\n`;
 
             // Find or create comment
             const { data: comments } = await github.rest.issues.listComments({
@@ -361,25 +403,26 @@ jobs:
               });
             }
 
-      - name: Record Stress Test Result
+      # `tri stress --record` is no longer called here: it is an unimplemented
+      # subcommand that exits 0, and this job never built tri, so it could not
+      # have run anyway. .trinity/brain_health_history.jsonl is no longer
+      # uploaded as a result: nothing in CI writes it; the checked-in copy is a
+      # one-line snapshot from 2026-03-20.
+      - name: Stress Test Summary
         if: always()
         run: |
-          # Record to Hippocampus
-          ./zig-out/bin/tri stress --record || echo "Record skipped"
-
-          # Upload stress test output
           echo "## 🧪 Stress Test Output" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          cat /tmp/stress-output.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          tail -60 /tmp/stress-output.txt >> $GITHUB_STEP_SUMMARY 2>/dev/null || echo "no stress output was produced" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
 
-      - name: Upload Brain Scan Results
+      - name: Upload Stress Test Output
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: brain-stress-results
-          path: |
-            /tmp/stress-output.txt
-            .trinity/brain_health_history.jsonl
+          path: /tmp/stress-output.txt
           retention-days: 30
 
   # =========================================================================
@@ -413,62 +456,27 @@ jobs:
 
       - name: CLI Commands Test
         run: |
-          echo "Testing tri task commands..."
-          ./zig-out/bin/tri task stats || true
-          ./zig-out/bin/tri task list || true
-
-          echo "Testing tri event commands..."
-          ./zig-out/bin/tri event stats || true
-
-          echo "Running tri stress --health..."
+          # Only commands that measure something are run here, and none is
+          # wrapped in `|| true`.
+          #
+          # `tri stress --health` runs the 17 brain probes and exits 1 if ANY
+          # probe fails -- stricter than the health job, which gates on the
+          # score threshold.
+          #
+          # Dropped, because each one prints "<name>: TODO - not implemented
+          # yet" and exits 0, so calling it tested only that the binary starts:
+          #   tri task stats, tri task list   (task-claim)
+          #   tri event stats                 (event-stream)
+          #   tri stress --scan               (stress-test; only --health exists)
+          # Add them back when they do something.
           ./zig-out/bin/tri stress --health
 
-          echo "Testing tri stress --scan..."
-          ./zig-out/bin/tri stress --scan
-
-  # =========================================================================
-  # Phase 6: Brain Metrics Export (Prometheus format)
-  # =========================================================================
-  brain-metrics:
-    name: 📊 Export Brain Metrics
-    runs-on: ubuntu-latest
-    needs: cli-smoke
-    if: always()
-    timeout-minutes: 5
-    steps:
-      - name: Setup Zig
-        uses: mlugg/setup-zig@v2
-        with:
-          version: 0.15.2
-
-      - name: Checkout Trinity
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Build TRI Binary
-        run: |
-          # `zig build tri` is a RUN step -- build.zig declares it as
-          # "Run TRI - Unified Trinity CLI" -- so this launched the REPL with
-          # stdin closed and segfaulted, while the step called itself a build.
-          # `zig build` installs the binary without running it, which is what
-          # a step named "Build TRI Binary" should do.
-          zig build -Dci=true
-          ls -la zig-out/bin/tri
-
-      - name: Export Metrics
-        run: |
-          echo "# Brain Metrics Export" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          ./zig-out/bin/tri stress --metrics >> $GITHUB_STEP_SUMMARY
-
-      - name: Upload Metrics Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: brain-metrics
-          path: |
-            .trinity/brain_health_history.jsonl
-          retention-days: 90
+  # Phase 6 "Export Brain Metrics" is gone. Its only measuring step was
+  # `tri stress --metrics`, which prints "stress-test: TODO - not implemented
+  # yet" and exits 0, and its artifact was the checked-in
+  # .trinity/brain_health_history.jsonl, which nothing in CI writes. It ran
+  # with `if: always()`, so it reported success even when every job above it
+  # had failed. Re-add it when `tri stress --metrics` exports something.
 
   # =========================================================================
   # Final Gate: Brain Health Report
@@ -484,14 +492,19 @@ jobs:
         run: |
           echo "# 🧠 S³AI Brain Health Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Phase | Status | Details |" >> $GITHUB_STEP_SUMMARY
+          # Each row shows the job's real result (success / failure /
+          # cancelled / skipped). The old table printed "FAIL" for anything
+          # but success, so a job that never ran because an earlier one failed
+          # read as a second failure. Jobs here have no `if:` of their own, so
+          # "skipped" means an upstream job failed.
+          echo "| Phase | Result | Details |" >> $GITHUB_STEP_SUMMARY
           echo "|-------|--------|---------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Health Check | ${{ needs.brain-health-check.result == 'success' && 'X PASS' || 'x FAIL' }} | Score check |" >> $GITHUB_STEP_SUMMARY
-          echo "| Build | ${{ needs.build-check.result == 'success' && 'X PASS' || 'x FAIL' }} | Compile check |" >> $GITHUB_STEP_SUMMARY
-          echo "| Unit Tests | ${{ needs.brain-unit.result == 'success' && 'X PASS' || 'x FAIL' }} | Brain regions |" >> $GITHUB_STEP_SUMMARY
-          echo "| Integration | ${{ needs.brain-integration.result == 'success' && 'X PASS' || 'x FAIL' }} | Cross-module |" >> $GITHUB_STEP_SUMMARY
-          echo "| Stress Test | ${{ needs.brain-stress.result == 'success' && 'X PASS' || 'x FAIL' }} | Functional MRI |" >> $GITHUB_STEP_SUMMARY
-          echo "| CLI Smoke | ${{ needs.cli-smoke.result == 'success' && 'X PASS' || 'x FAIL' }} | Commands work |" >> $GITHUB_STEP_SUMMARY
+          echo "| Health Check | ${{ needs.brain-health-check.result }} | tri stress --health score vs threshold |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build | ${{ needs.build-check.result }} | zig build -Dci=true |" >> $GITHUB_STEP_SUMMARY
+          echo "| Unit Tests | ${{ needs.brain-unit.result }} | test-basal-ganglia, test-reticular-formation, test-locus-coeruleus |" >> $GITHUB_STEP_SUMMARY
+          echo "| Integration | ${{ needs.brain-integration.result }} | test-brain |" >> $GITHUB_STEP_SUMMARY
+          echo "| Stress Test | ${{ needs.brain-stress.result }} | test-brain-stress, all tests pass, none leak |" >> $GITHUB_STEP_SUMMARY
+          echo "| CLI Smoke | ${{ needs.cli-smoke.result }} | tri stress --health, every probe passes |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
           echo "## Verdict" >> $GITHUB_STEP_SUMMARY
@@ -525,9 +538,9 @@ jobs:
             const body = `## 🚨 CRITICAL: Brain Health Below Threshold\n\n` +
               `The brain health CI gate has failed. This PR **cannot be merged** until:\n\n` +
               `1. All brain region unit tests pass\n` +
-              `2. Integration tests pass\n` +
-              `3. Stress test score >= 270/300\n` +
-              `4. Brain health score >= 80/100\n\n` +
+              `2. Integration tests pass (\`zig build test-brain\`)\n` +
+              `3. Every stress test passes with no leaks (\`zig build test-brain-stress\`)\n` +
+              `4. Brain health score >= 80/100, and every probe passes in CLI Smoke\n\n` +
               `Please review the failed job logs and fix the issues.`;
 
             await github.rest.issues.createComment({
@@ -556,25 +569,18 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Build TRI Binary
-        run: |
-          # `zig build tri` is a RUN step -- build.zig declares it as
-          # "Run TRI - Unified Trinity CLI" -- so this launched the REPL with
-          # stdin closed and segfaulted, while the step called itself a build.
-          # `zig build` installs the binary without running it, which is what
-          # a step named "Build TRI Binary" should do.
-          zig build -Dci=true
-          ls -la zig-out/bin/tri
-
+      # tri was built here only for `tri stress --record` and `--history`,
+      # both unimplemented subcommands that exit 0. They and the build are
+      # gone; the stress test below is the measurement.
       - name: Run Full Stress Test
         run: |
-          zig build test-brain-stress -Dci=true 2>&1 | tee /tmp/weekly-stress.txt
-
-      - name: Record Weekly Snapshot
-        run: |
-          ./zig-out/bin/tri stress --record
+          # pipefail: without it `| tee` hid a failed stress run and the
+          # weekly job went green on a red test binary.
+          set -o pipefail
+          zig build test-brain-stress -Dci=true --summary all 2>&1 | tee /tmp/weekly-stress.txt
 
       - name: Generate Trend Report
+        if: always()
         run: |
           echo "# 📈 Weekly Brain Health Trend Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -582,21 +588,18 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## Stress Test Results" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          cat /tmp/weekly-stress.txt >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "## Health History" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          ./zig-out/bin/tri stress --history 2>&1 || echo "No history available" >> $GITHUB_STEP_SUMMARY
+          tail -60 /tmp/weekly-stress.txt >> $GITHUB_STEP_SUMMARY 2>/dev/null || echo "no stress output was produced" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
 
+      # `with:` is not a shell, so `$(date +%Y%m%d)` was never expanded: every
+      # week uploaded an artifact literally named
+      # "weekly-brain-report-$(date +%Y%m%d)". The run id is unique per run.
       - name: Upload Weekly Report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: weekly-brain-report-$(date +%Y%m%d)
-          path: |
-            /tmp/weekly-stress.txt
-            .trinity/brain_health_history.jsonl
+          name: weekly-brain-report-${{ github.run_id }}
+          path: /tmp/weekly-stress.txt
           retention-days: 365
 
   # =========================================================================
@@ -606,7 +609,11 @@ jobs:
     name: 🔒 Merge Gate
     runs-on: ubuntu-latest
     needs: [brain-health-report]
-    if: github.event_name == 'pull_request'
+    # always(): without it a failed report makes this job "skipped", and a
+    # skipped check is grey, not red -- on #1328 (run 37176676345) the report
+    # failed and the gate showed skipped. Now it runs and the check below
+    # fails it for any report result other than success.
+    if: always() && github.event_name == 'pull_request'
     timeout-minutes: 2
     steps:
       - name: Check Merge Eligibility
