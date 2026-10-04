@@ -298,6 +298,12 @@ jobs:
       # addressed at somebody else's agent.
       - name: Agent onboarding spec
         run: npm run check:onboarding && npm run test:onboarding-spec
+      # The X player card (public/play/) is generated from specs/x/player.t27 through the
+      # compiler: X's limits on the card, the tabs the page must carry, and the site bundle
+      # built from src/lib/highlight.ts. The tests also hold the RTL tab's reading of the
+      # emitted Verilog to what t27c wrote for hello_world.
+      - name: X player spec
+        run: npm run check:play && npm run test:play-spec
       # The world scan's contract (specs/catalog/discovery.t27 through the compiler),
       # its pure decisions, and the manifest merge that must never touch a founding
       # source. The scan itself runs against GitHub in t27-world-scan.yml.
