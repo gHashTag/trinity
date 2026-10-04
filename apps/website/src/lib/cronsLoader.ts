@@ -2,7 +2,7 @@
 // scripts/sync-crons.mjs, which reads the three repositories on disk and the
 // hand-kept Railway service list. The page reads only this committed file.
 
-export type CronKind = 'railway-cron' | 'inngest' | 'timer' | 'github-actions'
+export type CronKind = 'railway-cron' | 'inngest' | 'timer' | 'github-actions' | 'launchd'
 export type Health = 'ok' | 'warn' | 'fail'
 
 export interface CronSchedule {

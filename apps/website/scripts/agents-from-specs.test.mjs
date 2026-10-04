@@ -140,6 +140,17 @@ test('a timer carries INTERVAL_MS, a schedule carries SCHEDULE, never both', () 
   assert.ok(r.problems.some((p) => p.includes('x1.t27: only a timer has INTERVAL_MS')), r.problems.join('\n'))
 })
 
+test('a launchd job (the owner\'s Mac) carries exactly one of INTERVAL_MS and SCHEDULE, and is not warned for being absent from the code manifest', () => {
+  const ok = build([], files('specs/crons',
+    cronSrc('launchd/mac/a', { module: 'cron_x0', host: 'launchd' }),
+    cronSrc('launchd/mac/b', { module: 'cron_x1', host: 'launchd' }).replace(/pub const SCHEDULE[^\n]*\n/, 'pub const INTERVAL_MS : u32 = 600000;\n'),
+  ))
+  assert.deepEqual(ok.problems, [])
+  assert.ok(ok.crons.crons.every((c) => c.health === 'ok'), JSON.stringify(ok.crons.crons.map((c) => c.messages)))
+  const both = build([], files('specs/crons', cronSrc('launchd/mac/a', { module: 'cron_x0', host: 'launchd', extra: 'pub const INTERVAL_MS : u32 = 1;' })))
+  assert.ok(both.problems.some((p) => p.includes('exactly one of SCHEDULE and INTERVAL_MS')), both.problems.join('\n'))
+})
+
 test('a spec that disagrees with the schedule the code catalog read is shown, as warn', () => {
   const r = build([], files('specs/crons', cronSrc('github-actions/trinity/x', { module: 'cron_x0', schedule: '"5 5 * * *"' })))
   assert.deepEqual(r.problems, [])
