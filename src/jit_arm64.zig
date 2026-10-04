@@ -202,8 +202,12 @@ pub const Arm64JitCompiler = struct {
 
     /// LDRSB (register) - ldrsb Wt, [Xn, Xm]
     fn ldrsbReg(self: *Self, rt: u5, rn: u5, rm: u5) !void {
-        // LDRSB (reg, 32-bit): 00 111 0 00 11 1 Rm 011 0 10 Rn Rt
-        const instr: u32 = 0x38E06800 |
+        // LDRSB (reg, 64-bit): 00 111 0 00 10 1 Rm 011 0 10 Rn Rt -- sign-extends into all
+        // of Xt. The 32-bit form (opc 11, 0x38E06800) zeroes bits 63:32, so a -1 trit read
+        // as 0x00000000FFFFFFFF by the 64-bit MUL, ADD, CMP and SCVTF of the scalar tails:
+        // the fused cosine and the bundle came out wrong for every vector with a negative
+        // trit past the last full 16. SMULL reads only the low 32 bits, which are the same.
+        const instr: u32 = 0x38A06800 |
             (@as(u32, rm) << 16) |
             (@as(u32, rn) << 5) |
             @as(u32, rt);
@@ -587,7 +591,9 @@ pub const Arm64JitCompiler = struct {
 
     /// CMGT Vd.16B, Vn.16B, #0 - Compare greater than zero
     fn cmgt_16b_zero(self: *Self, vd: u5, vn: u5) !void {
-        const instr: u32 = 0x4E20A800 |
+        // 0 Q 0 01110 size 10000 01000 10 Rn Rd. 0x4E20A800 (opcode 01010) is CMLT #0, which
+        // made the SIMD bundle return 0 for every positive sum.
+        const instr: u32 = 0x4E208800 |
             (@as(u32, vn) << 5) |
             @as(u32, vd);
         try self.emit32(instr);
@@ -2172,4 +2178,97 @@ test "ARM64 bundle SIMD non-aligned" {
 
     _ = func(@ptrCast(&a), @ptrCast(&b));
     // Bundle SIMD correctness to be verified via integration tests
+}
+
+// Every kernel against a scalar reference, on random trits and on dimensions with and without a
+// tail past the last full 16. The tests above use hand-picked inputs -- all ones, or one fixed
+// eight-trit vector -- and the bundle test checks no result at all; with them all passing, the
+// SIMD bundle returned 0 for every positive sum (CMLT encoded where CMGT was meant), and the
+// fused cosine was wrong for any vector with a negative trit in its tail (LDRSB into W, then
+// 64-bit arithmetic), which is how the VM's v_cosine came to say -1.0 for two identical vectors.
+test "ARM64 kernels agree with a scalar reference, with tails and negative trits" {
+    if (!is_arm64) return error.SkipZigTest;
+    const dims = [_]usize{ 1, 7, 15, 16, 17, 33, 1024, 1031, 32767, 59049 };
+    const n = 59049;
+    const alloc = std.testing.allocator;
+    const a = try alloc.alloc(i8, n);
+    defer alloc.free(a);
+    const b = try alloc.alloc(i8, n);
+    defer alloc.free(b);
+    const out = try alloc.alloc(i8, n);
+    defer alloc.free(out);
+    var wrong: usize = 0;
+    for (dims) |dim| {
+        var prng = std.Random.DefaultPrng.init(dim);
+        for (a[0..dim], b[0..dim]) |*x, *y| {
+            x.* = @as(i8, @intCast(prng.random().intRangeAtMost(u8, 0, 2))) - 1;
+            y.* = @as(i8, @intCast(prng.random().intRangeAtMost(u8, 0, 2))) - 1;
+        }
+        var dot: i64 = 0;
+        var aa: i64 = 0;
+        var bb: i64 = 0;
+        var ham: i64 = 0;
+        for (a[0..dim], b[0..dim]) |x, y| {
+            dot += @as(i64, x) * y;
+            aa += @as(i64, x) * x;
+            bb += @as(i64, y) * y;
+            if (x != y) ham += 1;
+        }
+        const cos: f64 = @as(f64, @floatFromInt(dot)) / @sqrt(@as(f64, @floatFromInt(aa)) * @as(f64, @floatFromInt(bb)));
+        const Reduce = enum { dot, dot_hybrid, hamming, cosine };
+        for ([_]Reduce{ .dot, .dot_hybrid, .hamming, .cosine }) |k| {
+            var c = Arm64JitCompiler.init(alloc);
+            defer c.deinit();
+            switch (k) {
+                .dot => try c.compileDotProduct(dim),
+                .dot_hybrid => try c.compileDotProductHybrid(dim),
+                .hamming => try c.compileHammingSIMD(dim),
+                .cosine => try c.compileFusedCosine(dim),
+            }
+            const r = (try c.finalize())(@ptrCast(a.ptr), @ptrCast(b.ptr));
+            const ok = switch (k) {
+                .dot, .dot_hybrid => r == dot,
+                .hamming => r == ham,
+                // 0/0 for a zero vector is the caller's to map (vsa_jit maps it to 0).
+                .cosine => if (aa == 0 or bb == 0) std.math.isNan(@as(f64, @bitCast(r))) else @abs(@as(f64, @bitCast(r)) - cos) < 1e-12,
+            };
+            if (!ok) {
+                std.debug.print("{s} dim={d}: got {d}, want dot={d} hamming={d} cosine={d}\n", .{ @tagName(k), dim, r, dot, ham, cos });
+                wrong += 1;
+            }
+        }
+        if (dim % 16 == 0) {
+            var c = Arm64JitCompiler.init(alloc);
+            defer c.deinit();
+            try c.compileDotProductSIMD(dim);
+            const r = (try c.finalize())(@ptrCast(a.ptr), @ptrCast(b.ptr));
+            if (r != dot) {
+                std.debug.print("dot_simd dim={d}: got {d}, want {d}\n", .{ dim, r, dot });
+                wrong += 1;
+            }
+        }
+        const Map = enum { bind_direct, bind_simd, bundle_simd };
+        for ([_]Map{ .bind_direct, .bind_simd, .bundle_simd }) |k| {
+            @memcpy(out[0..dim], a[0..dim]);
+            var c = Arm64JitCompiler.init(alloc);
+            defer c.deinit();
+            switch (k) {
+                .bind_direct => try c.compileBindDirect(dim),
+                .bind_simd => try c.compileBindSIMD(dim),
+                .bundle_simd => try c.compileBundleSIMD(dim),
+            }
+            _ = (try c.finalize())(@ptrCast(out.ptr), @ptrCast(b.ptr));
+            var bad: usize = 0;
+            for (a[0..dim], b[0..dim], out[0..dim]) |x, y, z| {
+                const s: i16 = @as(i16, x) + y;
+                const want: i8 = if (k == .bundle_simd) (if (s > 0) 1 else if (s < 0) -1 else 0) else x * y;
+                if (z != want) bad += 1;
+            }
+            if (bad > 0) {
+                std.debug.print("{s} dim={d}: {d} of {d} trits wrong\n", .{ @tagName(k), dim, bad, dim });
+                wrong += 1;
+            }
+        }
+    }
+    try std.testing.expectEqual(@as(usize, 0), wrong);
 }

@@ -525,7 +525,7 @@ Formatted output to stdout
 1. CFF 1.2.0 Specification: https://citation-file-format.github.io/
 2. ORCID API: https://info.orcid.org/documentation/integration-guide/
 3. OpenAlex API: https://docs.openalex.org/
-4. COAR Notification System: https://www.coar-repositories.org/notifications/
+4. COAR Notification System: https://coar-notify.net/
 
 ### Statistical Methods
 5. Efron, B. (1979). "Bootstrap methods: Another look at the jackknife"

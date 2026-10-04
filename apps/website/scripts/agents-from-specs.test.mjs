@@ -11,10 +11,11 @@
 
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
-  I18N_SPEC_DIR, SITE, analyzeSpecFiles, checkI18n, buildSpecCatalogs, constsOf, decodeBytes, loadCompiler, runNowTarget, sortKeys, verdictOf,
+  I18N_SPEC_DIR, SITE, analyzeSpecFiles, castCommandRuns, castCommands, castProblems, readCasts, checkI18n, buildSpecCatalogs, constsOf, decodeBytes, loadCompiler, runNowTarget, sortKeys, verdictOf,
 } from './agents-from-specs.mjs'
 
 const analyze = await loadCompiler(readFileSync(join(SITE, 'public/t27/t27_compiler.wasm')))
@@ -409,7 +410,7 @@ test('an agent spec typechecks, resolves its skills, derives its crons from RUNS
   assert.equal(a.links.alphabet, `https://github.com/gHashTag/t27/blob/${'c'.repeat(40)}/docs/agents/AGENTS_ALPHABET.md`)
   assert.equal(a.links.experienceLog, `https://github.com/gHashTag/t27/tree/${'c'.repeat(40)}/.trinity/experience`)
   assert.equal(r.agents.pin.ref, 'c'.repeat(40))
-  assert.deepEqual(r.agents.ladder, { specs: null, skills: 1, crons: 1, agents: 1, tools: 0, functions: 0 })
+  assert.deepEqual(r.agents.ladder, { specs: null, skills: 1, crons: 1, agents: 1, tools: 0, functions: 0, providers: 0 })
   assert.equal(r.agents.counts.episodesUnattributed, 2)
   assert.equal(r.agents.counts.withCrons, 1)
 })
@@ -579,7 +580,7 @@ test('schema 2: a trinity/tri card is qualified only, joins the collision table 
   assert.equal(r.tools.counts.trinityTri, 2)
   assert.equal(r.tools.counts.schema2, 3)
   assert.equal(r.tools.counts.collisions, 1)
-  assert.deepEqual(r.tools.groups.triByRepo, { 'gHashTag/t27': ['tri/test'], 'gHashTag/trinity': ['gHashTag/trinity:tri/phi', 'gHashTag/trinity:tri/test'] })
+  assert.deepEqual(r.tools.groups.triByRepo, { 'gHashTag/t27': ['tri/test'], 'gHashTag/trinity': ['gHashTag/trinity:tri/phi', 'gHashTag/trinity:tri/test'], 'gHashTag/BrowserOS': [] })
   assert.equal(r.tools.counts.byWitness['registry-export'], 2)
 })
 
@@ -618,7 +619,7 @@ test('a tri tool spec typechecks into a card with its actions, its owner letters
   assert.equal(t.links.source, `https://github.com/gHashTag/t27/blob/${'c'.repeat(40)}/cli/tri/src/main.rs`)
   assert.equal(t.links.pinnedAt, 'c'.repeat(40))
   assert.ok(t.searchText.includes('checkpoint') && t.searchText.includes('w'))
-  assert.deepEqual(r.tools.ladder, { specs: null, skills: 1, crons: 1, agents: 1, tools: 1, functions: 0 })
+  assert.deepEqual(r.tools.ladder, { specs: null, skills: 1, crons: 1, agents: 1, tools: 1, functions: 0, providers: 0 })
   assert.equal(r.tools.counts.tri, 1)
   assert.equal(r.tools.counts.triActions, 2)
   assert.equal(r.tools.counts.withAgents, 1)
@@ -689,27 +690,31 @@ test('tool translations come through the same i18n contract once SCOPE names spe
   assert.equal(r.tools.i18n[0].coverage.n, 1)
 })
 
-test('the committed tool catalog: 92 specs in three directories at schema 2 (52 t27 tri, 29 Trinity tri, 11 mcp), a 63-entry legacy table, two collisions, every agent link resolved both ways, RU summaries for all', async () => {
+test('the committed tool catalog: 607 specs in five directories at schema 2 (52 t27 tri, 29 Trinity registry-export tri, 220 generated Trinity tri, 295 trios tri, 11 mcp), a 63-entry legacy table, twelve collisions, every agent link resolved both ways, RU summaries for all but the generated trios and trinity/cli cards', async () => {
   const { generate } = await import('./agents-from-specs.mjs')
   const r = await generate({ generatedAt: '2026-01-01T00:00:00.000Z' })
   assert.deepEqual(r.problems, [])
-  assert.equal(r.tools.tools.length, 92)
-  assert.equal(r.tools.counts.tri, 81)
-  assert.equal(r.tools.counts.trinityTri, 29)
+  assert.equal(r.tools.tools.length, 607)
+  assert.equal(r.tools.counts.tri, 596)
+  assert.equal(r.tools.counts.trinityTri, 249)
+  assert.equal(r.tools.tools.filter((t) => t.specPath.startsWith('specs/tools/trinity/cli/')).length, 220)
+  assert.equal(r.tools.counts.triosTri, 295)
   assert.equal(r.tools.counts.mcp, 11)
-  assert.equal(r.tools.counts.schema2, 92)
+  assert.equal(r.tools.counts.schema2, 607)
   assert.equal(r.tools.schema, 2)
   assert.equal(Object.keys(r.tools.legacy).length, 63)
   // The eleventh mcp card is the Queen's scheduler; its witness is the only help-output one.
   assert.equal(r.tools.counts.byWitness['help-output'], 1)
   assert.equal(byIdOf(r).get('mcp/inngest-dev')?.agents.map((a) => a.letter).join(), 'T')
-  assert.deepEqual(r.tools.collisions.map((c) => c.name), ['fpga', 'test'])
+  assert.deepEqual(r.tools.collisions.map((c) => c.name), ['cell', 'doctor', 'experience', 'fmt', 'fpga', 'gen', 'loop', 'pr', 'serve', 'status', 'test', 'verdict'])
   assert.equal(r.tools.counts.byWitness['registry-export'], 29)
   for (const t of r.tools.tools) assert.equal(t.qualifiedId, `${t.repo}:${t.id.includes(':') ? t.id.split(':')[1] : t.id}`, `${t.id}: qualified id`)
   const byId = new Map(r.tools.tools.map((t) => [t.id, t]))
   for (const t of r.tools.tools) {
     assert.ok(t.agents.every((a) => a.ok), `${t.id}: unresolved agent`)
-    assert.ok(t.summary.ru && /[\u0400-\u04ff]/.test(t.summary.ru), `${t.id}: no Russian summary`)
+    // The trios and trinity/cli cards are regenerated from their source on every bump; their RU summaries are not written yet.
+    const isGenerated = t.repo === 'gHashTag/BrowserOS' || t.specPath.startsWith('specs/tools/trinity/cli/')
+    if (!isGenerated) assert.ok(t.summary.ru && /[\u0400-\u04ff]/.test(t.summary.ru), `${t.id}: no Russian summary`)
     assert.ok(!/\/(home|Users)\//.test(t.launch ?? ''), `${t.id}: LAUNCH carries a home path`)
   }
   for (const a of r.agents.agents) for (const t of a.tools) assert.ok(byId.get(t.id)?.agents.some((x) => x.letter === a.letter), `${a.id} -> ${t.id} is one-way`)
@@ -812,6 +817,22 @@ test('a function the manifest does not list is spec-only (warn); a manifest id w
   assert.deepEqual(r.functions.codeOnly, ['ghost-function'])
   assert.equal(r.functions.counts.codeOnly, 1)
   assert.equal(r.functions.counts.deployUnknown, 1)
+})
+
+test('a withdrawn function: CONTROL code-only/unregistered is in the vocabulary, and agrees with a manifest control of the same value (ok, no distance)', () => {
+  // t27 specs/functions/README.md, 2026-09-17: five functions left registerFunctions.ts;
+  // the spec and the bot manifest both say code-only/unregistered, so the card is ok.
+  const src = fnSrc('neuro-image-generate').replace('"spec+code"', '"code-only/unregistered"')
+  const r = withFunctions(fnFiles(['neuro-image-generate', src]), [{ ...fnManifestEntry('neuro-image-generate'), control: 'code-only/unregistered' }])
+  assert.deepEqual(r.problems, [])
+  const f = r.functions.functions[0]
+  assert.equal(f.fields.CONTROL, 'code-only/unregistered')
+  assert.equal(f.code.control, 'code-only/unregistered')
+  assert.deepEqual(f.differences, [])
+  assert.equal(f.health, 'ok')
+  // and a value outside the vocabulary is still a build problem
+  const bad = withFunctions(fnFiles(['neuro-image-generate', fnSrc('neuro-image-generate').replace('"spec+code"', '"withdrawn"')]), [fnManifestEntry('neuro-image-generate')])
+  assert.ok(bad.problems.some((p) => p.includes('CONTROL "withdrawn"')))
 })
 
 test('no manifest at all: every function is spec-only and nothing is invented', () => {
@@ -934,4 +955,188 @@ test('the committed function catalog: 33 specs, every one witnessed by the manif
   const pay = fns.find((f) => f.id === 'payment-ai-server-process')
   assert.deepEqual(pay.differences, [{ field: 'ON_FAILURE', spec: 'admin-telegram', code: 'log' }])
   assert.equal(pay.health, 'warn')
+})
+
+// ---------------------------------------------------------------------------
+// Recorded runs: CAST on a tri-cli card, read from public/term/<id>/ (castProblems).
+// ---------------------------------------------------------------------------
+const castFixture = (recordings) => {
+  const root = mkdtempSync(join(tmpdir(), 'cast-'))
+  for (const { id, commands, exits = commands.map(() => '0'), metaExits = exits, header = { version: 2, width: 80, height: 24, title: id, commands }, meta = {}, extraLines = [] } of recordings) {
+    const dir = join(root, 'public/term', id)
+    mkdirSync(dir, { recursive: true })
+    // A typed "x" is an output event whose text is "x"; only the "x" event type is an exit code.
+    const lines = [JSON.stringify(header), JSON.stringify([0.1, 'o', 'x']), ...exits.map((x, i) => JSON.stringify([i + 1, 'x', x])), ...extraLines]
+    writeFileSync(join(dir, 'session.cast'), lines.join('\n') + '\n')
+    if (meta !== null) writeFileSync(join(dir, 'meta.json'), JSON.stringify({ id, title: `title ${id}`, url: `https://t27.ai/term/${id}/`, recorded: '2026-10-02 20:34 UTC', commands, exit_codes: metaExits, ...meta }))
+  }
+  return readCasts(root)
+}
+const withCast = (cast) => `pub const CAST : str = ${q(cast)};`
+
+test('readCasts parses the cast as JSON lines: a typed "x" is output, an "x" event is an exit code', () => {
+  const casts = castFixture([{ id: 'cell-run', commands: ['tri cell seal'], exits: ['0'] }])
+  const c = casts.get('cell-run')
+  assert.equal(c.header.version, 2)
+  assert.deepEqual(c.exits, ['0'])
+  assert.equal(c.badEvents, 0)
+  assert.deepEqual(castCommands(c), ['tri cell seal'])
+  assert.ok(castCommandRuns('tri cell seal', 'tri cell') && castCommandRuns('tri cell', 'tri cell'))
+  assert.ok(!castCommandRuns('tri cellar', 'tri cell'), 'a longer command name is another command')
+})
+
+test('a tri card with a CAST its recording backs: the catalog carries src, share page, title and the commands that ran it', () => {
+  const casts = castFixture([{ id: 'cell-run', commands: ['tri gen x', 'tri cell seal --all'] }])
+  const r = withTools(toolFiles(['tri', 'cell', triToolSrc('cell', { extra: withCast('term/cell-run/session.cast') })]), [], { casts })
+  assert.deepEqual(r.problems, [])
+  const t = r.tools.tools[0]
+  assert.deepEqual(t.cast, { id: 'cell-run', src: 'term/cell-run/session.cast', share: 'https://t27.ai/term/cell-run/', title: 'title cell-run', recorded: '2026-10-02 20:34 UTC', commands: ['tri cell seal --all'] })
+  assert.equal(t.witness, 'source-parse', 'a CAST does not upgrade the witness')
+  assert.equal(r.tools.counts.withCast, 1)
+  // No CAST: the entry says so with null, and the count stays honest.
+  const bare = withTools(toolFiles(['tri', 'cell', triToolSrc('cell')]), [], { casts })
+  assert.equal(bare.tools.tools[0].cast, null)
+  assert.equal(bare.tools.counts.withCast, 0)
+})
+
+test('CAST problems: wrong shape, no recording, no meta.json, not v2, a non-zero exit, meta that disagrees, a recording that never ran the command', () => {
+  const casts = castFixture([
+    { id: 'failed', commands: ['tri cell seal'], exits: ['0', '1'] },
+    { id: 'meta-failed', commands: ['tri cell seal'], metaExits: ['2'] },
+    { id: 'old-format', commands: ['tri cell seal'], header: { version: 1, commands: ['tri cell seal'] } },
+    { id: 'no-meta', commands: ['tri cell seal'], meta: null },
+    { id: 'other-cmd', commands: ['tri gen x'] },
+    { id: 'drifted', commands: ['tri cell seal'], meta: { commands: ['tri cell seal --other'] } },
+    { id: 'junk-line', commands: ['tri cell seal'], extraLines: ['not json'] },
+  ])
+  const p = (cast) => castProblems('c.t27', { cast, witness: 'source-parse', command: 'tri cell' }, casts).join('\n')
+  assert.match(p('term/cell-run/cast.json'), /CAST must be term\/<id>\/session\.cast/)
+  assert.match(p('/term/x/session.cast'), /CAST must be term\/<id>\/session\.cast/)
+  assert.match(p('term/missing/session.cast'), /not under public\/term\//)
+  assert.match(p('term/failed/session.cast'), /records exit code\(s\) 1/)
+  assert.match(p('term/meta-failed/session.cast'), /exit_codes holds 2/)
+  assert.match(p('term/old-format/session.cast'), /asciicast v2 header/)
+  assert.match(p('term/no-meta/session.cast'), /no readable public\/term\/no-meta\/meta\.json/)
+  assert.match(p('term/other-cmd/session.cast'), /records no command that runs "tri cell"/)
+  assert.match(p('term/drifted/session.cast'), /commands differ from the cast header's/)
+  assert.match(p('term/junk-line/session.cast'), /1 line\(s\) that are not \[time, type, data\] events/)
+  // The same rules hold inside the build, on the card.
+  const r = withTools(toolFiles(['tri', 'cell', triToolSrc('cell', { extra: withCast('term/failed/session.cast') })]), [], { casts })
+  assert.match(r.problems.join('\n'), /specs\/tools\/tri\/cell\.t27: CAST term\/failed\/session\.cast records exit code\(s\) 1/)
+})
+
+test('the ratchet: WITNESS "runtime" needs a CAST; an MCP card cannot carry one', () => {
+  const casts = castFixture([{ id: 'cell-run', commands: ['tri cell seal'] }])
+  const bare = withTools(toolFiles(['tri', 'cell', triToolSrc('cell', { witness: 'runtime' })]), [], { casts })
+  assert.match(bare.problems.join('\n'), /tri\/cell\.t27: WITNESS "runtime" needs a CAST/)
+  const backed = withTools(toolFiles(['tri', 'cell', triToolSrc('cell', { witness: 'runtime', extra: withCast('term/cell-run/session.cast') })]), [], { casts })
+  assert.deepEqual(backed.problems, [])
+  assert.equal(backed.tools.counts.byWitness.runtime, 1)
+  const mcp = withTools(toolFiles(['mcp', 'needle', mcpToolSrc('needle', { extra: withCast('term/cell-run/session.cast') })]), [], { casts })
+  assert.match(mcp.problems.join('\n'), /mcp\/needle\.t27: unknown constant CAST/)
+  assert.equal(mcp.tools.tools[0].cast, null)
+})
+
+test('tools-from-trios-tri names the newest recording that ran the command and passes the checks, and none otherwise', async () => {
+  const { castFor } = await import('./tools-from-trios-tri.mjs')
+  const casts = castFixture([
+    { id: 'older', commands: ['tri devkit flow'], meta: { recorded: '2026-10-01 10:00 UTC' } },
+    { id: 'newer', commands: ['tri devkit impact'], meta: { recorded: '2026-10-03 04:31 UTC' } },
+    { id: 'newest-failed', commands: ['tri devkit flow'], exits: ['1'], meta: { recorded: '2026-10-04 00:00 UTC' } },
+  ])
+  assert.equal(castFor('tri devkit', casts).id, 'newer')
+  assert.equal(castFor('tri dev', casts), null, 'tri devkit is not a run of tri dev')
+})
+
+test('the committed recordings: tri x7-board and tri devkit of the trios CLI, tri misread of the t27 CLI end with their casts; no card claims runtime', async () => {
+  const { generate } = await import('./agents-from-specs.mjs')
+  const r = await generate({ generatedAt: '2026-01-01T00:00:00.000Z' })
+  const byId = byIdOf(r)
+  assert.equal(byId.get('gHashTag/BrowserOS:tri/x7-board').cast.src, 'term/x7-board/session.cast')
+  assert.equal(byId.get('gHashTag/BrowserOS:tri/devkit').cast.src, 'term/devkit-flow/session.cast')
+  assert.equal(byId.get('tri/misread').cast.src, 'term/t27-tri-misread/session.cast')
+  // 27 trios cards from 22 recordings (tri-x7-fasm, tri-fpga-rgmii and tri-fpga-status each run two
+  // commands, tri-x7-refs three) + 8 t27 ones under public/term/; check:tools-coverage says which card
+  // each belongs to.
+  assert.equal(r.tools.counts.withCast, 35)
+  assert.equal(r.tools.counts.byWitness.runtime, 0)
+})
+
+// ---- Layer seven: providers. The fixtures are the committed cards, read from the
+//      vendored corpus and bent one constant at a time, so a test cannot drift
+//      from the schema catalog.t27 states.
+const PROVIDER_DIR = 'public/t27/files/specs/providers'
+const providerFile = (rel) => ({ path: `specs/providers/${rel}`, text: readFileSync(join(SITE, PROVIDER_DIR, rel), 'utf8') })
+const providerCatalog = () => analyzeSpecFiles(analyze, [providerFile('catalog.t27')])[0]
+const buildProviderCards = (cards, over = {}) => build([], [], { providerSpecs: analyzeSpecFiles(analyze, cards), providerCatalogSpec: providerCatalog(), providerDirs: ['gonka', 'trinet'], ...over })
+const bend = (card, from, to) => {
+  assert.ok(card.text.includes(from), `${card.path} no longer carries ${from}`)
+  return { ...card, text: card.text.replace(from, to) }
+}
+
+test('a model card read from the chain and a host design: no problems, models first, the design says nothing has run', () => {
+  const r = buildProviderCards([providerFile('trinet/gpu-consumer-24gb.t27'), providerFile('gonka/minimax-m2-7.t27')])
+  assert.deepEqual(r.problems, [])
+  const [model, host] = r.providers.providers
+  assert.equal(model.id, 'gonka/minimax-m2-7', 'a model card sorts before a host class')
+  assert.equal(model.family, 'model')
+  assert.equal(model.status, 'serving')
+  assert.equal(model.witness, 'chain-read')
+  assert.equal(model.health, 'ok')
+  assert.equal(model.moduleName, 'provider_gonka_minimax_m2_7')
+  assert.equal(host.id, 'trinet/gpu-consumer-24gb')
+  assert.equal(host.witness, 'design-only')
+  assert.equal(host.health, 'warn', 'a design never reads ok')
+  assert.deepEqual(host.messages, ['a design: nothing has run'])
+  assert.deepEqual(r.providers.counts.byFamily, { model: 1, 'host-class': 1 })
+  assert.equal(r.agents.ladder.providers, 2, 'the ladder counts the seventh layer')
+  assert.deepEqual(r.providers.ladder, r.agents.ladder)
+})
+
+test('STATUS follows HOSTS for a model and MEASURED for a host; a design cannot claim a bench', () => {
+  const noHosts = bend(providerFile('gonka/minimax-m2-7.t27'), 'pub const HOSTS : u32 = 26;', 'pub const HOSTS : u32 = 0;')
+  let r = buildProviderCards([noHosts])
+  assert.ok(r.problems.some((p) => /HOSTS 0 makes the STATUS listed, the card says serving/.test(p)), r.problems.join('\n'))
+  const notRead = bend(providerFile('gonka/minimax-m2-7.t27'), 'pub const WITNESS : str = "chain-read";', 'pub const WITNESS : str = "design-only";')
+  r = buildProviderCards([notRead])
+  assert.ok(r.problems.some((p) => /WITNESS must be chain-read/.test(p)), r.problems.join('\n'))
+  const claims = bend(providerFile('trinet/gpu-consumer-24gb.t27'), 'pub const STATUS : str = "planned";', 'pub const STATUS : str = "measured";')
+  r = buildProviderCards([bend(claims, 'pub const WITNESS : str = "design-only";', 'pub const WITNESS : str = "bench-measured";')])
+  assert.ok(r.problems.some((p) => /MEASURED is empty, so STATUS must be planned/.test(p)), r.problems.join('\n'))
+  assert.ok(r.problems.some((p) => /MEASURED is empty, so WITNESS must be design-only/.test(p)), r.problems.join('\n'))
+})
+
+test('provider gates: ID is the path, the module follows it, a card in an unnamed directory, a duplicate and a catalog the generator does not encode', () => {
+  const wrongId = bend(providerFile('gonka/minimax-m2-7.t27'), 'pub const ID : str = "gonka/minimax-m2-7";', 'pub const ID : str = "gonka/minimax";')
+  let r = buildProviderCards([wrongId])
+  assert.ok(r.problems.some((p) => /ID must be the path under specs\/providers without \.t27 \(gonka\/minimax-m2-7\)/.test(p)), r.problems.join('\n'))
+  const wrongModule = bend(providerFile('gonka/minimax-m2-7.t27'), 'module provider_gonka_minimax_m2_7;', 'module provider_minimax;')
+  r = buildProviderCards([wrongModule])
+  assert.ok(r.problems.some((p) => /module must be provider_gonka_minimax_m2_7/.test(p)), r.problems.join('\n'))
+  r = buildProviderCards([providerFile('gonka/minimax-m2-7.t27')], { providerDirs: ['aws', 'gonka', 'trinet'] })
+  assert.ok(r.problems.some((p) => /specs\/providers\/aws\/: not a network of/.test(p)), r.problems.join('\n'))
+  r = buildProviderCards([providerFile('gonka/minimax-m2-7.t27'), providerFile('gonka/minimax-m2-7.t27')])
+  assert.ok(r.problems.some((p) => /duplicate provider ID gonka\/minimax-m2-7/.test(p)), r.problems.join('\n'))
+  const catalog = providerFile('catalog.t27')
+  const renamed = bend(catalog, 'pub const STATUSES : [4]str = ["serving", "listed", "measured", "planned"];', 'pub const STATUSES : [4]str = ["serving", "listed", "benched", "planned"];')
+  r = build([], [], { providerSpecs: [], providerCatalogSpec: analyzeSpecFiles(analyze, [renamed])[0], providerDirs: [] })
+  assert.ok(r.problems.some((p) => /STATUSES is .*change both together/.test(p)), r.problems.join('\n'))
+  r = build([], [], { providerSpecs: analyzeSpecFiles(analyze, [providerFile('gonka/minimax-m2-7.t27')]) })
+  assert.ok(r.problems.some((p) => /provider cards without specs\/providers\/catalog\.t27/.test(p)), r.problems.join('\n'))
+})
+
+test('the committed provider catalog: five Gonka models from epoch 413, two host classes, the study derived, no host address anywhere', async () => {
+  const { generate } = await import('./agents-from-specs.mjs')
+  const r = await generate({ generatedAt: '2026-01-01T00:00:00.000Z' })
+  assert.deepEqual(r.problems, [])
+  const p = r.providers
+  assert.deepEqual(p.counts.byFamily, { model: 5, 'host-class': 2 })
+  assert.deepEqual(p.counts.byWitness, { 'chain-read': 5, 'bench-measured': 1, 'design-only': 1 })
+  assert.ok(p.providers.filter((x) => x.family === 'model').every((x) => x.fields.EPOCH === 413), 'every model card read the same epoch')
+  assert.equal(p.providers.find((x) => x.id === 'trinet/fpga-xc7a200t').witness, 'bench-measured')
+  assert.equal(p.study.fields.TRI_MAINNET, false, 'the study does not pretend $TRI has a mainnet')
+  assert.equal(p.study.fields.GONKA_POOL_REGISTERED, false)
+  assert.equal(p.study.derived.allowlistActive, false)
+  assert.match(p.study.derived.subsidyPerFee, /^\d+$/, 'a ratio of wide integers stays an exact decimal string')
+  assert.doesNotMatch(JSON.stringify(p), /inference_url|validator_key|\b(?:\d{1,3}\.){3}\d{1,3}\b/, 'no participant address or key on a public page')
 })

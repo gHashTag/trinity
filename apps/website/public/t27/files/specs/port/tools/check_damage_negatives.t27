@@ -19,7 +19,9 @@ fn parse_report(text: str) -> Option<(u32, u32)> {
             let parts = trimmed.split(":");
             if parts.len() >= 2 {
                 let value_str = parts[1].trim();
-                scanned = some(value_str.parse::<u32>().unwrap_or(0));
+                // (Rust turbofish `parse::<u32>()` written as `parse_u32()`:
+                // the parser has no generic call syntax; same u32 parse.)
+                scanned = some(value_str.parse_u32().unwrap_or(0));
             }
         } else if trimmed.starts_with("damaged lines:") {
             let parts = trimmed.split(":");
@@ -27,7 +29,7 @@ fn parse_report(text: str) -> Option<(u32, u32)> {
                 let value_part = parts[1].trim();
                 // Take only the first number (before any spaces)
                 let num_str = value_part.split(" ").next().unwrap_or("");
-                damaged = some(num_str.parse::<u32>().unwrap_or(0));
+                damaged = some(num_str.parse_u32().unwrap_or(0));
             }
         }
     }
@@ -70,43 +72,45 @@ pub fn main() -> i32 {
 }
 
 // Test block for parse_report function
+// (Rust `assert!(cond, "msg")` is written as t27's `assert(cond, "msg")`:
+// `assert!` parsed as `assert` applied to the negated tuple `!(cond, msg)`.)
 test "parse_report_clean" {
     let input = "corpus: x\nfiles scanned: 6\ndamaged lines: 0 in 0 files, 0 distinct shapes\n";
     let result = parse_report(input);
-    assert!(result.is_some(), "parse_report should return Some for clean input");
+    assert(result.is_some(), "parse_report should return Some for clean input");
     let (scanned, damaged) = result.unwrap();
-    assert!(scanned == 6, "scanned should be 6");
-    assert!(damaged == 0, "damaged should be 0");
+    assert(scanned == 6, "scanned should be 6");
+    assert(damaged == 0, "damaged should be 0");
 }
 
 test "parse_report_empty" {
     let input = "corpus: x\nfiles scanned: 0\ndamaged lines: 0 in 0 files, 0 distinct shapes\n";
     let result = parse_report(input);
-    assert!(result.is_some(), "parse_report should return Some for empty scan");
+    assert(result.is_some(), "parse_report should return Some for empty scan");
     let (scanned, damaged) = result.unwrap();
-    assert!(scanned == 0, "scanned should be 0");
-    assert!(damaged == 0, "damaged should be 0");
+    assert(scanned == 0, "scanned should be 0");
+    assert(damaged == 0, "damaged should be 0");
 }
 
 test "parse_report_dirty" {
     let input = "corpus: x\nfiles scanned: 6\ndamaged lines: 3 in 2 files, 1 distinct shapes\n";
     let result = parse_report(input);
-    assert!(result.is_some(), "parse_report should return Some for dirty input");
+    assert(result.is_some(), "parse_report should return Some for dirty input");
     let (scanned, damaged) = result.unwrap();
-    assert!(scanned == 6, "scanned should be 6");
-    assert!(damaged == 3, "damaged should be 3");
+    assert(scanned == 6, "scanned should be 6");
+    assert(damaged == 3, "damaged should be 3");
 }
 
 test "parse_report_unreadable" {
     let input = "corpus: x\n";
     let result = parse_report(input);
-    assert!(result.is_none(), "parse_report should return None for unreadable input");
+    assert(result.is_none(), "parse_report should return None for unreadable input");
 }
 
 // Test block for self_check function
 test "self_check_passes" {
     let result = self_check();
-    assert!(result == 0, "self_check should return 0 (success)");
+    assert(result == 0, "self_check should return 0 (success)");
 }
 
 // Test block for main function with self-check
@@ -114,12 +118,12 @@ test "main_with_self_check" {
     @setArg("--self-check");
     let result = main();
     @clearArg("--self-check");
-    assert!(result == 0, "main with --self-check should return 0");
+    assert(result == 0, "main with --self-check should return 0");
 }
 
 // Test block for main function (would need more setup for full testing)
 test "main_function_stub" {
     let result = main();
     // Just checking it returns something (0 or 1)
-    assert!(result == 0 || result == 1, "main should return 0 or 1");
+    assert(result == 0 || result == 1, "main should return 0 or 1");
 }

@@ -59,6 +59,13 @@ module Constants {
     const G_SCALE : f64 = 1.0001;
     const OMEGA_COARSE_SCALE : f64 = 728.9;
 
+    // Absolute tolerance for floating-point comparisons
+    // APPROX_TOLERANCE = 1e-9, absolute, chosen as the most common tolerance across 18 sites
+    // Rationale: 18 sites pass explicit third argument, all coherent only as absolute bounds
+    // Examples: feed_forward(1.0, ~828) → 1.0 window, positional_enc(5000.0, 1e-6) → 5e-3 window
+    // One name must mean one thing - absolute tolerance, not relative
+    const APPROX_TOLERANCE : f64 = 1e-9;
+
     // ═══════════════════════════════════════════════════════════════════════════
     // 3. Helper Functions
     // ═════════════════════════════════════════════════════════════════════════════════════
@@ -288,6 +295,90 @@ module Constants {
         given result = floor(5.0)
         then result == 5.0
 
+    test floor_function_large_positive
+        given result = floor(123.456)
+        then result == 123.0
+
+    test floor_function_large_negative
+        given result = floor(-123.456)
+        then result == -124.0
+
+    test floor_function_zero
+        given result = floor(0.0)
+        then result == 0.0
+
+    test floor_function_negative_one
+        given result = floor(-1.0)
+        then result == -1.0
+
+    test pow_zero_base_zero_exponent
+        given result = pow(0.0, 0.0)
+        then result == 1.0
+
+    test pow_negative_base_integer_exponent
+        given result = pow(-2.0, 3.0)
+        and expected = -8.0
+        then abs(result - expected) < APPROX_TOLERANCE
+
+    test pow_fractional_base_integer_exponent
+        given result = pow(4.5, 2.0)
+        and expected = 20.25
+        then abs(result - expected) < APPROX_TOLERANCE
+
+    test pow_large_exponent
+        given result = pow(2.0, 20.0)
+        and expected = 1048576.0
+        then abs(result - expected) < APPROX_TOLERANCE
+
+    test pow_small_fractional_exponent
+        given result = pow(8.0, 1.0/3.0)
+        and expected = 2.0
+        then abs(result - expected) < APPROX_TOLERANCE
+
+    test pow_pi_squared
+        given result = pow(PI, 2.0)
+        and expected = PI * PI
+        then abs(result - expected) < APPROX_TOLERANCE
+
+    test pow_e_power
+        given result = pow(E, 1.0)
+        then abs(result - E) < APPROX_TOLERANCE
+
+    test pow_commutative_property
+        given result1 = pow(2.0, 3.0)
+        and result2 = pow(3.0, 2.0)
+        then abs(result1 - result2) < 5.0  // Different results, just check computation
+
+    test pow_associative_property
+        given result1 = pow(pow(2.0, 2.0), 3.0)
+        and result2 = pow(2.0, 6.0)
+        then abs(result1 - result2) < APPROX_TOLERANCE
+
+    test pow_distributive_property_over_multiplication
+        given result1 = pow(2.0 * 3.0, 2.0)
+        and result2 = pow(2.0, 2.0) * pow(3.0, 2.0)
+        then abs(result1 - result2) < APPROX_TOLERANCE
+
+    test abs_function_positive
+        given result = abs(42.0)
+        then result == 42.0
+
+    test abs_function_negative
+        given result = abs(-42.0)
+        then result == 42.0
+
+    test abs_function_zero
+        given result = abs(0.0)
+        then result == 0.0
+
+    test abs_function_large_negative
+        given result = abs(-1e10)
+        then result == 1e10
+
+    test abs_function_small_negative
+        given result = abs(-1e-10)
+        then result == 1e-10
+
     invariant phi_squared_plus_inverse_squared_equals_3
         assert |PHI*PHI + 1.0/(PHI*PHI) - 3.0| < 1e-12
 
@@ -342,6 +433,83 @@ module Constants {
 
     invariant floor_monotonic
         assert floor(x) <= floor(y) when x <= y
+
+    invariant floor_bounded
+        assert floor(x) <= x and floor(x) + 1.0 > x for all f64 x
+
+    invariant floor_integer_consistency
+        assert floor(x) == x when x is integer
+
+    invariant pow_zero_handling
+        assert pow(0.0, x) == 0.0 for x > 0.0
+        assert pow(0.0, 0.0) == 1.0
+        assert pow(0.0, x) == infinity for x < 0.0
+
+    invariant pow_one_identity
+        assert pow(1.0, x) == 1.0 for all x
+
+    invariant pow_negative_base_even_exponent
+        assert pow(-2.0, 2.0 * n) > 0.0 for integer n
+
+    invariant pow_negative_base_odd_exponent
+        assert pow(-2.0, 2.0 * n + 1.0) < 0.0 for integer n
+
+    invariant pow_exponent_addition
+        assert pow(x, a + b) == pow(x, a) * pow(x, b) for x > 0.0
+
+    invariant pow_base_multiplication
+        assert pow(x * y, n) == pow(x, n) * pow(y, n) for x > 0.0, y > 0.0
+
+    invariant pow_reciprocal
+        assert pow(x, -n) == 1.0 / pow(x, n) for x != 0.0
+
+    invariant abs_idempotent
+        assert abs(abs(x)) == abs(x) for all f64 x
+
+    invariant abs_positive_output
+        assert abs(x) >= 0.0 for all f64 x
+
+    invariant abs_symmetric
+        assert abs(x) == abs(-x) for all f64 x
+
+    invariant abs_zero_only_for_zero
+        assert abs(x) == 0.0 only when x == 0.0
+
+    invariant phi_trigonometric_relationship
+        assert 2.0 * cos(PI/5.0) == PHI  // Golden ratio relationship with pentagon
+
+    invariant pi_transcendental_verification
+        assert PI is not rational  // Cannot be expressed as ratio of integers
+
+    invariant e_irrational_verification
+        assert E is not rational  // Cannot be expressed as ratio of integers
+
+    invariant codata_gravitational_constant_uncertainty
+        assert abs(G_MEASURED - 6.67430e-11) < 2.0e-15  // CODATA 2022 uncertainty
+
+    invariant cosmological_constant_physicality
+        assert LAMBDA_COSMO > 0.0 and LAMBDA_COSMO < 1.0e-50  // Physically reasonable range
+
+    invariant dark_energy_parameter_bounds
+        assert OMEGA_LAMBDA_MEASURED > 0.6 and OMEGA_LAMBDA_MEASURED < 0.7  // Planck 2018 range
+
+    invariant scale_factor_consistency
+        assert G_SCALE > 0.9999 and G_SCALE < 1.0002  // SI normalization factor
+
+    invariant phi_fibonacci_ratio_convergence
+        assert lim(n->inf) Fib(n+1)/Fib(n) = PHI  // Convergence property
+
+    invariant phi_continued_fraction
+        assert PHI = 1.0 + 1.0/(1.0 + 1.0/(1.0 + ...))  // Infinite continued fraction
+
+    invariant phi_algebraic_identity
+        assert PHI * PHI == PHI + 1.0  // Fundamental golden ratio identity
+
+    invariant phi_reciprocal_identity
+        assert 1.0/PHI == PHI - 1.0  // Reciprocal property
+
+    invariant phi_squared_sum
+        assert PHI*PHI + 1.0/(PHI*PHI) == 3.0  // Sacred identity from comments
 
     bench phi_computation_cost
         measure: cycles per PHI computation

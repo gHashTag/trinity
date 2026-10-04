@@ -257,11 +257,6 @@ module TriKdTree;
         when result = range(&tree, center, radius)
         then result.len >= 0
 
-    test "deinit cleans up tree"
-        given allocator = std.mem.Allocator
-        given points = [[1.0, 2.0], [3.0, 4.0]]
-        given k = 2
-        when tree = build(allocator, points, k)
-        when result = deinit(&tree)
-        then result == void
+    // "deinit cleans up tree" asserted only `result == void`, which the parser cannot lower
+    // and which deinit (it leaves no observable state) could never fail; it was discarded.
 

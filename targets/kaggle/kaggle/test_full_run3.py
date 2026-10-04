@@ -1,7 +1,7 @@
 import os
-os.environ['KAGGLE_API_TOKEN'] = 'KGAT_c178a7497385fc3a63aed579e53e5ef9'
+# KAGGLE_API_TOKEN is read from the environment (Railway/Infisical); never hardcode it.
 os.environ['MODEL_PROXY_URL'] = 'https://api.openai.com/v1'
-os.environ['MODEL_PROXY_API_KEY'] = 'ce8a4b21d9134c2988b3667d032bf88f.1votRIKGtIM99Duq'
+# MODEL_PROXY_API_KEY is read from the environment (Railway/Infisical); never hardcode it.
 os.environ['LLM_DEFAULT'] = 'gpt-4o'
 
 import kaggle_benchmarks as kb

@@ -16,7 +16,7 @@ const DOCS_URL = '#/docs'
 // The locale files have no keys for the commercial pages yet, so the labels
 // live next to the links. Missing locales fall back to English.
 const PAGES_LABEL: Record<string, string> = {
-  ru: 'Страницы', de: 'Seiten', es: 'Páginas', zh: '页面',
+  ru: 'Страницы',
 }
 
 type PageLink = { href: string; en: string; ru: string; note: string; noteRu: string; external?: boolean; color?: string }

@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import ChatInput from './chat/ChatInput'
 import ChatMessage from './chat/ChatMessage'
 import { NotSignedIn, type ChatResponse } from '../services/chatApi'
+import { directiveHelp, readDirectives } from '../lib/queenDirectives'
+import { emptyNote, headState, startersFor } from '../lib/queenBrowserHelp'
 import { askQueen, askQueenInBrowser, queenCaller, queenHealth, queenModelName } from '../services/queenModel'
 import { signInHref } from '../lib/triIdentity'
 import { HUD_VIEWS, type HudEvent, type HudEventKind } from './queenHud'
@@ -15,9 +17,29 @@ export interface QueenChatContext {
   view: string
   spec?: string | null
   repo?: string | null
+  /** The rail's own name for where the person is (AGENT, KANBAN...). */
+  label?: string | null
+  /** On TRI: which of the app's screens. */
+  screen?: string | null
+  /** What the screen shows, as text, read at the moment of the question. */
+  sees?: () => string
 }
 
-type Turn = { kind: 'turn'; at: number; role: 'user' | 'assistant'; content: string } & Partial<ChatResponse>
+/**
+ * A draft for the person's agent (queenDirectives): shown, editable, and sent
+ * only by the person's own press.
+ */
+type AgentDraft = { text: string; state: 'draft' | 'sending' | 'sent' | 'failed'; error?: string }
+
+type Turn = {
+  kind: 'turn'
+  at: number
+  role: 'user' | 'assistant'
+  content: string
+  /** The tab she opened with this answer, by its rail name. */
+  opened?: string
+  draft?: AgentDraft
+} & Partial<ChatResponse>
 
 // The feed runs to 120 rows. The LOGS tab holds all of them, because that is
 // what it is for; the number is kept here so the A2A tab can say which window
@@ -30,6 +52,10 @@ const copy = {
     context: 'In context', offline: 'OFFLINE', online: 'LIVE', checking: 'CHECKING',
     offlineNote: 'No Queen is answering. Start one with `tri serve --chat`, or point VITE_QUEEN_CHAT_URL at a deployed one. Nothing here is answered from a sample.',
     empty: 'Ask her about the board. She sees the view you are on; the traffic it makes is in LOGS, and who it travelled between is in A2A.',
+    browserEmpty: 'Here she works in your own browser: she reads the page, clicks and types for you, and stops at a sign-in field so you type the password into the picture yourself. Every step she takes is in the journal under the picture.',
+    agentState: 'YOUR AGENT',
+    agentStateTitle: 'On this tab your own agent answers, with the browser tools.',
+    starters: 'Start with',
     failed: 'The Queen did not answer.',
     about: 'Ask about this',
     subject: 'Asking about',
@@ -38,6 +64,14 @@ const copy = {
     thinking: 'The Queen is answering',
     signedOut: 'The Queen answers people she knows. Sign in with Telegram and ask her here.',
     signIn: 'Sign in',
+    opened: 'opened',
+    draftTitle: 'To your agent, from you',
+    draftSend: 'Send to agent',
+    draftSending: 'Sending...',
+    draftSent: 'Sent. The reply is below, and in the AGENT tab.',
+    draftFailed: 'Not sent:',
+    agentSource: 'your agent',
+    agentSilent: 'The agent answered with nothing.',
     signInTitle: 'Sign in with Telegram and come back to this view',
     tabQueen: 'QUEEN', tabLogs: 'LOGS', tabA2A: 'A2A',
     tabQueenTitle: 'The conversation', tabLogsTitle: 'Everything the board did, filtered', tabA2ATitle: 'Who the traffic travelled between',
@@ -58,6 +92,10 @@ const copy = {
     context: 'В контексте', offline: 'OFFLINE', online: 'LIVE', checking: 'ПРОВЕРКА',
     offlineNote: 'Королева не отвечает. Поднимите её через `tri serve --chat` или укажите VITE_QUEEN_CHAT_URL на развёрнутую. Ни один ответ здесь не берётся из образца.',
     empty: 'Спрашивайте её о доске. Она видит вид, на котором вы стоите; его трафик — во вкладке ЛОГИ, а между кем он шёл — в A2A.',
+    browserEmpty: 'Здесь она работает в вашем собственном браузере: читает страницу, нажимает и печатает за вас, а на поле входа останавливается — пароль вы вводите в картинку сами. Каждый её шаг виден в журнале под картинкой.',
+    agentState: 'ВАШ АГЕНТ',
+    agentStateTitle: 'На этой вкладке отвечает ваш собственный агент, с инструментами браузера.',
+    starters: 'Начните с',
     failed: 'Королева не ответила.',
     about: 'Спросить об этом',
     subject: 'Разговор о',
@@ -66,6 +104,14 @@ const copy = {
     thinking: 'Королева отвечает',
     signedOut: 'Королева отвечает тем, кого знает. Войдите через Telegram и спрашивайте здесь.',
     signIn: 'Войти',
+    opened: 'открыла',
+    draftTitle: 'Вашему агенту, от вас',
+    draftSend: 'Отправить агенту',
+    draftSending: 'Отправляю...',
+    draftSent: 'Отправлено. Ответ ниже и во вкладке АГЕНТ.',
+    draftFailed: 'Не отправлено:',
+    agentSource: 'ваш агент',
+    agentSilent: 'Агент ответил пустым сообщением.',
     signInTitle: 'Войти через Telegram и вернуться к этому виду',
     tabQueen: 'КОРОЛЕВА', tabLogs: 'ЛОГИ', tabA2A: 'A2A',
     tabQueenTitle: 'Диалог', tabLogsTitle: 'Всё, что сделала доска, с фильтром', tabA2ATitle: 'Между кем шёл трафик',
@@ -86,7 +132,8 @@ const copy = {
 // The chat contract carries a message and nothing else, so what she is looking
 // at travels as a prefix rather than as a field the backend does not have.
 function contextLine(ctx: QueenChatContext, subject: HudEvent | null): string {
-  const parts = [`view=${ctx.view}`]
+  const parts = [ctx.label ? `tab=${ctx.label}` : '', `view=${ctx.view}`].filter(Boolean)
+  if (ctx.screen) parts.push(`screen=${ctx.screen}`)
   if (ctx.repo) parts.push(`repo=${ctx.repo}`)
   if (ctx.spec) parts.push(`spec=${ctx.spec}`)
   if (subject) parts.push(`event=${subject.kind}${subject.issue ? `#${subject.issue}` : ''}`)
@@ -94,9 +141,13 @@ function contextLine(ctx: QueenChatContext, subject: HudEvent | null): string {
 }
 
 export default function QueenChat({
-  context, lang, events = [], describe, issueHref, workers = null,
+  context, lang, events = [], describe, issueHref, workers = null, onOpen, onSendToAgent,
 }: {
   context: QueenChatContext
+  /** Show a tab ([[open:NAME]]); returns its rail name, or null if it cannot. */
+  onOpen?: (target: string) => string | null
+  /** Send an approved draft to the person's agent as them; resolves to its reply. */
+  onSendToAgent?: (text: string) => Promise<string>
   lang: 'ru' | 'en'
   events?: HudEvent[]
   describe?: (event: HudEvent) => string
@@ -161,9 +212,12 @@ export default function QueenChat({
   // derived tabs run newest-first, because they are read by looking rather than
   // by following, and a filter that answers at the bottom of a scroller has not
   // answered.
+  // Before the first question there is nothing to follow: the log stays at its
+  // top, so the sentence above the BROWSER starters is read first (scrolled to
+  // the bottom, a 375px panel cut it off -- seen in a harness, 2026-10-04).
   useEffect(() => {
     if (tab !== 'queen') return
-    log.current?.scrollTo({ top: log.current.scrollHeight })
+    log.current?.scrollTo({ top: turns.length === 0 ? 0 : log.current.scrollHeight })
   }, [tab, turns.length, busy])
 
   // The clock is started where the question is sent, not here: setting state in
@@ -200,12 +254,31 @@ export default function QueenChat({
     const history = turns
       .filter((turn) => turn.source !== 'offline')
       .map((turn) => ({ role: turn.role, content: turn.content }))
+    // WHAT SHE IS SHOWN WITH THE QUESTION: where the person is, what that
+    // screen says (read now, not when the tab opened), and what she may do
+    // about it (queenDirectives). The owner asked for all three (2026-09-22).
+    let seen = ''
+    try { seen = context.sees ? context.sees() : '' } catch { seen = '' }
+    const onAgentTab = context.view === 'tri' && context.screen === 'chat'
+    const prefix =
+      `[${line}]` +
+      (seen ? ` [on screen: ${seen}]` : '') +
+      (onOpen ? ` [${directiveHelp(onAgentTab && Boolean(onSendToAgent))}]` : '')
     const asked: Promise<ChatResponse> =
       context.view === 'browser'
-        ? askQueenInBrowser(history, question, lang, (soFar) => setProgress({ tools: soFar.tools, text: soFar.text }))
-        : askQueen(`[${line}]${quoted ? ` ${quoted}` : ''} ${question}`)
+        ? askQueenInBrowser(history, question, lang, (soFar) => setProgress({ tools: soFar.tools, text: soFar.text }), context.spec ?? null)
+        : askQueen(`${prefix}${quoted ? ` ${quoted}` : ''} ${question}`)
     asked
-      .then((res) => setTurns((prev) => [...prev, { kind: 'turn', at: Date.now(), role: 'assistant', ...res, content: res.response }]))
+      .then((res) => {
+        const said = readDirectives(res.response)
+        const opened = said.open && onOpen ? onOpen(said.open) ?? undefined : undefined
+        const draft: AgentDraft | undefined =
+          said.agent && onSendToAgent ? { text: said.agent, state: 'draft' } : undefined
+        setTurns((prev) => [
+          ...prev,
+          { kind: 'turn', at: Date.now(), role: 'assistant', ...res, content: said.text || res.response, opened, draft },
+        ])
+      })
       .catch((error: unknown) => {
         // Signed out is not the Queen failing, and must not be reported as one:
         // she is answering other people at this moment. The panel closes the
@@ -219,7 +292,28 @@ export default function QueenChat({
         setTurns((prev) => [...prev, { kind: 'turn', at: Date.now(), role: 'assistant', content: said ? `${t.failed} ${said}` : t.failed, source: 'offline', confidence: 0 }])
       })
       .finally(() => { setBusy(false); setProgress(null) })
-  }, [busy, context, subject, describe, t.failed, turns, lang])
+  }, [busy, context, subject, describe, t.failed, turns, lang, onOpen, onSendToAgent])
+
+  // The person pressed Send on a draft: it goes to their agent as them, and
+  // the agent's reply lands here and in the AGENT tab's own thread.
+  const sendDraft = useCallback((at: number, text: string) => {
+    if (!onSendToAgent || !text.trim()) return
+    const mark = (draft: AgentDraft) =>
+      setTurns((prev) => prev.map((turn) => (turn.at === at && turn.draft ? { ...turn, draft } : turn)))
+    mark({ text, state: 'sending' })
+    onSendToAgent(text.trim())
+      .then((reply) => {
+        mark({ text, state: 'sent' })
+        setTurns((prev) => [
+          ...prev,
+          { kind: 'turn', at: Date.now(), role: 'assistant', content: reply || t.agentSilent, source: t.agentSource, confidence: 0 },
+        ])
+      })
+      .catch((error: unknown) => {
+        if (error instanceof NotSignedIn) { setSignedIn(false); mark({ text, state: 'draft' }); return }
+        mark({ text, state: 'failed', error: error instanceof Error ? error.message : String(error) })
+      })
+  }, [onSendToAgent, t.agentSilent, t.agentSource])
 
   if (!open) {
     return (
@@ -232,6 +326,10 @@ export default function QueenChat({
   const label: Record<ChatTab, string> = { queen: t.tabQueen, logs: t.tabLogs, a2a: t.tabA2A }
   const hint: Record<ChatTab, string> = { queen: t.tabQueenTitle, logs: t.tabLogsTitle, a2a: t.tabA2ATitle }
   const badge: Record<ChatTab, number | null> = { queen: turns.length || null, logs: feed.length || null, a2a: net.links.length || null }
+  // On BROWSER the person's agent answers, not the Queen server whose health
+  // `live` is (lib/queenBrowserHelp.ts says why).
+  const head = headState(context.view, live)
+  const starters = startersFor(context.view, { turns: turns.length, signedIn, busy }, lang === 'ru' ? 'ru' : 'en')
 
   const eventRow = (event: HudEvent) => (
     <article
@@ -255,8 +353,8 @@ export default function QueenChat({
     <section className="queen-chat" aria-label={t.title}>
       <header className="queen-chat-head">
         <span className="queen-chat-title">{t.title}</span>
-        <span className={`queen-chat-state is-${live === null ? 'checking' : live ? 'live' : 'offline'}`}>
-          {live === null ? t.checking : live ? t.online : t.offline}
+        <span className={`queen-chat-state is-${head}`} title={head === 'agent' ? t.agentStateTitle : undefined}>
+          {head === 'agent' ? t.agentState : head === 'checking' ? t.checking : head === 'live' ? t.online : t.offline}
         </span>
         <span className="queen-chat-count">{queenModelName()} · {events.length} {t.events}</span>
         <button type="button" className="queen-chat-hide" onClick={() => setOpen(false)} aria-expanded>
@@ -297,16 +395,34 @@ export default function QueenChat({
       >
         {tab === 'queen' && (
           <div className="queen-chat-log" ref={log}>
-            {turns.length === 0 && <p className="queen-chat-empty">{live === false ? t.offlineNote : t.empty}</p>}
+            {turns.length === 0 && <p className="queen-chat-empty">{t[emptyNote(context.view, live)]}</p>}
+            {starters.length > 0 && (
+              <div className="queen-chat-starters" role="group" aria-label={t.starters}>
+                {starters.map((line) => (
+                  <button key={line} type="button" className="queen-chat-starter" onClick={() => send(line)}>
+                    {line}
+                  </button>
+                ))}
+              </div>
+            )}
             {turns.map((turn, i) => (
-              <ChatMessage
-                key={`t:${i}:${turn.at}`}
-                role={turn.role}
-                content={turn.content}
-                source={turn.source}
-                confidence={turn.confidence}
-                latency_us={turn.latency_us}
-              />
+              <div key={`t:${i}:${turn.at}`} className="queen-chat-turn">
+                <ChatMessage
+                  role={turn.role}
+                  content={turn.content}
+                  source={turn.source}
+                  confidence={turn.confidence}
+                  latency_us={turn.latency_us}
+                />
+                {turn.opened && <p className="queen-chat-opened">→ {t.opened} {turn.opened}</p>}
+                {turn.draft && (
+                  <DraftCard
+                    draft={turn.draft}
+                    t={t}
+                    onSend={(text) => sendDraft(turn.at, text)}
+                  />
+                )}
+              </div>
             ))}
             {busy && progress && (progress.tools.length > 0 || progress.text) && (
               <div className="queen-chat-progress" aria-live="polite">
@@ -431,5 +547,47 @@ export default function QueenChat({
         </p>
       ))}
     </section>
+  )
+}
+
+/**
+ * The draft she wrote for the agent: editable, and sent only by the person.
+ * It goes out as them (queenModel.sendToAgentAsMe), and the agent can act on
+ * it - which is why nothing sends it but this button.
+ */
+function DraftCard({
+  draft,
+  t,
+  onSend,
+}: {
+  draft: AgentDraft
+  t: { draftTitle: string; draftSend: string; draftSending: string; draftSent: string; draftFailed: string }
+  onSend: (text: string) => void
+}) {
+  const [text, setText] = useState(draft.text)
+  const locked = draft.state === 'sending' || draft.state === 'sent'
+  return (
+    <div className={`queen-chat-draft is-${draft.state}`}>
+      <p className="queen-chat-draft-title">{t.draftTitle}</p>
+      <textarea
+        value={text}
+        readOnly={locked}
+        rows={Math.min(8, Math.max(2, text.split('\n').length))}
+        onChange={(e) => setText(e.target.value)}
+        aria-label={t.draftTitle}
+      />
+      {draft.state === 'sent' ? (
+        <p className="queen-chat-draft-note">{t.draftSent}</p>
+      ) : (
+        <div className="queen-chat-draft-actions">
+          {draft.state === 'failed' && (
+            <span className="queen-chat-draft-note">{t.draftFailed} {draft.error}</span>
+          )}
+          <button type="button" disabled={locked || !text.trim()} onClick={() => onSend(text)}>
+            {draft.state === 'sending' ? t.draftSending : t.draftSend}
+          </button>
+        </div>
+      )}
+    </div>
   )
 }

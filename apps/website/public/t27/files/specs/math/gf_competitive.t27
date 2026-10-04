@@ -52,32 +52,32 @@ module GFCompetitive {
 
     test "decode_complexity_returns_3_formats" {
         let complexity = decode_complexity();
-        assert_eq!(complexity.len(), 3);
+        assert(complexity.len() == 3);
     }
 
     test "gf16_can_parallelize" {
         let complexity = decode_complexity();
-        assert!(complexity[2].can_parallelize);
+        assert(complexity[2].can_parallelize);
     }
 
     test "posit_cannot_parallelize" {
         let complexity = decode_complexity();
-        assert!(!complexity[1].can_parallelize);
+        assert(!complexity[1].can_parallelize);
     }
 
     test "ieee754_fp16_can_parallelize" {
         let complexity = decode_complexity();
-        assert!(complexity[0].can_parallelize);
+        assert(complexity[0].can_parallelize);
     }
 
     test "gf16_has_minimal_sequential_steps" {
         let complexity = decode_complexity();
-        assert_eq!(complexity[2].steps_sequential, 3);
+        assert(complexity[2].steps_sequential == 3);
     }
 
     test "posit_has_more_sequential_steps" {
         let complexity = decode_complexity();
-        assert!(complexity[1].steps_sequential > complexity[2].steps_sequential);
+        assert(complexity[1].steps_sequential > complexity[2].steps_sequential);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -86,24 +86,24 @@ module GFCompetitive {
 
     invariant "decode_complexity_always_returns_3_entries" {
         let complexity = decode_complexity();
-        assert_eq!(complexity.len(), 3);
+        assert(complexity.len() == 3);
     }
 
     invariant "gf16_can_parallelize_is_true" {
         let complexity = decode_complexity();
-        assert!(complexity[2].can_parallelize);
+        assert(complexity[2].can_parallelize);
     }
 
     invariant "posit_has_more_sequential_steps_than_gf16" {
         let complexity = decode_complexity();
-        assert!(complexity[1].steps_sequential >= complexity[2].steps_sequential);
+        assert(complexity[1].steps_sequential >= complexity[2].steps_sequential);
     }
 
     invariant "all_formats_have_positive_steps" {
         let complexity = decode_complexity();
         for c in complexity {
-            assert!(c.steps_sequential > 0);
-            assert!(c.steps_parallel > 0);
+            assert(c.steps_sequential > 0);
+            assert(c.steps_parallel > 0);
         }
     }
 

@@ -7,84 +7,94 @@ const std = @import("std");
 // AST Types (simplified for CLI runtime)
 // aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
-const AST = struct {
-    const Program = struct {
-        constants: []Const = &[0]Const{},
-        spec_decl: ?SpecDecl = null,
-        test_section: ?TestSection = null,
-        invariant_section: ?InvariantSection = null,
-    };
+// The AST namespace (`const AST = struct { const Program = struct {...}; ... }`)
+// is flattened: t27 drops declarations nested inside a struct body, so each
+// type is declared at top level with an `Ast` prefix (AST.Program is
+// AstProgram, AST.TestCase is AstTestCase, and so on). An empty-slice field
+// default `&[0]T{}` is written `&.{}` (t27 lowers `[0]T{}` to `.{ 0 }`, and
+// a bare `[]` to `.{}`, which Zig rejects for a slice). Inside a struct
+// literal (`.errors = []` in parseSimple) the empty slice is written `[]`,
+// which lowers there to a typed empty slice.
+// C and Rust have no field defaults, so those backends omit them.
 
-    const Const = struct {
-        name: []const u8,
-        value: f64,
-    };
+const AstProgram = struct {
+    constants: []AstConst = &.{},
+    spec_decl: ?AstSpecDecl = null,
+    test_section: ?AstTestSection = null,
+    invariant_section: ?AstInvariantSection = null,
+};
 
-    const SpecDecl = struct {
-        name: []const u8,
-        test_blocks: []TestBlock = &[0]TestBlock{},
-        invariants: []InvariantBlock = &[0]InvariantBlock{},
-    };
+const AstConst = struct {
+    name: []const u8,
+    value: f64,
+};
 
-    const TestBlock = struct {
-        name: []const u8,
-        clauses: []Clause = &[0]Clause{},
-    };
+const AstSpecDecl = struct {
+    name: []const u8,
+    test_blocks: []AstTestBlock = &.{},
+    invariants: []AstInvariantBlock = &.{},
+};
 
-    const InvariantBlock = struct {
-        name: []const u8,
-        expression: []const u8,
-    };
+const AstTestBlock = struct {
+    name: []const u8,
+    clauses: []AstClause = &.{},
+};
 
-    const TestSection = struct {
-        test_cases: []TestCase = &[0]TestCase{},
-    };
+const AstInvariantBlock = struct {
+    name: []const u8,
+    expression: []const u8,
+};
 
-    const InvariantSection = struct {
-        invariants: []Invariant = &[0]Invariant{},
-    };
+const AstTestSection = struct {
+    test_cases: []AstTestCase = &.{},
+};
 
-    const TestCase = struct {
-        name: []const u8,
-        verify: []const u8 = "",
-        setup: []const u8 = "",
-        expected_value: []const u8 = "",
-    };
+const AstInvariantSection = struct {
+    invariants: []AstInvariant = &.{},
+};
 
-    const Invariant = struct {
-        name: []const u8,
-        statement: []const u8 = "",
-        rationale: []const u8 = "",
-    };
+const AstTestCase = struct {
+    name: []const u8,
+    verify: []const u8 = "",
+    setup: []const u8 = "",
+    expected_value: []const u8 = "",
+};
 
-    const Clause = struct {
-        kind: ClauseKind,
-        content: []const u8,
-    };
+const AstInvariant = struct {
+    name: []const u8,
+    statement: []const u8 = "",
+    rationale: []const u8 = "",
+};
 
-    const ClauseKind = enum {
-        given,
-        when,
-        then,
-        and,
-        assert,
-        expect,
-    };
+const AstClause = struct {
+    kind: AstClauseKind,
+    content: []const u8,
+};
+
+const AstClauseKind = enum {
+    given,
+    when,
+    then,
+    and,
+    assert,
+    expect,
 };
 
 // aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 // Parse Context
 // aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
-const ParseContext = struct {
-    ast_root: AST.Program,
-    errors: []Error = &[0]Error{},
+// ParseContext.Error is declared at top level as ParseContextError (a
+// declaration nested in a struct body is dropped by t27).
+const ParseContextError = struct {
+    line: usize,
+    column: usize,
+    message: []const u8,
+};
 
-    const Error = struct {
-        line: usize,
-        column: usize,
-        message: []const u8,
-    };
+const ParseContext = struct {
+    ast_root: AstProgram,
+    errors: []ParseContextError = &.{},
 };
 
 // aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
@@ -92,7 +102,11 @@ const ParseContext = struct {
 // aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
 pub fn main() !void {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    // `GeneralPurposeAllocator(.{}){}` lost its trailing `{}` initializer in
+    // every backend, leaving the type instead of a value; the type is named
+    // first and then initialized, which lowers intact.
+    const Gpa = std.heap.GeneralPurposeAllocator(.{});
+    var gpa = Gpa{};
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
@@ -108,14 +122,15 @@ pub fn main() !void {
     const command = args[1];
 
     // Route to command handler
+    // (Open-ended slices `args[n..]` are written with their explicit end.)
     if (std.mem.eql(u8, command, "spec")) {
-        try runSpecCommand(allocator, args[2..]);
+        try runSpecCommand(allocator, args[2..args.len]);
     } else if (std.mem.eql(u8, command, "gen")) {
-        try runGenCommand(allocator, args[2..]);
+        try runGenCommand(allocator, args[2..args.len]);
     } else if (std.mem.eql(u8, command, "git")) {
-        try runGitCommand(allocator, args[2..]);
+        try runGitCommand(allocator, args[2..args.len]);
     } else if (std.mem.eql(u8, command, "lint")) {
-        try runLintCommand(allocator, args[2..]);
+        try runLintCommand(allocator, args[2..args.len]);
     } else if (std.mem.eql(u8, command, "help")) {
         try printUsage();
     } else {
@@ -129,7 +144,10 @@ pub fn main() !void {
 // Command Handlers
 // aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
-fn runSpecCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+// Argument lists are typed `[]const string`, i.e. `[]const []const u8`: the
+// t27 type grammar reads one `[]const` prefix before the element name, so the
+// inner `[]const u8` is written with its t27 name `string`.
+fn runSpecCommand(allocator: std.mem.Allocator, args: []const string) !void {
     if (args.len == 0) {
         try printError("spec command requires subcommand: create, validate, list\n");
         return;
@@ -162,19 +180,22 @@ fn runSpecCommand(allocator: std.mem.Allocator, args: []const []const u8) !void 
     }
 }
 
-fn runGenCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+fn runGenCommand(allocator: std.mem.Allocator, args: []const string) !void {
     const options = try parseGenOptions(allocator, args);
 
     if (options.all) {
         try genAll(allocator, options);
-    } else if (options.spec_path) |spec| {
+    } else if (options.spec_path != null) {
+        // `else if (opt) |spec|`: t27 drops if-payload captures, so the
+        // optional is tested against null and unwrapped with `.?` explicitly.
+        const spec = options.spec_path.?;
         try gen(allocator, spec, options);
     } else {
         try printError("tri gen <spec> | --all\n");
     }
 }
 
-fn runGitCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+fn runGitCommand(allocator: std.mem.Allocator, args: []const string) !void {
     if (args.len == 0) {
         try printError("git command requires subcommand: commit, push, status\n");
         return;
@@ -182,10 +203,11 @@ fn runGitCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
 
     const subcommand = args[0];
 
+    // (Open-ended slices `args[1..]` are written with their explicit end.)
     if (std.mem.eql(u8, subcommand, "commit")) {
-        try gitCommit(allocator, args[1..]);
+        try gitCommit(allocator, args[1..args.len]);
     } else if (std.mem.eql(u8, subcommand, "push")) {
-        try gitPush(allocator, args[1..]);
+        try gitPush(allocator, args[1..args.len]);
     } else if (std.mem.eql(u8, subcommand, "status")) {
         try gitStatusWithCell(allocator);
     } else {
@@ -193,7 +215,7 @@ fn runGitCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
     }
 }
 
-fn runLintCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+fn runLintCommand(allocator: std.mem.Allocator, args: []const string) !void {
     const all = args.len > 0 and std.mem.eql(u8, args[0], "--all");
 
     if (all) {
@@ -236,12 +258,7 @@ fn specCreate(allocator: std.mem.Allocator, name: []const u8, path: []const u8) 
 
     std.debug.print("Created spec: {s}\n", .{output_path});
     try std.io.getStdOut().writeAll(
-        \\Next steps:
-        \\  1. Add constants, functions to your spec
-        \\  2. Add test cases using 'test <name>' blocks
-        \\  3. Add invariants using 'invariant <name>' blocks
-        \\  4. Run 'tri gen {s}.t27' to generate code
-        \\  5. Run 'tri test' to execute tests
+        "Next steps:\n  1. Add constants, functions to your spec\n  2. Add test cases using 'test <name>' blocks\n  3. Add invariants using 'invariant <name>' blocks\n  4. Run 'tri gen {s}.t27' to generate code\n  5. Run 'tri test' to execute tests"
     , .{name});
 }
 
@@ -289,25 +306,36 @@ fn specValidate(allocator: std.mem.Allocator, spec_path: []const u8) !void {
 
 fn specList(allocator: std.mem.Allocator) !void {
     const spec_dir = "specs";
-    var dir = std.fs.cwd().openDir(spec_dir) catch |err| {
-        if (err == error.FileNotFound) {
-            try std.io.getStdOut().writeAll("No specs directory found\n");
-            return;
-        }
-        return err;
-    };
+    // `openDir(...) catch |err| { ... }`: t27 has no `catch`. The open result
+    // is kept, its FileNotFound case is tested with `==`, and `try` unwraps it
+    // (any other error propagates, as `return err` did).
+    const dir_open = std.fs.cwd().openDir(spec_dir);
+    if (dir_open == error.FileNotFound) {
+        try std.io.getStdOut().writeAll("No specs directory found\n");
+        return;
+    }
+    var dir = try dir_open;
     defer dir.close();
 
-    var spec_files = std.ArrayList([]const u8).init(allocator);
-    defer {
-        for (spec_files.items) |f| allocator.free(f);
-        spec_files.deinit();
+    // `[]const u8` cannot stand in expression position in t27; `string`
+    // is t27's name for the same byte-slice type.
+    var spec_files = std.ArrayList(string).init(allocator);
+    // `defer { free each item; deinit }` as two defers: they run last-in
+    // first-out, so the items are freed before the list is deinitialised.
+    defer spec_files.deinit();
+    defer for (spec_files.items) |f| {
+        allocator.free(f);
     }
 
     var walker = try dir.walk(allocator);
     defer walker.deinit();
 
-    while (try walker.next()) |entry| {
+    // `while (try walker.next()) |entry|`: t27's while has no payload
+    // capture, so the optional is unwrapped explicitly and null ends the loop.
+    while (true) {
+        const next_entry = try walker.next();
+        if (next_entry == null) break;
+        const entry = next_entry.?;
         if (entry.kind == .file and std.mem.endsWith(u8, entry.path, ".t27")) {
             const path = try std.fmt.allocPrint(allocator, "{s}/{s}", .{ spec_dir, entry.path });
             try spec_files.append(path);
@@ -324,7 +352,8 @@ fn specList(allocator: std.mem.Allocator) !void {
     for (spec_files.items) |spec_path| {
         defer allocator.free(spec_path);
 
-        const rel_path = spec_path["specs/".len..];
+        // Open-ended slice written with its explicit end.
+        const rel_path = spec_path["specs/".len..spec_path.len];
         const content = try std.fs.cwd().readFileAlloc(allocator, spec_path, 1024 * 1024);
         defer allocator.free(content);
 
@@ -352,7 +381,7 @@ const GenOptions = struct {
     spec_path: ?[]const u8 = null,
 };
 
-fn parseGenOptions(allocator: std.mem.Allocator, args: []const []const u8) !GenOptions {
+fn parseGenOptions(allocator: std.mem.Allocator, args: []const string) !GenOptions {
     _ = allocator;
     var options = GenOptions{};
 
@@ -420,27 +449,7 @@ fn gen(allocator: std.mem.Allocator, spec_path: []const u8, options: GenOptions)
     if (!has_tests) {
         try printError("TDD contract violated: no tests in spec\n\n");
         try std.io.getStdErr().writeAll(
-            \\The t27 project follows Test-Driven Development where:
-            \\  1. Every spec MUST have at least one 'test' or 'invariant' block
-            \\  2. Tests are written BEFORE or WITH the implementation
-            \\  3. Conformance JSON is generated FROM tests, not hand-written
-            \\
-            \\To fix this error:
-            \\  1. Add a .test section with test cases to your spec
-            \\  2. Or add a .invariant section with invariant declarations
-            \\  3. Or use the high-level TDD syntax with 'test' and 'invariant' blocks
-            \\
-            \\Example:
-            \\  .test
-            \\      ; my_test
-            \\      ; Verify: functionality works
-            \\      ; Expected: correct result
-            \\
-            \\  .invariant
-            \\      ; my_invariant
-            \\      ; For all valid inputs: output is valid
-            \\
-            \\NOTE: There is NO --allow-no-tests flag (prototype mode is disabled per policy)
+            "The t27 project follows Test-Driven Development where:\n  1. Every spec MUST have at least one 'test' or 'invariant' block\n  2. Tests are written BEFORE or WITH the implementation\n  3. Conformance JSON is generated FROM tests, not hand-written\n\nTo fix this error:\n  1. Add a .test section with test cases to your spec\n  2. Or add a .invariant section with invariant declarations\n  3. Or use the high-level TDD syntax with 'test' and 'invariant' blocks\n\nExample:\n  .test\n      ; my_test\n      ; Verify: functionality works\n      ; Expected: correct result\n\n  .invariant\n      ; my_invariant\n      ; For all valid inputs: output is valid\n\nNOTE: There is NO --allow-no-tests flag (prototype mode is disabled per policy)"
         );
         return error.TDDViolation;
     }
@@ -470,9 +479,10 @@ fn gen(allocator: std.mem.Allocator, spec_path: []const u8, options: GenOptions)
 
 fn genAll(allocator: std.mem.Allocator, options: GenOptions) !void {
     const spec_files = try globSpecs(allocator);
-    defer {
-        for (spec_files.items) |f| allocator.free(f);
-        spec_files.deinit();
+    // `defer { free each item; deinit }` as two last-in-first-out defers.
+    defer spec_files.deinit();
+    defer for (spec_files.items) |f| {
+        allocator.free(f);
     }
 
     if (spec_files.items.len == 0) {
@@ -489,9 +499,14 @@ fn genAll(allocator: std.mem.Allocator, options: GenOptions) !void {
         std.debug.print("Generating: {s}\n", .{spec_path});
         const result = gen(allocator, spec_path, options);
 
-        if (result) |_| {
+        // `if (result) |_| {...} else |_| {...}`: t27 has no `catch` and drops
+        // if-payload captures (the test would lower to a bare `if (result)`),
+        // so success is tested with Zig's `std.meta.isError`, which is true
+        // exactly when the error union holds an error. Both captures were
+        // `_`, so no value is lost.
+        if (!std.meta.isError(result)) {
             success_count += 1;
-        } else |_| {
+        } else {
             fail_count += 1;
             try std.io.getStdErr().writer().print("  Failed: {s}\n", .{spec_path});
         }
@@ -511,7 +526,7 @@ fn genAll(allocator: std.mem.Allocator, options: GenOptions) !void {
 // Git Commands
 // aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
-fn gitCommit(allocator: std.mem.Allocator, args: []const []const u8) !void {
+fn gitCommit(allocator: std.mem.Allocator, args: []const string) !void {
     _ = allocator;
     var message: []const u8 = "";
     var all = false;
@@ -537,14 +552,32 @@ fn gitCommit(allocator: std.mem.Allocator, args: []const []const u8) !void {
 
     // TODO: Implement full git commit with cell validation
     // For now, delegate to git
-    const git_argv = &[_][]const u8{ "git", "commit" } ++ if (all) &[_][]const u8{"--all"} else &[_][]const u8{} ++
-        if (message.len > 0) &[_][]const u8{ "-m", message } else &[_][]const u8{};
-
-    try runGitDirect(git_argv);
+    // Array literals of byte strings are written `[_]string{...}`: an array
+    // literal's element type must be a single name in t27, and `string` is
+    // t27's name for `[]const u8`.
+    // The argv was
+    //   {"git", "commit"} ++ if (all) {"--all"} else {} ++
+    //       if (message.len > 0) {"-m", message} else {}
+    // t27 has no `++` on arrays, so the resulting argv is spelled out per
+    // case. Zig's `if` expression takes everything after `else` as its else
+    // branch, so the original parses as
+    //   {"git", "commit"} ++ (if (all) {"--all"} else ({} ++ if (msg) ...))
+    // and gives `git commit --all` WITHOUT `-m` when --all is set. That
+    // literal behaviour is reproduced here.
+    // TODO: the usage text (`git commit [--all] [-m "msg"]`) suggests --all
+    // and -m were meant to combine; fixing that is a behaviour change and is
+    // left to the owner of this file.
+    if (all) {
+        try runGitDirect(&[_]string{ "git", "commit", "--all" });
+    } else if (message.len > 0) {
+        try runGitDirect(&[_]string{ "git", "commit", "-m", message });
+    } else {
+        try runGitDirect(&[_]string{ "git", "commit" });
+    }
     std.debug.print("Mode: {s}\n", .{mode});
 }
 
-fn gitPush(allocator: std.mem.Allocator, args: []const []const u8) !void {
+fn gitPush(allocator: std.mem.Allocator, args: []const string) !void {
     _ = allocator;
     var remote: []const u8 = "origin";
     var branch: []const u8 = "";
@@ -569,7 +602,8 @@ fn gitPush(allocator: std.mem.Allocator, args: []const []const u8) !void {
 
     // TODO: Implement full git push with cell validation
     const branch_arg = if (branch.len > 0) branch else "HEAD";
-    const git_argv = &[_][]const u8{ "git", "push", remote, branch_arg };
+    // (`[_]string{...}` is `[_][]const u8{...}`; see gitCommit.)
+    const git_argv = &[_]string{ "git", "push", remote, branch_arg };
 
     try runGitDirect(git_argv);
     std.debug.print("Mode: {s}\n", .{mode});
@@ -579,7 +613,8 @@ fn gitStatusWithCell(allocator: std.mem.Allocator) !void {
     _ = allocator;
 
     // Show git status
-    try runGitDirect(&[_][]const u8{ "git", "status", "--porcelain" });
+    // (`[_]string{...}` is `[_][]const u8{...}`; see gitCommit.)
+    try runGitDirect(&[_]string{ "git", "status", "--porcelain" });
 
     // TODO: Show cell info if registry exists
     const registry_path = ".trinity/cells/registry.json";
@@ -640,9 +675,10 @@ fn lintFile(allocator: std.mem.Allocator, file_path: []const u8) !void {
 
 fn lintAll(allocator: std.mem.Allocator) !void {
     const files = try globSourceFiles(allocator);
-    defer {
-        for (files.items) |f| allocator.free(f);
-        files.deinit();
+    // `defer { free each item; deinit }` as two last-in-first-out defers.
+    defer files.deinit();
+    defer for (files.items) |f| {
+        allocator.free(f);
     }
 
     if (files.items.len == 0) {
@@ -655,7 +691,11 @@ fn lintAll(allocator: std.mem.Allocator) !void {
     var errors: usize = 0;
 
     for (files.items) |file| {
-        if (lintFile(allocator, file)) |_| {} else |_| {
+        // `if (lintFile(...)) |_| {} else |_| { errors += 1; }`: t27 has no
+        // `catch` and drops if-payload captures, so the failure is tested
+        // with Zig's `std.meta.isError` (true when the error union holds an
+        // error). Both captures were `_`; the empty success branch is kept.
+        if (!std.meta.isError(lintFile(allocator, file))) {} else {
             errors += 1;
         }
     }
@@ -674,63 +714,33 @@ fn lintAll(allocator: std.mem.Allocator) !void {
 
 fn printUsage() !void {
     try std.io.getStdOut().writeAll(
-        \\tri - Trinity T27 CLI
-        \\
-        \\Usage:
-        \\  tri <command> [arguments]
-        \\
-        \\Commands:
-        \\  spec create <name> [--path <path>]    Create a new spec with TDD template
-        \\  spec validate <spec>                  Validate spec for TDD compliance
-        \\  spec list                             List all specs in project
-        \\
-        \\  gen <spec>                            Generate code from spec
-        \\    [--backend <zig|c|verilog>]       Target backend (default: zig)
-        \\    [--output-dir <dir>]                Output directory
-        \\    [--no-tests]                        Skip test generation
-        \\    [--no-conformance]                  Skip conformance JSON
-        \\  gen --all                             Generate code for all specs
-        \\
-        \\  git commit [--all] [-m "msg"]         Commit with cell validation
-        \\    [--mode strict|normal|local]       Commit mode (default: strict)
-        \\  git push [remote] [branch] [--mode ...] Push with cell validation
-        \\  git status                             Show git status with cell info
-        \\
-        \\  lint [file]                           Check file or all for compliance
-        \\    --all                                Check all source files
-        \\
-        \\  help                                  Show this help message
-        \\
-        \\Environment Variables:
-        \\  TRI_BACKEND                           Default backend for gen (default: zig)
-        \\  TRI_OUTPUT_DIR                         Default output directory
-        \\
-        \\SOUL.md Constitutional Laws:
-        \\  Law #1: Source files MUST NOT contain Cyrillic (docs may)
-        \\  Law #2: Every spec MUST have tests or invariants (no prototype mode)
-        \\
-        \\For more information, see:
-        \\  docs/SOUL.md - Constitutional laws
-        \\  docs/TDD-CONTRACT.md - TDD contract details
-        \\  docs/TRI_SYNTAX_VNEXT.md - Language syntax
+        "tri - Trinity T27 CLI\n\nUsage:\n  tri <command> [arguments]\n\nCommands:\n  spec create <name> [--path <path>]    Create a new spec with TDD template\n  spec validate <spec>                  Validate spec for TDD compliance\n  spec list                             List all specs in project\n\n  gen <spec>                            Generate code from spec\n    [--backend <zig|c|verilog>]       Target backend (default: zig)\n    [--output-dir <dir>]                Output directory\n    [--no-tests]                        Skip test generation\n    [--no-conformance]                  Skip conformance JSON\n  gen --all                             Generate code for all specs\n\n  git commit [--all] [-m \"msg\"]         Commit with cell validation\n    [--mode strict|normal|local]       Commit mode (default: strict)\n  git push [remote] [branch] [--mode ...] Push with cell validation\n  git status                             Show git status with cell info\n\n  lint [file]                           Check file or all for compliance\n    --all                                Check all source files\n\n  help                                  Show this help message\n\nEnvironment Variables:\n  TRI_BACKEND                           Default backend for gen (default: zig)\n  TRI_OUTPUT_DIR                         Default output directory\n\nSOUL.md Constitutional Laws:\n  Law #1: Source files MUST NOT contain Cyrillic (docs may)\n  Law #2: Every spec MUST have tests or invariants (no prototype mode)\n\nFor more information, see:\n  docs/SOUL.md - Constitutional laws\n  docs/TDD-CONTRACT.md - TDD contract details\n  docs/TRI_SYNTAX_VNEXT.md - Language syntax"
     );
 }
 
+// KNOWN DEFECT carried over from the original: 14 call sites pass a format
+// string plus an argument tuple to this one-parameter function (they read
+// like printErrorFmt calls). They are left as written, not redirected, so
+// the translation does not change which function is called.
 fn printError(msg: []const u8) !void {
     try std.io.getStdErr().writer().print("{s}\n", .{msg});
 }
 
-fn printErrorFmt(comptime fmt: []const u8, args: anytype) !void {
+// `comptime fmt`: t27 parameters have no comptime qualifier, so `fmt` is an
+// ordinary parameter here.
+fn printErrorFmt(fmt: []const u8, args: anytype) !void {
     const writer = std.io.getStdErr().writer();
     try writer.print(fmt, args);
     try writer.writeByte('\n');
 }
 
 fn fileExists(path: []const u8) bool {
-    std.fs.cwd().openFile(path, .{}) catch |err| {
-        if (err == error.FileNotFound) return false;
-        return true;
-    };
+    // `openFile(...) catch |err| { ... }`: t27 has no `catch`, so the open
+    // result is compared with the error it was matched against. Only
+    // FileNotFound means "absent"; success and every other error count as
+    // present, exactly as before.
+    const opened = std.fs.cwd().openFile(path, .{});
+    if (opened == error.FileNotFound) return false;
     return true;
 }
 
@@ -754,58 +764,7 @@ fn isValidSpecName(name: []const u8) bool {
 
 fn generateSpecTemplate(allocator: std.mem.Allocator, name: []const u8) ![]const u8 {
     return std.fmt.allocPrint(allocator,
-        \\; {s}.t27 a Specification for {s}
-        \\; phi^2 + 1/phi^2 = 3 | TRINITY
-        \\
-        \\; This file is the source of truth for {s}.
-        \\; Generated code is a derived artifact - DO NOT EDIT generated files.
-        \\;
-        \\; TDD Contract: This spec MUST include at least one test or invariant.
-        \\
-        \\use base::types
-        \\
-        \\; aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-        \\; Constants
-        \\; aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-        \\
-        \\; Example constant
-        \\const EXAMPLE_CONSTANT = 42
-        \\
-        \\; aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-        \\; Data Section
-        \\; aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-        \\
-        \\.data
-        \\    .const DATA_INIT 0
-        \\
-        \\; aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-        \\; Code Section
-        \\; aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-        \\
-        \\.code
-        \\main:
-        \\    ; Your code here
-        \\    HALT
-        \\
-        \\; aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-        \\; TDD-Inside-Spec: Tests and Invariants
-        \\; aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-        \\
-        \\.test
-        \\    ; example_test
-        \\    ; Verify: example functionality works correctly
-        \\    ; Setup: initialize with EXAMPLE_CONSTANT
-        \\    ; Expected: returns expected value
-        \\
-        \\.invariant
-        \\    ; example_invariant
-        \\    ; For all valid inputs: output is in valid range
-        \\    ; Rationale: Ensures function correctness
-        \\
-        \\.bench
-        \\    ; example_benchmark
-        \\    ; Measure: operations per second
-        \\    ; Target: > 1M ops/sec
+        "; {s}.t27 a Specification for {s}\n; phi^2 + 1/phi^2 = 3 | TRINITY\n\n; This file is the source of truth for {s}.\n; Generated code is a derived artifact - DO NOT EDIT generated files.\n;\n; TDD Contract: This spec MUST include at least one test or invariant.\n\nuse base::types\n\n; aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n; Constants\n; aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n\n; Example constant\nconst EXAMPLE_CONSTANT = 42\n\n; aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n; Data Section\n; aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n\n.data\n    .const DATA_INIT 0\n\n; aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n; Code Section\n; aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n\n.code\nmain:\n    ; Your code here\n    HALT\n\n; aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n; TDD-Inside-Spec: Tests and Invariants\n; aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n\n.test\n    ; example_test\n    ; Verify: example functionality works correctly\n    ; Setup: initialize with EXAMPLE_CONSTANT\n    ; Expected: returns expected value\n\n.invariant\n    ; example_invariant\n    ; For all valid inputs: output is in valid range\n    ; Rationale: Ensures function correctness\n\n.bench\n    ; example_benchmark\n    ; Measure: operations per second\n    ; Target: > 1M ops/sec"
     , .{name, name, name, name});
 }
 
@@ -837,19 +796,28 @@ fn validateNoCyrillic(content: []const u8, file_path: []const u8) bool {
     return true;
 }
 
-fn hasTestsOrInvariants(ast_root: *const AST.Program) bool {
+fn hasTestsOrInvariants(ast_root: *const AstProgram) bool {
     // Check test_section
-    if (ast_root.test_section) |test_section| {
+    // `if (opt) |test_section|`: t27 drops if-payload captures, so the optional
+    // is tested against null and unwrapped with `.?` explicitly.
+    if (ast_root.test_section != null) {
+        const test_section = ast_root.test_section.?;
         if (test_section.test_cases.len > 0) return true;
     }
 
     // Check invariant_section
-    if (ast_root.invariant_section) |inv_section| {
+    // `if (opt) |inv_section|`: t27 drops if-payload captures, so the optional
+    // is tested against null and unwrapped with `.?` explicitly.
+    if (ast_root.invariant_section != null) {
+        const inv_section = ast_root.invariant_section.?;
         if (inv_section.invariants.len > 0) return true;
     }
 
     // Check spec_decl (high-level TDD)
-    if (ast_root.spec_decl) |spec_decl| {
+    // `if (opt) |spec_decl|`: t27 drops if-payload captures, so the optional
+    // is tested against null and unwrapped with `.?` explicitly.
+    if (ast_root.spec_decl != null) {
+        const spec_decl = ast_root.spec_decl.?;
         if (spec_decl.test_blocks.len > 0) return true;
         if (spec_decl.invariants.len > 0) return true;
     }
@@ -857,8 +825,10 @@ fn hasTestsOrInvariants(ast_root: *const AST.Program) bool {
     return false;
 }
 
-fn validateTDDCompliance(allocator: std.mem.Allocator, ast_root: *const AST.Program) !std.ArrayList([]const u8) {
-    var errors = std.ArrayList([]const u8).init(allocator);
+fn validateTDDCompliance(allocator: std.mem.Allocator, ast_root: *const AstProgram) !std.ArrayList([]const u8) {
+    // `[]const u8` cannot stand in expression position in t27; `string`
+    // is t27's name for the same byte-slice type.
+    var errors = std.ArrayList(string).init(allocator);
 
     if (!hasTestsOrInvariants(ast_root)) {
         try errors.append(try allocator.dupe(u8, "TDD contract violated: spec must contain at least one 'test' or 'invariant' block"));
@@ -867,28 +837,36 @@ fn validateTDDCompliance(allocator: std.mem.Allocator, ast_root: *const AST.Prog
     return errors;
 }
 
-fn printSummary(ast_root: *const AST.Program) !void {
+fn printSummary(ast_root: *const AstProgram) !void {
     try std.io.getStdOut().writer().print(
-        \\Summary:
-        \\  Constants: {d}
+        "Summary:\n  Constants: {d}"
     , .{ast_root.constants.len});
 
-    if (ast_root.spec_decl) |spec| {
+    // `if (opt) |spec|`: t27 drops if-payload captures, so the optional
+    // is tested against null and unwrapped with `.?` explicitly.
+    if (ast_root.spec_decl != null) {
+        const spec = ast_root.spec_decl.?;
         try std.io.getStdOut().writer().print(
-            \\  Tests (spec-style): {d}
-            \\  Invariants (spec-style): {d}
+            "  Tests (spec-style): {d}\n  Invariants (spec-style): {d}"
         , .{ spec.test_blocks.len, spec.invariants.len });
     }
 
-    if (ast_root.test_section) |test| {
+    // The capture was named `test`, a t27 keyword; it is `test_sec` here.
+    // `if (opt) |test|`: t27 drops if-payload captures, so the optional
+    // is tested against null and unwrapped with `.?` explicitly.
+    if (ast_root.test_section != null) {
+        const test_sec = ast_root.test_section.?;
         try std.io.getStdOut().writer().print(
-            \\  Tests (assembly-style): {d}
-        , .{test.test_cases.len});
+            "  Tests (assembly-style): {d}"
+        , .{test_sec.test_cases.len});
     }
 
-    if (ast_root.invariant_section) |inv| {
+    // `if (opt) |inv|`: t27 drops if-payload captures, so the optional
+    // is tested against null and unwrapped with `.?` explicitly.
+    if (ast_root.invariant_section != null) {
+        const inv = ast_root.invariant_section.?;
         try std.io.getStdOut().writer().print(
-            \\  Invariants (assembly-style): {d}
+            "  Invariants (assembly-style): {d}"
         , .{inv.invariants.len});
     }
 
@@ -902,16 +880,21 @@ fn printSummary(ast_root: *const AST.Program) !void {
 fn parseSimple(content: []const u8, file_path: []const u8) ParseContext {
     _ = file_path;
 
-    var program = AST.Program{};
+    var program = AstProgram{};
 
     // Simple line-by-line parsing for .test and .invariant sections
     var lines = std.mem.splitScalar(u8, content, '\n');
     var in_test = false;
     var in_invariant = false;
-    var test_cases = std.ArrayList(AST.TestCase).init(std.heap.page_allocator);
-    var invariants = std.ArrayList(AST.Invariant).init(std.heap.page_allocator);
+    var test_cases = std.ArrayList(AstTestCase).init(std.heap.page_allocator);
+    var invariants = std.ArrayList(AstInvariant).init(std.heap.page_allocator);
 
-    while (lines.next()) |line| {
+    // `while (lines.next()) |line|`: the optional is unwrapped explicitly and
+    // null ends the loop (t27's while has no payload capture).
+    while (true) {
+        const next_line = lines.next();
+        if (next_line == null) break;
+        const line = next_line.?;
         const trimmed = std.mem.trim(u8, line, " \t\r");
 
         if (std.mem.startsWith(u8, trimmed, ".test")) {
@@ -929,38 +912,41 @@ fn parseSimple(content: []const u8, file_path: []const u8) ParseContext {
         } else if (in_test and trimmed.len > 0 and !std.mem.startsWith(u8, trimmed, ";")) {
             // Found a test case (non-comment, non-empty)
             const name = std.mem.trim(u8, trimmed, " \t\r");
-            test_cases.append(AST.TestCase{
+            // `append(...) catch {}` ignored an allocation failure; the result
+            // is discarded with `_ =` (t27 has no `catch`).
+            _ = test_cases.append(AstTestCase{
                 .name = name,
                 .verify = "",
                 .setup = "",
                 .expected = "",
-            }) catch {};
+            });
         } else if (in_invariant and trimmed.len > 0 and !std.mem.startsWith(u8, trimmed, ";")) {
             // Found an invariant
             const name = std.mem.trim(u8, trimmed, " \t\r");
-            invariants.append(AST.Invariant{
+            // `append(...) catch {}`: failure ignored, result discarded.
+            _ = invariants.append(AstInvariant{
                 .name = name,
                 .statement = "",
                 .rationale = "",
-            }) catch {};
+            });
         }
     }
 
     if (test_cases.items.len > 0) {
-        program.test_section = AST.TestSection{
+        program.test_section = AstTestSection{
             .test_cases = test_cases.toOwnedSlice(),
         };
     }
 
     if (invariants.items.len > 0) {
-        program.invariant_section = AST.InvariantSection{
+        program.invariant_section = AstInvariantSection{
             .invariants = invariants.toOwnedSlice(),
         };
     }
 
     return ParseContext{
         .ast_root = program,
-        .errors = &[0]ParseContext.Error{},
+        .errors = [],
     };
 }
 
@@ -968,7 +954,7 @@ fn parseSimple(content: []const u8, file_path: []const u8) ParseContext {
 // Code Generation Helpers
 // aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
-fn generateImplementation(allocator: std.mem.Allocator, spec_path: []const u8, ast_root: *const AST.Program, options: GenOptions) ![]const u8 {
+fn generateImplementation(allocator: std.mem.Allocator, spec_path: []const u8, ast_root: *const AstProgram, options: GenOptions) ![]const u8 {
     _ = spec_path;
     _ = ast_root;
     _ = options;
@@ -977,7 +963,7 @@ fn generateImplementation(allocator: std.mem.Allocator, spec_path: []const u8, a
     return try allocator.dupe(u8, "// Generated implementation for spec\n");
 }
 
-fn generateTests(allocator: std.mem.Allocator, ast_root: *const AST.Program, options: GenOptions) ![]const u8 {
+fn generateTests(allocator: std.mem.Allocator, ast_root: *const AstProgram, options: GenOptions) ![]const u8 {
     _ = options;
 
     var output = std.ArrayList(u8).init(allocator);
@@ -985,7 +971,10 @@ fn generateTests(allocator: std.mem.Allocator, ast_root: *const AST.Program, opt
 
     try output.appendSlice("// Generated tests for spec\n");
 
-    if (ast_root.test_section) |test_section| {
+    // `if (opt) |test_section|`: t27 drops if-payload captures, so the optional
+    // is tested against null and unwrapped with `.?` explicitly.
+    if (ast_root.test_section != null) {
+        const test_section = ast_root.test_section.?;
         for (test_section.test_cases) |test_case| {
             try output.appendSlice("test \"");
             try output.appendSlice(test_case.name);
@@ -995,7 +984,10 @@ fn generateTests(allocator: std.mem.Allocator, ast_root: *const AST.Program, opt
         }
     }
 
-    if (ast_root.invariant_section) |inv_section| {
+    // `if (opt) |inv_section|`: t27 drops if-payload captures, so the optional
+    // is tested against null and unwrapped with `.?` explicitly.
+    if (ast_root.invariant_section != null) {
+        const inv_section = ast_root.invariant_section.?;
         for (inv_section.invariants) |inv| {
             try output.appendSlice("// invariant: ");
             try output.appendSlice(inv.name);
@@ -1006,7 +998,7 @@ fn generateTests(allocator: std.mem.Allocator, ast_root: *const AST.Program, opt
     return output.toOwnedSlice();
 }
 
-fn generateConformance(allocator: std.mem.Allocator, ast_root: *const AST.Program) ![]const u8 {
+fn generateConformance(allocator: std.mem.Allocator, ast_root: *const AstProgram) ![]const u8 {
     var output = std.ArrayList(u8).init(allocator);
     defer output.deinit();
 
@@ -1014,8 +1006,14 @@ fn generateConformance(allocator: std.mem.Allocator, ast_root: *const AST.Progra
     try output.appendSlice("  \"description\": \"t27 conformance\",\n");
     try output.appendSlice("  \"test_vectors\": [\n");
 
-    if (ast_root.test_section) |test_section| {
-        for (test_section.test_cases, 0..) |test_case, i| {
+    // `if (opt) |test_section|`: t27 drops if-payload captures, so the optional
+    // is tested against null and unwrapped with `.?` explicitly.
+    if (ast_root.test_section != null) {
+        const test_section = ast_root.test_section.?;
+        // `for (test_cases, 0..) |test_case, i|` (two iterables) as an index loop.
+        var i: usize = 0;
+        while (i < test_section.test_cases.len) : (i += 1) {
+            const test_case = test_section.test_cases[i];
             try output.appendSlice("    {\n");
             try output.appendSlice("      \"name\": \"");
             try output.appendSlice(test_case.name);
@@ -1044,14 +1042,22 @@ fn generateConformance(allocator: std.mem.Allocator, ast_root: *const AST.Progra
 // Git Helpers
 // aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
-fn runGitDirect(argv: []const []const u8) !void {
-    const result = std.process.Child.exec(.{
+fn runGitDirect(argv: []const string) !void {
+    // `exec(...) catch |err| { ... }`: t27 has no `catch` and drops
+    // if-payload captures, so the error path is selected with Zig's
+    // `std.meta.isError` (true when the error union holds an error) and the
+    // error is named from the result itself (APPROXIMATION: Zig's
+    // @errorName wants the bare error, which only a capture can extract).
+    // `try` then unwraps the success value.
+    const exec_result = std.process.Child.exec(.{
         .allocator = std.heap.page_allocator,
         .argv = argv,
-    }) catch |err| {
-        try printErrorFmt("Failed to execute git: {}\n", .{@errorName(err)});
+    });
+    if (std.meta.isError(exec_result)) {
+        try printErrorFmt("Failed to execute git: {}\n", .{@errorName(exec_result)});
         return error.GitFailed;
-    };
+    }
+    const result = try exec_result;
     defer result.deinit();
 
     try std.io.getStdOut().writeAll(result.stdout);
@@ -1068,18 +1074,25 @@ fn runGitDirect(argv: []const []const u8) !void {
 // aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
 fn globSpecs(allocator: std.mem.Allocator) !std.ArrayList([]const u8) {
-    var spec_files = std.ArrayList([]const u8).init(allocator);
+    // `[]const u8` cannot stand in expression position in t27; `string`
+    // is t27's name for the same byte-slice type.
+    var spec_files = std.ArrayList(string).init(allocator);
 
-    var dir = std.fs.cwd().openDir("specs") catch |err| {
-        if (err == error.FileNotFound) return spec_files;
-        return err;
-    };
+    // `openDir(...) catch |err| { ... }` without `catch`: FileNotFound is
+    // tested with `==`; `try` propagates any other error.
+    const dir_open = std.fs.cwd().openDir("specs");
+    if (dir_open == error.FileNotFound) return spec_files;
+    var dir = try dir_open;
     defer dir.close();
 
     var walker = try dir.walk(allocator);
     defer walker.deinit();
 
-    while (try walker.next()) |entry| {
+    // `while (try walker.next()) |entry|` with the optional unwrapped explicitly.
+    while (true) {
+        const next_entry = try walker.next();
+        if (next_entry == null) break;
+        const entry = next_entry.?;
         if (entry.kind == .file and std.mem.endsWith(u8, entry.path, ".t27")) {
             const path = try std.fmt.allocPrint(allocator, "specs/{s}", .{entry.path});
             try spec_files.append(path);
@@ -1090,22 +1103,30 @@ fn globSpecs(allocator: std.mem.Allocator) !std.ArrayList([]const u8) {
 }
 
 fn globSourceFiles(allocator: std.mem.Allocator) !std.ArrayList([]const u8) {
-    var files = std.ArrayList([]const u8).init(allocator);
+    // `[]const u8` cannot stand in expression position in t27; `string`
+    // is t27's name for the same byte-slice type.
+    var files = std.ArrayList(string).init(allocator);
 
     // Common source extensions
-    const extensions = [_][]const u8{ ".t27", ".tri", ".zig", ".c", ".h", ".v", ".verilog" };
+    // (`[_]string{...}` is `[_][]const u8{...}`; see gitCommit.)
+    const extensions = [_]string{ ".t27", ".tri", ".zig", ".c", ".h", ".v", ".verilog" };
 
     // Recursively find files
-    var walker = try std.fs.cwd().walk(allocator, .{
+    // `try walk(...) catch |err| { ... }` without `catch`: FileNotFound is
+    // tested with `==`; `try` propagates any other error.
+    const walk_open = std.fs.cwd().walk(allocator, .{
         .max_depth = 10,
         .skip_hidden_files = true,
-    }) catch |err| {
-        if (err == error.FileNotFound) return files;
-        return err;
-    };
+    });
+    if (walk_open == error.FileNotFound) return files;
+    var walker = try walk_open;
     defer walker.deinit();
 
-    while (try walker.next()) |entry| {
+    // `while (try walker.next()) |entry|` with the optional unwrapped explicitly.
+    while (true) {
+        const next_entry = try walker.next();
+        if (next_entry == null) break;
+        const entry = next_entry.?;
         if (entry.kind == .file) {
             const path = entry.path;
             // Skip docs/ directory
@@ -1122,4 +1143,40 @@ fn globSourceFiles(allocator: std.mem.Allocator) !std.ArrayList([]const u8) {
     }
 
     return files;
+}
+
+// =====================================================================
+// TDD: Tests
+// The handwritten runtime carried no test, and L4 requires one. These
+// pin the pure helpers above exactly as they are written.
+// =====================================================================
+
+test "is_valid_spec_name_accepts_lowercase_snake_case" {
+    assert(isValidSpecName("my_spec2"));
+    assert(isValidSpecName("a"));
+}
+
+test "is_valid_spec_name_rejects_bad_names" {
+    assert(!isValidSpecName(""));
+    assert(!isValidSpecName("MySpec"));
+    assert(!isValidSpecName("2spec"));
+    assert(!isValidSpecName("my-spec"));
+}
+
+test "validate_no_cyrillic_accepts_ascii_and_docs" {
+    assert(validateNoCyrillic("const X = 1;", "specs/x.t27"));
+    assert(validateNoCyrillic("anything", "docs/notes.md"));
+    assert(validateNoCyrillic("anything", "repo/docs/notes.md"));
+}
+
+test "has_tests_or_invariants_false_for_empty_program" {
+    const program = AstProgram{};
+    assert(!hasTestsOrInvariants(&program));
+}
+
+test "has_tests_or_invariants_true_with_one_test_case" {
+    // Exercises the explicit `!= null` / `.?` unwrap of test_section.
+    var cases = [_]AstTestCase{ AstTestCase{ .name = "t" } };
+    const program = AstProgram{ .test_section = AstTestSection{ .test_cases = &cases } };
+    assert(hasTestsOrInvariants(&program));
 }

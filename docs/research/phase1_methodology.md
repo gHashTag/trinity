@@ -213,7 +213,7 @@ Log-normal and log-uniform results available in CSV but not yet analyzed.
 
 - IEEE 754-2019: Floating-point arithmetic standard
 - bfloat16: https://en.wikipedia.org/wiki/Bfloat16_floating-point_format
-- DLFloat 6:9: https://arxiv.org/abs/2201.070640
+- DLFloat 6:9: https://doi.org/10.1109/ARITH.2019.00023
 - FP16: https://en.wikipedia.org/wiki/Half-precision_floating-point_format
 
 ---

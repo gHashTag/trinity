@@ -142,7 +142,7 @@ fn showAnalysis() void {
     print("    DSP48: 0/240 (0%%)   BRAM36-eq: 135/135 (100%%)\n", .{});
     print("    LUT: 4,267/63,400 (6.7%%)   FF: 2,449/126,800 (1.9%%)\n\n", .{});
     print("  {s}vs TerEffic (2025){s}: 0 DSP vs 3,041 DSP | $30 vs $5,000 | Yosys vs Vivado\n", .{ CYAN, RESET });
-    print("  {s}Zenodo{s}: 63 tok/s @ 92 MHz, ~1W, 16 tokens autoregressive (seed=42)\n", .{ CYAN, RESET });
+    print("  {s}Zenodo{s}: 16 tokens autoregressive (seed=42), ~34 tok/s measured at 50 MHz; the record's 63 tok/s @ 92 MHz is a projection and its ~1W is withdrawn (README.md FPGA table)\n", .{ CYAN, RESET });
     print("  {s}Files{s}: fpga/openxc7-synth/hslm_ternary_mac.v, docs/lab/papers/trinity-fpga/draft.md\n\n", .{ GRAY, RESET });
 
     // P3: Ouroboros
@@ -344,7 +344,7 @@ fn showZenodo() void {
     print("    Date:     2026-03-10\n", .{});
     print("    License:  MIT\n", .{});
     print("    Device:   QMTech XC7A100T ($30)\n", .{});
-    print("    Speed:    63 tok/s @ 92 MHz, ~1W\n", .{});
+    print("    Speed:    ~34 tok/s measured at 50 MHz (the record's 63 tok/s @ 92 MHz is a projection; its ~1W is withdrawn, see README.md FPGA table)\n", .{});
     print("    Result:   16 tokens autoregressive (seed=42)\n", .{});
     print("    Toolchain: openXC7 (yosys + nextpnr-xilinx)\n\n", .{});
 

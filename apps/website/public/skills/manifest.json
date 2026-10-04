@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "generatedAt": "2026-09-22T12:22:31.439Z",
+  "generatedAt": "2026-09-23T04:25:08.667Z",
   "generatedFrom": [
     {
       "repo": "gHashTag/999-multibots-telegraf",
-      "commit": "354c92c7988b256770f748ed1269ad84249058f6",
-      "shortCommit": "354c92c79",
+      "commit": "3f3590eef5e288cb9f0e08d2d5096de84ff9a8ba",
+      "shortCommit": "3f3590eef",
       "branch": "main-snapshot",
       "dirty": false,
       "private": true
@@ -20,16 +20,16 @@
     },
     {
       "repo": "gHashTag/trinity",
-      "commit": "85081311581911d838c382160cb82866a33f220a",
-      "shortCommit": "850813115",
-      "branch": "feat/skill-connect-accounts",
+      "commit": "cb59206f2cf5b1522140dbf43ee0bc597ca36447",
+      "shortCommit": "cb59206f2",
+      "branch": "docs/taps-lessons",
       "dirty": true,
       "private": false
     }
   ],
   "specManifestCommit": "6e13d65c4",
   "skillCount": 27,
-  "withheld": 62,
+  "withheld": 63,
   "bySource": {
     "SKILL.md": 25,
     "skill.md": 2
@@ -1359,9 +1359,9 @@
       },
       "hasFrontmatter": true,
       "lang": "en",
-      "bytes": 4307,
-      "lines": 73,
-      "sha256": "b8401486a420ad24142ab627b3c832dc46f60b751b0b51d7e87e4b87314296e6",
+      "bytes": 6616,
+      "lines": 110,
+      "sha256": "c7eadb87f1ed3348ba5ce78b71776c1db855e5e72cd070961f04663bba28d85d",
       "headings": [
         {
           "level": 1,
@@ -1385,13 +1385,18 @@
         },
         {
           "level": 2,
-          "text": "Quick diagnosis",
+          "text": "When a tap reaches nothing",
           "line": 58
         },
         {
           "level": 2,
+          "text": "Quick diagnosis",
+          "line": 93
+        },
+        {
+          "level": 2,
           "text": "Related",
-          "line": 69
+          "line": 106
         }
       ],
       "codeBlocks": [],

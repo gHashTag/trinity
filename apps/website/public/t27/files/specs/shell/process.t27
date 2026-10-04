@@ -11,7 +11,11 @@ module ShellProcess {
     // ════════════════════════════════════════════════════════════════════
 
     // ProcessID is a branded string representing a process identifier
-    struct ProcessID(str);
+    // (t27 has no tuple structs: the wrapped string is the single field `value`,
+    // so `ProcessID(s)` is written `ProcessID{ value = s }` and `pid.0` is `pid.value`)
+    struct ProcessID {
+        value: str;
+    }
 
     // ════════════════════════════════════════════════════════════════════
     // Process Operations
@@ -23,7 +27,7 @@ module ShellProcess {
         if command.len == 0 {
             return Err(ShellError::InvalidCommand);
         }
-        var pid = ProcessID("mock_pid_" + command.len.to_str());
+        var pid = ProcessID{ value = "mock_pid_" + command.len.to_str() };
         return Ok(pid);
     }
 
@@ -56,18 +60,18 @@ module ShellProcess {
     }
 
     // kill terminates a process
-    fn kill(pid: ProcessID, signal: str?) -> Result<void, ShellError> {
+    fn kill(pid: ProcessID, signal: ?str) -> Result<void, ShellError> {
         // Implementation: Send signal to process
-        if pid.0.len == 0 {
+        if pid.value.len == 0 {
             return Err(ShellError::NotFound);
         }
-        return Ok(void);
+        return Ok();
     }
 
     // kill_tree terminates a process tree
     fn kill_tree(pid: ProcessID) -> Result<void, ShellError> {
         // Implementation: Terminate process and all children
-        if pid.0.len == 0 {
+        if pid.value.len == 0 {
             return Err(ShellError::NotFound);
         }
         
@@ -82,7 +86,7 @@ module ShellProcess {
         while timeout > 0 {
             var aliveResult = is_alive(pid);
             if aliveResult.is_err() or !aliveResult.unwrap() {
-                return Ok(void);
+                return Ok();
             }
             timeout = timeout - 1;
         }
@@ -94,7 +98,7 @@ module ShellProcess {
     // wait waits for a process to complete
     fn wait(pid: ProcessID) -> Result<ProcessResult, ShellError> {
         // Implementation: Wait for process and return result
-        if pid.0.len == 0 {
+        if pid.value.len == 0 {
             return Err(ShellError::NotFound);
         }
         
@@ -117,7 +121,7 @@ module ShellProcess {
     // poll checks process status without blocking
     fn poll(pid: ProcessID) -> Result<ProcessInfo?, ShellError> {
         // Implementation: Get current process info
-        if pid.0.len == 0 {
+        if pid.value.len == 0 {
             return Ok(null);
         }
         
@@ -211,7 +215,7 @@ module ShellProcess {
         }
         
         pool.processes = runningPids;
-        return Ok(void);
+        return Ok();
     }
 
     // ════════════════════════════════════════════════════════════════════
@@ -231,23 +235,39 @@ module ShellProcess {
     // send_signal sends a signal to a process
     fn send_signal(pid: ProcessID, signal: Signal) -> Result<void, ShellError> {
         // Implementation: Send signal to process
-        if pid.0.len == 0 {
+        if pid.value.len == 0 {
             return Err(ShellError::NotFound);
         }
-        return Ok(void);
+        return Ok();
     }
 
     // signal_name returns the name of a signal
     fn signal_name(signal: Signal) -> str {
         // Implementation: Return signal name
-        return switch signal {
-            Signal::SIGTERM => "SIGTERM",
-            Signal::SIGKILL => "SIGKILL",
-            Signal::SIGINT => "SIGINT",
-            Signal::SIGHUP => "SIGHUP",
-            Signal::SIGSTOP => "SIGSTOP",
-            Signal::SIGCONT => "SIGCONT",
+        return switch (signal) {
+            .SIGTERM => "SIGTERM",
+            .SIGKILL => "SIGKILL",
+            .SIGINT => "SIGINT",
+            .SIGHUP => "SIGHUP",
+            .SIGSTOP => "SIGSTOP",
+            .SIGCONT => "SIGCONT",
         };
+    }
+
+    // env_lookup returns the value bound to `key` in an environment written
+    // as EnvVar key/value pairs, or null when the environment is null or the
+    // key is absent (the optional map lookup `env?.[key]`; t27 has no map
+    // type with an index operator)
+    fn env_lookup(env: ?[]EnvVar, key: str) -> ?str {
+        if (env == null) {
+            return null;
+        }
+        for entry in env {
+            if (entry.name == key) {
+                return entry.value;
+            }
+        }
+        return null;
     }
 
     // ════════════════════════════════════════════════════════════════════
@@ -255,8 +275,8 @@ module ShellProcess {
     // ════════════════════════════════════════════════════════════════════
 
     test "process_id_creation" {
-        var pid = ProcessID("12345");
-        assert(pid.0 == "12345");
+        var pid = ProcessID{ value = "12345" };
+        assert(pid.value == "12345");
     }
 
     test "pool_creation" {
@@ -271,9 +291,9 @@ module ShellProcess {
     test "pool_with_processes" {
         var pool = Pool {
             processes = [
-                ProcessID("1"),
-                ProcessID("2"),
-                ProcessID("3"),
+                ProcessID{ value = "1" },
+                ProcessID{ value = "2" },
+                ProcessID{ value = "3" },
             ],
             maxSize = 10,
         };
@@ -283,11 +303,11 @@ module ShellProcess {
     test "pool_full" {
         var pool = Pool {
             processes = [
-                ProcessID("1"),
-                ProcessID("2"),
-                ProcessID("3"),
-                ProcessID("4"),
-                ProcessID("5"),
+                ProcessID{ value = "1" },
+                ProcessID{ value = "2" },
+                ProcessID{ value = "3" },
+                ProcessID{ value = "4" },
+                ProcessID{ value = "5" },
             ],
             maxSize = 5,
         };
@@ -316,7 +336,10 @@ module ShellProcess {
     }
 
     test "process_options_with_env" {
-        var env: [str: str] = { "TEST": "value" };
+        // t27 has no map literal: the one-entry map { "TEST": "value" } is
+        // written as an array of EnvVar key/value pairs, and the optional
+        // map lookup `opts.env?.["TEST"]` as env_lookup(opts.env, "TEST").
+        var env: [1]EnvVar = [EnvVar{ name = "TEST", value = "value" }];
         var opts = ProcessOptions {
             cwd = "/test",
             env = env,
@@ -325,7 +348,7 @@ module ShellProcess {
             captureOutput = true,
             abort = false,
         };
-        assert(opts.env?.["TEST"] == "value");
+        assert(env_lookup(opts.env, "TEST") == "value");
         assert(opts.cwd == "/test");
     }
 
@@ -409,8 +432,8 @@ module ShellProcess {
     }
 
     test "process_id_numeric" {
-        var pid = ProcessID("99999");
-        assert(pid.0 == "99999");
+        var pid = ProcessID{ value = "99999" };
+        assert(pid.value == "99999");
     }
 
     test "pool_empty" {
@@ -458,11 +481,11 @@ module ShellProcess {
     test "pool_spawn_refuses_full_pool" {
         var pool = Pool {
             processes = [
-                ProcessID("1"),
-                ProcessID("2"),
-                ProcessID("3"),
-                ProcessID("4"),
-                ProcessID("5"),
+                ProcessID{ value = "1" },
+                ProcessID{ value = "2" },
+                ProcessID{ value = "3" },
+                ProcessID{ value = "4" },
+                ProcessID{ value = "5" },
             ],
             maxSize = 5,
         };

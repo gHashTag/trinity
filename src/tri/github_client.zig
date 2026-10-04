@@ -37,6 +37,192 @@ pub const PrResult = struct {
     state: []const u8,
 };
 
+/// The label a reviewer bee applies after reviewing and verifying a PR.
+pub const BEE_REVIEWED_LABEL = "bee-reviewed";
+
+/// Outcome of the reviewer-bee merge gate (see `GitHubClient.mergePr`).
+pub const BeeGate = struct {
+    ok: bool,
+    reason: []const u8,
+    head_sha_buf: [40]u8 = undefined,
+
+    pub fn refuse(reason: []const u8) BeeGate {
+        return .{ .ok = false, .reason = reason };
+    }
+
+    pub fn headSha(self: *const BeeGate) []const u8 {
+        return self.head_sha_buf[0..];
+    }
+};
+
+/// Why the gate refuses, or null when it passes. Pure, for the tests.
+/// GitHub timestamps are `YYYY-MM-DDTHH:MM:SSZ`, so byte order is time order.
+pub fn beeGateReason(has_label: bool, approved: bool, head_at: ?[]const u8, labeled_at: ?[]const u8) ?[]const u8 {
+    if (!has_label) return "no `bee-reviewed` label";
+    if (!approved) return "no APPROVED review";
+    const h = head_at orelse return "head arrival time unreadable";
+    const l = labeled_at orelse return "no `bee-reviewed` label event found";
+    if (std.mem.order(u8, l, h) == .lt) return "`bee-reviewed` predates the head's arrival (a push after review is unreviewed code)";
+    return null;
+}
+
+fn parseValue(allocator: std.mem.Allocator, json: []const u8) ?std.json.Parsed(std.json.Value) {
+    return std.json.parseFromSlice(std.json.Value, allocator, json, .{}) catch null;
+}
+
+fn objGet(v: std.json.Value, key: []const u8) ?std.json.Value {
+    return switch (v) {
+        .object => |o| o.get(key),
+        else => null,
+    };
+}
+
+fn strOf(v: ?std.json.Value) ?[]const u8 {
+    const x = v orelse return null;
+    return switch (x) {
+        .string => |s| s,
+        else => null,
+    };
+}
+
+/// `head.sha` of a REST pull-request object, copied into `buf`.
+pub fn prHeadSha(allocator: std.mem.Allocator, pr_json: []const u8, buf: *[40]u8) ?[]const u8 {
+    const parsed = parseValue(allocator, pr_json) orelse return null;
+    defer parsed.deinit();
+    const head = objGet(parsed.value, "head") orelse return null;
+    const sha = strOf(objGet(head, "sha")) orelse return null;
+    if (sha.len != 40) return null;
+    @memcpy(buf[0..], sha);
+    return buf[0..];
+}
+
+/// Does a REST pull-request (or issue) object carry this label?
+pub fn jsonHasLabel(allocator: std.mem.Allocator, pr_json: []const u8, label: []const u8) bool {
+    const parsed = parseValue(allocator, pr_json) orelse return false;
+    defer parsed.deinit();
+    const labels = objGet(parsed.value, "labels") orelse return false;
+    if (labels != .array) return false;
+    for (labels.array.items) |l| {
+        if (strOf(objGet(l, "name"))) |n| {
+            if (std.mem.eql(u8, n, label)) return true;
+        }
+    }
+    return false;
+}
+
+/// Does a REST reviews array contain at least one APPROVED review?
+pub fn jsonHasApproval(allocator: std.mem.Allocator, reviews_json: []const u8) bool {
+    const parsed = parseValue(allocator, reviews_json) orelse return false;
+    defer parsed.deinit();
+    if (parsed.value != .array) return false;
+    for (parsed.value.array.items) |r| {
+        if (strOf(objGet(r, "state"))) |st| {
+            if (std.mem.eql(u8, st, "APPROVED")) return true;
+        }
+    }
+    return false;
+}
+
+/// `commit.committer.date` of a REST commit object, copied into `buf`.
+pub fn commitDate(allocator: std.mem.Allocator, commit_json: []const u8, buf: *[32]u8) ?[]const u8 {
+    const parsed = parseValue(allocator, commit_json) orelse return null;
+    defer parsed.deinit();
+    const commit = objGet(parsed.value, "commit") orelse return null;
+    const committer = objGet(commit, "committer") orelse return null;
+    const date = strOf(objGet(committer, "date")) orelse return null;
+    if (date.len > buf.len) return null;
+    @memcpy(buf[0..date.len], date);
+    return buf[0..date.len];
+}
+
+/// The latest `labeled` event for `label` in a REST issue-events array,
+/// copied into `buf`.
+pub fn latestLabeledAt(allocator: std.mem.Allocator, events_json: []const u8, label: []const u8, buf: *[32]u8) ?[]const u8 {
+    const parsed = parseValue(allocator, events_json) orelse return null;
+    defer parsed.deinit();
+    if (parsed.value != .array) return null;
+    var best: ?[]const u8 = null;
+    for (parsed.value.array.items) |e| {
+        const ev = strOf(objGet(e, "event")) orelse continue;
+        if (!std.mem.eql(u8, ev, "labeled")) continue;
+        const l = objGet(e, "label") orelse continue;
+        const name = strOf(objGet(l, "name")) orelse continue;
+        if (!std.mem.eql(u8, name, label)) continue;
+        const at = strOf(objGet(e, "created_at")) orelse continue;
+        if (best == null or std.mem.order(u8, at, best.?) == .gt) best = at;
+    }
+    const b = best orelse return null;
+    if (b.len > buf.len) return null;
+    @memcpy(buf[0..b.len], b);
+    return buf[0..b.len];
+}
+
+/// A GitHub timestamp (`YYYY-MM-DDTHH:MM:SSZ`) held in a fixed buffer, so
+/// it outlives the JSON it was read from. Empty means "none seen".
+pub const Stamp = struct {
+    buf: [32]u8 = undefined,
+    len: usize = 0,
+
+    pub fn get(self: *const Stamp) ?[]const u8 {
+        return if (self.len == 0) null else self.buf[0..self.len];
+    }
+
+    fn set(self: *Stamp, at: []const u8) void {
+        @memcpy(self.buf[0..at.len], at);
+        self.len = at.len;
+    }
+
+    /// Keep the later of the held stamp and `at`.
+    pub fn keepLater(self: *Stamp, at: []const u8) void {
+        if (at.len == 0 or at.len > self.buf.len) return;
+        if (self.len != 0 and std.mem.order(u8, at, self.buf[0..self.len]) != .gt) return;
+        self.set(at);
+    }
+
+    /// Keep the earlier of the held stamp and `at`.
+    pub fn keepEarlier(self: *Stamp, at: []const u8) void {
+        if (at.len == 0 or at.len > self.buf.len) return;
+        if (self.len != 0 and std.mem.order(u8, at, self.buf[0..self.len]) != .lt) return;
+        self.set(at);
+    }
+};
+
+/// One page of REST issue events: raise `labeled` to the latest `labeled`
+/// event for `label`, and `force_pushed` to the latest `head_ref_force_pushed`.
+/// Returns how many events the page held (to know whether another page
+/// follows), or null when the page is not an events array.
+pub fn scanEventsPage(allocator: std.mem.Allocator, events_json: []const u8, label: []const u8, labeled: *Stamp, force_pushed: *Stamp) ?usize {
+    const parsed = parseValue(allocator, events_json) orelse return null;
+    defer parsed.deinit();
+    if (parsed.value != .array) return null;
+    for (parsed.value.array.items) |e| {
+        const ev = strOf(objGet(e, "event")) orelse continue;
+        const at = strOf(objGet(e, "created_at")) orelse continue;
+        if (std.mem.eql(u8, ev, "head_ref_force_pushed")) {
+            force_pushed.keepLater(at);
+        } else if (std.mem.eql(u8, ev, "labeled")) {
+            const l = objGet(e, "label") orelse continue;
+            const name = strOf(objGet(l, "name")) orelse continue;
+            if (std.mem.eql(u8, name, label)) labeled.keepLater(at);
+        }
+    }
+    return parsed.value.array.items.len;
+}
+
+/// The earliest `started_at` in a REST check-runs response (a push starts
+/// them, so this is when the head reached GitHub). False when the response
+/// carries no `check_runs` array; true with `out` empty when none has run.
+pub fn earliestCheckRunStart(allocator: std.mem.Allocator, runs_json: []const u8, out: *Stamp) bool {
+    const parsed = parseValue(allocator, runs_json) orelse return false;
+    defer parsed.deinit();
+    const runs = objGet(parsed.value, "check_runs") orelse return false;
+    if (runs != .array) return false;
+    for (runs.array.items) |r| {
+        if (strOf(objGet(r, "started_at"))) |at| out.keepEarlier(at);
+    }
+    return true;
+}
+
 pub const CheckRunResult = struct {
     id: i64,
     url: []const u8,
@@ -483,17 +669,40 @@ pub const GitHubClient = struct {
         }
     }
 
-    /// Merge a pull request
+    /// Merge a pull request -- ONLY what a reviewer bee passed.
+    ///
+    /// Owner's rule, 2026-10-02: "the Queen must not merge by herself!! the
+    /// Queen only manages!" and "take the merge right away from the board
+    /// merger too". No automation merges on its own verdict. A merge happens
+    /// only after a reviewer bee's review: at least one APPROVED review AND
+    /// the `bee-reviewed` label applied after the head ARRIVED -- the latest of
+    /// its committer date, its first check run and the last force-push (a
+    /// push after the review is unreviewed code). Same gate as
+    /// gHashTag/t27#5526. The merge is pinned to the head sha the gate
+    /// checked, so a commit landing in between makes GitHub refuse it.
+    ///
+    /// The gate lives here, in the one function every caller goes through
+    /// (`tri pr merge`, `tri cloud merge`), so no caller can skip it.
     pub fn mergePr(self: *Self, number: u32, merge_method: []const u8) !void {
+        if (self.mode == .dry_run) {
+            std.debug.print("\x1b[38;2;255;215;0m[DRY RUN]\x1b[0m Would check the reviewer-bee gate, then merge PR #{d} (method={s})\n", .{ number, merge_method });
+            return;
+        }
+
+        const gate = try self.reviewerBeeGate(number);
+        if (!gate.ok) {
+            std.debug.print("\x1b[38;2;255;85;85mRefusing to merge PR #{d}: {s}. Only a reviewer bee's review merges (APPROVED + `bee-reviewed` after the head commit).\x1b[0m\n", .{ number, gate.reason });
+            return error.NotBeeReviewed;
+        }
+        const head_sha = gate.headSha();
+
         switch (self.mode) {
-            .dry_run => {
-                std.debug.print("\x1b[38;2;255;215;0m[DRY RUN]\x1b[0m Would merge PR #{d} (method={s})\n", .{ number, merge_method });
-            },
+            .dry_run => unreachable,
             .native_http => {
                 var json_buf: [256]u8 = undefined;
                 var escape_buf: [64]u8 = undefined;
                 const escaped = escapeJson(merge_method, &escape_buf);
-                const json_body = std.fmt.bufPrint(&json_buf, "{{\"merge_method\":\"{s}\"}}", .{escaped}) catch return error.BufferOverflow;
+                const json_body = std.fmt.bufPrint(&json_buf, "{{\"merge_method\":\"{s}\",\"sha\":\"{s}\"}}", .{ escaped, head_sha }) catch return error.BufferOverflow;
                 const path = try std.fmt.allocPrint(self.allocator, "/repos/{s}/{s}/pulls/{d}/merge", .{ self.owner, self.repo, number });
                 defer self.allocator.free(path);
                 const response = try self.httpRequest("PUT", path, json_body);
@@ -508,10 +717,90 @@ pub const GitHubClient = struct {
                     "--merge"
                 else
                     "--squash";
-                const result = try self.ghCliRun(&.{ "gh", "pr", "merge", num_str, method_flag, "--delete-branch" });
+                const result = try self.ghCliRun(&.{ "gh", "pr", "merge", num_str, method_flag, "--match-head-commit", head_sha, "--delete-branch" });
                 self.allocator.free(result);
             },
         }
+    }
+
+    /// The reviewer-bee gate for one pull request, read from the GitHub API.
+    /// Fails closed: anything it cannot read counts as "not reviewed".
+    pub fn reviewerBeeGate(self: *Self, number: u32) !BeeGate {
+        if (self.mode == .dry_run) return BeeGate.refuse("dry run reads nothing");
+
+        const pr_path = try std.fmt.allocPrint(self.allocator, "/repos/{s}/{s}/pulls/{d}", .{ self.owner, self.repo, number });
+        defer self.allocator.free(pr_path);
+        const pr_json = self.apiGet(pr_path) catch return BeeGate.refuse("cannot read the pull request");
+        defer self.allocator.free(pr_json);
+
+        var gate = BeeGate.refuse("");
+        _ = prHeadSha(self.allocator, pr_json, &gate.head_sha_buf) orelse return BeeGate.refuse("cannot read the head sha");
+        const has_label = jsonHasLabel(self.allocator, pr_json, BEE_REVIEWED_LABEL);
+
+        const commit_path = try std.fmt.allocPrint(self.allocator, "/repos/{s}/{s}/commits/{s}", .{ self.owner, self.repo, gate.headSha() });
+        defer self.allocator.free(commit_path);
+        const commit_json = self.apiGet(commit_path) catch return BeeGate.refuse("cannot read the head commit");
+        defer self.allocator.free(commit_json);
+        // WHEN THE HEAD ARRIVED, not when it was committed. A commit made at
+        // 10:00 and pushed at 10:10 carries 10:00, so a label put on at 10:05
+        // would pass it unreviewed; a force-push back to an older SHA carries
+        // an older date still. The head's time is the latest of: its committer
+        // date, the first check run GitHub started on it (a push starts them),
+        // and the last force-push of the branch. Same hardening as
+        // gHashTag/t27#5526 (f9a6c9b). Every read fails closed.
+        var head_at = Stamp{};
+        var commit_at_buf: [32]u8 = undefined;
+        head_at.keepLater(commitDate(self.allocator, commit_json, &commit_at_buf) orelse
+            return BeeGate.refuse("cannot read the head commit date"));
+
+        const runs_path = try std.fmt.allocPrint(self.allocator, "/repos/{s}/{s}/commits/{s}/check-runs?per_page=100", .{ self.owner, self.repo, gate.headSha() });
+        defer self.allocator.free(runs_path);
+        const runs_json = self.apiGet(runs_path) catch return BeeGate.refuse("cannot read the head's check runs");
+        defer self.allocator.free(runs_json);
+        var first_run = Stamp{};
+        if (!earliestCheckRunStart(self.allocator, runs_json, &first_run)) return BeeGate.refuse("cannot read the head's check runs");
+        // Reading only the first 100 runs can only make this later: stricter.
+        if (first_run.get()) |at| head_at.keepLater(at);
+
+        const reviews_path = try std.fmt.allocPrint(self.allocator, "/repos/{s}/{s}/pulls/{d}/reviews?per_page=100", .{ self.owner, self.repo, number });
+        defer self.allocator.free(reviews_path);
+        const reviews_json = self.apiGet(reviews_path) catch return BeeGate.refuse("cannot read the reviews");
+        defer self.allocator.free(reviews_json);
+        const approved = jsonHasApproval(self.allocator, reviews_json);
+
+        // EVERY page of events: a force-push on a page left unread would make
+        // the head look older than it is, and that fails open. A history too
+        // long to read is refused.
+        var labeled_at = Stamp{};
+        var force_pushed_at = Stamp{};
+        var page: u32 = 1;
+        while (true) : (page += 1) {
+            if (page > 30) return BeeGate.refuse("too many events to read");
+            const events_path = try std.fmt.allocPrint(self.allocator, "/repos/{s}/{s}/issues/{d}/events?per_page=100&page={d}", .{ self.owner, self.repo, number, page });
+            defer self.allocator.free(events_path);
+            const events_json = self.apiGet(events_path) catch return BeeGate.refuse("cannot read the label events");
+            defer self.allocator.free(events_json);
+            const n = scanEventsPage(self.allocator, events_json, BEE_REVIEWED_LABEL, &labeled_at, &force_pushed_at) orelse
+                return BeeGate.refuse("cannot read the label events");
+            if (n < 100) break;
+        }
+        if (force_pushed_at.get()) |at| head_at.keepLater(at);
+
+        gate.reason = beeGateReason(has_label, approved, head_at.get(), labeled_at.get()) orelse {
+            gate.ok = true;
+            gate.reason = "reviewer bee passed";
+            return gate;
+        };
+        return gate;
+    }
+
+    /// GET a REST path through whichever transport this client has.
+    fn apiGet(self: *Self, path: []const u8) ![]const u8 {
+        return switch (self.mode) {
+            .dry_run => error.DryRun,
+            .native_http => self.httpRequest("GET", path, null),
+            .gh_cli => self.ghCliRun(&.{ "gh", "api", path[1..] }),
+        };
     }
 
     /// List pull requests
@@ -1308,4 +1597,100 @@ test "jsonEscapeAlloc graphql query" {
     const result = try jsonEscapeAlloc(allocator, query);
     defer allocator.free(result);
     try std.testing.expect(std.mem.indexOf(u8, result, "\\\"o\\\"") != null);
+}
+
+test "bee gate: label after head and approved passes" {
+    try std.testing.expect(beeGateReason(true, true, "2026-10-02T10:00:00Z", "2026-10-02T11:00:00Z") == null);
+    try std.testing.expect(beeGateReason(true, true, "2026-10-02T10:00:00Z", "2026-10-02T10:00:00Z") == null);
+}
+
+test "bee gate: refusals" {
+    try std.testing.expect(beeGateReason(false, true, "2026-10-02T10:00:00Z", "2026-10-02T11:00:00Z") != null);
+    try std.testing.expect(beeGateReason(true, false, "2026-10-02T10:00:00Z", "2026-10-02T11:00:00Z") != null);
+    try std.testing.expect(beeGateReason(true, true, "2026-10-02T12:00:00Z", "2026-10-02T11:00:00Z") != null);
+    try std.testing.expect(beeGateReason(true, true, null, "2026-10-02T11:00:00Z") != null);
+    try std.testing.expect(beeGateReason(true, true, "2026-10-02T10:00:00Z", null) != null);
+}
+
+test "bee gate: JSON readers" {
+    const a = std.testing.allocator;
+    const pr =
+        \\{"number":7,"head":{"sha":"0123456789abcdef0123456789abcdef01234567"},"labels":[{"name":"charter:r2-pass"},{"name":"bee-reviewed"}]}
+    ;
+    var sb: [40]u8 = undefined;
+    try std.testing.expectEqualStrings("0123456789abcdef0123456789abcdef01234567", prHeadSha(a, pr, &sb).?);
+    try std.testing.expect(jsonHasLabel(a, pr, BEE_REVIEWED_LABEL));
+    try std.testing.expect(!jsonHasLabel(a, "{\"labels\":[{\"name\":\"bee\"}]}", BEE_REVIEWED_LABEL));
+
+    try std.testing.expect(jsonHasApproval(a, "[{\"state\":\"COMMENTED\"},{\"state\":\"APPROVED\"}]"));
+    try std.testing.expect(!jsonHasApproval(a, "[{\"state\":\"CHANGES_REQUESTED\"}]"));
+    try std.testing.expect(!jsonHasApproval(a, "not json"));
+
+    var buf: [32]u8 = undefined;
+    try std.testing.expectEqualStrings("2026-10-02T10:00:00Z", commitDate(a, "{\"commit\":{\"committer\":{\"date\":\"2026-10-02T10:00:00Z\"}}}", &buf).?);
+
+    const events =
+        \\[{"event":"labeled","label":{"name":"bee-reviewed"},"created_at":"2026-10-02T11:00:00Z"},
+        \\ {"event":"labeled","label":{"name":"other"},"created_at":"2026-10-02T15:00:00Z"},
+        \\ {"event":"unlabeled","label":{"name":"bee-reviewed"},"created_at":"2026-10-02T14:00:00Z"},
+        \\ {"event":"labeled","label":{"name":"bee-reviewed"},"created_at":"2026-10-02T13:00:00Z"}]
+    ;
+    var lb: [32]u8 = undefined;
+    try std.testing.expectEqualStrings("2026-10-02T13:00:00Z", latestLabeledAt(a, events, BEE_REVIEWED_LABEL, &lb).?);
+    try std.testing.expect(latestLabeledAt(a, "[]", BEE_REVIEWED_LABEL, &lb) == null);
+}
+
+test "bee gate: head time is its arrival, not its commit date" {
+    const a = std.testing.allocator;
+    var head = Stamp{};
+    head.keepLater("2026-10-02T10:00:00Z"); // committer date
+
+    var first_run = Stamp{};
+    try std.testing.expect(earliestCheckRunStart(a,
+        \\{"total_count":2,"check_runs":[{"started_at":"2026-10-02T10:12:00Z"},{"started_at":"2026-10-02T10:10:00Z"},{"started_at":null}]}
+    , &first_run));
+    try std.testing.expectEqualStrings("2026-10-02T10:10:00Z", first_run.get().?);
+    head.keepLater(first_run.get().?);
+
+    // Late push: committed 10:00, pushed 10:10, labeled 10:05 -> refused.
+    try std.testing.expect(beeGateReason(true, true, head.get(), "2026-10-02T10:05:00Z") != null);
+    try std.testing.expect(beeGateReason(true, true, head.get(), "2026-10-02T10:11:00Z") == null);
+
+    // Force-push back to an older SHA after the label -> refused.
+    var labeled = Stamp{};
+    var pushed = Stamp{};
+    const events =
+        \\[{"event":"labeled","label":{"name":"bee-reviewed"},"created_at":"2026-10-02T11:00:00Z"},
+        \\ {"event":"head_ref_force_pushed","created_at":"2026-10-02T11:30:00Z"},
+        \\ {"event":"head_ref_force_pushed","created_at":"2026-10-02T09:00:00Z"},
+        \\ {"event":"labeled","label":{"name":"other"},"created_at":"2026-10-02T12:00:00Z"}]
+    ;
+    try std.testing.expectEqual(@as(?usize, 4), scanEventsPage(a, events, BEE_REVIEWED_LABEL, &labeled, &pushed));
+    try std.testing.expectEqualStrings("2026-10-02T11:00:00Z", labeled.get().?);
+    try std.testing.expectEqualStrings("2026-10-02T11:30:00Z", pushed.get().?);
+    head.keepLater(pushed.get().?);
+    try std.testing.expect(beeGateReason(true, true, head.get(), labeled.get()) != null);
+}
+
+test "bee gate: unreadable responses fail closed" {
+    const a = std.testing.allocator;
+    var s = Stamp{};
+    var t = Stamp{};
+    try std.testing.expect(!earliestCheckRunStart(a, "{\"message\":\"Not Found\"}", &s));
+    try std.testing.expect(!earliestCheckRunStart(a, "not json", &s));
+    try std.testing.expect(earliestCheckRunStart(a, "{\"check_runs\":[]}", &s));
+    try std.testing.expect(s.get() == null);
+    try std.testing.expect(scanEventsPage(a, "{\"message\":\"Not Found\"}", BEE_REVIEWED_LABEL, &s, &t) == null);
+    try std.testing.expect(beeGateReason(true, true, s.get(), "2026-10-02T11:00:00Z") != null);
+}
+
+test "bee gate: Stamp keeps the right end" {
+    var s = Stamp{};
+    s.keepEarlier("2026-10-02T10:00:00Z");
+    s.keepEarlier("2026-10-02T11:00:00Z");
+    try std.testing.expectEqualStrings("2026-10-02T10:00:00Z", s.get().?);
+    s.keepLater("2026-10-02T09:00:00Z");
+    try std.testing.expectEqualStrings("2026-10-02T10:00:00Z", s.get().?);
+    s.keepLater("2026-10-02T12:00:00Z");
+    try std.testing.expectEqualStrings("2026-10-02T12:00:00Z", s.get().?);
 }

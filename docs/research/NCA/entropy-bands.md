@@ -39,5 +39,5 @@ tri farm evolve inject \
 
 ## References
 
-- [Source: docs/experiments/FOUND_EXPERIMENTS_SUMMARY.md](../../../experiments/FOUND_EXPERIMENTS_SUMMARY.md)
+- [Source: docs/experiments/FOUND_EXPERIMENTS_SUMMARY.md](../../experiments/FOUND_EXPERIMENTS_SUMMARY.md)
 - [Related: architecture.md](./architecture.md)

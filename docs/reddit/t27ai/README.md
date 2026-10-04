@@ -26,7 +26,7 @@ Go to: https://www.reddit.com/subreddits/create
 
 ### 2. Configure Sidebar
 
-1. Go to: https://www.reddit.com/r/t27ai/about/sidebar
+1. Open the community you moderate and follow Reddit’s [Sidebar Widgets instructions](https://support.reddithelp.com/hc/en-us/articles/15484474697748-Sidebar-Widgets). The former direct sidebar URL is unavailable; this document does not confirm that `r/t27ai` exists or that the reader has moderator access.
 2. Copy content from `SIDEBAR.md`
 3. Paste into sidebar editor
 

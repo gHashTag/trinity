@@ -596,9 +596,9 @@ pub fn generateZenodoMetadataWithMetrics(
 ## References
 
 1. Efron, B., & Tibshirani, R. J. (1993). An introduction to the bootstrap. Chapman and Hall/CRC.
-2. NeurIPS 2025: https://neurips.cc/Conferences/2025/DatasetTrack
-3. ICLR 2025: https://iclr.cc/Conferences/2025/reproducibility-checklist
-4. MLSys 2025: https://mlsys.org/Conferences/2025/artifact-evaluation
+2. NeurIPS 2025: https://neurips.cc/Conferences/2025/CallForDatasetsBenchmarks
+3. ICLR 2025: https://iclr.cc/Conferences/2025/AuthorGuide
+4. MLSys 2025: https://mlsys.org/Conferences/2025/CallForAE
 5. FAIR Principles: https://www.go-fair.org/fair-principles/
 
 ---

@@ -2,7 +2,8 @@
 // Measure what the t27 stack is written in, for the ROADMAP tab.
 //
 // The game's goal is one language: everything below the interface in .t27,
-// generated to its target (trios CLAUDE.md, law L0). A roadmap toward that is
+// generated to its target (law L0 PURPOSE, gHashTag/t27 docs/T27-CONSTITUTION.md
+// section 2). A roadmap toward that is
 // only honest if it starts from a count anyone can reproduce, so this reads the
 // files git TRACKS in each repository that runs app.t27.ai, at a named commit,
 // from GitHub's tree API - sizes without a checkout. The first version cloned

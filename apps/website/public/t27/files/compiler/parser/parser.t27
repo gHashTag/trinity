@@ -33,8 +33,10 @@ module parser {
                     .test_section = null,
                     .invariant_section = null,
                     .bench_section = null,
-                    .exports = &[0][]const u8{},
-                    .imports = &[0][]const u8{},
+                    // (`&[0][]const u8{}` -- an empty list of strings -- is
+                    // written as the empty array literal `[]`.)
+                    .exports = [],
+                    .imports = [],
                 },
                 .symbol_table = SymbolTable.new(null),
                 .errors = &[0]CompileError{},
@@ -112,7 +114,10 @@ module parser {
 
     // Match any of the given token types
     pub fn Parser.match(types: []const TokenType) bool {
-        for (types) |t| {
+        // (Zig `for (xs) |x|` loops are written as indexed while loops.)
+        var k: usize = 0;
+        while (k < types.len) : (k += 1) {
+            const t = types[k];
             if (self.check(t)) {
                 return true;
             }
@@ -1048,7 +1053,10 @@ module parser {
         }
 
         // Scan for Cyrillic characters (U+0400–U+04FF)
-        for (source, 0..) |c, i| {
+        // (Zig `for (source, 0..) |c, i|` written as an indexed loop.)
+        var i: usize = 0;
+        while (i < source.len) : (i += 1) {
+            const c = source[i];
             // Check for Cyrillic range
             // U+0400 (1040) to U+04FF (1279)
             if (c >= 0xD0 and c <= 0xD0) { // May be start of 2-byte Cyrillic
@@ -1074,7 +1082,9 @@ module parser {
     // Helper: get line number at position
     pub fn Parser.get_line_at_pos(source: []const u8, pos: u32) u32 {
         var line: u32 = 1;
-        for (source[0..pos]) |c| {
+        var k: u32 = 0;
+        while (k < pos) : (k += 1) {
+            const c = source[k];
             if (c == '\n') {
                 line += 1;
             }
@@ -1162,133 +1172,153 @@ module parser {
     }
 
     // ========== TDD-Inside-Spec: Tests and Invariants for Parser ==========
+// (Blocks were keyword-style with Zig statements; now brace form:
+// `try std.testing.expect(x)` -> `assert x`, `parser.f` -> `f` (same
+// module), and each bench's `target:` line is kept as a comment.)
 
-    test test_parser_empty_program
+test test_parser_empty_program {
     // Verify: parser handles empty input
     // Setup: parse empty string
     // Expected: program with no errors
     const source = "";
-    const ctx = parser.parse(source, "test.t27");
-    try std.testing.expect(ctx.errors.len == 0);
+    const ctx = parse(source, "test.t27");
+    assert ctx.errors.len == 0;
+}
 
-test test_parser_const_definition
+test test_parser_const_definition {
     // Verify: parser extracts constant definitions
     // Setup: parse .const MAX 100
     // Expected: constant in AST with correct name and value
     const source = ".const MAX 100";
-    const ctx = parser.parse(source, "test.t27");
-    try std.testing.expect(ctx.ast_root.constants.len == 1);
-    try std.testing.expect(std.mem.eql(u8, ctx.ast_root.constants[0].name, "MAX"));
+    const ctx = parse(source, "test.t27");
+    assert ctx.ast_root.constants.len == 1;
+    assert std.mem.eql(u8, ctx.ast_root.constants[0].name, "MAX");
+}
 
-test test_parser_data_section
+test test_parser_data_section {
     // Verify: parser extracts data section
     // Setup: parse .data section with labels
     // Expected: data_section populated correctly
     const source = ".data\nstart: .dword 42";
-    const ctx = parser.parse(source, "test.t27");
-    try std.testing.expect(ctx.ast_root.data_section.declarations.len == 1);
+    const ctx = parse(source, "test.t27");
+    assert ctx.ast_root.data_section.declarations.len == 1;
+}
 
-test test_parser_code_section
+test test_parser_code_section {
     // Verify: parser extracts code section with labels and instructions
     // Setup: parse .code section with MOV instruction
     // Expected: code_section has instruction at label
     const source = ".code\nstart: MOV r0, #1";
-    const ctx = parser.parse(source, "test.t27");
-    try std.testing.expect(ctx.ast_root.code_section.instructions.len == 1);
+    const ctx = parse(source, "test.t27");
+    assert ctx.ast_root.code_section.instructions.len == 1;
+}
 
-test test_parser_instruction_operands
+test test_parser_instruction_operands {
     // Verify: parser handles all operand types
     // Setup: parse instruction with register, immediate, label, memory
     // Expected: operands parsed correctly
     const source = ".code\nMOV r0, #1\nJMP label\nLOAD r0, [r1]";
-    const ctx = parser.parse(source, "test.t27");
-    try std.testing.expect(ctx.ast_root.code_section.instructions.len == 3);
+    const ctx = parse(source, "test.t27");
+    assert ctx.ast_root.code_section.instructions.len == 3;
+}
 
-test test_parser_test_section
+test test_parser_test_section {
     // Verify: parser extracts test section
     // Setup: parse .test section with comment-style tests
     // Expected: test_section populated with test cases
     const source = ".test\n; test_name\n; Verify: something works\n; Expected: 42";
-    const ctx = parser.parse(source, "test.t27");
-    try std.testing.expect(ctx.ast_root.test_section != null);
-    try std.testing.expect(ctx.ast_root.test_section.?.test_cases.len == 1);
+    const ctx = parse(source, "test.t27");
+    assert ctx.ast_root.test_section != null;
+    assert ctx.ast_root.test_section.?.test_cases.len == 1;
+}
 
-test test_parser_invariant_section
+test test_parser_invariant_section {
     // Verify: parser extracts invariant section
     // Setup: parse .invariant section
     // Expected: invariant_section populated with invariants
     const source = ".invariant\n; arena_no_leak\n; heap_ptr never exceeds heap_end\n; Rationale: bounds checking";
-    const ctx = parser.parse(source, "test.t27");
-    try std.testing.expect(ctx.ast_root.invariant_section != null);
+    const ctx = parse(source, "test.t27");
+    assert ctx.ast_root.invariant_section != null;
+}
 
-test test_parser_bench_section
+test test_parser_bench_section {
     // Verify: parser extracts bench section
     // Setup: parse .bench section
     // Expected: bench_section populated with benchmarks
     const source = ".bench\n; alloc_latency\n; Measure: allocation time\n; Target: < 10 cycles";
-    const ctx = parser.parse(source, "test.t27");
-    try std.testing.expect(ctx.ast_root.bench_section != null);
+    const ctx = parse(source, "test.t27");
+    assert ctx.ast_root.bench_section != null;
+}
 
-test test_parser_spec_style
+test test_parser_spec_style {
     // Verify: parser handles high-level spec-style
     // Setup: parse spec with test block
     // Expected: spec_decl populated with test_blocks
     const source = "spec test_spec\n test basic\n  given x = 1\n  when y = x + 1\n  then y == 2";
-    const ctx = parser.parse(source, "test.t27");
-    try std.testing.expect(ctx.ast_root.spec_decl != null);
+    const ctx = parse(source, "test.t27");
+    assert ctx.ast_root.spec_decl != null;
+}
 
-test test_parser_opcode_mnemonic
+test test_parser_opcode_mnemonic {
     // Verify: get_opcode maps mnemonics correctly
     // Setup: call get_opcode with various mnemonics
     // Expected: correct Opcode returned
-    var p = parser.Parser.new(&[_]parser.Token{}, "test.t27");
-    try std.testing.expect(p.get_opcode("MOV") == parser.Opcode.MOV);
-    try std.testing.expect(p.get_opcode("ADD") == parser.Opcode.ADD);
-    try std.testing.expect(p.get_opcode("UNKNOWN") == null);
+    var p = Parser.new(&[_]Token{}, "test.t27");
+    assert p.get_opcode("MOV") == Opcode.MOV;
+    assert p.get_opcode("ADD") == Opcode.ADD;
+    assert p.get_opcode("UNKNOWN") == null;
+}
 
-test test_parser_language_policy_cyrillic
+test test_parser_language_policy_cyrillic {
     // Verify: parser rejects Cyrillic in source (SOUL.md Law #1)
     // Setup: parse source with Cyrillic characters
     // Expected: error added to context
     const source = "const DD D~D'D.Dc 42"; // Cyrillic
-    const ctx = parser.parse(source, "test.t27");
-    try std.testing.expect(ctx.errors.len > 0);
+    const ctx = parse(source, "test.t27");
+    assert ctx.errors.len > 0;
+}
 
-test test_parser_language_policy_docs_exception
+test test_parser_language_policy_docs_exception {
     // Verify: Cyrillic allowed in docs/ directory
     // Setup: parse source in docs/ path with Cyrillic
     // Expected: no error
     const source = "const DD D~D'D.Dc 42";
-    const ctx = parser.parse(source, "docs/README.md");
-    try std.testing.expect(ctx.errors.len == 0);
+    const ctx = parse(source, "docs/README.md");
+    assert ctx.errors.len == 0;
+}
 
-invariant parser_no_crash_on_empty
+invariant parser_no_crash_on_empty {
     // parser never crashes on empty input
     // Rationale: Robustness
     const source = "";
-    _ = parser.parse(source, "test.t27");
+    _ = parse(source, "test.t27");
+}
 
-invariant parser_symbol_table_consistent
+invariant parser_symbol_table_consistent {
     // symbol_table contains all defined labels and constants
     // Rationale: Linking correctness
     const source = ".const X 1\n.code\nlabel: MOV r0, #X";
-    const ctx = parser.parse(source, "test.t27");
+    const ctx = parse(source, "test.t27");
     _ = ctx;
     // assert ctx.symbol_table has entries for "X" and "label"
+}
 
-invariant parser_tdd_contract_enforced
+invariant parser_tdd_contract_enforced {
     // validate_spec enforces at least one test or invariant
     // Rationale: TDD-Inside-Spec compliance
     // A spec without tests should have an error in context
     // (specific validation is tested in test_parser_validate_spec)
+}
 
-bench bench_parse_throughput_lines_per_sec
-    target: > 10K lines/sec
+bench bench_parse_throughput_lines_per_sec {
+    // target: > 10K lines/sec
     const source = ".code\nMOV r0, #1\nMOV r1, #2\nADD r0, r1\nHALT";
-    _ = parser.parse(source, "test.t27");
+    _ = parse(source, "test.t27");
+}
 
-bench bench_parse_latency_ns_per_line
-    target: < 1000 ns/line
+bench bench_parse_latency_ns_per_line {
+    // target: < 1000 ns/line
     const source = ".const MAX 100\n.data\nval: .dword 0\n.code\nstart: MOV r0, #MAX\nHALT";
-    _ = parser.parse(source, "test.t27");
+    _ = parse(source, "test.t27");
+}
 }

@@ -191,61 +191,65 @@ module PpoActor;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test forward_discrete_basic_case
-        given state = [1.0, 2.0, 3.0]
-             params = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 0.1, 0.2] // 3x4 weights + 4 bias
-             config = ActorConfig{state_dim: 3, action_dim: 4, hidden_dims: [], action_space: ActionSpace{}, init_log_std: 0.0}
-        when result = forward_discrete(state, params, config)
-        then result.len == 4
-             result[0] >= 0.0 && result[0] <= 1.0
-             result[1] >= 0.0 && result[1] <= 1.0
-             result[2] >= 0.0 && result[2] <= 1.0
-             result[3] >= 0.0 && result[3] <= 1.0
-             (result[0] + result[1] + result[2] + result[3] - 1.0) * (result[0] + result[1] + result[2] + result[3] - 1.0) <= 0.001 * 0.001
+    test forward_discrete_basic_case {
+        var state: [3]f32 = [1.0, 2.0, 3.0];
+        var params: [12]f32 = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 0.1, 0.2];  // 3x4 weights
+        var hidden: [0]u32 = [];
+        var config = ActorConfig{ .state_dim = 3, .action_dim = 4, .hidden_dims = &hidden, .action_space = ActionSpace{}, .init_log_std = 0.0 };
+        var result = forward_discrete(&state, &params, config);
+        assert(result.len == 4);
+        assert(result[0] >= 0.0 and result[0] <= 1.0);
+        assert(result[1] >= 0.0 and result[1] <= 1.0);
+        assert(result[2] >= 0.0 and result[2] <= 1.0);
+        assert(result[3] >= 0.0 and result[3] <= 1.0);
+        var sum = result[0] + result[1] + result[2] + result[3];
+        assert((sum - 1.0) * (sum - 1.0) <= 0.001 * 0.001);  // a probability distribution
     }
 
-    test forward_continuous_basic_case
-        given state = [1.0, 2.0, 3.0]
-             params = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 0.1, 0.2, 0.0, 0.0, 0.0, 0.0] // 3x4 weights + 4 bias + 4 log_std
-             config = ActorConfig{state_dim: 3, action_dim: 4, hidden_dims: [], action_space: ActionSpace{}, init_log_std: 0.0}
-        when result = forward_continuous(state, params, config)
-        then result.logits.len == 4
-             result.log_std.len == 4
-             var i : usize = 0;
-             while (i < result.logits.len) : (i += 1) {
-                 result.logits[i] != undefined
-                 result.log_std[i] >= MIN_LOG_STD && result.log_std[i] <= MAX_LOG_STD
-             }
+    test forward_continuous_basic_case {
+        var state: [3]f32 = [1.0, 2.0, 3.0];
+        var params: [16]f32 = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 0.1, 0.2, 0.0, 0.0, 0.0, 0.0];  // 3x4 weights + 4 log_std
+        var hidden: [0]u32 = [];
+        var config = ActorConfig{ .state_dim = 3, .action_dim = 4, .hidden_dims = &hidden, .action_space = ActionSpace{}, .init_log_std = 0.0 };
+        var result = forward_continuous(&state, &params, config);
+        assert(result.logits.len == 4);
+        assert(result.log_std.len == 4);
+        var i : usize = 0;
+        while (i < result.log_std.len) {
+            assert(result.log_std[i] >= MIN_LOG_STD and result.log_std[i] <= MAX_LOG_STD);
+            i = i + 1;
+        }
     }
 
-    test sample_action_basic_case
-        given policy_output = PolicyOutput{logits: [1.0, 2.0, 3.0, 4.0], log_std: [0.1, 0.2, 0.3, 0.4]}
-             action_space = ActionSpace{}
-             deterministic = false
-        when result = sample_action(policy_output, action_space, deterministic)
-        then result.len == 4
-             var i : usize = 0;
-             while (i < result.len) : (i += 1) {
-                 result[i] != undefined
-                 result[i] >= -10.0 && result[i] <= 10.0
-             }
+    test sample_action_basic_case {
+        var logits: [4]f32 = [1.0, 2.0, 3.0, 4.0];
+        var log_std: [4]f32 = [0.1, 0.2, 0.3, 0.4];
+        var policy_output = PolicyOutput{ .logits = &logits, .log_std = &log_std };
+        var result = sample_action(policy_output, ActionSpace{}, false);
+        assert(result.len == 4);
+        var i : usize = 0;
+        while (i < result.len) {
+            assert(result[i] >= -10.0 and result[i] <= 10.0);
+            i = i + 1;
+        }
     }
 
-    test log_prob_basic_case
-        given action = [1.0, 2.0, 3.0, 4.0]
-             policy_output = PolicyOutput{logits: [1.0, 2.0, 3.0, 4.0], log_std: [0.1, 0.2, 0.3, 0.4]}
-             action_space = ActionSpace{}
-        when result = log_prob(action, policy_output, action_space)
-        then result != undefined
-             result != undefined
+    test log_prob_basic_case {
+        // The original asserted only `result != undefined`; this runs the computation.
+        var action: [4]f32 = [1.0, 2.0, 3.0, 4.0];
+        var logits: [4]f32 = [1.0, 2.0, 3.0, 4.0];
+        var log_std: [4]f32 = [0.1, 0.2, 0.3, 0.4];
+        var policy_output = PolicyOutput{ .logits = &logits, .log_std = &log_std };
+        var result = log_prob(&action, policy_output, ActionSpace{});
+        assert(result == result);  // not NaN
     }
 
-    test entropy_basic_case
-        given policy_output = PolicyOutput{logits: [1.0, 2.0, 3.0, 4.0], log_std: [0.1, 0.2, 0.3, 0.4]}
-             action_space = ActionSpace{}
-        when result = entropy(policy_output, action_space)
-        then result != undefined
-             result >= 0.0
+    test entropy_basic_case {
+        var logits: [4]f32 = [1.0, 2.0, 3.0, 4.0];
+        var log_std: [4]f32 = [0.1, 0.2, 0.3, 0.4];
+        var policy_output = PolicyOutput{ .logits = &logits, .log_std = &log_std };
+        var result = entropy(policy_output, ActionSpace{});
+        assert(result >= 0.0);
     }
 
     // ═══════════════════════════════════════════════════════════

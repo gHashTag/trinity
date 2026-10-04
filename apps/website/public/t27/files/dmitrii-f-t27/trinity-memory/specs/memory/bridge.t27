@@ -134,6 +134,22 @@ module TrinityMemoryBridgeSpec {
     pub const TMS_BRIDGE_IDENTITY_BYTES: u32 = 16;
     pub const TMS_BRIDGE_IDENTITY_ANCHOR: u32 = 18368;
 
+    // 10. Device backend (issue #64; a fork-local extension, not in the upstream
+    //     emulator-only v1 copy). The emulator stays the default and every
+    //     emulator response is unchanged. Backend fpga reports the device
+    //     transport and the evidence block of the captures the build ran with:
+    //     bitstream sha256, capture sha256, IDCODE and DNA. A server constructed
+    //     with backend fpga but without the whole evidence block is rejected at
+    //     construction, and its device methods answer with the transport error
+    //     until a device is linked behind them.
+    pub const TMS_BRIDGE_TRANSPORT_IN_PROCESS: u32 = 0;
+    pub const TMS_BRIDGE_TRANSPORT_UART: u32 = 1;
+    pub const TMS_BRIDGE_EVIDENCE_BITSTREAM: u32 = 1;
+    pub const TMS_BRIDGE_EVIDENCE_CAPTURE: u32 = 2;
+    pub const TMS_BRIDGE_EVIDENCE_IDCODE: u32 = 4;
+    pub const TMS_BRIDGE_EVIDENCE_DNA: u32 = 8;
+    pub const TMS_BRIDGE_EVIDENCE_REQUIRED: u32 = 15;
+
     // Reference functions.
     pub fn tms_bridge_request_status(size: u64, max_request: u64, json_valid: bool) -> i32 {
         if (size > max_request) { return TMS_HTTP_PAYLOAD_TOO_LARGE; }
@@ -260,6 +276,33 @@ module TrinityMemoryBridgeSpec {
             + max_trits * TMS_BRIDGE_RESPONSE_BYTES_PER_TRIT;
     }
 
+    pub fn tms_bridge_backend_valid(backend: u32) -> bool {
+        return backend == 0 || backend == 1;
+    }
+
+    pub fn tms_bridge_backend_is_hardware(backend: u32) -> bool {
+        return backend == 1;
+    }
+
+    // The emulator computes in process; the device backend reaches the board over
+    // the loader's UART line.
+    pub fn tms_bridge_transport_valid(backend: u32, transport: u32) -> bool {
+        if (backend == 0) { return transport == TMS_BRIDGE_TRANSPORT_IN_PROCESS; }
+        return transport == TMS_BRIDGE_TRANSPORT_UART;
+    }
+
+    // The emulator carries no evidence; the device backend requires all four fields.
+    pub fn tms_bridge_evidence_valid(backend: u32, present: u32) -> bool {
+        if (backend == 0) { return present == 0; }
+        return present == TMS_BRIDGE_EVIDENCE_REQUIRED;
+    }
+
+    // A device identity needs a nonzero IDCODE read from the board (0x3636093 on
+    // the AX7203, XC7A200T); DNA covers the rest of the receipt.
+    pub fn tms_bridge_idcode_valid(idcode: u32) -> bool {
+        return idcode != 0;
+    }
+
     // Invariants: constant expressions, compiled as static assertions.
     invariant error_codes_are_distinct_and_negative {
         assert TMS_RPC_ERR_PARSE < TMS_RPC_ERR_INTERNAL && TMS_RPC_ERR_INTERNAL < TMS_RPC_ERR_INVALID_PARAMS
@@ -312,6 +355,10 @@ module TrinityMemoryBridgeSpec {
     invariant http_statuses_are_the_standard_codes {
         assert TMS_HTTP_OK == 200 && TMS_HTTP_BAD_REQUEST == 400 && TMS_HTTP_FORBIDDEN == 403 && TMS_HTTP_METHOD_NOT_ALLOWED == 405
             && TMS_HTTP_PAYLOAD_TOO_LARGE == 413 && TMS_HTTP_UNSUPPORTED_MEDIA_TYPE == 415 && TMS_HTTP_HEADERS_TOO_LARGE == 431;
+    }
+    invariant evidence_mask_is_the_sum_of_its_four_fields {
+        assert TMS_BRIDGE_EVIDENCE_REQUIRED == (TMS_BRIDGE_EVIDENCE_BITSTREAM | TMS_BRIDGE_EVIDENCE_CAPTURE
+            | TMS_BRIDGE_EVIDENCE_IDCODE | TMS_BRIDGE_EVIDENCE_DNA);
     }
 
     // Tests execute in the generated C test runner.
@@ -411,5 +458,19 @@ module TrinityMemoryBridgeSpec {
     test "runtime buffer capacities follow the configured limits" {
         assert tms_bridge_request_capacity(2097152) == 2162688;
         assert tms_bridge_response_capacity(524288, 1000000) == 41064960;
+    }
+    test "the emulator is the default and the device backend needs its transport" {
+        assert tms_bridge_backend_valid(0) && tms_bridge_backend_valid(1);
+        assert !tms_bridge_backend_valid(2);
+        assert !tms_bridge_backend_is_hardware(0) && tms_bridge_backend_is_hardware(1);
+        assert tms_bridge_transport_valid(0, 0) && !tms_bridge_transport_valid(0, 1);
+        assert tms_bridge_transport_valid(1, 1) && !tms_bridge_transport_valid(1, 0);
+    }
+    test "the device backend requires the whole evidence block and the emulator none" {
+        assert tms_bridge_evidence_valid(0, 0) && !tms_bridge_evidence_valid(0, 15);
+        assert tms_bridge_evidence_valid(1, 15) && !tms_bridge_evidence_valid(1, 0);
+        assert !tms_bridge_evidence_valid(1, 7) && !tms_bridge_evidence_valid(1, 31);
+        // 0x3636093 in decimal digits: the Artix-7 XC7A200T of the AX7203.
+        assert tms_bridge_idcode_valid(56762515) && tms_bridge_idcode_valid(1) && !tms_bridge_idcode_valid(0);
     }
 }

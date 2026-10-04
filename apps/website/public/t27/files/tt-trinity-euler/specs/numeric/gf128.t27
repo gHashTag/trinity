@@ -347,123 +347,122 @@ pub fn gf128_clamp(value: GF128, min: GF128, max: GF128) GF128 {
 // ============================================================================
 
 test "gf128_extract_sign_positive" {
-    given value = 0x00000000000000000000000000001234
-    try std.testing.expect(sign = gf128_extract_sign(value));
-    try std.testing.expect(sign == 0);
+    const value = 0x00000000000000000000000000001234;
+    const sign = gf128_extract_sign(value);
+    assert(sign == 0);
 }
 
 test "gf128_extract_sign_negative" {
-    given value = 0x80000000000000000000000000001234
-    try std.testing.expect(sign = gf128_extract_sign(value));
-    try std.testing.expect(sign == -1);
+    const value = 0x80000000000000000000000000001234;
+    const sign = gf128_extract_sign(value);
+    assert(sign == -1);
 }
 
 test "gf128_extract_exponent_middle" {
-    given value = 0x00008000000000000000000000000000  // exp = 134217728
-    try std.testing.expect(exp = gf128_extract_exponent(value));
-    try std.testing.expect(exp == 134217728);
+    const value = 0x00008000000000000000000000000000;  // exp = 134217728
+    const exp = gf128_extract_exponent(value);
+    assert(exp == 134217728);
 }
 
 test "gf128_is_zero_positive" {
-    try std.testing.expect(gf128_is_zero(GF128_ZERO_POS) == true);
+    assert(gf128_is_zero(GF128_ZERO_POS) == true);
 }
 
 test "gf128_is_zero_negative" {
-    try std.testing.expect(gf128_is_zero(GF128_ZERO_NEG) == true);
+    assert(gf128_is_zero(GF128_ZERO_NEG) == true);
 }
 
 test "gf128_is_inf_positive" {
-    try std.testing.expect(gf128_is_inf(GF128_INF_POS) == true);
+    assert(gf128_is_inf(GF128_INF_POS) == true);
 }
 
 test "gf128_is_nan" {
-    try std.testing.expect(gf128_is_nan(GF128_NAN) == true);
+    assert(gf128_is_nan(GF128_NAN) == true);
 }
 
 test "gf128_encode_f64_zero" {
-    given gf = gf128_encode_f64(0.0)
-    try std.testing.expect(gf == GF128_ZERO_POS);
+    const gf = gf128_encode_f64(0.0);
+    assert(gf == GF128_ZERO_POS);
 }
 
 test "gf128_encode_f64_one" {
-    given gf = gf128_encode_f64(1.0)
-    try std.testing.expect(decoded = gf128_decode_f64(gf));
-    try std.testing.expect(abs(decoded - 1.0) < 0.0001);
+    const gf = gf128_encode_f64(1.0);
+    const decoded = gf128_decode_f64(gf);
+    assert(abs(decoded - 1.0) < 0.0001);
 }
 
 test "gf128_encode_f64_negative_one" {
-    given gf = gf128_encode_f64(-1.0)
-    try std.testing.expect(decoded = gf128_decode_f64(gf));
-    try std.testing.expect(abs(decoded + 1.0) < 0.0001);
+    const gf = gf128_encode_f64(-1.0);
+    const decoded = gf128_decode_f64(gf);
+    assert(abs(decoded + 1.0) < 0.0001);
 }
 
 test "gf128_encode_f64_roundtrip" {
-    given original = 42.5
-    try std.testing.expect(gf = gf128_encode_f64(original));
-    try std.testing.expect(decoded = gf128_decode_f64(gf));
-    try std.testing.expect(abs(decoded - original) < 0.001);
+    const original = 42.5;
+    const gf = gf128_encode_f64(original);
+    const decoded = gf128_decode_f64(gf);
+    assert(abs(decoded - original) < 0.001);
 }
 
 test "gf128_add_simple" {
-    given a = gf128_encode_f64(1.0)
-    try std.testing.expect(b = gf128_encode_f64(2.0));
-    try std.testing.expect(result = gf128_add(a, b));
-    try std.testing.expect(decoded = gf128_decode_f64(result));
-    try std.testing.expect(abs(decoded - 3.0) < 0.01);
+    const a = gf128_encode_f64(1.0);
+    const b = gf128_encode_f64(2.0);
+    const result = gf128_add(a, b);
+    const decoded = gf128_decode_f64(result);
+    assert(abs(decoded - 3.0) < 0.01);
 }
 
 test "gf128_mul_simple" {
-    given a = gf128_encode_f64(3.0)
-    try std.testing.expect(b = gf128_encode_f64(4.0));
-    try std.testing.expect(result = gf128_mul(a, b));
-    try std.testing.expect(decoded = gf128_decode_f64(result));
-    try std.testing.expect(abs(decoded - 12.0) < 0.01);
+    const a = gf128_encode_f64(3.0);
+    const b = gf128_encode_f64(4.0);
+    const result = gf128_mul(a, b);
+    const decoded = gf128_decode_f64(result);
+    assert(abs(decoded - 12.0) < 0.01);
 }
 
 test "gf128_abs_positive" {
-    given value = gf128_encode_f64(5.0)
-    try std.testing.expect(abs_val = gf128_abs(value));
-    try std.testing.expect(gf128_is_equal(abs_val, value) == true);
+    const value = gf128_encode_f64(5.0);
+    const abs_val = gf128_abs(value);
+    assert(gf128_is_equal(abs_val, value) == true);
 }
 
 test "gf128_abs_negative" {
-    given value = gf128_encode_f64(-5.0)
-    try std.testing.expect(abs_val = gf128_abs(value));
-    try std.testing.expect(gf128_extract_sign(abs_val) == 0);
+    const value = gf128_encode_f64(-5.0);
+    const abs_val = gf128_abs(value);
+    assert(gf128_extract_sign(abs_val) == 0);
 }
 
 test "gf128_neg" {
-    given value = gf128_encode_f64(5.0)
-    try std.testing.expect(neg_val = gf128_neg(value));
-    try std.testing.expect(decoded = gf128_decode_f64(neg_val));
-    try std.testing.expect(abs(decoded + 5.0) < 0.01);
+    const value = gf128_encode_f64(5.0);
+    const neg_val = gf128_neg(value);
+    const decoded = gf128_decode_f64(neg_val);
+    assert(abs(decoded + 5.0) < 0.01);
 }
 
 test "gf128_is_equal_nan" {
-    try std.testing.expect(gf128_is_equal(GF128_NAN, GF128_NAN) == false);
+    assert(gf128_is_equal(GF128_NAN, GF128_NAN) == false);
 }
 
 test "gf128_is_greater_positive" {
-    given a = gf128_encode_f64(5.0)
-    try std.testing.expect(b = gf128_encode_f64(3.0));
-    try std.testing.expect(gf128_is_greater(a, b) == true);
+    const a = gf128_encode_f64(5.0);
+    const b = gf128_encode_f64(3.0);
+    assert(gf128_is_greater(a, b) == true);
 }
 
 test "gf128_from_components_roundtrip" {
-    given sign = -1
-    try std.testing.expect(exp = 134217728);
-    try std.testing.expect(mant = 0x8000000000000000000000000);
-    try std.testing.expect(gf = gf128_from_components(sign, exp, mant));
-    try std.testing.expect(extracted_sign = gf128_extract_sign(gf));
-    try std.testing.expect(extracted_exp = gf128_extract_exponent(gf));
-    try std.testing.expect(extracted_sign == sign and extracted_exp == exp);
+    const sign = -1;
+    const exp = 134217728;
+    const mant = 0x8000000000000000000000000;
+    const gf = gf128_from_components(sign, exp, mant);
+    const extracted_sign = gf128_extract_sign(gf);
+    const extracted_exp = gf128_extract_exponent(gf);
+    assert(extracted_sign == sign and extracted_exp == exp);
 }
 
 // ============================================================================
 // Invariants
 // ============================================================================
 
-}
 invariant gf128_bits_total
     assert SIGN_BITS + EXP_BITS + MANT_BITS == 128
 

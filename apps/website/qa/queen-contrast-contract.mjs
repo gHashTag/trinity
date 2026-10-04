@@ -193,6 +193,10 @@ const REACHED = {
     'src/components/QueenChat.css',
     'src/components/QueenCombEmbedded.css',
     'src/components/QueenContext.css',
+    'src/components/QueenEvidence.css',
+    /* The IGLA board section inside WARS (feat/wars-igla-board): black field,
+       measured by the same census as every other board sheet. */
+    'src/components/IglaBoard.css',
     'src/components/QueenIntel.css',
     'src/components/QueenLoading.css',
     'src/components/QueenMcp.css',
@@ -200,6 +204,8 @@ const REACHED = {
     'src/components/QueenSpecTreasury.css',
     'src/components/QueenTri.css',
     'src/components/QueenUniverseAtlas.css',
+    'src/components/QueenWars.css',
+    'src/components/QueenWidgets.css',
     'src/pages/Queen.css',
     'src/pages/QueenUniverse.css',
     'src/pages/passport.css',
@@ -211,9 +217,30 @@ const REACHED = {
        that renders inside .queen27-hud-vp-body sits over the same hive every
        other view does, and arriving three days later does not exempt it. */
     'src/components/queenRoadmap.css',
+    /* The LEADERBOARD view: the third sheet to arrive after this list was
+       written, and the third the list caught on its first run rather than
+       letting it onto the board unmeasured. It is grounded with the rest -- a
+       veil over the hive, blurred, and every pair below measured over both a
+       lit and a dark field. */
+    'src/components/QueenLeaderboard.css',
+    /* PEOPLE, the contributors half of that tab: the fourth sheet the list has
+       caught on its first run, which is four for four. */
+    'src/components/QueenPeople.css',
+    /* TOKEN, TRI and who earned it: the facts strip and the testnet label
+       are veiled and blurred like the rows, which reuse QueenPeople.css. */
+    'src/components/QueenToken.css',
+    /* MY RUNNERS, the cabinet inside that tab: a veil over the hive, blurred,
+       like the leaderboard rows it sits beside. */
+    'src/components/QueenRunners.css',
+    /* LEVEL II, the comb on the ROADMAP view: five for five. It renders inside
+       .rm, whose opaque gradient already grounds it, and its own panel is
+       opaque on top of that. */
+    'src/components/queenRoadmapGame.css',
   ],
   'src/App.tsx': [
     'src/components/AgiGameBlock.css',
+    /* TRI DEV KIT on #/devkit: its panels are opaque over the page background. */
+    'src/components/DevKitBlock.css',
     'src/components/FaqBlock.css',
     'src/components/GameHero.css',
     'src/components/ModuleHeroBlock.css',
@@ -225,6 +252,7 @@ const REACHED = {
     'src/components/QueenChat.css',
     'src/components/QueenCombEmbedded.css',
     'src/components/QueenHeroBlock.css',
+    'src/components/QueenEvidence.css',
     'src/components/SpecHeroBlock.css',
     /* Not imported by any component on the landing page. They arrive through
        the two `@import` lines at the top of QueenCatalogHive.css, which is what
@@ -686,6 +714,13 @@ const INKS = [
 ]
 
 const table = []
+// Evidence text is small in both the disclosure and its opaque report body.
+for (const ink of ['#d8ebe3', '#aebfb8', '#64dcff', '#ffd45a']) {
+  for (const ground of [parseColor('#060c0d'), composite(PANEL, LIT)]) {
+    assert.ok(contrast(parseColor(ink), ground) >= 4.5,
+      `Queen evidence ink ${ink} must meet body-text AA on both surfaces`)
+  }
+}
 for (const ground of GROUNDS) {
   for (const ink of INKS) {
     for (const [field, fieldName] of [[LIT, 'lit'], [DARK, 'dark']]) {
@@ -823,9 +858,13 @@ const TOKEN_SCOPES = new Map([
   ['.queen27-page.is-shell:has(.queen-chat-tab)', 'board'],
   // Views and components mounted inside it.
   ['.rm', 'board'],
+  // LEVEL II, the comb: mounted inside `.rm`.
+  ['.rg', 'board'],
   ['.queen-catalog-layer', 'board'],
   ['.queen-catalog-layer:has(.queen-catalog-toolbar.is-search-open)', 'board'],
   ['.queen-hive-display', 'board'],
+  ['.queen-wars', 'board'],
+  ['.queen-widgets', 'board'],
   ['.queen27-context', 'board'],
   ['.queen27-cycle-brand', 'board'],
   ['.queen27-factory', 'board'],
@@ -1057,24 +1096,6 @@ const UNREADABLE = new Map([
      gate measures them. */
   ['src/pages/Queen.css:.queen27-dir-chip > i', 'opaque var(--queen-dir), 6px dot'],
   ['src/pages/Queen.css:.queen27-dir-filter .queen27-dir-chip[aria-pressed="true"]', 'opaque var(--queen-dir) under #050505'],
-
-  /* The direction cards: `color-mix(in srgb, var(--queen-dir) N%, transparent)`
-     at 7% resting and 16% on hover. The alpha IS known and is written here
-     because it is the number a reader of the selector cannot work out; the hue
-     is not, and with a direction hue on one side the mix is a LIGHT translucent
-     fill, which `groundsIn` classifies as a tint laid on somebody else's ground
-     rather than as a ground -- the same answer it would give if the hue were
-     resolved. So this entry records an unreadable value that changes no verdict.
-
-     It does leave a real question open, and this is the honest place to say so
-     rather than in a commit message: `.queen27-card` paints `rgba(255, 255,
-     255, 0.018)` and the shell layer gives it a border and a clip-path and no
-     ground at all, so a card's text on this board sits on the live hive with
-     nothing but a 1.8% wash between. That is not a contrast failure this gate
-     can state -- there is no dark ground to measure and no ink is declared
-     against one -- it is the bare-text case, which nothing in qa/ checks for. */
-  ['src/pages/Queen.css:.queen27-card[data-dir], .queen27-page.is-shell .queen27-card[data-dir]', 'alpha 0.07, hue from JS'],
-  ['src/pages/Queen.css:.queen27-card[data-dir]:hover, .queen27-page.is-shell .queen27-card[data-dir]:hover', 'alpha 0.16, hue from JS'],
 
   /* `color-mix(in srgb, var(--tech-color) 8%, #020202)`. Unreadable for the
      hue, and decided by the OTHER side: #020202 is opaque, so 92% of the mix is
@@ -1662,6 +1683,18 @@ const SEALED = {
   '.rm-hero': '.rm',
   '.rm-kpis div': '.rm',
   '.rm-stages li': '.rm',
+
+  // LEVEL II, the comb, renders as the first child of `.rm`
+  // (QueenRoadmap.tsx), so its tiles sit on the same opaque wash as the three
+  // above; the hive stops at `.rm`'s boundary.
+  '.rg': '.rm',
+  '.rg-hud div': '.rm',
+  '.rg-targets li': '.rm',
+  '.rg-sector': '.rm',
+  // The raid banner and the boss cards: the same view root, the same wash.
+  '.rg-raid': '.rm',
+  '.rg-raid.is-none': '.rm',
+  '.rg-boss': '.rm',
 }
 
 /** Surfaces that buy legibility with a HALO instead of with a ground.

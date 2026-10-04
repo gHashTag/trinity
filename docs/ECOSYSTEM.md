@@ -26,12 +26,12 @@ zig-golden-float          ← числовое ядро (GF16, TF3, JIT, VM)
 | Repository | Role | Size | Dependencies |
 |---|---|---|---|
 | [zig-golden-float](https://github.com/gHashTag/zig-golden-float) | Numeric core: GF16, TF3, JIT, VM, math | ~1MB | — |
-| [zig-sacred-geometry](https://github.com/gHashTag/zig-sacred-geometry) | φ-geometry, sacred constants, Beal | ~58KB | zig-golden-float |
+| `zig-sacred-geometry` (historical repository; public access unconfirmed) | φ-geometry, sacred constants, Beal | ~58KB | zig-golden-float |
 | [zig-physics](https://github.com/gHashTag/zig-physics) | Quantum physics, QCD, gravity, dark matter | ~36KB | zig-golden-float |
 | [zig-hdc](https://github.com/gHashTag/zig-hdc) | Hyperdimensional Computing, VSA, sequence_hdc | ~352KB | zig-golden-float |
 | [zig-knowledge-graph](https://github.com/gHashTag/zig-knowledge-graph) | Knowledge Graph server + CLI | ~100KB | — |
 | [trinity-training](https://github.com/gHashTag/trinity-training) | HSLM ML training, benchmarks, datasets | 208MB | zig-golden-float |
-| [zig-agents](https://github.com/gHashTag/zig-agents) | Agents, MCP, autonomous systems | ~519KB | trinity API |
+| `zig-agents` (historical repository; public access unconfirmed) | Agents, MCP, autonomous systems | ~519KB | trinity API |
 | [zig-crypto-mining](https://github.com/gHashTag/zig-crypto-mining) | BTC mining MVP, DePIN | ~60KB | — |
 | [trinity](https://github.com/gHashTag/trinity) | Orchestrator, API, CLI, VIBEE, FPGA | ~500MB | all above |
 

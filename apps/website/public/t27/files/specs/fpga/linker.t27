@@ -278,6 +278,10 @@ module Linker {
         given cfg = linker_config("_start")
         then stack_top(cfg) == 5120
 
+    test heap_start
+        given cfg = linker_config("_start")
+        then heap_start(cfg) == 9216
+
     test validate_config_ok
         given cfg = linker_config("_start")
         then validate_config(cfg) == 0

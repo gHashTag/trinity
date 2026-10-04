@@ -154,14 +154,16 @@ module TriToT27Converter;
         // 3. Constants section
         if (spec.constants.len > 0) {
             output = concat(output, "const ");
-            for (spec.constants) |const_val, i| {
-                if (i > 0) output = concat(output, "\nconst ");
+            var idx = 0;
+            for (spec.constants) |const_val| {
+                if (idx > 0) output = concat(output, "\nconst ");
                 output = concat(output, const_val.name);
                 output = concat(output, " : ");
                 output = concat(output, const_val.const_type);
                 output = concat(output, " = ");
                 output = concat(output, const_val.value);
                 output = concat(output, ";\n");
+                idx += 1;
             }
             output = concat(output, "\n");
         }
@@ -189,11 +191,13 @@ module TriToT27Converter;
             output = concat(output, "fn ");
             output = concat(output, func.name);
             output = concat(output, "(");
-            for (func.params) |param, i| {
-                if (i > 0) output = concat(output, ", ");
+            var param_idx = 0;
+            for (func.params) |param| {
+                if (param_idx > 0) output = concat(output, ", ");
                 output = concat(output, param.name);
                 output = concat(output, ": ");
                 output = concat(output, param.param_type);
+                param_idx += 1;
             }
             output = concat(output, ") -> ");
             output = concat(output, func.return_type);
@@ -204,7 +208,8 @@ module TriToT27Converter;
         }
         
         // 6. TDD Tests section (from behaviors)
-        for (spec.behaviors) |behavior, i| {
+        for (spec.behaviors) |behavior| {
+            var behavior_idx = 0;
             output = concat(output, "test ");
             output = concat(output, spec.name);
             output = concat(output, "_");
@@ -213,10 +218,12 @@ module TriToT27Converter;
             output = concat(output, "    // TODO: test ");
             output = concat(output, behavior.name);
             output = concat(output, "\n}\n\n");
+            behavior_idx += 1;
         }
         
         // 7. TDD Invariants section (from constraints)
-        for (spec.constraints) |constraint, i| {
+        for (spec.constraints) |constraint| {
+            var constraint_idx = 0;
             output = concat(output, "invariant ");
             output = concat(output, spec.name);
             output = concat(output, "_");
@@ -225,6 +232,7 @@ module TriToT27Converter;
             output = concat(output, "    // TODO: invariant ");
             output = concat(output, constraint.name);
             output = concat(output, "\n}\n\n");
+            constraint_idx += 1;
         }
         
         // Footer

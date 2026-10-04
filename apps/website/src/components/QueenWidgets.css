@@ -1,0 +1,309 @@
+.queen-widgets {
+  --widgets-line: color-mix(in srgb, var(--hud-line, rgba(0, 255, 136, 0.22)) 48%, transparent);
+  --widgets-green: var(--hud-green, #00ff88);
+  --widgets-gold: var(--hud-gold, #ffd700);
+  --widgets-text-muted: #adc9c0;
+  --widgets-text-subtle: #8fa9a0;
+  position: relative;
+  /* The site-wide section rule is a full-viewport flex hero. WIDGETS is the
+     viewport's one scroll owner, as WARS is, so it opts out explicitly. */
+  display: block;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  padding: clamp(14px, 2vw, 28px);
+  color: #e8fff7;
+  background: #000;
+  scrollbar-color: var(--widgets-green) rgba(0, 0, 0, 0.45);
+}
+
+.queen-widgets-head,
+.queen-widgets-filter,
+.queen-widgets-shelf,
+.queen-widgets-ideas,
+.queen-widgets-honesty {
+  width: min(1380px, 100%);
+  margin-inline: auto;
+}
+
+.queen-widgets-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 20px;
+  padding: clamp(12px, 2vw, 28px) 0 18px;
+  border-bottom: 1px solid var(--widgets-line);
+}
+
+.queen-widgets-kicker,
+.queen-widgets-shelf-title,
+.queen-widgets-tags {
+  margin: 0;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--widgets-green);
+}
+
+.queen-widgets h3 {
+  margin: 6px 0 8px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: clamp(1.6rem, 4vw, 2.6rem);
+  font-weight: 800;
+  line-height: 1.25;
+  color: #fff;
+}
+
+.queen-widgets-lead,
+.queen-widgets-shelf-line {
+  max-width: 72ch;
+  margin: 0;
+  color: var(--widgets-text-muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.queen-widgets-source {
+  padding: 6px 12px;
+  border: 1px solid var(--widgets-line);
+  border-radius: 999px;
+  color: var(--widgets-gold);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.72rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.queen-widgets-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 14px 0 4px;
+}
+
+.queen-widgets-filter button,
+.queen-widgets-actions :is(a, button),
+.queen-widgets-embed button {
+  min-height: 32px;
+  padding: 4px 12px;
+  border: 1px solid var(--widgets-line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--widgets-text-muted);
+  font: inherit;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.74rem;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.queen-widgets-filter button[aria-pressed="true"],
+.queen-widgets-actions :is(a, button):hover,
+.queen-widgets-actions button[aria-pressed="true"],
+.queen-widgets-actions button[aria-expanded="true"] {
+  border-color: var(--widgets-green);
+  color: var(--widgets-green);
+}
+
+.queen-widgets-shelf {
+  padding: 22px 0 6px;
+}
+
+.queen-widgets-shelf-line {
+  margin: 4px 0 14px;
+}
+
+.queen-widgets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  gap: 14px;
+}
+
+.queen-widgets-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border: 1px solid var(--widgets-line);
+  border-radius: 10px;
+  background: #050807;
+  overflow: hidden;
+}
+
+.queen-widgets-stage {
+  position: relative;
+  aspect-ratio: 1200 / 630;
+  background: #000;
+  border-bottom: 1px solid var(--widgets-line);
+}
+
+.queen-widgets-stage.is-wide {
+  aspect-ratio: 16 / 9;
+}
+
+.queen-widgets-stage:has(iframe) {
+  aspect-ratio: 4 / 3;
+}
+
+.queen-widgets-stage :is(img, iframe) {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  object-fit: cover;
+}
+
+.queen-widgets-glyph {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  font-size: 3.4rem;
+  color: var(--widgets-gold);
+}
+
+.queen-widgets-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px 14px 14px;
+}
+
+.queen-widgets-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  color: var(--widgets-text-subtle);
+  font-size: 0.62rem;
+}
+
+.queen-widgets-tags span:first-child {
+  color: var(--widgets-green);
+}
+
+.queen-widgets-card h4 {
+  margin: 0;
+  color: #fff;
+  font-size: 1rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.queen-widgets-line,
+.queen-widgets-hook {
+  margin: 0;
+  color: var(--widgets-text-muted);
+  font-size: 0.84rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.queen-widgets-hook b {
+  color: var(--widgets-gold);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.queen-widgets-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 6px;
+}
+
+.queen-widgets-embed {
+  display: grid;
+  gap: 10px;
+}
+
+.queen-widgets-embed label {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 6px;
+  align-items: start;
+}
+
+.queen-widgets-embed label > span {
+  grid-column: 1 / -1;
+  color: var(--widgets-text-subtle);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.64rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.queen-widgets-embed textarea {
+  min-width: 0;
+  resize: vertical;
+  padding: 6px 8px;
+  border: 1px solid var(--widgets-line);
+  border-radius: 6px;
+  background: #000;
+  color: #e8fff7;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.7rem;
+  line-height: 1.4;
+}
+
+.queen-widgets-ideas {
+  padding: 26px 0 8px;
+  border-top: 1px solid var(--widgets-line);
+  margin-top: 22px;
+}
+
+.queen-widgets-ideas ol {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.queen-widgets-ideas li {
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px;
+  border: 1px dashed var(--widgets-line);
+  border-radius: 10px;
+}
+
+.queen-widgets-ideas b {
+  color: #fff;
+  font-size: 0.92rem;
+}
+
+.queen-widgets-ideas span {
+  color: var(--widgets-text-muted);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.queen-widgets-ideas small {
+  color: var(--widgets-text-subtle);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.68rem;
+}
+
+.queen-widgets-honesty {
+  margin-block: 18px 6px;
+  color: var(--widgets-text-subtle);
+  font-size: 0.78rem;
+}
+
+@media (max-width: 520px) {
+  .queen-widgets-head {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .queen-widgets-source {
+    justify-self: start;
+  }
+}

@@ -12,7 +12,7 @@ module TriGraphBfs;
     // ═══════════════════════════════════════════════════════════
 
     pub const Graph = struct {
-        adj : "[]const []const u8",
+        adj : [][]usize,
         allocator : "std.mem.Allocator",
     };
 
@@ -27,25 +27,38 @@ module TriGraphBfs;
     // ═══════════════════════════════════════════════════════════
 
     // init(allocator: std.mem.Allocator, vertex_count: usize) -> Graph
-    fn init(allocator: std.mem.Allocator, vertex_count: usize) -> Graph {
-        var adj = allocator.alloc([]usize, vertex_count) catch unreachable;
-        for (0..vertex_count) |i| {
-            adj[i] = &[_]usize{};
-        }
-        return Graph{
-            .adj = @constCast(&adj),
-            .allocator = allocator,
-        };
-    }
+fn init(allocator: std.mem.Allocator, vertex_count: usize) -> Graph {
+         // (Zig `alloc(...) catch null` + payload capture `if (opt) |ptr|`
+         // written out: t27 has no error unions and no captures, so the
+         // allocation result is tested against null and unwrapped with `.?`;
+         // the failure branch stays `unreachable`. The declared type
+         // `*[]usize` is kept exactly as the original wrote it.)
+         var adj_array : *[]usize = allocator.alloc([]usize, vertex_count);
+         if (adj_array != null) {
+             const ptr = adj_array.?;
+             for (0..vertex_count) |i| {
+                 ptr[i] = &[_]usize{};
+             }
+             return Graph{
+                 .adj = ptr[0..vertex_count],
+                 .allocator = allocator,
+             };
+         } else {
+             unreachable;
+         }
+     }
 
     // add_edge(graph: *Graph, from: usize, to: usize) -> void
+    // (Zig `catch unreachable` dropped here and in traverse: t27 has no
+    // error unions, and `catch unreachable` only asserted that the call
+    // cannot fail, which is how t27 reads the bare call.)
     fn add_edge(graph: *Graph, from: usize, to: usize) -> void {
-        var from_row = graph.allocator.alloc(usize, graph.adj[from].len + 1) catch unreachable;
+        var from_row = graph.allocator.alloc(usize, graph.adj[from].len + 1);
         @memcpy(from_row[0..graph.adj[from].len], graph.adj[from]);
         from_row[graph.adj[from].len] = to;
         graph.adj[from] = @constCast(&from_row);
         
-        var to_row = graph.allocator.alloc(usize, graph.adj[to].len + 1) catch unreachable;
+        var to_row = graph.allocator.alloc(usize, graph.adj[to].len + 1);
         @memcpy(to_row[0..graph.adj[to].len], graph.adj[to]);
         to_row[graph.adj[to].len] = from;
         graph.adj[to] = @constCast(&to_row);
@@ -53,19 +66,22 @@ module TriGraphBfs;
 
     // traverse(graph: *Graph, start: usize, allocator: std.mem.Allocator) -> BFSResult
     fn traverse(graph: *Graph, start: usize, allocator: std.mem.Allocator) -> BFSResult {
-        var visited = allocator.alloc(bool, graph.adj.len) catch unreachable;
+        var visited = allocator.alloc(bool, graph.adj.len);
         @memset(visited, false, graph.adj.len);
         
-        var order = allocator.alloc(usize, graph.adj.len) catch unreachable;
-        var distance = allocator.alloc(usize, graph.adj.len) catch unreachable;
+        var order = allocator.alloc(usize, graph.adj.len);
+        var distance = allocator.alloc(usize, graph.adj.len);
         @memset(distance, std.math.maxInt(usize), graph.adj.len);
         
         var queue = std.ArrayList(usize).init(allocator);
-        defer queue.deinit();
+        // (Zig `defer queue.deinit();` is written as an explicit
+        // `queue.deinit();` just before this function's only `return`: the
+        // backends do not lower `defer`, and with no other exit the release
+        // happens at the same point.)
         
         visited[start] = true;
         distance[start] = 0;
-        queue.append(start) catch unreachable;
+        queue.append(start);
         
         var index: usize = 0;
         while (queue.items.len > 0) {
@@ -77,11 +93,12 @@ module TriGraphBfs;
                 if (!visited[neighbor]) {
                     visited[neighbor] = true;
                     distance[neighbor] = distance[current] + 1;
-                    queue.append(neighbor) catch unreachable;
+                    queue.append(neighbor);
                 }
             }
         }
         
+        queue.deinit();
         return BFSResult{
             .order = order[0..index],
             .distance = distance,
@@ -202,4 +219,7 @@ module TriGraphBfs;
         given graph = init(std.testing.allocator, 2)
         and add_edge(&graph, 0, 1)
         when result = deinit(&graph)
-        then result == void
+        // (`then result == void` compared a value with the type keyword,
+        // which is not an expression; the same claim -- deinit's result is
+        // of type void -- is stated through its type name.)
+        then std.mem.eql(u8, @typeName(@TypeOf(result)), "void")

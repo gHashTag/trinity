@@ -626,10 +626,12 @@ pub fn chipbench_benchmark_competitor() -> CompetitorScore {
     };
 }
 
-/// rtlscout_competitor() -> CompetitorScore
+/// rtlscout_competitor_2() -> CompetitorScore
 /// RTLScout (Huawei, arXiv:2606.06530v1): Agentic RTL + PPA optimization.
 /// 35% area reduction, 45% delay reduction vs baseline.
-pub fn rtlscout_competitor() -> CompetitorScore {
+/// Copy 2 of 3 definitions of rtlscout_competitor() in this file (#2822); renamed rtlscout_competitor_2
+/// so no backend sees a redeclaration. Record unchanged; which copy is authoritative is not decided here.
+pub fn rtlscout_competitor_2() -> CompetitorScore {
     return CompetitorScore {
         name: "RTLScout",
         pass_at_1: 0.0,
@@ -639,10 +641,12 @@ pub fn rtlscout_competitor() -> CompetitorScore {
     };
 }
 
-/// stepprm_rtl_competitor() -> CompetitorScore
+/// stepprm_rtl_competitor_2() -> CompetitorScore
 /// StepPRM-RTL (IBM Research, arXiv:2606.04246v1, DAC'26): Stepwise PRM with MCTS+RAFT.
 /// Pass@1=85.7% Verilog, 78.6% VHDL.
-pub fn stepprm_rtl_competitor() -> CompetitorScore {
+/// Copy 2 of 4 definitions of stepprm_rtl_competitor() in this file (#2822); renamed stepprm_rtl_competitor_2
+/// so no backend sees a redeclaration. Record unchanged; which copy is authoritative is not decided here.
+pub fn stepprm_rtl_competitor_2() -> CompetitorScore {
     return CompetitorScore {
         name: "StepPRM-RTL",
         pass_at_1: 0.857,
@@ -692,10 +696,12 @@ pub fn kuleuven_ternary_competitor() -> CompetitorScore {
     };
 }
 
-/// estrtl_competitor() -> CompetitorScore
+/// estrtl_competitor_2() -> CompetitorScore
 /// EstRTL (NUDT, arXiv:2606.09867): Generation->Estimation->Correction with VFCS metric.
 /// Fixes >12% erroneous RTL.
-pub fn estrtl_competitor() -> CompetitorScore {
+/// Copy 2 of 3 definitions of estrtl_competitor() in this file (#2822); renamed estrtl_competitor_2
+/// so no backend sees a redeclaration. Record unchanged; which copy is authoritative is not decided here.
+pub fn estrtl_competitor_2() -> CompetitorScore {
     return CompetitorScore {
         name: "EstRTL",
         pass_at_1: 0.0,
@@ -705,10 +711,12 @@ pub fn estrtl_competitor() -> CompetitorScore {
     };
 }
 
-/// llm4rtl_2026_competitor() -> CompetitorScore
+/// llm4rtl_2026_competitor_2() -> CompetitorScore
 /// LLM4RTL-2026 (UC Riverside, arXiv:2606.15500): 7B DeepSeek-Coder with JRCRC pipeline.
 /// Pass@1~60.8% VerilogEval.
-pub fn llm4rtl_2026_competitor() -> CompetitorScore {
+/// Copy 2 of 2 definitions of llm4rtl_2026_competitor() in this file (#2822); renamed llm4rtl_2026_competitor_2
+/// so no backend sees a redeclaration. Record unchanged; which copy is authoritative is not decided here.
+pub fn llm4rtl_2026_competitor_2() -> CompetitorScore {
     return CompetitorScore {
         name: "LLM4RTL-2026",
         pass_at_1: 0.608,
@@ -718,10 +726,12 @@ pub fn llm4rtl_2026_competitor() -> CompetitorScore {
     };
 }
 
-/// cass_rtl_competitor() -> CompetitorScore
+/// cass_rtl_competitor_2() -> CompetitorScore
 /// CASS-RTL (arXiv:2606.05680): Correctness-aware subspace steering, training-free inference intervention.
 /// +10-20% Pass@1/5/10.
-pub fn cass_rtl_competitor() -> CompetitorScore {
+/// Copy 2 of 3 definitions of cass_rtl_competitor() in this file (#2822); renamed cass_rtl_competitor_2
+/// so no backend sees a redeclaration. Record unchanged; which copy is authoritative is not decided here.
+pub fn cass_rtl_competitor_2() -> CompetitorScore {
     return CompetitorScore {
         name: "CASS-RTL",
         pass_at_1: 0.0,
@@ -731,9 +741,11 @@ pub fn cass_rtl_competitor() -> CompetitorScore {
     };
 }
 
-/// rtlbenchls_competitor() -> CompetitorScore
+/// rtlbenchls_competitor_2() -> CompetitorScore
 /// RTL-BenchLS (HKUST, arXiv:2606.08976v1): >10,000 formally verified Verilog designs.
-pub fn rtlbenchls_competitor() -> CompetitorScore {
+/// Copy 2 of 2 definitions of rtlbenchls_competitor() in this file (#2822); renamed rtlbenchls_competitor_2
+/// so no backend sees a redeclaration. Record unchanged; which copy is authoritative is not decided here.
+pub fn rtlbenchls_competitor_2() -> CompetitorScore {
     return CompetitorScore {
         name: "RTL-BenchLS",
         pass_at_1: 0.0,
@@ -756,12 +768,14 @@ pub fn hiersva_competitor() -> CompetitorScore {
     };
 }
 
-/// rtlseek_competitor() -> CompetitorScore
+/// rtlseek_competitor_2() -> CompetitorScore
 /// RTLSeek (arXiv:2603.27630v1): Post-training diversity-oriented GRPO for RTL generation.
 /// Three-stage: SFT warm-up -> diversity GRPO -> multi-objective exploration.
 /// Integrates EDA tool feedback (syntax + functional via VCS/Pyverilog) with AST diversity rewards.
 /// HIGH threat: first to combine GRPO with structural diversity reward.
-pub fn rtlseek_competitor() -> CompetitorScore {
+/// Copy 2 of 2 definitions of rtlseek_competitor() in this file (#2822); renamed rtlseek_competitor_2
+/// so no backend sees a redeclaration. Record unchanged; which copy is authoritative is not decided here.
+pub fn rtlseek_competitor_2() -> CompetitorScore {
     return CompetitorScore {
         name: "RTLSeek",
         pass_at_1: 0.0,
@@ -1626,8 +1640,9 @@ test estrtl_competitor_name
     when c = estrtl_competitor()
     then c.name == "EstRTL"
 
+// Bound to llm4rtl_2026_competitor_2: of the copies of llm4rtl_2026_competitor() only that one carries pass_at_1 0.608.
 test llm4rtl_2026_competitor_pass_at_1
-    when c = llm4rtl_2026_competitor()
+    when c = llm4rtl_2026_competitor_2()
     then c.pass_at_1 == 0.608
 
 test cass_rtl_competitor_name
@@ -2046,12 +2061,14 @@ pub fn trine_competitor() -> CompetitorScore {
     };
 }
 
-/// alpha_rtl_competitor() -> CompetitorScore
+/// alpha_rtl_competitor_2() -> CompetitorScore
 /// Alpha-RTL (arXiv:2606.05253v1): Test-Time Training for RTL Hardware Optimization.
 /// JUNE 2026. TTT-RTL adapts LLM policy online using EDA synthesis feedback.
 /// 65.1% geomean PPA product reduction vs reference on RTLLM v2.0.
 /// HIGH threat: RL-driven RTL optimization with physical awareness.
-pub fn alpha_rtl_competitor() -> CompetitorScore {
+/// Copy 2 of 2 definitions of alpha_rtl_competitor() in this file (#2822); renamed alpha_rtl_competitor_2
+/// so no backend sees a redeclaration. Record unchanged; which copy is authoritative is not decided here.
+pub fn alpha_rtl_competitor_2() -> CompetitorScore {
     return CompetitorScore {
         name: "Alpha-RTL",
         pass_at_1: 0.0,
@@ -2061,12 +2078,14 @@ pub fn alpha_rtl_competitor() -> CompetitorScore {
     };
 }
 
-/// stepprm_rtl_competitor() -> CompetitorScore
+/// stepprm_rtl_competitor_3() -> CompetitorScore
 /// StepPRM-RTL (arXiv:2606.04246v1): Stepwise Process-Reward Guided LLM Fine-Tuning.
 /// JUNE 2026. Step-level PRM + MCTS + RAFT for Verilog/VHDL generation.
 /// Pass@1 0.857 on VerilogEval. IBM Research.
 /// MEDIUM-HIGH threat: stepwise reward models improve functional correctness.
-pub fn stepprm_rtl_competitor() -> CompetitorScore {
+/// Copy 3 of 4 definitions of stepprm_rtl_competitor() in this file (#2822); renamed stepprm_rtl_competitor_3
+/// so no backend sees a redeclaration. Record unchanged; which copy is authoritative is not decided here.
+pub fn stepprm_rtl_competitor_3() -> CompetitorScore {
     return CompetitorScore {
         name: "StepPRM-RTL",
         pass_at_1: 0.857,
@@ -2076,12 +2095,14 @@ pub fn stepprm_rtl_competitor() -> CompetitorScore {
     };
 }
 
-/// cass_rtl_competitor() -> CompetitorScore
+/// cass_rtl_competitor_3() -> CompetitorScore
 /// CASS-RTL (arXiv:2606.05680): Correctness-Aware Subspace Steering for RTL Generation.
 /// JUNE 2026. Discovers attention subspaces that steer LLM outputs toward correct RTL.
 /// Improves Pass@K on VerilogEval and CVDP without extra supervision.
 /// MEDIUM threat: attention steering for correctness; no formal proofs, no ternary.
-pub fn cass_rtl_competitor() -> CompetitorScore {
+/// Copy 3 of 3 definitions of cass_rtl_competitor() in this file (#2822); renamed cass_rtl_competitor_3
+/// so no backend sees a redeclaration. Record unchanged; which copy is authoritative is not decided here.
+pub fn cass_rtl_competitor_3() -> CompetitorScore {
     return CompetitorScore {
         name: "CASS-RTL",
         pass_at_1: 0.0,
@@ -2121,13 +2142,15 @@ pub fn formal_rtl_competitor() -> CompetitorScore {
     };
 }
 
-/// llm4rtl_competitor() -> CompetitorScore
+/// llm4rtl_competitor_2() -> CompetitorScore
 /// LLM4RTL (arXiv:2606.15500): Tool-Assisted LLM for RTL Generation.
 /// JUNE 2026. JRCRC pipeline (Judge-Renew-Check-Renew-Check) refines datasets.
 /// Python tools infer logic expressions before Verilog generation.
 /// Achieves GPT-4O parity on VerilogEval-human with DeepSeek-Coder-7B.
 /// HIGH threat: cost-efficient RTL generation rivals frontier LLMs.
-pub fn llm4rtl_competitor() -> CompetitorScore {
+/// Copy 2 of 2 definitions of llm4rtl_competitor() in this file (#2822); renamed llm4rtl_competitor_2
+/// so no backend sees a redeclaration. Record unchanged; which copy is authoritative is not decided here.
+pub fn llm4rtl_competitor_2() -> CompetitorScore {
     return CompetitorScore {
         name: "LLM4RTL",
         pass_at_1: 0.0,
@@ -2180,11 +2203,13 @@ pub fn trigen_competitor() -> CompetitorScore {
     };
 }
 
-/// rtlscout_competitor() -> CompetitorScore
+/// rtlscout_competitor_3() -> CompetitorScore
 /// RTLScout (arXiv:2606.06530v1): Joint agentic code and synthesis optimization.
 /// JUNE 2026. LLM agents + Yosys/OpenROAD gate-level synthesis. 35% area / 45% delay reduction.
 /// HIGH threat: autonomous RTL optimization with EDA feedback loop.
-pub fn rtlscout_competitor() -> CompetitorScore {
+/// Copy 3 of 3 definitions of rtlscout_competitor() in this file (#2822); renamed rtlscout_competitor_3
+/// so no backend sees a redeclaration. Record unchanged; which copy is authoritative is not decided here.
+pub fn rtlscout_competitor_3() -> CompetitorScore {
     return CompetitorScore {
         name: "RTLScout",
         pass_at_1: 0.0,
@@ -2194,12 +2219,14 @@ pub fn rtlscout_competitor() -> CompetitorScore {
     };
 }
 
-/// estrtl_competitor() -> CompetitorScore
+/// estrtl_competitor_3() -> CompetitorScore
 /// EstRTL (arXiv:2606.09867): Functional estimation guided RTL code generation.
 /// JUNE 2026. 3-stage agent (Generation -> Estimation -> Correction). Static functional
 /// correctness estimation without testbenches. 3.2-9.0% Pass@1 improvement on VerilogEval.
 /// MEDIUM-HIGH threat: removes testbench dependency for RTL validation.
-pub fn estrtl_competitor() -> CompetitorScore {
+/// Copy 3 of 3 definitions of estrtl_competitor() in this file (#2822); renamed estrtl_competitor_3
+/// so no backend sees a redeclaration. Record unchanged; which copy is authoritative is not decided here.
+pub fn estrtl_competitor_3() -> CompetitorScore {
     return CompetitorScore {
         name: "EstRTL",
         pass_at_1: 0.0,
@@ -2282,12 +2309,14 @@ pub fn sparda_competitor() -> CompetitorScore {
     };
 }
 
-/// stepprm_rtl_competitor() -> CompetitorScore
+/// stepprm_rtl_competitor_4() -> CompetitorScore
 /// StepPRM-RTL (arXiv:2606.04246v1): Stepwise Process-Reward Guided LLM Fine-Tuning
 /// for Enhanced RTL Synthesis. IBM Research. June 2026. MCTS + RAFT reaches 85.7% Pass@1
 /// on VerilogEval by scoring intermediate reasoning steps.
 /// HIGH threat: step-level PRM raises functional-correctness bar for generated RTL.
-pub fn stepprm_rtl_competitor() -> CompetitorScore {
+/// Copy 4 of 4 definitions of stepprm_rtl_competitor() in this file (#2822); renamed stepprm_rtl_competitor_4
+/// so no backend sees a redeclaration. Record unchanged; which copy is authoritative is not decided here.
+pub fn stepprm_rtl_competitor_4() -> CompetitorScore {
     return CompetitorScore {
         name: "StepPRM-RTL",
         pass_at_1: 0.857,
@@ -2297,12 +2326,14 @@ pub fn stepprm_rtl_competitor() -> CompetitorScore {
     };
 }
 
-/// openrtlset_competitor() -> CompetitorScore
+/// openrtlset_competitor_2() -> CompetitorScore
 /// OpenRTLSet (arXiv:2606.10285v1): Fully open-source dataset for LLM-based Verilog module
 /// design. 131K+ open-source modules from GitHub. Qwen2.5-32B fine-tuned reaches 89.3% Pass@10
 /// on VerilogEval-Machine.
 /// MEDIUM-HIGH threat: commoditizes training data for RTL generation.
-pub fn openrtlset_competitor() -> CompetitorScore {
+/// Copy 2 of 2 definitions of openrtlset_competitor() in this file (#2822); renamed openrtlset_competitor_2
+/// so no backend sees a redeclaration. Record unchanged; which copy is authoritative is not decided here.
+pub fn openrtlset_competitor_2() -> CompetitorScore {
     return CompetitorScore {
         name: "OpenRTLSet",
         pass_at_1: 0.0,
@@ -2312,11 +2343,13 @@ pub fn openrtlset_competitor() -> CompetitorScore {
     };
 }
 
-/// chimera_competitor() -> CompetitorScore
+/// chimera_competitor_2() -> CompetitorScore
 /// CHIMERA (arXiv:2606.02358v1): Flexible AI-MCU with Transformer Accelerator Cluster.
 /// 22nm FDX. 3.1 TOPS/W, 281 GOPS/mm2, 563 Gb/s shared-L2 with QoS.
 /// MEDIUM threat: strong edge-transformer efficiency baseline using conventional 8-bit.
-pub fn chimera_competitor() -> CompetitorScore {
+/// Copy 2 of 2 definitions of chimera_competitor() in this file (#2822); renamed chimera_competitor_2
+/// so no backend sees a redeclaration. Record unchanged; which copy is authoritative is not decided here.
+pub fn chimera_competitor_2() -> CompetitorScore {
     return CompetitorScore {
         name: "CHIMERA",
         pass_at_1: 0.0,
@@ -2755,7 +2788,9 @@ pub fn carmen_competitor() -> CompetitorScore {
     };
 }
 
-pub fn tom_competitor() -> CompetitorScore {
+/// Copy 2 of 2 definitions of tom_competitor() in this file (#2822); renamed tom_competitor_2
+/// so no backend sees a redeclaration. Record unchanged; which copy is authoritative is not decided here.
+pub fn tom_competitor_2() -> CompetitorScore {
     return CompetitorScore {
         name: "TOM",
         pass_at_1: 0.0,
@@ -2765,7 +2800,9 @@ pub fn tom_competitor() -> CompetitorScore {
     };
 }
 
-pub fn tellme_competitor() -> CompetitorScore {
+/// Copy 2 of 2 definitions of tellme_competitor() in this file (#2822); renamed tellme_competitor_2
+/// so no backend sees a redeclaration. Record unchanged; which copy is authoritative is not decided here.
+pub fn tellme_competitor_2() -> CompetitorScore {
     return CompetitorScore {
         name: "TeLLMe",
         pass_at_1: 0.0,
@@ -3009,13 +3046,15 @@ test carmen_competitor_benchmark
     then c.benchmark == "28nm CORDIC ASIC 4.83 TOPS/mm2 (arXiv:2605.06878)"
 
 
+// Bound to tom_competitor_2: of the copies of tom_competitor() only that one carries this benchmark string.
 test tom_competitor_benchmark
-    when c = tom_competitor()
+    when c = tom_competitor_2()
     then c.benchmark == "ROM-based ternary ASIC 3,306 tok/s BitNet-2B 5.33W (arXiv:2602.20662)"
 
 
+// Bound to tellme_competitor_2: of the copies of tellme_competitor() only that one carries this benchmark string.
 test tellme_competitor_benchmark
-    when c = tellme_competitor()
+    when c = tellme_competitor_2()
     then c.benchmark == "Edge FPGA KV260 ternary LLM 9.51 tok/s <7W prefill+decode (arXiv:2504.16266)"
 
 test tenet_competitor_name
@@ -3552,19 +3591,25 @@ test kaushik_vaibhav_singh_e8e8_competitor_benchmark
 // 6. Benchmarks
 // ============================================================================
 
-invariant trinity_phi_identity:
+invariant trinity_phi_identity
     assert 1.618 * 1.618 + 1.0 / (1.618 * 1.618) > 2.99 && 1.618 * 1.618 + 1.0 / (1.618 * 1.618) < 3.01
 
     invariant benchmarkreport_sacred_rate_nonnegative:
     forall s : BenchmarkReport, s.sacred_rate >= 0.0
 
+// Was: for all t : BenchmarkTask, t.sacred_required == true || t.sacred_required == false.
+// The predicate reads only the bool field sacred_required, so checking both of its
+// values covers every BenchmarkTask: an exhaustive check, not a sample.
 invariant benchmark_task_sacred_required_boolean
-    forall t : BenchmarkTask
-    t.sacred_required == true || t.sacred_required == false
+    given t_yes = BenchmarkTask { task_id: "t", prompt: "p", golden_rtl: "g", language: "verilog", sacred_required: true }
+    given t_no = BenchmarkTask { task_id: "t", prompt: "p", golden_rtl: "g", language: "verilog", sacred_required: false }
+    assert t_yes.sacred_required == true || t_yes.sacred_required == false
+    assert t_no.sacred_required == true || t_no.sacred_required == false
 
+// Was: for all results : []BenchmarkResult, results.len() == 0 ==> compute_aggregate_report(results).total_tasks == 0.
+// Only the empty slice satisfies the premise, so checking it is exhaustive, not a sample.
 invariant benchmark_compute_aggregate_report_empty_zero
-    forall results : []BenchmarkResult
-    results.len() == 0 ==> compute_aggregate_report(results).total_tasks == 0
+    assert compute_aggregate_report([]BenchmarkResult{}).total_tasks == 0
 
 bench benchmark_suite_latency
     given bank = WeightBank { depth: 1, width: 1, data: [0] }
@@ -3817,8 +3862,9 @@ invariant benchmark_count_passed_nonnegative:
     forall results : []BenchmarkResult
     count_passed(results, 0, 0) >= 0
 
+// This invariant opened with a bare quantifier keyword and no binder, so the
+// predicate below is closed; it is now checked exactly as written.
 invariant benchmark_trinity_self_train_estimate_bounded:
-    forall
     trinity_self_train_estimate() > 0.0
     && trinity_self_train_estimate() < 1.0
 
@@ -3878,9 +3924,10 @@ invariant benchmark_count_passed_bounded_by_len_inv:
 
 
 
+// Was: for all results : []BenchmarkResult, results.len() == 0 ==> count_passed(results, 0, 0) == 0.
+// Only the empty slice satisfies the premise, so checking it is exhaustive, not a sample.
 invariant benchmark_count_passed_empty_zero_inv:
-    forall results : []BenchmarkResult
-    results.len() == 0 ==> count_passed(results, 0, 0) == 0
+    count_passed([]BenchmarkResult{}, 0, 0) == 0
 
 
 
@@ -3980,9 +4027,10 @@ test benchmark_pow_f32_zero_exp_one
     when p = pow_f32(base, exp)
     then p == 1.0
 
+// Was: for all results : []BenchmarkResult, results.len() == 0 ==> count_synth(results, 0, 0) == 0.
+// Only the empty slice satisfies the premise, so checking it is exhaustive, not a sample.
 invariant benchmark_count_synth_empty_zero_inv:
-    forall results : []BenchmarkResult
-    results.len() == 0 ==> count_synth(results, 0, 0) == 0
+    count_synth([]BenchmarkResult{}, 0, 0) == 0
 
 test benchmark_single_op_latency_equals_cycles
     given ops = 1
@@ -4005,9 +4053,10 @@ test benchmark_count_failed_empty_zero
     when n = count_failed(results)
     then n == 0
 
+// Was: for all results : []BenchmarkResult, results.len() == 0 ==> count_failed(results) == 0.
+// Only the empty slice satisfies the premise, so checking it is exhaustive, not a sample.
 invariant benchmark_count_failed_empty_zero_inv:
-    forall results : []BenchmarkResult
-    results.len() == 0 ==> count_failed(results) == 0
+    count_failed([]BenchmarkResult{}) == 0
 
 test benchmark_compute_latency_zero_ops
     given ops = 0
@@ -4273,7 +4322,8 @@ invariant benchmark_mean_five_equal_w309_inv:
     mean([7.0, 7.0, 7.0, 7.0, 7.0]) == 7.0
 
 
-invariant benchmark_mean_five_equal_w309_inv:
+// Second, byte-identical copy of benchmark_mean_five_equal_w309_inv; renamed _2 so the name is declared once.
+invariant benchmark_mean_five_equal_w309_inv_2:
     mean([7.0, 7.0, 7.0, 7.0, 7.0]) == 7.0
 
 test benchmark_mean_five_equal_w310
@@ -4307,7 +4357,8 @@ invariant benchmark_mean_five_equal_w311_inv:
 
 
 
-invariant benchmark_mean_five_equal_w311_inv:
+// Second, byte-identical copy of benchmark_mean_five_equal_w311_inv; renamed _2 so the name is declared once.
+invariant benchmark_mean_five_equal_w311_inv_2:
     mean([7.0, 7.0, 7.0, 7.0, 7.0]) == 7.0
 
 
@@ -4481,7 +4532,7 @@ test benchmark_mean_negative_positive_w320
 
 invariant benchmark_mean_five_equal_w320_inv:
     mean([7.0, 7.0, 7.0, 7.0, 7.0]) == 7.0
-// Wave Loop 321 — CODER depth +1 (54→55)
+// Wave Loop 321 -- CODER depth +1 (54->55)
 test benchmark_w321_batch_depth_invariant_1 { /* verify baseline */ }
 test benchmark_w321_batch_depth_invariant_2 { /* verify baseline */ }
 invariant benchmark_w321_depth_055: true
@@ -4490,79 +4541,79 @@ test benchmark_w322_batch_depth_invariant_1 { /* verify baseline */ }
 test benchmark_w322_batch_depth_invariant_2 { /* verify baseline */ }
 invariant benchmark_w322_depth_055: true
 
-// Wave Loop 323 — CODER depth +1 (56→57)
+// Wave Loop 323 -- CODER depth +1 (56->57)
 test benchmark_w323_batch_depth_invariant_1 { /* verify baseline */ }
 test benchmark_w323_batch_depth_invariant_2 { /* verify baseline */ }
 invariant benchmark_w323_depth_057: true
-// Wave Loop 324 — CODER depth +1 (57→58)
+// Wave Loop 324 -- CODER depth +1 (57->58)
 test benchmark_w324_batch_depth_invariant_1 { /* verify baseline */ }
 test benchmark_w324_batch_depth_invariant_2 { /* verify baseline */ }
 invariant benchmark_w324_depth_058: true
-// Wave Loop 325 — CODER depth +1 (58→59)
+// Wave Loop 325 -- CODER depth +1 (58->59)
 test benchmark_w325_batch_depth_invariant_1 { /* verify baseline */ }
 test benchmark_w325_batch_depth_invariant_2 { /* verify baseline */ }
 invariant benchmark_w325_depth_059: true
-// Wave Loop 326 — CODER depth +1 (59→60)
+// Wave Loop 326 -- CODER depth +1 (59->60)
 test benchmark_w326_batch_depth_invariant_1 { /* verify baseline */ }
 test benchmark_w326_batch_depth_invariant_2 { /* verify baseline */ }
 invariant benchmark_w326_depth_060: true
-// Wave Loop 327 — CODER depth +1 (60→61)
+// Wave Loop 327 -- CODER depth +1 (60->61)
 test benchmark_w327_batch_depth_invariant_1 { /* verify baseline */ }
 test benchmark_w327_batch_depth_invariant_2 { /* verify baseline */ }
 invariant benchmark_w327_depth_061: true
-// Wave Loop 328 — CODER depth +1 (61→62)
+// Wave Loop 328 -- CODER depth +1 (61->62)
 test benchmark_w328_batch_depth_invariant_1 { /* verify baseline */ }
 test benchmark_w328_batch_depth_invariant_2 { /* verify baseline */ }
 invariant benchmark_w328_depth_062: true
 test benchmark_w329_batch_depth_invariant_1 { /* verify baseline */ }
 test benchmark_w329_batch_depth_invariant_2 { /* verify baseline */ }
 invariant benchmark_w329_depth_063: true
-// Wave Loop 330 — CODER depth +1 (63→64)
+// Wave Loop 330 -- CODER depth +1 (63->64)
 test benchmark_w330_batch_depth_invariant_1 { /* verify baseline */ }
 test benchmark_w330_batch_depth_invariant_2 { /* verify baseline */ }
 invariant benchmark_w330_depth_064: true
 
-// Wave Loop 331 — CODER depth +1 (64→65)
+// Wave Loop 331 -- CODER depth +1 (64->65)
 test benchmark_w331_batch_depth_invariant_1 { /* verify baseline */ }
 test benchmark_w331_batch_depth_invariant_2 { /* verify baseline */ }
 invariant benchmark_w331_depth_065: true
 
-// Wave Loop 332 — CODER depth +1 (65→66)
+// Wave Loop 332 -- CODER depth +1 (65->66)
 test benchmark_w332_batch_depth_invariant_1 { /* verify baseline */ }
 test benchmark_w332_batch_depth_invariant_2 { /* verify baseline */ }
 invariant benchmark_w332_depth_066: true
 
-// Wave Loop 333 — CODER depth +1 (66→67)
+// Wave Loop 333 -- CODER depth +1 (66->67)
 test benchmark_w333_batch_depth_invariant_1 { /* verify baseline */ }
 test benchmark_w333_batch_depth_invariant_2 { /* verify baseline */ }
 invariant benchmark_w333_depth_067: true
 
-// Wave Loop 334 — CODER depth +1 (67→68)
+// Wave Loop 334 -- CODER depth +1 (67->68)
 test benchmark_w334_batch_depth_invariant_1 { /* verify baseline */ }
 test benchmark_w334_batch_depth_invariant_2 { /* verify baseline */ }
 invariant benchmark_w334_depth_068: true
 
-// Wave Loop 335 — CODER depth +1 (68→69)
+// Wave Loop 335 -- CODER depth +1 (68->69)
 test benchmark_w335_batch_depth_invariant_1 { /* verify baseline */ }
 test benchmark_w335_batch_depth_invariant_2 { /* verify baseline */ }
 invariant benchmark_w335_depth_069: true
-// Wave Loop 336 — CODER depth +1 (69→70)
+// Wave Loop 336 -- CODER depth +1 (69->70)
 test benchmark_w336_batch_depth_invariant_1 { /* verify baseline */ }
 test benchmark_w336_batch_depth_invariant_2 { /* verify baseline */ }
 invariant benchmark_w336_depth_070: true
 
-// Wave Loop 337 — CODER depth +1 (70→71)
+// Wave Loop 337 -- CODER depth +1 (70->71)
 test benchmark_w337_batch_depth_invariant_1 { /* verify baseline */ }
 test benchmark_w337_batch_depth_invariant_2 { /* verify baseline */ }
 invariant benchmark_w337_depth_071: true
 
-// Wave Loop 338 — CODER depth +1 (71→72)
+// Wave Loop 338 -- CODER depth +1 (71->72)
 test benchmark_w338_batch_depth_invariant_1 { /* verify baseline */ }
 test benchmark_w338_batch_depth_invariant_2 { /* verify baseline */ }
 invariant benchmark_w338_depth_072: true
 
-// Wave Loop 339 — CODER depth +1 (72→73)
-// Century milestone: 100 generic ∀ theorems, 15-variable accumulation
+// Wave Loop 339 -- CODER depth +1 (72->73)
+// Century milestone: 100 generic for-all theorems, 15-variable accumulation
 
 test benchmark_w339_batch_depth_invariant_1 {
   // Verify baseline arithmetic for century milestone
@@ -4573,13 +4624,13 @@ test benchmark_w339_batch_depth_invariant_2 {
   // Verify baseline properties for 15-variable accumulation
   assert(true)
 }
-// Wave Loop 340 — CODER depth +1 (73→74)
+// Wave Loop 340 -- CODER depth +1 (73->74)
 test benchmark_w340_batch_depth_invariant_1 { /* verify baseline */ }
 test benchmark_w340_batch_depth_invariant_2 { /* verify baseline */ }
 invariant benchmark_w340_depth_074: true
 
 
-// Wave Loop 341 — CODER depth +1 (74→75)
+// Wave Loop 341 -- CODER depth +1 (74->75)
 test benchmark_w341_batch_depth_invariant_1 { /* verify baseline */ }
 test benchmark_w341_batch_depth_invariant_2 { /* verify baseline */ }
 invariant benchmark_w341_depth_075: true
@@ -4590,7 +4641,7 @@ test benchmark_w342_batch_depth_invariant_1 { /* verify baseline */ }
 test benchmark_w342_batch_depth_invariant_2 { /* verify baseline */ }
 invariant benchmark_w342_depth_076: true
 
-}
+// (A stray closing brace that closed no block stood here; removed so the parser does not swallow it.)
 
 invariant benchmark_w339_depth_073: true
 // Wave Loop 343 -- depth +1 (75->76)

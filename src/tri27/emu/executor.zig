@@ -550,8 +550,10 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []align(8) u8) ExecErr
                 return ExecError.StackOverflow;
             }
 
-            // Push old IP to stack (word-aligned)
-            const ip_bytes = std.mem.asBytes(&cpu.pc);
+            // Push the address of the instruction AFTER the call, so RET resumes
+            // past the call site instead of looping on the CALL itself.
+            const return_addr = cpu.pc + 1;
+            const ip_bytes = std.mem.asBytes(&return_addr);
             memory[cpu.sp] = ip_bytes[0];
             memory[cpu.sp + 1] = ip_bytes[1];
             memory[cpu.sp + 2] = ip_bytes[2];
@@ -1095,6 +1097,34 @@ test "execute HALT" {
 
     try std.testing.expect(cpu.flags.H);
     try std.testing.expectEqual(@as(u32, 0), cpu.pc); // IP not advanced
+}
+
+test "CALL pushes the next address, RET resumes after the call" {
+    const allocator = std.testing.allocator;
+    var cpu = try CPUState.init(allocator);
+    defer cpu.deinit();
+    cpu.pc = 5; // the CALL sits at word 5
+    cpu.sp = 0;
+
+    const memory = cpu.getBytesMut();
+
+    // CALL at word 5 jumps to word 10; RET there must return to word 6.
+    try execute(&cpu, Instruction{
+        .opcode = .CALL,
+        .immediate = 10,
+        .has_imm = true,
+    }, memory);
+    try std.testing.expectEqual(@as(u32, 10), cpu.pc);
+    try std.testing.expectEqual(@as(u32, 4), cpu.sp);
+    // The pushed return address is the word after the CALL, not the CALL itself.
+    const pushed = std.mem.readInt(u32, memory[0..4], .little);
+    try std.testing.expectEqual(@as(u32, 6), pushed);
+
+    try execute(&cpu, Instruction{
+        .opcode = .RET,
+    }, memory);
+    try std.testing.expectEqual(@as(u32, 6), cpu.pc);
+    try std.testing.expectEqual(@as(u32, 0), cpu.sp);
 }
 
 test "estimateCycles" {

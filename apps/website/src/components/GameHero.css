@@ -1,7 +1,7 @@
 /* The mark, the claim, and three ways in. One column, centred, sized from the
    viewport — there is nothing here that needs a breakpoint to decide. */
 .game-hero {
-  background: #020605;
+  background: #000;
   color: var(--text, #FFFFFF);
 }
 
@@ -85,8 +85,8 @@
 
 .game-hero-primary {
   border: 1px solid #00ff88;
-  background: #00ff88;
-  color: #001b0e;
+  background: #000;
+  color: #00ff88;
   font-weight: 600;
 }
 

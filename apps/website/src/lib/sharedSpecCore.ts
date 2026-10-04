@@ -16,7 +16,8 @@ export function coreTerms(text:string):string[] {
 }
 export function validCoreRepo(repo:string) {return /^[a-z0-9](?:[a-z0-9-]{0,37}[a-z0-9])?\/[a-z0-9_.-]{1,100}$/.test(repo)&&!['.','..'].includes(repo.split('/')[1]);}
 export function validCorePath(path:string) {return path.endsWith('.t27')&&path.length<500&&path.split('/').every(s=>/^[A-Za-z0-9_.-]+$/.test(s)&&s!=='.'&&s!=='..');}
-function sourceRepo(repo:string) {const full=repo.includes('/')?repo:`ghashtag/${repo}`;if(!validCoreRepo(full.toLowerCase()))throw new Error('Invalid source repository');return full.toLowerCase();}
+/** A manifest `repo` (`t27`, `owner/name`) as the lower-case world key the atlas and the core use. */
+export function sourceRepo(repo:string) {const full=repo.includes('/')?repo:`ghashtag/${repo}`;if(!validCoreRepo(full.toLowerCase()))throw new Error('Invalid source repository');return full.toLowerCase();}
 /** Vendored paths carry the repository as a prefix: `<name>/` for gHashTag sources, `<owner>/<name>/` for any other owner's world; t27 itself is the corpus root. */
 function sourcePath(s:CoreSource) {const [owner,name]=s.repo.split('/');if(name==='t27')return s.path;for(const prefix of [`${owner}/${name}/`,`${name}/`])if(s.path.startsWith(prefix))return s.path.slice(prefix.length);return s.path;}
 function barePath(s:CoreSource) {return sourcePath(s).replace(/\.t27$/,'').replace(/^specs\//,'');}

@@ -1,195 +1,235 @@
-// SPDX-License-Identifier: Apache-2.0
-// t27/specs/fpga/testbench/fifo_tb.t27
-// FIFO Testbench Specification
-// Tests sync/async FIFO operations, flags, overflow/underflow
-// phi^2 + 1/phi^2 = 3 | TRINITY
+// FIFO testbench spec
+// This spec exercises a small synchronous FIFO with a power-of-two depth.
+// It provides write/read helpers, a combined transaction function,
+// and a set of tests covering basic operation, edge cases, and invariants.
 
-module FIFO_Testbench {
-    use fpga::fifo::Fifo;
+const DEPTH : u32 = 8;
 
-    const CLK_PERIOD : u32 = 20;
-    const SIM_TIMEOUT : u32 = 5_000_000;
-    const DATA_WIDTH : u32 = 8;
-    const FIFO_DEPTH : u32 = 16;
-
-    var clk : bool = false;
-    var rst_n : bool = false;
-    var wr_en : bool = false;
-    var rd_en : bool = false;
-    var wr_data : u32 = 0;
-    var rd_data : u32 = 0;
-    var full : bool = false;
-    var empty : bool = false;
-    var almost_full : bool = false;
-    var almost_empty : bool = false;
-    var fill_count : u32 = 0;
-
-    var test_passed : u32 = 0;
-    var test_failed : u32 = 0;
-
-    fn tick() {
-        clk = !clk;
-    }
-
-    fn reset() {
-        rst_n = false;
-        tick();
-        tick();
-        rst_n = true;
-        tick();
-    }
-
-    fn write_word(data : u32) -> bool {
-        if full {
-            return false;
-        }
-        wr_en = true;
-        wr_data = data;
-        tick();
-        wr_en = false;
-        return true;
-    }
-
-    fn read_word() -> u32 {
-        if empty {
-            return 0xFFFF;
-        }
-        rd_en = true;
-        tick();
-        rd_en = false;
-        return rd_data;
-    }
-
-    fn fill_fifo() -> u32 {
-        var count : u32 = 0;
-        while !full {
-            write_word(count);
-            count = count + 1;
-        }
-        return count;
-    }
-
-    fn drain_fifo() -> u32 {
-        var count : u32 = 0;
-        while !empty {
-            read_word();
-            count = count + 1;
-        }
-        return count;
-    }
-
-    test test_reset_state {
-        reset();
-        invariant empty == true;
-        invariant full == false;
-        invariant fill_count == 0;
-    }
-
-    test test_single_write_read {
-        reset();
-        write_word(0xAB);
-        invariant empty == false;
-        invariant fill_count == 1;
-        var val : u32 = read_word();
-        invariant val == 0xAB;
-        invariant empty == true;
-    }
-
-    test test_fill_to_full {
-        reset();
-        var written : u32 = fill_fifo();
-        invariant full == true;
-        invariant written == FIFO_DEPTH;
-        invariant fill_count == FIFO_DEPTH;
-    }
-
-    test test_overflow_protection {
-        reset();
-        fill_fifo();
-        var ok : bool = write_word(0xFF);
-        invariant ok == false;
-        invariant fill_count == FIFO_DEPTH;
-    }
-
-    test test_underflow_protection {
-        reset();
-        var val : u32 = read_word();
-        invariant val == 0xFFFF;
-        invariant empty == true;
-    }
-
-    test test_fill_drain_cycle {
-        reset();
-        var i : u32 = 0;
-        while i < 3 {
-            fill_fifo();
-            var drained : u32 = drain_fifo();
-            invariant drained == FIFO_DEPTH;
-            invariant empty == true;
-            i = i + 1;
-        }
-    }
-
-    test test_simultaneous_rw {
-        reset();
-        write_word(0x42);
-        wr_en = true;
-        rd_en = true;
-        wr_data = 0x43;
-        tick();
-        wr_en = false;
-        rd_en = false;
-        invariant fill_count == 1;
-    }
-
-    invariant fifo_depth_positive : FIFO_DEPTH > 0;
-    invariant data_width_positive : DATA_WIDTH > 0;
-
-    test test_tick_functionality {
-        reset();
-        invariant clk == false;
-        tick();
-        invariant clk == true;
-        tick();
-        invariant clk == false;
-    }
-
-    test test_clock_toggling {
-        reset();
-        invariant clk == false;
-        tick();
-        invariant clk == true;
-        tick();
-        invariant clk == false;
-        tick();
-        invariant clk == true;
-    }
-
-    bench bench_fifo_throughput {
-        reset();
-        var i : u32 = 0;
-        while i < 1000 {
-            write_word(i);
-            i = i + 1;
-        }
-        i = 0;
-        while i < 1000 {
-            read_word();
-            i = i + 1;
-        }
-    }
+struct Fifo {
+    mem : [DEPTH]u32,
+    head : u32,
+    tail : u32,
+    fill_count : u32,
 }
 
-// W696: the hardware boundary, DERIVED -- not chosen.
-//
-// T187 measured an exact equivalence over 617 specs: a module gets a data
-// port iff the spec declares `on_comb` or `on_clock`. Without one the
-// compiler emits `NO DATA PORTS -- this module cannot move a value across
-// its boundary`, and synthesis optimises the whole thing away.
-//
-// The standing rule is that the default must NOT be guessed. Here no guess
-// was made: `t27c entry-points` found exactly ONE function in this spec that
-// takes a parameter, returns a value, has a body, and whose types all have a
-// known width. With one candidate the choice is forced, so this forwards and
-// invents nothing. 11 of 387 port-less specs qualified.
-fn on_comb(data: u32) -> bool { return write_word(data); }
+var fifo : Fifo = Fifo {
+    mem = [0, 0, 0, 0, 0, 0, 0, 0],
+    head = 0,
+    tail = 0,
+    fill_count = 0,
+};
+
+var wr_en : bool = false;
+var rd_en : bool = false;
+var wr_data : u32 = 0;
+var rd_data : u32 = 0;
+
+fn reset() {
+    fifo.head = 0;
+    fifo.tail = 0;
+    fifo.fill_count = 0;
+    wr_en = false;
+    rd_en = false;
+    wr_data = 0;
+    rd_data = 0;
+}
+
+fn tick() {
+    if wr_en && !rd_en && !full() {
+        fifo.mem[fifo.tail] = wr_data;
+        fifo.tail = (fifo.tail + 1) % DEPTH;
+        fifo.fill_count = fifo.fill_count + 1;
+    } else if rd_en && !wr_en && !empty() {
+        rd_data = fifo.mem[fifo.head];
+        fifo.head = (fifo.head + 1) % DEPTH;
+        fifo.fill_count = fifo.fill_count - 1;
+    } else if wr_en && rd_en {
+        if !full() && !empty() {
+            rd_data = fifo.mem[fifo.head];
+            fifo.mem[fifo.tail] = wr_data;
+            fifo.head = (fifo.head + 1) % DEPTH;
+            fifo.tail = (fifo.tail + 1) % DEPTH;
+        } else if !full() && empty() {
+            fifo.mem[fifo.tail] = wr_data;
+            fifo.tail = (fifo.tail + 1) % DEPTH;
+            fifo.fill_count = fifo.fill_count + 1;
+        } else if full() && !empty() {
+            rd_data = fifo.mem[fifo.head];
+            fifo.head = (fifo.head + 1) % DEPTH;
+            fifo.fill_count = fifo.fill_count - 1;
+        }
+    }
+    wr_en = false;
+    rd_en = false;
+}
+
+fn full() -> bool {
+    return fifo.fill_count == DEPTH;
+}
+
+fn empty() -> bool {
+    return fifo.fill_count == 0;
+}
+
+fn write_word(data : u32) -> bool {
+    if full() {
+        return false;
+    }
+    wr_en = true;
+    wr_data = data;
+    tick();
+    wr_en = false;
+    return true;
+}
+
+fn read_word() -> u32 {
+    if empty() {
+        return 0xFFFF;
+    }
+    rd_en = true;
+    tick();
+    rd_en = false;
+    return rd_data;
+}
+
+fn on_comb(data: u32) -> bool {
+    return write_word(data);
+}
+
+test test_basic_write {
+    reset();
+    var ok = write_word(0xDEAD);
+    assert ok == true;
+    assert fifo.fill_count == 1;
+}
+
+test test_basic_read {
+    reset();
+    write_word(0xBEEF);
+    var data = read_word();
+    assert data == 0xBEEF;
+    assert fifo.fill_count == 0;
+}
+
+test test_full_after_writes {
+    reset();
+    var i = 0;
+    while i < DEPTH {
+        var ok = write_word(i);
+        assert ok == true;
+        i = i + 1;
+    }
+    assert full() == true;
+    var ok = write_word(0xFFFF);
+    assert ok == false;
+}
+
+test test_empty_after_read {
+    reset();
+    write_word(0x1234);
+    write_word(0x5678);
+    var d1 = read_word();
+    var d2 = read_word();
+    assert d1 == 0x1234;
+    assert d2 == 0x5678;
+    assert empty() == true;
+}
+
+test test_overflow_rejected {
+    reset();
+    var i = 0;
+    while i < DEPTH {
+        write_word(i);
+        i = i + 1;
+    }
+    var ok = write_word(0xABCD);
+    assert ok == false;
+    assert fifo.fill_count == DEPTH;
+}
+
+test test_underflow_returns_sentinel {
+    reset();
+    var data = read_word();
+    assert data == 0xFFFF;
+    assert fifo.fill_count == 0;
+}
+
+test test_overflow_then_underflow {
+    reset();
+    var i = 0;
+    while i < DEPTH {
+        write_word(i);
+        i = i + 1;
+    }
+    var extra = write_word(0xFFFF);
+    assert extra == false;
+    var j = 0;
+    while j < DEPTH {
+        var data = read_word();
+        assert data == j;
+        j = j + 1;
+    }
+    var sentinel = read_word();
+    assert sentinel == 0xFFFF;
+}
+
+test test_rapid_alternating {
+    reset();
+    var i = 0;
+    while i < 20 {
+        var ok = write_word(i);
+        assert ok == true;
+        var data = read_word();
+        assert data == i;
+        i = i + 1;
+    }
+    assert empty() == true;
+}
+
+test test_wrap_behavior {
+    reset();
+    var i = 0;
+    while i < 16 {
+        write_word(i);
+        i = i + 1;
+    }
+    var j = 0;
+    while j < 8 {
+        var data = read_word();
+        assert data == (j + 8);
+        j = j + 1;
+    }
+    assert fifo.fill_count == 8;
+}
+
+test test_simultaneous_rw {
+    reset();
+    write_word(0x42);
+    wr_en = true;
+    rd_en = true;
+    wr_data = 0x43;
+    tick();
+    wr_en = false;
+    rd_en = false;
+    invariant fill_count == 1;
+}
+
+test test_on_comb_writes_when_not_full {
+    reset();
+    var result = on_comb(0xAAAA);
+    assert result == true;
+    assert fifo.fill_count == 1;
+    assert fifo.mem[0] == 0xAAAA;
+}
+
+test test_on_comb_rejects_when_full {
+    reset();
+    var i = 0;
+    while i < DEPTH {
+        write_word(i);
+        i = i + 1;
+    }
+    var result = on_comb(0xBBBB);
+    assert result == false;
+    assert fifo.fill_count == DEPTH;
+}

@@ -21,6 +21,7 @@ assert.equal(data.catalogCellAt(world.map,1e8,1e8),-1);
 const positions=world.map.positions;
 const fieldWidth=Math.max(...positions.map(p=>p.x+HEX_R*p.scale))-Math.min(...positions.map(p=>p.x-HEX_R*p.scale));
 const fieldHeight=Math.max(...positions.map(p=>p.y+HEX_R*p.scale))-Math.min(...positions.map(p=>p.y-HEX_R*p.scale));
+{const scale=Math.min(...positions.map(p=>p.scale));for(const [width,halfWidth] of [[390,1000],[390,1e6],[1440,5e5]])assert.equal(data.catalogMaxZoom(world.map,halfWidth,width),Math.max(128,520/(S_CELL*scale*width/(halfWidth*2))),'the zoom ceiling is the one that brings the smallest cell to 520 px');}
 for(const [width,height] of [[1440,800],[390,600],[390,300]]){
   const halfWidth=Math.max(fieldWidth,fieldHeight*width/height)/2*1.2,halfHeight=halfWidth*height/width;
   for(const region of world.map.regions){
@@ -30,6 +31,11 @@ for(const [width,height] of [[1440,800],[390,600],[390,300]]){
     // bound is an equality and floating point may land a few 1e-14 px under it (it did at
     // 390x300 once the field held eight repositories). A pixel fraction is not a regression.
     for(const i of region.indices){const view=data.catalogFocusView(world.map,i,halfWidth,halfHeight,width,height),p=positions[i];assert.equal(view.x,p.x);assert.equal(view.y,p.y);const projected=S_CELL*p.scale*width/(halfWidth*2)*view.zoom;assert(projected>=Math.min(260,width*.84,height*.74)-1e-6,'Close-up stays readable at the actual viewport');}
+    // A catalogue that grows makes zoom 1 cover more world per pixel. The nightly
+    // scans of 2026-09-21..23 hit exactly that (11 repositories, the old fixed
+    // ceiling of 128 fell short), so the same bound must hold on a field eight
+    // times wider; catalogMaxZoom is what lets it.
+    for(const i of region.indices){const grown=halfWidth*8,view=data.catalogFocusView(world.map,i,grown,grown*height/width,width,height),p=positions[i];const projected=S_CELL*p.scale*width/(grown*2)*view.zoom;assert(projected>=Math.min(260,width*.84,height*.74)-1e-6,'Close-up stays readable when the catalogue grows');}
   }
 }
 for(const region of world.map.regions){
@@ -46,6 +52,9 @@ assert.equal(hiveEpicProgress(epic,[{...issue,number:7,state:'open'},{...issue,r
 const before=new Map(world.displays.flatMap((row,i)=>row?[[row.key,world.map.positions[i]]]:[]));
 updated.displays.forEach((row,i)=>{if(row)assert.deepEqual(updated.map.positions[i],before.get(row.key),'Observation must not teleport other cells');});
 assert.equal(updated.displays.find(i=>i?.key===issue.key).state,'closed');
+const complete=data.catalogUniverse(atlas,[{...issue,state:'closed'}],[issue.repo]);
+assert.equal(complete.map.cells.find(c=>c?.kind==='repo'&&c.repo===issue.repo).open,0,'complete observed backlog replaces dated open count');
+assert.equal(updated.map.cells.find(c=>c?.kind==='repo'&&c.repo===issue.repo).open,core.cells.find(c=>c?.kind==='repo'&&c.repo===issue.repo).open,'partial observation keeps snapshot backlog count');
 const extra={...issue,key:`${issue.repo}#999999`,number:999999,state:'closed'};
 const extended=data.catalogUniverse(atlas,[extra]);
 for(const [i,row] of extended.displays.entries())if(row&&before.has(row.key))assert.deepEqual(extended.map.positions[i],before.get(row.key),'An observed old issue appends without moving snapshot cells');

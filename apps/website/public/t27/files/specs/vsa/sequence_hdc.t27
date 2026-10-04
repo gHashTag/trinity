@@ -83,11 +83,17 @@ module SequenceHdc {
     pub struct QueryResult {
         label : []const u8,        // Matching sequence label
         similarity : f64,          // Cosine similarity score
-    }
-
-    // ========================================================================
-    // 6. Item Memory Functions
-    // ========================================================================
+}
+ 
+     pub struct LanguageDetector {
+         item_memory : *ItemMemory,
+         dimension : usize,
+         language_vectors : map[:]const u8, PackedBigInt>,
+     }
+ 
+     // ========================================================================
+     // 6. Item Memory Functions
+     // ========================================================================
 
     // initItemMemory(allocator: std.mem.Allocator, dimension: usize, seed: u64) -> ItemMemory
     // Create new item memory with given dimension and seed
@@ -165,13 +171,22 @@ module SequenceHdc {
     // Create language detector with given dimension
     // Returns detector ready for training and detection
     // Complexity: O(1)
-    pub fn initDetector(item_memory: &ItemMemory, dimension: usize) -> LanguageDetector {}
+    pub fn initDetector(item_memory: &ItemMemory, dimension: usize) -> LanguageDetector {
+    LanguageDetector {
+        item_memory: &item_memory,
+        dimension: dimension,
+    }
+}
 
     // trainDetector(detector: &LanguageDetector, language: []const u8, samples: []const u8)
     // Train detector on labeled text samples per language
     // Stores character n-grams for each language
     // Complexity: O(p * n) where p = samples.len, n = dimension
-    pub fn trainDetector(detector: &LanguageDetector, language: []const u8, samples: []const u8) {}
+    pub fn trainDetector(detector: &LanguageDetector, language: []const u8, samples: []const u8) {
+    let encoder = initEncoder(detector.item_memory, NGRAM_ORDER);
+    let encoded = encodeNGram(&encoder, samples);
+    detector.language_vectors[language] = encoded.vector;
+}
 
     // detect(detector: &LanguageDetector, text: []const u8) -> !SequenceMemory.QueryResult
     // Detect language of input text

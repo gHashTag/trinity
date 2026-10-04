@@ -344,7 +344,7 @@ invariant "deploy_state_enum_complete" {
 
 invariant "env_vars_array_size_is_sacred" {
     // Environment variables must have 27 elements
-    var dummy: [27]EnvVar = undefined;
+    const dummy: [27]EnvVar = undefined;
     _ = dummy;
 }
 
@@ -359,5 +359,5 @@ bench init_sacred_env_vars_latency {
     for (0..1000) |_| {
         env_vars = init_sacred_env_vars();
     }
-    _ = env_vars;
 }
+// Note: the line "_ = env_vars;" has been removed as per the issue.

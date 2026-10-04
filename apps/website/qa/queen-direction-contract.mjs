@@ -291,11 +291,16 @@ A(
   css.includes('.queen27-page.is-shell .queen27-card[data-dir]:hover'),
   'the hovered card keeps its direction colour in the shell layout',
 )
-A(
-  !/\.queen27-card\[data-dir\][^{]*\{[^}]*rgba\(255, 255, 255/.test(css),
-  'the tint mixes against transparent: one layer of ground, which is the ' +
-    'rule the shell layout states for every card on this board',
-)
+// The owner asked for black cards, 2026-10-03: a 7% wash of the direction
+// colour turned a board that is mostly code into a green board. The colour may
+// sit on the dot, the tag and the right edge; it may not be the ground.
+for (const match of css.matchAll(/([^{}]*\.queen27-card\[data-dir\][^{}]*)\{([^{}]*)\}/g)) {
+  const background = /background\s*:\s*([^;]*)/.exec(match[2])
+  A(
+    background !== null && background[1].trim() === '#000',
+    `a direction card states a black ground, not a tint: ${match[1].trim().replace(/\s+/g, ' ')}`,
+  )
+}
 
 // THE SAME DEFECT, A SECOND TIME, WHICH IS WHY THIS PART IS GENERIC.
 //

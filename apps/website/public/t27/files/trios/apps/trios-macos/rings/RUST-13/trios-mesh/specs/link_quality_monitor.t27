@@ -29,9 +29,9 @@ module LinkQualityMonitor {
         
         // Cap at reasonable maximum (10.0 in Q8 = 0x280)
         if new_estimate > 0x280 {
-            0x280
+            return 0x280;
         } else {
-            new_estimate as u8
+            return new_estimate as u8;
         }
     }
     
@@ -46,9 +46,9 @@ module LinkQualityMonitor {
         
         // Trend = recent - older (positive = worsening)
         if recent_avg > older_avg {
-            (recent_avg - older_avg) as i8
+            return (recent_avg - older_avg) as i8;
         } else {
-            -((older_avg - recent_avg) as i8)
+            return -((older_avg - recent_avg) as i8);
         }
     }
     
@@ -58,18 +58,18 @@ module LinkQualityMonitor {
         
         // Ensure reasonable bounds (1.0 to 10.0 in Q8 = 0x40 to 0x280)
         if prediction < 0x40 {
-            0x40  // Minimum ETX of 1.0
+            return 0x40;  // Minimum ETX of 1.0
         } else if prediction > 0x280 {
-            0x280  // Maximum ETX of 10.0
+            return 0x280;  // Maximum ETX of 10.0
         } else {
-            prediction as u8
+            return prediction as u8;
         }
     }
     
     // Determine if link quality is degrading
     fn is_degrading(current_etx: u8, trend: i8) -> bool {
         // Degradation criteria: ETX is poor AND trend is positive (worsening)
-        (current_etx > QUALITY_POOR) && (trend > TREND_THRESHOLD)
+        return (current_etx > QUALITY_POOR) && (trend > TREND_THRESHOLD);
     }
     
     // Calculate quality score (0-255, lower is better)
@@ -81,32 +81,35 @@ module LinkQualityMonitor {
         let combined: u16 = etx_component + latency_component;
         
         // Cap at 255
-        if combined > 255 { 255 } else { combined as u8 }
+        if combined > 255 { return 255; } else { return combined as u8; }
     }
     
     // Convert quality score to classification
     fn classify_quality(score: u8) -> u8 {
         if score <= 50 {
-            0  // Excellent
+            return 0;  // Excellent
         } else if score <= 100 {
-            1  // Good
+            return 1;  // Good
         } else if score <= 150 {
-            2  // Fair
+            return 2;  // Fair
         } else if score <= 200 {
-            3  // Poor
+            return 3;  // Poor
         } else {
-            4  // Very Poor
+            return 4;  // Very Poor
         }
     }
 }
 
-testbench link_quality_monitor_tb {
+// t27 has no `testbench` block; `spec Name { ... }` groups the same tests.
+// Rust-style tail expressions became explicit `return`, and
+// `LinkQualityMonitor::f(...)` became `f(...)` (same module).
+spec link_quality_monitor_tb {
     test ewma_calculation {
         // Update from 2.0 to 3.0
         let current: u8 = 0x40;  // 2.0 in Q8
         let sample: u8 = 0x60;  // 3.0 in Q8
         
-        let new_etx: u8 = LinkQualityMonitor::update_ewma(current, sample);
+        let new_etx: u8 = update_ewma(current, sample);
         
         // Should be between current and sample (weighted average)
         assert new_etx > current;
@@ -116,12 +119,12 @@ testbench link_quality_monitor_tb {
     test trend_detection {
         // Improving quality (decreasing ETX)
         let improving_history: [u8; 8] = [0x70, 0x68, 0x60, 0x58, 0x50, 0x48, 0x40, 0x38];
-        let trend: i8 = LinkQualityMonitor::calculate_trend(improving_history);
+        let trend: i8 = calculate_trend(improving_history);
         assert trend < 0;  // Negative trend = improving
         
         // Worsening quality (increasing ETX)
         let worsening_history: [u8; 8] = [0x40, 0x48, 0x50, 0x58, 0x60, 0x68, 0x70, 0x78];
-        let trend2: i8 = LinkQualityMonitor::calculate_trend(worsening_history);
+        let trend2: i8 = calculate_trend(worsening_history);
         assert trend2 > 0;  // Positive trend = worsening
     }
     
@@ -130,7 +133,7 @@ testbench link_quality_monitor_tb {
         let current: u8 = 0x60;  // 3.0 in Q8
         let trend: i8 = 0x08;   // +0.5 trend
         
-        let predicted: u8 = LinkQualityMonitor::predict_next_etx(current, trend);
+        let predicted: u8 = predict_next_etx(current, trend);
         
         // Should predict slightly higher ETX
         assert predicted > current;
@@ -139,20 +142,20 @@ testbench link_quality_monitor_tb {
     
     test degradation_detection {
         // Poor ETX with worsening trend
-        assert LinkQualityMonitor::is_degrading(0x70, 0x10) == true;
+        assert is_degrading(0x70, 0x10) == true;
         
         // Poor ETX with improving trend
-        assert LinkQualityMonitor::is_degrading(0x70, -0x10) == false;
+        assert is_degrading(0x70, -0x10) == false;
         
         // Good ETX regardless of trend
-        assert LinkQualityMonitor::is_degrading(0x30, 0x10) == false;
+        assert is_degrading(0x30, 0x10) == false;
     }
     
     test quality_score_calculation {
         let etx: u8 = 0x50;    // 4.0 in Q8
         let latency: u16 = 100; // 100ms
         
-        let score: u8 = LinkQualityMonitor::quality_score(etx, latency);
+        let score: u8 = quality_score(etx, latency);
         
         // Score should be reasonable
         assert score > 50;
@@ -160,10 +163,10 @@ testbench link_quality_monitor_tb {
     }
     
     test quality_classification {
-        assert LinkQualityMonitor::classify_quality(30) == 0;  // Excellent
-        assert LinkQualityMonitor::classify_quality(80) == 1;  // Good
-        assert LinkQualityMonitor::classify_quality(125) == 2; // Fair
-        assert LinkQualityMonitor::classify_quality(175) == 3; // Poor
-        assert LinkQualityMonitor::classify_quality(225) == 4; // Very Poor
+        assert classify_quality(30) == 0;  // Excellent
+        assert classify_quality(80) == 1;  // Good
+        assert classify_quality(125) == 2; // Fair
+        assert classify_quality(175) == 3; // Poor
+        assert classify_quality(225) == 4; // Very Poor
     }
 }

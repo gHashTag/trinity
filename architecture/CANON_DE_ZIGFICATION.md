@@ -17,6 +17,14 @@ Trinity Project transition to **t27 as the canonical language specification**.
 3. **Zero Zig in Specs** — Specifications are hardware-agnostic, language-agnostic
 4. **Multi-Target Generation** — One .t27 spec generates Zig, C, Verilog, and more
 
+> **Correction (2026-10-04).** Item 1 listed Python among the implementations
+> derived from .t27 specs; no Python is generated today. `t27c` emits Zig,
+> Verilog, Verilog (HIR), C, Rust, JavaScript and TypeScript — the seven
+> targets of `t27_compiler.wasm`, listed as `TARGET_IDS` in
+> `apps/website/src/lib/t27Compiler.ts`. A Python backend is planned for
+> gHashTag/t27 and not yet shipped. Go, C++ and VHDL were never t27c
+> backends.
+
 ---
 
 ## The Canonical Hierarchy

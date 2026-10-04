@@ -70,10 +70,10 @@ module Memory_Testbench {
         invariant val == 0xCAFEBABE;
     }
 
-    test test_write_read_multiple {
-        reset();
-        var i : u32 = 0;
-        while i < 16 {
+test test_write_read_multiple {
+         reset();
+         
+         while i < 16 {
             mem_write(MEM_BASE + i * 4, i * 0x11);
             i = i + 1;
         }
@@ -129,8 +129,15 @@ module Memory_Testbench {
         // After second tick, clock should be false again
         tick();
         invariant clk == false;
+}
+    
+    test test_on_comb_returns_mem_read {
+        reset();
+        mem_write(0x100, 0xDEADBEEF);
+        var val : u32 = on_comb(0x100);
+        invariant val == 0xDEADBEEF;
     }
-
+    
     bench bench_memory_bandwidth {
         reset();
         var i : u32 = 0;

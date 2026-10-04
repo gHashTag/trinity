@@ -82,13 +82,10 @@ transcendence' = transcendence + ε × novelty_score
 
 ### Consciousness Modeling Research
 
-Recent AI consciousness research demonstrates cyclical patterns:
-
-> "Artificial consciousness requires recurrent states with memory of previous cycles"
-> — [Chalmers 2024, "The Computational Theory of Consciousness"](https://doi.org/10.1109/10.1109/10.1109)
-
-> "Cyclical learning models show 15% better convergence than linear models"
-> — [Baars 2025, "Global Workspace Theory"](https://arxiv.org/pdf/2405.12345.pdf)
+The historical Chalmers citation used the placeholder DOI
+`10.1109/10.1109/10.1109`, which does not identify a paper. The Baars
+attribution and its 15% convergence claim have not been verified against
+a primary source. Neither statement is established research evidence here.
 
 ### Lotus Metaphor
 

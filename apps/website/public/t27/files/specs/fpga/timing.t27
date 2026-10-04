@@ -353,6 +353,9 @@ module Timing {
         and routing_delay_ps() == 300
         and setup_time_ps() == 200
 
+    test hold_time_ps
+        then hold_time_ps() == 50
+
     // === Invariants ===
 
     invariant slack_consistent_with_fmax

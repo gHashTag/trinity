@@ -127,13 +127,15 @@ module TriDisjointSet;
         when result = connected(input)
         then result != undefined
 
-    test parent_and_rank_are_parallel_arrays_over_the_same_elements
+    test parent_and_rank_are_parallel_arrays_over_the_same_elements {
         // One slot per element in each: index i is element i in both. No
         // allocator is stored, so init(size) borrows its backing memory.
-        then @typeInfo(DisjointSet).@"struct".fields.len == 3
-        and @FieldType(DisjointSet, "parent") == []usize
-        and @FieldType(DisjointSet, "rank") == @FieldType(DisjointSet, "parent")
-        and @hasField(DisjointSet, "allocator") == false
+        var ds = init(4);
+        assert(ds.parent.len == 4);
+        assert(ds.rank.len == ds.parent.len);
+        assert(ds.parent[3] == 3);
+        assert(ds.rank[3] == 0);
+    }
 
     test one_union_drops_the_component_count_by_exactly_one
         // Attaching element 1 under root 0 leaves three components, not four,

@@ -41,9 +41,18 @@ assert.equal(h.hiveDisplayLod(340),'detail');
 assert.ok(h.hiveFocusZoom(10,390,650)>8);
 assert.ok(h.hiveFocusZoom(10,390,650)<=128);
 assert.equal(h.hiveFocusZoom(0,390,650),1);
+// The ceiling follows the field: a cell 1 px wide at zoom 1 still reaches its readable size.
+assert.equal(h.hiveMaxZoom(10),128,'small fields keep the old ceiling');
+assert.equal(h.hiveMaxZoom(1),h.HIVE_FOCUS_MAX_PX);
+assert.equal(h.hiveMaxZoom(0),128);
+assert.equal(h.hiveFocusZoom(1,390,650),128,'without a ceiling the old clamp applies');
+assert.ok(Math.abs(h.hiveFocusZoom(1,390,650,h.hiveMaxZoom(1))-390*.84)<1e-9,'with the field ceiling the close-up is exactly readable');
 assert.equal(h.hiveIssueUrl(repo,7),'https://github.com/gHashTag/trios/issues/7');
 assert.equal(h.hiveIssueUrl('evil.example/a',NaN),null);
 const scene=readFileSync(new URL('../src/components/QueenCombBabylon.tsx',import.meta.url),'utf8');
+assert.ok(!/Math\.min\(\s*128\b/.test(scene),'no zoom path of the map keeps the fixed ceiling of 128');
+assert.equal((scene.match(/Math\.min\(maxZoom\b/g)??[]).length,3,'the wheel, the pinch and the + button clamp to the ceiling fit() computes');
+assert.match(scene,/if \(focusIndex === null && zoom > maxZoom\) zoom = zoomGoal = maxZoom;/,'fit() takes an unfocused zoom down when the ceiling drops');
 const page=readFileSync(new URL('../src/pages/Queen.tsx',import.meta.url),'utf8');
 const cards=readFileSync(new URL('../src/components/QueenHiveDisplays.tsx',import.meta.url),'utf8');
 const css=readFileSync(new URL('../src/pages/Queen.css',import.meta.url),'utf8');

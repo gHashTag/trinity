@@ -49,7 +49,7 @@ assert.ok(originProblems([{ screen: 'x', route: '.evil.example/feed' }]).length 
 assert.deepEqual(originProblems(TRI_SCREENS), [], 'every TRI route keeps the app origin')
 
 for (const { screen, route } of TRI_SCREENS) {
-  for (const lang of ['en', 'ru', 'de', 'zh', 'es']) {
+  for (const lang of ['en', 'ru']) {
     const src = new URL(triFrameSrc(screen, lang))
     assert.equal(src.origin, APP_ORIGIN, `${screen}/${lang}: frame origin`)
     assert.equal(src.pathname, route, `${screen}/${lang}: frame route`)
@@ -186,8 +186,12 @@ assert.ok(at >= 0, 'HUD_VIEWS includes tri')
 assert.equal(HUD_KEYS[at], 'r', 'TRI opens on r')
 // Spelled out rather than derived, so adding a view has to be said out loud
 // here. The fourteenth is b: PASSPORT. The digits were spent at ten, and t, p
-// and r are TOOLS, PROJECT and TRI.
-assert.equal(HUD_KEYS.slice(0, HUD_VIEWS.length).join(''), '1234567890tprbwm')
+// and r are TOOLS, PROJECT and TRI. Then w: BROWSER, m: ROADMAP, and l:
+// LEADERBOARD, whose lane the bees ran on. The eighteenth is x (the crossed
+// blades): WARS, then k: TOKEN, and the twentieth is g: PROVIDERS, the GPUs
+// and boards that sell compute. The twenty-first is v: WIDGETS, what a reader
+// lifts out and shares.
+assert.equal(HUD_KEYS.slice(0, HUD_VIEWS.length).join(''), '1234567890tprbwmlxkgv')
 // The typed Latin letter or digit decides, as the rail's badge says; the
 // physical key (KeyboardEvent.code) only when the character is not one, so r
 // opens TRI on a Russian layout too.
@@ -205,7 +209,8 @@ for (const [layout, key, code, view] of [
   ['Dvorak', 'r', 'KeyO', 'tri'], ['Dvorak', 'p', 'KeyR', 'project'], ['Dvorak', 't', 'KeyK', 'tools'], ['Dvorak', 'y', 'KeyT', null],
   ['Colemak', 'p', 'KeyR', 'project'], ['Colemak', 't', 'KeyG', 'tools'], ['Colemak', 'f', 'KeyT', null], ['Colemak', 'R', 'KeyS', 'tri'],
 ]) assert.equal(hudKeyIndex({ code, key }), view ? HUD_VIEWS.indexOf(view) : -1, `${layout}: typing ${key} (physical ${code}) opens ${view ?? 'nothing'}`)
-assert.equal(hudKeyIndex({ code: 'KeyK', key: 'к' }), -1)
+assert.equal(hudKeyIndex({ code: 'KeyQ', key: 'й' }), -1, 'Russian layout: an unbound physical key opens nothing')
+assert.equal(hudKeyIndex({ code: 'KeyK', key: 'л' }), HUD_VIEWS.indexOf('token'), 'Russian layout: code KeyK, key л opens TOKEN')
 assert.equal(hudKeyIndex({ code: '', key: 'r' }), at, 'no code (a scripted event): the character decides')
 assert.equal(hudKeyIndex({ code: '', key: 'к' }), -1)
 assert.equal(hudKeyIndex({ key: 'R' }), at)

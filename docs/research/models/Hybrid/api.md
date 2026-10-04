@@ -4,7 +4,7 @@
 
 Full Hybrid API reference is available at:
 
-**[docs/docs/api/hybrid.md](../../docs/api/hybrid.md)**
+**[docs/docs/api/hybrid.md](../../../docs/api/hybrid.md)**
 
 This document contains:
 - HybridBigInt operations
@@ -28,11 +28,11 @@ Arbitrary precision balanced ternary arithmetic supporting:
 
 ## FFI Bindings
 
-Rust FFI bindings are available at:
+Historical Rust FFI bindings are not present in this checkout. Former path:
 
-**[crates/trios-hybrid/README.md](../../../../../crates/trios-hybrid/README.md)**
+**crates/trios-hybrid/README.md (historical path `../../../../../crates/trios-hybrid/README.md`; not present in this checkout)**
 
-These provide C-compatible interfaces for hybrid arithmetic operations.
+These historical bindings described C-compatible interfaces; their implementation is not verified by this checkout.
 
 ## Research Reports
 

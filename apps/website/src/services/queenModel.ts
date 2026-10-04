@@ -9,8 +9,10 @@
 // readable by anyone who opens the site, so a hosted model is reached through a
 // proxy that holds the key, never from this file.
 import { sendMessage, checkHealth, NotSignedIn, type ChatResponse } from './chatApi.ts'
-import { AgentSignedOut, askBrowserAgent, type AgentAnswer, type ChatTurn } from '../lib/queenBrowser.ts'
+import { AgentSignedOut, askBrowserAgent, type AgentAnswer, type ChatTurn, sayToAgent } from '../lib/queenBrowser.ts'
 import { appSessionFromWindow, type AppSessionVerdict } from '../lib/appSessionIdentity.ts'
+import { catalogWithin, pageSpecOf } from '../lib/queenBrowserPage.ts'
+import { loadCorpus } from '../lib/queenCorpus.ts'
 
 const OLLAMA_URL = import.meta.env?.VITE_QUEEN_OLLAMA_URL || 'http://localhost:11434'
 const OLLAMA_MODEL = import.meta.env?.VITE_QUEEN_OLLAMA_MODEL || ''
@@ -117,17 +119,25 @@ export function askQueen(message: string): Promise<ChatResponse> {
  * holds the browser tools (lib/queenBrowser.ts says why). The token is read
  * here, at the moment of the question, exactly as askQueen reads it -- the
  * panel is handed an answer, never the credential.
+ *
+ * `addressSpec` is the address's raw `spec=`. The agent is told a spec only if
+ * it is one entry of the public catalog (lib/queenBrowserPage.ts); anything
+ * else, or a catalog that does not load in time, and the question goes as before.
  */
 export async function askQueenInBrowser(
   history: readonly ChatTurn[],
   question: string,
   lang: 'ru' | 'en',
   onProgress?: (soFar: AgentAnswer) => void,
+  addressSpec: string | null = null,
 ): Promise<ChatResponse> {
   const caller = queenCaller()
   if (!caller.signedIn) throw new NotSignedIn()
   const bearer = caller.authorization.replace(/^Bearer /, '')
   const started = Date.now()
+  const page = addressSpec
+    ? pageSpecOf(addressSpec, await catalogWithin(() => loadCorpus('manifest').then((part) => part.data.specs)))
+    : null
   try {
     const a = await askBrowserAgent(
       { fetch: (url, init) => fetch(url, init), token: () => bearer },
@@ -135,6 +145,7 @@ export async function askQueenInBrowser(
       question,
       lang,
       onProgress,
+      page,
     )
     return {
       response: a.text,
@@ -144,6 +155,31 @@ export async function askQueenInBrowser(
       confidence: 0,
       latency_us: Math.round((Date.now() - started) * 1000),
     }
+  } catch (error) {
+    if (error instanceof AgentSignedOut) throw new NotSignedIn()
+    throw error
+  }
+}
+
+/**
+ * The AGENT tab: a message the Queen drafted and the person approved, sent to
+ * their agent as them. Same token discipline as askQueenInBrowser: read at the
+ * moment of sending, handed to one call, kept nowhere.
+ */
+export async function sendToAgentAsMe(
+  text: string,
+  onProgress?: (soFar: AgentAnswer) => void,
+): Promise<string> {
+  const caller = queenCaller()
+  if (!caller.signedIn) throw new NotSignedIn()
+  const bearer = caller.authorization.replace(/^Bearer /, '')
+  try {
+    const answer = await sayToAgent(
+      { fetch: (url, init) => fetch(url, init), token: () => bearer },
+      text,
+      onProgress,
+    )
+    return answer.text
   } catch (error) {
     if (error instanceof AgentSignedOut) throw new NotSignedIn()
     throw error
