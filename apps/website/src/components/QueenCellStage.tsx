@@ -78,6 +78,8 @@ const COPY = {
     packetNote: 'The packet does not claim the work. Check assignees and open pull requests before starting.',
     specs: 'Related specs · not proof',
     noSpecs: 'The catalog links no .t27 spec to this cell.',
+    proof: 'Verified Phase A evidence',
+    observed: 'Checked',
     post: 'Post to GitHub',
     posted: 'Posted',
     postFailed: 'GitHub post failed',
@@ -126,6 +128,8 @@ const COPY = {
     packetNote: 'Пакет не назначает задачу. Перед работой проверьте исполнителя и открытые pull request.',
     specs: 'Связанные спеки · не доказательство',
     noSpecs: 'Каталог не связывает с этой сотой ни одной спеки .t27.',
+    proof: 'Проверенные доказательства Phase A',
+    observed: 'Проверено',
     post: 'Отправить в GitHub',
     posted: 'Отправлено',
     postFailed: 'Не удалось отправить в GitHub',
@@ -291,6 +295,13 @@ export default function QueenCellStage({
             </p>
           )}
           <h4>{t.description}</h4>
+          {issue?.proof && <div className="queen-cell-note" data-issue-proof={issue.proof.commit}>
+            <strong>{t.proof}</strong>{' · '}
+            <a href={issue.proof.specUrl} target="_blank" rel="noopener noreferrer">.t27</a>{' · '}
+            <a href={issue.proof.ciUrl} target="_blank" rel="noopener noreferrer">CI</a>{' · '}
+            <a href={issue.proof.gdsUrl} target="_blank" rel="noopener noreferrer">GDS</a>
+            <br/>{t.observed}: <time dateTime={new Date(issue.proof.observedAt).toISOString()}>{new Date(issue.proof.observedAt).toLocaleString()}</time>
+          </div>}
           <pre className="queen-cell-body" data-lang-exempt="github-content">
             {issue ? (issue.body || t.noBody) : issueError ? t.failed : t.loading}
           </pre>

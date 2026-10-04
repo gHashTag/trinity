@@ -1,0 +1,70 @@
+{
+  "spec_path": "specs/queen/issue_proof.t27",
+  "spec_hash": "76c068c85d3af34aaa6f4a571742f6ad00de727a37f0ffe419c83bbdb1b84c71",
+  "vectors": [
+    {
+      "mask": 0,
+      "expected": 0
+    },
+    {
+      "mask": 1,
+      "expected": 0
+    },
+    {
+      "mask": 2,
+      "expected": 0
+    },
+    {
+      "mask": 3,
+      "expected": 0
+    },
+    {
+      "mask": 4,
+      "expected": 0
+    },
+    {
+      "mask": 5,
+      "expected": 0
+    },
+    {
+      "mask": 6,
+      "expected": 0
+    },
+    {
+      "mask": 7,
+      "expected": 0
+    },
+    {
+      "mask": 8,
+      "expected": 0
+    },
+    {
+      "mask": 9,
+      "expected": 0
+    },
+    {
+      "mask": 10,
+      "expected": 0
+    },
+    {
+      "mask": 11,
+      "expected": 0
+    },
+    {
+      "mask": 12,
+      "expected": 0
+    },
+    {
+      "mask": 13,
+      "expected": 0
+    },
+    {
+      "mask": 14,
+      "expected": 0
+    },
+    {
+      "mask": 15,
+      "expected": 1
+    }
+  ]
+}

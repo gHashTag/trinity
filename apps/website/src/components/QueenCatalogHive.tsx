@@ -9,14 +9,28 @@ import {SELECTION_KEY,validSelection} from '../lib/queenEmbed';
 import {atlasAgentPacket,type UniverseAtlas,type AtlasIssue} from '../lib/queenUniverseAtlas';
 import type {CombHandle} from './queenHud';
 import type {HiveDisplayProjection,HiveDisplay} from './queenHiveDisplay';
-import type {WorldIssue} from './queenRepositoryWorld';
+import {loadWorldIssues,type WorldIssue} from './queenRepositoryWorld';
+import {supportsIssueProof} from '../lib/queenIssueProof';
 import './QueenCatalogHive.css';
 
 export function QueenCatalogHive({atlas,lang,handleRef,foundationVisible=true,fitInset=0,onInspect}:{atlas:UniverseAtlas;lang:'ru'|'en';handleRef:Ref<CombHandle>;foundationVisible?:boolean;fitInset?:number;onInspect?:()=>void}) {
   const ru=lang==='ru';
   const [params,setParams]=useSearchParams(),focus=catalogFocus(`#/queen?${params}`,atlas),repo=focus?.repo??null;
   const [observed,setObserved]=useState<Record<string,WorldIssue>>({});
-  const world=useMemo(()=>catalogUniverse(atlas,Object.values(observed)),[atlas,observed]),map=world.map;
+  const [completeWorlds,setCompleteWorlds]=useState<string[]>([]);
+  useEffect(()=>{
+    if(!repo||!supportsIssueProof(repo))return;
+    const request=new AbortController();
+    // Refresh this small supported world when selected; a static atlas predating
+    // closure must not override the exact GitHub/native-proof observation.
+    loadWorldIssues(repo,1,request.signal).then(({rows,hasMore})=>{
+      if(request.signal.aborted)return;
+      setObserved(prev=>({...Object.fromEntries(Object.entries(prev).filter(([,row])=>row.repo!==repo)),...Object.fromEntries(rows.map(row=>[row.key,row]))}));
+      setCompleteWorlds(prev=>[...prev.filter(r=>r!==repo),...(!hasMore?[repo]:[])]);
+    }).catch(()=>{/* The dated atlas remains explicitly a snapshot on failure. */});
+    return()=>request.abort();
+  },[repo]);
+  const world=useMemo(()=>catalogUniverse(atlas,Object.values(observed),completeWorlds),[atlas,observed,completeWorlds]),map=world.map;
   const issueRows=world.displays.filter(row=>row?.repo===repo);
   const cards=useMemo(()=>world.displays.map(row=>row?{number:row.number,title:row.title,column:row.state}:null),[world]);
   const issueKey=focus?.number?`${repo}#${focus.number}`:null;

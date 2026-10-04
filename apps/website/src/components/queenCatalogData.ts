@@ -52,7 +52,7 @@ export function catalogHive(input:UniverseAtlas):CatalogHive {
 }
 
 /** One coordinate space. Focus never changes membership or replaces the core. */
-export function catalogUniverse(input:UniverseAtlas,observed:WorldIssue[]=[]) {
+export function catalogUniverse(input:UniverseAtlas,observed:WorldIssue[]=[],completeWorlds:string[]=[]) {
   const atlas=keyWorldAtlas(input),core=catalogHive(atlas);
   const cells=[...core.cells],positions:CatalogPosition[]=cells.map((_,i)=>({...hexToWorld(spiralAxial(i)),scale:1}));
   const displays:(WorldIssue|null)[]=cells.map(()=>null),regions:CatalogRegion[]=[];
@@ -61,6 +61,8 @@ export function catalogUniverse(input:UniverseAtlas,observed:WorldIssue[]=[]) {
   core.cells.forEach((portal,portalIndex)=>{
     if(portal?.kind!=='repo')return;
     const rows=catalogIssueRows(atlas,portal.repo,observed);
+    // Partial pages and a single inspected issue cannot establish the backlog.
+    if(completeWorlds.includes(portal.repo))cells[portalIndex]={...portal,open:observed.filter(r=>r.repo===portal.repo&&r.state==='open').length};
     // Reserve the snapshot's slots: a newly observed older issue appends instead of shifting existing cells.
     const snapshot=catalogIssueRows(atlas,portal.repo),byKey=new Map(rows.map(r=>[r.key,r]));
     const ordered=[...snapshot.map(r=>byKey.get(r.key)!),...observed.filter(r=>r.repo===portal.repo&&byKey.has(r.key)&&!snapshot.some(s=>s.key===r.key))];
@@ -89,7 +91,7 @@ export function catalogUniverse(input:UniverseAtlas,observed:WorldIssue[]=[]) {
     }
     regions.push(region);
   });
-  const map:CatalogHive={...core,cells,positions,regions,specLinks,coreCount:core.cells.length,signature:JSON.stringify([core.signature,regions,specLinks,displays.map(r=>r?.key??null)])};
+  const map:CatalogHive={...core,cells,positions,regions,specLinks,coreCount:core.cells.length,signature:JSON.stringify([core.signature,completeWorlds,cells.filter(c=>c?.kind==='repo'),regions,specLinks,displays.map(r=>r?.key??null)])};
   return {map,displays};
 }
 
