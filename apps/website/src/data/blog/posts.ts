@@ -6,7 +6,6 @@ import { body as body_the_fpga_flow_layer_by_layer, ruBody as ruBody_the_fpga_fl
 import { body as body_the_back_half_of_openxc7_from_a_spec, ruBody as ruBody_the_back_half_of_openxc7_from_a_spec } from './bodies/the-back-half-of-openxc7-from-a-spec'
 import { body as body_how_to_join_the_swarm, ruBody as ruBody_how_to_join_the_swarm } from './bodies/how-to-join-the-swarm'
 import { postsIndex } from './index'
-import { body as body_features_that_change_no_bits, ruBody as ruBody_features_that_change_no_bits } from './bodies/features-that-change-no-bits'
 import { body as body_queen_browser_actions_you_can_follow, ruBody as ruBody_queen_browser_actions_you_can_follow } from './bodies/queen-browser-actions-you-can-follow'
 import { body as body_a_partial_module_needs_its_own_verdict, ruBody as ruBody_a_partial_module_needs_its_own_verdict } from './bodies/a-partial-module-needs-its-own-verdict'
 import { body as body_an_invitation_in_the_language_it_describes, ruBody as ruBody_an_invitation_in_the_language_it_describes } from './bodies/an-invitation-in-the-language-it-describes'
@@ -86,10 +85,10 @@ import { body as body_the_scanner_scored_what_it_could_not_see, ruBody as ruBody
 
 import { body as body_i_wrote_the_post_then_did_the_thing, ruBody as ruBody_i_wrote_the_post_then_did_the_thing } from './bodies/i-wrote-the-post-then-did-the-thing'
 import { body as body_real_value_in_integer_container, ruBody as ruBody_real_value_in_integer_container } from './bodies/real-value-in-integer-container'
+import { body as body_features_that_change_no_bits, ruBody as ruBody_features_that_change_no_bits } from './bodies/features-that-change-no-bits'
 import { body as body_one_commit_nine_workflow_outcomes, ruBody as ruBody_one_commit_nine_workflow_outcomes } from './bodies/one-commit-nine-workflow-outcomes'
 
 const bodies: Record<string, PostBody> = {
-  'features-that-change-no-bits': { body: body_features_that_change_no_bits, ruBody: ruBody_features_that_change_no_bits },
   'a-terminal-for-seven-backends-in-an-x-post': { body: body_a_terminal_for_seven_backends_in_an_x_post, ruBody: ruBody_a_terminal_for_seven_backends_in_an_x_post },
   't27c-compile-time-and-a-backend-without-llvm': { body: body_t27c_compile_time_and_a_backend_without_llvm, ruBody: ruBody_t27c_compile_time_and_a_backend_without_llvm },
   'three-bits-each-necessary': { body: body_three_bits_each_necessary, ruBody: ruBody_three_bits_each_necessary },
@@ -113,6 +112,7 @@ const bodies: Record<string, PostBody> = {
   'queen-review-lifecycle-queues': { body: body_queen_review_lifecycle_queues, ruBody: ruBody_queen_review_lifecycle_queues },
   'one-commit-nine-workflow-outcomes': { body: body_one_commit_nine_workflow_outcomes, ruBody: ruBody_one_commit_nine_workflow_outcomes },
   'real-value-in-integer-container': { body: body_real_value_in_integer_container, ruBody: ruBody_real_value_in_integer_container },
+  'features-that-change-no-bits': { body: body_features_that_change_no_bits, ruBody: ruBody_features_that_change_no_bits },
   'physical-width-changed-the-question': { body: body_physical_width_changed_the_question, ruBody: ruBody_physical_width_changed_the_question },
   'nobodys-example': { body: body_nobodys_example, ruBody: ruBody_nobodys_example },
   'the-silence-was-a-saturated-readout': { body: body_the_silence_was_a_saturated_readout, ruBody: ruBody_the_silence_was_a_saturated_readout },
