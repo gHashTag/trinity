@@ -150,8 +150,6 @@ const UI = {
     editing: 'Editing — not the shipped spec',
     unrun: 'not compiled yet',
     runHint: 'RUN or ⌘⏎ to compile',
-    brokeIt: 'broke',
-    fixedIt: 'fixed',
     course: 'Course',
     courseNote: 'Eight lessons, in order, each one clean through every layer.',
     droppedItems: 'dropped',
@@ -255,8 +253,6 @@ const UI = {
     editing: 'Редактирование — это уже не исходная спека',
     unrun: 'ещё не скомпилировано',
     runHint: 'RUN или ⌘⏎ для компиляции',
-    brokeIt: 'сломал',
-    fixedIt: 'починил',
     course: 'Курс',
     courseNote: 'Восемь уроков по порядку, каждый чист на всех слоях.',
     droppedItems: 'отброшено',
@@ -1570,7 +1566,7 @@ export default function SpecExplorer() {
                         result={result}
                         baseline={baseline}
                         ms={ms}
-                        labels={{ ...LAYER_LABEL, tokens: ui.tokens, nodes: ui.nodes, depth: ui.depth, typeErrs: ui.typeErrs, droppedItems: ui.droppedItems, brokeIt: ui.brokeIt, fixedIt: ui.fixedIt }}
+                        labels={{ tokens: ui.tokens, nodes: ui.nodes, depth: ui.depth, typeErrs: ui.typeErrs, droppedItems: ui.droppedItems }}
                       />
                     </div>
                   )}

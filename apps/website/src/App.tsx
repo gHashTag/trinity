@@ -1,5 +1,6 @@
 import Navigation from './components/Navigation'
 import GameHero from './components/GameHero'
+import GetStartedBlock from './components/GetStartedBlock'
 import Footer from './components/Footer'
 import ServiceEntry from './components/ServiceEntry'
 import QueenHeroBlock from './components/QueenHeroBlock'
@@ -16,10 +17,16 @@ import DevKitBlock from './components/DevKitBlock'
 // собственные блоки, остальные лежат указателем в конце.
 const SHOWCASE = ['kanban', 'factory', 'agents'] as const
 
-// Главная — это игра, и читается она как воронка: марка и девиз, живая доска,
-// зачем ею управлять, как сделать ход, что спрашивают перед ходом, вход — и
-// только потом глубина: корпус, три модуля в полный рост и указатель на все
-// остальные.
+// Главная — это игра, и читается она как воронка: марка и девиз, три входа,
+// живая доска, зачем ею управлять, как сделать ход, что спрашивают перед
+// ходом, вход — и только потом глубина: корпус, три модуля в полный рост и
+// указатель на все остальные.
+//
+// Корпус и модули не запускаются сами. Каждый из них — целое приложение во
+// фрейме, и пока они монтировались при прокрутке, один проход по главной
+// загружал четыре копии сайта: 218 запросов, около 8 МБ, и каждая доска
+// опрашивала супервизор (замер на t27.ai, 2026-10-04). Теперь фрейм
+// запускается кнопкой в нём самом.
 //
 // Порядок такой не по вкусу. Страницу измерили: 20 962px, 27 экранов, из них
 // восемнадцать подряд — одиннадцать одинаковых блоков модулей с одной и той же
@@ -56,8 +63,15 @@ export default function App() {
           here. */}
       <GameHero />
 
-      {/* The board itself, second. It is the strongest thing this page has —
-          the live scene the /queen route mounts, not a picture of it — and it
+      {/* Three ways in, one per kind of visitor, before anything asks them to
+          read: someone who writes code, someone with a machine to lend, someone
+          who wants to work on the core. Each button opens a place that works
+          today; what is not built yet is said on its card. */}
+      <GetStartedBlock />
+
+      {/* The board itself, right after the ways in. It is the strongest thing
+          this page has — the live scene the /queen route mounts, not a
+          picture of it — and it
           used to sit at the seventh screen, behind the argument for it. Show
           the board, then argue for it. */}
       <QueenHeroBlock />

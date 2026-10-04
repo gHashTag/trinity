@@ -158,3 +158,58 @@
     gap: 1rem;
   }
 }
+
+/* The frame before it runs: what it holds and the one button that runs it.
+   The whole frame is the button, so the target is the screen it fills. */
+.module-hero-run {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.85rem;
+  padding: 1.5rem;
+  border: 0;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(0, 255, 136, 0.08), transparent 60%),
+    #000;
+  color: #00ff88;
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+}
+
+.module-hero-run > i {
+  font-size: clamp(3rem, 8vw, 5.5rem);
+  font-style: normal;
+  line-height: 1;
+}
+
+.module-hero-run > span {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.65rem 1.1rem;
+  border: 1px solid #00ff88;
+  border-radius: 6px;
+  font: 600 0.9rem/1.2 "JetBrains Mono", monospace;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.module-hero-run > small {
+  max-width: 42ch;
+  color: #a8c1ba;
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.module-hero-run:hover > span,
+.module-hero-run:focus-visible > span {
+  background: rgba(0, 255, 136, 0.12);
+}
+
+.module-hero-run:focus-visible {
+  outline: 2px solid #00ff88;
+  outline-offset: -6px;
+}
