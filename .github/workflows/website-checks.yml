@@ -338,8 +338,20 @@ jobs:
       - name: Roadmap game rules
         run: npm run check:roadmap-game
 
+      # What a link to t27.ai says in a chat preview: the name, the caption and
+      # the description, from lib/motto.ts -- in the head tags, in the i18n
+      # provider that rewrites them after load, and in og/og-image.svg.
+      - name: Link preview words
+        run: npm run check:og-preview
+
       - name: Build
         run: npx vite build
+
+      # What a crawler reads on the home page before any script runs: the
+      # lib/motto words GameHero renders, and absolute links to every static
+      # section. After the build, so the shell is checked in dist/ as shipped.
+      - name: Home page shell a crawler reads
+        run: npm run check:boot-shell
 
       # Skips itself if no Chrome is found rather than failing: a missing
       # browser is an environment fact, not a defect in the change.

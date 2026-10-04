@@ -114,6 +114,9 @@
     "test:wars-spec": "node --test scripts/queen-wars-from-spec.test.mjs",
     "check:igla-board": "node scripts/igla-board-from-spec.mjs --check && node qa/igla-board-contract.mjs",
     "check:roadmap-game": "node --experimental-strip-types qa/roadmap-game-contract.mjs",
+    "check:og-preview": "node --experimental-strip-types qa/og-preview-contract.mjs",
+    "check:boot-shell": "node --experimental-strip-types qa/boot-shell-contract.mjs",
+    "og-image": "node scripts/og-image.mjs",
     "test:viewport-spec": "node --test scripts/viewport-from-spec.test.mjs",
     "check:explorer-viewport": "node qa/explorer-viewport-contract.mjs",
     "check:passport": "node --experimental-strip-types qa/passport-figures.mjs"

@@ -7,53 +7,19 @@ import path from 'path'
 // value to the same driver under node -- see that module for why the compiler
 // needs a content-addressed URL at all.
 import { t27WasmTag } from './scripts/t27-wasm-tag.ts'
-
-const escapeHtml = (s: unknown) =>
-  String(s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
+import { bootShell, escapeHtml } from './scripts/boot-shell.ts'
 
 /**
- * Write the first screen into index.html at build time.
- *
- * The page is a client-rendered SPA, so #root shipped empty: nothing was on
- * screen until 524 kB of JavaScript had downloaded, parsed and mounted, and
- * anything that does not run JS — every preview bot, and crawlers on their
- * first pass — saw a document with no heading and no prose at all.
- *
- * The copy is read from messages/en.json rather than written here, so it cannot
- * drift from the hero it stands in for. The links are the clean static paths,
- * not the #/ hash routes the app uses: those pages are real HTML and work with
- * JavaScript switched off, which is the whole point of this shell.
- *
- * React clears #root on its first render, so nothing has to remove it.
+ * Write the first screen into index.html at build time: scripts/boot-shell.ts
+ * holds the words and the links, and says why they are what they are.
  */
 function prerenderHero(): Plugin {
   return {
     name: 'prerender-hero',
     transformIndexHtml(html) {
-      const file = path.resolve(__dirname, 'messages/en.json')
-      const hero = JSON.parse(fs.readFileSync(file, 'utf-8')).hero
-      // Fail the build rather than ship the placeholder: a silently un-replaced
-      // shell would claim less than the page does and nobody would notice.
-      for (const k of ['tag', 'headline', 'subheadline', 'cta', 'ctaSecondary']) {
-        if (!hero?.[k]) throw new Error(`prerender-hero: messages/en.json hero.${k} is missing`)
-      }
-      const shell = `<div id="boot">
-      <img src="trinity-logo-with-label.svg" alt="TRINITY" width="1080" height="1080" />
-      <h1>${escapeHtml(hero.tag)}</h1>
-      <p class="eq">${escapeHtml(hero.headline)}</p>
-      <p class="sub">${escapeHtml(hero.subheadline)}</p>
-      <div class="btns">
-        <a class="primary" href="ip/">${escapeHtml(hero.cta)}</a>
-        <a href="proof/">${escapeHtml(hero.ctaSecondary)}</a>
-      </div>
-    </div><!-- /boot -->`
       const marker = /<div id="boot">[\s\S]*?<!-- \/boot -->/
       if (!marker.test(html)) throw new Error('prerender-hero: #boot block not found in index.html')
-      return html.replace(marker, shell)
+      return html.replace(marker, bootShell())
     },
   }
 }
