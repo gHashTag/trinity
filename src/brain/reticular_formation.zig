@@ -449,27 +449,24 @@ pub const EventBus = struct {
     pub fn poll(self: *EventBus, since: i64, allocator: std.mem.Allocator, max_events: usize) ![]AgentEventRecord {
         self.mutex.lock();
 
-        // First pass: count matching events for exact capacity
-        const limit = if (max_events == 0) self.count else @min(self.count, max_events);
+        // First pass: count matching events for exact capacity.
+        // `max_events` caps the events that pass the `since` filter, so the
+        // scan covers the whole buffer and stops only once the cap is reached.
+        const cap = if (max_events == 0) self.count else max_events;
         var match_count: usize = 0;
         var i: usize = 0;
-        while (i < limit) : (i += 1) {
+        while (i < self.count and match_count < cap) : (i += 1) {
             const idx = (self.head_idx + i) % MAX_EVENTS;
-            if (self.buffer[idx].timestamp > since) {
-                match_count += 1;
-                if (max_events > 0 and match_count >= max_events) break;
-            }
+            if (self.buffer[idx].timestamp > since) match_count += 1;
         }
 
         // Allocate with exact capacity
         var results = try std.ArrayList(AgentEventRecord).initCapacity(allocator, match_count);
         errdefer results.deinit(allocator);
 
-        // Second pass: collect events
+        // Second pass: collect the same `match_count` events, oldest first
         i = 0;
-        while (i < limit) : (i += 1) {
-            if (max_events > 0 and results.items.len >= max_events) break;
-
+        while (i < self.count and results.items.len < match_count) : (i += 1) {
             const idx = (self.head_idx + i) % MAX_EVENTS;
             const stored = &self.buffer[idx];
 
@@ -810,6 +807,25 @@ test "EventBus poll with max_events limit" {
     defer allocator.free(events);
 
     try std.testing.expectEqual(@as(usize, 2), events.len);
+}
+
+test "EventBus poll applies max_events after the since filter" {
+    const allocator = std.testing.allocator;
+    var bus = EventBus.init(allocator);
+    defer bus.deinit();
+
+    // Three events at or before `boundary`, then two strictly after it.
+    for (0..3) |_| try bus.publish(.agent_spawned, .{ .agent_spawned = .{ .agent_id = "old" } });
+    const boundary = std.time.milliTimestamp();
+    while (std.time.milliTimestamp() <= boundary) std.Thread.sleep(std.time.ns_per_ms / 4);
+    for (0..2) |_| try bus.publish(.agent_spawned, .{ .agent_spawned = .{ .agent_id = "new" } });
+
+    // Two events match; the cap of 1 must return the older of those two,
+    // not stop after scanning the first (non-matching) buffered event.
+    const events = try bus.poll(boundary, allocator, 1);
+    defer allocator.free(events);
+    try std.testing.expectEqual(@as(usize, 1), events.len);
+    try std.testing.expectEqualStrings("new", events[0].data.agent_spawned.agent_id);
 }
 
 test "EventBus poll returns empty when no events" {
