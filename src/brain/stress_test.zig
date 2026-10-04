@@ -66,7 +66,7 @@ test "Stress: Basal Ganglia - 10,000 sequential claims" {
     }
 
     try std.testing.expectEqual(STRESS_TASK_COUNT, successful);
-    try std.testing.expectEqual(STRESS_TASK_COUNT, registry.count());
+    try std.testing.expectEqual(STRESS_TASK_COUNT, registry.claims.count());
 }
 
 test "Stress: Basal Ganglia - claim completion cycle" {
