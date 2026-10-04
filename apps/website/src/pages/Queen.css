@@ -4309,12 +4309,14 @@ main:where(.queen27-page.is-shell) section {
 @media (max-height: 919px) {
   /* Nineteen commands (TOKEN, 2026-10-02) at 6 px gaps put the last one 4 px
      under COLLAPSE at 1272x806 (measured by the viewport contract); 4 px gaps
-     give back 36 px. */
+     give back 36 px. WIDGETS (2026-10-05) made it twenty and put the last
+     one 22 px under COLLAPSE again; 3 px gaps and 0.26 rem rows give back
+     about 60 px more. */
   .queen27-page.is-shell .queen27-hud-command:not(.is-compact) {
-    gap: 4px;
+    gap: 3px;
   }
   .queen27-page.is-shell .queen27-hud-command:not(.is-compact) > .queen27-hud-cmd {
-    padding: 0.35rem 0.65rem;
+    padding: 0.26rem 0.65rem;
   }
   .queen27-page.is-shell .queen27-hud-command:not(.is-compact) > .queen27-hud-cmd small {
     display: none;
@@ -4341,15 +4343,17 @@ main:where(.queen27-page.is-shell) section {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     grid-template-rows: repeat(var(--queen-tile-rows, 6), max-content) minmax(0, 1fr) max-content;
-    gap: 4px;
+    gap: 3px;
     padding: 6px;
   }
+  /* ten tile rows (twenty commands) overran COLLAPSE by 10 px at 1280x600;
+     0.24 rem tiles and 3 px gaps give back about 45 px */
   .queen27-page.is-shell .queen27-hud-command > .queen27-hud-cmd {
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto auto;
-    gap: 0.15rem;
+    gap: 0.1rem;
     justify-items: center;
-    padding: 0.35rem 0.3rem;
+    padding: 0.24rem 0.3rem;
     text-align: center;
   }
   .queen27-page.is-shell .queen27-hud-command > .queen27-hud-cmd > i {
