@@ -42,6 +42,6 @@
 
 ## Links
 
-- **Architecture**: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
-- **Documentation Index**: [docs/DOCUMENTATION_INDEX.md](docs/DOCUMENTATION_INDEX.md)
+- **Architecture**: [docs/ARCHITECTURE.md](ARCHITECTURE.md)
+- **Documentation Index**: [docs/DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md)
 - **TRI-27 Language**: https://github.com/gHashTag/t27

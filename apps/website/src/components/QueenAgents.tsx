@@ -15,12 +15,12 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useI18n } from '../i18n/context'
 import { QueenLoading } from './QueenLoading'
 import { useQueenExplorerFrame } from './useQueenExplorerFrame'
-import { loadAgentSpecs, loadCronSpecs, loadFunctionSpecs, loadSkillSpecs, loadToolSpecs } from '../lib/agentSpecs'
+import { loadAgentSpecs, loadCronSpecs, loadFunctionSpecs, loadProviderSpecs, loadSkillSpecs, loadToolSpecs } from '../lib/agentSpecs'
 import { loadSystemDocs } from '../lib/systemDocs'
 import { QueenMcp, mcpCopy } from './QueenMcp'
 import type { ExplorerTab } from '../lib/queenEmbed'
 
-export type AgentsKind = 'skills' | 'crons' | 'agents' | 'functions' | 'tools' | 'project'
+export type AgentsKind = 'skills' | 'crons' | 'agents' | 'functions' | 'tools' | 'providers' | 'project'
 
 // PROJECT frames #/docs?embed=1. A quick jump above the frame is a chapter written
 // to the Queen address (chapter=), like a pick inside the frame; the frame's hash
@@ -64,12 +64,17 @@ export interface AgentsCopy {
   projectChapters?: string
   projectRu?: string
   projectSources?: string
+  /** Providers only: cards whose numbers were read (from a chain or a bench), and cards that are a design. */
+  providersRead?: string
+  providersDesign?: string
 }
 
 // For skills and crons the third figure is code-only cards; for agents it is
 // the episodes no letter claims (`unattributed`), which is a fact about the log,
 // not a defect of any agent. For tools the pair is owned / not yet owned: an
-// unbound tool is a gap in the alphabet's bindings, not a broken spec.
+// unbound tool is a gap in the alphabet's bindings, not a broken spec. For
+// providers the pair is read / design: a card copied from the Gonka chain or
+// measured on a bench, and a card that is a plan and claims no number.
 interface Counts { specs: number; specPlusCode: number; codeOnly: number; typecheckOk: number; typecheckTotal?: number }
 
 async function loadCounts(kind: AgentsKind): Promise<Counts> {
@@ -91,6 +96,11 @@ async function loadCounts(kind: AgentsKind): Promise<Counts> {
   if (kind === 'tools') {
     const c = (await loadToolSpecs()).counts
     return { specs: c.specs, specPlusCode: c.withAgents, codeOnly: c.specs - c.withAgents, typecheckOk: c.typecheckOk }
+  }
+  if (kind === 'providers') {
+    const c = (await loadProviderSpecs()).counts
+    const read = c.byWitness['chain-read'] + c.byWitness['bench-measured']
+    return { specs: c.specs, specPlusCode: read, codeOnly: c.byWitness['design-only'], typecheckOk: c.typecheckOk }
   }
   const c = kind === 'skills' ? (await loadSkillSpecs()).counts : (await loadCronSpecs()).counts
   return { specs: c.specs, specPlusCode: c.specPlusCode, codeOnly: c.codeOnly, typecheckOk: c.typecheckOk }
@@ -116,10 +126,10 @@ export function QueenAgentsDirective({ kind, c, collapsible = false }: { kind: A
           <b style={{ color: '#00FF88' }}>{counts.specs}</b> {kind === 'project' ? c.projectChapters ?? c.specs : c.specs}
           {' · '}
           <b style={{ color: (kind === 'agents' || kind === 'tools') && counts.specPlusCode === 0 ? '#8b9490' : '#00FF88' }}>{counts.specPlusCode}</b>{' '}
-          {kind === 'agents' ? c.specPlusExperience ?? c.specPlusCode : kind === 'tools' ? c.toolsOwned ?? c.specPlusCode : kind === 'project' ? c.projectRu ?? c.specPlusCode : c.specPlusCode}
+          {kind === 'agents' ? c.specPlusExperience ?? c.specPlusCode : kind === 'tools' ? c.toolsOwned ?? c.specPlusCode : kind === 'providers' ? c.providersRead ?? c.specPlusCode : kind === 'project' ? c.projectRu ?? c.specPlusCode : c.specPlusCode}
           {' · '}
           <b style={{ color: kind === 'project' ? '#00FF88' : counts.codeOnly ? '#f0a020' : '#8b9490' }}>{counts.codeOnly}</b>{' '}
-          {kind === 'agents' ? c.unattributed ?? c.codeOnly : kind === 'tools' ? c.toolsUnowned ?? c.codeOnly : kind === 'project' ? c.projectSources ?? c.codeOnly : c.codeOnly}
+          {kind === 'agents' ? c.unattributed ?? c.codeOnly : kind === 'tools' ? c.toolsUnowned ?? c.codeOnly : kind === 'providers' ? c.providersDesign ?? c.codeOnly : kind === 'project' ? c.projectSources ?? c.codeOnly : c.codeOnly}
           {' · '}
           <b style={{ color: counts.typecheckOk === (counts.typecheckTotal ?? counts.specs) ? '#00FF88' : '#f85149' }}>
             {counts.typecheckOk}/{counts.typecheckTotal ?? counts.specs}
@@ -154,7 +164,7 @@ export function QueenAgents({ kind, c, showDirective = true, onNavigate, ladder 
   const { lang } = useI18n()
   const [ready, setReady] = useState(false)
   // The card in the frame is the card in the Queen address: skill=, cron=, agent=,
-  // function=, tool= or chapter= (lib/queenEmbed). PROJECT opens on the first chapter.
+  // function=, tool=, provider= or chapter= (lib/queenEmbed). PROJECT opens on the first chapter.
   const frameRef = useRef<HTMLIFrameElement>(null)
   const frame = useQueenExplorerFrame(kind, onNavigate, frameRef)
   const jump = frame.card ?? PROJECT_JUMPS[0].stem
@@ -223,7 +233,7 @@ export function QueenAgents({ kind, c, showDirective = true, onNavigate, ladder 
           name={frame.frameName}
           className="queen27-specs-frame"
           src={frame.src}
-          title={kind === 'skills' ? 'Skill Explorer' : kind === 'crons' ? 'Cron Explorer' : kind === 'agents' ? 'Agent Explorer' : kind === 'functions' ? 'Function Explorer' : kind === 'tools' ? 'Tool Explorer' : 'System documentation'}
+          title={kind === 'skills' ? 'Skill Explorer' : kind === 'crons' ? 'Cron Explorer' : kind === 'agents' ? 'Agent Explorer' : kind === 'functions' ? 'Function Explorer' : kind === 'tools' ? 'Tool Explorer' : kind === 'providers' ? 'Provider Explorer' : 'System documentation'}
           onLoad={() => { setReady(true); frame.onFrameLoad() }}
           loading="lazy"
         />

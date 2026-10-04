@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // specs/automation/crm-duet.t27 -- a REAL Telegram dialogue between two agents: the owner's
-// seller agent (from @t27_dev, 144022504) sells every function of the bot to a connected
-// seller acting as a new buyer (@playom, 435572800, answered by a persona model from HER
-// session), and the content offered is for HER real game -- Leela Chakra
+// seller agent (from the platform owner's account) sells every function of the bot to a
+// connected seller acting as a new buyer (answered by a persona model from HER session), and
+// the content offered is for HER real game -- Leela Chakra
 // (@leela_chakra_ai_bot, mini app t27.ai/leela, 72 planes, entry with a six, ruleset classic).
 // Host: 999-multibots-telegraf apps/vibee-editor/render/src/agent/crm-duet-tool.ts -- owner-only
 //       tools crm_duet (starts a run in the background, returns its id) and crm_duet_status
@@ -20,12 +20,40 @@
 // owner-only, both accounts are connected sellers (the row in tg_sessions is the consent), and
 // the transcript is returned; session strings never are.
 // Coverage: every tool the seller agent calls is recorded name -> ok/fail; paid generations
-// (image_generate, image_edit, audio_generate, video_generate, reel_render) are counted; the
-// brief asks for at most one per reply and three per run -- a SOFT cap enforced by the prompt
-// and measured in the report, not a hard limit in code.
+// (image_generate, image_edit, audio_generate, video_generate, reel_render, and since v3 a
+// crm_story_reel call that starts a reel) are counted; the
+// brief asks for at most one per reply and two per run (one portrait from her face, one reel
+// -- the brief since 2026-09-21; v1 said three) -- a SOFT cap enforced by the prompt and
+// measured in the report, not a hard limit in code.
 // Claim status: tool written and unit-tested with doubles. Whether a run SUCCEEDED live -- both
 // sessions alive, the business bot silent, content delivered -- is shown by crm_duet_status,
 // not by this file.
+// v2 (2026-09-27): bound to the host (src/spec/crm-duet.test.ts runs every test below against
+// crm-duet-tool.ts, leela-canon.ts and the bot's businessBotService.ts). v1's tests were
+// braceless -- inert under the parser of the day -- and its SELLER/BUYER constants were two
+// real people's Telegram ids; they are roles now, and the host imports the turn limits,
+// the retry and the discovery gate from here instead of restating them. Binding found two
+// drifts, both settled on the side of this file: the host's negation window reached THREE
+// words back ("bez vsyakikh tochnykh predskazanij" passed), now it takes NEGATION_WINDOW_WORDS
+// from here; and the brief's soft cap had been two per run since the portrait came first.
+// v3 (2026-09-27): THE DUET'S REEL IS THE STORY REEL. Owner, 2026-09-27: "why does the agent
+// not understand the video made of three frames -- it keeps doing it the old way". The seller
+// brief said "only the LeelaPlanReel template"; it now names crm_story_reel (three frames, her
+// face in a new setting each, her voice, a pause with the call), the topic a plan she chose.
+// The silent plan reel is not offered. Wiring the new route found four holes the old one hid:
+//   1. crm_story_reel was in no set of the duet: listed on discovery turns, callable on a
+//      rewrite round, not counted. It joins the paid set; only a call that STARTS a reel is a
+//      paid call -- the readiness read is free, but it waits for discovery with the rest.
+//   2. its card reaches the owner's Telegram, and a dry run sends nothing: not in a dry run.
+//   3. it is made in the background (5-10 min) and comes to the OWNER as a card "to her DM" --
+//      one press, his; the duet forwards nothing. Where the card goes is the duet's (the tool
+//      context), not the model's: a model's `to` could bind a group of hers. A line promising
+//      to send it is kept by that card, so the duet does not "keep" it by resending the last
+//      file it has -- which was her portrait. The next seller turn is told it is being made.
+//   4. her plan: v2 moved only cards of the LeelaPlanReel template. A reel for plan N now goes
+//      to her REEL card for plan N whatever reel template it names; a card with no template is
+//      her own and is never moved. A story reel without a topic takes her next card itself
+//      (story template), and the duet links nothing then -- one card, not two.
 // phi^2 + 1/phi^2 = 3 | TRINITY
 
 module automation::crm_duet {
@@ -33,11 +61,11 @@ module automation::crm_duet {
     pub const KIND : str = "automation";
     pub const ID : str = "crm-duet";
     pub const REPO : str = "999-multibots-telegraf";
-    pub const VERSION : u8 = 1;
+    pub const VERSION : u8 = 3;
 
     // ---- Who ----------------------------------------------------------------------------
-    pub const SELLER : str = "144022504";  // @t27_dev: the owner, sells
-    pub const BUYER : str = "435572800";  // @playom: connected seller, plays a new buyer
+    pub const SELLER : str = "platform-owner";  // the owner's account: sells
+    pub const BUYER : str = "connected-seller";  // a connected seller who plays a new buyer
     pub const BUYER_GAME : str = "Leela Chakra";
     pub const BUYER_BOT : str = "leela_chakra_ai_bot";
     pub const BUYER_APP : str = "https://t27.ai/leela/";
@@ -64,11 +92,26 @@ module automation::crm_duet {
     pub const BUSINESS_BOT_TAKEOVER_MIN : u8 = 30;  // OWNER_TAKEOVER_MS in businessBotService.ts
 
     // ---- Coverage -----------------------------------------------------------------------
-    pub const PAID_TOOLS : u8 = 5;  // image_generate image_edit audio_generate video_generate reel_render
+    pub const PAID_TOOLS : u8 = 6;  // image_generate image_edit audio_generate video_generate reel_render crm_story_reel
     pub const PAID_PER_REPLY_SOFT : u8 = 1;
-    pub const PAID_PER_RUN_SOFT : u8 = 3;
+    pub const PAID_PER_RUN_SOFT : u8 = 2;  // one portrait, one reel
     pub const PAID_CAP_IS_HARD : bool = false;
     pub const MEDIA_FORWARDED : bool = true;  // a tool result with done=true and an http url is sent as a file
+
+    // ---- The reel is the story reel (v3) ---------------------------------------------------
+    pub const REEL_TOOL : str = "crm_story_reel";
+    pub const OLD_REEL_IN_BRIEF : bool = false;  // the brief no longer says "only LeelaPlanReel"
+    pub const STORY_PAID_ONLY_ON_START : bool = true;  // start=true spends; the readiness read is free
+    pub const STORY_HIDDEN_IN_DISCOVERY : bool = true;  // the whole tool, the read included
+    pub const STORY_IN_DRY_RUN : bool = false;  // its card would reach the owner's Telegram
+    pub const STORY_START_COUNTS_AS_WORK : bool = true;  // "I am putting it together" after a start is not a false claim
+    pub const STORY_REEL_FORWARDED : bool = false;  // made in 5-10 min, comes to the owner as a card
+    pub const STORY_CARD_TO : str = "dm";  // set by the duet in the tool context, never by the model
+    pub const STORY_START_KEEPS_PROMISE : bool = true;  // a promise to send it is kept by the owner's card; nothing is resent
+    pub const STORY_NOTE_NEXT_TURN : bool = true;  // the seller hears it is being made, not ready
+    pub const PLAN_LINK_ANY_REEL_TEMPLATE : bool = true;  // v2 read only LeelaPlanReel cards
+    pub const PLAN_LINK_OWN_CARDS : bool = false;  // a card with no template is hers: never moved
+    pub const STORY_WITHOUT_TOPIC_TAKES_CARD : bool = true;  // the story template takes her next card; the duet links none
 
     // ---- Honesty of the seller line (duet-mtzyg2t6, 2026-09-13) ---------------------------
     // Turn 0 of a dry run said "I already built a trial reel in your style and am preparing
@@ -185,6 +228,41 @@ module automation::crm_duet {
         return seller_turn >= DISCOVERY_SELLER_TURNS;
     }
 
+    // Whether a call is a paid generation: the story reel only when it starts one.
+    fn call_is_paid(paid_tool: bool, story_reel: bool, start: bool) -> bool {
+        if story_reel {
+            return start;
+        }
+        return paid_tool;
+    }
+
+    // Whether the story reel is offered to the seller on seller turn `seller_turn`.
+    fn story_offered(seller_turn: u8, dry_run: bool) -> bool {
+        return !dry_run && seller_turn >= DISCOVERY_SELLER_TURNS;
+    }
+
+    // Whether the duet keeps a promise to send a file by resending the last one it has.
+    fn resend_for_promise(media_in_turn: u8, story_started: bool, has_last_file: bool) -> bool {
+        return media_in_turn == 0 && !story_started && has_last_file;
+    }
+
+    // Whether one of her open cards takes a reel for a plan: a reel card about that plan.
+    fn card_takes_reel(names_plan: bool, has_template: bool) -> bool {
+        return names_plan && has_template;
+    }
+
+    // The plan a story reel is about (0 = none): the plan its topic names, else the one plan
+    // looked up this run. No topic: the story template takes her next card itself.
+    fn story_plan(topic_given: bool, plan_in_topic: u8, looked_up_single: u8) -> u8 {
+        if !topic_given {
+            return 0;
+        }
+        if plan_in_topic > 0 {
+            return plan_in_topic;
+        }
+        return looked_up_single;
+    }
+
     // Whether a CLAIM-word hit counts, given how many words back the nearest negation stands
     // (0 = none in the window).
     fn claim_hit_counts(negation_distance: u8) -> bool {
@@ -215,7 +293,7 @@ module automation::crm_duet {
         return is_owner_session && takeover_minutes <= BUSINESS_BOT_TAKEOVER_MIN;
     }
 
-    test "the seller opens and the business bot stays silent for the run"
+    test "the seller opens and the business bot stays silent for the run" {
         assert(SELLER_SPEAKS_FIRST);
         assert(speaker_at(0).from_owner);
         assert(!speaker_at(1).from_owner);
@@ -223,36 +301,88 @@ module automation::crm_duet {
         assert(business_bot_silent(true, 12));
         assert(!business_bot_silent(false, 12));
         assert(!business_bot_silent(true, 31));
+    }
 
-    test "the run is the owner's, needs a connected buyer who is not the owner, and returns no session"
+    test "the run is the owner's, needs a connected buyer who is not the owner, and returns no session" {
         assert(TOOL_CALLER == "owner");
         assert(BUYER_MUST_BE_SELLER);
         assert(!BUYER_MAY_BE_OWNER);
         assert(!RETURNS_SESSION);
-        assert(SELLER != BUYER);
+        assert(SELLER == "platform-owner");
+        assert(BUYER == "connected-seller");
+    }
 
-    test "the paid cap is soft and says so"
+    test "the paid cap is soft and says so" {
         assert(!PAID_CAP_IS_HARD);
         assert(PAID_PER_REPLY_SOFT == 1);
-        assert(PAID_PER_RUN_SOFT == 3);
-        assert(PAID_TOOLS == 5);
+        assert(PAID_PER_RUN_SOFT == 2);
+        assert(PAID_TOOLS == 6);
+    }
 
-    test "turns are bounded and the buyer side never calls tools"
+    test "the duet's reel is the story reel, paid only when it starts" {
+        assert(REEL_TOOL == "crm_story_reel");
+        assert(!OLD_REEL_IN_BRIEF);
+        assert(STORY_PAID_ONLY_ON_START);
+        assert(call_is_paid(true, true, true));
+        assert(!call_is_paid(true, true, false));  // the readiness read is free
+        assert(call_is_paid(true, false, false));  // reel_render: every call
+        assert(!call_is_paid(false, false, false));  // leela_plan
+        assert(STORY_START_COUNTS_AS_WORK);
+    }
+
+    test "the story reel waits for discovery and never runs dry" {
+        assert(STORY_HIDDEN_IN_DISCOVERY);
+        assert(!STORY_IN_DRY_RUN);
+        assert(!story_offered(0, false));
+        assert(!story_offered(1, false));
+        assert(story_offered(2, false));
+        assert(!story_offered(2, true));
+    }
+
+    test "the story reel reaches her by the owner's card, and a promise is not a resend" {
+        assert(!STORY_REEL_FORWARDED);
+        assert(STORY_CARD_TO == "dm");
+        assert(STORY_START_KEEPS_PROMISE);
+        assert(STORY_NOTE_NEXT_TURN);
+        assert(resend_for_promise(0, false, true));
+        assert(!resend_for_promise(0, true, true));
+        assert(!resend_for_promise(1, false, true));
+        assert(!resend_for_promise(0, false, false));
+    }
+
+    test "her reel card is found by the plan, not by the template" {
+        assert(PLAN_LINK_ANY_REEL_TEMPLATE);
+        assert(!PLAN_LINK_OWN_CARDS);
+        assert(card_takes_reel(true, true));
+        assert(!card_takes_reel(true, false));  // her own card
+        assert(!card_takes_reel(false, true));
+        assert(STORY_WITHOUT_TOPIC_TAKES_CARD);
+        assert(story_plan(true, 6, 0) == 6);
+        assert(story_plan(true, 0, 12) == 12);
+        assert(story_plan(true, 6, 12) == 6);  // her words over the lookup
+        assert(story_plan(false, 0, 12) == 0);  // no topic: the template's own card
+        assert(story_plan(true, 0, 0) == 0);
+    }
+
+    test "turns are bounded and the buyer side never calls tools" {
         assert(TURNS_DEFAULT <= TURNS_MAX);
         assert(TURNS_MAX == 8);
         assert(BUYER_TURN_IS_PLAIN_COMPLETION);
         assert(RUNS_IN_BACKGROUND);
+    }
 
-    test "a run that broke off is failed and keeps the turn's error"
+    test "a run that broke off is failed and keeps the turn's error" {
         assert(ABORTED_RUN_STATE == "failed");
         assert(ABORTED_RUN_KEEPS_ERROR);
         assert(DONE_MEANS_ALL_LINES);
         assert(state_after(3, 4, true) == "failed");
         assert(state_after(3, 4, false) == "failed");
+        assert(state_after(6, 4, false) == "failed");  // 6 of 8 lines: turns * 2, not turns
         assert(state_after(8, 4, false) == "done");
         assert(RUN_ERROR_SHOWN_ON_DASHBOARD);
+    }
 
-    test "a claim of finished work needs a tool or a file in the same turn"
+    test "a claim of finished work needs a tool or a file in the same turn" {
         assert(CLAIMED_WORK_NEEDS_TOOL);
         assert(CLAIM_CHECK_CORRECTIONS == 1);
         assert(CLAIM_MISS_IS_VIOLATION);
@@ -260,8 +390,9 @@ module automation::crm_duet {
         assert(claim_is_honest(true, true, false));
         assert(claim_is_honest(true, false, true));
         assert(claim_is_honest(false, false, false));
+    }
 
-    test "a seller turn that hit a limit is retried once, without paid calls"
+    test "a seller turn that hit a limit is retried once, without paid calls" {
         assert(SELLER_RETRY_ON_LIMIT == 1);
         assert(SELLER_RETRY_PAUSE_MS == 30000);
         assert(RETRY_ONLY_WITHOUT_PAID_CALL);
@@ -270,8 +401,9 @@ module automation::crm_duet {
         assert(!retry_allowed(1, true, 0));
         assert(!retry_allowed(0, false, 0));
         assert(!retry_allowed(0, true, 1));
+    }
 
-    test "the first two seller turns are discovery: no paid tools, no familiarity"
+    test "the first two seller turns are discovery: no paid tools, no familiarity" {
         assert(DISCOVERY_SELLER_TURNS == 2);
         assert(DISCOVERY_HIDES_PAID_TOOLS);
         assert(DISCOVERY_REFUSES_PAID_CALL);
@@ -283,8 +415,9 @@ module automation::crm_duet {
         assert(SELLER_GENDER == "m");
         assert(SELLER_GENDER_IN_BRIEF);
         assert(GENDER_SLIP_IS_FLAG_ONLY);
+    }
 
-    test "a negated claim word is not a claim; pressure is never exempt"
+    test "a negated claim word is not a claim; pressure is never exempt" {
         assert(CLAIM_NEGATION_EXEMPT);
         assert(!PRESSURE_NEGATION_EXEMPT);
         assert(NEGATION_WINDOW_WORDS == 2);
@@ -293,8 +426,9 @@ module automation::crm_duet {
         assert(!claim_hit_counts(2));
         assert(claim_hit_counts(3));
         assert(HOOK_NE_SLUCHAJNO_FORBIDDEN_IN_BRIEF);
+    }
 
-    test "what was seen live is separated from what is not claimed"
+    test "what was seen live is separated from what is not claimed" {
         assert(DRY_RUN_SEEN_LIVE);
         assert(FULL_DRY_RUN_SEEN_LIVE);
         assert(DISCOVERY_GATE_SEEN_LIVE);
@@ -308,18 +442,22 @@ module automation::crm_duet {
         assert(!RETRY_SEEN_LIVE);
         assert(DUET_RAN_LIVE);
         assert(DUET_LIVE_RUN == "duet-mub68idg");
+    }
 
-    test "content is for the real game and nothing live is claimed"
+    test "content is for the real game and nothing live is claimed" {
         assert(BUYER_GAME == "Leela Chakra");
         assert(LEELA_PLANES == 72);
         assert(LEELA_RULESET == "classic");
-        
         assert(!DRY_RUN_SENDS);
+    }
 
-    test "honesty constants from the live run"
+    test "honesty constants from the live run" {
         assert(FEED_PUBLISH_SAYS_SAVED);
         assert(NO_LIVED_EXPERIENCE_CLAIM);
         assert(PLAN_MEANING_FROM_CANON);
         assert(PERSONA_CONSENT_IS_NOT_CONSENT);
         assert(AGENT_PUBLISH_IS_HIDDEN);
+    }
 }
+
+// phi^2 + 1/phi^2 = 3 | TRINITY

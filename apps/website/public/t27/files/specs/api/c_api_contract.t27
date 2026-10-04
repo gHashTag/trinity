@@ -1,27 +1,27 @@
 // SPDX-License-Identifier: Apache-2.0
-# C API CONTRACT — Trinity VSA FFI Bridge
+// C API CONTRACT — Trinity VSA FFI Bridge
 
-## Specification
+// Specification
 
 // Zig-backed FFI bridge for Trinity VSA core.
 // Exposes real SIMD-accelerated VSA core to C/C++/Python/Swift/Go via FFI.
 
-## Mathematical Foundation
+// Mathematical Foundation
 
 ```
 // φ² + 1/φ² = 3 = TRINITY
 ```
 
-## Exposed Functions
+// Exposed Functions
 
-### Version
+// Version
 
 ```
 // export fn trinity_vsa_version() -> [*]const u8
 //     Returns "0.2.0"
 ```
 
-### Vector Lifecycle
+// Vector Lifecycle
 
 ```
 // export fn trinity_vsa_vector_zeros(dim: usize) -> ?*anyopaque
@@ -40,7 +40,7 @@
 //     Free a vector (must be called for every created vector)
 ```
 
-### VSA Operations
+// VSA Operations
 
 ```
 // export fn trinity_vsa_bind(a, b) -> ?*anyopaque
@@ -61,7 +61,7 @@
 //     Permute vector (cyclic shift by k positions)
 ```
 
-### Similarity
+// Similarity
 
 ```
 // export fn trinity_vsa_cosine_similarity(a, b) -> f64
@@ -74,7 +74,7 @@
 //     Dot product (sum of element-wise products)
 ```
 
-### Text Encoding
+// Text Encoding
 
 ```
 // export fn trinity_vsa_encode_text(text: [*]const u8, len: usize) -> ?*anyopaque
@@ -88,7 +88,7 @@
 //     Returns number of decoded characters written to buf
 ```
 
-### Vector Access
+// Vector Access
 
 ```
 // export fn trinity_vsa_get_dim(v: ?*anyopaque) -> usize
@@ -108,7 +108,7 @@
 //     Get maximum supported vector dimension
 ```
 
-## Memory Management
+// Memory Management
 
 // All functions use opaque handles (heap-allocated HybridBigInt).
 
@@ -117,7 +117,7 @@
 // - Ownership: Free must be called for every `trinity_vsa_vector_*` created vector.
 // - Error handling: Null return indicates allocation failure.
 
-## Tests
+// Tests
 
 ```
 test "C-API: version" {
@@ -235,7 +235,7 @@ test "C-API: permute" {
 }
 ```
 
-## Notes
+// Notes
 
 // - Thread-safety: All functions are thread-safe (no global state)
 // - Alignment: Memory allocated via heap allocator (no alignment restrictions)

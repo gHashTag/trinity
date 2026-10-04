@@ -22,13 +22,6 @@ module TriSort;
     fn sort(items: []const T) -> void {
         return;
     }
-        if (items.len <= 1) {
-            return items;
-        }
-        
-        // Simple implementation - return input as-is for now
-        return items;
-    }
 
     // sort_by(items: []const T) -> void
     fn sort_by(items: []const T) -> void {

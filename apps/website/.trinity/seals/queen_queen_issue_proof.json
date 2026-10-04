@@ -1,0 +1,12 @@
+{
+  "gen_hash_c": "sha256:56d15f88b0b37a71296c97ce16dd2267e8c23256cc85fb05b43e79cacf1b02f2",
+  "gen_hash_rust": "sha256:a8d8d79054dd2d1bb7e9d6123aa542dbd134ba6546ec268fbf092b2ef4fa4ffd",
+  "gen_hash_verilog": "sha256:94017e65333be620a7d0574b8f2fdadef995c07bef477c0d6471a434756f145a",
+  "gen_hash_zig": "sha256:afd70f46deb15a09a5966cfdeb756860cff3f3dae2141b45a54ed864d067908a",
+  "module": "queen_issue_proof",
+  "ring": 12,
+  "sealed_at": "2026-10-04T13:34:55Z",
+  "sealed_by": "t27c-bootstrap@0.4.0",
+  "spec_hash": "sha256:aefcb400627c6006d3c9fafb5466ee8722d1d2ca768feba501bdd759eb8f4390",
+  "spec_path": "specs/queen/issue_proof.t27"
+}

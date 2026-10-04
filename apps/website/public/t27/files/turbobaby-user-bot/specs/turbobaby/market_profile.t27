@@ -22,7 +22,8 @@
 ;     MARKET.fixed_offset, MARKET.now and MARKET.fixed_offset respectively.
 ; (3) The census was two short. src/api/events.rs:2068 (:1700, then :1928 -- the 2026-09-21 events
 ;     edits moved it twice, the second time by the delete's escape hatch) and
-;     src/ui/screens/admin_screen.rs:4724 (:4722 before that same day's delete-toast fix)
+;     src/ui/screens/admin_screen.rs:4732 (:4724 until the Loyalty tab grew its referral sub-tab
+;     on 2026-09-26, and :4722 before the delete-toast fix of 2026-09-21)
 ;     read the same clock and appear in no list of five; both source files say so in their own
 ;     comments. tests/market_clock_wiring.rs pins SEVEN sites in its WIRED array, and seven is
 ;     the count pinned below.

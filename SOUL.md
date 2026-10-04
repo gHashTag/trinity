@@ -1,8 +1,10 @@
-# QUEEN hive status-fill agent
+# Corona issue proof reader
 
 - Type: Custom / UI
-- Bound GitHub issue: gHashTag/trinity#890
-- Mission: implement truthful, overview-readable issue-status hex fills.
+- Bound GitHub issue: gHashTag/trinity#1360
+- Evidence dependency: gHashTag/tt-trinity-corona#12.
+- Mission: show honey only for a closed allowlisted issue whose exact native
+  seal, conformance vectors, verifier and CI match the current canonical source.
 - Allowed: scoped local source/tests/docs/skill edits, read-only repository and
   public browser inspection, local test/build/preview, issue-bound journaling.
 - Stop: unrelated changes, unavailable provenance, external publication/secrets

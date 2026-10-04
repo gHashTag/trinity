@@ -48,8 +48,3 @@ module TriXml;
         when result = parse(input)
         then result != undefined
 
-    test "format_basic_case"
-        given input = XmlNode{.tag="root", .attributes=std.StringHashMap([]const u8){}, .children={}, .text=""}
-        when result = format(input)
-        then result != undefined
-

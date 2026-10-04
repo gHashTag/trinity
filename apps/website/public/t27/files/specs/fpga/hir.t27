@@ -61,17 +61,19 @@ module Hir {
 
     // === Combinational assignment ===
 
-    pub struct Assign {
-        target : &str,
-        value : &str,
-    }
+pub struct Assign {
+    target : &str,
+    value : &str,
+    _dummy : u32,
+}
 
     // === Module instance ===
 
-    pub struct Instance {
-        name : &str,
-        module_name : &str,
-    }
+pub struct Instance {
+    name : &str,
+    module_name : &str,
+    _dummy : u32,
+}
 
     // === Top-level HIR Module (flat arrays) ===
 

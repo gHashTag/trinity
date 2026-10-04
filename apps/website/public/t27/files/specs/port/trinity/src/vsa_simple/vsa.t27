@@ -1,0 +1,176 @@
+module port::trinity::src::vsa_simple::vsa;
+
+const std = @import("std");
+const Trit = i8;
+
+pub const Vector = struct {
+    data: []Trit,
+    len: usize,
+    allocator: std.mem.Allocator,
+};
+
+pub fn Vector_init(allocator: std.mem.Allocator, len: usize) -> Vector {
+    const data = allocator.alloc(Trit, len);
+    return .{ .data = data, .len = len, .allocator = allocator };
+}
+
+pub fn Vector_clone(self: Vector) -> Vector {
+    const result = try self.allocator.alloc(Trit, self.len);
+    @memcpy(result, self.data);
+    return .{ .data = result, .len = self.len, .allocator = self.allocator };
+}
+
+pub fn Vector_deinit(self: Vector) void {
+    self.allocator.free(self.data);
+}
+
+pub fn bind(allocator: std.mem.Allocator, a: Vector, b: Vector) -> Vector {
+    const len = @max(a.len, b.len);
+    const result = try Vector.init(allocator, len);
+
+    for (0..len) |i| {
+        const a_val = if (i < a.len) a.data[i] else 0;
+        const b_val = if (i < b.len) b.data[i] else 0;
+        result.data[i] = if (b_val == 0) a_val else b_val * a_val;
+    }
+
+    return result;
+}
+
+pub fn bundle2(allocator: std.mem.Allocator, a: Vector, b: Vector) -> Vector {
+    const len = @max(a.len, b.len);
+    const result = try Vector.init(allocator, len);
+
+    for (0..len) |i| {
+        const a_val = if (i < a.len) a.data[i] else 0;
+        const b_val = if (i < b.len) b.data[i] else 0;
+        const sum = @as(i16, a_val) + @as(i16, b_val);
+        result.data[i] = if (sum > 0) 1 else if (sum < 0) -1 else 0;
+    }
+
+    return result;
+}
+
+pub fn cosineSimilarity(a: Vector, b: Vector) f64 {
+    var dot: i64 = 0;
+    var norm_a: f64 = 0.0;
+    var norm_b: f64 = 0.0;
+    const len = @min(a.len, b.len);
+
+    for (0..len) |i| {
+        dot += @as(i64, a.data[i]) * @as(i64, b.data[i]);
+        norm_a += @as(f64, @floatFromInt(a.data[i])) * @as(f64, @floatFromInt(a.data[i]));
+        norm_b += @as(f64, @floatFromInt(b.data[i])) * @as(f64, @floatFromInt(b.data[i]));
+    }
+
+    const denom = @sqrt(norm_a) * @sqrt(norm_b);
+    if (denom == 0.0) return 0.0;
+    return @as(f64, @floatFromInt(dot)) / denom;
+}
+
+test "Vector init works" {
+    const allocator = std.testing.allocator;
+    const v = try Vector.init(allocator, 100);
+    defer v.deinit();
+    try std.testing.expectEqual(@as(usize, 100), v.len);
+}
+
+test "bind creates result" {
+    const allocator = std.testing.allocator;
+    var a = try Vector.init(allocator, 10);
+    defer a.deinit();
+    @memset(a.data, 1);
+
+    var b = try Vector.init(allocator, 10);
+    defer b.deinit();
+    @memset(b.data, -1);
+
+    const result = try bind(allocator, a, b);
+    defer result.deinit();
+
+    try std.testing.expectEqual(@as(usize, 10), result.len);
+    try std.testing.expectEqual(@as(Trit, -1), result.data[0]);
+}
+
+test "bundle2 majority vote" {
+    const allocator = std.testing.allocator;
+    var a = try Vector.init(allocator, 10);
+    defer a.deinit();
+    @memset(a.data, 1);
+
+    var b = try Vector.init(allocator, 10);
+    defer b.deinit();
+    @memset(b.data, 1);
+
+    var result = try bundle2(allocator, a, b);
+    defer result.deinit();
+
+    try std.testing.expectEqual(@as(Trit, 1), result.data[0]);
+}
+
+test "cosineSimilarity identical" {
+    const allocator = std.testing.allocator;
+    var a = try Vector.init(allocator, 10);
+    defer a.deinit();
+
+    const sim = cosineSimilarity(a, a);
+    try std.testing.expectApproxEqAbs(@as(f64, 1.0), sim, 0.001);
+}
+
+test "Vector clone works" {
+    const allocator = std.testing.allocator;
+    var original = try Vector.init(allocator, 5);
+    defer original.deinit();
+    @memset(original.data, 42 as Trit);
+
+    const clone = try original.clone();
+    defer clone.deinit();
+
+    try std.testing.expectEqual(original.len, clone.len);
+    for (original.data) |*i, idx| {
+        try std.testing.expectEqual(*i, clone.data[idx]);
+    }
+}
+
+test "bind with different lengths" {
+    const allocator = std.testing.allocator;
+    var a = try Vector.init(allocator, 5);
+    defer a.deinit();
+    @memset(a.data, 2 as Trit);
+
+    var b = try Vector.init(allocator, 3);
+    defer b.deinit();
+    @memset(b.data, 3 as Trit);
+
+    const result = try bind(allocator, a, b);
+    defer result.deinit();
+
+    // Expected: [2*3, 2*3, 2*3, 2, 2] = [6,6,6,2,2]
+    try std.testing.expectEqual(@as(usize, 5), result.len);
+    try std.testing.expectEqual(@as(Trit, 6), result.data[0]);
+    try std.testing.expectEqual(@as(Trit, 6), result.data[1]);
+    try std.testing.expectEqual(@as(Trit, 6), result.data[2]);
+    try std.testing.expectEqual(@as(Trit, 2), result.data[3]);
+    try std.testing.expectEqual(@as(Trit, 2), result.data[4]);
+}
+
+test "bundle2 with different lengths" {
+    const allocator = std.testing.allocator;
+    var a = try Vector.init(allocator, 4);
+    defer a.deinit();
+    @memset(a.data, 1 as Trit);
+
+    var b = try Vector.init(allocator, 2);
+    defer b.deinit();
+    @memset(b.data, -1 as Trit);
+
+    const result = try bundle2(allocator, a, b);
+    defer result.deinit();
+
+    // Expected: [1+(-1)=0, 1+(-1)=0, 1+0=1, 1+0=1] = [0,0,1,1]
+    try std.testing.expectEqual(@as(usize, 4), result.len);
+    try std.testing.expectEqual(@as(Trit, 0), result.data[0]);
+    try std.testing.expectEqual(@as(Trit, 0), result.data[1]);
+    try std.testing.expectEqual(@as(Trit, 1), result.data[2]);
+    try std.testing.expectEqual(@as(Trit, 1), result.data[3]);
+}

@@ -88,20 +88,27 @@ module GeluApprox;
         when result = forward(input)
         then result < 0.0 and result > -1.0
 
-    test forward_batch_empty
-        given input = []f32{len = 0}
-        when result = forward_batch(input)
-        then result.len == 0
+    test forward_batch_empty {
+        var input: [0]f32 = [];
+        var result = forward_batch(&input);
+        assert(result.len == 0);
+    }
 
-    test forward_batch_single_element
-        given input = []f32{len = 1; [0.0]}
-        when result = forward_batch(input)
-        then result.len == 1 and result[0] == 0.0
+    test forward_batch_single_element {
+        var input: [1]f32 = [0.0];
+        var result = forward_batch(&input);
+        assert(result.len == 1);
+        assert(result[0] == 0.0);
+    }
 
-    test forward_batch_multiple_elements
-        given input = []f32{len = 3; [1.0, -1.0, 0.5]}
-        when result = forward_batch(input)
-        then result.len == 3 and result[0] > 0.0 and result[1] < 0.0 and result[2] > 0.0
+    test forward_batch_multiple_elements {
+        var input: [3]f32 = [1.0, -1.0, 0.5];
+        var result = forward_batch(&input);
+        assert(result.len == 3);
+        assert(result[0] > 0.0);
+        assert(result[1] < 0.0);
+        assert(result[2] > 0.0);
+    }
 
     test derivative_zero_input
         given input = 0.0
@@ -123,10 +130,11 @@ module GeluApprox;
         when result = forward(input)
         then result >= 0.0
 
-    test "forward_batch_basic"
-        given input = []f32{len = 2; [1.0, -0.5]}
-        when result = forward_batch(input)
-        then result.len == 2
+    test "forward_batch_basic" {
+        var input: [2]f32 = [1.0, -0.5];
+        var result = forward_batch(&input);
+        assert(result.len == 2);
+    }
 
     test "derivative_basic"
         given input = 2.0

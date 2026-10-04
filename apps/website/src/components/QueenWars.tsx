@@ -1,5 +1,6 @@
 import { useState, type CSSProperties } from 'react'
 import { QUEEN_WARS } from '../lib/queenWars.generated'
+import { IglaBoard } from './IglaBoard'
 import './QueenWars.css'
 
 type WarsRun = {
@@ -59,6 +60,7 @@ const COPY = {
     noLedger: 'No completed arm has been sealed into the .t27 ledger yet.',
     pipeline: 'TRAINING PIPELINE',
     pipelineCopy: 'IGLA enters this arena when one of its checkpoints runs an arena issue under the same gates. The pilot reports trained checkpoints; none has run an arena issue yet, so IGLA has no arena score.',
+    iglaJump: 'IGLA BOARD ↓',
     control: 'CONTROL',
     triLayer: 'TRI DECISION LAYER',
     decision: 'COMPARISON ARM',
@@ -110,6 +112,7 @@ const COPY = {
     noLedger: 'Ни одна завершённая рука ещё не запечатана в журнале .t27.',
     pipeline: 'КОНВЕЙЕР ОБУЧЕНИЯ',
     pipelineCopy: 'IGLA входит на эту арену, когда один из её checkpoint решает issue арены под теми же воротами. Пилот сообщает об обученных checkpoint, но ни один ещё не решал issue арены, поэтому оценки на арене у IGLA нет.',
+    iglaJump: 'ДОСКА IGLA ↓',
     control: 'КОНТРОЛЬ',
     triLayer: 'СЛОЙ РЕШЕНИЙ TRI',
     decision: 'СРАВНИТЕЛЬНОЕ ПЛЕЧО',
@@ -272,7 +275,7 @@ export function QueenWars({ lang }: { lang: 'en' | 'ru' }) {
         </header>
         <p className="queen-wars-matrix-hint">{c.matrixHint}</p>
         <div className="queen-wars-table-scroll" tabIndex={0} role="region" aria-label={c.matrix}>
-          <table>
+          <table data-stack="">
             <thead>
               <tr>
                 <th scope="col">{c.task}</th>
@@ -295,7 +298,7 @@ export function QueenWars({ lang }: { lang: 'en' | 'ru' }) {
                     const run = latestRun(item.id, id)
                     const killed = run ? measurements.find((m) => m.runId === run.id && m.key === 'mutants-killed') : undefined
                     return (
-                      <td key={id} data-outcome={outcome(run?.verdict)} data-evidence={run?.evidence ?? 'UNKNOWN'}>
+                      <td key={id} data-label={QUEEN_WARS.configurations.find((config) => config.id === id)?.name ?? id} data-outcome={outcome(run?.verdict)} data-evidence={run?.evidence ?? 'UNKNOWN'}>
                         {run ? <>
                           <strong>{run.verdict}</strong>
                           <small>{state(run.state)}{killed ? ` · ${c.mutantsKilled}: ${killed.value}` : ''}</small>
@@ -303,7 +306,7 @@ export function QueenWars({ lang }: { lang: 'en' | 'ru' }) {
                       </td>
                     )
                   })}
-                  <td data-outcome={outcome(item.state)}><small>{state(item.state)}</small></td>
+                  <td data-label={c.state} data-outcome={outcome(item.state)}><small>{state(item.state)}</small></td>
                 </tr>
               ))}
             </tbody>
@@ -403,7 +406,7 @@ export function QueenWars({ lang }: { lang: 'en' | 'ru' }) {
           <h3 id="queen-wars-score-title">{c.metrics}</h3>
         </header>
         <div className="queen-wars-table-scroll" tabIndex={0} role="region" aria-label={c.metrics}>
-          <table>
+          <table data-stack="">
             <thead>
               <tr>
                 <th scope="col">{c.metric}</th>
@@ -421,6 +424,7 @@ export function QueenWars({ lang }: { lang: 'en' | 'ru' }) {
                     return (
                       <td
                         key={config.id}
+                        data-label={config.name}
                         data-evidence={value?.evidence ?? 'UNKNOWN'}
                         data-outcome={outcome(value?.value)}
                       >
@@ -479,7 +483,10 @@ export function QueenWars({ lang }: { lang: 'en' | 'ru' }) {
         <div className="queen-wars-flow" aria-label={c.pipeline}>
           <span>IGLA .t27 CORPUS</span><i aria-hidden="true">→</i><span>TRAIN</span><i aria-hidden="true">→</i><span>CHECKPOINT + SHA</span><i aria-hidden="true">→</i><span>WARS</span><i aria-hidden="true">→</i><span>QUEEN VERDICT</span>
         </div>
+        <button type="button" className="queen-wars-igla-jump" onClick={() => document.getElementById('igla-board')?.scrollIntoView({ block: 'start' })}>{c.iglaJump}</button>
       </section>
+
+      <IglaBoard lang={lang} />
 
       <footer className="queen-wars-foot">
         <span>{c.specHash}</span>

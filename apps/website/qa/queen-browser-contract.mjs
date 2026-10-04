@@ -43,7 +43,11 @@ const bridge = { source: 'bridge' }
 // 1. The panel's mode. A preview never becomes ready, even signed in: the
 //    homepage renders many previews and none may touch a person's browser.
 assert.equal(panelMode({ embedded: true, nested: false, session: signedIn }), 'preview')
-assert.equal(panelMode({ embedded: false, nested: true, session: signedIn }), 'nested')
+// Framed by the app (the Hive tab) is no longer a mode of its own: the owner
+// reversed it on 2026-09-29, the browser opens in this window. So framing
+// changes nothing -- the session alone decides, signed in or out.
+assert.equal(panelMode({ embedded: false, nested: true, session: signedIn }), 'ready')
+assert.equal(panelMode({ embedded: false, nested: true, session: signedOut }), 'signin')
 assert.equal(panelMode({ embedded: false, nested: false, session: signedIn }), 'ready')
 assert.equal(panelMode({ embedded: false, nested: false, session: signedOut }), 'signin')
 // Off the app's origin there is no first-party /live/, whatever else is true.

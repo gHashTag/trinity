@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import Footer from '../components/Footer'
 import Cover from '../components/BlogCover'
+import TerminalCast from '../components/TerminalCast'
 import { publishedPosts, postBySlug } from '../data/blog/index'
 import type { Block, Post, PostBody, PostMeta } from '../data/blog/types'
 import { useI18n } from '../i18n/context'
@@ -374,6 +375,8 @@ function renderBlock(b: Block, i: number) {
           </figcaption>
         </figure>
       )
+    case 'terminal':
+      return <TerminalCast key={i} src={b.src} title={b.title} caption={b.caption} share={b.share} />
     case 'table':
       return (
         <div key={i} style={{ overflowX: 'auto', marginBottom: '1.6em' }}>

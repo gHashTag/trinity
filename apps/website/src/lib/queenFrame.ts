@@ -27,7 +27,7 @@ export function isQueenFrameMessage(data: unknown): data is QueenFrameMessage {
   return typeof m === 'object' && m !== null && m.type === MESSAGE_TYPE && (m.action === 'selected' || m.action === 'open') && typeof m.hash === 'string'
 }
 
-const ROUTE = /^#\/(specs|skills|crons|agents|functions|tools|docs)(?:\/([^?#]*))?(?:\?([^#]*))?(?:#.*)?$/
+const ROUTE = /^#\/(specs|skills|crons|agents|functions|tools|providers|docs)(?:\/([^?#]*))?(?:\?([^#]*))?(?:#.*)?$/
 
 /** The Explorer route a hash names, unvalidated, or null when it names none. Only the docs have sub-routes. */
 export function explorerRouteParts(hash: string): { route: string; sub: string | undefined; query: URLSearchParams } | null {

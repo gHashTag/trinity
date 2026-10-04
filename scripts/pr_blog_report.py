@@ -2,8 +2,16 @@
 """Validate a PR's data-only work report and create unpublished blog artifacts.
 
 Usage: pr_blog_report.py validate --event "$GITHUB_EVENT_PATH" --output out
+           [--files files.jsonl --commits commits.jsonl]
 The trusted caller supplies a GitHub pull_request event. No PR code, command,
 template, URL, or instruction is ever executed or fetched by this program.
+
+One narrow exemption: a Dependabot PR whose body has no report block, whose
+every commit is Dependabot's own GitHub-signed commit and whose every changed
+file is a dependency manifest or lockfile is its own report. The trusted caller
+supplies the changed files and commits as JSON lines; the bump is recorded as a
+`dependency-bump` report.json and no blog draft is produced. A PR that carries a
+report block is always validated normally, Dependabot or not.
 """
 
 from __future__ import annotations
@@ -27,9 +35,21 @@ MAX_EVENT_BYTES = 2 * 1024 * 1024
 MAX_REPORT_CHARS = 65536
 SHA = re.compile(r"[0-9a-fA-F]{40}\Z")
 REPOSITORY = re.compile(r"[A-Za-z0-9][A-Za-z0-9-]{0,38}/[A-Za-z0-9][A-Za-z0-9._-]{0,99}\Z")
+CAST = re.compile(r"term/[a-z0-9][a-z0-9-]{0,63}/session\.cast\Z")
 PLACEHOLDER = re.compile(r"\b(?:TODO|TBD|FIXME)\b", re.IGNORECASE)
 EMPTY_VALUE = re.compile(r"(?:none|n/?a|not applicable|placeholder|replace(?: me| this)?|example|test|pending|\.\.\.|…|[-_]+)[.! ]*\Z", re.IGNORECASE)
 TEMPLATE_VALUE = re.compile(r"(?:replace (?:this|me|with)\b.*|(?:insert|write|enter|your)\b.*\bhere[.! ]*|<[^>]+>|\[[^\]]+\])\Z", re.IGNORECASE)
+
+
+DEPENDABOT = "dependabot[bot]"
+# Basenames only. Workflow files are deliberately absent: a bump of a GitHub
+# Action changes what runs with this repository's token, so it needs a report.
+DEPENDENCY_FILE = re.compile(
+    r"(?:package\.json|package-lock\.json|npm-shrinkwrap\.json|yarn\.lock|pnpm-lock\.yaml"
+    r"|bun\.lockb?|Cargo\.toml|Cargo\.lock|go\.mod|go\.sum|requirements[A-Za-z0-9._-]*\.(?:txt|in)"
+    r"|poetry\.lock|uv\.lock|pyproject\.toml|Pipfile(?:\.lock)?|Gemfile(?:\.lock)?"
+    r"|composer\.(?:json|lock)|build\.zig\.zon)\Z")
+DEPENDENCY_FILE_STATUS = {"modified", "added", "changed"}
 
 
 class ReportError(ValueError):
@@ -57,13 +77,15 @@ def decode_json(raw: str, context: str) -> Any:
         fail(f"{context}: malformed JSON ({exc})")
 
 
-def mapping(value: Any, name: str, keys: set[str] | None = None) -> dict[str, Any]:
+def mapping(value: Any, name: str, keys: set[str] | None = None,
+            optional: frozenset[str] = frozenset()) -> dict[str, Any]:
     if not isinstance(value, dict):
         fail(f"{name} must be an object")
-    if keys is not None and set(value) != keys:
+    if keys is not None:
         missing = sorted(keys - set(value))
-        extra = sorted(set(value) - keys)
-        fail(f"{name}: missing keys {missing}; unsupported keys {extra}")
+        extra = sorted(set(value) - keys - optional)
+        if missing or extra:
+            fail(f"{name}: missing keys {missing}; unsupported keys {extra}")
     return value
 
 
@@ -99,6 +121,13 @@ def text_list(value: Any, name: str, minimum_items: int = 1,
     return result
 
 
+def cast_path(value: Any, name: str) -> str:
+    # Only a recording published on the site itself: term/<id>/session.cast.
+    if not isinstance(value, str) or not CAST.fullmatch(value):
+        fail(f"{name} must be a published recording path term/<id>/session.cast")
+    return value
+
+
 def sha(value: Any, name: str) -> str:
     if not isinstance(value, str) or not SHA.fullmatch(value):
         fail(f"{name} must be a full 40-character hexadecimal commit SHA")
@@ -117,7 +146,8 @@ def timestamp(value: Any, name: str) -> str:
         fail(f"{name} must be an ISO 8601 timestamp with a timezone")
 
 
-def validate_event(event: Any) -> dict[str, Any]:
+def validate_event_identity(event: Any) -> tuple[dict[str, Any], dict[str, Any], str, int, str, str]:
+    """Check which repository, PR and head commit the event names."""
     event = mapping(event, "event")
     repository = mapping(event.get("repository"), "event.repository").get("full_name")
     if not isinstance(repository, str) or not REPOSITORY.fullmatch(repository) or repository.split("/")[1] in {".", ".."}:
@@ -136,6 +166,11 @@ def validate_event(event: Any) -> dict[str, Any]:
     if "html_url" in pr and pr["html_url"] != pr_url:
         fail("pull_request.html_url does not match repository and PR number")
     head_sha = sha(mapping(pr.get("head"), "pull_request.head").get("sha"), "pull_request.head.sha")
+    return event, pr, repository, number, pr_url, head_sha
+
+
+def validate_event(event: Any) -> dict[str, Any]:
+    event, pr, repository, number, pr_url, head_sha = validate_event_identity(event)
     state = pr.get("state")
     merged = pr.get("merged")
     if state not in ("open", "closed") or type(merged) is not bool:
@@ -193,7 +228,13 @@ def validate_event(event: Any) -> dict[str, Any]:
         normalized_tags.append(tag)
     if len(set(tag.casefold() for tag in normalized_tags)) != len(normalized_tags):
         fail("work report.tags must be unique (case-insensitive)")
-    blog = mapping(report["blog"], "work report.blog", {"title", "summary", "outline"})
+    blog = mapping(report["blog"], "work report.blog", {"title", "summary", "outline"},
+                   frozenset({"cast", "reproduce"}))
+    extras: dict[str, Any] = {}
+    if "cast" in blog:
+        extras["cast"] = cast_path(blog["cast"], "work report.blog.cast")
+    if "reproduce" in blog:
+        extras["reproduce"] = text_list(blog["reproduce"], "work report.blog.reproduce", 1, 8, 2, 1)
     return {
         "version": 1,
         "repository": repository,
@@ -215,7 +256,73 @@ def validate_event(event: Any) -> dict[str, Any]:
             "title": text(blog["title"], "work report.blog.title", 15, 180, words=3),
             "summary": text(blog["summary"], "work report.blog.summary", 40, 600, words=6),
             "outline": text_list(blog["outline"], "work report.blog.outline", 3, 20, 80, 12),
+            **extras,
         },
+    }
+
+
+def json_lines(raw: str, context: str) -> list[dict[str, Any]]:
+    return [mapping(decode_json(line, f"{context} line {index + 1}"), f"{context} line {index + 1}")
+            for index, line in enumerate(raw.splitlines()) if line.strip()]
+
+
+def dependency_bump_refusal(event: Any, files: list[dict[str, Any]],
+                            commits: list[dict[str, Any]]) -> str | None:
+    """Return why the PR is NOT a pure Dependabot dependency bump, or None if it is."""
+    pr = event.get("pull_request") if isinstance(event, dict) else None
+    if not isinstance(pr, dict):
+        return "event has no pull_request"
+    user = pr.get("user") if isinstance(pr.get("user"), dict) else {}
+    if user.get("login") != DEPENDABOT or user.get("type") != "Bot":
+        return "author is not dependabot[bot]"
+    head = pr.get("head") if isinstance(pr.get("head"), dict) else {}
+    base = pr.get("base") if isinstance(pr.get("base"), dict) else {}
+    head_repo = head.get("repo") if isinstance(head.get("repo"), dict) else {}
+    base_repo = base.get("repo") if isinstance(base.get("repo"), dict) else {}
+    if not base_repo.get("full_name") or head_repo.get("full_name") != base_repo.get("full_name"):
+        return "head branch is not in the base repository"
+    if not isinstance(head.get("ref"), str) or not head["ref"].startswith("dependabot/"):
+        return "head branch is not a dependabot/ branch"
+    if not files or type(pr.get("changed_files")) is not int or len(files) != pr["changed_files"]:
+        return "changed-file list is missing or incomplete"
+    for item in files:
+        name, status = item.get("filename"), item.get("status")
+        if not isinstance(name, str) or not DEPENDENCY_FILE.fullmatch(name.rsplit("/", 1)[-1]):
+            return f"changes a file that is not a dependency manifest or lockfile: {name!r}"
+        if status not in DEPENDENCY_FILE_STATUS:
+            return f"{status!r} change to {name!r} is not a version bump"
+    if not commits or type(pr.get("commits")) is not int or len(commits) != pr["commits"]:
+        return "commit list is missing or incomplete"
+    for item in commits:
+        # Dependabot's commits are authored by it and signed by GitHub (web-flow).
+        # A pushed commit with a forged author email is not web-flow verified.
+        if (item.get("author") != DEPENDABOT or item.get("committer") != "web-flow"
+                or item.get("verified") is not True):
+            return f"commit {str(item.get('sha'))[:12]} is not a GitHub-signed Dependabot commit"
+    if commits[-1].get("sha") != head.get("sha"):
+        return "commit list does not end at the PR head"
+    return None
+
+
+def dependency_bump_report(event: dict[str, Any], files: list[dict[str, Any]],
+                           commits: list[dict[str, Any]]) -> dict[str, Any]:
+    """Build the bump's own report. Claims only what the API data shows."""
+    pr = event["pull_request"]
+    repository = event["repository"]["full_name"]
+    title = pr.get("title")
+    return {
+        "version": 1,
+        "kind": "dependency-bump",
+        "repository": repository,
+        "number": pr["number"],
+        "pr_url": f"https://github.com/{repository}/pull/{pr['number']}",
+        "head_sha": sha(pr["head"]["sha"], "pull_request.head.sha"),
+        "title": text(title, "pull_request.title", 1, 300),
+        "files": [{"filename": item["filename"], "status": item["status"]} for item in files],
+        "commits": [sha(item.get("sha"), "commit.sha") for item in commits],
+        "note": ("Dependabot dependency bump: manifests and lockfiles only, every commit "
+                 "GitHub-signed by Dependabot. No tests are claimed by this report; CI on the "
+                 "PR is the only verification. No blog draft is generated."),
     }
 
 
@@ -227,28 +334,70 @@ def lifecycle(report: dict[str, Any]) -> str:
     return "Open PR; unpublished blog draft (not merged)"
 
 
+STATUS_LABEL = {"passed": "passed", "failed": "FAILED", "not_run": "not run"}
+
+
+def code_span(value: str) -> str:
+    return value if "`" in value else f"`{value}`"
+
+
+def check_count(tests: list[dict[str, Any]]) -> str:
+    counts = {status: sum(test["status"] == status for test in tests) for status in STATUS_LABEL}
+    parts = [f"{counts[status]} {STATUS_LABEL[status]}" for status in STATUS_LABEL if counts[status]]
+    return ", ".join(parts)
+
+
 def make_post(report: dict[str, Any]) -> dict[str, Any]:
-    """Produce the website's Post schema, never an SVG/HTML block or published post."""
-    source_notice = (
-        f"{lifecycle(report)}. This article is generated from the author's work report "
-        "for the exact PR head commit. Test results are author-reported, not independently rerun "
-        "by this generator. Merge status is not proof of deployment or runtime correctness."
-    )
-    body = [{"kind": "p", "text": source_notice},
-            {"kind": "h", "text": "Work report"},
-            {"kind": "p", "text": report["summary"]},
-            {"kind": "h", "text": "What changed"},
-            {"kind": "ul", "items": report["changes"]},
-            {"kind": "h", "text": "Context and reasoning"}]
-    body.extend({"kind": "p", "text": paragraph} for paragraph in report["blog"]["outline"])
+    """Produce the website's Post schema, never an SVG/HTML block or published post.
+
+    The order follows what readers do with a technical post: they read the
+    first lines and skim headings. So the result comes first, then the problem
+    (outline[0]) and how it was solved (the rest of the outline), then the
+    evidence and its limits. Where the text came from closes the post.
+    """
+    blog = report["blog"]
+    tests = report["tests"]
+    status = (f"{lifecycle(report).split(';')[0]}. Checks reported by the author: "
+              f"{check_count(tests)}; this generator did not rerun them.")
+    body: list[dict[str, Any]] = [
+        {"kind": "p", "text": report["summary"]},
+        {"kind": "p", "text": status},
+        {"kind": "h", "text": "The problem"},
+        {"kind": "p", "text": blog["outline"][0]},
+        {"kind": "h", "text": "How it works"},
+    ]
+    body.extend({"kind": "p", "text": paragraph} for paragraph in blog["outline"][1:])
+    page = None
+    if "cast" in blog:
+        page = f"https://t27.ai/{blog['cast'].rsplit('/', 1)[0]}/"
+        body.extend([
+            {"kind": "h", "text": "See it run"},
+            {"kind": "p", "text": f"A terminal recording of the commands is published at {page} "
+                                  "(prompt and typing staged, every printed byte real)."},
+        ])
     body.extend([
-        {"kind": "h", "text": "Reported verification"},
-        {"kind": "ul", "items": [
-            f"[{test['status']}] Command: {test['command']}. Result: {test['result']}. Evidence: {test['evidence']}"
-            for test in report["tests"]
-        ]},
-        {"kind": "h", "text": "Limits and open questions"},
+        {"kind": "h", "text": "What changed"},
+        {"kind": "ul", "items": report["changes"]},
+        {"kind": "h", "text": "How we checked"},
+        {"kind": "table", "head": ["Check", "Status", "Result", "Evidence"],
+         "rows": [[code_span(test["command"]), STATUS_LABEL[test["status"]], test["result"], test["evidence"]]
+                  for test in tests]},
+    ])
+    if "reproduce" in blog:
+        body.extend([
+            {"kind": "h", "text": "Try it yourself"},
+            {"kind": "p", "text": "The author lists these commands to reproduce the result; "
+                                  "this generator did not run them."},
+            {"kind": "code", "text": "\n".join(blog["reproduce"])},
+        ])
+    body.extend([
+        {"kind": "h", "text": "What this does not show"},
         {"kind": "ul", "items": report["limitations"]},
+        {"kind": "h", "text": "How this post was made"},
+        {"kind": "p", "text": (
+            f"{lifecycle(report)}. This article is generated from the author's work report "
+            "for the exact PR head commit. Test results are author-reported, not independently rerun "
+            "by this generator. Merge status is not proof of deployment or runtime correctness.")},
     ])
     receipts = [
         {"label": f"{report['repository']} PR #{report['number']}", "href": report["pr_url"]},
@@ -258,12 +407,16 @@ def make_post(report: dict[str, Any]) -> dict[str, Any]:
     if report["merged"]:
         receipts.append({"label": f"Merge commit {report['merge_commit_sha'][:12]}",
                          "href": f"https://github.com/{report['repository']}/commit/{report['merge_commit_sha']}"})
+    if page:
+        receipts.append({"label": "Terminal recording", "href": page})
     word_count = sum(len(block.get("text", "").split()) +
-                     sum(len(item.split()) for item in block.get("items", [])) for block in body)
+                     sum(len(item.split()) for item in block.get("items", [])) +
+                     sum(len(cell.split()) for row in block.get("rows", []) for cell in row)
+                     for block in body)
     return {
         "slug": report["slug"],
-        "title": report["blog"]["title"],
-        "summary": report["blog"]["summary"],
+        "title": blog["title"],
+        "summary": blog["summary"],
         "date": (report["merged_at"] or report["created_at"])[:10],
         "readingMinutes": max(1, math.ceil(word_count / 200)),
         "tags": report["tags"],
@@ -292,6 +445,14 @@ def make_markdown(report: dict[str, Any], post: dict[str, Any]) -> str:
             lines.append(f"## {markdown_text(block['text'])}")
         elif block["kind"] == "ul":
             lines.extend(f"- {markdown_text(item)}" for item in block["items"])
+        elif block["kind"] == "table":
+            # Every cell is escaped, including "|", so a cell cannot add a column.
+            lines.append("| " + " | ".join(markdown_text(cell) for cell in block["head"]) + " |")
+            lines.append("|" + "---|" * len(block["head"]))
+            lines.extend("| " + " | ".join(markdown_text(cell) for cell in row) + " |" for row in block["rows"])
+        elif block["kind"] == "code":
+            # Escaped list items, not a fence: a command cannot close a fence it is not in.
+            lines.extend(f"- {markdown_text(item)}" for item in block["text"].split("\n"))
         else:
             lines.append(markdown_text(block["text"]))
         lines.append("")
@@ -308,17 +469,24 @@ def encode_json(value: Any) -> str:
 
 
 def write_artifacts(report: dict[str, Any], output: Path) -> None:
+    if report.get("kind") == "dependency-bump":
+        artifacts = {"report.json": encode_json(report)}
+    else:
+        post = make_post(report)
+        artifacts = {
+            "report.json": encode_json(report),
+            "post.json": encode_json(post),
+            "draft.md": make_markdown(report, post),
+        }
+    write_files(artifacts, output)
+
+
+def write_files(artifacts: dict[str, str], output: Path) -> None:
     if output.is_symlink():
         fail("output directory must not be a symlink")
     output.mkdir(parents=True, exist_ok=True)
     if not output.is_dir():
         fail("output must be a directory")
-    post = make_post(report)
-    artifacts = {
-        "report.json": encode_json(report),
-        "post.json": encode_json(post),
-        "draft.md": make_markdown(report, post),
-    }
     for name in artifacts:
         path = output / name
         if path.is_symlink() or (path.exists() and not path.is_file()):
@@ -345,6 +513,9 @@ def main(argv: list[str] | None = None) -> int:
     validate = commands.add_parser("validate", help="validate the current PR report and emit drafts")
     validate.add_argument("--event", type=Path, required=True)
     validate.add_argument("--output", type=Path, required=True)
+    validate.add_argument("--files", type=Path, help="changed files as JSON lines {filename,status}")
+    validate.add_argument("--commits", type=Path,
+                          help="PR commits as JSON lines {sha,author,committer,verified}")
     args = parser.parse_args(argv)
     try:
         with args.event.open("rb") as stream:
@@ -352,6 +523,22 @@ def main(argv: list[str] | None = None) -> int:
         if len(raw) > MAX_EVENT_BYTES:
             fail("event JSON exceeds the 2 MiB limit")
         event = decode_json(raw.decode("utf-8"), "event")
+        pr = event.get("pull_request") if isinstance(event, dict) else None
+        body = pr.get("body") if isinstance(pr, dict) else None
+        if args.files and args.commits and not (isinstance(body, str) and START in body):
+            files = json_lines(args.files.read_text(encoding="utf-8"), "files")
+            commits = json_lines(args.commits.read_text(encoding="utf-8"), "commits")
+            refusal = dependency_bump_refusal(event, files, commits)
+            if refusal is None:
+                validate_event_identity(event)
+                report = dependency_bump_report(event, files, commits)
+                write_artifacts(report, args.output)
+                print(f"Dependency bump {report['repository']}#{report['number']} at "
+                      f"{report['head_sha']}: {len(files)} manifest/lockfile change(s) by Dependabot; "
+                      f"the bump is its own report; artifacts written to {args.output}")
+                return 0
+            if isinstance(pr, dict) and isinstance(pr.get("user"), dict) and pr["user"].get("login") == DEPENDABOT:
+                print(f"Dependency-bump exemption does not apply: {refusal}", file=sys.stderr)
         report = validate_event(event)
         write_artifacts(report, args.output)
         print(f"Validated {report['repository']}#{report['number']} at {report['head_sha']}: "

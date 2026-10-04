@@ -1,3 +1,9 @@
+import { body as body_a_terminal_for_seven_backends_in_an_x_post, ruBody as ruBody_a_terminal_for_seven_backends_in_an_x_post } from './bodies/a-terminal-for-seven-backends-in-an-x-post'
+import { body as body_t27c_compile_time_and_a_backend_without_llvm, ruBody as ruBody_t27c_compile_time_and_a_backend_without_llvm } from './bodies/t27c-compile-time-and-a-backend-without-llvm'
+import { body as body_three_bits_each_necessary, ruBody as ruBody_three_bits_each_necessary } from './bodies/three-bits-each-necessary'
+import { body as body_tri_cast_from_command_to_card, ruBody as ruBody_tri_cast_from_command_to_card } from './bodies/tri-cast-from-command-to-card'
+import { body as body_the_fpga_flow_layer_by_layer, ruBody as ruBody_the_fpga_flow_layer_by_layer } from './bodies/the-fpga-flow-layer-by-layer'
+import { body as body_the_back_half_of_openxc7_from_a_spec, ruBody as ruBody_the_back_half_of_openxc7_from_a_spec } from './bodies/the-back-half-of-openxc7-from-a-spec'
 import { body as body_how_to_join_the_swarm, ruBody as ruBody_how_to_join_the_swarm } from './bodies/how-to-join-the-swarm'
 import { postsIndex } from './index'
 import { body as body_queen_browser_actions_you_can_follow, ruBody as ruBody_queen_browser_actions_you_can_follow } from './bodies/queen-browser-actions-you-can-follow'
@@ -17,6 +23,8 @@ import { body as body_the_fpga_row_was_corrected, ruBody as ruBody_the_fpga_row_
 import { body as body_a_small_agent_needs_an_exact_judge, ruBody as ruBody_a_small_agent_needs_an_exact_judge } from './bodies/a-small-agent-needs-an-exact-judge'
 import type { Post, PostBody } from './types'
 import { body as body_mask_over_scale_ternary_drafts_that_compile, ruBody as ruBody_mask_over_scale_ternary_drafts_that_compile } from './bodies/mask-over-scale-ternary-drafts-that-compile'
+import { body as body_the_seed_moved_it_the_pins_moved_it_more, ruBody as ruBody_the_seed_moved_it_the_pins_moved_it_more } from './bodies/the-seed-moved-it-the-pins-moved-it-more'
+import { body as body_one_regional_clock_twelve_pull_requests, ruBody as ruBody_one_regional_clock_twelve_pull_requests } from './bodies/one-regional-clock-twelve-pull-requests'
 import { body as body_tri_mined_not_sold, ruBody as ruBody_tri_mined_not_sold } from './bodies/tri-mined-not-sold'
 import { body as body_trained_weights_ran_receipts_were_not_checked, ruBody as ruBody_trained_weights_ran_receipts_were_not_checked } from './bodies/trained-weights-ran-receipts-were-not-checked'
 import { body as body_golden_ratio_weights_ran_on_the_board, ruBody as ruBody_golden_ratio_weights_ran_on_the_board } from './bodies/golden-ratio-weights-ran-on-the-board'
@@ -80,6 +88,12 @@ import { body as body_real_value_in_integer_container, ruBody as ruBody_real_val
 import { body as body_one_commit_nine_workflow_outcomes, ruBody as ruBody_one_commit_nine_workflow_outcomes } from './bodies/one-commit-nine-workflow-outcomes'
 
 const bodies: Record<string, PostBody> = {
+  'a-terminal-for-seven-backends-in-an-x-post': { body: body_a_terminal_for_seven_backends_in_an_x_post, ruBody: ruBody_a_terminal_for_seven_backends_in_an_x_post },
+  't27c-compile-time-and-a-backend-without-llvm': { body: body_t27c_compile_time_and_a_backend_without_llvm, ruBody: ruBody_t27c_compile_time_and_a_backend_without_llvm },
+  'three-bits-each-necessary': { body: body_three_bits_each_necessary, ruBody: ruBody_three_bits_each_necessary },
+  'tri-cast-from-command-to-card': { body: body_tri_cast_from_command_to_card, ruBody: ruBody_tri_cast_from_command_to_card },
+  'the-fpga-flow-layer-by-layer': { body: body_the_fpga_flow_layer_by_layer, ruBody: ruBody_the_fpga_flow_layer_by_layer },
+  'the-back-half-of-openxc7-from-a-spec': { body: body_the_back_half_of_openxc7_from_a_spec, ruBody: ruBody_the_back_half_of_openxc7_from_a_spec },
   'tri-mined-not-sold': { body: body_tri_mined_not_sold, ruBody: ruBody_tri_mined_not_sold },
   'how-to-join-the-swarm': { body: body_how_to_join_the_swarm, ruBody: ruBody_how_to_join_the_swarm },
   'queen-browser-actions-you-can-follow': { body: body_queen_browser_actions_you_can_follow, ruBody: ruBody_queen_browser_actions_you_can_follow },
@@ -154,6 +168,8 @@ const bodies: Record<string, PostBody> = {
   'trained-weights-ran-receipts-were-not-checked': { body: body_trained_weights_ran_receipts_were_not_checked, ruBody: ruBody_trained_weights_ran_receipts_were_not_checked },
   'golden-ratio-weights-ran-on-the-board': { body: body_golden_ratio_weights_ran_on_the_board, ruBody: ruBody_golden_ratio_weights_ran_on_the_board },
   'mask-over-scale-ternary-drafts-that-compile': { body: body_mask_over_scale_ternary_drafts_that_compile, ruBody: ruBody_mask_over_scale_ternary_drafts_that_compile },
+  'the-seed-moved-it-the-pins-moved-it-more': { body: body_the_seed_moved_it_the_pins_moved_it_more, ruBody: ruBody_the_seed_moved_it_the_pins_moved_it_more },
+  'one-regional-clock-twelve-pull-requests': { body: body_one_regional_clock_twelve_pull_requests, ruBody: ruBody_one_regional_clock_twelve_pull_requests },
 }
 
 export type { Block, Post } from './types'

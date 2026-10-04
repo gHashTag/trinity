@@ -12,6 +12,10 @@ on:
 
 jobs:
   claude-review:
+    # CLAUDE_CODE_OAUTH_TOKEN is a repository secret, and secrets are withheld on
+    # pull_request events from forks, so the action started with an empty token
+    # and failed on every fork PR. Skip fork PRs; same-repo PRs still get reviewed.
+    if: github.event.pull_request.head.repo.full_name == github.repository
     # Optional: Filter by PR author
     # if: |
     #   github.event.pull_request.user.login == 'external-contributor' ||

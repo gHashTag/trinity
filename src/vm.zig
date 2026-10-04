@@ -259,9 +259,11 @@ pub const VSAVM = struct {
 
     fn execVRandom(self: *VSAVM, inst: VSAInstruction) void {
         const dst = self.getVReg(inst.dst);
+        // The immediate is the seed. It used to be ignored -- every v_random drew seed 0 -- so
+        // a program that bound two "random" vectors bound a vector with itself, and the bind and
+        // unbind examples could not tell unbind from the identity.
         const seed: u64 = @bitCast(inst.imm);
-        _ = seed; // TODO: actually use seed
-        dst.* = tvc_vsa.randomVector(MAX_TRITS, 0);
+        dst.* = tvc_vsa.randomVector(MAX_TRITS, seed);
     }
 
     fn execVBind(self: *VSAVM, inst: VSAInstruction) void {
@@ -971,7 +973,6 @@ test "VSA VM bind/unbind" {
 
 test "VSA VM bundle similarity" {
     var vm = VSAVM.init(std.testing.allocator);
-    vm.jit_enabled = false; // Disable JIT (has bug in cosineSimilarity)
     defer vm.deinit();
 
     const program = [_]VSAInstruction{
@@ -992,7 +993,6 @@ test "VSA VM bundle similarity" {
 
 test "VSA VM permute" {
     var vm = VSAVM.init(std.testing.allocator);
-    vm.jit_enabled = false; // Disable JIT (has bug in cosineSimilarity)
     defer vm.deinit();
 
     const program = [_]VSAInstruction{
@@ -1146,11 +1146,10 @@ test "VSA VM f16: v_f16_load quantizes correctly" {
     try std.testing.expectEqual(@as(usize, 16), v0.trit_len);
 
     // All values should be in {-1, 0, +1}
+    v0.ensureUnpacked();
     for (0..16) |i| {
-        if (v0.unpacked_cache) |cache| {
-            const val = cache[i];
-            try std.testing.expect(val == -1 or val == 0 or val == 1);
-        }
+        const val = v0.unpacked_cache[i];
+        try std.testing.expect(val == -1 or val == 0 or val == 1);
     }
 }
 

@@ -44,6 +44,11 @@ pub const McpManager = struct {
             }
         }
         self.servers.deinit(self.allocator);
+        for (self.tools.items) |tool| {
+            self.allocator.free(tool.name);
+            self.allocator.free(tool.description);
+            self.allocator.free(tool.input_schema);
+        }
         self.tools.deinit(self.allocator);
     }
 
@@ -84,7 +89,16 @@ pub const McpManager = struct {
             return 0;
         }
 
-        // Send initialized notification
+        const initialized = self.readResponse(server_idx) orelse return 0;
+        defer self.allocator.free(initialized);
+        const init_response = std.json.parseFromSlice(std.json.Value, self.allocator, initialized, .{}) catch return 0;
+        defer init_response.deinit();
+        if (init_response.value != .object or init_response.value.object.get("error") != null) return 0;
+        const init_result = init_response.value.object.get("result") orelse return 0;
+        const init_id = init_response.value.object.get("id") orelse return 0;
+        if (init_result != .object or init_id != .integer or init_id.integer != self.next_id - 1) return 0;
+
+        // Consume initialize before requesting tools/list so responses stay aligned.
         self.sendNotification(server_idx, "notifications/initialized");
 
         // List tools
@@ -105,9 +119,11 @@ pub const McpManager = struct {
                 var params: std.ArrayList(u8) = .empty;
                 defer params.deinit(self.allocator);
 
-                params.appendSlice(self.allocator, "{\"name\":\"") catch return null;
-                params.appendSlice(self.allocator, actual_name) catch return null;
-                params.appendSlice(self.allocator, "\",\"arguments\":") catch return null;
+                const encoded_name = std.json.Stringify.valueAlloc(self.allocator, actual_name, .{}) catch return null;
+                defer self.allocator.free(encoded_name);
+                params.appendSlice(self.allocator, "{\"name\":") catch return null;
+                params.appendSlice(self.allocator, encoded_name) catch return null;
+                params.appendSlice(self.allocator, ",\"arguments\":") catch return null;
                 params.appendSlice(self.allocator, args_json) catch return null;
                 params.appendSlice(self.allocator, "}") catch return null;
 
@@ -125,7 +141,7 @@ pub const McpManager = struct {
         for (self.tools.items, 0..) |tool, i| {
             if (i > 0) try writer.writeByte(',');
             try writer.writeAll("{\"name\":\"");
-            try writer.writeAll(tool.name);
+            try proto.writeJsonEscaped(writer, tool.name);
             try writer.writeAll("\",\"description\":\"");
             try proto.writeJsonEscaped(writer, tool.description);
             try writer.writeAll("\",\"input_schema\":");
@@ -151,38 +167,48 @@ pub const McpManager = struct {
         const response = self.readResponse(server_idx) orelse return 0;
         defer self.allocator.free(response);
 
-        // Parse tool entries from response
-        // Look for "name":"..." and "description":"..." and "inputSchema":{...}
-        var count: u32 = 0;
-        const tools_needle = "\"tools\":[";
-        const tools_start = std.mem.indexOf(u8, response, tools_needle) orelse return 0;
-        var pos = tools_start + tools_needle.len;
+        return self.registerTools(response, server_idx, server_name) catch 0;
+    }
 
-        while (pos < response.len and response[pos] != ']') {
-            // Find next tool object
-            const name = proto.extractFieldFrom(response, pos, "name") orelse break;
-            const desc = proto.extractFieldFrom(response, pos, "description") orelse "";
-            const schema = extractSchema(response, pos) orelse "{}";
-
-            // Build prefixed name: "server.tool"
-            const full_name = std.fmt.allocPrint(self.allocator, "{s}.{s}", .{ server_name, name }) catch break;
-
-            self.tools.append(self.allocator, .{
-                .name = full_name,
-                .description = desc,
-                .input_schema = schema,
-                .server_idx = server_idx,
-            }) catch break;
-
-            count += 1;
-
-            // Advance past this tool object
-            if (std.mem.indexOfPos(u8, response, pos + 1, "\"name\":\"")) |next| {
-                pos = next;
-            } else break;
+    fn registerTools(self: *McpManager, response: []const u8, server_idx: u32, server_name: []const u8) !u32 {
+        const parsed = try std.json.parseFromSlice(std.json.Value, self.allocator, response, .{});
+        defer parsed.deinit();
+        if (parsed.value != .object) return error.InvalidResponse;
+        const result = parsed.value.object.get("result") orelse return error.InvalidResponse;
+        if (result != .object) return error.InvalidResponse;
+        const tools = result.object.get("tools") orelse return error.InvalidResponse;
+        if (tools != .array) return error.InvalidResponse;
+        const start = self.tools.items.len;
+        errdefer {
+            for (self.tools.items[start..]) |tool| {
+                self.allocator.free(tool.name);
+                self.allocator.free(tool.description);
+                self.allocator.free(tool.input_schema);
+            }
+            self.tools.items.len = start;
         }
-
-        return count;
+        for (tools.array.items) |entry| {
+            if (entry != .object) return error.InvalidResponse;
+            const name = entry.object.get("name") orelse return error.InvalidResponse;
+            if (name != .string or name.string.len == 0) return error.InvalidResponse;
+            const desc = entry.object.get("description");
+            if (desc != null and desc.? != .string) return error.InvalidResponse;
+            const schema = entry.object.get("inputSchema") orelse return error.InvalidResponse;
+            if (schema != .object) return error.InvalidResponse;
+            const full_name = try std.fmt.allocPrint(self.allocator, "{s}.{s}", .{ server_name, name.string });
+            errdefer self.allocator.free(full_name);
+            const description = try self.allocator.dupe(u8, if (desc) |d| d.string else "");
+            errdefer self.allocator.free(description);
+            const input_schema = try std.json.Stringify.valueAlloc(self.allocator, schema, .{});
+            errdefer self.allocator.free(input_schema);
+            try self.tools.append(self.allocator, .{
+                .name = full_name,
+                .description = description,
+                .input_schema = input_schema,
+                .server_idx = server_idx,
+            });
+        }
+        return @intCast(self.tools.items.len - start);
     }
 
     fn sendRequest(self: *McpManager, server_idx: u32, method: []const u8, params: []const u8) bool {
@@ -378,3 +404,53 @@ pub const ServerConfig = struct {
     name: []const u8,
     command: []const []const u8,
 };
+
+test "MCP tool metadata owns strings after response release" {
+    const a = std.testing.allocator;
+    var manager = McpManager.init(a);
+    defer manager.deinit();
+    const response = try a.dupe(u8,
+        \\{ "result" : { "tools" : [{"name":"first","description":"First tool","inputSchema":{"type":"object"}}, {"name":"second","inputSchema":{"type":"object"}}] } }
+    );
+    try std.testing.expectEqual(@as(u32, 2), try manager.registerTools(response, 0, "test"));
+    a.free(response);
+    try std.testing.expectEqualStrings("test.first", manager.tools.items[0].name);
+    try std.testing.expectEqualStrings("First tool", manager.tools.items[0].description);
+    try std.testing.expectEqualStrings("{\"type\":\"object\"}", manager.tools.items[0].input_schema);
+    try std.testing.expectEqualStrings("test.second", manager.tools.items[1].name);
+}
+
+test "invalid MCP entry rolls back tool registration" {
+    var manager = McpManager.init(std.testing.allocator);
+    defer manager.deinit();
+    try std.testing.expectError(error.InvalidResponse, manager.registerTools(
+        \\{"result":{"tools":[{"name":"valid","inputSchema":{}},{"name":42,"inputSchema":{}}]}}
+    , 0, "test"));
+    try std.testing.expectEqual(@as(usize, 0), manager.tools.items.len);
+}
+
+test "MCP handshake consumes initialize before listing tools" {
+    var manager = McpManager.init(std.testing.allocator);
+    defer manager.deinit();
+    const server =
+        \\import json, sys
+        \\initialized = False
+        \\for line in sys.stdin:
+        \\    req = json.loads(line)
+        \\    method = req['method']
+        \\    if method == 'initialize':
+        \\        result = {'protocolVersion':'2024-11-05','capabilities':{}}
+        \\    elif method == 'notifications/initialized':
+        \\        initialized = True
+        \\        continue
+        \\    elif method == 'tools/list':
+        \\        assert initialized
+        \\        result = {'tools':[{'name':'ping','description':'Owned description','inputSchema':{'type':'object'}}]}
+        \\    else:
+        \\        continue
+        \\    print(json.dumps({'jsonrpc':'2.0','id':req['id'],'result':result}), flush=True)
+    ;
+    try std.testing.expectEqual(@as(u32, 1), manager.connectServer("fixture", &.{ "python3", "-u", "-c", server }));
+    try std.testing.expectEqualStrings("fixture.ping", manager.tools.items[0].name);
+    try std.testing.expectEqualStrings("Owned description", manager.tools.items[0].description);
+}

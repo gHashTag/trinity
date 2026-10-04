@@ -55,26 +55,7 @@ module TriReader;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test "pure ignores environment"
-        given env = { value: 42 }
-        when reader = pure(100)
-        when result = reader.run(env)
-        then result == 100
-
-    test "ask returns environment"
-        given env = { name: "test" }
-        when reader = ask()
-        when result = reader.run(env)
-        then result == env
-
-    test "asks applies function to environment"
-        given env = { x: 5 }
-        when fn_value = asks(fn(env: R) -> T { env.x * 2 })
-        when result = fn_value.run(env)
-        then result == 10
-
-    test "local modifies environment for reader"
-        given env = { count: 1 }
-        when modified_env = local(fn(env: R) -> R { { count: env.count + 1 } }, pure(5))
-        when result = modified_env.run(env)
-        then result == 5
+    // pure, ask, asks and local return closures that t27 cannot express (`run` is a
+    // string standing for a function type), and the tests built anonymous environments
+    // and passed function literals. All four given/when/then blocks were discarded by the
+    // parser; they can return when the language has function values.

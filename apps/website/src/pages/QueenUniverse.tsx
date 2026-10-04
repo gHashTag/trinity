@@ -4,7 +4,8 @@ import { createPortal } from 'react-dom';
 import { useSearchParams } from 'react-router-dom';
 import { useI18n } from '../i18n/context';
 import { TrinityLogo } from '../components/TrinityLogo';
-import {validateAtlas,type UniverseAtlas} from '../lib/queenUniverseAtlas';
+import type {UniverseAtlas} from '../lib/queenUniverseAtlas';
+import {loadCorpus} from '../lib/queenCorpus';
 import { placeHiveDisplays } from '../components/queenHiveDisplay';
 import { hexField, type CombHandle } from '../components/queenHud';
 import { COLLAB_ORIGIN, PINNED_WORLDS, WORLD_STORAGE, loadWorldIssues, loadWorldMetadata, mergeWorldIssues, parseWorldRepository, savedWorlds, type WorldIssue, type WorldMetadata } from '../components/queenRepositoryWorld';
@@ -41,7 +42,8 @@ export default function QueenUniverse() {
   const dialog=useRef<HTMLDialogElement>(null),pending=useRef<AbortController|null>(null);
   useEffect(()=>{document.body.classList.add('queen-universe-shell');return()=>{document.body.classList.remove('queen-universe-shell');pending.current?.abort();};},[]);
   useEffect(()=>{try{localStorage.setItem(WORLD_STORAGE,JSON.stringify([...new Set([...saved,repo])]));}catch{/* optional local preference */}},[saved,repo]);
-  useEffect(()=>{const abort=new AbortController();fetch('t27/universe-atlas.json',{signal:abort.signal,credentials:'omit'}).then(async r=>{if(!r.ok)throw new Error('atlas');return validateAtlas(await r.json());}).then(data=>{if(!abort.signal.aborted){setAtlas(data);setAtlasError(false);}}).catch(()=>{if(!abort.signal.aborted)setAtlasError(true);});return()=>abort.abort();},[atlasRetry]);
+  // The atlas from the corpus store (lib/queenCorpus), the copy every tab reads; a retry reads it again.
+  useEffect(()=>{let live=true;loadCorpus('atlas',{fresh:atlasRetry>0}).then(part=>{if(live){setAtlas(part.data);setAtlasError(false);}}).catch(()=>{if(live)setAtlasError(true);});return()=>{live=false;};},[atlasRetry]);
   useEffect(()=>{const abort=new AbortController();fetch(`${COLLAB_ORIGIN}/health`,{signal:abort.signal,credentials:'omit'}).then(r=>r.ok?r.json():null).then(v=>setAuthReady(v?.capabilities?.queenRepositoryPicker===true)).catch(()=>{});return()=>abort.abort();},[]);
   function choose(value:string) { setParams(p=>{const n=new URLSearchParams(p);n.delete('issue');n.delete('task');if(!coreView&&atlas?.worlds.some(w=>w.repo===value&&w.specCount>0)){n.delete('repo');n.delete('view');n.set('world',value);}else{n.set('repo',value);n.delete('world');if(n.get('view')==='atlas')n.delete('view');}return n;}); }
   async function connect() {

@@ -12,11 +12,11 @@
 
 | Документ | Ветка | Описание |
 |----------|--------|-----------|
-| [docs/lab/papers/2026-03-15-hslm-tjepa.md](../../lab/papers/2026-03-15-hslm-tjepa.md) | main | Ежедневный отчет HSLM/T-JEPA с результатами обучения |
-| [docs/experiments/FOUND_EXPERIMENTS_SUMMARY.md](../../experiments/FOUND_EXPERIMENTS_SUMMARY.md) | main, feat/physics-migration-phase-a | Полный экспериментальный журнал |
-| [crates/trios-train-cpu/src/tjepa.rs](../../../../../crates/trios-train-cpu/src/tjepa.rs) | main, feat/physics-migration-phase-a | Реализация T-JEPA на Rust |
-| [crates/trios-train-cpu/src/objective.rs](../../../../../crates/trios-train-cpu/src/objective.rs) | main | Multi-objective система |
-| [docs/lab/papers/sevo-method.md](../../lab/papers/sevo-method.md) | main | Документация SEVO с JEPA objective |
+| [docs/lab/papers/2026-03-15-hslm-tjepa.md](../lab/papers/2026-03-15-hslm-tjepa.md) | main | Ежедневный отчет HSLM/T-JEPA с результатами обучения |
+| [docs/experiments/FOUND_EXPERIMENTS_SUMMARY.md](../experiments/FOUND_EXPERIMENTS_SUMMARY.md) | main, feat/physics-migration-phase-a | Полный экспериментальный журнал |
+| crates/trios-train-cpu/src/tjepa.rs (historical path `../../../../../crates/trios-train-cpu/src/tjepa.rs`; not present in this checkout) | main, feat/physics-migration-phase-a | Реализация T-JEPA на Rust |
+| crates/trios-train-cpu/src/objective.rs (historical path `../../../../../crates/trios-train-cpu/src/objective.rs`; not present in this checkout) | main | Multi-objective система |
+| [docs/lab/papers/sevo-method.md](../lab/papers/sevo-method.md) | main | Документация SEVO с JEPA objective |
 
 ### Параметры T-JEPA
 
@@ -41,7 +41,7 @@
 
 | Документ | Ветка | Описание |
 |----------|--------|-----------|
-| [docs/experiments/FOUND_EXPERIMENTS_SUMMARY.md](../../experiments/FOUND_EXPERIMENTS_SUMMARY.md) | main, feat/physics-migration-phase-a | NCA конфигурация |
+| [docs/experiments/FOUND_EXPERIMENTS_SUMMARY.md](../experiments/FOUND_EXPERIMENTS_SUMMARY.md) | main, feat/physics-migration-phase-a | NCA конфигурация |
 | [src/tri/evolution.zig](../../src/tri/evolution.zig) | main, feat/physics-migration-phase-a | Эволюция с NCA objectives |
 | [src/tri/tri_farm.zig](../../src/tri/tri_farm.zig) | main, feat/physics-migration-phase-a | Управление фармой |
 | [src/brain/evolution_simulation.zig](../../src/brain/evolution_simulation.zig) | main, feat/physics-migration-phase-a | Симуляция эволюции |

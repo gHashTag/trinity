@@ -1,4 +1,4 @@
-import { Component, type ErrorInfo, type ReactNode } from "react";
+import { Component, Fragment, type ErrorInfo, type ReactNode } from "react";
 
 /**
  * A boundary around the 3D scene, so that losing it does not lose the page.
@@ -14,6 +14,13 @@ import { Component, type ErrorInfo, type ReactNode } from "react";
  * this says what happened, in the same words the console used. Retry remounts
  * the subtree by key, which is the only remedy for a lost context that does not
  * cost a reload — a second context is sometimes granted where the first was not.
+ *
+ * The landing mounts the same scene, and on 2026-10-03 it had no boundary at
+ * all: a Chromium with no WebGL threw "WebGL not supported" out of the engine
+ * and t27.ai/ went blank. There the scene is one panel beside the block's own
+ * words, the board's sheet that styles this panel is not loaded, and a retry
+ * cannot conjure a GPU — so a host may pass `fallback` to stand in for the
+ * scene instead of the panel.
  */
 const COPY = {
   en: {
@@ -33,6 +40,11 @@ interface Props {
   lang: "en" | "ru";
   /** Told what broke, so a failure that only this boundary sees is still reported. */
   onError?: (error: Error) => void;
+  /** Drawn instead of the panel when the scene fails (null draws nothing).
+   *  Given, the boundary adds no element of its own around the scene either:
+   *  .queen-scene-holder is laid out by Queen.css, which only the board loads,
+   *  and a host outside the board lays the scene out itself. */
+  fallback?: ReactNode;
 }
 
 interface State {
@@ -59,9 +71,13 @@ export class SceneBoundary extends Component<Props, State> {
 
   render() {
     const t = COPY[this.props.lang] ?? COPY.en;
+    const quiet = this.props.fallback !== undefined;
     if (this.state.message === null) {
-      return <div key={this.state.attempt} className="queen-scene-holder">{this.props.children}</div>;
+      return quiet
+        ? <Fragment key={this.state.attempt}>{this.props.children}</Fragment>
+        : <div key={this.state.attempt} className="queen-scene-holder">{this.props.children}</div>;
     }
+    if (quiet) return this.props.fallback;
     return (
       <div className="queen-scene-lost" role="status">
         <strong>{t.title}</strong>

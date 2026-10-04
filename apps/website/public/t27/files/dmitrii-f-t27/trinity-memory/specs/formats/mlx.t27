@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
 // specs/formats/mlx.t27 -- MLX 2-bit affine quantization (codes, scales, biases)
-// Restates upstream ml-explore/mlx@59d600b5e64c238427d0f8d897ab7c682ef4d3d2
-// mlx/ops.cpp: :4957-5002 (pack_and_quantize: q = clip(round((w - bias) /
+// Restates upstream ml-explore/mlx@0a8e18e034d61b591f53a0616c722d2d9770f379
+// mlx/ops.cpp: :4974-5019 (pack_and_quantize: q = clip(round((w - bias) /
 // scale), 0, 2^bits - 1), packed into uint32 words with shifts 2^(0, bits,
-// 2 bits, ...), :4975), :5005-5020 (affine_quantize: group 32, 64 or 128;
-// bits 2 to 8 except 7), :5059 (packed width cols * bits / 32), :5207
-// (cols divisible by the group), :5223-5298 (affine_dequantize: code k of a
-// word at bits k*bits, w = q * scale + bias per group, :5297-5298).
+// 2 bits, ...), :4992), :5022-5037 (affine_quantize: group 32, 64 or 128;
+// bits 2 to 8 except 7), :5076 (packed width cols * bits / 32), :5224
+// (cols divisible by the group), :5240-5315 (affine_dequantize: code k of a
+// word at bits k*bits, w = q * scale + bias per group, :5314-5315).
 // For bits = 2 a row of cols weights is cols/16 uint32 words; stored
 // little-endian, weight k of a row is in byte k/4 at bits 2(k%4). scales and
 // biases have shape [rows, cols/group] in the model dtype (F16 in

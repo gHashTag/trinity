@@ -27,7 +27,7 @@
 ; prefers TelegramApp::init().bot_username() and falls back to the const, and
 ; src/ui/screens/profile_screen.rs:744, :898 and :911 each unwrap_or_else over that same read.
 ; The resolver behind all four is src/ui/telegram.rs:486, which reads initDataUnsafe. Two are
-; unconditional and consult nothing: src/ui/pages/referrals.rs:184, the placeholder invite link
+; unconditional and consult nothing: src/ui/pages/referrals.rs:225, the placeholder invite link
 ; built when telegram_id is 0, and src/ui/screens/home_screen.rs:446, a support href. So the
 ; defect is open and its mechanism is the platform rather than the compiler -- the client tracks
 ; whichever bot Telegram says is serving, the server tracks BOT_USERNAME, and nothing makes the
@@ -149,7 +149,7 @@ pub const NOTIFICATION_QUEUE_INTERVAL_DECLARATION : str = "POLL_INTERVAL_SECONDS
 ; std::env::var call under src/ plus the two names handed to the collector as literals at
 ; src/config.rs:77. 24 names reach env::var inside src/config.rs; BOT_TOKEN and DATABASE_URL are
 ; read through the closure at :77-79 and so appear in no env::var call there; seven further names
-; are read only outside the resolver -- DB_POOL_MAX (src/db/mod.rs:594), DELIVERY_ZONES_JSON
+; are read only outside the resolver -- DB_POOL_MAX (src/db/mod.rs:598), DELIVERY_ZONES_JSON
 ; (src/delivery.rs:105), PROMPTPAY_ID (src/promptpay.rs:28), RUST_LOG (src/main.rs:393) and the
 ; three RAILWAY_GIT_* names (src/notify.rs:78, :84, :85). Configuration is not resolved in one
 ; place, and the seven are the measure of that.
@@ -179,6 +179,10 @@ pub const BRIEF_CLASS_COUNT : u8 = 3;
 ; WEB_APP_URL, APP_URL, WEBHOOK_PATH, PORT, BOT_USERNAME, PROMO_CHANNEL_ID and the five S3
 ; location names. SWITCH: BACKUP_ASSETS, HIDE_MARKETING_BADGES, REFERRAL_WELCOME_BONUS,
 ; REFERRAL_SHARE_SOURCES, GARDEN_SHARE_SOURCES, DELIVERY_ZONES_JSON, DB_POOL_MAX, RUST_LOG.
+; REFERRAL_WELCOME_BONUS is still parsed into Config::referral_welcome_bonus and read by nobody
+; since 2026-09-26: the owner retired the welcome credit (R3, turbobaby/referral-credit), and the
+; field stays parsed so that no variable and no count here moves (Config::delivery_zones is the
+; precedent of a parsed field nothing reads).
 ; ROSTER: ADMIN_IDS. PLATFORM_FACT: NODE_ENV, RAILWAY_ENVIRONMENT and the three RAILWAY_GIT_*.
 pub const CLASS_COUNTS : [5]u8 = [8, 11, 8, 1, 5];
 
@@ -267,7 +271,7 @@ pub const MENU_BUTTON_TASK_RUNS_EVERY_BOOT : bool = true;
 ; --- The half-obeyed knob --------------------------------------------------------------------------
 pub const BOT_HANDLE_CLIENT_LITERAL_SITES : [6]str = [
   "src/ui/share.rs:24",
-  "src/ui/pages/referrals.rs:184",
+  "src/ui/pages/referrals.rs:225",
   "src/ui/screens/home_screen.rs:446",
   "src/ui/screens/profile_screen.rs:744",
   "src/ui/screens/profile_screen.rs:898",
@@ -277,6 +281,10 @@ pub const BOT_HANDLE_CLIENT_LITERAL_SITES : [6]str = [
 ; three lines above each: home_screen :442 -> :445 and profile_screen :740/:894/:907 ->
 ; :743/:897/:910. Six literals, four files, one claim -- unchanged. Re-taken 2026-09-23: one line
 ; more above each after T27 defect 2 (home :446, profile :744/:898/:911), same literals.
+; Re-taken 2026-09-26 (R3, the referral credit): the referral page's placeholder :184 -> :229, the
+; page's request helpers landing above it; same literal. The profile's three kept their lines.
+; Re-taken 2026-09-26 again (the referral top list removed on the owner's answer of that day): the
+; placeholder :229 -> :225, the list's type, signal and handle leaving above it; same literal.
 pub const BOT_HANDLE_CLIENT_LITERAL_FILES : u8 = 4;
 pub const BOT_HANDLE_SERVER_READS_ENV : bool = true;
 
@@ -286,7 +294,7 @@ pub const BOT_HANDLE_SERVER_READS_ENV : bool = true;
 ; resolver they all defer to is src/ui/telegram.rs:486, which takes the handle from initDataUnsafe
 ; -- so when the SDK answers, those four are right, and they are right about the bot Telegram is
 ; actually serving rather than about BOT_USERNAME. Two consult nothing and are wrong whenever the
-; compiled handle is wrong: src/ui/pages/referrals.rs:184 and src/ui/screens/home_screen.rs:446.
+; compiled handle is wrong: src/ui/pages/referrals.rs:225 and src/ui/screens/home_screen.rs:446.
 ; What holds in every case is that the client reads the environment variable at 0 sites, so the
 ; server knob does not reach the client by any path, agreeing or not.
 pub const BOT_HANDLE_CLIENT_LITERAL_SITES_SDK_FALLBACK : u8 = 4;
@@ -341,7 +349,7 @@ pub fn absent_value_refuses_boot(required_always: bool, required_in_production: 
 
 ; Two names are parsed strictly, so a malformed value refuses the boot rather than being
 ; swallowed: PORT (src/config.rs:299-314, unset and empty still default) and DB_POOL_MAX
-; (src/db/mod.rs:549-571, which also refuses a zero because it would deadlock the first query).
+; (src/db/mod.rs:553-575, which also refuses a zero because it would deadlock the first query).
 ; Six are parsed tolerantly and fall back on garbage. The direction is the finding: strictness is
 ; the exception, and one of the six tolerant fallbacks is the identity-bearing default that stayed
 ; open until 2026-09-24 (src/delivery.rs:105-115, :91-101 before that day's rewrite of the file).
@@ -372,7 +380,7 @@ pub const ABSENCE_HANDLING_SITES : [5]str = [
   "src/config.rs:193-195",
   "src/config.rs:187-189",
   "src/api/auth.rs:485-486",
-  "src/promo.rs:722",
+  "src/promo.rs:730",
   "src/promptpay.rs:39-47"
 ];
 
@@ -571,8 +579,8 @@ pub fn longest_loop_interval() u32 {
 ; src/cart_abandonment.rs:25, src/notification_queue.rs:29 -- was :28, moved by the 2026-09-21
 ; drain rewrite, which added one import line and no spawn). The
 ; other ten are fire-and-forget, spawned per request or per event -- src/main.rs:185 and
-; src/api/client_errors.rs:462, src/api/orders.rs:1596, :2269, :2468, src/api/quest.rs:163, :391,
-; :637, src/bot/commands.rs:285, src/promo.rs:754 -- and not one of the ten opens an interval or
+; src/api/client_errors.rs:462, src/api/orders.rs:1596, :2269, :2468, src/api/quest.rs:175, :413,
+; :659, src/bot/commands.rs:285, src/promo.rs:762 -- and not one of the ten opens an interval or
 ; a loop, which is what holds the recurring count at eight. Counting spawn expressions and
 ; calling the answer the number of loops would have returned nineteen; counting only the ones in
 ; src/main.rs would have returned seven and missed three real loops. Expressions are not tasks
@@ -580,11 +588,18 @@ pub fn longest_loop_interval() u32 {
 ; tasks more than it has expressions. Of the eleven long-lived tasks a boot leaves running, eight
 ; are the loops above, two are one-shot delayed sends -- the menu button after two seconds
 ; (:524-525) and the deploy notice after three (:563-565) -- and one is the dispatcher (:676).
-pub const SPAWN_EXPRESSIONS_IN_SHIPPED_CODE : u8 = 19;
+; RE-MEASURED 2026-09-26: twenty expressions. The eleventh fire-and-forget one is the admins'
+; notice of a new referral-credit request (post_my_request in src/api/referral_credit.rs, R3),
+; spawned after the request's commit so a failed send never fails the request; it opens no
+; interval or loop, so the recurring count still holds at eight. The readings before keep their
+; _BEFORE_2026_09_26 names.
+pub const SPAWN_EXPRESSIONS_IN_SHIPPED_CODE : u8 = 20;
 pub const BOOT_SPAWN_EXPRESSIONS : u8 = 9;
 pub const BOOT_SPAWN_EXPRESSIONS_IN_MAIN : u8 = 6;
 pub const BOOT_SPAWN_EXPRESSIONS_ELSEWHERE : u8 = 3;
-pub const FIRE_AND_FORGET_SPAWN_EXPRESSIONS : u8 = 10;
+pub const FIRE_AND_FORGET_SPAWN_EXPRESSIONS : u8 = 11;
+pub const SPAWN_EXPRESSIONS_IN_SHIPPED_CODE_BEFORE_2026_09_26 : u8 = 19;
+pub const FIRE_AND_FORGET_SPAWN_EXPRESSIONS_BEFORE_2026_09_26 : u8 = 10;
 pub const FIRE_AND_FORGET_RECURRING_LOOPS : u8 = 0;
 pub const TTL_SWEEP_CALL_SITES : u8 = 3;
 pub const EXTRA_TTL_INVOCATIONS : u8 = 2;
@@ -592,6 +607,8 @@ pub const ONE_SHOT_DELAYED_TASKS : u8 = 2;
 pub const ONE_SHOT_DELAY_SECONDS : [2]u32 = [2, 3];
 pub const DISPATCHER_TASKS : u8 = 1;
 pub const LONG_LIVED_TASKS_AT_BOOT : u8 = 11;
+pub const REFERRAL_WELCOME_BONUS_IS_READ : bool = false;
+pub const REFERRAL_WELCOME_BONUS_UNREAD_SINCE : str = "2026-09-26";
 
 pub fn boot_tasks_from_expressions(boot_expressions: u8, extra_ttl_invocations: u8) u8 {
   return boot_expressions + extra_ttl_invocations;
@@ -810,6 +827,8 @@ test a_discarded_first_tick_doubles_the_wait_for_first_work {
 test spawn_expressions_and_boot_tasks_are_different_counts_and_reconcile {
   assert BOOT_SPAWN_EXPRESSIONS_IN_MAIN + BOOT_SPAWN_EXPRESSIONS_ELSEWHERE == BOOT_SPAWN_EXPRESSIONS;
   assert BOOT_SPAWN_EXPRESSIONS + FIRE_AND_FORGET_SPAWN_EXPRESSIONS == SPAWN_EXPRESSIONS_IN_SHIPPED_CODE;
+  assert BOOT_SPAWN_EXPRESSIONS + FIRE_AND_FORGET_SPAWN_EXPRESSIONS_BEFORE_2026_09_26 == SPAWN_EXPRESSIONS_IN_SHIPPED_CODE_BEFORE_2026_09_26;
+  assert SPAWN_EXPRESSIONS_IN_SHIPPED_CODE - SPAWN_EXPRESSIONS_IN_SHIPPED_CODE_BEFORE_2026_09_26 == 1;
   assert FIRE_AND_FORGET_RECURRING_LOOPS == 0;
   assert TTL_SWEEP_CALL_SITES - 1 == EXTRA_TTL_INVOCATIONS;
   assert boot_tasks_from_expressions(BOOT_SPAWN_EXPRESSIONS, EXTRA_TTL_INVOCATIONS) == LONG_LIVED_TASKS_AT_BOOT;

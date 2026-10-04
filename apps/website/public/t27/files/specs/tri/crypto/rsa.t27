@@ -83,16 +83,18 @@ module TriRsa;
         then keypair.private_d != undefined
         then keypair.private_n != undefined
 
-    test "encrypt_decrypt_roundtrip"
-        let keypair = generate(std.mem.allocator, 1024)
-        let original_message : "u64" = 42
-        let ciphertext = encrypt(original_message, keypair.public_e, keypair.public_n)
-        let decrypted = decrypt(ciphertext, keypair.private_d, keypair.private_n)
-        then decrypted == original_message
+    test "encrypt_decrypt_roundtrip" {
+        var keypair = generate(std.testing.allocator, 1024);
+        var original_message: u64 = 42;
+        var ciphertext = encrypt(original_message, keypair.public_e, keypair.public_n);
+        var decrypted = decrypt(ciphertext, keypair.private_d, keypair.private_n);
+        assert(decrypted == original_message);
+    }
 
-                            test_mod_exp_small_numbers
-        let result = mod_exp(2, 10, 1000)  // 2^10 mod 1000 = 1024 mod 1000 = 24
-        then result == 24
+    test "test_mod_exp_small_numbers" {
+        var result = mod_exp(2, 10, 1000);  // 2^10 mod 1000 = 1024 mod 1000 = 24
+        assert(result == 24);
+    }
 
     test "test_mod_exp_with_zero"
         let result = mod_exp(5, 0, 100)  // Any number^0 mod n = 1 mod n

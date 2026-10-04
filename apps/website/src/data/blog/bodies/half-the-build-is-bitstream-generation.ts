@@ -1,4 +1,5 @@
 import type { Block } from '../types'
+import { DEVKIT_FLOW } from '../../casts'
 
 export const body: Block[] = [
   {
@@ -118,6 +119,17 @@ export const body: Block[] = [
   {
     "kind": "p",
     "text": "The floor stops dominating once the design is big enough. At gf128_mul the bitstream stage is 122.3 s of 533.2 s — 23% — while place-and-route takes 253.7 s and synthesis 163.1 s. Both of those grow with the netlist; the bitstream stage grows much more slowly."
+  },
+  {
+    kind: 'p',
+    text: 'A later run timed the same stage on a larger design: 33.9 s of a 116.9 s build for trinet_node_v2_ax7203, 121,587 lines of FASM, on a laptop rather than a CI runner. It also ran bitwalk, the FASM-to-frames and frames-to-.bit steps rebuilt from t27 specs, on the same FASM: 0.42 s and 0.25 s, with the same bytes. A different design and a different machine, so it is not a row in the table above.',
+  },
+  {
+    kind: 'terminal',
+    src: DEVKIT_FLOW.src,
+    share: DEVKIT_FLOW.share,
+    title: DEVKIT_FLOW.title,
+    caption: 'A later recording, not one of the runs above.' + ' ' + DEVKIT_FLOW.caption.en,
   },
   {
     "kind": "h",
@@ -304,6 +316,17 @@ export const ruBody: Block[] = [
   {
     "kind": "p",
     "text": "Пол перестаёт доминировать, когда дизайн достаточно велик. У gf128_mul битстрим — 122.3 с из 533.2 с, то есть 23%, тогда как трассировка занимает 253.7 с, а синтез 163.1 с. Эти две растут вместе с нетлистом, битстрим-стадия — гораздо медленнее."
+  },
+  {
+    kind: 'p',
+    text: 'Более поздний прогон засёк тот же этап на дизайне побольше: 33.9 с из 116.9 с сборки trinet_node_v2_ax7203, 121 587 строк FASM, на ноутбуке, а не на CI-раннере. Там же на том же FASM запущен bitwalk — шаги FASM → фреймы и фреймы → .bit, пересобранные из t27-спеков: 0.42 с и 0.25 с, байты те же. Другой дизайн и другая машина, поэтому это не строка таблицы выше.',
+  },
+  {
+    kind: 'terminal',
+    src: DEVKIT_FLOW.src,
+    share: DEVKIT_FLOW.share,
+    title: DEVKIT_FLOW.title,
+    caption: 'Более поздняя запись, не один из прогонов выше.' + ' ' + DEVKIT_FLOW.caption.ru,
   },
   {
     "kind": "h",

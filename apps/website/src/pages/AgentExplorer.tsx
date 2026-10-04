@@ -57,6 +57,7 @@ const UI = {
     ladderAgents: 'Agents',
     ladderTools: 'Tools',
     ladderFunctions: 'Functions',
+    ladderProviders: 'Providers',
     soulLaw: 'SOUL & LAW',
     soulLawHint: 'The three documents that bind every letter, linked at the commit the experience snapshot was taken from.',
     openSoul: 'Open SOUL.md',
@@ -127,6 +128,7 @@ const UI = {
     ladderAgents: 'Агенты',
     ladderTools: 'Инструменты',
     ladderFunctions: 'Функции',
+    ladderProviders: 'Провайдеры',
     soulLaw: 'ДУША И ЗАКОН',
     soulLawHint: 'Три документа, которые связывают каждую букву; ссылки на коммит, с которого снят снимок опыта.',
     openSoul: 'Открыть SOUL.md',
@@ -354,8 +356,9 @@ export default function AgentExplorer() {
       { key: 'agents', label: ui.ladderAgents, count: l?.agents ?? null, href: `#/agents${embed}`, current: true },
       { key: 'tools', label: ui.ladderTools, count: l?.tools ?? null, href: `#/tools${embed}` },
       { key: 'functions', label: ui.ladderFunctions, count: l?.functions ?? null, href: `#/functions${embed}` },
+      { key: 'providers', label: ui.ladderProviders, count: l?.providers ?? null, href: `#/providers${embed}` },
     ]
-  }, [catalog, embedded, ui.ladderSpecs, ui.ladderSkills, ui.ladderCrons, ui.ladderAgents, ui.ladderTools, ui.ladderFunctions])
+  }, [catalog, embedded, ui.ladderSpecs, ui.ladderSkills, ui.ladderCrons, ui.ladderAgents, ui.ladderTools, ui.ladderFunctions, ui.ladderProviders])
 
   const heading = (text: string) => <div style={{ fontSize: 11, color: C.muted, fontFamily: C.mono }}>{text}</div>
   const row = (label: string, value: React.ReactNode) => (

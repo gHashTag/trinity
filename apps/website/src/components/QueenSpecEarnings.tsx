@@ -13,6 +13,7 @@
 
 import { useEffect, useState } from 'react'
 import { QUEEN_API } from '../lib/queenApi'
+import './QueenSpecEarnings.css'
 
 interface Earner {
   name: string

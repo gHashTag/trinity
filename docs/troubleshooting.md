@@ -272,11 +272,11 @@ tri cloud history <issue-number>
 
 | Error | Category | Solution | Link |
 |--------|-----------|------------|-------|
-| E0501 | Memory management | Check allocators | [src/vsa/README.md](src/vsa/README.md) |
+| E0501 | Memory management | Check allocators | [VSA API](docs/api/vsa.md) |
 | E0502 | Allocator leak | Verify cleanup | [Memory Guide](docs/troubleshooting.md) |
-| E0601 | UART timeout | Check hardware connection | [UART README](fpga/openxc7-synth/UART_README.md) |
-| E0701 | Training config | Verify env vars | [Farm Guide](.claude/projects/-Users-playra-trinity-w1/memory/project_farm_patterns.md) |
-| E0801 | Agent token expired | Refresh PAT | [Cloud Pipeline](.claude/projects/-Users-playra-trinity-w1/memory/project_cloud_dev_pipeline.md) |
+| E0601 | UART timeout | Check hardware connection | [UART README](../fpga/openxc7-synth/UART_README.md) |
+| E0701 | Training config | Verify env vars | [RunPod deployment](docs/deployment/runpod.md) |
+| E0801 | Agent token expired | Refresh PAT | [Agent architecture](docs/architecture/agents-v2.md) |
 
 ---
 
@@ -300,7 +300,7 @@ tri cloud history <issue-number>
 ### Before Reporting
 
 1. Search existing issues (your problem may already be reported)
-2. Check documentation index: [docs/DOCUMENTATION_INDEX.md](docs/DOCUMENTATION_INDEX.md)
+2. Check documentation index: [docs/DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md)
 3. Try latest version (issue may be fixed)
 
 ---

@@ -1,3 +1,5 @@
+> **SUPERSEDED (2026-09-24).** $TRI has no sale, no SAFT and no pre-allocation: 100% is mined by accepted work. See [`SUPERSEDED.md`](SUPERSEDED.md) and gHashTag/trinity-fpga@d7e9718e9 `docs/docs/depin/principles.md`. Kept as history only.
+
 # $TRI Token - Tokenomics Specification
 
 ## Overview

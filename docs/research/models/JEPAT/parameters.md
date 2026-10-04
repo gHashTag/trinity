@@ -38,4 +38,4 @@ JEPA operates within the multi-objective system alongside:
 - **NCA** (Neural Cellular Automata): 25% weight
 - **JEPA**: 25% weight
 
-See [integration.md](./integration.md) for details.
+See integration.md (historical path `./integration.md`; not present in this checkout) for details.
