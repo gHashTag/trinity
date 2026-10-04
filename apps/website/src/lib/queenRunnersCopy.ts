@@ -9,6 +9,8 @@ export interface RunnersCopy {
   signin: string
   elsewhere: string
   unavailable: string
+  /** The Queen answered, and the cabinet is not on her yet (a 404 on its path). */
+  pending: string
   loading: string
   none: string
   namePlaceholder: string
@@ -35,6 +37,7 @@ export const RUNNERS_COPY: Record<'en' | 'ru', RunnersCopy> = {
     signin: 'Sign in to app.t27.ai to manage your runners.',
     elsewhere: 'Runners are managed on the app’s board, where your session lives:',
     unavailable: 'The Queen did not answer. Try again in a minute.',
+    pending: 'Runners are on their way: the Queen does not offer them yet. This panel switches on by itself the day she does.',
     loading: 'Reading your runners…',
     none: 'No runners yet.',
     namePlaceholder: 'Name, e.g. my laptop',
@@ -59,6 +62,7 @@ export const RUNNERS_COPY: Record<'en' | 'ru', RunnersCopy> = {
     signin: 'Войдите в app.t27.ai, чтобы управлять раннерами.',
     elsewhere: 'Раннеры управляются на доске приложения, где живёт ваша сессия:',
     unavailable: 'Королева не ответила. Попробуйте через минуту.',
+    pending: 'Раннеры скоро появятся: Королева их пока не выдаёт. Панель включится сама, как только это изменится.',
     loading: 'Читаю ваших раннеров…',
     none: 'Раннеров пока нет.',
     namePlaceholder: 'Имя, например «мой ноутбук»',
