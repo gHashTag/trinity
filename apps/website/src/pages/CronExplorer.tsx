@@ -73,6 +73,7 @@ const UI = {
     kindRailway: 'Railway cron',
     kindInngest: 'Inngest',
     kindTimer: 'Timer',
+    kindLaunchd: 'Mac (launchd)',
     kindActions: 'GitHub Actions',
     everyMinutes: 'minutes',
     everyHourly: 'hourly',
@@ -140,6 +141,7 @@ const UI = {
     kindRailway: 'Крон Railway',
     kindInngest: 'Inngest',
     kindTimer: 'Таймер',
+    kindLaunchd: 'Mac владельца (launchd)',
     kindActions: 'GitHub Actions',
     everyMinutes: 'минуты',
     everyHourly: 'каждый час',
@@ -192,6 +194,7 @@ function kindLabel(kind: string, ui: Ui): string {
   if (kind === 'railway-cron') return ui.kindRailway
   if (kind === 'inngest') return ui.kindInngest
   if (kind === 'timer') return ui.kindTimer
+  if (kind === 'launchd') return ui.kindLaunchd
   return ui.kindActions
 }
 
