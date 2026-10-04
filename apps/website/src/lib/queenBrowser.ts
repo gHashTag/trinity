@@ -58,17 +58,21 @@ export interface BrowserView {
  *
  *   preview  -- a homepage block (?embed=1). Many previews on one page; none
  *               of them may touch a person's browser, not even to read it.
- *   nested   -- the board is itself inside the app (the Hive tab). The app
- *               already has a Browser tab; a pod window inside a board inside
- *               the app is a stamp, so this points there instead.
  *   signin   -- no app session in this tab. Not an error: the ordinary visit.
  *   ready    -- signed in, on the app's own copy of the board.
+ *
+ * The board inside the app (the Hive tab) used to be a fourth mode, 'nested':
+ * a note pointing at the app's own Browser tab, on the theory that a pod
+ * window inside a board inside the app was one layer too many. The owner
+ * reversed that on 2026-09-29: the browser OPENS in this window, embedded,
+ * and the full screen is a button rather than a takeover. Framing changes
+ * nothing about the stream itself: /live/ is same-origin under the app, and
+ * the session the panel reads is the app's own.
  */
-export type PanelMode = 'preview' | 'nested' | 'signin' | 'ready'
+export type PanelMode = 'preview' | 'signin' | 'ready'
 
-export function panelMode(input: { embedded: boolean; nested: boolean; session: AppSessionVerdict }): PanelMode {
+export function panelMode(input: { embedded: boolean; session: AppSessionVerdict }): PanelMode {
   if (input.embedded) return 'preview'
-  if (input.nested) return 'nested'
   // `bridge` means this is not the app's copy of the board (t27.ai, a local
   // build). There is no first-party /live/ there, so nothing to show but the
   // way to the app.
@@ -417,6 +421,21 @@ const VERB: Record<string, { ru: string; en: string }> = {
   browser_status: { ru: 'проверил вкладки', en: 'checked tabs' },
   browser_close_tab: { ru: 'закрыл вкладку', en: 'closed a tab' },
   browser_ask_permission: { ru: 'спросил разрешения', en: 'asked permission' },
+  /*
+   * The two asks. browser_ask_input is the agent stopping at a sign-in
+   * field and pointing at it: the words it asked with are the step's text
+   * (d.what below), so the throne reads the question right in the journal
+   * strip -- and answers by typing into the picture, the wheel theirs on
+   * touch. browser_logins says which networks hold a cookie, never which.
+   */
+  browser_ask_input: { ru: 'попросил ввести', en: 'asked for input' },
+  browser_logins: { ru: 'проверил входы', en: 'checked logins' },
+  /*
+   * Not the agent: a person opened one of the owner's watch links (render
+   * watch-link.ts noteView). The journal is where the owner learns their
+   * screen has an audience -- the link's short id, never the token.
+   */
+  watch_link: { ru: 'открыли ссылку', en: 'watch link opened' },
 }
 
 /**
@@ -437,6 +456,7 @@ export function journalLine(step: JournalStep, lang: 'ru' | 'en'): { time: strin
   else if (typeof d.chars === 'number') text = `${d.chars} ${chars}`
   else if (typeof d.x === 'number' && typeof d.y === 'number') text = `${d.x}, ${d.y}`
   else if (typeof d.pages === 'number') text = String(d.pages)
+  else if (typeof d.link === 'string') text = d.link
   const t = new Date(step.at)
   const time = Number.isNaN(t.getTime())
     ? ''
