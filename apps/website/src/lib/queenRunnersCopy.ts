@@ -1,7 +1,7 @@
 // MY RUNNERS, in words: what a runner is and how far it goes today. The cabinet
 // (components/QueenRunners.tsx) draws it, and the homepage's GET STARTED quotes
-// its lead and its next stage rather than describing runners a second time, so
-// the day taking tasks ships, one edit here moves both.
+// its lead and how a runner works rather than describing runners a second
+// time, so one edit here moves both.
 export interface RunnersCopy {
   title: string
   lead: string
@@ -26,7 +26,9 @@ export interface RunnersCopy {
   copy: string
   copied: string
   done: string
-  nextStage: string
+  /** What a runner does with a task; the homepage's GET STARTED quotes it. */
+  howItWorks: string
+  readme: string
 }
 
 export const RUNNERS_COPY: Record<'en' | 'ru', RunnersCopy> = {
@@ -53,7 +55,8 @@ export const RUNNERS_COPY: Record<'en' | 'ru', RunnersCopy> = {
     copy: 'Copy',
     copied: 'Copied',
     done: 'I saved it',
-    nextStage: 'Today a runner can connect and show up online. Taking tasks and handing work back is the next stage of the Queen; until it ships there is nothing to take.',
+    howItWorks: 'The runner takes one task at a time, runs your own coding agent on it (Claude Code by default) and pushes the result to your public fork. The Queen fetches that branch and her review judges it like any other bee’s work. Ctrl-C hands the task back.',
+    readme: 'Setup and settings',
   },
   ru: {
     title: 'МОИ РАННЕРЫ',
@@ -78,6 +81,7 @@ export const RUNNERS_COPY: Record<'en' | 'ru', RunnersCopy> = {
     copy: 'Скопировать',
     copied: 'Скопировано',
     done: 'Сохранено',
-    nextStage: 'Сейчас раннер может подключиться и отображаться «на связи». Выдача задач и приём работы — следующий этап Королевы; пока его нет, брать нечего.',
+    howItWorks: 'Раннер берёт по одной задаче, запускает на ней ваш собственный агент (по умолчанию Claude Code) и пушит результат в ваш публичный форк. Королева забирает эту ветку, и её ревью оценивает работу так же, как работу любой другой пчелы. Ctrl-C возвращает задачу.',
+    readme: 'Установка и настройки',
   },
 }

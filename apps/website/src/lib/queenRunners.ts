@@ -157,14 +157,26 @@ export async function callRunners(env: RunnersEnv, call: RunnersCall, previous?:
 }
 
 /**
- * The lines a person pastes on their own machine. The provider key is named as
- * an environment variable THEY set there and is never part of anything this
- * page writes, stores or sends.
+ * The branch the Queen's production service is built from, so the script a
+ * person downloads is the one the server they connect to speaks.
+ */
+export const RUNNER_BRANCH = 'fix/queen-worker-provider-and-prompt-size'
+
+/** The runner script and its instructions, in the Queen's own repository. */
+export const RUNNER_SCRIPT_URL = `https://raw.githubusercontent.com/gHashTag/BrowserOS/${RUNNER_BRANCH}/trios/agent-server/tools/queen-runner/queen-runner.mjs`
+export const RUNNER_README_URL = `https://github.com/gHashTag/BrowserOS/blob/${RUNNER_BRANCH}/trios/agent-server/tools/queen-runner/README.md`
+
+/**
+ * The lines a person pastes on their own machine. The provider key is never
+ * part of anything this page writes, stores or sends: the runner's agent uses
+ * whatever key the person already has set up there.
  */
 export function setupLines(token: string, base: string): string[] {
   return [
     `export TRIOS_QUEEN_URL=${base}`,
     `export TRIOS_RUNNER_TOKEN=${token}`,
-    `curl -fsS -X POST -H "Authorization: Bearer $TRIOS_RUNNER_TOKEN" "$TRIOS_QUEEN_URL/queen/runner/heartbeat"`,
+    'export TRIOS_RUNNER_REMOTE=https://github.com/<you>/<your-public-fork>.git',
+    `curl -fsSLO ${RUNNER_SCRIPT_URL}`,
+    'node queen-runner.mjs',
   ]
 }

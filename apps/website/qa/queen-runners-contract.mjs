@@ -17,6 +17,7 @@ import {
   cabinetOf,
   callRunners,
   runnerOf,
+  RUNNER_SCRIPT_URL,
   setupLines,
 } from '../src/lib/queenRunners.ts'
 
@@ -146,7 +147,24 @@ const env = (fetch, token = 'session-token') => ({ base: BASE, fetch, token: () 
 {
   const lines = setupLines(TOKEN, 'https://queen.invalid').join('\n')
   assert.ok(lines.includes(TOKEN))
-  assert.ok(!/API_KEY|sk-|provider/i.test(lines))
+  // A provider KEY, in any spelling. Not the bare word: the production branch
+  // the script is downloaded from is named fix/queen-worker-provider-and-...
+  const providerKey = /API_KEY|\bsk-|provider[_ -]?key/i
+  assert.ok(!providerKey.test(lines))
+  // ...and the narrower pattern still catches what it is for.
+  for (const leak of ['export ANTHROPIC_API_KEY=x', 'sk-abc', 'PROVIDER_KEY=x', 'your provider key']) {
+    assert.ok(providerKey.test(leak), leak)
+  }
+  // ...and they run the runner, which pushes to the person's own public fork.
+  assert.ok(lines.includes('TRIOS_RUNNER_REMOTE=https://github.com/'))
+  assert.ok(lines.includes('node queen-runner.mjs'))
+  // The production branch, the one the deployed Queen is built from.
+  assert.ok(
+    RUNNER_SCRIPT_URL.startsWith(
+      'https://raw.githubusercontent.com/gHashTag/BrowserOS/fix/queen-worker-provider-and-prompt-size/',
+    ),
+  )
+  assert.ok(RUNNER_SCRIPT_URL.endsWith('/queen-runner.mjs'))
   assert.ok(CABINET_HOME.startsWith('https://app.t27.ai/queen/'))
 }
 

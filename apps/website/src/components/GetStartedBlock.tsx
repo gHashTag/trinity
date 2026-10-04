@@ -51,7 +51,7 @@ const COPY: Record<'en' | 'ru', { eyebrow: string; title: string; lede: string; 
         cta: 'Create a runner',
         href: CABINET_HOME,
         external: true,
-        note: `${RUNNERS_COPY.en.nextStage} Renting a GPU or an FPGA out for TRI is planned: there is no GPU worker and no job format yet.`,
+        note: `${RUNNERS_COPY.en.howItWorks} Renting a GPU or an FPGA out for TRI is planned: there is no GPU worker and no job format yet.`,
         more: [
           { label: 'How to join the swarm', href: '#/blog/how-to-join-the-swarm' },
           { label: 'The FPGA flow, timed layer by layer', href: '#/devkit' },
@@ -94,7 +94,7 @@ const COPY: Record<'en' | 'ru', { eyebrow: string; title: string; lede: string; 
         cta: 'Создать раннер',
         href: CABINET_HOME,
         external: true,
-        note: `${RUNNERS_COPY.ru.nextStage} Сдавать GPU или FPGA в аренду за TRI — в планах: GPU-воркера и формата задач пока нет.`,
+        note: `${RUNNERS_COPY.ru.howItWorks} Сдавать GPU или FPGA в аренду за TRI — в планах: GPU-воркера и формата задач пока нет.`,
         more: [
           { label: 'Как войти в рой', href: '#/blog/how-to-join-the-swarm' },
           { label: 'FPGA-поток, по слоям и по времени', href: '#/devkit' },

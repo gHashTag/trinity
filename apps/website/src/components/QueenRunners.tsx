@@ -11,6 +11,7 @@ import {
   callRunners,
   type RunnersCall,
   type RunnersEnv,
+  RUNNER_README_URL,
   setupLines,
 } from '../lib/queenRunners'
 import { RUNNERS_COPY } from '../lib/queenRunnersCopy'
@@ -184,7 +185,14 @@ export default function QueenRunners({ lang }: { lang: 'en' | 'ru' }) {
           </p>
         </>
       )}
-      {view?.state !== 'pending' && <p className="qr-small">{c.nextStage}</p>}
+      {view?.state !== 'pending' && (
+        <p className="qr-small">
+          {c.howItWorks}{' '}
+          <a href={RUNNER_README_URL} target="_blank" rel="noreferrer">
+            {c.readme}
+          </a>
+        </p>
+      )}
     </section>
   )
 }
