@@ -112,6 +112,7 @@
 .queen-chat-state.is-live { color: #00ff88; }
 .queen-chat-state.is-offline { color: #ff6b6b; }
 .queen-chat-state.is-checking { color: #8b9490; }
+.queen-chat-state.is-agent { color: #8b9490; }
 
 .queen-chat-hide,
 .queen-chat-tab {
@@ -197,6 +198,36 @@
   color: #8b9490;
   font-size: 12px;
   line-height: 1.5;
+}
+
+/* BROWSER only (lib/queenBrowserHelp.ts): the first question, one press away.
+   A column of whole sentences, not a scrolling chip row -- each is read
+   before it is pressed, and each press is sent as the person's own words. */
+.queen-chat-starters {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.queen-chat-starter {
+  min-height: 44px;
+  padding: 6px 10px;
+  border: 1px solid rgba(0, 255, 136, 0.2);
+  border-radius: 6px;
+  background: transparent;
+  color: #8b9490;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: left;
+  cursor: pointer;
+}
+
+.queen-chat-starter:hover,
+.queen-chat-starter:focus-visible {
+  border-color: #00ff88;
+  color: #00ff88;
 }
 
 /* On a phone the column is a drawer, and a chat that takes the whole of it

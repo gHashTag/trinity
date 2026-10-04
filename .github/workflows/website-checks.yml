@@ -232,6 +232,11 @@ jobs:
       # both languages instead of drawing names nobody published.
       - name: The Queen's three tabs
         run: npm run check:queen-chat-tabs
+      # On BROWSER the person's own agent answers, not the Queen server whose
+      # health the chat polls: the chip and the empty sentence say so, and the
+      # first questions offered never ask the agent to pay, send or delete.
+      - name: The Queen on the BROWSER tab
+        run: npm run check:queen-browser-help
       # "it is dim" (the owner, 2026-09-21, with a photograph of the clients
       # strip). The board draws every panel over a live hive, so each colour
       # here has two contrasts and only one of them gets looked at. This does
