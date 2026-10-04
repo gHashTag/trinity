@@ -3,6 +3,42 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: "three-bits-each-necessary",
+    title: "Three bits, each one necessary: the MMCM's performance clock on silicon",
+    summary: "[one clock path on one AX7203 board; LEDs read by eye, no counter readback; built with a nextpnr-xilinx 115 commits behind main, with one merged fix applied locally; the faster loop was timed on one small design] An MMCM output can reach a regional clock buffer through a performance-clock path, and two rows in Project X-Ray's database say which bits switch that path on. With the rows on prjxray-db master, a counter clocked through it does not run on an XC7A200T. With the rows we proposed in openXC7/prjxray-db#30, it runs, and the two bitstreams differ in exactly three bits. Clearing any one of the three stops the counter again, so each is necessary. nextpnr-xilinx main still pins a database with the old rows. Along the way, the edit-to-board loop went from about 104–111 s to about 19–28 s, mostly from a router flag, the t27-spec assembler and a faster JTAG clock.",
+    date: "2026-10-04",
+    readingMinutes: 6,
+    tags: ["FPGA", "Open toolchain", "Verification"],
+    receipts: [
+      { label: "openXC7/prjxray-db#30: the CLK_PERF and PERFCLK rows, c030ed6 (open)", href: "https://github.com/openXC7/prjxray-db/pull/30" },
+      { label: "openXC7/nextpnr#24: where the rows are discussed", href: "https://github.com/openXC7/nextpnr/issues/24" },
+      { label: "The verification scripts behind the rows", href: "https://gist.github.com/gHashTag/3c9216880b77946385dfc5bea317d927" },
+      { label: "cavearr's perfclk campaign, 1083 Vivado specimens", href: "https://github.com/cavearr/prjxray/releases/tag/perfclk-campaign-2026-10" },
+      { label: "openXC7/prjxray-db#13: the rows nextpnr-xilinx main pins · MERGED 2026-09-07", href: "https://github.com/openXC7/prjxray-db/pull/13" },
+      { label: "openXC7/nextpnr-xilinx#191: the MMCM RST/PWRDWN fix · MERGED 2026-09-09", href: "https://github.com/openXC7/nextpnr-xilinx/pull/191" },
+      { label: "openXC7/nextpnr-xilinx#205: the BUFR regional clock enables · MERGED 2026-09-24", href: "https://github.com/openXC7/nextpnr-xilinx/pull/205" },
+      { label: "Two bitstreams, one bit apart (the earlier one-bit A/B)", href: "https://t27.ai/#/blog/two-bitstreams-one-bit-apart" },
+      { label: "The FPGA flow, layer by layer (the previous timing post)", href: "https://t27.ai/#/blog/the-fpga-flow-layer-by-layer" },
+      { label: "The recording: the three bits and the knockout bitstreams", href: "https://t27.ai/term/perf2-knockouts/" },
+      { label: "The recording: one cycle from place-and-route to SRAM, timed", href: "https://t27.ai/term/perf2-loop/" },
+    ],
+    openQuestions: [
+      "One clock path on one board, with LEDs read by eye. The knockouts show that each bit is necessary here, not that the three are sufficient on other paths.",
+      "nextpnr-xilinx main pins rows that left this counter dead. Whether main routes a design through this path at all was not tested.",
+      "router1 was timed on a design with a few hundred wires. On a large design it may be slower than router2 or fail to route.",
+    ],
+    published: true,
+    ru: {
+      title: "Три бита, и каждый нужен: performance clock у MMCM на кремнии",
+      summary: "[один тактовый тракт на одной плате AX7203; светодиоды читались глазом, считывания счётчика нет; сборка nextpnr-xilinx на 115 коммитов позади main, с одним влитым исправлением, применённым локально; быстрый цикл засекался на одном маленьком дизайне] Выход MMCM может дойти до регионального тактового буфера через тракт performance clock, и две строки в базе Project X-Ray говорят, какие биты этот тракт включают. Со строками master prjxray-db счётчик, тактируемый через него, на XC7A200T не идёт. Со строками, которые мы предложили в openXC7/prjxray-db#30, идёт, а два битстрима различаются ровно в трёх битах. Сброс любого одного из трёх снова останавливает счётчик, так что нужен каждый. main nextpnr-xilinx всё ещё фиксирует базу со старыми строками. Попутно цикл от правки до платы сократился с примерно 104–111 с до примерно 19–28 с, в основном за счёт флага роутера, ассемблера из t27-спеков и более быстрого такта JTAG.",
+      openQuestions: [
+        "Один тактовый тракт на одной плате, светодиоды читались глазом. Нокауты показывают, что здесь нужен каждый бит, а не что трёх хватит на других трактах.",
+        "main nextpnr-xilinx фиксирует строки, с которыми этот счётчик стоял. Разводит ли main дизайн через этот тракт вообще, не проверялось.",
+        "router1 засекался на дизайне из нескольких сотен проводов. На большом дизайне он может оказаться медленнее router2 или не развести его.",
+      ],
+    },
+  },
+  {
     slug: "tri-cast-from-command-to-card",
     title: "tri cast: record a command, check the recording, publish it as a page",
     summary: "[one machine, one day per recording; 10 of 596 commands have one; tri cast is not in a tri release yet] A recorded command can be replayed and checked, a described one can only be believed. tri cast records real terminal output, scrubs and checks it, and publishes a page, a preview card and a player.",

@@ -55,7 +55,7 @@ const COPY = {
     railHead: `On the rail · ${RAIL_N}`,
     ladderHead: `Inside SPECS, on the ladder · ${LADDER_N}`,
     ladderNote:
-      'Specs, skills, crons, agents, tools and functions are six layers of one thing: each is generated from .t27 and each names the one below it. They open on the same keys as before, one step inside SPECS.',
+      'Specs, skills, crons, agents, tools, functions and providers are seven layers of one thing: each is generated from .t27, and the first six each name the one below. The six open on the same keys as before and providers on g, one step inside SPECS.',
     boardHead: `Inside KANBAN, on the board · ${BOARD_N}`,
     boardNote:
       'The kanban, the mission map, the factory and the tech tree read one board: the same issues as columns, as a map, as what the swarm is building from them, and as the path the .t27 language took to get here. Same keys, one step inside KANBAN.',
@@ -72,7 +72,7 @@ const COPY = {
     railHead: `На панели · ${RAIL_N}`,
     ladderHead: `Внутри СПЕК, на лестнице · ${LADDER_N}`,
     ladderNote:
-      'Спеки, скиллы, кроны, агенты, инструменты и функции — шесть слоёв одного: каждый порождается из .t27 и каждый называет следующий. Клавиши прежние, просто на шаг внутрь СПЕК.',
+      'Спеки, скиллы, кроны, агенты, инструменты, функции и провайдеры — семь слоёв одного: каждый порождается из .t27, а первые шесть называют следующий. Шесть открываются прежними клавишами, провайдеры — клавишей g, на шаг внутрь СПЕК.',
     boardHead: `Внутри КАНБАНА, на доске · ${BOARD_N}`,
     boardNote:
       'Канбан, карта миссий, фабрика и тех-дерево читают одну доску: те же задачи — колонками, картой, тем, что рой из них строит, и путём, которым язык .t27 сюда пришёл. Клавиши прежние, просто на шаг внутрь КАНБАНА.',

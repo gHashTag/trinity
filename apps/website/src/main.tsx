@@ -99,15 +99,17 @@ const BlogIndex = lazy(() => import('./pages/Blog.tsx').then(m => ({ default: m.
 const BlogPost = lazy(() => import('./pages/Blog.tsx').then(m => ({ default: m.BlogPost })))
 // Lazy matters more than usual here: this page pulls a 477 KB compiler wasm.
 const SpecExplorer = lazy(() => import('./pages/SpecExplorer.tsx'))
-// The Explorer family: the same shell over five other corpora — the skills
+// The Explorer family: the same shell over six other corpora — the skills
 // that stand on those specs, the jobs that run on a schedule, the agents that
-// hold the skills, the tools those agents should know, and the owner's own
-// client memory.
+// hold the skills, the tools those agents should know, the owner's own
+// client memory, and the providers who sell compute (Gonka's models, and the
+// GPU or FPGA a person could rent out for TRI).
 const SkillExplorer = lazy(() => import('./pages/SkillExplorer.tsx'))
 const CronExplorer = lazy(() => import('./pages/CronExplorer.tsx'))
 const AgentExplorer = lazy(() => import('./pages/AgentExplorer.tsx'))
 const FunctionExplorer = lazy(() => import('./pages/FunctionExplorer.tsx'))
 const ToolExplorer = lazy(() => import('./pages/ToolExplorer.tsx'))
+const ProviderExplorer = lazy(() => import('./pages/ProviderExplorer.tsx'))
 // The system documentation: one declared document (specs/docs/system.t27), seven
 // chapters, rendered from public/docs/system-docs.json. The Queen's PROJECT view
 // frames it with ?embed=1.
@@ -169,6 +171,7 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/agents" element={<AgentExplorer />} />
             <Route path="/functions" element={<FunctionExplorer />} />
             <Route path="/tools" element={<ToolExplorer />} />
+            <Route path="/providers" element={<ProviderExplorer />} />
             <Route path="/docs" element={<SystemDocs />} />
             <Route path="/docs/:chapter" element={<SystemDocs />} />
             {/* Not in the navigation: the console shows one person's
