@@ -243,7 +243,7 @@ if (errors.length === 0) {
   // backend names are whatever the vendored compiler actually emitted over the
   // corpus. Three lists, one measured source, and the next backend is added in
   // one place or the gate says where the other one is.
-  const { TARGET_IDS } = await import(
+  const { TARGET_IDS, TARGET_LABEL: BUNDLED_LABEL } = await import(
     `data:text/javascript;base64,${Buffer.from(
       (await build({
         entryPoints: [`${root}/src/lib/t27Compiler.ts`],
@@ -264,6 +264,15 @@ if (errors.length === 0) {
   }
   for (const [id, label] of Object.entries(TARGET_LABEL)) {
     if (typeof label !== 'string' || !label.trim()) fail(`TARGET_LABEL.${id} has no name to draw`)
+  }
+  // The bundle names the backends too (t27Compiler's TARGET_LABEL), and since
+  // 2026-10-04 the pages that used to list t27's outputs by hand -- "Python, Go,
+  // C++, VHDL and 38 more" -- read it. The node copy above and that one are the
+  // same names or one of them is wrong.
+  for (const id of emitted) {
+    if (BUNDLED_LABEL?.[id] !== TARGET_LABEL[id]) {
+      fail(`backend ${id} is "${BUNDLED_LABEL?.[id]}" in src/lib/t27Compiler.ts and "${TARGET_LABEL[id]}" in scripts/t27-corpus.mjs`)
+    }
   }
 }
 

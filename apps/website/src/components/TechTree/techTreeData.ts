@@ -1,6 +1,25 @@
 // Tech Tree Data
 // Based on docs/TECH_TREE.md
 
+import { TARGET_IDS, TARGET_LABEL } from '../../lib/t27Compiler';
+
+const BACKEND_NAMES = TARGET_IDS.map((id) => TARGET_LABEL[id]).join(', ');
+
+/**
+ * core-002 used to say "Zig, Python, Rust, Verilog and 38 more" / "42 targets",
+ * which was the VIBEE generator's list, never t27c's: t27c has no Python, Go,
+ * C++ or VHDL backend (corrected 2026-10-04). The node's text -- here and in
+ * both message catalogues -- now carries {backends} and {count}, filled from
+ * TARGET_IDS, the ids the compiler keys its output by, so it cannot drift.
+ */
+export function fillBackends(text: string): string;
+export function fillBackends(text: string | undefined): string | undefined;
+export function fillBackends(text: string | undefined): string | undefined {
+  return text
+    ?.replace(/\{backends\}/g, BACKEND_NAMES)
+    .replace(/\{count\}/g, String(TARGET_IDS.length));
+}
+
 export type NodeStatus = 'done' | 'in_progress' | 'locked';
 
 export interface TechNode {
@@ -47,12 +66,12 @@ export const techBranches: TechBranch[] = [
       {
         id: 'core-002',
         name: 'Multi-Lang Codegen',
-        description: 'Code generation for Zig, Python, Rust, Verilog and 38 more',
+        description: 'Code generation for {backends}',
         status: 'done',
         branch: 'core',
         prerequisites: ['core-001'],
         unlocks: ['core-003'],
-        metrics: '42 targets',
+        metrics: '{count} backends',
         x: 1,
         y: 0
       },

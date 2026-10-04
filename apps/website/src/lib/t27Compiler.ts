@@ -89,6 +89,26 @@ export const TARGET_IDS = ['zig', 'verilog', 'verilog_hir', 'c', 'rust', 'js', '
 
 export type TargetId = (typeof TARGET_IDS)[number]
 
+/**
+ * What each backend is called on the page. A Record over TargetId, so a backend
+ * added to TARGET_IDS without a name stops this file compiling.
+ *
+ * This lived inside SpecExplorer's layer labels until 2026-10-04, when the
+ * pages that named t27's outputs by hand were found claiming Python, Go, C++,
+ * VHDL and "38 more". Those pages now read the names from here -- the same ids
+ * the wasm compiler keys its `targets` object by -- instead of keeping a list
+ * of their own.
+ */
+export const TARGET_LABEL: Record<TargetId, string> = {
+  zig: 'Zig',
+  verilog: 'Verilog',
+  verilog_hir: 'Verilog (HIR)',
+  c: 'C',
+  rust: 'Rust',
+  js: 'JavaScript',
+  ts: 'TypeScript',
+}
+
 export type Health = 'ok' | 'warn' | 'fail'
 
 export interface SpecEntry {
