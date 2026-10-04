@@ -79,7 +79,9 @@ pub const TEST_BLOCKED_ERRORS : [11]str = [
     "spec.zig:24:27: error: use of undeclared identifier 'Trit'"
 ];
 pub const TEST_NONE : [2]str = ["specs/tools/mcp/needle.t27", "specs/tools/mcp/trinity.t27"];
-pub const TESTS_RUN_MIN : u32 = 77;
+; 78 at gHashTag/t27@39e06aa0: 58 specs measured, all 78 of their tests passing. It was 77 at de2a1aca;
+; the one test of specs/trinity/capabilities/brain.regions.t27 is the only test this vendoring added.
+pub const TESTS_RUN_MIN : u32 = 78;
 ; Every vendored file, sorted, and its sha256.
 pub const FILES : [76]str = [
     "conformance/trinity/fpga_adapter.json",
@@ -247,5 +249,5 @@ test the_lock_names_its_source {
 
 test the_ledgers_hold_together {
     assert PARSE_DISCARD_TOKENS[0] == 48;
-    assert TESTS_RUN_MIN == 77;
+    assert TESTS_RUN_MIN == 78;
 }
