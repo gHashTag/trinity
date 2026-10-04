@@ -17,15 +17,18 @@ WHAT IT CHECKS, AND WHAT IT DELIBERATELY DOES NOT
 Checked (exit 1 on any finding, each with an exact path or name):
   * the project spec pins the revision the inventory was taken from, and the inventory was
     taken from a tree with no modified tracked file (a dirty inventory is refused);
-  * the dialect counts the project spec states equal the counts in the inventory, and the
-    website mirror (apps/website/public/t27/files/) is never counted as canonical;
+  * the dialect counts the project spec states equal the counts in the inventory, and neither
+    the website mirror (apps/website/public/t27/files/) nor the consumer's vendored copies of
+    this repository's contracts (external/t27/, locked by its specs/reproduce/contracts.t27)
+    is ever counted as canonical -- each is counted apart;
   * every executable, library, test and step of build.zig is assigned to exactly one card
     (patterns are allowed, `test:src/trinity_node/*`); a card cannot own a target that the
     build does not define;
   * a target installed by default (`zig build -Dci=true`) belongs to a headless card, a
     target guarded by `!ci_mode` does not;
   * every `trinity:` path a card names is a tracked file or directory of the pinned tree;
-    a t27 path it names exists in this repository; a mirror path is never canonical;
+    a t27 path it names exists in this repository; a mirror or vendored path is never
+    canonical;
   * DIALECT agrees with the extension of CANONICAL_SPEC; BACKEND is one of the compiler's
     targets or "none", and only executable, adapter and research cards may claim one;
   * two cards cannot claim the same canonical spec under different owners, and no two
@@ -39,6 +42,22 @@ declares and what a public CI log measured; running the build belongs to S03 and
 The constants are read here with a line grammar (`pub const NAME : TYPE = VALUE;`); the
 compiler remains the authority on the files themselves -- t27c parses, typechecks and
 seals them in the other gates, and this tool refuses a card the grammar cannot read.
+
+HOW THE ZIG SOURCES ARE READ
+----------------------------
+build.zig and every .zig file the reachability walk opens are read with their `//`
+comments blanked first (`///` and `//!` included), byte for byte, so every offset and line
+number is the file's own. String literals, character literals and multiline string lines
+(the ones opened by two backslashes) are kept whole: a `//` inside them is text, not a
+comment. A step, an install, a path or an @import that exists only in a comment is
+therefore not counted. Until 2026-10-01 they were: at gHashTag/trinity@976df517 the steps
+needle-mcp and trinity-mcp, the installs of trinity-canvas and trinity-canvas-wasm-check, and
+one reachable file (src/background_agent/db/issue_bindings.zig, through a commented @import)
+existed only in comments, and two cards owned the steps and named `zig build needle-mcp` /
+`zig build trinity-mcp` as their acceptance -- commands that answer "no step named"
+(gHashTag/trinity#989). Not done: the content of a multiline string is still text the
+patterns can match; build.zig carries no multiline string at the pin, and blanking those
+lines as well changes no reachability there (measured).
 
 Usage:
   python3 tools/trinity_manifest.py inventory --trinity-root DIR [--out conformance/trinity/inventory.json]
@@ -67,6 +86,11 @@ INVENTORY = "conformance/trinity/inventory.json"
 REPORT = "conformance/trinity/report.json"
 SPECS = "specs/trinity"
 MIRROR = "apps/website/public/t27/files/"
+# The consumer's byte-identical copies of this repository's contracts (specs/trinity/**, the
+# canonical specs the cards name and this checker), locked by its specs/reproduce/contracts.t27
+# (S12). They are t27's files, not the consumer's own specs: counted apart, never canonical.
+VENDORED = "external/t27/"
+NEVER_CANONICAL = (MIRROR, VENDORED)
 CONSUMER = "gHashTag/trinity"
 
 DISPOSITIONS = ("executable", "declared", "adapter", "external", "deprecated", "out-of-scope", "research", "catalog-only")
@@ -79,7 +103,7 @@ PROJECT_REQUIRED = {
     "KIND": "str", "ID": "str", "NAME": "str", "CONSUMER_REPO": "str", "PINNED_REVISION": "str",
     "PINNED_AT": "str", "T27_REVISION": "str", "PROFILES": "arr", "INITIAL_PROFILE": "str",
     "DISPOSITIONS": "arr", "EVIDENCE_TAGS": "arr", "DIALECTS": "arr",
-    "T27_CANONICAL_FILES": "u16", "T27_MIRROR_FILES": "u16", "TRI_FILES": "u16", "VIBEE_FILES": "u16",
+    "T27_CANONICAL_FILES": "u16", "T27_MIRROR_FILES": "u16", "T27_VENDORED_FILES": "u16", "TRI_FILES": "u16", "VIBEE_FILES": "u16",
     "ZIG_FILES": "u16", "ZIG_UNREACHABLE_FILES": "u16",
     "BUILD_EXECUTABLES": "u8", "BUILD_LIBRARIES": "u8", "BUILD_TESTS": "u8", "BUILD_STEPS": "u8",
     "INSTALLED_BY_DEFAULT": "u8", "INSTALLED_GUARDED": "u8",
@@ -169,7 +193,40 @@ def root_source(fields: dict) -> str | None:
     return None
 
 
+def blank_comments(src: str) -> str:
+    """Zig source with every `//` comment (`///` and `//!` included) replaced by spaces, one
+    for one, so every offset and line number of the result is the source's own.
+
+    A `//` is a comment only outside a literal. String and character literals are skipped
+    with their escapes (a quote held in '"' must not open a string); a multiline string
+    line -- opened by two backslashes, running to the end of its line -- is skipped whole."""
+    out = list(src)
+    i, n = 0, len(src)
+    while i < n:
+        c = src[i]
+        if src.startswith("//", i):
+            end = src.find("\n", i)
+            end = n if end < 0 else end
+            for k in range(i, end):
+                out[k] = " "
+            i = end
+        elif src.startswith("\\\\", i):
+            end = src.find("\n", i)
+            i = n if end < 0 else end
+        elif c in "\"'":
+            i += 1
+            while i < n and src[i] != c:
+                i += 2 if src[i] == "\\" else 1
+            i += 1
+        else:
+            i += 1
+    return "".join(out)
+
+
 def parse_build_zig(text: str) -> dict:
+    # A step, an artifact, an install, an option or a path written only in a comment is not
+    # declared by the build: read the code, with the comments blanked in place.
+    text = blank_comments(text)
     lines = text.split("\n")
     artifacts, seen = [], set()
     for m in re.finditer(r"(?:const|var)\s+(\w+)\s*=\s*b\.(addExecutable|addTest|addLibrary|addStaticLibrary|addSharedLibrary|addObject)\(", text):
@@ -211,7 +268,11 @@ def parse_build_zig(text: str) -> dict:
         g = guards(line - 1)
         installs.append({"var": m.group(1), "key": art["key"] if art else None, "name": art["name"] if art else m.group(1), "line": line,
                          "guards": g, "default": not g})
-    return {"artifacts": artifacts, "steps": steps, "options": options, "installs": installs}
+    # Every .zig file build.zig names: artifact roots and the roots of named modules
+    # (`b.createModule(.{ .root_source_file = b.path("...") })`) that reach an artifact
+    # through `.imports` rather than through a relative @import.
+    zig_paths = sorted({m.group(1) for m in re.finditer(r'b\.path\("([^"]+\.zig)"\)', text)})
+    return {"artifacts": artifacts, "steps": steps, "options": options, "installs": installs, "zig_paths": zig_paths}
 
 
 def parse_zon(text: str) -> dict:
@@ -232,7 +293,8 @@ def parse_gitmodules(text: str) -> list[dict]:
 
 def zig_reachability(root: pathlib.Path, files: list[str], roots: list[str]) -> dict:
     """Files reachable from the roots build.zig names through relative @import("x.zig");
-    package/module imports (no .zig suffix) are recorded by name, not followed."""
+    package/module imports (no .zig suffix) are recorded by name, not followed. An @import
+    in a comment imports nothing: each file is read with its comments blanked."""
     tracked = set(files)
     cache: dict[str, list[str]] = {}
     modules: set[str] = set()
@@ -242,7 +304,7 @@ def zig_reachability(root: pathlib.Path, files: list[str], roots: list[str]) -> 
             return cache[path]
         out = []
         try:
-            text = (root / path).read_text(encoding="utf-8", errors="replace")
+            text = blank_comments((root / path).read_text(encoding="utf-8", errors="replace"))
         except OSError:
             cache[path] = out
             return out
@@ -298,6 +360,20 @@ def read_json(path: pathlib.Path):
         return None
 
 
+def dialects_of(files: list[str]) -> dict:
+    """The dialect counts of a tracked file list. A .t27 file under the website mirror or under
+    the vendored copies of t27's contracts is counted apart, and is never canonical."""
+    ext = lambda e: [f for f in files if f.endswith("." + e)]
+    t27_all = ext("t27")
+    t27_canonical = [f for f in t27_all if not f.startswith(NEVER_CANONICAL)]
+    return {
+        "t27_canonical": len(t27_canonical), "t27_mirror": len([f for f in t27_all if f.startswith(MIRROR)]),
+        "t27_vendored": len([f for f in t27_all if f.startswith(VENDORED)]),
+        "tri": len(ext("tri")), "vibee": len(ext("vibee")), "zig": len(ext("zig")),
+        "mirror_prefix": MIRROR, "vendored_prefix": VENDORED, "t27_canonical_files": t27_canonical,
+    }
+
+
 def inventory(root: pathlib.Path) -> dict:
     if not (root / ".git").exists() and not (root / ".git").is_file():
         raise SystemExit(f"trinity_manifest: {root} is not a git checkout")
@@ -311,15 +387,9 @@ def inventory(root: pathlib.Path) -> dict:
     zon = parse_zon((root / "build.zig.zon").read_text(encoding="utf-8"))
     gitmodules = (root / ".gitmodules")
     submodules = parse_gitmodules(gitmodules.read_text(encoding="utf-8")) if gitmodules.exists() else []
-    ext = lambda e: [f for f in files if f.endswith("." + e)]
-    t27_all, tri, vibee, zig = ext("t27"), ext("tri"), ext("vibee"), ext("zig")
-    t27_mirror = [f for f in t27_all if f.startswith(MIRROR)]
-    t27_canonical = [f for f in t27_all if not f.startswith(MIRROR)]
     # Every file build.zig names is part of the declared build graph: artifact roots and the
-    # roots of named modules (`b.createModule(.{ .root_source_file = b.path("...") })`) that
-    # reach an artifact through `.imports` rather than through a relative @import.
-    build_text = (root / "build.zig").read_text(encoding="utf-8")
-    roots = sorted({a["root"] for a in build["artifacts"] if a["root"]} | {m.group(1) for m in re.finditer(r'b\.path\("([^"]+\.zig)"\)', build_text)})
+    # roots of named modules, read from the code of build.zig and never from its comments.
+    roots = sorted({a["root"] for a in build["artifacts"] if a["root"]} | set(build["zig_paths"]))
     reach = zig_reachability(root, files, roots)
     reach["roots_named_by_build_zig"] = len(roots)
     registry = read_json(root / ".trinity/registry.json") or {}
@@ -337,10 +407,7 @@ def inventory(root: pathlib.Path) -> dict:
         "committed_at": git(root, "log", "-1", "--format=%cI", "HEAD").strip(),
         "tracked_files": len(files),
         "top_level": dict(sorted(top.items(), key=lambda kv: (-kv[1], kv[0]))),
-        "dialects": {
-            "t27_canonical": len(t27_canonical), "t27_mirror": len(t27_mirror), "tri": len(tri), "vibee": len(vibee), "zig": len(zig),
-            "mirror_prefix": MIRROR, "t27_canonical_files": t27_canonical,
-        },
+        "dialects": dialects_of(files),
         "build": {
             "options": build["options"],
             "executables": [a for a in build["artifacts"] if a["kind"] == "exe"],
@@ -470,6 +537,11 @@ def path_exists(inv: dict, ref: str, t27_root: pathlib.Path) -> bool:
 
 def check(inv: dict, specs_dir: pathlib.Path, t27_root: pathlib.Path) -> tuple[list, dict]:
     findings: list[tuple[str, str]] = []
+    if "t27_vendored" not in inv.get("dialects", {}):
+        # Written before the vendored copies were counted apart, so its canonical count may
+        # include them: judging it by the current rules would compare two different populations.
+        return [("UNREADABLE", "the inventory carries no dialects.t27_vendored: it was taken by a checker that counted the "
+                 "vendored copies of t27 (external/t27/) as canonical; take it again with `inventory --trinity-root DIR`")], {}
     project_path = specs_dir / "project.t27"
     if not project_path.exists():
         return [("MISSING_PROJECT", f"{project_path} does not exist")], {}
@@ -488,7 +560,8 @@ def check(inv: dict, specs_dir: pathlib.Path, t27_root: pathlib.Path) -> tuple[l
         findings.append(("PIN_MISMATCH", f"project.t27 names {p.get('CONSUMER_REPO')}, the inventory is of {inv.get('repo')}"))
     d, b = inv["dialects"], inv["build"]
     counts = {
-        "T27_CANONICAL_FILES": d["t27_canonical"], "T27_MIRROR_FILES": d["t27_mirror"], "TRI_FILES": d["tri"], "VIBEE_FILES": d["vibee"],
+        "T27_CANONICAL_FILES": d["t27_canonical"], "T27_MIRROR_FILES": d["t27_mirror"], "T27_VENDORED_FILES": d["t27_vendored"],
+        "TRI_FILES": d["tri"], "VIBEE_FILES": d["vibee"],
         "ZIG_FILES": d["zig"], "ZIG_UNREACHABLE_FILES": inv["zig_reachability"]["unreachable"],
         "BUILD_EXECUTABLES": len({a["key"] for a in b["executables"]}), "BUILD_LIBRARIES": len({a["key"] for a in b["libraries"]}),
         "BUILD_TESTS": len({a["key"] for a in b["tests"]}), "BUILD_STEPS": len(b["steps"]),
@@ -565,6 +638,9 @@ def check(inv: dict, specs_dir: pathlib.Path, t27_root: pathlib.Path) -> tuple[l
         if spec_ref:
             if spec_ref.startswith("trinity:" + MIRROR):
                 findings.append(("MIRROR_AS_CANONICAL", f"{f}: CANONICAL_SPEC {spec_ref} is a mirrored copy, not a source"))
+            if spec_ref.startswith("trinity:" + VENDORED):
+                findings.append(("MIRROR_AS_CANONICAL", f"{f}: CANONICAL_SPEC {spec_ref} is the consumer's vendored copy of a t27 "
+                                 "contract, not a source; name the path in this repository"))
             if not path_exists(inv, spec_ref, t27_root):
                 findings.append(("ABSENT_PATH", f"{f}: CANONICAL_SPEC {spec_ref} does not exist"))
             ext_map = {".t27": "t27", ".tri": "tri", ".vibee": "vibee"}
@@ -616,9 +692,12 @@ def check(inv: dict, specs_dir: pathlib.Path, t27_root: pathlib.Path) -> tuple[l
         "version": 1,
         "generated_by": "tools/trinity_manifest.py check",
         "consumer": {"repo": inv.get("repo"), "sha": inv.get("sha"), "committed_at": inv.get("committed_at")},
-        "canonical_specs": {"t27_files_in_trinity_outside_the_mirror": d["t27_canonical"], "tri_files": d["tri"], "vibee_files": d["vibee"],
+        "canonical_specs": {"t27_files_in_trinity_outside_the_mirror_and_the_vendored_contracts": d["t27_canonical"], "tri_files": d["tri"],
+                            "vibee_files": d["vibee"],
                             "note": "files of three dialects; only .t27 is compiled by t27c, counts cannot be added into a generation claim"},
         "mirrored_files": {"t27_mirror": d["t27_mirror"], "prefix": MIRROR, "note": "vendored copies of other repositories' specs; never canonical"},
+        "vendored_contracts": {"t27_vendored": d["t27_vendored"], "prefix": VENDORED,
+                               "note": "byte-identical copies of this repository's contracts that the consumer locks (S12); never canonical"},
         "catalog_snapshot": inv["catalog_snapshot"],
         "build": {k: counts[k] for k in ("BUILD_EXECUTABLES", "BUILD_LIBRARIES", "BUILD_TESTS", "BUILD_STEPS", "INSTALLED_BY_DEFAULT", "INSTALLED_GUARDED")},
         "zig_unreachable": {"count": inv["zig_reachability"]["unreachable"], "by_dir": inv["zig_reachability"]["unreachable_by_dir"]},
@@ -652,6 +731,7 @@ pub const EVIDENCE_TAGS : [5]str = ["measured", "declared", "specified", "extern
 pub const DIALECTS : [4]str = ["t27", "tri", "vibee", "none"];
 pub const T27_CANONICAL_FILES : u16 = 1;
 pub const T27_MIRROR_FILES : u16 = 1;
+pub const T27_VENDORED_FILES : u16 = 0;
 pub const TRI_FILES : u16 = 0;
 pub const VIBEE_FILES : u16 = 0;
 pub const ZIG_FILES : u16 = 2;
@@ -697,10 +777,11 @@ test owner { assert ENABLED == true; }
 """
 
 
-def fixture_inventory(sha: str, dirty: bool = False) -> dict:
+def fixture_inventory(sha: str, dirty: bool = False, vendored: int = 0) -> dict:
     return {"version": 1, "repo": CONSUMER, "sha": sha, "dirty": dirty, "committed_at": "2026-09-12T00:00:00Z", "tracked_files": 4,
-            "tree": tree_of(["build.zig", "src/main.zig", "src/lost.zig", "specs/a.t27", MIRROR + "x.t27"]),
-            "dialects": {"t27_canonical": 1, "t27_mirror": 1, "tri": 0, "vibee": 0, "zig": 2, "mirror_prefix": MIRROR, "t27_canonical_files": ["specs/a.t27"]},
+            "tree": tree_of(["build.zig", "src/main.zig", "src/lost.zig", "specs/a.t27", MIRROR + "x.t27", VENDORED + "specs/a.t27"]),
+            "dialects": {"t27_canonical": 1, "t27_mirror": 1, "t27_vendored": vendored, "tri": 0, "vibee": 0, "zig": 2, "mirror_prefix": MIRROR,
+                         "vendored_prefix": VENDORED, "t27_canonical_files": ["specs/a.t27"]},
             "build": {"options": [], "executables": [{"key": "exe:tri", "kind": "exe", "name": "tri", "root": "src/main.zig"}], "libraries": [], "tests": [],
                       "steps": [{"key": "step:tri", "name": "tri"}], "installs": [], "installed_by_default": ["exe:tri"], "installed_guarded": []},
             "dependencies": {"dependencies": [{"name": "zig_hdc", "url": "https://example.invalid/zig-hdc.tar.gz", "hash": "x"}]},
@@ -723,12 +804,136 @@ def card(**kw) -> str:
     return fill(GOOD_CARD, **base)
 
 
+# A build.zig in which each shape the comment blanker must tell apart occurs once: a step, a
+# path and an install that exist only in comments (`//`, `///`, `//!`); a `//` inside a string,
+# inside a string after an escaped quote, and inside a multiline string line; a character
+# literal that holds a quote, with a comment after it; and real code after all of them.
+BUILD_FIXTURE = r'''const std = @import("std");
+pub fn build(b: *std.Build) void {
+    const ci_mode = b.option(bool, "ci", "CI mode") orelse false;
+    const tri = b.addExecutable(.{ .name = "tri", .root_module = b.createModule(.{ .root_source_file = b.path("src/main.zig") }) });
+    b.installArtifact(tri);
+    const tri_step = b.step("tri", "Run tri; the manual is at https://example.invalid/tri");
+    tri_step.dependOn(&b.addRunArtifact(tri).step);
+    // const ghost_step = b.step("ghost", "a step that exists only in a comment");
+    /// b.step("ghost-doc", "in a doc comment");
+    //! b.step("ghost-top", "in a top-level doc comment");
+    const quote = '"'; // b.step("ghost-char", "after a character literal that holds a quote");
+    const said = "an escaped \" and then // which is still inside the string";
+    const usage =
+        \\zig build tri // a multiline string line, not a comment
+    ;
+    _ = .{ quote, said, usage };
+    // _ = b.path("src/ghost.zig");
+    if (!ci_mode) {
+        const gui = b.addExecutable(.{ .name = "gui", .root_module = b.createModule(.{ .root_source_file = b.path("src/gui.zig") }) });
+        // b.installArtifact(gui);
+        _ = gui;
+    }
+}
+'''
+# The .zig files of that build: one real @import and one that exists only in a comment.
+ZIG_FIXTURE = {
+    "src/main.zig": 'const real = @import("real.zig");\n// const ghost = @import("ghost.zig");\npub fn main() void {}\n',
+    "src/real.zig": "pub const x = 1;\n",
+    "src/ghost.zig": "pub const y = 2;\n",
+    "src/gui.zig": "pub fn main() void {}\n",
+}
+
+
+def parser_self_check() -> list[str]:
+    """The comment blanker and parse_build_zig, on BUILD_FIXTURE: what is in a comment is gone,
+    what is in a literal is kept, and every line stays where it was."""
+    failures = []
+    src = BUILD_FIXTURE
+    blank = blank_comments(src)
+    if len(blank) != len(src) or [i for i, c in enumerate(blank) if c == "\n"] != [i for i, c in enumerate(src) if c == "\n"]:
+        failures.append("blanking comments must keep every offset and every line break of the source")
+    kept = [ln for ln in src.split("\n") if "still inside the string" in ln or "a multiline string line" in ln]
+    if len(kept) != 2:
+        failures.append(f"the fixture must carry the two literal lines this control reads, found {len(kept)}")
+    for ln in kept:
+        if ln not in blank.split("\n"):
+            failures.append(f"a `//` inside a literal is text, and this line was changed: {ln.strip()}")
+    b = parse_build_zig(src)
+    steps = [s["key"] for s in b["steps"]]
+    if steps != ["step:tri"]:
+        failures.append(f"a step in a comment (//, ///, //!, after a quote held in a character literal) is no step, got {steps}")
+    tri = next((s for s in b["steps"] if s["name"] == "tri"), {})
+    if tri.get("description") != "Run tri; the manual is at https://example.invalid/tri":
+        failures.append(f"a `//` inside a string is not a comment: the step description reads {tri.get('description')!r}")
+    if tri.get("line") != src[: src.index('b.step("tri"')].count("\n") + 1:
+        failures.append(f"the step must keep the line it has in the source, got {tri.get('line')}")
+    installs = [(i["key"], i["default"]) for i in b["installs"]]
+    if installs != [("exe:tri", True)]:
+        failures.append(f"an installArtifact in a comment installs nothing, got {installs}")
+    artifacts = sorted(a["key"] for a in b["artifacts"])
+    if artifacts != ["exe:gui", "exe:tri"]:
+        failures.append(f"the code after the comments must still be read, got artifacts {artifacts}")
+    if b["zig_paths"] != ["src/gui.zig", "src/main.zig"]:
+        failures.append(f"a b.path in a comment names no file, got {b['zig_paths']}")
+    return failures
+
+
+def inventory_self_check(tmp: pathlib.Path) -> list[str]:
+    """inventory() end to end over a planted consumer repository, so the wiring is held and not
+    only the functions it calls: the comments of build.zig and of the sources are not read,
+    and a .t27 file under the mirror or under the vendored copies is not canonical."""
+    failures = []
+    repo = tmp / "consumer"
+    tree = dict(ZIG_FIXTURE)
+    tree.update({
+        "build.zig": BUILD_FIXTURE,
+        "build.zig.zon": '.{ .name = .fixture, .version = "0.0.0", .dependencies = .{ .zig_hdc = .{ .url = "https://example.invalid/zig-hdc.tar.gz", .hash = "x" } } }\n',
+        "specs/a.t27": "module a;\n", MIRROR + "x.t27": "module x;\n", VENDORED + "specs/trinity/project.t27": "module trinity_project;\n",
+    })
+    g = ["git", "-C", str(repo), "-c", "user.name=t27", "-c", "user.email=t27@example.invalid", "-c", "commit.gpgsign=false"]
+    try:
+        subprocess.run(["git", "init", "-q", str(repo)], check=True, capture_output=True)
+        for path, text in tree.items():
+            (repo / path).parent.mkdir(parents=True, exist_ok=True)
+            (repo / path).write_text(text)
+        subprocess.run(g + ["add", "-A"], check=True, capture_output=True)
+        subprocess.run(g + ["commit", "-q", "-m", "fixture"], check=True, capture_output=True)
+    except (OSError, subprocess.CalledProcessError) as e:
+        return [f"the planted consumer repository could not be built ({e}); nothing about inventory() was checked"]
+    inv = inventory(repo)
+    b, r, d = inv["build"], inv["zig_reachability"], inv["dialects"]
+    if [s["key"] for s in b["steps"]] != ["step:tri"] or b["installed_by_default"] != ["exe:tri"] or b["installed_guarded"]:
+        failures.append(f"inventory() read build.zig's comments: steps {[s['key'] for s in b['steps']]}, "
+                        f"installed {b['installed_by_default']}, guarded {b['installed_guarded']}")
+    # build.zig is not a file build.zig names, so it is unreachable by this definition -- as it
+    # is in the real inventory.
+    if r["roots_named_by_build_zig"] != 2 or r["unreachable_files"] != ["build.zig", "src/ghost.zig"]:
+        failures.append(f"inventory() followed a path or an @import that exists only in a comment: "
+                        f"{r['roots_named_by_build_zig']} roots, unreachable {r['unreachable_files']}")
+    if (d["t27_canonical"], d["t27_mirror"], d["t27_vendored"]) != (1, 1, 1):
+        failures.append(f"inventory() must count the mirror and the vendored copies apart from the canonical .t27: {d}")
+    return failures
+
+
 def self_check() -> int:
     sha = "a" * 40
-    failures = []
+    failures = parser_self_check()
+    d = dialects_of(["specs/a.t27", MIRROR + "x.t27", VENDORED + "specs/trinity/project.t27", "src/main.zig"])
+    if (d["t27_canonical"], d["t27_mirror"], d["t27_vendored"], d["t27_canonical_files"]) != (1, 1, 1, ["specs/a.t27"]):
+        failures.append(f"a mirrored or a vendored .t27 is never canonical, got {d}")
     with tempfile.TemporaryDirectory() as tmp:
         root = pathlib.Path(tmp)
-        (root / "specs/a.t27").parent.mkdir(parents=True)
+        for path, text in ZIG_FIXTURE.items():
+            (root / path).parent.mkdir(parents=True, exist_ok=True)
+            (root / path).write_text(text)
+        reach = zig_reachability(root, sorted(ZIG_FIXTURE), ["src/main.zig"])
+        if reach["unreachable_files"] != ["src/ghost.zig", "src/gui.zig"]:
+            failures.append(f"an @import in a comment imports nothing, got unreachable {reach['unreachable_files']}")
+        # The planted repository is read by `git`; a GIT_DIR or GIT_INDEX_FILE inherited from a
+        # hook would point every one of those commands at another repository.
+        saved = {k: os.environ.pop(k) for k in [k for k in os.environ if k.startswith("GIT_")]}
+        try:
+            failures += inventory_self_check(root)
+        finally:
+            os.environ.update(saved)
+        (root / "specs/a.t27").parent.mkdir(parents=True, exist_ok=True)
         (root / "specs/a.t27").write_text("module a;\n")
 
         def run(project_text: str, cards: dict[str, str], inv: dict) -> list[str]:
@@ -741,37 +946,49 @@ def self_check() -> int:
             (specs / "project.t27").write_text(project_text)
             for name, text in cards.items():
                 (specs / "capabilities" / name).write_text(text)
-            findings, _ = check(inv, specs, root)
+            try:
+                findings, _ = check(inv, specs, root)
+            except Exception as e:  # a crash is not a verdict: name it, so the case says why it failed
+                return [f"CRASH {type(e).__name__}: {e}"]
             return [code for code, _ in findings]
 
         good = run(fill(GOOD_PROJECT, sha=sha), {"cli.tri.t27": card()}, fixture_inventory(sha))
         if good:
             failures.append(f"the clean fixture must pass, got {good}")
-        cases = {
-            "DUPLICATE_OWNERSHIP": ({"cli.tri.t27": card(targets='"exe:tri"', n=1), "cli.other.t27": card(mod="cli_other", id="cli.other", owner="gHashTag/other", targets='"step:tri"', n=1)}, fixture_inventory(sha), fill(GOOD_PROJECT, sha=sha)),
-            "ABSENT_PATH": ({"cli.tri.t27": card(impl="trinity:src/gone.zig")}, fixture_inventory(sha), fill(GOOD_PROJECT, sha=sha)),
-            "AMBIGUOUS_DIALECT": ({"cli.tri.t27": card(dialect="tri")}, fixture_inventory(sha), fill(GOOD_PROJECT, sha=sha)),
-            "DIRTY": ({"cli.tri.t27": card()}, fixture_inventory(sha, dirty=True), fill(GOOD_PROJECT, sha=sha)),
-            "UNSUPPORTED_BACKEND": ({"cli.tri.t27": card(disp="external", backend="verilog")}, fixture_inventory(sha), fill(GOOD_PROJECT, sha=sha)),
-            "UNASSIGNED_TARGET": ({"cli.tri.t27": card(targets='"exe:tri"', n=1)}, fixture_inventory(sha), fill(GOOD_PROJECT, sha=sha)),
-            "PIN_MISMATCH": ({"cli.tri.t27": card()}, fixture_inventory("b" * 40), fill(GOOD_PROJECT, sha=sha)),
-            "EVIDENCE_UNSUPPORTED": ({"cli.tri.t27": card(source="")}, fixture_inventory(sha), fill(GOOD_PROJECT, sha=sha)),
-            "MIRROR_AS_CANONICAL": ({"cli.tri.t27": card(spec="trinity:" + MIRROR + "x.t27")}, fixture_inventory(sha), fill(GOOD_PROJECT, sha=sha)),
-            "PROFILE_MISMATCH": ({"cli.tri.t27": card(profile="web")}, fixture_inventory(sha), fill(GOOD_PROJECT, sha=sha)),
-            "WORK_PACKAGE_UNCOVERED": ({"cli.tri.t27": card()}, fixture_inventory(sha), fill(GOOD_PROJECT, sha=sha).replace('WORK_PACKAGES : [1]str = ["S01"]', 'WORK_PACKAGES : [2]str = ["S01", "S02"]').replace('WORK_PACKAGE_ISSUES : [1]str = ["https://github.com/gHashTag/t27/issues/3563"]', 'WORK_PACKAGE_ISSUES : [2]str = ["https://github.com/gHashTag/t27/issues/3563", "https://github.com/gHashTag/t27/issues/3564"]')),
-            "COUNT_MISMATCH": ({"cli.tri.t27": card()}, fixture_inventory(sha), fill(GOOD_PROJECT, sha=sha).replace("TRI_FILES : u16 = 0", "TRI_FILES : u16 = 7")),
-            "UNKNOWN_TARGET": ({"cli.tri.t27": card(targets='"exe:tri", "step:tri", "exe:ghost"', n=3)}, fixture_inventory(sha), fill(GOOD_PROJECT, sha=sha)),
-        }
-        for code, (cards, inv, project_text) in cases.items():
+        stale = fixture_inventory(sha)
+        del stale["dialects"]["t27_vendored"]
+        project = fill(GOOD_PROJECT, sha=sha)
+        # (what is planted, the code that must report it, cards, inventory, project)
+        cases = [
+            ("two owners of one spec", "DUPLICATE_OWNERSHIP", {"cli.tri.t27": card(targets='"exe:tri"', n=1), "cli.other.t27": card(mod="cli_other", id="cli.other", owner="gHashTag/other", targets='"step:tri"', n=1)}, fixture_inventory(sha), project),
+            ("an untracked path", "ABSENT_PATH", {"cli.tri.t27": card(impl="trinity:src/gone.zig")}, fixture_inventory(sha), project),
+            ("a dialect the spec is not", "AMBIGUOUS_DIALECT", {"cli.tri.t27": card(dialect="tri")}, fixture_inventory(sha), project),
+            ("a dirty inventory", "DIRTY", {"cli.tri.t27": card()}, fixture_inventory(sha, dirty=True), project),
+            ("a backend on an external card", "UNSUPPORTED_BACKEND", {"cli.tri.t27": card(disp="external", backend="verilog")}, fixture_inventory(sha), project),
+            ("a target nobody owns", "UNASSIGNED_TARGET", {"cli.tri.t27": card(targets='"exe:tri"', n=1)}, fixture_inventory(sha), project),
+            ("another revision", "PIN_MISMATCH", {"cli.tri.t27": card()}, fixture_inventory("b" * 40), project),
+            ("measured without a source", "EVIDENCE_UNSUPPORTED", {"cli.tri.t27": card(source="")}, fixture_inventory(sha), project),
+            ("the website mirror as canonical", "MIRROR_AS_CANONICAL", {"cli.tri.t27": card(spec="trinity:" + MIRROR + "x.t27")}, fixture_inventory(sha), project),
+            ("a vendored copy of a t27 contract as canonical", "MIRROR_AS_CANONICAL", {"cli.tri.t27": card(spec="trinity:" + VENDORED + "specs/a.t27")}, fixture_inventory(sha), project),
+            ("a default install on a web card", "PROFILE_MISMATCH", {"cli.tri.t27": card(profile="web")}, fixture_inventory(sha), project),
+            ("a package without a card", "WORK_PACKAGE_UNCOVERED", {"cli.tri.t27": card()}, fixture_inventory(sha), project.replace('WORK_PACKAGES : [1]str = ["S01"]', 'WORK_PACKAGES : [2]str = ["S01", "S02"]').replace('WORK_PACKAGE_ISSUES : [1]str = ["https://github.com/gHashTag/t27/issues/3563"]', 'WORK_PACKAGE_ISSUES : [2]str = ["https://github.com/gHashTag/t27/issues/3563", "https://github.com/gHashTag/t27/issues/3564"]')),
+            ("a dialect count that differs", "COUNT_MISMATCH", {"cli.tri.t27": card()}, fixture_inventory(sha), project.replace("TRI_FILES : u16 = 0", "TRI_FILES : u16 = 7")),
+            ("vendored copies the project does not state", "COUNT_MISMATCH", {"cli.tri.t27": card()}, fixture_inventory(sha, vendored=3), project),
+            ("a target build.zig does not define", "UNKNOWN_TARGET", {"cli.tri.t27": card(targets='"exe:tri", "step:tri", "exe:ghost"', n=3)}, fixture_inventory(sha), project),
+            ("an inventory without the vendored count", "UNREADABLE", {"cli.tri.t27": card()}, stale, project),
+        ]
+        for planted, code, cards, inv, project_text in cases:
             got = run(project_text, cards, inv)
             if code not in got:
-                failures.append(f"planted {code}, the gate reported {got}")
+                failures.append(f"planted {planted}: {code} expected, the gate reported {got}")
     if failures:
         print("trinity_manifest --self-check: FAIL")
         for f in failures:
             print("  " + f)
         return 1
-    print("trinity_manifest --self-check: PASS (clean fixture passes; 13 planted defects each reported under their own code)")
+    print(f"trinity_manifest --self-check: PASS (clean fixture passes; {len(cases)} planted defects each reported under their own code; "
+          "a step, an install, a path and an @import that exist only in comments are not read, a `//` inside a literal is; "
+          "the mirror and the vendored copies are counted apart, end to end through inventory())")
     return 0
 
 
@@ -798,7 +1015,8 @@ def main() -> int:
         b = inv["build"]
         print(f"trinity_manifest: {inv['repo']}@{inv['sha'][:9]} -> {args.out}: {len(b['executables'])} executables, {len(b['libraries'])} libraries, "
               f"{len(b['tests'])} tests, {len(b['steps'])} steps, {len(b['installed_by_default'])} installed by default, "
-              f"{inv['dialects']['t27_canonical']} canonical .t27 / {inv['dialects']['t27_mirror']} mirrored, {inv['dialects']['tri']} .tri, "
+              f"{inv['dialects']['t27_canonical']} canonical .t27 / {inv['dialects']['t27_mirror']} mirrored / "
+              f"{inv['dialects']['t27_vendored']} vendored from t27, {inv['dialects']['tri']} .tri, "
               f"{inv['dialects']['vibee']} .vibee, zig unreachable {inv['zig_reachability']['unreachable']}/{inv['zig_reachability']['zig_files']}")
         return 0
     if args.command == "check":

@@ -19,9 +19,12 @@ pub const ID : str = "reproduce/capabilities";
 ; Run as the card writes the command, with -Dci=true added to every `zig build` in it (the cards are
 ; headless, and the headless profile is -Dci=true), stdin closed, at most RUN_TIMEOUT_S seconds each.
 ; A tracked file the command changes is recorded with the run and restored after it.
-pub const RUN : [11]str = [
+; trinity/brain.regions owns five named steps and six test roots that the profile's test step does not
+; compile (gHashTag/t27#5953), so its five `zig build test-<region>` commands are its only measure here.
+pub const RUN : [12]str = [
     "trinity/abi.c-api",
     "trinity/agent.phi-loop",
+    "trinity/brain.regions",
     "trinity/cli.tri",
     "trinity/convert.b2t",
     "trinity/examples.zig",
@@ -41,10 +44,12 @@ pub const NOT_RUN_REASONS : [3]str = [
 ];
 ; Capabilities known to be blocked, and what blocks each. One that measures complete fails the index
 ; until its line is removed, and one that is blocked and not here fails it too.
-pub const KNOWN_BLOCKED : [3]str = ["trinity/mcp.needle-mcp", "trinity/mcp.trinity-mcp", "trinity/registry.commands"];
-pub const KNOWN_BLOCKED_REASONS : [3]str = [
-    "zig build needle-mcp: there is no such step -- build.zig comments it out (around line 1507), and the S01 inventory counts it because tools/trinity_manifest.py does not skip // lines",
-    "zig build trinity-mcp: there is no such step -- build.zig comments it out (around line 1551), as for needle-mcp",
+; mcp.needle-mcp and mcp.trinity-mcp left this list with the vendoring of gHashTag/t27@39e06aa0: their
+; acceptance was `zig build needle-mcp` / `zig build trinity-mcp`, steps that exist only in commented-out
+; lines of build.zig, and gHashTag/t27#5474 made it `zig build -Dci=true && test -x zig-out/bin/<name>`,
+; the install the headless profile already makes.
+pub const KNOWN_BLOCKED : [1]str = ["trinity/registry.commands"];
+pub const KNOWN_BLOCKED_REASONS : [1]str = [
     "zig build export-registry && git diff --exit-code .trinity/registry.json cannot pass: the export writes the time it ran into generated_at"
 ];
 ; Findings of the S01 checker that are drift since the inventory S01 pinned (gHashTag/trinity@976df517)

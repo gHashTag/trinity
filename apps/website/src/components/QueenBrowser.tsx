@@ -2,6 +2,7 @@
 // live in lib/queenBrowser.ts; this file only draws them.
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { appSessionFromWindow } from '../lib/appSessionIdentity'
+import { guideSpecHref, guideSpecOf } from '../lib/queenBrowserGuide'
 import {
   APP_BROWSER_URL,
   STARTING_POLL_MS,
@@ -43,6 +44,14 @@ export interface BrowserCopy {
   journal: string
   driving: string
   handBack: string
+  /** The signed-out guide (lib/queenBrowserGuide.ts): what this tab does once signed in. */
+  guideTitle: string
+  guideLive: string
+  guideJournal: string
+  guidePasswords: string
+  /** Before the spec the address names, and the link that opens it on SPECS. */
+  guideSpec: string
+  guideReadSpec: string
   watch: WatchCopy
   lanes: BrowserLanesCopy
 }
@@ -56,7 +65,20 @@ const brokerEnv = {
   },
 }
 
-export function QueenBrowser({ c, embedded, lang = 'en' }: { c: BrowserCopy; embedded: boolean; lang?: 'ru' | 'en' }) {
+export function QueenBrowser({
+  c,
+  embedded,
+  lang = 'en',
+  spec = null,
+  onReadSpec,
+}: {
+  c: BrowserCopy
+  embedded: boolean
+  lang?: 'ru' | 'en'
+  /** The address's raw `spec=`; the guide names it only through guideSpecOf. */
+  spec?: string | null
+  onReadSpec?: (spec: string) => void
+}) {
   const mode = panelMode({ embedded, session: appSessionFromWindow() })
 
   const [view, setView] = useState<BrowserView | null>(null)
@@ -185,8 +207,33 @@ export function QueenBrowser({ c, embedded, lang = 'en' }: { c: BrowserCopy; emb
 
   const state = view?.state
   if (mode === 'signin' || state === 'signin') {
+    // The guide: what a signed-in person gets here, each line true of the
+    // branches below (qa/queen-browser-guide-contract.mjs pins them), and the
+    // spec the address names -- printed only if it is a plain path.
+    const named = guideSpecOf(spec)
     return (
       <div className="queen27-browser is-note">
+        <ul className="queen27-browser-guide" aria-label={c.guideTitle}>
+          <li>{c.guideLive}</li>
+          <li>{c.guideJournal}</li>
+          <li>{c.guidePasswords}</li>
+        </ul>
+        {named ? (
+          <p>
+            {c.guideSpec} <code>{named}</code>{' '}
+            <a
+              className="queen27-browser-link"
+              href={guideSpecHref(named)}
+              onClick={e => {
+                if (!onReadSpec) return
+                e.preventDefault()
+                onReadSpec(named)
+              }}
+            >
+              {c.guideReadSpec}
+            </a>
+          </p>
+        ) : null}
         <p>{c.signin}</p>
         <a className="queen27-browser-btn" href={APP_BROWSER_URL} target="_top" rel="noopener">
           {c.openInApp}

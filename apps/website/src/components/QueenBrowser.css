@@ -84,6 +84,24 @@
   max-width: 56ch;
 }
 
+/* The signed-out guide. No ink of its own: it rides the note's, so the
+   contrast measured at the note rule above is the guide's too. A spec path
+   wraps only at its hyphens, and the guide prints any plain path the address
+   names. Measured at 375px, 2026-10-04: the longest catalog path (96
+   characters, with hyphens) fits either way; a 90-character path of
+   underscores ran to 718px inside a 343px note without this rule and fits
+   with it. So it may break anywhere. */
+.queen27-page.is-shell .queen27-browser-guide {
+  margin: 0;
+  max-width: 56ch;
+  padding-left: 1.2em;
+}
+
+.queen27-page.is-shell .queen27-browser.is-note code {
+  font: inherit;
+  overflow-wrap: anywhere;
+}
+
 .queen27-page.is-shell .queen27-browser-bar {
   /* Wraps, and anchors the watch panel: on a phone the hint, the invite and
      the two buttons are wider than the screen, and a bar that did not wrap

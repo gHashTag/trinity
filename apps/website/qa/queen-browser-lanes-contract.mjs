@@ -115,19 +115,19 @@ const said = (t) => ({ ['тип']: 'текст', ['текст']: t })
 }
 {
   const r = render({ lines: [{ ['тип']: 'lane', lane: 'task-2' }, said('done')] })
-  const a = await askBrowserAgent(r.env, [], 'find it', 'en', undefined, 'task-2')
+  const a = await askBrowserAgent(r.env, [], 'find it', 'en', undefined, null, 'task-2')
   assert.equal(r.sent[0].body.lane, 'task-2')
   assert.equal(a.lane, 'task-2')
   assert.equal(a.text, 'done')
 }
 {
   const r = render({ lines: [said('from main')] })
-  const a = await askBrowserAgent(r.env, [], 'find it', 'en', undefined, 'task-2')
+  const a = await askBrowserAgent(r.env, [], 'find it', 'en', undefined, null, 'task-2')
   assert.equal(a.lane, null, 'a render from before lanes confirms nothing')
 }
 {
   const r = render({ status: 409, raw: body({ code: 'lane_limit', error: 'three lanes (main, a, b)' }) })
-  await assert.rejects(askBrowserAgent(r.env, [], 'x', 'en', undefined, 'task-2'), (e) => e instanceof AgentLaneRefused && e.refusal === 'limit')
+  await assert.rejects(askBrowserAgent(r.env, [], 'x', 'en', undefined, null, 'task-2'), (e) => e instanceof AgentLaneRefused && e.refusal === 'limit')
 }
 {
   const r = render({ status: 409, raw: body({ code: 'lane_limit' }) })
@@ -135,7 +135,7 @@ const said = (t) => ({ ['тип']: 'текст', ['текст']: t })
 }
 {
   const r = render({ status: 401 })
-  await assert.rejects(askBrowserAgent(r.env, [], 'x', 'en', undefined, 'task-2'), AgentSignedOut)
+  await assert.rejects(askBrowserAgent(r.env, [], 'x', 'en', undefined, null, 'task-2'), AgentSignedOut)
 }
 {
   const r = render({ lines: [said('ok')] })
@@ -158,7 +158,7 @@ assert.match(cards, /if \(error\.refusal === 'limit'\) setFull\(true\)/)
 assert.doesNotMatch(cards, /localStorage|sessionStorage|indexedDB/, 'a card is forgotten when it closes')
 
 const lib = readFileSync(new URL('../src/lib/queenBrowser.ts', import.meta.url), 'utf8')
-assert.match(lib, /messages: agentMessages\(history, question, lang\), \.\.\.laneField\(lane\)/)
+assert.match(lib, /messages: agentMessages\(history, question, lang, page\), \.\.\.laneField\(lane\)/)
 
 // 11. The words, in both languages, with the render's numbers in them.
 const page = readFileSync(new URL('../src/pages/Queen.tsx', import.meta.url), 'utf8')
