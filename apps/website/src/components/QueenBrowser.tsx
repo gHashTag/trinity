@@ -21,6 +21,8 @@ import {
   type BrowserView,
 } from '../lib/queenBrowser'
 import { QueenWatch, type WatchCopy } from './QueenWatch'
+import { QueenBrowserLanes, type BrowserLanesCopy } from './QueenBrowserLanes'
+import { MAIN_LANE, laneOfStep } from '../lib/queenBrowserLanes'
 import './QueenBrowser.css'
 
 export interface BrowserCopy {
@@ -42,6 +44,7 @@ export interface BrowserCopy {
   driving: string
   handBack: string
   watch: WatchCopy
+  lanes: BrowserLanesCopy
 }
 
 const brokerEnv = {
@@ -239,13 +242,16 @@ export function QueenBrowser({ c, embedded, lang = 'en' }: { c: BrowserCopy; emb
           allow="clipboard-read; clipboard-write; fullscreen"
           onLoad={e => listenInside(e.currentTarget)}
         />
+        <QueenBrowserLanes c={c.lanes} lang={lang} env={brokerEnv} live={live} />
         {journal.length > 0 ? (
           <ol className="queen27-browser-journal" aria-label={c.journal}>
             {foldRepeats(journal, lang).map((step, i) => {
               const line = journalLine(step, lang)
+              const lane = laneOfStep(step.detail)
               return (
                 <li key={`${step.at}:${i}`} className={line.ok ? '' : 'is-error'}>
-                  <time>{line.time}</time> <b>{line.verb}</b>
+                  <time>{line.time}</time> {lane === MAIN_LANE ? null : <i className="queen27-browser-lane">{lane}</i>}
+                  <b>{line.verb}</b>
                   {step.times > 1 ? <em> ×{step.times}</em> : null} <span>{line.text}</span>
                 </li>
               )
