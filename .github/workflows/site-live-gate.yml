@@ -86,7 +86,10 @@ jobs:
           say "- served by t27.ai: \`$LIVE\`"
           echo "" >> "$GITHUB_STEP_SUMMARY"
 
-          # The publisher runs on a 15-minute cron, so between a merge here and
+          # publish-apex-on-merge.yml asks the publisher to run as soon as a
+          # website change lands (a publish takes 4-5 minutes); its 15-minute
+          # cron is only the backstop -- GitHub ran it 3-7 hours apart on
+          # 2026-10-01. So between a merge here and
           # the apex serving it there is a window in which a mismatch is normal
           # operation rather than a defect. Firing inside that window makes this
           # gate red after every merge — which is exactly how a watchdog teaches

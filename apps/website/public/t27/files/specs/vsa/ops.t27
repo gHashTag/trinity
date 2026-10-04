@@ -2,16 +2,16 @@
 // t27/specs/vsa/ops.t27
 // Vector Symbolic Architecture Operations
 // Bind, Unbind, Bundle, Similarity for ternary hypervectors
-// phi^2 + 1/phi^2 = 3 | TRINITY
+// φ² + 1/φ² = 3 | TRINITY
 
 module VSAOps {
     // Import base types and operations
     use base::types;
     use base::ops;
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 1. Constants
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     const VSA_DIM : usize = 1024;     // Default hypervector dimension
     const SIMD_WIDTH : usize = 32;    // SIMD trits per operation
@@ -26,11 +26,11 @@ module VSAOps {
     const BIND_IDENTITY : u8 = 0;     // Self-binding (vector unchanged)
     const BIND_INVERT : u8 = 1;       // Inverted binding
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 2. Bind Operation
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // bind(a: []Trit, b: []Trit, len: usize) -> []Trit
+    // bind(a: []Trit, b: []Trit, len: usize) → []Trit
     // XOR-like operation for balanced ternary hypervectors
     // Algorithm: if a[i] == 0 return b[i]; else if b[i] == 0 return a[i];
     //           else return a[i] * b[i] (which is either -1 or +1)
@@ -60,11 +60,11 @@ module VSAOps {
         return result;
     }
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 3. Unbind Operation
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // unbind(bound: []Trit, key: []Trit, len: usize) -> []Trit
+    // unbind(bound: []Trit, key: []Trit, len: usize) → []Trit
     // Inverse of bind operation
     // For XOR-like bind: unbind(x, y) = bind(x, y)
     // Used for: retrieving bound values from hypervectors
@@ -73,14 +73,14 @@ module VSAOps {
         return bind(bound, key, len);
     }
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 4. Bundle Operations
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // bundle2(a: []Trit, b: []Trit, len: usize) -> []Trit
+    // bundle2(a: []Trit, b: []Trit, len: usize) → []Trit
     // Majority vote of 2 ternary vectors
     // Algorithm: if a[i] == 0 return b[i]; else if b[i] == 0 return a[i];
-    //           else return sign(a[i] + b[i]) in {-1, 0, +1}
+    //           else return sign(a[i] + b[i]) ∈ {-1, 0, +1}
     // Used for: superposition of items, set union
     fn bundle2(a: []Trit, b: []Trit, len: usize) -> []Trit {
         var result : []Trit = [];
@@ -110,7 +110,7 @@ module VSAOps {
         return result;
     }
 
-    // bundle3(a: []Trit, b: []Trit, c: []Trit, len: usize) -> []Trit
+    // bundle3(a: []Trit, b: []Trit, c: []Trit, len: usize) → []Trit
     // Majority vote of 3 ternary vectors
     // Algorithm: sum = a[i] + b[i] + c[i]; result = sign(sum)
     // Used for: robust superposition, noise reduction
@@ -137,11 +137,11 @@ module VSAOps {
         return result;
     }
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 5. Similarity Operations
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // similarity(a: []Trit, b: []Trit, len: usize, metric: u8) -> f64
+    // similarity(a: []Trit, b: []Trit, len: usize, metric: u8) → f64
     // Compute similarity between two hypervectors
     // Metrics: COSINE, HAMMING, DOT
     fn similarity(a: []Trit, b: []Trit, len: usize, metric: u8) -> f64 {
@@ -154,8 +154,8 @@ module VSAOps {
         return dot_product(a, b, len);
     }
 
-    // cosine_similarity(a: []Trit, b: []Trit, len: usize) -> f64
-    // Cosine similarity: (a*b) / (||a|| * ||b||)
+    // cosine_similarity(a: []Trit, b: []Trit, len: usize) → f64
+    // Cosine similarity: (a·b) / (||a|| * ||b||)
     fn cosine_similarity(a: []Trit, b: []Trit, len: usize) -> f64 {
         const dot = dot_product(a, b, len);
         const norm_a = vector_norm(a, len);
@@ -168,15 +168,15 @@ module VSAOps {
         return dot / (norm_a * norm_b);
     }
 
-    // hamming_similarity(a: []Trit, b: []Trit, len: usize) -> f64
+    // hamming_similarity(a: []Trit, b: []Trit, len: usize) → f64
     // Hamming similarity: 1 - (hamming_distance / len)
     fn hamming_similarity(a: []Trit, b: []Trit, len: usize) -> f64 {
         const dist = hamming_distance(a, b, len);
         return 1.0 - (dist as f64 / len as f64);
     }
 
-    // dot_product(a: []Trit, b: []Trit, len: usize) -> f64
-    // Compute dot product Sigma a[i] * b[i]
+    // dot_product(a: []Trit, b: []Trit, len: usize) → f64
+    // Compute dot product Σ a[i] * b[i]
     fn dot_product(a: []Trit, b: []Trit, len: usize) -> f64 {
         var acc : i64 = 0;
 
@@ -190,9 +190,9 @@ module VSAOps {
         return acc as f64;
     }
 
-    // vector_norm(v: []Trit, len: usize) -> f64
-    // Compute L2 norm: sqrt(Sigma v[i]^2)
-    // For trits: v[i]^2 is always 0 or 1
+    // vector_norm(v: []Trit, len: usize) → f64
+    // Compute L2 norm: sqrt(Σ v[i]²)
+    // For trits: v[i]² is always 0 or 1
     // So norm = sqrt(count of non-zero trits)
     fn vector_norm(v: []Trit, len: usize) -> f64 {
         var nonzero_count : usize = 0;
@@ -208,7 +208,7 @@ module VSAOps {
         return sqrt(nonzero_count as f64);
     }
 
-    // hamming_distance(a: []Trit, b: []Trit, len: usize) -> usize
+    // hamming_distance(a: []Trit, b: []Trit, len: usize) → usize
     // Count positions where a[i] != b[i]
     fn hamming_distance(a: []Trit, b: []Trit, len: usize) -> usize {
         var distance : usize = 0;
@@ -224,11 +224,11 @@ module VSAOps {
         return distance;
     }
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 6. Permutation Operations
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // permute(v: []Trit, len: usize, shift: usize) -> []Trit
+    // permute(v: []Trit, len: usize, shift: usize) → []Trit
     // Circular shift of hypervector by shift positions
     // Used for: sequence encoding, position tagging
     fn permute(v: []Trit, len: usize, shift: usize) -> []Trit {
@@ -247,7 +247,7 @@ module VSAOps {
         return result;
     }
 
-    // encode_sequence(items: [][]Trit, count: usize, item_len: usize) -> []Trit
+    // encode_sequence(items: [][]Trit, count: usize, item_len: usize) → []Trit
     // Encode sequence of items using position-aware binding
     // result = items[0] + permute(items[1], 1) + permute(items[2], 2) + ...
     fn encode_sequence(items: [][]Trit, count: usize, item_len: usize) -> []Trit {
@@ -263,7 +263,7 @@ module VSAOps {
         return result;
     }
 
-    // probe_sequence(seq: []Trit, candidate: []Trit, position: usize, len: usize) -> f64
+    // probe_sequence(seq: []Trit, candidate: []Trit, position: usize, len: usize) → f64
     // Probe if candidate is at position in encoded sequence
     // Returns similarity between seq and permute(candidate, position)
     fn probe_sequence(seq: []Trit, candidate: []Trit, position: usize, len: usize) -> f64 {
@@ -271,9 +271,9 @@ module VSAOps {
         return similarity(seq, permuted, len, SIM_COSINE);
     }
 
-    // =======================================================================================================
+    // ═══════════════════════════════════════════════════════════════════════════════════════════════════════
     // TDD-Inside-Spec: Tests and Invariants for VSAOps
-    // =======================================================================================================
+    // ═══════════════════════════════════════════════════════════════════════════════════════════════════════
 
     test vsa_bind_with_zeros
         given a = [Trit.zero, Trit.pos, Trit.neg]
@@ -482,9 +482,9 @@ module VSAOps {
     invariant vsa_max_vectors_positive
         assert MAX_VECTORS > 0
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // Ring 048: Additional Algebraic Group Invariants
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // bind_self_inverse: a BIND (a BIND b) == b
     // For XOR-like bind, bind is its own inverse
@@ -548,9 +548,9 @@ module VSAOps {
         and   xz = bind(x, zero, 3)
         then hamming_distance(zx, x) == 0 and hamming_distance(xz, x) == 0
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 27-Dimensional Coptic Trit Space (Ring 048)
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     const COPTIC_DIM : usize = 27
 

@@ -133,6 +133,11 @@ module Diagnostics {
         given r = error_code_range(ErrorCode::InternalError)
         then r == 9
 
+    test format_diagnostic_returns_file_path
+        given d = diagnostic_new(ErrorCode::ParseError, Severity::Error, "bad", "test.t27", 1, 1)
+        given result = format_diagnostic(d)
+        then result == "test.t27"
+
     invariant parse_codes_are_1xxx
         assert ErrorCode::ParseError >= 1000
         assert ErrorCode::InvalidType < 2000

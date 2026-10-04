@@ -70,59 +70,72 @@ module GF16_Accel_Testbench {
         return result;
     }
 
-    test test_reset_state {
+    test "test_reset_state" {
         reset();
         invariant valid == false;
         invariant busy == false;
     }
 
-    test test_add_zero {
+    test "test_add_zero" {
         reset();
         var val : u16 = gf16_add(0x3C00, 0x0000);
         invariant val != 0;
     }
 
-    test test_mul_by_one {
+    test "test_mul_by_one" {
         reset();
         var one : u16 = 0x3C00;
         var val : u16 = gf16_mul(one, one);
         invariant val == one;
     }
 
-    test test_mul_by_zero {
+    test "test_mul_by_zero" {
         reset();
         var val : u16 = gf16_mul(0x3C00, 0x0000);
         invariant val == 0;
     }
 
-    test test_mac_identity {
+    test "test_mac_identity" {
         reset();
         var a : u16 = gf16_mul(0x3C00, 0x3C00);
         var val : u16 = gf16_mac(0x3C00, 0x0000, a);
         invariant val != 0;
     }
 
-    test test_commutative_add {
+    test "test_commutative_add" {
         reset();
         var r1 : u16 = gf16_add(0x4000, 0x3C00);
         var r2 : u16 = gf16_add(0x3C00, 0x4000);
         invariant r1 == r2;
     }
 
-    test test_commutative_mul {
+    test "test_commutative_mul" {
         reset();
         var r1 : u16 = gf16_mul(0x4000, 0x3C00);
         var r2 : u16 = gf16_mul(0x3C00, 0x4000);
         invariant r1 == r2;
     }
 
-    test test_phi_squared {
+    test "test_phi_squared" {
         var phi : u16 = 0x3E80;
         var phi_sq : u16 = gf16_mul(phi, phi);
         invariant phi_sq != 0;
     }
 
     invariant phi_tolerance_positive : PHI_TOLERANCE > 0;
+
+    test "test_tick" {
+        reset();
+        tick();
+        invariant valid == false;
+        invariant busy == false;
+    }
+
+    test "test_tick_implementation" {
+        reset();
+        tick();
+        invariant clk == true;
+    }
 
     bench bench_gf16_throughput {
         reset();

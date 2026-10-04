@@ -1,24 +1,39 @@
 // specs/tools/schema.t27
 // Tools Types Specification
-// phi^2 + 1/phi^2 = 3 | TRINITY
+// φ² + 1/φ² = 3 | TRINITY
 
 module Tools {
     use base::types;
-    use session::schema as SessionSchema;
+    // was `use session::schema as SessionSchema;` -- the parser rejects `as`;
+    // t27 spells an aliased import `using Alias: @import("path");`.
+    // NOTE: specs/session/schema.t27 does not exist in the repo (master
+    // a103752) and no SessionID / MessageID is defined anywhere in it; the
+    // path is only where the original module name session::schema would live.
+    // The compiler records just the alias and does not open the file.
+    using SessionSchema: @import("../session/schema.t27");
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Tool ID Type
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     // ToolID is a branded string representing a tool identifier
-    struct ToolID(str);
+    // (t27 has no tuple structs: the wrapped string is the single field `value`,
+    // so `ToolID(s)` is written `ToolID{ value = s }` and `id.0` is `id.value`;
+    // the same holds for CallID. SessionSchema's SessionID / MessageID are
+    // left in their original call form `SessionID("s")` / `.0`, which parses:
+    // their module is not in the repo, so their shape is unknown)
+    struct ToolID {
+        value: str;
+    }
 
     // CallID is a branded string representing a tool call identifier
-    struct CallID(str);
+    struct CallID {
+        value: str;
+    }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Tool Types
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     // ToolCategory represents the category of a tool
     enum ToolCategory {
@@ -38,9 +53,9 @@ module Tools {
         Denied = 2,            // Tool is disabled
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Tool Definition
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     // ParameterSchema represents the schema for tool parameters
     struct ParameterSchema {
@@ -75,9 +90,9 @@ module Tools {
         metadata: ToolMetadata,
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Tool Execution
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     // ToolContext represents the context for tool execution
     struct ToolContext {
@@ -110,9 +125,9 @@ module Tools {
         timestamp: u64,         // Call timestamp
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Validation
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     // ValidationError represents a parameter validation error
     struct ValidationError {
@@ -127,9 +142,9 @@ module Tools {
         errors: [ValidationError],
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Tool Registry Types
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     // ToolRegistry represents a registry of available tools
     struct ToolRegistry {
@@ -138,9 +153,9 @@ module Tools {
         custom: [ToolID],       // Custom tool IDs
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Error Types
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     // ToolError represents errors in tool operations
     enum ToolError {
@@ -153,16 +168,16 @@ module Tools {
         NotDefined = 6,
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Constants
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     const MAX_OUTPUT_LENGTH: u32 = 100000;
     const DEFAULT_TIMEOUT_MS: u32 = 120000;
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Helper Functions
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     // is_dangerous checks if a tool is dangerous
     fn is_dangerous(metadata: ToolMetadata) -> bool {
@@ -179,18 +194,18 @@ module Tools {
         return metadata.permission == ToolPermission::Allowed;
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Tests
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     test "tool_id_creation" {
-        var id = ToolID("read_file");
-        assert(id.0 == "read_file");
+        var id = ToolID{ value = "read_file" };
+        assert(id.value == "read_file");
     }
 
     test "call_id_creation" {
-        var id = CallID("call-123");
-        assert(id.0 == "call-123");
+        var id = CallID{ value = "call-123" };
+        assert(id.value == "call-123");
     }
 
     test "tool_category_values" {
@@ -255,14 +270,15 @@ module Tools {
     }
 
     test "tool_parameters_creation" {
-        var props: [str: ParameterSchema] = {
-            "file": ParameterSchema {
-                type = "string",
-                description = "File path",
-                required = true,
-                default = null,
-                enum = null,
-            },
+        // Map literal: t27 has no map literal, so the map is emptied and then
+        // filled with one index assignment per entry (same meaning).
+        var props: [str: ParameterSchema] = [];
+        props["file"] = ParameterSchema {
+            type = "string",
+            description = "File path",
+            required = true,
+            default = null,
+            enum = null,
         };
         var params = ToolParameters {
             properties = props,
@@ -298,7 +314,7 @@ module Tools {
     }
 
     test "tool_definition_creation" {
-        var props: [str: ParameterSchema] = {};
+        var props: [str: ParameterSchema] = [];  // empty map ({} has no t27 form)
         var params = ToolParameters {
             properties = props,
             required: [],
@@ -312,12 +328,12 @@ module Tools {
             outputPath = null,
         };
         var def = ToolDefinition {
-            id = ToolID("read"),
+            id = ToolID{ value = "read" },
             description = "Read a file",
             parameters = params,
             metadata = metadata,
         };
-        assert(def.id.0 == "read");
+        assert(def.id.value == "read");
         assert(def.description == "Read a file");
     }
 
@@ -325,13 +341,13 @@ module Tools {
         var ctx = ToolContext {
             sessionID = SessionSchema::SessionID("sess-1"),
             messageID = SessionSchema::MessageID("msg-1"),
-            callID = CallID("call-1"),
+            callID = CallID{ value = "call-1" },
             agent = "claude",
             abort = false,
             extra = null,
         };
         assert(ctx.sessionID.0 == "sess-1");
-        assert(ctx.callID?.0 == "call-1");
+        assert(ctx.callID?.value == "call-1");
     }
 
     test "tool_result_success" {
@@ -344,8 +360,8 @@ module Tools {
             outputPath = null,
         };
         var result = ToolResult {
-            toolID = ToolID("read"),
-            callID = CallID("call-1"),
+            toolID = ToolID{ value = "read" },
+            callID = CallID{ value = "call-1" },
             success = true,
             title = "File read",
             output = "file content",
@@ -368,8 +384,8 @@ module Tools {
             outputPath = null,
         };
         var result = ToolResult {
-            toolID = ToolID("read"),
-            callID = CallID("call-1"),
+            toolID = ToolID{ value = "read" },
+            callID = CallID{ value = "call-1" },
             success = false,
             title = "Failed",
             output = "",
@@ -408,13 +424,18 @@ module Tools {
     }
 
     test "tool_call_creation" {
+        // Map literal { "file": "test.txt" }: t27 has no map literal, so the
+        // map is emptied and then filled with one index assignment per entry
+        // (same meaning).
+        var parameters: [str: str] = [];
+        parameters["file"] = "test.txt";
         var call = ToolCall {
-            toolID = ToolID("read"),
-            callID = CallID("call-1"),
-            parameters = { "file": "test.txt" },
+            toolID = ToolID{ value = "read" },
+            callID = CallID{ value = "call-1" },
+            parameters = parameters,
             timestamp = 1234567890,
         };
-        assert(call.toolID.0 == "read");
+        assert(call.toolID.value == "read");
         assert(call.parameters["file"] == "test.txt");
     }
 

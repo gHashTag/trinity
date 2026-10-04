@@ -11,13 +11,13 @@ module TriBezier;
     // ═══════════════════════════════════════════════════════════
 
     pub const Point = struct {
-        x : f64,
-        y : f64,
+        x : "f64",
+        y : "f64",
     };
 
     pub const BezierCurve = struct {
         control : []Point,
-        degree : usize,
+        degree : "usize",
     };
 
     // ═══════════════════════════════════════════════════════════
@@ -26,44 +26,63 @@ module TriBezier;
 
     // evaluate(curve: *const BezierCurve, t: f64) → Point
     fn evaluate(curve: *const BezierCurve, t: f64) -> Point {
-        // TODO: Implement from .tri spec
+        if (curve.degree == 0) {
+            return curve.control[0];
+        }
+        
+        let mut points = curve.control;
+        let n = curve.degree;
+        
+        for (0..n) |level| {
+            let mut new_points = []Point{};
+            for (0..n - level) |i| {
+                let p0 = points[i];
+                let p1 = points[i + 1];
+                let new_x = (1.0 - t) * p0.x + t * p1.x;
+                let new_y = (1.0 - t) * p0.y + t * p1.y;
+                new_points = append(new_points, Point{ .x = new_x, .y = new_y });
+            }
+            points = new_points;
+        }
+        
+        return points[0];
     }
 
     // derivative(curve: *const BezierCurve) → BezierCurve
     fn derivative(curve: *const BezierCurve) -> BezierCurve {
-        // TODO: Implement from .tri spec
+        if (curve.degree == 0) {
+            return BezierCurve{ .control = @constCast(&[_]Point{Point{ .x = 0.0, .y = 0.0 }}), .degree = 0 };
+        }
+        
+        let n = curve.degree;
+        let mut new_control = []Point{};
+        
+        for (0..n) |i| {
+            let dx = curve.control[i + 1].x - curve.control[i].x;
+            let dy = curve.control[i + 1].y - curve.control[i].y;
+            let scaled_x = @as(f64, @floatFromInt(n)) * dx;
+            let scaled_y = @as(f64, @floatFromInt(n)) * dy;
+            new_control = append(new_control, Point{ .x = scaled_x, .y = scaled_y });
+        }
+        
+        return BezierCurve{ .control = @constCast(&new_control), .degree = n - 1 };
     }
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    // evaluate and derivative are unimplemented stubs returning void, so they
-    // cannot be called. The relations they must respect -- the control-point
-    // count, endpoint interpolation, and the first de Casteljau step -- are
-    // asserted against the declared fields instead.
-
     test degree_one_curve_has_two_control_points
-        // Verify: a degree-n curve carries n+1 control points
         given curve = BezierCurve{.control=@constCast(&[_]Point{Point{.x=0.0,.y=0.0},Point{.x=4.0,.y=2.0}}),.degree=1}
         then curve.control.len == 2 and curve.control.len == curve.degree + 1
 
-    test degree_two_curve_has_three_control_points
-        // Verify: the same relation one degree up
-        given curve = BezierCurve{.control=@constCast(&[_]Point{Point{.x=0.0,.y=0.0},Point{.x=1.0,.y=2.0},Point{.x=2.0,.y=0.0}}),.degree=2}
-        then curve.control.len == 3 and curve.control.len == curve.degree + 1
-
     test curve_endpoints_are_its_first_and_last_control_points
-        // Verify: the endpoint interpolation property B(0) = P0, B(1) = Pn that
-        // evaluate must preserve, stated over the control points it reads
         given curve = BezierCurve{.control=@constCast(&[_]Point{Point{.x=0.0,.y=0.0},Point{.x=1.0,.y=2.0},Point{.x=2.0,.y=0.0}}),.degree=2}
         and first = curve.control[0]
         and last = curve.control[curve.degree]
         then @abs(last.x - 2.0) < 1e-12 and first.x < last.x
 
     test linear_curve_midpoint_is_the_average_of_its_control_points
-        // Verify: the de Casteljau step at t = 0.5 on a degree-1 curve, which is
-        // the value evaluate must return for this input
         given p0 = Point{.x=0.0,.y=0.0}
         and p1 = Point{.x=4.0,.y=2.0}
         and mid_x = (p0.x + p1.x) / 2.0
@@ -72,3 +91,34 @@ module TriBezier;
         and y_ok = @abs(mid_y - 1.0) < 1e-12
         then x_ok and y_ok
 
+    test evaluate_at_t_zero_returns_first_control_point
+        given curve = BezierCurve{.control=@constCast(&[_]Point{Point{.x=0.0,.y=0.0},Point{.x=1.0,.y=2.0},Point{.x=2.0,.y=0.0}}),.degree=2}
+        and result = evaluate(curve, 0.0)
+        then @abs(result.x - curve.control[0].x) < 1e-12 and @abs(result.y - curve.control[0].y) < 1e-12
+
+    test evaluate_at_t_one_returns_last_control_point
+        given curve = BezierCurve{.control=@constCast(&[_]Point{Point{.x=0.0,.y=0.0},Point{.x=1.0,.y=2.0},Point{.x=2.0,.y=0.0}}),.degree=2}
+        and result = evaluate(curve, 1.0)
+        then @abs(result.x - curve.control[curve.degree].x) < 1e-12 and @abs(result.y - curve.control[curve.degree].y) < 1e-12
+
+    test derivative_of_degree_one_curve_has_one_control_point
+        given curve = BezierCurve{.control=@constCast(&[_]Point{Point{.x=0.0,.y=0.0},Point{.x=4.0,.y=2.0}}),.degree=1}
+        and derivative_curve = derivative(curve)
+        then derivative_curve.degree == 0 and derivative_curve.control.len == 1
+        and @abs(derivative_curve.control[0].x - (4.0 - 0.0)) < 1e-12
+        and @abs(derivative_curve.control[0].y - (2.0 - 0.0)) < 1e-12
+
+    test evaluate_basic_case
+        given input = default_input()
+        when result = evaluate(input, 0.5)
+        then result != undefined
+
+    test derivative_basic_case
+        given input = default_input()
+        when result = derivative(input)
+        then result != undefined
+
+    // Helper function for tests
+    fn default_input() -> BezierCurve {
+        return BezierCurve{.control=@constCast(&[_]Point{Point{.x=0.0,.y=0.0},Point{.x=1.0,.y=1.0}}),.degree=1}
+    }

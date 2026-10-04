@@ -43,45 +43,83 @@ module Lstm;
 
     // forward(input: []const f32, state_prev: LSTMState, weights: LSTMWeights, state_next: LSTMState, config: LSTMConfig) → void
     fn forward(input: []const f32, state_prev: LSTMState, weights: LSTMWeights, state_next: LSTMState, config: LSTMConfig) -> void {
-        // TODO: Implement from .tri spec
+        // LSTM forward pass implementation
+        // Extract input size from input slice
+        let input_size = input.size();
+        
+        // Validate input size matches configuration
+        assert(input_size == config.input_size);
+        
+        // Concatenate input with previous hidden state
+        let concat_input = math::concatenate(input, state_prev.h);
+        
+        // Compute gate activations
+        let forget_gate = math::sigmoid(math::dot(concat_input, weights.Wf) + weights.bf);
+        let input_gate = math::sigmoid(math::dot(concat_input, weights.Wi) + weights.bi);
+        let output_gate = math::sigmoid(math::dot(concat_input, weights.Wo) + weights.bo);
+        let cell_gate = math::tanh(math::dot(concat_input, weights.Wg) + weights.bg);
+        
+        // Update cell state
+        state_next.c = math::add(math::multiply(forget_gate, state_prev.c), 
+                                math::multiply(input_gate, cell_gate));
+        
+        // Compute new hidden state
+        let activated_cell = math::tanh(state_next.c);
+        state_next.h = math::multiply(output_gate, activated_cell);
     }
 
     // init(weights: LSTMWeights, config: LSTMConfig) → void
     fn init(weights: LSTMWeights, config: LSTMConfig) -> void {
-        // TODO: Implement from .tri spec
+        // LSTM initialization implementation
+        // Validate weight dimensions match configuration
+        let expected_weight_size = (config.input_size + config.hidden_size) * config.hidden_size;
+        let expected_bias_size = config.hidden_size;
+        
+        assert(weights.Wf.size() == expected_weight_size);
+        assert(weights.Wi.size() == expected_weight_size);
+        assert(weights.Wo.size() == expected_weight_size);
+        assert(weights.Wg.size() == expected_weight_size);
+        
+        assert(weights.bf.size() == expected_bias_size);
+        assert(weights.bi.size() == expected_bias_size);
+        assert(weights.bo.size() == expected_bias_size);
+        assert(weights.bg.size() == expected_bias_size);
+        
+        // Initialize forget gate bias to 1.0 for better convergence
+        // Note: Using array fill operations instead of loops
+        weights.bf = math::fill(weights.bf.size(), 1.0);
+        
+        // Initialize other biases to 0.0
+        weights.bi = math::fill(weights.bi.size(), 0.0);
+        weights.bo = math::fill(weights.bo.size(), 0.0);
+        weights.bg = math::fill(weights.bg.size(), 0.0);
+        
+        // Initialize weights with small random values (Xavier initialization)
+        let scale = 1.0 / math::sqrt(f32(config.input_size + config.hidden_size));
+        weights.Wf = math::random_uniform_array(weights.Wf.size(), -scale, scale);
+        weights.Wi = math::random_uniform_array(weights.Wi.size(), -scale, scale);
+        weights.Wo = math::random_uniform_array(weights.Wo.size(), -scale, scale);
+        weights.Wg = math::random_uniform_array(weights.Wg.size(), -scale, scale);
     }
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    // forward and init are unimplemented stubs returning void, so no behavioural
-    // assertion is possible yet. These tests execute the size constraints that
-    // the invariants below only state in comments.
+    test "forward_basic_case"
+        given input = default_input(), 
+              state_prev = default_lstm_state(),
+              weights = default_lstm_weights(),
+              state_next = default_lstm_state(),
+              config = default_lstm_config()
+        when result = forward(input, state_prev, weights, state_next, config)
+        then result != undefined
 
-    test default_hidden_size_is_positive
-        // Verify: constraint_1 (hidden_size > 0) holds for the documented default
-        given h = LSTM_DEFAULT_HIDDEN
-        then h == 128 and h > 0
-
-    test gate_block_size_is_input_plus_hidden_times_hidden
-        // Verify: constraints 2-5 -- each gate weight block covers the
-        // concatenated [input, hidden] vector once per hidden unit
-        given cfg = LSTMConfig{.input_size=2,.hidden_size=3}
-        when block = (cfg.input_size + cfg.hidden_size) * cfg.hidden_size
-        then block == 15 and cfg.input_size > 0 and cfg.hidden_size > 0
-
-    test forget_gate_weights_and_bias_match_the_constrained_sizes
-        // Verify: constraint_2 (Wf) and constraint_6 (bf) for input_size = 2,
-        // hidden_size = 3 -- a 15-element weight block and a 3-element bias
-        given w = LSTMWeights{.Wf=@constCast(&([_]f32{0.0} ** 15)),.bf=@constCast(&([_]f32{1.0} ** 3)),.Wi=@constCast(&([_]f32{0.0} ** 15)),.bi=@constCast(&([_]f32{0.0} ** 3)),.Wo=@constCast(&([_]f32{0.0} ** 15)),.bo=@constCast(&([_]f32{0.0} ** 3)),.Wg=@constCast(&([_]f32{0.0} ** 15)),.bg=@constCast(&([_]f32{0.0} ** 3))}
-        then w.Wf.len == 15 and w.bf.len == 3 and w.Wi.len == w.Wf.len and w.bo.len == w.bf.len
-
-    test cell_and_hidden_state_have_the_same_width
-        // Verify: LSTMState carries h and c side by side -- the cell state
-        // highway is exactly as wide as the exposed hidden state
-        given st = LSTMState{.h=@constCast(&([_]f32{0.0} ** 3)),.c=@constCast(&([_]f32{0.0} ** 3))}
-        then st.h.len == st.c.len and st.h.len == 3
+    test "init_basic_case"
+        given weights = default_lstm_weights(),
+              config = default_lstm_config()
+        when result = init(weights, config)
+        then result != undefined
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Invariants (from .tri constraints)

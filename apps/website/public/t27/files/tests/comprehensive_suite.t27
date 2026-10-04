@@ -1,4 +1,4 @@
-; comprehensive_suite.t27 -- documents the repository integration suite
+; comprehensive_suite.t27 a documents the repository integration suite
 ; Executed by: t27c suite (or tri test). No shell runners under tests/.
 ; phi^2 + 1/phi^2 = 3 | TRINITY
 

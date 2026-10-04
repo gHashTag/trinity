@@ -53,6 +53,8 @@ func NewRouter(cfg *config.Config, db *sql.DB) *Router {
 		wsHub: NewWSHub(),
 	}
 
+	r.initAuthPersistence()
+
 	// Initialize Bot API client if token is configured
 	log.Printf("[INIT] BotToken set: %v (len=%d)", cfg.BotToken != "", len(cfg.BotToken))
 	log.Printf("[INIT] BotWebhookURL: %s", cfg.BotWebhookURL)
@@ -213,6 +215,9 @@ func (r *Router) setupRoutes() {
 	r.mux.HandleFunc("/api/v1/auth/phone", r.handleAuthPhone)
 	r.mux.HandleFunc("/api/v1/auth/code", r.handleAuthCode)
 	r.mux.HandleFunc("/api/v1/auth/2fa", r.handleAuth2FA)
+	r.mux.HandleFunc("/api/v1/auth/resend", r.handleAuthResend)
+	r.mux.HandleFunc("/api/v1/auth/qr", r.handleAuthQR)
+	r.mux.HandleFunc("/api/v1/auth/qr/status", r.handleAuthQRStatus)
 	r.mux.HandleFunc("/api/v1/me", r.handleGetMe)
 	r.mux.HandleFunc("/api/v1/dialogs", r.handleGetDialogs)
 	r.mux.HandleFunc("/api/v1/history/", r.handleGetHistory)
@@ -368,8 +373,16 @@ func (r *Router) handleConnect(w http.ResponseWriter, req *http.Request) {
 	// Generate session ID
 	sessionID := generateSessionID()
 
-	// Create session storage - use gotd's FileStorage directly for proper persistence
-	sessionStorage := &session.FileStorage{Path: r.cfg.SessionDir + "/" + sessionID + ".session"}
+	// Session storage. On a container filesystem FileStorage is not
+	// persistence -- it is a file that dies with the container, so a redeploy
+	// mid-login took the session with it. Use the database when we have one
+	// and keep the file only as the local-development fallback.
+	var sessionStorage session.Storage
+	if r.db != nil {
+		sessionStorage = telegram.NewPostgresSessionStorage(r.db, sessionID)
+	} else {
+		sessionStorage = &session.FileStorage{Path: r.cfg.SessionDir + "/" + sessionID + ".session"}
+	}
 
 	// Create Telegram client
 	client, err := telegram.NewClient(body.AppID, body.AppHash, sessionStorage)
@@ -441,14 +454,14 @@ func (r *Router) handleAuthPhone(w http.ResponseWriter, req *http.Request) {
 	log.Printf("Sending code to phone: %s", body.Phone)
 
 	// Retry logic for DC migration - Telegram may require reconnection to different data center
-	var codeHash string
+	var sent telegram.SentCode
 	var err error
 	maxRetries := 2
 	for attempt := 1; attempt <= maxRetries; attempt++ {
 		// Use longer timeout per attempt to allow DC migration to complete
 		ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
 
-		codeHash, err = client.SendCode(ctx, body.Phone)
+		sent, err = client.SendCode(ctx, body.Phone)
 		cancel()
 
 		if err == nil {
@@ -474,13 +487,241 @@ func (r *Router) handleAuthPhone(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	log.Printf("Auth phone request success: phone=%s", body.Phone)
+	if sent.AlreadyAuthorized {
+		respondJSON(w, http.StatusOK, map[string]interface{}{
+			"status":  "authorized",
+			"message": "This session is already authorized; no code was sent.",
+		})
+		return
+	}
+
+	r.savePendingAuth(sessionID, client)
+
+	log.Printf("Auth phone success: phone=%s delivery=%s timeout=%ds next=%q",
+		body.Phone, sent.Type, sent.TimeoutSeconds, sent.NextType)
+
+	// The delivery channel is reported as Telegram stated it, never guessed.
+	// "app" in particular is not a synonym for "check your SMS": it means the
+	// code went to other logged-in sessions of this number, and if there are
+	// none, it went nowhere the user can reach. Saying so is the difference
+	// between a user who waits for an SMS that will never arrive and a user
+	// who scans a QR code.
+	resp := map[string]interface{}{
+		"status":     "code_sent",
+		"code_hash":  sent.CodeHash,
+		"delivery":   sent.Type,
+		"can_resend": sent.CanResend(),
+		"message":    describeDelivery(sent),
+	}
+	if sent.Length > 0 {
+		resp["code_length"] = sent.Length
+	}
+	if sent.TimeoutSeconds > 0 {
+		resp["resend_after_seconds"] = sent.TimeoutSeconds
+	}
+	if sent.NextType != "" {
+		resp["next_delivery"] = sent.NextType
+	}
+	if sent.Detail != "" {
+		resp["delivery_detail"] = sent.Detail
+	}
+	respondJSON(w, http.StatusOK, resp)
+}
+
+// describeDelivery states, in the user's own terms, where the code went.
+func describeDelivery(s telegram.SentCode) string {
+	switch s.Type {
+	case "app":
+		return "The code was sent to Telegram itself, in the chat named \"Telegram\", " +
+			"on your other logged-in devices for this number. If this number is not " +
+			"logged in anywhere else, no code will arrive on any channel -- use QR login instead."
+	case "sms":
+		return "The code was sent by SMS."
+	case "call":
+		return "The code will be dictated by an automated phone call."
+	case "missed_call":
+		return "You will receive a missed call; the code is the last digits of the calling number."
+	case "flash_call":
+		return "You will receive a dropped call; the code is taken from the calling number."
+	case "email":
+		return "The code was sent to the login email " + s.Detail + "."
+	case "fragment":
+		return "The code was delivered through Fragment: " + s.Detail
+	case "firebase_sms":
+		return "The code was sent by SMS via Firebase."
+	case "setup_email_required":
+		return "This account must set up a login email before a code can be sent."
+	default:
+		return "Telegram used a delivery channel this bridge does not recognise (" + s.Detail + "). " +
+			"Rather than guess, we are telling you so: QR login does not depend on code delivery."
+	}
+}
+
+// AuthResendRequest is the request for /auth/resend
+type AuthResendRequest struct {
+	SessionID string `json:"session_id,omitempty"`
+}
+
+// handleAuthResend advances the code to Telegram's next delivery channel.
+//
+// The old "Request a new code" button called /auth/phone again. That restarts
+// auth.sendCode, which is free to choose the same channel it already chose, so
+// for the user who cannot receive an app code it repeated the failure with a
+// fresh timer. auth.resendCode moves to the next_type Telegram itself
+// nominated, and when it nominates none we say so instead of pretending.
+func (r *Router) handleAuthResend(w http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodPost {
+		respondError(w, http.StatusMethodNotAllowed, "Method not allowed")
+		return
+	}
+
+	var body AuthResendRequest
+	_ = json.NewDecoder(req.Body).Decode(&body)
+
+	sessionID := req.Header.Get("X-Session-ID")
+	if sessionID == "" {
+		sessionID = body.SessionID
+	}
+	client := r.getClient(sessionID)
+	if client == nil {
+		respondError(w, http.StatusUnauthorized, "Invalid or missing session")
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
+	defer cancel()
+
+	sent, err := client.ResendCode(ctx)
+	if err != nil {
+		log.Printf("ResendCode error for session %s: %v", sessionID, err)
+		respondError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	r.savePendingAuth(sessionID, client)
+
+	resp := map[string]interface{}{
+		"status":     "code_resent",
+		"code_hash":  sent.CodeHash,
+		"delivery":   sent.Type,
+		"can_resend": sent.CanResend(),
+		"message":    describeDelivery(sent),
+	}
+	if sent.TimeoutSeconds > 0 {
+		resp["resend_after_seconds"] = sent.TimeoutSeconds
+	}
+	if sent.NextType != "" {
+		resp["next_delivery"] = sent.NextType
+	}
+	respondJSON(w, http.StatusOK, resp)
+}
+
+// AuthQRRequest is the request for the QR endpoints.
+type AuthQRRequest struct {
+	SessionID string `json:"session_id,omitempty"`
+}
+
+// handleAuthQR issues a tg://login token for the user to scan.
+func (r *Router) handleAuthQR(w http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodPost {
+		respondError(w, http.StatusMethodNotAllowed, "Method not allowed")
+		return
+	}
+
+	var body AuthQRRequest
+	_ = json.NewDecoder(req.Body).Decode(&body)
+
+	sessionID := req.Header.Get("X-Session-ID")
+	if sessionID == "" {
+		sessionID = body.SessionID
+	}
+	client := r.getClient(sessionID)
+	if client == nil {
+		respondError(w, http.StatusUnauthorized, "Invalid or missing session")
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
+	defer cancel()
+
+	code, err := client.ExportQR(ctx)
+	if err != nil {
+		log.Printf("ExportQR error for session %s: %v", sessionID, err)
+		respondError(w, http.StatusInternalServerError, "Failed to export login token: "+err.Error())
+		return
+	}
+	if code == nil {
+		respondJSON(w, http.StatusOK, map[string]interface{}{
+			"status":  "authorized",
+			"message": "This session is already authorized.",
+		})
+		return
+	}
+
+	r.savePendingAuth(sessionID, client)
 
 	respondJSON(w, http.StatusOK, map[string]interface{}{
-		"status":    "code_sent",
-		"code_hash": codeHash,
-		"message":   "Verification code sent to phone",
+		"status":     "qr_issued",
+		"url":        code.URL,
+		"expires_at": code.ExpiresAt,
+		"message": "Open Telegram on the phone that holds this number, go to " +
+			"Settings -> Devices -> Link Desktop Device, and scan this code. " +
+			"Poll /api/v1/auth/qr/status until it reports authorized.",
 	})
+}
+
+// handleAuthQRStatus reports whether the token has been scanned yet.
+func (r *Router) handleAuthQRStatus(w http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodGet && req.Method != http.MethodPost {
+		respondError(w, http.StatusMethodNotAllowed, "Method not allowed")
+		return
+	}
+
+	sessionID := req.Header.Get("X-Session-ID")
+	if sessionID == "" {
+		sessionID = req.URL.Query().Get("session_id")
+	}
+	client := r.getClient(sessionID)
+	if client == nil {
+		respondError(w, http.StatusUnauthorized, "Invalid or missing session")
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+
+	status, err := client.PollQR(ctx)
+	if err != nil {
+		log.Printf("PollQR error for session %s: %v", sessionID, err)
+		respondError(w, http.StatusInternalServerError, "Failed to poll login token: "+err.Error())
+		return
+	}
+
+	resp := map[string]interface{}{"state": string(status.State)}
+	switch status.State {
+	case telegram.QRPending:
+		resp["message"] = "Not scanned yet."
+	case telegram.QRExpired:
+		resp["message"] = "The previous token expired; a fresh one is attached. The login itself is not lost."
+	case telegram.QRNeedsPassword:
+		// Identical second factor to the code path, so the client can reuse
+		// the same screen it already has.
+		resp["message"] = "Scanned. This account has two-step verification; POST the cloud password to /api/v1/auth/2fa."
+	case telegram.QRAuthorized:
+		resp["message"] = "Authorized."
+		if err := r.clearPendingAuth(sessionID); err != nil {
+			log.Printf("clear pending auth for session %s: %v", sessionID, err)
+		}
+	}
+	if status.Token != nil {
+		resp["url"] = status.Token.URL
+		resp["expires_at"] = status.Token.ExpiresAt
+		r.savePendingAuth(sessionID, client)
+	}
+	if status.User != nil {
+		resp["user"] = status.User
+	}
+	respondJSON(w, http.StatusOK, resp)
 }
 
 // AuthCodeRequest is the request for /auth/code
@@ -536,6 +777,11 @@ func (r *Router) handleAuthCode(w http.ResponseWriter, req *http.Request) {
 	}
 
 	log.Printf("Auth code request: user=%s", user.Username)
+
+	// The login is complete; the in-flight record has nothing left to protect.
+	if err := r.clearPendingAuth(sessionID); err != nil {
+		log.Printf("clear pending auth for session %s: %v", sessionID, err)
+	}
 
 	// Explicitly save session to disk
 	if err := client.SaveSession(); err != nil {
@@ -594,6 +840,10 @@ func (r *Router) handleAuth2FA(w http.ResponseWriter, req *http.Request) {
 	}
 
 	log.Printf("Auth 2FA request: user=%s", user.Username)
+
+	if err := r.clearPendingAuth(sessionID); err != nil {
+		log.Printf("clear pending auth for session %s: %v", sessionID, err)
+	}
 
 	// Explicitly save session to disk
 	if err := client.SaveSession(); err != nil {
@@ -898,8 +1148,15 @@ func (r *Router) handleWebSocket(w http.ResponseWriter, req *http.Request) {
 
 func (r *Router) getClient(sessionID string) *telegram.Client {
 	r.mu.RLock()
-	defer r.mu.RUnlock()
-	return r.clients[sessionID]
+	client := r.clients[sessionID]
+	r.mu.RUnlock()
+	if client != nil {
+		return client
+	}
+	// Not in memory. After a restart that is true of every session, so before
+	// telling the caller their session is invalid, look for a persisted
+	// in-flight login. This is the whole point of persisting it.
+	return r.restoreClient(sessionID)
 }
 
 func (r *Router) forwardUpdates(sessionID string, client *telegram.Client) {

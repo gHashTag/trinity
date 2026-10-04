@@ -20,7 +20,7 @@ module SpecWriter;
     pub const SpecBehavior = struct {
         inputs : []const SpecField,
         output : []const u8,
-        steps : []const []const u8,
+        steps : "[]const []const u8",
     };
 
     pub const SpecTemplate = struct {
@@ -40,6 +40,3 @@ module SpecWriter;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test "spec_writer_smoke_test" {
-        expect(true)
-    }

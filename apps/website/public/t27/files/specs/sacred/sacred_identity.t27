@@ -2,7 +2,7 @@
 // t27/specs/
 // | | φ² + 1/φ² = 3 | TRINITY
 
-module SacredIdentity;
+module String;
     use base::types;
     use math::constants;
 
@@ -71,6 +71,3 @@ module SacredIdentity;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test "sacred_identity_smoke_test" {
-        expect(true)
-    }

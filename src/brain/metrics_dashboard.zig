@@ -121,30 +121,45 @@ pub const RegionMetrics = struct {
     }
 
     pub fn deinit(self: *RegionMetrics) void {
+        // Read the allocator before raw_metrics.deinit(): HashMap.deinit sets
+        // the map to undefined, so raw_metrics.allocator is garbage afterwards.
+        const allocator = self.raw_metrics.allocator;
         var iter = self.raw_metrics.iterator();
         while (iter.next()) |entry| {
-            self.raw_metrics.allocator.free(entry.key_ptr.*);
-            self.raw_metrics.allocator.free(entry.value_ptr.*);
+            allocator.free(entry.key_ptr.*);
+            allocator.free(entry.value_ptr.*);
         }
         self.raw_metrics.deinit();
-        if (self.alert) |a| self.raw_metrics.allocator.free(a);
+        if (self.alert) |a| allocator.free(a);
     }
 
     /// Set a raw metric value (copies both key and value)
     pub fn setMetric(self: *RegionMetrics, allocator: std.mem.Allocator, key: []const u8, value: []const u8) !void {
-        const key_copy = try allocator.dupe(u8, key);
-        errdefer allocator.free(key_copy);
         const value_copy = try allocator.dupe(u8, value);
         errdefer allocator.free(value_copy);
-        try self.raw_metrics.put(key_copy, value_copy);
+        try self.putOwnedValue(allocator, key, value_copy);
     }
 
     /// Set a raw metric value, taking ownership of the value (must be allocated with same allocator)
     pub fn setMetricOwned(self: *RegionMetrics, allocator: std.mem.Allocator, key: []const u8, value: []const u8) !void {
-        const key_copy = try allocator.dupe(u8, key);
-        errdefer allocator.free(key_copy);
-        // Value is already allocated, use it directly
-        try self.raw_metrics.put(key_copy, value);
+        try self.putOwnedValue(allocator, key, value);
+    }
+
+    /// Store an owned value under a copy of key. HashMap.put on an existing
+    /// key keeps the stored key and drops the old value, so a plain put of
+    /// fresh copies leaked the new key copy and the replaced value on every
+    /// overwrite. Copy the key only on first insert; free the replaced value.
+    fn putOwnedValue(self: *RegionMetrics, allocator: std.mem.Allocator, key: []const u8, value: []const u8) !void {
+        const gop = try self.raw_metrics.getOrPut(key);
+        if (gop.found_existing) {
+            allocator.free(gop.value_ptr.*);
+        } else {
+            gop.key_ptr.* = allocator.dupe(u8, key) catch |err| {
+                self.raw_metrics.removeByPtr(gop.key_ptr);
+                return err;
+            };
+        }
+        gop.value_ptr.* = value;
     }
 };
 
@@ -549,6 +564,10 @@ pub fn quickScan(allocator: std.mem.Allocator) !struct {
 
 test "AggregateMetrics collect all regions" {
     const allocator = std.testing.allocator;
+    // collect() creates the basal-ganglia and reticular-formation singletons
+    // with this allocator; release them so the leak checker sees a clean exit.
+    defer basal_ganglia.resetGlobal(allocator);
+    defer reticular_formation.resetGlobal(allocator);
     var metrics = AggregateMetrics.init(allocator);
     defer metrics.deinit();
 
@@ -584,6 +603,10 @@ test "AggregateMetrics collect all regions" {
 
 test "AggregateMetrics overall health calculation" {
     const allocator = std.testing.allocator;
+    // collect() creates the basal-ganglia and reticular-formation singletons
+    // with this allocator; release them so the leak checker sees a clean exit.
+    defer basal_ganglia.resetGlobal(allocator);
+    defer reticular_formation.resetGlobal(allocator);
     var metrics = AggregateMetrics.init(allocator);
     defer metrics.deinit();
 
@@ -608,6 +631,10 @@ test "RegionMetrics set and get" {
 
 test "quickScan returns healthy status" {
     const allocator = std.testing.allocator;
+    // collect() creates the basal-ganglia and reticular-formation singletons
+    // with this allocator; release them so the leak checker sees a clean exit.
+    defer basal_ganglia.resetGlobal(allocator);
+    defer reticular_formation.resetGlobal(allocator);
     var result = try quickScan(allocator);
     defer {
         for (result.problematic_regions.items) |r| allocator.free(r);
@@ -621,6 +648,10 @@ test "quickScan returns healthy status" {
 
 test "AggregateMetrics exportJson is valid" {
     const allocator = std.testing.allocator;
+    // collect() creates the basal-ganglia and reticular-formation singletons
+    // with this allocator; release them so the leak checker sees a clean exit.
+    defer basal_ganglia.resetGlobal(allocator);
+    defer reticular_formation.resetGlobal(allocator);
     var metrics = AggregateMetrics.init(allocator);
     defer metrics.deinit();
 
@@ -696,8 +727,10 @@ test "RegionMetrics setMetricOwned takes ownership" {
     var metrics = RegionMetrics.init(allocator, "Test", "Function");
     defer metrics.deinit();
 
+    // setMetricOwned copies the key and takes ownership of the value only,
+    // so the caller still owns (and frees) its key buffer.
     const key_copy = try allocator.dupe(u8, "owned_key");
-    errdefer allocator.free(key_copy);
+    defer allocator.free(key_copy);
 
     const value_copy = try allocator.dupe(u8, "owned_value");
     errdefer allocator.free(value_copy);
@@ -1471,8 +1504,9 @@ test "AggregateMetrics formatAscii long names" {
 
     const output = buffer.items;
 
-    // Should truncate or handle long name
-    try std.testing.expect(std.mem.indexOf(u8, output, "VeryLongRegionNameThatE") != null);
+    // formatAscii truncates region names to 20 bytes (name[0..20]).
+    try std.testing.expect(std.mem.indexOf(u8, output, "VeryLongRegionNameTh") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output, "VeryLongRegionNameThat") == null);
 }
 
 test "AggregateMetrics formatDetailed with all fields" {
@@ -1655,8 +1689,11 @@ test "RegionMetrics many metrics" {
 
     // Add many metrics
     for (0..100) |i| {
+        // setMetric copies key and value, so these buffers stay ours to free.
         const key = try std.fmt.allocPrint(allocator, "metric_{d}", .{i});
+        defer allocator.free(key);
         const value = try std.fmt.allocPrint(allocator, "value_{d}", .{i});
+        defer allocator.free(value);
         try metrics.setMetric(allocator, key, value);
     }
 

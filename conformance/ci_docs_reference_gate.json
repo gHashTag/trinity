@@ -1,0 +1,62 @@
+{
+  "spec_path": "specs/ci/docs_reference_gate.t27",
+  "spec_hash": "0117fc00bc1bf158cdf5be11571c4a65c10e7be51b6283e059500a94d4bc62e4",
+  "vectors": [
+    {
+      "status": 200,
+      "expected": 1
+    },
+    {
+      "status": 202,
+      "expected": 1
+    },
+    {
+      "status": 203,
+      "expected": 1
+    },
+    {
+      "status": 206,
+      "expected": 1
+    },
+    {
+      "status": 301,
+      "expected": 1
+    },
+    {
+      "status": 302,
+      "expected": 1
+    },
+    {
+      "status": 308,
+      "expected": 1
+    },
+    {
+      "status": 400,
+      "expected": 0
+    },
+    {
+      "status": 401,
+      "expected": 2
+    },
+    {
+      "status": 403,
+      "expected": 2
+    },
+    {
+      "status": 404,
+      "expected": 0
+    },
+    {
+      "status": 410,
+      "expected": 0
+    },
+    {
+      "status": 429,
+      "expected": 2
+    },
+    {
+      "status": 503,
+      "expected": 2
+    }
+  ]
+}

@@ -112,12 +112,12 @@ module Power {
     }
 
     fn est_total_power(luts: u32, ffs: u32, brams: u32, dsps: u32, clock_mhz: u32, toggle_rate: u32) -> PowerEstimate {
-        var lut_p = est_lut_dynamic(luts, clock_mhz, toggle_rate);
-        var ff_p = est_ff_dynamic(ffs, clock_mhz, toggle_rate);
-        var bram_p = est_bram_dynamic(brams, clock_mhz);
-        var dsp_p = est_dsp_dynamic(dsps, clock_mhz);
-        var dyn = lut_p + ff_p + bram_p + dsp_p;
-        var stat = est_static(total_resources(luts, ffs, brams, dsps));
+        const lut_p = est_lut_dynamic(luts, clock_mhz, toggle_rate);
+        const ff_p = est_ff_dynamic(ffs, clock_mhz, toggle_rate);
+        const bram_p = est_bram_dynamic(brams, clock_mhz);
+        const dsp_p = est_dsp_dynamic(dsps, clock_mhz);
+        const dyn = lut_p + ff_p + bram_p + dsp_p;
+        const stat = est_static(total_resources(luts, ffs, brams, dsps));
         return PowerEstimate{
             .dynamic_mw = dyn,
             .static_mw = stat,

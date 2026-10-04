@@ -9,28 +9,28 @@
 // numbers that came from the compiler cannot drift from the artifact.
 
 import { useCallback, useState } from 'react'
+import { TARGET_IDS } from '../lib/t27Compiler'
 import type { SpecEntry } from '../lib/t27Compiler'
+import {canonicalSpecUrl as specUrl} from '../lib/specCatalog'
 
 const MONO = "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace"
-
-export function specUrl(path: string): string {
-  const base = `${window.location.origin}${window.location.pathname}`
-  return `${base}#/specs?spec=${encodeURIComponent(path)}`
-}
 
 export function SpecShare({
   spec,
   labels,
+  embedded = false,
 }: {
   spec: SpecEntry
   labels: { share: string; copy: string; copied: string }
+  embedded?: boolean
 }) {
   const [copied, setCopied] = useState(false)
+  const [fallback,setFallback]=useState(false)
   const url = specUrl(spec.path)
   const u = encodeURIComponent(url)
 
   const name = spec.module || spec.name
-  const headline = `${name} — a .t27 spec through the real compiler: ${spec.tokens.toLocaleString()} tokens, ${spec.nodes.toLocaleString()} AST nodes, ${Object.values(spec.outBytes).filter((v) => v).length} of 5 backends emitting.`
+  const headline = `${name} — a .t27 spec through the real compiler: ${spec.tokens.toLocaleString()} tokens, ${spec.nodes.toLocaleString()} AST nodes, ${Object.values(spec.outBytes).filter((v) => v).length} of ${TARGET_IDS.length} backends emitting.`
   const title = encodeURIComponent(headline)
   const tgText = encodeURIComponent(`${headline}\n\n#t27 #FPGA #compilers`)
 
@@ -42,14 +42,12 @@ export function SpecShare({
     { name: 'Reddit', href: `https://www.reddit.com/submit?url=${u}&title=${title}` },
   ]
 
-  const copy = useCallback(() => {
-    navigator.clipboard?.writeText(url).then(
-      () => {
-        setCopied(true)
-        window.setTimeout(() => setCopied(false), 1400)
-      },
-      () => {},
-    )
+  const copy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(url)
+      setCopied(true)
+      window.setTimeout(() => setCopied(false),1400)
+    } catch {setFallback(true)}
   }, [url])
 
   const pill: React.CSSProperties = {
@@ -68,14 +66,15 @@ export function SpecShare({
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap' }}>
       <span style={{ fontSize: 10, color: '#8b9490', opacity: 0.7, fontFamily: MONO }}>{labels.share}</span>
-      {targets.map((s) => (
-        <a key={s.name} href={s.href} target="_blank" rel="noopener noreferrer" style={pill}>
+      {!embedded && targets.map((s) => (
+        <a key={s.name} className="spec-x-target" href={s.href} target="_blank" rel="noopener noreferrer" style={pill}>
           {s.name}
         </a>
       ))}
       <button onClick={copy} style={{ ...pill, color: copied ? '#00FF88' : '#8b9490' }}>
         {copied ? labels.copied : labels.copy}
       </button>
+      {fallback&&<input readOnly aria-label={labels.copy} value={url} style={{...pill,width:'100%',minWidth:0,boxSizing:'border-box'}}/>}
     </div>
   )
 }

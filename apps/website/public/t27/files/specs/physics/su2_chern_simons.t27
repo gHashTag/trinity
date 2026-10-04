@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
 // t27/specs/physics/su2_chern_simons.t27
-// SU(2)_k Chern-Simons Theory -- Topological QFT Foundation
+// SU(2)_k Chern-Simons Theory — Topological QFT Foundation
 // Direction F (Priority 1) of PROJECT KEPLER->NEWTON
 //
 // This module formalizes the PROVEN THEOREM: golden ratio phi emerges
 // from SU(2) Chern-Simons theory at level k=3 as quantum dimension
-// of Fibonacci anyons. This is NOT numerology -- it is a mathematical
+// of Fibonacci anyons. This is NOT numerology — it is a mathematical
 // consequence of the fusion rule tau x tau = 1 + tau.
 //
 // Key results:
@@ -21,7 +21,7 @@
 //   - Freedman, Kitaev, Larsen, Wang, arXiv:quant-ph/0101025 (2003)
 //   - Witten, Commun. Math. Phys. 121 (1989) 351
 //   - Zamolodchikov, Int. J. Mod. Phys. A4 (1989) 4235
-//   - Minev et al., IBM/Cornell (2024) -- experimental Fibonacci anyon gates
+//   - Minev et al., IBM/Cornell (2024) — experimental Fibonacci anyon gates
 
 module SU2ChernSimons {
     use math::constants;
@@ -39,7 +39,7 @@ module SU2ChernSimons {
     // At k=3: sectors labeled j = 0, 1/2, 1, 3/2
     const NUM_SECTORS : i64 = CS_LEVEL + 1;  // = 4
 
-    // k+2 = 5 -- this is the cyclotomic index
+    // k+2 = 5 — this is the cyclotomic index
     // All appearances of phi trace to Q(sqrt(5)) and 5th roots of unity
     const CYCLOTOMIC_INDEX : i64 = CS_LEVEL + 2;  // = 5
 
@@ -148,7 +148,7 @@ module SU2ChernSimons {
 
     // The deepest connection: CS level k=3 and the TRINITY identity
     // phi^2 + phi^{-2} = 3 = k
-    // This is not a coincidence -- it reflects that phi arises from
+    // This is not a coincidence — it reflects that phi arises from
     // the cyclotomic field Q(sqrt(5)) where 5 = k + 2
 
     fn trinity_equals_cs_level() -> bool {

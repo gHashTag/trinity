@@ -7,7 +7,7 @@ const json_parser = @import("json_parser.zig");
 const simd_json = @import("simd_json.zig");
 
 pub fn main() !void {
-    const stdout = std.io.getStdOut().writer();
+    const stdout = std.fs.File.stdout().deprecatedWriter();
 
     try stdout.print("\n", .{});
     try stdout.print("╔══════════════════════════════════════════════════════════════════╗\n", .{});

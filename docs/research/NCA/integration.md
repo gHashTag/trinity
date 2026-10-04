@@ -42,10 +42,10 @@ The SEVO (Sacred EVolutionary Objective Search) system supports objective mutati
 - **NCA** can be mutated to JEPA during evolution
 - **Quotas** ensure diversity across objective types
 
-See [SEVO documentation](../../docs/lab/papers/sevo-method.md) for details.
+See [SEVO documentation](../../lab/papers/sevo-method.md) for details.
 
 ## References
 
 - [JEPA: ../JEPAT/architecture.md](../JEPAT/architecture.md)
-- [SEVO: docs/lab/papers/sevo-method.md](../../../lab/papers/sevo-method.md)
-- [Framework: docs/research/TRINITY_S3AI_UNIFIED_FRAMEWORK.md](../../../research/TRINITY_S3AI_UNIFIED_FRAMEWORK.md)
+- [SEVO: docs/lab/papers/sevo-method.md](../../lab/papers/sevo-method.md)
+- [Framework: docs/research/TRINITY_S3AI_UNIFIED_FRAMEWORK.md](../TRINITY_S3AI_UNIFIED_FRAMEWORK.md)

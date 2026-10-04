@@ -10,8 +10,8 @@ module TriCountingSort;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // sort(allocator: std.mem.Allocator, values: []usize, max_val: usize) → []usize
-    fn sort(allocator: std.mem.Allocator, values: []usize, max_val: usize) -> []usize {
+    // sort(allocator: std.mem.Allocator) → void
+    fn sort(allocator: std.mem.Allocator) -> void {
         // TODO: Implement from .tri spec
     }
 

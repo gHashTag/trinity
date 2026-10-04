@@ -2,15 +2,15 @@
 // t27/specs/isa/registers.t27
 // TRI27 ISA Register File Specification
 // Register definitions, Coptic encoding, and register file operations
-// phi^2 + 1/phi^2 = 3 | TRINITY
+// φ² + 1/φ² = 3 | TRINITY
 
 module ISARegisters {
     // Import base types
     use base::types;
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 1. Register Constants
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // Register file configuration (Coptic compatibility: 27 registers)
     const NUM_REGISTERS : usize = 27;   // R0-R26
@@ -57,55 +57,55 @@ module ISARegisters {
     const FLAG_TRAP : u8 = 4;      // Trap flag
     const FLAG_INTERRUPT : u8 = 5; // Interrupt enable
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 2. Coptic Alphabet Encoding
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // Coptic alphabet encoding (27 letters for 27 registers)
     // Maps register numbers to Coptic Unicode code points
     const COPTIC_ALPHABET : [27]u32 = [
-        0x03B1,  // alpha = alpha (R0)
-        0x03B2,  // beta = bita (R1)
-        0x03B3,  // gamma = gamma (R2)
-        0x03B4,  // delta = dalda (R3)
-        0x03B5,  // epsilon = ei (R4)
-        0x03C6,  // phi = sima (R5)
-        0x03B6,  // zeta = zata (R6)
-        0x03B7,  // eta = ita (R7)
-        0x03B8,  // theta = thita (R8)
-        0x03B9,  // iota = iota (R9)
-        0x03BA,  // kappa = kappa (R10)
-        0x03BB,  // lambda = lauda (R11)
-        0x03BC,  // mu = mi (R12)
-        0x03BD,  // nu = ni (R13)
-        0x03BE,  // xi = ksi (R14)
-        0x03C0,  // pi = pi (R15)
-        0x03C1,  // rho = ro (R16)
-        0x03C3,  // sigma = sigma (R17)
-        0x03C4,  // tau = tau (R18)
-        0x03C5,  // upsilon = upsilon (R19)
-        0x03C6,  // phi = fi (R20)
-        0x03C7,  // chi = khi (R21)
-        0x03C8,  // psi = psi (R22)
-        0x03C9,  // omega = ou (R23)
-        0x0417,  // 304 = sampi (R24)
-        0x0418,  // 305 = koppa (R25)
-        0x0419,  // 306 = 307hei (R26)
+        0x03B1,  // α = alpha (R0)
+        0x03B2,  // β = bita (R1)
+        0x03B3,  // γ = gamma (R2)
+        0x03B4,  // δ = dalda (R3)
+        0x03B5,  // ε = ei (R4)
+        0x03C6,  // ϕ = sima (R5)
+        0x03B6,  // ζ = zata (R6)
+        0x03B7,  // η = ita (R7)
+        0x03B8,  // θ = thita (R8)
+        0x03B9,  // ι = iota (R9)
+        0x03BA,  // κ = kappa (R10)
+        0x03BB,  // λ = lauda (R11)
+        0x03BC,  // μ = mi (R12)
+        0x03BD,  // ν = ni (R13)
+        0x03BE,  // ξ = ksi (R14)
+        0x03C0,  // π = pi (R15)
+        0x03C1,  // ρ = ro (R16)
+        0x03C3,  // σ = sigma (R17)
+        0x03C4,  // τ = tau (R18)
+        0x03C5,  // υ = upsilon (R19)
+        0x03C6,  // φ = fi (R20)
+        0x03C7,  // χ = khi (R21)
+        0x03C8,  // ψ = psi (R22)
+        0x03C9,  // ω = ou (R23)
+        0x0417,  // ϗ = sampi (R24)
+        0x0418,  // Ϙ = koppa (R25)
+        0x0419,  // ϙ = šhei (R26)
     ];
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 3. Register File State
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // Register file: 27 registers, each holding a TernaryWord (27 trits)
     // Stored as u32 for efficiency (27 trits fits in 32 bits)
     var register_file : [NUM_REGISTERS]TernaryWord = [TernaryWord{.raw = 0}; NUM_REGISTERS];
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 4. Register Read/Write
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // reg_read(reg: u8) -> TernaryWord
+    // reg_read(reg: u8) → TernaryWord
     // Read from register file
     // R0 always returns 0 (zero register)
     // Returns error sentinel if register number is invalid
@@ -124,7 +124,7 @@ module ISARegisters {
         return register_file[reg];
     }
 
-    // reg_write(reg: u8, value: TernaryWord) -> bool
+    // reg_write(reg: u8, value: TernaryWord) → bool
     // Write to register file
     // R0 writes are ignored (zero register is read-only)
     // Returns true if write succeeded, false if invalid register
@@ -143,11 +143,11 @@ module ISARegisters {
         return true;
     }
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 5. Coptic Encoding Conversion
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // reg_to_coptic(reg: u8) -> u32
+    // reg_to_coptic(reg: u8) → u32
     // Convert register number to Coptic Unicode code point
     // Returns 0 if register number is invalid
     fn reg_to_coptic(reg: u8) -> u32 {
@@ -157,7 +157,7 @@ module ISARegisters {
         return COPTIC_ALPHABET[reg];
     }
 
-    // coptic_to_reg(cp: u32) -> u8
+    // coptic_to_reg(cp: u32) → u8
     // Convert Coptic Unicode code point to register number
     // Returns 0xFF if not a valid register character
     fn coptic_to_reg(cp: u32) -> u8 {
@@ -173,11 +173,11 @@ module ISARegisters {
         return 0xFF;  // Error sentinel
     }
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 6. Status Register Operations
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // status_read(flag: u8) -> bool
+    // status_read(flag: u8) → bool
     // Read a specific flag from status register (R20)
     // Returns true if flag is set, false otherwise
     fn status_read(flag: u8) -> bool {
@@ -186,7 +186,7 @@ module ISARegisters {
         return (status_val.raw & mask) != 0;
     }
 
-    // status_write(flag: u8, value: bool) -> bool
+    // status_write(flag: u8, value: bool) → bool
     // Set or clear a specific flag in status register (R20)
     // Returns true if operation succeeded
     fn status_write(flag: u8, value: bool) -> bool {
@@ -206,11 +206,11 @@ module ISARegisters {
         return reg_write(R20, status_val);
     }
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 7. Stack Operations (using R17 as stack pointer)
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // push_reg(reg: u8) -> bool
+    // push_reg(reg: u8) → bool
     // Push register value to stack (using R17 as stack pointer)
     // Stack grows downward (decrement before store)
     // Returns true if push succeeded
@@ -237,7 +237,7 @@ module ISARegisters {
         return true;
     }
 
-    // pop_reg(reg: u8) -> bool
+    // pop_reg(reg: u8) → bool
     // Pop value from stack into register (using R17 as stack pointer)
     // Stack grows downward (load then increment)
     // Returns true if pop succeeded
@@ -261,11 +261,11 @@ module ISARegisters {
         return reg_write(reg, value);
     }
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 8. Context Save/Restore
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // save_context() -> void
+    // save_context() → void
     // Save caller-saved registers (R5-R9) to stack
     // Used by function prologue
     fn save_context() -> void {
@@ -276,7 +276,7 @@ module ISARegisters {
         push_reg(R9);
     }
 
-    // restore_context() -> void
+    // restore_context() → void
     // Restore caller-saved registers from stack
     // Used by function epilogue
     fn restore_context() -> void {
@@ -287,9 +287,9 @@ module ISARegisters {
         pop_reg(R5);
     }
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 9. Register Aliases
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // Argument/return registers
     const ARG0 : u8 = R1;
@@ -322,9 +322,9 @@ module ISARegisters {
     const KSP : u8 = R22;  // Kernel stack pointer
     const TP : u8 = R23;   // Thread pointer
 
-    // =======================================================================================================
+    // ═══════════════════════════════════════════════════════════════════════════════════════════════════════
     // TDD-Inside-Spec: Tests and Invariants for ISARegisters
-    // =======================================================================================================
+    // ═══════════════════════════════════════════════════════════════════════════════════════════════════════
 
     test isa_r0_always_zero
         given word = TernaryWord{.raw = 0x123456}
@@ -364,22 +364,22 @@ module ISARegisters {
 
     test isa_reg_to_coptic_r0
         given cp = reg_to_coptic(R0)
-        then cp == 0x03B1  // alpha
+        then cp == 0x03B1  // α
 
     test isa_reg_to_coptic_r10
         given cp = reg_to_coptic(R10)
-        then cp == 0x03BA  // kappa
+        then cp == 0x03BA  // κ
 
     test isa_reg_to_coptic_r26
         given cp = reg_to_coptic(R26)
-        then cp == 0x0419  // 1492
+        then cp == 0x0419  // ϙ
 
     test isa_coptic_to_reg_alpha
-        given reg = coptic_to_reg(0x03B1)  // alpha
+        given reg = coptic_to_reg(0x03B1)  // α
         then reg == R0
 
     test isa_coptic_to_reg_kappa
-        given reg = coptic_to_reg(0x03BA)  // kappa
+        given reg = coptic_to_reg(0x03BA)  // κ
         then reg == R10
 
     test isa_coptic_to_reg_invalid
@@ -491,9 +491,9 @@ module ISARegisters {
     invariant isa_max_register_is_26
         assert R26 == NUM_REGISTERS - 1
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // Ring 045: Agent Binding and Trit State Invariants
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // agent_register_bijection: Each agent maps to exactly one register
     invariant agent_register_bijection
@@ -519,10 +519,10 @@ module ISARegisters {
         assert result.raw == value.raw
 
     // queen_register_special: T (Queen) register = register index 0 (Tau/Alpha)
-    // The Queen register is R0 (Alpha/alpha), the first Coptic letter
+    // The Queen register is R0 (Alpha/α), the first Coptic letter
     invariant queen_register_special
         assert R0 == 0
-        assert reg_to_coptic(R0) == 0x03B1  // alpha (Alpha, representing Queen/Tau)
+        assert reg_to_coptic(R0) == 0x03B1  // α (Alpha, representing Queen/Tau)
 
     // register_initial_zero: All registers initialize to 0
     invariant register_initial_zero
@@ -550,7 +550,7 @@ module ISARegisters {
         // T (Queen) register = register index 0 (Tau/Alpha)
         given queen_idx = R0
         and   queen_cp = reg_to_coptic(queen_idx)
-        then queen_idx == 0 and queen_cp == 0x03B1  // alpha
+        then queen_idx == 0 and queen_cp == 0x03B1  // α
 
     test agent_count_equals_register_count
         given agents = AGENT_COUNT
@@ -578,7 +578,7 @@ module ISARegisters {
         target: < 20ns
 
     bench isa_coptic_to_reg_latency
-        measure: nanoseconds to coptic_to_reg(0x03C0)  // pi
+        measure: nanoseconds to coptic_to_reg(0x03C0)  // π
         target: < 100ns
 
     bench isa_status_read_latency

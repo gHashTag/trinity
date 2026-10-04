@@ -9,11 +9,15 @@
 
 ## Header Layout (12 bytes)
 
+The container `tri_asm.zig` writes and `loader.load` reads: a six-byte main
+header, a four-byte CODE section header, and two padding bytes. The first
+instruction word starts at byte 12, which is word 3 of the fetch at `pc * 4`.
+
 | Offset | Size | Field | Description |
 |--------|------|-------|-------------|
 | 0x00 | 4 | Magic | `0x54524932` ("2IRT" little-endian) |
-| 0x04 | 4 | Version | Format version (current: 0x00010001) |
-| 0x08 | 4 | Section count | Number of sections (current: 1 for code only) |
+| 0x04 | 1 | Version | Format version (current: 1) |
+| 0x05 | 1 | Section count | Number of sections |
 
 ### Magic Number
 ```
@@ -22,25 +26,25 @@ ASCII: "2IRT" (stored little-endian)
 Bytes: [0x32, 0x49, 0x52, 0x54]
 ```
 
-### Version Format
-- Bits 0-15: Minor version
-- Bits 16-31: Major version
-- Current: `0x00010001` = v1.1
-
 ## Code Section
-
-The code section immediately follows the header and contains:
 
 ### Section Header (4 bytes)
 | Offset | Size | Field | Description |
 |--------|------|-------|-------------|
-| 0x00 | 1 | Section ID | 0x04 = Code section |
-| 0x01 | 1 | Version | Section format version (current: 1) |
-| 0x02 | 1 | Flags | Reserved (0 for now) |
-| 0x03 | 1 | Padding | Reserved (0) |
+| 0x00 | 1 | Section ID | 1 = Code section |
+| 0x01 | 1 | Padding | Reserved (0) |
+| 0x02 | 2 | Size | Payload size in bytes (u16 little-endian) |
+
+### Container Padding (2 bytes)
+Two reserved bytes after the CODE section header align the payload to byte 12
+(word 3). The loader skips them; a payload written without them loads shifted
+by two bytes.
 
 ### Code Data (4 bytes per instruction)
 All instructions are 32-bit words stored in **little-endian** byte order.
+The loader packs each four payload bytes into one four-byte fetch unit at
+byte `12 + i * 4`, so `run`'s fetch at `pc * 4` reads exactly one written word
+per instruction, starting at `pc = 3`.
 
 Byte layout:
 ```
@@ -101,19 +105,32 @@ Binary representation:
 ```
 Header:
 [32 49 52 54]     # Magic "2IRT"
-[01 00 01 00]     # Version 1.1
-[01 00 00 00]     # 1 section
+[01]              # Version 1
+[01]              # 1 section
 
-Code section header:
-[04 01 00 00]     # Section ID 0x04, v1
+Code section header + padding:
+[01 00 08 00]     # Section ID 1, padding, size 8 (u16 little-endian)
+[00 00]           # Container padding to byte 12
 
-Instructions (little-endian):
+Instructions (little-endian) at byte 12:
 LDI t0, 42  ->  0x0000002A  # opcode=LDI, dst=t0, imm=42
-HALT        ->  0x01000000  # opcode=HALT
+HALT        ->  0x0000004D  # opcode=HALT
 
 Full file (20 bytes):
-32 49 52 54 01 00 01 00 01 00 00 00 04 01 00 00 2A 00 00 00 01 00 00 00
+32 49 52 54 01 01 01 00 08 00 00 00 2A 00 00 00 4D 00 00 00
 ```
+
+## Constants Section
+
+| Offset | Size | Field | Description |
+|--------|------|-------|-------------|
+| 0x00 | 1 | Section ID | 2 = Constants |
+| 0x01 | 1 | Count | Number of f64 constants |
+| 0x02 | 8 * count | Data | One eight-byte value per constant |
+
+The loader reads the id, then the count, then skips `count * 8` payload bytes;
+the values themselves come from the `constants` array the caller passes, and
+only the first three reach `cpu.f`.
 
 ## File Extension
 - Source: `.tri` (assembly)

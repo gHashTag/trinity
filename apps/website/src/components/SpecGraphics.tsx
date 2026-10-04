@@ -1,6 +1,7 @@
 // Inline SVG for the spec explorer. No chart library: every shape here is a
 // handful of rects, which stays sharp at 12px and adds nothing to the bundle.
 
+import { TARGET_IDS } from '../lib/t27Compiler'
 import type { Health, T27Analysis } from '../lib/t27Compiler'
 
 export const HEALTH_COLOR: Record<Health, string> = {
@@ -31,6 +32,42 @@ export function HealthBar({ health, total }: { health: Record<Health, number>; t
       {order.map((k) => {
         const w = total > 0 ? (health[k] / total) * 100 : 0
         const el = <rect key={k} x={x} y={0} width={w} height={3} fill={HEALTH_COLOR[k]} />
+        x += w
+        return el
+      })}
+    </svg>
+  )
+}
+
+export interface StackSegment {
+  key: string
+  count: number
+  color: string
+  label: string
+}
+
+/**
+ * Any set of counted groups as one stacked bar.
+ *
+ * HealthBar was this shape hard-wired to three health states; the skills and
+ * crons catalogs group by other things entirely, and a second copy of the same
+ * six lines would eventually disagree about rounding. The legend beside it
+ * carries the exact counts, so this only has to keep the ratio legible.
+ */
+export function StackBar({ segments }: { segments: StackSegment[] }) {
+  const total = segments.reduce((n, s) => n + s.count, 0)
+  let x = 0
+  return (
+    <svg
+      viewBox="0 0 100 3"
+      preserveAspectRatio="none"
+      style={{ width: '100%', height: 6, display: 'block', borderRadius: 3, overflow: 'hidden' }}
+      role="img"
+      aria-label={segments.map((s) => `${s.count} ${s.label}`).join(', ')}
+    >
+      {segments.map((s) => {
+        const w = total > 0 ? (s.count / total) * 100 : 0
+        const el = <rect key={s.key} x={x} y={0} width={w} height={3} fill={s.color} />
         x += w
         return el
       })}
@@ -76,11 +113,18 @@ export function PipelineRibbon({
   active,
   onPick,
   labels,
+  interactive = true,
 }: {
   result: T27Analysis
   active: string
   onPick: (id: string) => void
   labels: Record<string, string>
+  /**
+   * False on a phone or a tablet: ten bars share one 375px row, so as buttons
+   * they are 31px wide, under the spec's 44px touch minimum, and every bar
+   * duplicates a layer tab. Drawn as a figure there; the tabs do the picking.
+   */
+  interactive?: boolean
 }) {
   const stages: Stage[] = [
     { key: 'source', label: labels.source, value: result.sourceBytes, ok: true },
@@ -88,7 +132,7 @@ export function PipelineRibbon({
     { key: 'ast', label: labels.ast, value: result.nodeCount ?? null, ok: !result.astError },
     { key: 'typecheck', label: labels.typecheck, value: result.typecheck?.errorCount ?? 0, ok: (result.typecheck?.errorCount ?? 0) === 0 },
     { key: 'hir', label: labels.hir, value: result.hir.ok ? result.hir.text?.length ?? 0 : null, ok: result.hir.ok },
-    ...['zig', 'verilog', 'verilog_hir', 'c', 'rust'].map((k) => ({
+    ...TARGET_IDS.map((k) => ({
       key: k,
       label: labels[k],
       value: result.targets[k]?.ok ? result.targets[k].bytes ?? 0 : null,
@@ -105,10 +149,12 @@ export function PipelineRibbon({
         const h = s.ok ? Math.max(3, mag * 26) : 26
         const color = !s.ok ? HEALTH_COLOR.fail : s.key === 'typecheck' && (s.value ?? 0) > 0 ? HEALTH_COLOR.warn : HEALTH_COLOR.ok
         const isActive = active === s.key
+        const Tag = interactive ? 'button' : 'span'
         return (
-          <button
+          <Tag
             key={s.key}
-            onClick={() => onPick(s.key)}
+            onClick={interactive ? () => onPick(s.key) : undefined}
+            role={interactive ? undefined : 'img'}
             title={`${s.label}: ${s.ok ? (s.value ?? 0).toLocaleString() : 'failed'}`}
             aria-label={`${s.label}, ${s.ok ? String(s.value ?? 0) : 'failed'}`}
             style={{
@@ -121,7 +167,7 @@ export function PipelineRibbon({
               background: 'transparent',
               border: 'none',
               padding: 0,
-              cursor: 'pointer',
+              cursor: interactive ? 'pointer' : 'default',
             }}
           >
             <span
@@ -136,7 +182,7 @@ export function PipelineRibbon({
                 transition: 'opacity 140ms ease-out',
               }}
             />
-          </button>
+          </Tag>
         )
       })}
     </div>

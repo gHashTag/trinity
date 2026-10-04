@@ -533,7 +533,7 @@ git push origin --force --all
 
 1. DARPA CLARA PA-25-07-02: Security Requirements
 2. CUI Regulation: 32 CFR 2002
-3. GitHub Security Best Practices: https://docs.github.com/en/security
+3. GitHub Security Best Practices: https://docs.github.com/en/code-security
 4. FedRAMP Marketplace: https://marketplace.fedramp.gov
 
 ---

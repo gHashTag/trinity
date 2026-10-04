@@ -10,6 +10,3 @@ module SiluSwishVbt;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test "silu_swish_vbt_activation_smoke_test" {
-        expect(true)
-    }

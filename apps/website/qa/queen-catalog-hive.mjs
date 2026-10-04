@@ -1,0 +1,91 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {catalogHive,catalogIssueRows,catalogFocus,catalogFocusHash,catalogLabelField,catalogPortalSize} from '../src/components/queenCatalogData.ts';
+import {placeHiveDisplays} from '../src/components/queenHiveDisplay.ts';
+const atlas=JSON.parse(readFileSync('public/t27/universe-atlas.json','utf8'));
+const manifest=JSON.parse(readFileSync('public/t27/manifest.json','utf8'));
+const map=catalogHive(atlas);
+assert.equal(map.cells[0],null,'Queen owns the center, never an invented issue');
+const specs=map.cells.filter(c=>c?.kind==='spec'),repos=map.cells.filter(c=>c?.kind==='repo');
+// The counts were pinned (760 specs, 5 repositories) when every source was typed into a
+// script by hand. The world scan adds repositories as it finds them, so the pin moved to
+// what must hold whatever the scan found: one cell per canonical spec of the snapshot,
+// one portal per repository that actually contributed bytes, and the five founding
+// sources always among them. The manifest ties the numbers to vendored files.
+const contributing=atlas.worlds.filter(w=>w.specCount>0).map(w=>w.repo).sort();
+assert.equal(specs.length,atlas.specs.length,'every canonical spec gets exactly one core cell');
+assert.equal(new Set(atlas.specs.map(s=>s.id)).size,manifest.specs.length-(manifest.duplicatesInCatalog??0)||atlas.specs.length,'canonical specs are the distinct vendored bytes');
+assert.deepEqual(repos.map(r=>r.repo).sort(),contributing,'a portal for each repository with .t27 bytes in the catalog, no other');
+for(const founding of ['ghashtag/t27','ghashtag/tri-net','ghashtag/trinity','ghashtag/trinity-fpga','ghashtag/tt-trinity-corona'])assert.ok(contributing.includes(founding),`${founding} is a founding source and must stay on the map`);
+assert.ok(repos.length>=5);
+assert.equal(new Set(map.cells.filter(Boolean).map(c=>c.key)).size,specs.length+repos.length);
+assert.ok(map.cells.filter(Boolean).every(c=>!('number' in c)),'resources never masquerade as issues');
+assert.equal(map.edges.length,atlas.specs.reduce((n,s)=>n+new Set(s.sources.map(src=>src.repo)).size,0),'one edge per spec per contributing repository');
+for(const [a,b] of map.edges){assert.equal(map.cells[a].kind,'spec');assert.equal(map.cells[b].kind,'repo');assert.ok(map.cells[a].sources.includes(map.cells[b].repo));}
+assert.deepEqual(catalogHive({...atlas,specs:[...atlas.specs].reverse(),worlds:[...atlas.worlds].reverse()}),map);
+assert.ok(repos.every(r=>r.count>0));
+const issues=catalogIssueRows(atlas,'ghashtag/trinity-fpga');
+assert.equal(issues.length,atlas.issues.filter(i=>i.repo==='ghashtag/trinity-fpga').length);
+assert.ok(issues.length>0,'the snapshot carries trinity-fpga open issues');
+assert.ok(issues.every(i=>i.repo==='ghashtag/trinity-fpga'&&i.key===`${i.repo}#${i.number}`&&i.state==='open'&&i.coverage==='unknown'&&i.updatedAt===null));
+assert.equal(catalogIssueRows(atlas,'other/repo').length,0);
+const oldClosed={...issues[0],key:`${issues[0].repo}#999999`,number:999999,state:'closed'};
+assert.equal(catalogIssueRows(atlas,issues[0].repo,[oldClosed]).at(-1).state,'closed','a historical shared link gets its actual closed cell');
+assert.equal(catalogIssueRows(atlas,issues[0].repo,[{...oldClosed,repo:'other/repo'}]).length,issues.length,'foreign same-number detail cannot cross source boundaries');
+const first=placeHiveDisplays(new Map(),issues.slice(1),100);
+const merged=placeHiveDisplays(first.ledger,issues,100);
+for(const [key,cell] of first.ledger)assert.equal(merged.ledger.get(key),cell,'adding an older issue cannot move established cells');
+const focus={repo:issues[0].repo,number:issues[0].number};
+assert.deepEqual(catalogFocus(catalogFocusHash(focus),atlas),focus);
+for(const hash of ['#/queen?world=other%2Frepo&task=1','#/queen?world=ghashtag%2Ftrinity-fpga&task=-1','#/queen?world=ghashtag%2Ftrinity-fpga&task=1.5','#/queen?world=ghashtag%2Ftrinity-fpga&task=1e2'])assert.equal(catalogFocus(hash,atlas),null);
+assert.deepEqual(catalogFocus(catalogFocusHash({repo:focus.repo,number:null}),atlas),{repo:focus.repo,number:null});
+const source=readFileSync('src/components/QueenCombBabylon.tsx','utf8');
+assert.ok(source.includes('catalogLayer'),'the shared data layer must use the existing Babylon renderer');
+const ui=readFileSync('src/components/QueenCatalogHive.tsx','utf8');
+assert.doesNotMatch(ui,/target="_blank"|window\.open/,'the collaboration flow stays inside the game');
+// A click on a cell opens the cell, at the size of the display. The 320px aside
+// that used to sit beside a moving map is gone rather than hidden, and the stage
+// is handed everything only the hive holds: the catalog's specs, the agent
+// packet, and the observer that redraws the map cell from the live GitHub read.
+const stage=readFileSync('src/components/QueenCellStage.tsx','utf8');
+assert.match(ui,/<QueenCellStage[^>]+number=\{focus\.number\}/,'a focused cell opens as the full-screen stage');
+assert.doesNotMatch(ui,/QueenCatalogInspector/,'the aside is replaced, not left beside the stage');
+for(const [prop,why] of [['specs=','the catalog spec links come from the hive, which holds the atlas'],['onSpec=','a spec on the stage still opens in the explorer'],['packet=','COPY TO AGENT survives the move'],['onObserved=','the live GitHub read still redraws the map cell']])assert.ok(ui.includes(prop),why);
+assert.doesNotMatch(stage,/target="_blank"|window\.open/,'the stage keeps the collaboration flow inside the game too');
+assert.match(stage,/role="dialog" aria-modal="true"/,'the close-up is a dialog, so Escape and focus behave');
+assert.match(stage,/collab\.capabilities\.comment && \(/,'the GitHub write button exists only while the service says it can write');
+assert.match(stage,/loadWorldIssueDetailsCached\(repo, number, abort\.signal, retry > 0\)/,'reopening a cell reuses the cached read; only Retry spends a request');
+assert.match(stage,/live\.boardRead \? '—' : '…'/,'a figure the board has not answered for is a dash, never a fabricated zero');
+const css=readFileSync('src/pages/Queen.css','utf8');
+const surface=css.match(/\.queen-hive-display:is\(\[data-kind="spec"\],\[data-task-tone="honey"\]\) \{([^}]+)\}/)[1];
+assert.doesNotMatch(surface,/gradient|blur\(/);assert.match(surface,/backdrop-filter:none/);
+assert.match(surface,/background:rgb\(var\(--hive-task-rgb\) \/ \.035\)/,'yellow faces match the light outer portals');
+assert.match(source,/if\(tone==='honey'&&catalogRef.current\)material.alpha=\.035/,'the GPU face must also be transparent');
+assert.doesNotMatch(source,/catalogGlass\.alpha/,'zoom must not restore the opaque golden face');
+assert.equal(catalogPortalSize(4).width,16,'zooming out shrinks portals with the hive');
+assert.equal(catalogPortalSize(4).readable,false,'tiny portals do not draw overflowing labels');
+assert.equal(catalogPortalSize(40).width,136);assert.equal(catalogPortalSize(NaN).width,0);
+// A region label lands on the map, never on the chrome floating over it. In the
+// shell the label layer is fixed at inset 0, because Babylon projects a cell to
+// CSS pixels of the render viewport and that viewport is the window: the layer
+// has to share the window's origin or every label is displaced by the body's
+// padding. Clamping a label "inside the layer" then clamped it inside the
+// WINDOW, and once the tabs moved up to the top edge two repository names were
+// placed at y=25 and y=40 -- underneath the translucent status bar, where they
+// read as garbled text over its counters. The free rectangle is the map's own
+// box, less the toolbar floating over whichever edge it is anchored to.
+const shellField=catalogLabelField({left:0,top:0,width:1343,height:788},{left:270,top:144,right:1323,bottom:758},{top:685,bottom:768});
+assert.deepEqual(shellField,{left:270,top:144,right:1323,bottom:685},'in the shell the field is the map box, less the toolbar anchored to its bottom');
+assert.ok(shellField.top>84,'the field starts below the status bar (20..84), which is exactly where the stray labels were drawn');
+// A toolbar anchored to the top pushes the top edge down instead.
+assert.deepEqual(catalogLabelField({left:0,top:0,width:1343,height:788},{left:270,top:144,right:1323,bottom:758},{top:150,bottom:190}),{left:270,top:190,right:1323,bottom:758});
+// Off the shell the layer is the labels' own parent and the toolbar sits above
+// them in the headroom: every edge resolves to the labels' own box, nothing moves.
+assert.deepEqual(catalogLabelField({left:0,top:112,width:900,height:500},{left:0,top:0,right:900,bottom:612},{top:60,bottom:104}),{left:0,top:0,right:900,bottom:500});
+// Nothing measured yet is the box itself -- what the old code always used.
+assert.deepEqual(catalogLabelField({left:0,top:0,width:900,height:500},null,null),{left:0,top:0,right:900,bottom:500});
+assert.deepEqual(catalogLabelField({left:0,top:0,width:900,height:500},{left:10,top:20,right:400,bottom:300},null),{left:10,top:20,right:400,bottom:300});
+// And the placement clamps against those edges, not against a width and height
+// that silently start at the window's origin.
+for(const edge of ['field.left+half+4','field.right-half-4','field.top+regionHeight+4','field.bottom-4'])assert.ok(ui.includes(edge),`the label placement clamps to ${edge}`);
+console.log(`Catalog hive: PASS (${specs.length} real specs, ${repos.length} contributing repos, exact source edges, no fake issue identity)`);

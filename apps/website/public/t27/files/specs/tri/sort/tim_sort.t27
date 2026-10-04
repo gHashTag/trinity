@@ -10,8 +10,8 @@ module TriTimSort;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // sort(allocator: std.mem.Allocator, values: []i64) → void
-    fn sort(allocator: std.mem.Allocator, values: []i64) -> void {
+    // sort(allocator: std.mem.Allocator) → void
+    fn sort(allocator: std.mem.Allocator) -> void {
         // TODO: Implement from .tri spec
     }
 

@@ -3,11 +3,17 @@
 // Trinity S³AI — Cognitive Task Orchestration
 // φ² + 1/φ² = 3 | TRINITY
 
-module queen-task-analysis;
+; S09 of gHashTag/trinity#988 (gHashTag/t27#4828), 2026-10-01. Until today this file sorted by returning
+; its input (`sort_tasks_by_priority` was `return tasks;`), picked the next task without reading either of
+; its arguments, counted 27 workers because there are 27 agent letters, and did not compile in C (it
+; imported BrainState across modules, which the C backend cannot resolve). It now compiles, orders by the
+; score it always defined, and is tested on deliberately unsorted input, where returning the input fails.
+; WHAT IT IS NOT: the order the Queen works in. The running supervisor takes the first eligible issue in
+; GitHub's listing order and ranks nothing (specs/queen/dispatch.t27, PRIORITY_RULE, measured on 120
+; orders); no runtime calls these functions. They are the priority a scheduler WOULD apply, stated so it
+; can be checked, not a description of one.
 
-use base::types::Trit;
-use math::sacred_physics::{PHI, PHI_INV, TRINITY};
-use brain::unified_state::{BrainState, ArousalLevel};
+module queen-task-analysis;
 
 // ============================================================================
 // SACRED CONSTANTS
@@ -17,8 +23,9 @@ pub const PHI : f64 = 1.618033988749895;
 pub const PHI_INV : f64 = 0.618033988749895;
 pub const TRINITY : f64 = 3.0;
 
-/// Worker count (27 Coptic registers)
-pub const WORKER_COUNT : u8 = 27;
+/// The agent alphabet of AGENTS.md: 27 documentation roles. Not workers: a worker is a model turn on a
+/// provider key, and how many run is bounded by keys, lanes and TRIOS_QUEEN_MAX_WORKERS (default 4).
+pub const AGENT_LETTER_COUNT : u8 = 27;
 
 /// Task priority levels
 pub const PRIORITY_CRITICAL : u8 = 0;
@@ -26,151 +33,136 @@ pub const PRIORITY_HIGH : u8 = 1;
 pub const PRIORITY_NORMAL : u8 = 2;
 pub const PRIORITY_LOW : u8 = 3;
 
-// ============================================================================
-// TASK TYPES
-// ============================================================================
-
-/// Task categories
-pub enum TaskType {
-    /// Anomaly detection
-    anomaly = 0,
-    /// Recovery action
-    recovery = 1,
-    /// Learning update
-    learning = 2,
-    /// Maintenance
-    maintenance = 3,
-    /// API request
-    api = 4,
-}
-
-/// Task with priority and metadata
-pub struct Task {
-    pub task_id: u64,
-    pub task_type: TaskType,
-    pub priority: u8,
-    pub urgency: f64,  // 0.0 - 1.0
-    pub phi_weight: f64,  // PHI-structured weight
-    pub created_ms: u64,
-}
-
-/// Task analysis result
-pub struct TaskAnalysis {
-    pub total_tasks: u32,
-    pub critical_count: u32,
-    pub high_count: u32,
-    pub average_urgency: f64,
-    pub phi_coherence: f64,
-}
+/// The functions below order a queue of at most this many tasks, passed as parallel arrays.
+pub const QUEUE_SLOTS : u32 = 4;
 
 // ============================================================================
 // FUNCTIONS: Task Analysis
 // ============================================================================
 
-/// Calculate task priority score
-pub fn calculate_priority_score(task: Task) -> f64 {
-    // φ-structured scoring: PHI * urgency + PHI_INV * priority_weight
-    const urgency_weight = PHI;
-    const priority_weight = PHI_INV;
-    
-    const normalized_priority = 1.0 - (task.priority as f64) / 4.0;
-    
-    return urgency_weight * task.urgency + priority_weight * normalized_priority;
+/// The priority score: PHI * urgency + PHI_INV * (1 - priority / 4). Higher is more urgent.
+pub fn priority_score(priority: u8, urgency: f64) -> f64 {
+    var normalized : f64 = 1.0 - (priority as f64) / 4.0;
+    return PHI * urgency + PHI_INV * normalized;
 }
 
-/// Sort tasks by priority (highest first)
-pub fn sort_tasks_by_priority(tasks: []Task) []Task {
-    // Implementation would sort tasks by calculate_priority_score
-    return tasks;
+/// Whether task a comes before task b: higher score first, then the older one, then the lower index.
+pub fn outranks(score_a: f64, created_a: u64, index_a: u32, score_b: f64, created_b: u64, index_b: u32) -> bool {
+    if (score_a > score_b) { return true; }
+    if (score_a < score_b) { return false; }
+    if (created_a < created_b) { return true; }
+    if (created_a > created_b) { return false; }
+    return index_a < index_b;
 }
 
-/// Analyze task queue
-pub fn analyze_task_queue(tasks: []Task, brain: BrainState) -> TaskAnalysis {
-    var analysis: TaskAnalysis = undefined;
-    analysis.total_tasks = tasks.len;
-    
-    var critical_count: u32 = 0;
-    var high_count: u32 = 0;
-    var urgency_sum: f64 = 0.0;
-    
-    var i: usize = 0;
-    while (i < tasks.len) {
-        const task = tasks[i];
-        
-        if (task.priority == PRIORITY_CRITICAL) {
-            critical_count = critical_count + 1;
-        } else if (task.priority == PRIORITY_HIGH) {
-            high_count = high_count + 1;
+/// The position task i takes in the order: how many of the first n tasks outrank it.
+pub fn priority_rank(scores: [4]f64, created: [4]u64, n: u32, i: u32) -> u32 {
+    var rank : u32 = 0;
+    var j : u32 = 0;
+    while (j < n) {
+        if (j != i) {
+            if (outranks(scores[j], created[j], j, scores[i], created[i], i)) {
+                rank = rank + 1;
+            }
         }
-        
-        urgency_sum = urgency_sum + task.urgency;
+        j = j + 1;
+    }
+    return rank;
+}
+
+/// The index of the task at a position of the order, or QUEUE_SLOTS when the position is past the queue.
+/// Replaces `sort_tasks_by_priority`, which returned its input.
+pub fn priority_order_at(scores: [4]f64, created: [4]u64, n: u32, position: u32) -> u32 {
+    var i : u32 = 0;
+    while (i < n) {
+        if (priority_rank(scores, created, n, i) == position) {
+            return i;
+        }
         i = i + 1;
     }
-    
-    analysis.critical_count = critical_count;
-    analysis.high_count = high_count;
-    analysis.average_urgency = if (tasks.len > 0) { urgency_sum / tasks.len as f64 } else { 0.0 };
-    analysis.phi_coherence = brain.phi_coherence;
-    
-    return analysis;
+    return QUEUE_SLOTS;
 }
 
-/// Get next task for worker
-pub fn get_next_task(analysis: TaskAnalysis, worker_id: u8) -> Task {
-    // φ-structured task assignment
-    var task: Task = undefined;
-    task.task_id = 0;
-    task.priority = PRIORITY_NORMAL;
-    task.urgency = 0.5;
-    task.phi_weight = PHI_INV;
-    task.created_ms = 0;
-    
-    return task;
+/// How many of the first n priorities are critical.
+pub fn critical_count(priorities: [4]u8, n: u32) -> u32 {
+    var count : u32 = 0;
+    var i : u32 = 0;
+    while (i < n) {
+        if (priorities[i] == PRIORITY_CRITICAL) {
+            count = count + 1;
+        }
+        i = i + 1;
+    }
+    return count;
 }
 
 // ============================================================================
 // TDD: TESTS
 // ============================================================================
 
-test "priority_levels_constant" {
+test priority_levels_constant {
     assert PRIORITY_CRITICAL == 0;
     assert PRIORITY_HIGH == 1;
     assert PRIORITY_NORMAL == 2;
     assert PRIORITY_LOW == 3;
 }
 
-test "worker_count_is_sacred" {
-    assert WORKER_COUNT == 27;
+test agent_letters_are_not_workers {
+    assert AGENT_LETTER_COUNT == 27;
+    assert QUEUE_SLOTS == 4;
 }
 
-test "calculate_priority_score_bounds" {
-    var task: Task = undefined;
-    task.priority = PRIORITY_NORMAL;
-    task.urgency = 0.5;
-    
-    const score = calculate_priority_score(task);
-    assert score >= 0.0 and score <= 2.0;
+test priority_score_bounds {
+    var low : f64 = priority_score(PRIORITY_LOW, 0.0);
+    var top : f64 = priority_score(PRIORITY_CRITICAL, 1.0);
+    assert low >= 0.0;
+    assert top <= 2.3;
+    assert top > low;
 }
 
-test "analyze_task_queue_empty" {
-    var tasks: []Task = [];
-    var brain: BrainState = undefined;
-    brain.phi_coherence = PHI_INV;
-    
-    const analysis = analyze_task_queue(tasks, brain);
-    assert analysis.total_tasks == 0;
-    assert analysis.critical_count == 0;
+test an_unsorted_queue_is_put_in_order {
+    // scores 0.5, 2.0, 1.0, 1.5 at indices 0..3: the order is 1, 3, 2, 0 -- returning the input gives 0, 1, 2, 3
+    var scores : [4]f64 = [0.5, 2.0, 1.0, 1.5];
+    var created : [4]u64 = [10, 20, 30, 40];
+    assert priority_order_at(scores, created, 4, 0) == 1;
+    assert priority_order_at(scores, created, 4, 1) == 3;
+    assert priority_order_at(scores, created, 4, 2) == 2;
+    assert priority_order_at(scores, created, 4, 3) == 0;
+    assert priority_order_at(scores, created, 4, 4) == QUEUE_SLOTS;
+}
+
+test ties_go_to_the_older_task_then_the_lower_index {
+    var scores : [4]f64 = [1.0, 1.0, 1.0, 0.0];
+    var created : [4]u64 = [30, 10, 10, 5];
+    assert priority_order_at(scores, created, 4, 0) == 1;
+    assert priority_order_at(scores, created, 4, 1) == 2;
+    assert priority_order_at(scores, created, 4, 2) == 0;
+    assert priority_order_at(scores, created, 4, 3) == 3;
+}
+
+test a_short_queue_uses_only_its_first_n {
+    var scores : [4]f64 = [0.1, 0.9, 5.0, 5.0];
+    var created : [4]u64 = [1, 2, 3, 4];
+    assert priority_order_at(scores, created, 2, 0) == 1;
+    assert priority_order_at(scores, created, 2, 1) == 0;
+    assert priority_order_at(scores, created, 2, 2) == QUEUE_SLOTS;
+}
+
+test critical_tasks_are_counted {
+    var priorities : [4]u8 = [0, 2, 0, 3];
+    assert critical_count(priorities, 4) == 2;
+    assert critical_count(priorities, 1) == 1;
 }
 
 // ============================================================================
 // TDD: INVARIANTS
 // ============================================================================
 
-invariant "worker_count_matches_coptic" {
-    assert WORKER_COUNT == 27;
+invariant agent_letters_are_twenty_seven {
+    assert AGENT_LETTER_COUNT == 27;
 }
 
-invariant "priority_levels_sequential" {
+invariant priority_levels_sequential {
     assert PRIORITY_CRITICAL < PRIORITY_HIGH;
     assert PRIORITY_HIGH < PRIORITY_NORMAL;
     assert PRIORITY_NORMAL < PRIORITY_LOW;

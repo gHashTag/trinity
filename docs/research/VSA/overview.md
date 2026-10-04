@@ -25,8 +25,8 @@ Vector Symbolic Architecture (VSA) is the core foundation of Trinity's neural sy
 - [API Reference: docs/docs/api/vsa.md](../../docs/api/vsa.md)
 - [Tutorial: docs/docs/tutorials/vsa-operations.md](../../docs/tutorials/vsa-operations.md)
 - [Cheat Sheet: docs/docs/cheatsheets/vsa-operations.md](../../docs/cheatsheets/vsa-operations.md)
-- [FFI Bindings: crates/trios-vsa/README.md](../../../../../crates/trios-vsa/README.md)
-- [Examples: .trinity/ralph/examples/vsa_usage.zig](../../../../../.trinity/ralph/examples/vsa_usage.zig)
+- FFI Bindings: crates/trios-vsa/README.md (historical path `../../../../../crates/trios-vsa/README.md`; not present in this checkout)
+- [Examples: .trinity/ralph/examples/vsa_usage.zig](../../../.trinity/ralph/examples/vsa_usage.zig)
 
 ## FPGA Implementation
 

@@ -337,6 +337,10 @@ module BoardFullXC7A100T {
         and   tx_ok = PIN_UART_TX.prjxray_verified
         then clk_ok and rx_ok and tx_ok
 
+    test count_leds_returns_eight
+        given result = count_leds()
+        then result == 8
+
     invariant full_board_has_all_interfaces
         assert HAS_UART == true and HAS_SPI == true and HAS_MAC_DEBUG == true
 

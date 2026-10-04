@@ -12,6 +12,9 @@ import SelfServeRun from '../components/SelfServeRun'
 import ExampleReport from '../components/ExampleReport'
 import ConformanceEvidence from '../components/ConformanceEvidence'
 import SignalHealth from '../components/SignalHealth'
+import { TnfFrontier, TnfReproduce } from '../components/sections/tnf'
+import TerminalCast from '../components/TerminalCast'
+import { X7_BOARD } from '../data/casts'
 
 const THEOREM_GROUPS = [
   {
@@ -679,6 +682,9 @@ export default function HardwareVerification() {
               arXiv:2606.09686
             </a>
           </div>
+          <div style={{ marginTop: '1.5rem' }}>
+            <TerminalCast src={X7_BOARD.src} share={X7_BOARD.share} title={X7_BOARD.title} caption={ru ? X7_BOARD.caption.ru : X7_BOARD.caption.en} />
+          </div>
         </motion.div>
 
         {/* Related pages. The header dock only carries one link to this service,
@@ -778,6 +784,9 @@ export default function HardwareVerification() {
 
       <TierSection lang={lang} />
         <ScienceSection lang={lang} />
+
+      <TnfFrontier />
+      <TnfReproduce />
 
       <Footer />
     </main>

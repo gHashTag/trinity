@@ -124,6 +124,12 @@ module Formal_Testbench {
     invariant num_assertions_positive : NUM_ASSERTIONS > 0;
     invariant num_cover_positive : NUM_COVER_POINTS > 0;
 
+    test test_tick_function {
+        clk = false;
+        tick();
+        invariant clk == true;
+    }
+
     bench bench_formal_proof {
         reset();
         run_proof(1000);

@@ -2,7 +2,7 @@
 // t27/specs/
 //  | φ² + 1/φ² = 3 | TRINITY
 
-module dark_matter;
+module DarkMatter;
     use base::types;
     use math::constants;
 
@@ -10,6 +10,3 @@ module dark_matter;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test "dark_matter_smoke_test" {
-        expect(true)
-    }

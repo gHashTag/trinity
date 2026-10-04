@@ -1,4 +1,4 @@
-# TRI Production Dashboard — Live Deployment
+# TRI Production Dashboard — Historical Deployment Report
 
 **Date:** February 28, 2026
 **Cycle:** Production Release
@@ -8,9 +8,11 @@
 
 ## Executive Summary
 
-The TRI Production Dashboard has been successfully deployed to live production at **https://ghashtag.github.io/trinity/dashboard**
+This February 2026 report described a demonstration dashboard with mock data.
+The former `/trinity/dashboard` URL returned HTTP 404 during verification on
+2026-10-04; current availability and live telemetry are not established here.
 
-This dashboard provides real-time visibility into:
+The original demonstration displayed example data for:
 - Command count and coverage metrics
 - System health indicators
 - Recent alerts and build status
@@ -20,11 +22,11 @@ This dashboard provides real-time visibility into:
 
 ## Deployment Details
 
-### Live URLs
+### Historical URLs and current limitation
 
 | Resource | URL | Status |
 |----------|-----|--------|
-| **Production Dashboard** | https://ghashtag.github.io/trinity/dashboard | ✅ Live |
+| **Demonstration Dashboard** | `/trinity/dashboard` | Unavailable (HTTP 404, 2026-10-04) |
 | **Main Website** | https://ghashtag.github.io/trinity/ | ✅ Live |
 | **Documentation** | https://ghashtag.github.io/trinity/docs/ | ✅ Live |
 
@@ -175,7 +177,7 @@ git push origin gh-pages --force
 ## Access Instructions
 
 ### For Users
-1. Navigate to https://ghashtag.github.io/trinity/dashboard
+1. The historical `/trinity/dashboard` route is unavailable. The following steps describe the old demonstration and do not verify a currently deployed dashboard.
 2. View real-time system metrics
 3. Check build status and alerts
 4. Monitor command coverage
@@ -211,7 +213,9 @@ git push origin gh-pages --force
 
 ## Conclusion
 
-The TRI Production Dashboard is now live and accessible to all stakeholders. This provides unprecedented visibility into the TRI system's health, build status, and command coverage.
+The report recorded a mock-data demonstration. A current deployment and real
+system health telemetry require separate verification; they are not established
+by this historical report.
 
 **Next Steps:**
 1. Monitor dashboard for accuracy
@@ -222,7 +226,7 @@ The TRI Production Dashboard is now live and accessible to all stakeholders. Thi
 ---
 
 **Links:**
-- Live Dashboard: https://ghashtag.github.io/trinity/dashboard
+- Historical dashboard route: `/trinity/dashboard` (unavailable)
 - Main Website: https://ghashtag.github.io/trinity/
 - Documentation: https://ghashtag.github.io/trinity/docs/
 - Repository: https://github.com/gHashTag/trinity

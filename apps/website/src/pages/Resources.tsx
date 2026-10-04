@@ -1,6 +1,8 @@
 import Navigation from '../components/Navigation'
 import Footer from '../components/Footer'
 import { useI18n } from '../i18n/context'
+import { TnfFaq } from '../components/sections/tnf'
+import PublicationsSection from '../components/sections/PublicationsSection'
 import {
   papers,
   datasets,
@@ -292,6 +294,9 @@ export default function Resources() {
           <Group key={g.id} id={g.id} title={COPY.sections[g.id][lang]} rows={g.rows} lang={lang} />
         ))}
       </div>
+      <TnfFaq />
+      <PublicationsSection />
+
       <Footer />
     </main>
   )

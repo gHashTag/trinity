@@ -1,0 +1,92 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import {specExplorerHash,canonicalSpecUrl,resolveManifestSpec} from '../src/lib/specCatalog.ts';
+import {loadSpecSource,analyzeCached,wasmUrl} from '../src/lib/t27Compiler.ts';
+import {atlasAgentPacket} from '../src/lib/queenUniverseAtlas.ts';
+import {t27WasmTag} from '../scripts/t27-wasm-tag.ts';
+
+// The bundle gets this identifier from vite's `define`; node has no such step,
+// so the gate supplies it the way the browser would. Assigned in the module
+// body rather than inside the fetch stub because `wasmUrl()` may be called the
+// moment a compile starts -- and deliberately not given a default inside the
+// driver, so a context that forgets this line fails loudly instead of quietly
+// requesting the unversioned URL the tag exists to replace.
+const wasmTag=t27WasmTag();
+globalThis.__T27_WASM_TAG__=wasmTag;
+
+const manifest=JSON.parse(readFileSync('public/t27/manifest.json','utf8'));
+const atlas=JSON.parse(readFileSync('public/t27/universe-atlas.json','utf8'));
+const hello='specs/demos/hello_world.t27';
+assert.equal(canonicalSpecUrl(hello),'https://t27.ai/#/specs?spec=specs%2Fdemos%2Fhello_world.t27');
+let count=0;
+for(const spec of atlas.specs)for(const source of spec.sources){
+  const entry=resolveManifestSpec(manifest,source.path);
+  assert.equal(entry.path,source.path);
+  // Founding sources are labelled by bare name (t27, tri-net); a scanned world of another
+  // owner carries owner/name, so two owners with a repository of one name cannot collide.
+  assert.equal(entry.repo.includes('/')?entry.repo:`ghashtag/${entry.repo}`,source.repo);
+  const url=new URL(canonicalSpecUrl(source.path));
+  assert.equal(new URLSearchParams(url.hash.split('?')[1]).get('spec'),source.path);
+  const bytes=readFileSync('public/t27/files/'+entry.path);
+  assert.equal(createHash('sha256').update(bytes).digest('hex'),spec.id);
+  count++;
+}
+assert.equal(count,manifest.specs.length,'every central catalog source is represented on the hive');
+assert.equal(resolveManifestSpec(manifest,null).path,hello);
+for(const path of ['missing.t27','../secret.t27','https://evil.test/x.t27','a/../x.t27','x.t27#other','/x.t27']){
+  assert.throws(()=>resolveManifestSpec(manifest,path),'invalid/unknown deep links must not substitute hello_world');
+}
+assert.throws(()=>resolveManifestSpec({...manifest,specs:[manifest.specs[0],manifest.specs[0]]},hello));
+const hash='a'.repeat(64),link=specExplorerHash(hello,{embedded:true,sha256:hash});
+assert.equal(new URLSearchParams(link.split('?')[1]).get('embed'),'1');
+assert.equal(new URLSearchParams(link.split('?')[1]).get('sha256'),hash);
+assert.throws(()=>specExplorerHash(hello,{sha256:'wrong'}));
+const packet=atlasAgentPacket(atlas,atlas.issues.find(i=>i.hits.length));
+assert.match(packet,/https:\/\/t27.ai\/#\/specs\?spec=/,'agent reuse evidence must carry canonical catalog links');
+
+// The compiler is fetched from a path nginx answers with a one-year `immutable`
+// cache, which is a promise that those bytes never change. It is only true if a
+// new compiler means a new URL, so the hash of the bytes rides in the query --
+// without it, adding the seventh backend shipped a TypeScript tab that asked a
+// cached six-backend compiler to fill it and printed "no output".
+const wasmExpected=`t27/t27_compiler.wasm?v=${createHash('sha256').update(readFileSync('public/t27/t27_compiler.wasm')).digest('hex').slice(0,16)}`;
+assert.equal(wasmUrl(),wasmExpected,'the compiler URL must carry the hash of the compiler it wants');
+assert.match(wasmTag,/^[0-9a-f]{16}$/,'the cache tag is 16 hex of the wasm SHA-256');
+
+const fetchOriginal=globalThis.fetch;
+const bytes=readFileSync('public/t27/files/'+hello),sha=createHash('sha256').update(bytes).digest('hex');
+let sourceFetches=0,wasmFetches=0;
+try{
+  globalThis.fetch=async(url,options)=>{
+    if(url.startsWith('t27/t27_compiler.wasm')){
+      // Equality, not a prefix: a driver that dropped the query would still
+      // reach this arm and load a perfectly good compiler, and the gate would
+      // pass while the deployed page served a year-stale one.
+      assert.equal(url,wasmExpected,'the compiler must be requested at its content-addressed URL');
+      wasmFetches++;
+      return new Response(readFileSync('public/t27/t27_compiler.wasm'),{headers:{'Content-Type':'application/wasm'}});
+    }
+    assert.equal(options?.credentials,'omit');
+    if(url==='t27/manifest.json')return new Response(JSON.stringify(manifest));
+    assert.equal(url,'t27/files/specs/demos/hello_world.t27');sourceFetches++;
+    return new Response(bytes);
+  };
+  assert.equal(await loadSpecSource(hello,sha),bytes.toString());
+  await assert.rejects(loadSpecSource(hello,'b'.repeat(64)),/SHA-256/);
+  const before=sourceFetches;
+  await assert.rejects(loadSpecSource('missing.t27'),/catalog/i);
+  assert.equal(sourceFetches,before,'unknown source paths never fetch arbitrary content');
+  const compiled=await analyzeCached(hello,bytes.toString());
+  assert.equal((await analyzeCached(hello,bytes.toString())),compiled,'identical source reuses its analysis');
+  const revised=bytes.toString()+'\n// revised source\n';
+  const updated=await analyzeCached(hello,revised);
+  assert.equal(updated.sourceBytes,Buffer.byteLength(revised),'same path with new bytes must not reuse old analysis');
+  // Without this the URL assertion above sits in an arm nothing ever enters,
+  // and a gate that never runs its own check is the failure it is meant to catch.
+  assert.ok(wasmFetches>0,'the compiler was never actually fetched, so its URL was never checked');
+}finally{globalThis.fetch=fetchOriginal;}
+const viewer=readFileSync('src/components/QueenCatalogSpec.tsx','utf8').split('export function QueenCatalogSpec')[1];
+assert.match(viewer,/<iframe/);assert.match(viewer,/specExplorerHash/);
+assert.doesNotMatch(viewer,/fetch\(|<pre|window\.open|_blank/,'the hive embeds the central Explorer, not another source implementation');
+console.log(`Central spec catalog: PASS (${count} exact source links, identity, SHA pinning, fail-closed paths, embedded Explorer, compiler pinned at ?v=${wasmTag})`);

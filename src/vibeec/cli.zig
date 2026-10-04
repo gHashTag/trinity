@@ -73,7 +73,7 @@ pub const CLI = struct {
     const Self = @This();
 
     pub fn init(allocator: Allocator, force_color: ?bool) Self {
-        const stdout = std.io.getStdOut();
+        const stdout = std.fs.File.stdout();
         return Self{
             .allocator = allocator,
             .writer = ColorWriter.init(stdout.writer().any(), force_color),

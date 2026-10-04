@@ -11,8 +11,8 @@ module GovernanceAgent;
     // ═══════════════════════════════════════════════════════════
 
     pub const GovernanceAgent = struct {
-        identity : String,  // "GOVERNANCEAGENT of Sacred Intelligence"
-        sacred_score : Float,  // 0-1 scale
+        identity : String  # "GOVERNANCEAGENT of Sacred Intelligence",
+        sacred_score : Float  # 0-1 scale,
         generation : Int,
         total_violations : Int,
         total_enforcements : Int,
@@ -20,17 +20,17 @@ module GovernanceAgent;
     };
 
     pub const SacredRule = struct {
-        weight : Float,  // φ-based weight
+        weight : Float  # φ-based weight,
         penalty_multiplier : Float,
         enabled : Bool,
     };
 
     pub const Violation = struct {
-        rule : String,  // Which sacred rule was violated
+        rule : String  # Which sacred rule was violated,
         file_path : String,
         line_number : Int,
-        severity : String,  // critical, warning, info
-        penalty : Float,  // φ-based penalty score
+        severity : String  # critical, warning, info,
+        penalty : Float  # φ-based penalty score,
         timestamp : Int64,
         commit_hash : String,
         auto_rollback : Bool,
@@ -38,12 +38,12 @@ module GovernanceAgent;
     };
 
     pub const SacredScore = struct {
-        phi_harmony : Float,  // Cosine similarity to φ
-        trinity_balance : Float,  // Ternary balance (-1, 0, +1)
-        gematria_compliance : Float,  // Sacred name usage
-        evolution_fitness : Float,  // Fitness improvement
-        test_safety : Float,  // Tests passing
-        overall_score : Float,  // Weighted average 0-1
+        phi_harmony : Float  # Cosine similarity to φ,
+        trinity_balance : Float  # Ternary balance (-1, 0, +1),
+        gematria_compliance : Float  # Sacred name usage,
+        evolution_fitness : Float  # Fitness improvement,
+        test_safety : Float  # Tests passing,
+        overall_score : Float  # Weighted average 0-1,
         timestamp : Int64,
     };
 
@@ -54,7 +54,7 @@ module GovernanceAgent;
         pre_score : Float,
         post_score : Float,
         delta : Float,
-        status : String,  // pending, approved, rejected, rolledBack
+        status : String  # pending, approved, rejected, rolledBack,
         approver : String,
         timestamp : Int64,
     };
@@ -69,7 +69,7 @@ module GovernanceAgent;
 
     pub const GovernanceWidget = struct {
         current_score : Float,
-        trend : String,  // improving, stable, declining
+        trend : String  # improving, stable, declining,
         violations_today : Int,
         enforcements_today : Int,
         pending_patches : Int,
@@ -79,9 +79,9 @@ module GovernanceAgent;
     pub const AuditEntry = struct {
         id : String,
         timestamp : Int64,
-        action : String,  // check, enforce, rollback, approve
+        action : String  # check, enforce, rollback, approve,
         rule : String,
-        outcome : String,  // passed, failed, warning
+        outcome : String  # passed, failed, warning,
         details : String,
         sacred_score_before : Float,
         sacred_score_after : Float,
@@ -92,6 +92,3 @@ module GovernanceAgent;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test "governance_agent_smoke_test" {
-        expect(true)
-    }

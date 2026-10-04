@@ -16,8 +16,9 @@
 // past URL length limits well before it got there. The button opens the file
 // for editing and the visitor pastes -- honest about what it can do.
 
+import { TARGET_IDS } from '../lib/t27Compiler'
 import type { SpecEntry, T27Analysis } from '../lib/t27Compiler'
-import { specUrl } from './SpecShare'
+import { canonicalSpecUrl as specUrl } from '../lib/specCatalog'
 
 const MONO = "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace"
 
@@ -75,7 +76,7 @@ export function SpecContribute({
     `| AST nodes | ${spec.nodes.toLocaleString()} (depth ${spec.depth}) |`,
     `| type errors | ${spec.tcErrors} |`,
     `| dropped by recovery | ${spec.loss} |`,
-    `| backends emitting | ${Object.values(spec.outBytes).filter((v) => v).length} of 5 |`,
+    `| backends emitting | ${Object.values(spec.outBytes).filter((v) => v).length} of ${TARGET_IDS.length} |`,
     '',
     problems.length ? `### Problems\n\n- ${problems.join('\n- ')}` : '### Observation\n\nNothing failed; filing for discussion.',
     firstBackendError ? `\n\`\`\`\n${firstBackendError}\n\`\`\`` : '',
@@ -110,6 +111,7 @@ export function SpecContribute({
     <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap' }}>
       <span style={{ fontSize: 10, color: '#8b9490', opacity: 0.7, fontFamily: MONO }}>{labels.contribute}</span>
       <a
+        className="spec-x-target"
         href={editHref}
         target="_blank"
         rel="noopener noreferrer"
@@ -119,6 +121,7 @@ export function SpecContribute({
         {labels.propose}
       </a>
       <a
+        className="spec-x-target"
         href={issueHref}
         target="_blank"
         rel="noopener noreferrer"

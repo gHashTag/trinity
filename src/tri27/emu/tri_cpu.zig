@@ -30,8 +30,8 @@ pub const Trit27 = struct {
         const sum = self.trits + other.trits;
         // Calculate carry using 3-trit balanced ternary arithmetic
         const half_carry = sum >> 54; // Carry for 27-trit values
-        // Reduce result modulo 3^27 and add carry
-        const base: i64 = 19683; // 3^27
+        // Reduce result modulo 3^9 and add carry
+        const base: i64 = 19683; // 3^9
         const result = (sum % base) + half_carry;
         return .{ .trits = result };
     }

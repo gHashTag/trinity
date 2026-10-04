@@ -11,15 +11,11 @@ module EternalMonitor;
     // ═══════════════════════════════════════════════════════════
 
     pub const Severity = struct {
-        // Recovered from the upstream spec this file was converted from:
-        // trinity-fpga specs/tri/eternal_monitor.tri:16. The converter dropped bare `- name` bullets.
-        enum : [info, warning, critical, fatal],
+        variants : ,
     };
 
     pub const HealthStatus = struct {
-        // Recovered from the upstream spec this file was converted from:
-        // trinity-fpga specs/tri/eternal_monitor.tri:24. The converter dropped bare `- name` bullets.
-        enum : [healthy, degraded, failed, unknown],
+        variants : ,
     };
 
     pub const Config = struct {
@@ -64,6 +60,3 @@ module EternalMonitor;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test "eternal_monitor_smoke_test" {
-        expect(true)
-    }

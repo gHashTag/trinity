@@ -54,7 +54,6 @@ export interface QueenContextLabels {
   copyLink: string;
   linkCopied: string;
   close: string;
-  openPanel: string;
 }
 
 export interface QueenContextQueueItem {
@@ -83,7 +82,6 @@ export interface QueenContextQueenStats {
 export interface QueenContextProps {
   open: boolean;
   onClose: () => void;
-  onOpen: () => void;
   lang: string;
   repo: string | null;
   columns: HudColumn[];
@@ -179,7 +177,6 @@ export function QueenContext({
   roundSeconds,
   open,
   onClose,
-  onOpen,
   lang,
   repo,
   columns,
@@ -235,13 +232,12 @@ export function QueenContext({
     return labels.noBee;
   }, [showQueen, pick, labels.slot, labels.busy, labels.idle, labels.noBee]);
 
-  if (!open) {
-    return (
-      <button type="button" className="queen27-context-chip" onClick={onOpen}>
-        {labels.openPanel} ▴
-      </button>
-    );
-  }
+  // Closed means gone, not folded into a chip. The chip this used to return
+  // floated a green CONTEXT button over the bottom-left of the comb with
+  // nothing behind it (owner, 2026-09-22: "hide the phantom button of the old
+  // design"). The way back in is FIT VIEW in the comb's own toolbar, which is
+  // already the control that undoes a zoom and a focused display.
+  if (!open) return null;
 
   const handleCopy = async () => {
     if (!selectedUrl) return;

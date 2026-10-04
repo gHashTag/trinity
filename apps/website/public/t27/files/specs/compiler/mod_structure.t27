@@ -112,6 +112,17 @@ test "ring_validation_accepts_trinity_multiples" {
     assert validate_ring_number(32) == true;
 }
 
+test "on_comb_delegates_to_ring_validation" {
+    assert on_comb(0) == true;
+    assert on_comb(3) == true;
+    assert on_comb(6) == true;
+    assert on_comb(32) == true;
+    assert on_comb(1) == false;
+    assert on_comb(2) == false;
+    assert on_comb(4) == false;
+    assert on_comb(5) == false;
+}
+
 // ============================================================================
 // TDD: INVARIANTS
 // ============================================================================
@@ -121,3 +132,17 @@ invariant "trinity_always_holds" {
     const phi_inv_sq = PHI_INV * PHI_INV;
     assert (phi_sq + phi_inv_sq - TRINITY) < 0.0001;
 }
+
+// W696: the hardware boundary, DERIVED -- not chosen.
+//
+// T187 measured an exact equivalence over 617 specs: a module gets a data
+// port iff the spec declares `on_comb` or `on_clock`. Without one the
+// compiler emits `NO DATA PORTS -- this module cannot move a value across
+// its boundary`, and synthesis optimises the whole thing away.
+//
+// The standing rule is that the default must NOT be guessed. Here no guess
+// was made: `t27c entry-points` found exactly ONE function in this spec that
+// takes a parameter, returns a value, has a body, and whose types all have a
+// known width. With one candidate the choice is forced, so this forwards and
+// invents nothing. 11 of 387 port-less specs qualified.
+fn on_comb(ring: u8) -> bool { return validate_ring_number(ring); }

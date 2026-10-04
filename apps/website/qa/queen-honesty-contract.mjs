@@ -3,7 +3,7 @@
 // source facts a regex CAN state. Node 22 needs --experimental-strip-types
 // to import the TypeScript module; package.json passes it.
 import { readFileSync } from "node:fs";
-import { alertCount, alertSpan, beeSilence, buildingPlan, castlePlaces, epicProgress, familyTint, feedCoverage, ringFamily, ringOfEpic, ringSummary, towerStage, wallBetween, ringOfModulePath, epicOfIssue, hexRingCells, foundationCells, foundationOrder, hexCellCount, hexCentres, hexCorners, hexField, hexIndexAt, hexRing, hexRingStart, hexToWorld, honeyTone, layersFromSearch, spiralAxial, spiralIndex, spiralOrder, HEX_R, S_CELL, buildingTint, cellGeometry, countdownFor, eventIdentity, mergeActivity, serverOffsetMs, decisionDetail, fieldShape, moduleColumn, moduleFor, moduleId, pathInTitle, placeCards, rewriteEndpoints, ringOrder, ringTone, roundStrip, skipReasonWords, staleAge, territoryOf, planHash, withOpenIssues } from "../src/components/queenHud.ts";
+import { alertCount, alertSpan, beeSilence, buildingPlan, castlePlaces, epicProgress, familyTint, ringFamily, ringOfEpic, ringSummary, towerStage, wallBetween, ringOfModulePath, epicOfIssue, hexRingCells, foundationCells, foundationOrder, hexCellCount, hexCentres, hexCorners, hexField, hexIndexAt, hexRing, hexRingStart, hexToWorld, honeyTone, layersFromSearch, spiralAxial, spiralIndex, spiralOrder, HEX_R, S_CELL, buildingTint, cellGeometry, countdownFor, eventIdentity, mergeActivity, serverOffsetMs, decisionDetail, fieldShape, moduleColumn, moduleFor, moduleId, pathInTitle, placeCards, rewriteEndpoints, ringOrder, ringTone, roundStrip, skipReasonWords, staleAge, territoryOf, planHash, withOpenIssues, HIVE_TONES, hiveCoverOf, hiveKey, hiveToneOf } from "../src/components/queenHud.ts";
 
 const fails = [];
 let checks = 0;
@@ -143,21 +143,43 @@ check(/`\$\{c\.hudSince\} \$\{formatMoment\(lastRoundAt, lang\)\} · ≤ \$\{for
 check(/schedulerOff \|\| !roundKnown \? "—" : `\+\$\{formatCountdown\(elapsedSeconds\)\}`/.test(src), "the value counts up since the last round; no countdown promises the next round at a second");
 // the status pill reads swarmState through COPY keys; the VERDICTS tile adds the unreviewed count only when the wire has it (P1-28)
 check(/data\?\.swarmState === "working"[\s\S]{0,40}c\.swarmWorking[\s\S]{0,120}c\.swarmIdle[\s\S]{0,120}c\.swarmPaused[\s\S]{0,80}data\.swarmState\.toUpperCase\(\)[\s\S]{0,40}c\.swarmUnknown/.test(src), "the pill maps working/idle/paused to COPY keys, prints an unfamiliar wire state as itself, and a missing one as the unknown key");
-check(/swarmWorking:\s*"WORKING"/.test(src) && /swarmWorking:\s*"РАБОТАЕТ"/.test(src) && /hudReady:\s*"ready"/.test(src) && /hudReady:\s*"готово"/.test(src), "the four swarm words and the ready word exist in both languages");
-check(/typeof data\?\.dispatches\.unreviewed === "number" \? ` · \$\{data\.dispatches\.unreviewed\} \$\{c\.hudReady\}` : ""/.test(src), "the VERDICTS sub-line prints the unreviewed count only when the wire carries the field, never 0 for an absent one");
-check(/`\$\{decisionInfo\} · \$\{decision\.allowed \? c\.chose : c\.stoodDown\}`/.test(src), "the gold block's decision line leads with the wire field (the refusal or what the round did), the verb follows");
-// the INTEL FEED header states what it holds, from its rows (P1-27)
-const cov = feedCoverage([{ at: "2026-09-05T00:40:00Z" }, { at: "2026-09-05T00:41:02Z" }, { at: "2026-09-05T00:40:30Z" }]);
-check(cov.rows === 3 && cov.spanSeconds === 62 && cov.oldestAt === "2026-09-05T00:40:00Z" && cov.newestAt === "2026-09-05T00:41:02Z", "three rows over 62 s: the header says 3 rows · 62 s from the rows themselves");
-check(feedCoverage([{ at: "2026-09-05T00:40:00Z" }]).spanSeconds === null && feedCoverage([]).rows === 0 && feedCoverage([{ at: "bad" }, { at: "2026-09-05T00:40:00Z" }]).spanSeconds === null, "one row, no rows or an undatable row: no span is printed, never a fabricated 0 s");
+check(/swarmWorking:\s*"WORKING"/.test(src) && /swarmWorking:\s*"РАБОТАЕТ"/.test(src) && /hudNoVerdict:\s*"finished, no verdict"/.test(src) && /hudNoVerdict:\s*"без вердикта"/.test(src), "the four swarm words and the no-verdict words exist in both languages (dispatches.unreviewed counts finished rows with no verdict, not issues ready)");
+check(/typeof data\?\.dispatches\.unreviewed === "number" \? ` · \$\{data\.dispatches\.unreviewed\} \$\{c\.hudNoVerdict\}` : ""/.test(src), "the VERDICTS sub-line prints the unreviewed count only when the wire carries the field, never 0 for an absent one");
+// This pin held `${decisionInfo} · ${verb}` (decisionLine), the fallback line
+// of the command rail's second round button. 9316e9edd removed that button --
+// one round control is left, the resource tile, whose line is roundStrip
+// (pinned above) or the round window -- and moved its popover onto the tile.
+// The popover is where the decision is still spelled out: the verb on a line
+// of its own, and the line under it leading with the wire field.
+check(/<strong>\s*\{decision\s*\?\s*decision\.allowed\s*\?\s*c\.chose\s*:\s*c\.stoodDown\s*:\s*c\.noDecision\}\s*<\/strong>\s*\{decision && \(\s*<p>\s*\{decisionInfo\} · \{decision\.skippedCount\}/.test(src), "the round popover's verb has a line of its own; the line under it leads with the wire field (the refusal or what the round did), the skip count follows");
+// Two assertions exercised feedCoverage(), the INTEL FEED header's row count
+// and row span (P1-27). The feed was deleted -- the shell gave its cell to the
+// Queen's conversation -- and these calls were the function's only remaining
+// reader, so the gate was the sole reason a dead helper still shipped. Both are
+// gone with it. The rule they stood for, that a header never prints a
+// fabricated "0 s", has no header left to govern: the conversation prints its
+// own row count from events.length and prints no span anywhere. The nearest
+// surface that could want one is the A2A tab, whose netScope line scopes the
+// link counts in rows alone ("the last {n} events", QueenChat.tsx:381); giving
+// it a span is a change to published copy in two languages, so the rule comes
+// back with that decision, not before it.
 // review and finished rows print their wire state after the kind word (P1-24)
 check(/return \(event\.kind === "review" \|\| event\.kind === "finished"\) && event\.state && event\.state !== event\.kind \? `\$\{word\} · \$\{event\.state\}` : word;/.test(src), "a verdict or a finish carries its wire state after the kind word; no state or a state equal to the kind (finished · finished) adds no suffix");
 // a bee's silence is measured against the round (P1-23)
 const nowB = Date.parse("2026-09-05T02:05:00Z");
 check(beeSilence("2026-09-05T02:04:18Z", nowB, 300)?.seconds === 42 && beeSilence("2026-09-05T02:04:18Z", nowB, 300)?.cold === false && beeSilence("2026-09-05T01:59:59Z", nowB, 300)?.cold === true, "42 s of silence under a 300 s round is warm; 301 s is cold");
 check(beeSilence("2026-09-05T01:00:00Z", nowB, null)?.cold === false && beeSilence(null, nowB, 300) === null && beeSilence("bad", nowB, 300) === null, "no round length: never cold; no last word or an undatable one: no age at all");
-check(/\$\{QUEEN_API\}\/queen\/public-foundation/.test(src) && /"\.\/queen\/foundation\.json"/.test(src) && /data-foundation=\{foundationState\.data \?/.test(src), "the honeycomb's GitHub facts come from the server's route first and the loop's dated snapshot second, named on the viewport (H-C1)");
-check((src.match(/hexField\(fieldNeed\)/g) || []).length >= 2 && /const fieldNeed = Math\.max\(moduleCards\.length \+ 1, closedCount \+ 1, \(foundationState\.data\?\.rings\.length \?\? 0\) > 0 \? hexCellCount\(CASTLE_RING\) \+ 1 : 0\)/.test(src), "the field is as large as the honey and the castle need (the hub plus modules or closed issues, at least ring 7 when rings exist), the modules keep their inner cells (H-C2, K-2)");
+// #1206 moved every corpus read into src/lib/queenCorpus.ts, and rule B of
+// qa/queen-spec-sync-contract.mjs (run in CI) refuses any other file that names
+// queen/foundation.json -- so the regex here, which demanded that Queen.tsx
+// name it, could not pass again. What Queen.tsx still decides is pinned here:
+// it asks the store for the foundation with the server's route as the wire,
+// keeps the snapshot only for the board's own repository, and names
+// count@date:source on the viewport. The store's order -- the wire first, the
+// vendored file when the wire has none, a 404 asked once, a 5xx asked again --
+// is executed in rule C of that contract, not restated here.
+check(/useCorpus\("foundation", \{ wire: `\$\{QUEEN_API\}\/queen\/public-foundation`/.test(src) && /const hiveFoundation = hiveSameRepositorySnapshot\(repo, foundationState\.data\);/.test(src) && /data-foundation=\{hiveFoundation \? `\$\{hiveFoundation\.closedIssues\.length\}@\$\{hiveFoundation\.generatedAt\}:\$\{hiveFoundation\.source\}`/.test(src), "GitHub facts come from the store with the server's route as the wire, only for the board's own repository, and the viewport names count@date:source (H-C1)");
+check((src.match(/hexField\(fieldNeed\)/g) || []).length >= 2 && /const fieldNeed = Math\.max\(moduleCards\.length \+ 1, closedCount \+ 1, hiveRecords\.length \+ 1, \(hiveFoundation\?\.rings\.length \?\? 0\) > 0 \? hexCellCount\(CASTLE_RING\) \+ 1 : 0\)/.test(src), "field reserves hub and space for modules, closed issues, live issue displays and same-repository castle");
 check(/data-pick-kind=\{livePick\?\.kind/.test(src) && /data-pick-issue=\{livePick\?\.kind === "issue"/.test(src) && /if \(pick\.kind === "issue" && pick\.issue\)/.test(src), "a pick is (kind, number): an issue pick follows its number through the snapshot, the viewport names the kind and the issue (H-E)");
 // the castle of the rings (K-1): places on spiral ring 7, epics to rings, towers by stage
 const ksRings = ["SR-00", "RUST-13", "T27-00", "RUST-04"];
@@ -175,7 +197,29 @@ check(ksSummary.epics === 1 && ksSummary.closed === 3 && ksSummary.total === 5 &
 check(wallBetween([ksEpic({ state: "closed", closedAt: "x", children: ksKids(2, 0) })], [ksEpic({ state: "closed", closedAt: "x", children: ksKids(1, 0) })]) === true && wallBetween([ksEpic({ children: ksKids(3, 2) })], [ksEpic({ state: "closed", closedAt: "x", children: ksKids(1, 0) })]) === false && wallBetween([], [ksEpic({ state: "closed", closedAt: "x", children: ksKids(1, 0) })]) === false, "a wall rises only between two rings whose every epic is a keep");
 check(ringOfModulePath("rings/SR-00") === "SR-00" && ringOfModulePath("rings/RUST-13/clade-meshd/src") === "RUST-13" && ringOfModulePath("rings") === null && ringOfModulePath("apps/rings/SR-00") === null && ringOfModulePath(".") === null, "ringOfModulePath: rings/<NAME> and anything beneath it; nothing else");
 check(epicOfIssue(101, [ksEpic({ number: 9001, children: ksKids(3, 2) }), ksEpic({ number: 9002, children: [] })])?.number === 9001 && epicOfIssue(1, [ksEpic({ children: ksKids(3, 2) })]) === null, "epicOfIssue: the first epic listing the issue among its children, else null");
+check(/data-working-age/.test(combSrc) && /kind === "finished" \|\| kind === "error"/.test(combSrc) && !/WORK_WINDOW_MS/.test(combSrc) && /const i = displaysRef.current \? indexByNumber.get\(issueNumber\) \?\? -1 : cellOfPath\(title\);/.test(combSrc), "work follows the issue's LAST wire state, not age; issue displays join its exact number and only legacy module cells use paths");
+check(/if \(hover >= 0 && hover !== p && cells\[hover\]\) placeDashed/.test(combSrc), "every cell under the pointer lights up, not only the ones carrying a card");
+check(!/\.glb/.test(combSrc) && !/LoadAssetContainerAsync/.test(combSrc) && /data-look", "hive"/.test(combSrc) && /CreateLineSystem\("queen-mark"/.test(combSrc), "the hive draws no model at all: no .glb is named, no asset container is loaded, and the Queen at the centre is the mark itself (the user, 2026-09-06)");
+const SPACE_KIT = ["platform_small", "machine_generatorLarge", "satelliteDish_large", "hangar_smallA", "hangar_roundA", "structure_closed", "gate_complex", "crater", "hangar_largeA", "rock_crystalsLargeA", "astronautA", "astronautB", "rover", "alien"];
+check(SPACE_KIT.every((m) => !combSrc.includes(m)), `the field draws one kit: no space-kit model may be named (${SPACE_KIT.filter((m) => combSrc.includes(m)).join(", ") || "none"})`);
+check(/host\.setAttribute\("data-foundation-shape", displaysRef.current \? "status-filled" : "outline"\)/.test(combSrc) && /CreateLineSystem\("cells"/.test(combSrc) && !/CreateCylinder\("honey"/.test(combSrc) && !/hex-sand/.test(combSrc), "issue cells have status fills (user 2026-09-07); module outlines remain, no fabricated honey or tile model");
+check(/host\.setAttribute\("data-hover-issue"/.test(combSrc) && /queen27-hover-card/.test(combSrc), "a hovered cell names its GitHub issue on the host and in the card");
 check(/host\.setAttribute\("data-castle-source", fdNow \? fdNow\.source : "none"\)/.test(combSrc) && /data-castle-stages/.test(combSrc) && /data-castle-unassigned/.test(combSrc), "the castle's testimony on the host comes from the snapshot's source, never a guess; stages and unassigned epics are named (K-2)");
+check(HIVE_TONES.t27 === "#FFD45A" && HIVE_TONES.awaiting === "#64DCFF" && HIVE_TONES.manual === "#FF4D5E" && HIVE_TONES.hover === "#FFC24D", "the hive's colour law is exact: yellow T27, neon blue awaiting, red manual, honey only for the hand");
+const claimed = new Set(["agent-server/apps/access-control"]);
+check(hiveCoverOf("agent-server/apps/access-control", claimed) === "t27" && hiveCoverOf("agent-server/apps/manual", claimed) === "manual" && hiveCoverOf(null, claimed) === "awaiting" && hiveToneOf("manual")[0] > hiveToneOf("manual")[2], "cover is a claim against the module: T27, manual, or awaiting; no decoration chooses it");
+check(/fieldRoot.rotation.copyFromFloats\(HIVE_WALL_ROTATION.x, HIVE_WALL_ROTATION.y, HIVE_WALL_ROTATION.z\)/.test(combSrc) && /new ArcRotateCamera\("cam", Math\.PI \/ 2, Math\.PI \/ 2/.test(combSrc) && /data-orientation", "facing"/.test(combSrc), "the comb is a wall facing the player, with the shared point-down orientation");
+check(/HIVE_TONES\.hover/.test(combSrc) && /hiveToneOf\(covers\[i\]\)/.test(combSrc) && /queen27-hive-law/.test(combSrc), "hover is honey while cell claims follow the law, and the legend names that law");
+check(/fieldRoot\.position\.y = motionPreference\.matches \|\| selectedDisplayRef\.current !== null \? 0 : Math\.sin\(nowMs \/ 6400\) \* 7/.test(combSrc), "wall drift stops for close-up reading and reduced motion");
+check(/hiveWallToWorld\(anchor.x, anchor.z\)/.test(combSrc) && /hiveWorldToWall\(wx, wy, fieldRoot.position.y\)/.test(combSrc) && /const p = planeAt\(x, y\)/.test(combSrc), "zoom and picking use the same rotated wall-plane coordinates");
+check(/QueenHiveDisplays/.test(combSrc) && /projected\.slice\(0,32\)/.test(combSrc) && !/new DynamicTexture\(`event-card-/.test(combSrc), "native displays replace blurry256px textures and cull to32 visible cells");
+// The same move (#1206) took `fetch("t27/manifest.json"` out of Queen.tsx; the
+// coverage now reads the manifest part of the store, and the scoping itself
+// (hiveCoverageFromManifest) is executed in qa/queen-coverage-contract.mjs.
+check(/function useT27Coverage\(repository: string \| null\)[^\n]*\{\n\s*const \{ manifest \} = useT27Manifest\(\);/.test(src) && /function useT27Manifest\(\)[^\n]*\{\n\s*const \{ part, error \} = useCorpus\("manifest"\);/.test(src) && /hiveCoverageFromManifest\(manifest, repository\)/.test(src) && /useT27Coverage\(modulesState\.data\?\.repo \?\? null\)/.test(src), "yellow is scoped to the displayed module snapshot repository, never hard-coded trinity");
+check(/\[\.\.\.t27Coverage\]\.sort\(\)/.test(combSrc), "same-size coverage changes invalidate the scene's signature");
+check(/hiveLawT27:\s*"T27 covered"/.test(src) && /hiveLawManual:\s*"manual code"/.test(src) && /hiveLawAwaiting:\s*"awaiting T27"/.test(src) && /hiveLawBees:\s*"bees"/.test(src), "the English colour-law words exist");
+check(/hiveLawT27:\s*"покрыто T27"/.test(src) && /hiveLawManual:\s*"ручной код"/.test(src) && /hiveLawAwaiting:\s*"ждёт T27"/.test(src) && /hiveLawBees:\s*"пчёлы"/.test(src), "the Russian colour-law words exist");
 check(decisionDetail({ allowed: false, refusal: null }, 0, 1, L) !== "0 executing now", "self-test");
 
 if (fails.length) { for (const f of fails) console.log("  ✗ " + f); console.log(`Queen honesty contract: FAIL (${fails.length})`); process.exit(1); }

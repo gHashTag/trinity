@@ -11,7 +11,7 @@ module TriState;
     // ═══════════════════════════════════════════════════════════
 
     pub const State(S, T) = struct {
-        run : fn(S) -> (S, T),
+        run : "fn(S) -> (S, T)",
     };
 
     // ═══════════════════════════════════════════════════════════
@@ -20,22 +20,22 @@ module TriState;
 
     // pure(value: T) → State(S, T)
     fn pure(value: T) -> State(S, T) {
-        // TODO: Implement from .tri spec
+        State { run = "fn(s: S) -> (S, T) { (s, value) }" }
     }
 
     // get() → State(S, S)
     fn get() -> State(S, S) {
-        // TODO: Implement from .tri spec
+        State { run = "fn(s: S) -> (S, S) { (s, s) }" }
     }
 
     // put(state: S) → State(S, void)
     fn put(state: S) -> State(S, void) {
-        // TODO: Implement from .tri spec
+        State { run = "fn(s: S) -> (S, void) { (state, void) }" }
     }
 
-    // modify(fn: fn(S) -> S) → State(S, void)
-    fn modify(fn: fn(S) -> S) -> State(S, void) {
-        // TODO: Implement from .tri spec
+    // modify(fn: Fn(S) -> S) → State(S, void)
+    fn modify(fn: Fn(S) -> S) -> State(S, void) {
+        State { run = "fn(s: S) -> (S, void) { (fn(s), void) }" }
     }
 
     // ═══════════════════════════════════════════════════════════

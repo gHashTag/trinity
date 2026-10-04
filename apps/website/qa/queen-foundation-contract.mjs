@@ -41,6 +41,7 @@ listeners.push(async msg => {
   if (msg.sessionId !== sessionId || msg.method !== 'Fetch.requestPaused') return;
   const { requestId, request, responseStatusCode } = msg.params;
   if (/queen\/foundation\.json|queen\/public-foundation/.test(request.url)) return; // the foundation listener answers these
+  if (/queen\/public-activity/.test(request.url)) return; // the activity listener answers these
   if (!/queen\/modules\.json/.test(request.url)) { await call('Fetch.continueRequest', { requestId }); return; }
   if (responseStatusCode === undefined) { await call('Fetch.continueRequest', { requestId }); return; }
   served += 1;
@@ -61,7 +62,30 @@ listeners.push(async msg => {
   if (!/queen\/foundation\.json/.test(request.url) || responseStatusCode === undefined) return;
   await call('Fetch.fulfillRequest', { requestId, responseCode: 200, responseHeaders: [{ name: 'Content-Type', value: 'application/json' }, { name: 'Access-Control-Allow-Origin', value: '*' }], body: Buffer.from(JSON.stringify(FIXTURE)).toString('base64') });
 });
-await call('Fetch.enable', { patterns: [{ urlPattern: '*queen/modules.json*', requestStage: 'Response' }, { urlPattern: '*queen/foundation.json*', requestStage: 'Response' }, { urlPattern: '*queen/public-foundation*', requestStage: 'Request' }] });
+// (h) the working cells: work is a STATE. An issue is worked while its LAST
+// event is not terminal, however long ago that was, because the wire delivers
+// in bursts. Two issues under one module mark ONE cell; a third issue whose
+// last event is `finished` marks none, even though it is the newest row.
+let workPath = null;
+listeners.push(async msg => {
+  if (msg.sessionId !== sessionId || msg.method !== 'Fetch.requestPaused') return;
+  const { requestId, request, responseStatusCode } = msg.params;
+  if (!/queen\/public-activity/.test(request.url)) return;
+  if (responseStatusCode === undefined) { await call('Fetch.continueRequest', { requestId }); return; }
+  if (workPath === null && boardText !== null) { const d = JSON.parse(boardText); const list = Array.isArray(d) ? d : d.modules; const m = list.find(x => x.path && x.path !== '.'); workPath = m ? m.path : null; }
+  const at = new Date().toISOString();
+  const old = new Date(Date.now() - 40 * 60 * 1000).toISOString();
+  const rows = workPath === null ? [] : [
+    // two issues under one module, last events 40 minutes old and not terminal
+    { id: 'w1', kind: 'progress', issue: 9101, title: `${workPath}/one.ts`, at: old, state: null },
+    { id: 'w2', kind: 'tool', issue: 9102, title: `${workPath}/two/deep.ts`, at: old, state: null },
+    // a third issue that started and then finished: the newest rows on the wire
+    { id: 'w3', kind: 'progress', issue: 9103, title: `${workPath}/three.ts`, at: old, state: null },
+    { id: 'w4', kind: 'finished', issue: 9103, title: `${workPath}/three.ts`, at, state: 'finished' },
+  ];
+  await call('Fetch.fulfillRequest', { requestId, responseCode: 200, responseHeaders: [{ name: 'Content-Type', value: 'application/json' }, { name: 'Access-Control-Allow-Origin', value: '*' }], body: Buffer.from(JSON.stringify({ events: rows })).toString('base64') });
+});
+await call('Fetch.enable', { patterns: [{ urlPattern: '*queen/modules.json*', requestStage: 'Response' }, { urlPattern: '*queen/foundation.json*', requestStage: 'Response' }, { urlPattern: '*queen/public-activity*', requestStage: 'Response' }, { urlPattern: '*queen/public-foundation*', requestStage: 'Request' }] });
 await call('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
 await call('Page.navigate', { url: `${ORIGIN}/?foundation=1${process.env.QUEEN_ENGINE ? '&engine=' + process.env.QUEEN_ENGINE : ''}#/queen` });
 let ready = false;
@@ -105,6 +129,25 @@ outerC: for (let gy = 0; gy < 8; gy++) for (let gx = 0; gx < 12; gx++) {
 if (!issuePick) { console.log('  Queen foundation contract: FAIL (no click on the honey reported data-hit=issue with CODE off)'); cleanup(); process.exit(1); }
 if (issuePick.kind !== 'issue' || !/^\d+$/.test(issuePick.issue || '') || !issuePick.text.includes('#' + issuePick.issue) || !issuePick.text.includes('fixture issue ' + issuePick.issue)) { console.log(`  Queen foundation contract: FAIL (an issue pick did not reach the panel: kind=${issuePick.kind} issue=${issuePick.issue} text="${issuePick.text.slice(0, 120)}")`); cleanup(); process.exit(1); }
 await evaluate(`document.querySelector('button[data-layer="code"]').click()`); await wait(300);
+// (f) the user (2026-09-06): every tile is a GitHub issue and a cell is an outline, not a filled disc; the host names the shape
+const shape = await evaluate(`document.querySelector('.queen27-comb-field[data-engine="babylon"]').getAttribute('data-foundation-shape')`);
+if (shape !== 'outline') { console.log(`  Queen foundation contract: FAIL (data-foundation-shape=${shape}; expected outline)`); cleanup(); process.exit(1); }
+// (g) hovering a cell with CODE off highlights it and shows the issue's card: number, title; leaving the canvas hides it
+await evaluate(`document.querySelector('button[data-layer="code"]').click()`); await wait(400);
+let hoverCard = null;
+outerG: for (let gy = 0; gy < 8; gy++) for (let gx = 0; gx < 12; gx++) {
+  const x = rect.x + rect.w * (0.2 + 0.6 * (gx / 11)), y = rect.y + rect.h * (0.08 + 0.4 * (gy / 7));
+  await evaluate(`(() => { const cv = document.querySelector('.queen27-comb-field canvas'); cv.dispatchEvent(new PointerEvent('pointermove', { clientX: ${x}, clientY: ${y}, bubbles: true, pointerId: 1, pointerType: 'mouse', isPrimary: true })); })()`);
+  await wait(120);
+  const h = await evaluate(`(() => { const f = document.querySelector('.queen27-comb-field[data-engine="babylon"]'); const c = f.querySelector('.queen27-hover-card'); return { issue: f.getAttribute('data-hover-issue'), shown: !!c && getComputedStyle(c).display !== 'none' && c.getAttribute('aria-hidden') !== 'true', text: c ? c.textContent : '' }; })()`);
+  if (h.issue) { hoverCard = h; break outerG; }
+}
+if (!hoverCard) { console.log('  Queen foundation contract: FAIL (no pointermove over the cells set data-hover-issue with CODE off)'); cleanup(); process.exit(1); }
+if (!hoverCard.shown || !hoverCard.text.includes('#' + hoverCard.issue) || !hoverCard.text.includes('fixture issue ' + hoverCard.issue)) { console.log(`  Queen foundation contract: FAIL (hover card for #${hoverCard.issue}: shown=${hoverCard.shown} text="${hoverCard.text.slice(0, 80)}")`); cleanup(); process.exit(1); }
+await evaluate(`(() => { const cv = document.querySelector('.queen27-comb-field canvas'); cv.dispatchEvent(new PointerEvent('pointerleave', { bubbles: false, pointerId: 1 })); })()`); await wait(250);
+const afterLeave = await evaluate(`(() => { const f = document.querySelector('.queen27-comb-field[data-engine="babylon"]'); const c = f.querySelector('.queen27-hover-card'); return { issue: f.getAttribute('data-hover-issue'), shown: !!c && c.getAttribute('aria-hidden') !== 'true' }; })()`);
+if (afterLeave.issue || afterLeave.shown) { console.log(`  Queen foundation contract: FAIL (the hover card stayed after pointerleave: ${JSON.stringify(afterLeave)})`); cleanup(); process.exit(1); }
+await evaluate(`document.querySelector('button[data-layer="code"]').click()`); await wait(300);
 // (d) the FOUNDATION button hides the honey: the section names the layers, the host shows 0
 await evaluate(`document.querySelector('button[data-layer="foundation"]').click()`);
 let hidden = null;
@@ -118,5 +161,9 @@ const zIn = await evaluate(`document.querySelector('.queen27-comb-field[data-eng
 await evaluate(`document.querySelector('button[data-tool="fit"]').click()`); await wait(300);
 const zFit = await evaluate(`document.querySelector('.queen27-comb-field[data-engine="babylon"]').getAttribute('data-zoom')`);
 if (zIn !== '1.25' || zFit !== '1.00') { console.log(`  Queen foundation contract: FAIL (zoom: + gave ${zIn}, FIT VIEW gave ${zFit}; expected 1.25 then 1.00)`); cleanup(); process.exit(1); }
-console.log(`  Queen foundation contract: PASS (data-foundation=${found}; field ${hostA.cells} cells, first ${hostA.first}, last ${hostA.last}, tile ${hostA.orient} ratio ${hostA.ratio}; FOUNDATION off -> shown 0, layers ${hidden.layers}; zoom ${zIn} -> ${zFit}; issue #${issuePick.issue} picked and named; picked ${picked.module} at index ${picked.index})`);
+let working = null;
+for (let i = 0; i < 40 && working !== '1'; i += 1) { await wait(500); working = await evaluate(`document.querySelector('.queen27-comb-field[data-engine="babylon"]').getAttribute('data-working')`); }
+const workAge = await evaluate(`document.querySelector('.queen27-comb-field[data-engine="babylon"]').getAttribute('data-working-age')`);
+if (working !== '1' || !/^\d+$/.test(String(workAge)) || Number(workAge) < 2000) { console.log(`  Queen foundation contract: FAIL (data-working=${working} age=${workAge}; two issues under one module with 40-minute-old non-terminal events must mark ONE cell and report its age, and a finished issue must mark none)`); cleanup(); process.exit(1); }
+console.log(`  Queen foundation contract: PASS (data-foundation=${found}; field ${hostA.cells} cells, first ${hostA.first}, last ${hostA.last}, cells ${hostA.orient}; FOUNDATION off -> shown 0, layers ${hidden.layers}; zoom ${zIn} -> ${zFit}; issue #${issuePick.issue} picked and named; picked ${picked.module} at index ${picked.index})`);
 cleanup(); process.exit(0);

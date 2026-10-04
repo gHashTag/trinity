@@ -10,25 +10,20 @@ module TriExitCodes;
     // 2. Types
     // ═══════════════════════════════════════════════════════════
 
-    // The CONTROL CASE for the converter bug (#2717): these bullets are
-    // written `- success: 0`, WITH a value, so they parsed as fields and
-    // survived where bare bullets were dropped. What was left behind is the
-    // `variants : ,` marker line and a set of fields wearing dashes.
-    pub const ExitCode = enum(u8) {
-        success = 0,
-        command_error = 1,
-        validation_error = 2,
-        runtime_error = 3,
-        timeout = 4,
-        job_failed = 5,
-        artifact_failed = 6,
-        internal_error = 7,
+    pub const ExitCode = struct {
+        kind : Enum(u8),
+        variants : ,
+        - success : 0,
+        - command_error : 1,
+        - validation_error : 2,
+        - runtime_error : 3,
+        - timeout : 4,
+        - job_failed : 5,
+        - artifact_failed : 6,
+        - internal_error : 7,
     };
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test "exit_codes_smoke_test" {
-        expect(true)
-    }

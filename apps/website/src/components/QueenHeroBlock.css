@@ -1,0 +1,126 @@
+/* No rule under this one: the spec block below is the second half of the same
+   idea, and a divider there made two slabs out of one pair. */
+.queen-hero-block {
+  border-top: 1px solid rgba(0, 255, 136, .24);
+  background: #000;
+  color: var(--text, #FFFFFF);
+}
+
+.queen-hero-block-inner {
+  width: min(1180px, calc(100% - 2rem));
+  min-height: 360px;
+  margin: 0 auto;
+  padding: clamp(2rem, 6vw, 4.5rem) 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(1.5rem, 4vw, 2.5rem);
+  align-items: start;
+}
+
+.queen-hero-block-copy { max-width: 620px; }
+.queen-hero-block-eyebrow {
+  color: #ffd45a;
+  font: 600 .72rem/1.2 "JetBrains Mono", monospace;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+.queen-hero-block h2 {
+  max-width: 20ch;
+  margin: .65rem 0 1rem;
+  font: 400 clamp(2rem, 5vw, 4.6rem)/.98 Outfit, sans-serif;
+  letter-spacing: 0;
+}
+.queen-hero-block p {
+  max-width: 54ch;
+  margin: 0;
+  color: #a8c1ba;
+  font-size: clamp(1rem, 1.6vw, 1.2rem);
+  line-height: 1.55;
+}
+.queen-hero-block-actions { display: flex; flex-wrap: wrap; gap: .65rem; margin-top: 1.5rem; }
+.queen-hero-block-actions a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: .65rem .9rem;
+  border-radius: 6px;
+  font: 600 .82rem/1.2 "JetBrains Mono", monospace;
+  text-decoration: none;
+}
+.queen-hero-block-primary { background: #000; color: #00ff88; border: 1px solid #00ff88; }
+.queen-hero-block-secondary { color: #ffd45a; border: 1px solid #ffd45a88; background: transparent; }
+.queen-hero-block-primary:hover, .queen-hero-block-secondary:hover { filter: brightness(1.12); }
+
+/* The hive is the point of the block, so it gets a screen's worth of height
+   instead of the 290px panel the decorative cells used to sit in. */
+.queen-hero-block-atlas {
+  height: min(72vh, 640px);
+  min-height: 420px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(0, 255, 136, .28);
+  background: #000;
+  clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+}
+.queen-hero-block-stats {
+  position: absolute;
+  left: 1rem;
+  bottom: 1rem;
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: .15rem .65rem;
+  align-items: baseline;
+  font-family: "JetBrains Mono", monospace;
+}
+.queen-hero-block-stats strong { color: #ffd45a; font-size: 1.35rem; }
+.queen-hero-block-stats span { color: #a8c1ba; font-size: .68rem; }
+.queen-hero-block-atlas > small { position: absolute; right: 1rem; bottom: 1rem; color: #64dcff; font-size: .65rem; }
+
+/* The stats sit over the live scene now, so they need their own ground.
+
+   A ground was half of it, and this is the surface that proves the other half
+   matters most where it is least expected. The block mounts the same
+   QueenCatalogHive -> QueenCombBabylon the board does, with foundationVisible
+   and fitInset 0: a live rotating lattice, on the public landing, above the
+   fold, the first thing anyone who has never heard of this project sees.
+   #000000b8 is alpha 0.7216, so 28% of that lattice reaches the digits -- and
+   alpha scales the field's amplitude while leaving its spatial frequency
+   untouched, so what reaches them is a hexagon edge at full sharpness, read as
+   a stroke of a numeral. The three inks pass 4.5:1 over a lit field (4.87,
+   5.85, 6.56 -- from 0xb8/255 and not from a 0.72 rounded on the way in, which
+   is the kind of slip a comment can make and a stylesheet cannot), which is
+   why the arithmetic never objected: contrast models the
+   backdrop as one flat colour, and a lattice is not one.
+
+   Darkening #000000b8 is the answer that was tried twice on the board, on
+   KANBAN and on TRI, and rejected both times for the same reason it would fail
+   here. blur() is the only declaration in CSS that touches the frequency.
+
+   qa/queen-contrast-contract.mjs could not have found this until today, and
+   the reason is worth keeping next to the fix: the gate derives the sheets it
+   reads by walking imports, and it walked from the board's route entry alone.
+   The landing is a different root. A gate rooted at one page is honest about
+   one page and silent about every other, and silence had been reading as
+   approval. It now walks from src/App.tsx as well. */
+.queen-hero-block-stats,
+.queen-hero-block-atlas > small {
+  z-index: 3;
+  padding: .3rem .5rem;
+  background: #000000b8;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+@media (max-width: 720px) {
+  .queen-hero-block-inner { grid-template-columns: 1fr; gap: 1.5rem; }
+  .queen-hero-block h2 { max-width: 16ch; }
+  .queen-hero-block-atlas { height: min(68vh, 520px); min-height: 360px; }
+}
+
+/* Landscape phones: the 420px floor is taller than the screen, so the block
+   alone outgrew the viewport. Same treatment the spec frame gets. */
+@media (max-height: 500px) {
+  .queen-hero-block-inner { padding: 1.25rem 0; gap: 1rem; }
+  .queen-hero-block-atlas { height: 82vh; min-height: 240px; }
+}

@@ -127,6 +127,14 @@ module APB_Bridge_Testbench {
     invariant addr_width_valid : APB_ADDR_WIDTH > 0;
     invariant data_width_valid : APB_DATA_WIDTH == 32;
 
+    test test_tick_functionality {
+        reset();
+        var initial_clk : bool = clk;
+        tick();
+        var after_tick_clk : bool = clk;
+        invariant after_tick_clk != initial_clk;
+    }
+
     bench bench_apb_throughput {
         reset();
         var i : u32 = 0;
@@ -139,5 +147,12 @@ module APB_Bridge_Testbench {
             apb_read(i * 4);
             i = i + 1;
         }
+    }
+
+    test "tick_function" {
+        reset();
+        var initial_clk : bool = clk;
+        tick();
+        invariant initial_clk != clk;
     }
 }

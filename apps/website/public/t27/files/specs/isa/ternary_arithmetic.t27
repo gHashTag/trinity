@@ -3,14 +3,14 @@
 // Ternary Arithmetic Operations Specification
 // Ring 064 - Balanced ternary arithmetic for T27
 // Defines addition, subtraction, multiplication, and division
-// phi^2 + 1/phi^2 = 3 | TRINITY
+// φ² + 1/φ² = 3 | TRINITY
 
 module TernaryArithmetic {
     use base::types;
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 1. Ternary Values and Constants
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // Balanced ternary values
     const TRIT_NEG : i32 = -1;   // Negative
@@ -24,15 +24,15 @@ module TernaryArithmetic {
     // Number of trits in a word (configurable)
     const TRITS_PER_WORD : usize = 27;  // 3^27 states (~7.6 trillion)
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 2. Single Trit Addition
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // trit_add(a: i32, b: i32, carry_in: i32) -> TritAddResult
+    // trit_add(a: i32, b: i32, carry_in: i32) → TritAddResult
     // Add two trits with carry in, return sum and carry out
     // Balanced ternary: -1, 0, 1
     // Result can be -2, -1, 0, 1, 2 (needs carry)
-    fn trit_add(a: i32, b: i32, carry_in: i32) -> TritAddResult {
+    fn trit_add(a: i32, b: i32, carry_in: i32) → TritAddResult {
         var sum = a + b + carry_in;
 
         // Normalize balanced ternary
@@ -59,13 +59,13 @@ module TernaryArithmetic {
         carry_out : i32,
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 3. Single Trit Subtraction
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // trit_sub(a: i32, b: i32, borrow_in: i32) -> TritSubResult
+    // trit_sub(a: i32, b: i32, borrow_in: i32) → TritSubResult
     // Subtract b from a with borrow in
-    fn trit_sub(a: i32, b: i32, borrow_in: i32) -> TritSubResult {
+    fn trit_sub(a: i32, b: i32, borrow_in: i32) → TritSubResult {
         // Subtraction = addition with negated subtrahend
         const neg_b = -b;
         const result = trit_add(a, neg_b, borrow_in);
@@ -82,24 +82,24 @@ module TernaryArithmetic {
         borrow_out : i32,
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 4. Single Trit Multiplication
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // trit_mul(a: i32, b: i32) -> i32
+    // trit_mul(a: i32, b: i32) → i32
     // Multiply two trits
     // Result: -1, 0, or 1 (no carry needed for single trit)
-    fn trit_mul(a: i32, b: i32) -> i32 {
+    fn trit_mul(a: i32, b: i32) → i32 {
         return a * b;
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 5. Word-Level Addition
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // ternary_word_add(a: []i32, b: []i32, len: usize) -> WordAddResult
+    // ternary_word_add(a: []i32, b: []i32, len: usize) → WordAddResult
     // Add two ternary words with carry propagation
-    fn ternary_word_add(a: []i32, b: []i32, len: usize) -> WordAddResult {
+    fn ternary_word_add(a: []i32, b: []i32, len: usize) → WordAddResult {
         var result : WordAddResult = undefined;
         var carry : i32 = 0;
         var i : usize = 0;
@@ -123,13 +123,13 @@ module TernaryArithmetic {
         overflow : bool,
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 6. Word-Level Subtraction
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // ternary_word_sub(a: []i32, b: []i32, len: usize) -> WordSubResult
+    // ternary_word_sub(a: []i32, b: []i32, len: usize) → WordSubResult
     // Subtract b from a with borrow propagation
-    fn ternary_word_sub(a: []i32, b: []i32, len: usize) -> WordSubResult {
+    fn ternary_word_sub(a: []i32, b: []i32, len: usize) → WordSubResult {
         var result : WordSubResult = undefined;
         var borrow : i32 = 0;
         var i : usize = 0;
@@ -153,13 +153,13 @@ module TernaryArithmetic {
         underflow : bool,
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 7. Ternary to Decimal Conversion
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // ternary_to_decimal(trits: []i32, len: usize) -> i64
+    // ternary_to_decimal(trits: []i32, len: usize) → i64
     // Convert balanced ternary to decimal integer
-    fn ternary_to_decimal(trits: []i32, len: usize) -> i64 {
+    fn ternary_to_decimal(trits: []i32, len: usize) → i64 {
         var result : i64 = 0;
         var power : i64 = 1;
         var i : usize = 0;
@@ -173,10 +173,10 @@ module TernaryArithmetic {
         return result;
     }
 
-    // decimal_to_ternary(value: i64, trits: []i32, len: usize) -> usize
+    // decimal_to_ternary(value: i64, trits: []i32, len: usize) → usize
     // Convert decimal integer to balanced ternary
     // Returns number of trits used
-    fn decimal_to_ternary(value: i64, trits: []i32, len: usize) -> usize {
+    fn decimal_to_ternary(value: i64, trits: []i32, len: usize) → usize {
         var val = value;
         var i : usize = 0;
 
@@ -212,19 +212,19 @@ module TernaryArithmetic {
         return actual_len;
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 8. Validation Functions
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // is_valid_trit(t: i32) -> bool
+    // is_valid_trit(t: i32) → bool
     // Check if a value is a valid trit
-    fn is_valid_trit(t: i32) -> bool {
+    fn is_valid_trit(t: i32) → bool {
         return t >= MIN_TRIT and t <= MAX_TRIT;
     }
 
-    // validate_trits(trits: []i32, len: usize) -> bool
+    // validate_trits(trits: []i32, len: usize) → bool
     // Validate all trits in an array
-    fn validate_trits(trits: []i32, len: usize) -> bool {
+    fn validate_trits(trits: []i32, len: usize) → bool {
         var i : usize = 0;
         while (i < len) {
             if (!is_valid_trit(trits[i])) {
@@ -235,14 +235,14 @@ module TernaryArithmetic {
         return true;
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 9. Comparison Operations
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // ternary_compare(a: []i32, b: []i32, len: usize) -> i32
+    // ternary_compare(a: []i32, b: []i32, len: usize) → i32
     // Compare two ternary words
     // Returns -1 if a < b, 0 if a == b, 1 if a > b
-    fn ternary_compare(a: []i32, b: []i32, len: usize) -> i32 {
+    fn ternary_compare(a: []i32, b: []i32, len: usize) → i32 {
         // Compare from most significant trit
         var i : i64 = @as(i64, @intCast(len)) - 1;
 
@@ -261,9 +261,9 @@ module TernaryArithmetic {
         return 0;
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 10. TDD - Tests
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     test trit_add_basic
         // 1 + 1 = 2 -> -1 with carry +1 (balanced ternary: 2 = -1 + 3)
@@ -359,9 +359,9 @@ module TernaryArithmetic {
         assert ternary_compare(&b, &a, 3) == -1
         assert ternary_compare(&a, &a, 3) == 0
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 11. TDD - Invariants
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     invariant trit_add_commutative
         // Trit addition is commutative
@@ -447,9 +447,9 @@ module TernaryArithmetic {
             i = i + 1;
         }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 12. TDD - Benchmarks
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     bench trit_add_performance
         // Measure: cycles to compute 1000 trit additions

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // t27/specs/vsa/jones_polynomial.t27
-// Jones Polynomial -- Link invariant computed from input structure
+// Jones Polynomial - Link invariant computed from input structure
 // V(L, t) = (-t^(-3/4))^w(L) * <L> where <L> is Kauffman bracket
 
 module JonesPolynomial {
@@ -33,9 +33,9 @@ module JonesPolynomial {
     // =========================================================================================
 
     // Skein relation for Kauffman bracket:
-    // <L_+> = A<L_0> + A^{-1}<L_inf>
-    // <L_-> = A^{-1}<L_0> + A<L_inf>
-    // <L_0> = (A + A^{-1})<L_inf>
+    // <L_+> = A<L_0> + A^{-1}<L_∞>
+    // <L_-> = A^{-1}<L_0> + A<L_∞>
+    // <L_0> = (A + A^{-1})<L_∞>
     // Where A = t^(-1/4), L_+ = positive crossing, L_- = negative crossing
 
     // A = t^(-1/4) parameter for Kauffman bracket
@@ -115,7 +115,7 @@ module JonesPolynomial {
     }
 
     // Jones polynomial for trefoil knot with t = phi
-    // Expected: V(trefoil, phi) = phi^2 + 1
+    // Expected: V(trefoil, phi) = phi² + 1
     fn jones_trefoil_at_phi() -> f64 {
         return jones_trefoil(PHI);
     }
@@ -249,12 +249,12 @@ module JonesPolynomial {
     test jones_trefoil_at_phi_approx
         given result = jones_trefoil_at_phi()
         and expected = PHI * PHI + 1.0
-        // V(trefoil, phi) ~= phi^2 + 1
+        // V(trefoil, phi) ~= phi² + 1
         when error = abs(result - expected)
         then error < 0.1  // Allow 10% tolerance for numeric approximation
 
     test jones_trefoil_at_phi_identity
-        // phi^2 + 1 = phi + phi^2 (trivial from phi^2 = phi + 1)
+        // phi² + 1 = phi + phi² (trivial from phi² = phi + 1)
         given result = jones_trefoil_at_phi()
         and phi_sq_plus_one = PHI * PHI + 1.0
         when error = abs(result - phi_sq_plus_one)
@@ -314,7 +314,7 @@ module JonesPolynomial {
     // =========================================================================================
 
     invariant jones_trefoil_phi_relation
-        // V(trefoil, phi) ~= phi^2 + 1
+        // V(trefoil, phi) ~= phi² + 1
         assert |jones_trefoil_at_phi() - (PHI * PHI + 1.0)| < 0.1
 
     invariant writhe_additivity
@@ -322,7 +322,7 @@ module JonesPolynomial {
         // Rationale: writhe is linear sum of crossing signs
 
     invariant bracket_unknot_normalization
-        assert BRACKET_UNKNOT = 1.0
+        assert BRACKET_UNKNOT == 1.0
         // Rationale: Kauffman bracket of unknot is 1 (definition)
 
     invariant jones_polynomial_invariance
@@ -331,7 +331,7 @@ module JonesPolynomial {
         // Rationale: Jones polynomial is a link invariant (unchanged under Reidemeister moves)
 
     invariant phi_jones_trefoil_identity
-        // For trefoil at t=phi: V = phi^2 + 1 = phi + phi^2 (from phi^2 = phi + 1)
+        // For trefoil at t=phi: V = phi² + 1 = phi + phi² (from phi² = phi + 1)
         assert jones_trefoil_at_phi() ~= PHI + PHI * PHI within 0.1
 
     // ===========================================================================

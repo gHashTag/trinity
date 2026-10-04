@@ -10,6 +10,3 @@ module WorkflowParser;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test "workflow_parser_smoke_test" {
-        expect(true)
-    }

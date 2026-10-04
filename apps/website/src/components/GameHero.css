@@ -1,0 +1,112 @@
+/* The mark, the claim, and three ways in. One column, centred, sized from the
+   viewport — there is nothing here that needs a breakpoint to decide. */
+.game-hero {
+  background: #000;
+  color: var(--text, #FFFFFF);
+}
+
+.game-hero-inner {
+  width: min(1180px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: clamp(2.5rem, 9vh, 5.5rem) 0 clamp(2rem, 6vw, 3.5rem);
+  display: grid;
+  justify-items: center;
+  gap: clamp(0.8rem, 2vw, 1.3rem);
+  text-align: center;
+}
+
+/* The name, at the size a name is read at. It carried the format claim --
+   TERNARY NETWORK FLOATS -- in a line small enough to be chrome, which left the
+   screen with no product name on it at all: the claim moved to /trinity with
+   the rest of the arithmetic, and what stands under the mark now is what the
+   thing is called. It is now the largest type on the screen -- 4rem against the
+   headline's 3.2rem -- and bold against the headline's 300, because the product
+   name outranks the sentence describing it on the screen that introduces both.
+   (It was the other way round, and the note here still said so for a while.) */
+.game-hero-wordmark {
+  color: var(--text, #FFFFFF);
+  font-size: clamp(1.9rem, 6.4vw, 4rem);
+  font-weight: 700;
+  letter-spacing: clamp(0.04em, 0.3vw, 0.1em);
+  line-height: 1.05;
+}
+
+/* The motto, directly under the mark it captions. Gold rather than the body
+   colour, because it is the one line on this screen that is a claim about the
+   game rather than a description of the page, and it should read as a mark's
+   caption reads: smaller than the headline, louder than the wordmark.
+   `text-transform` does the shouting so lib/motto can hold ordinary words. */
+.game-hero-motto {
+  color: #ffd45a;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: clamp(0.66rem, 1.5vw, 0.8rem);
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.game-hero h1 {
+  max-width: 26ch;
+  margin: 0;
+  font-size: clamp(1.7rem, 5.2vw, 3.2rem);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.game-hero p {
+  max-width: 62ch;
+  margin: 0;
+  color: #a8c1ba;
+  font-size: clamp(0.9rem, 1.7vw, 1.05rem);
+  line-height: 1.6;
+}
+
+.game-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: center;
+  align-items: center;
+  margin-top: 0.4rem;
+}
+
+.game-hero-actions a {
+  min-height: 44px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0 1.2rem;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.74rem;
+  letter-spacing: 0.14em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.game-hero-primary {
+  border: 1px solid #00ff88;
+  background: #000;
+  color: #00ff88;
+  font-weight: 600;
+}
+
+.game-hero-secondary {
+  border: 1px solid rgba(0, 255, 136, 0.4);
+  color: #00ff88;
+}
+
+.game-hero-secondary:hover,
+.game-hero-primary:hover {
+  filter: brightness(1.1);
+}
+
+.game-hero-quiet {
+  color: #a8c1ba;
+  border-bottom: 1px solid rgba(168, 193, 186, 0.3);
+  padding: 0 0.2rem;
+}
+
+.game-hero-quiet:hover {
+  color: #ffd45a;
+  border-bottom-color: #ffd45a;
+}

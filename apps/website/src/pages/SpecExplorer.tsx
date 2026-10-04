@@ -15,22 +15,34 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useI18n } from '../i18n/context'
 import { usePageMeta } from '../hooks/usePageMeta'
+import { useDocumentLock, useViewport } from '../lib/useViewport'
+import { HEADER_CHROME_MAX } from '../lib/viewport.generated'
 import { SpecCodeView } from '../components/SpecCodeView'
+import { SpecChipView } from '../components/SpecChipView'
+import LanguageSwitcher from '../components/LanguageSwitcher'
 import { SpecEditor } from '../components/SpecEditor'
 import { SpecMetrics } from '../components/SpecMetrics'
 import { SpecShare } from '../components/SpecShare'
 import { SpecContribute } from '../components/SpecContribute'
+import {resolveManifestSpec,specExplorerHash} from '../lib/specCatalog'
+import { reportExplorerAddress } from '../lib/queenFrame'
+import { loadCorpus, type ManifestPart } from '../lib/queenCorpus'
+import { specWorld, worldParam } from '../lib/queenCorpusCheck'
 import { HealthBar, HealthDot, PipelineRibbon, HEALTH_COLOR } from '../components/SpecGraphics'
-import { highlightCode, highlightSource, type Span } from '../lib/highlight'
+import { SpecSkillChips } from '../components/SpecChips'
+import TerminalCast from '../components/TerminalCast'
+import { loadToolSpecs, type ToolCast } from '../lib/agentSpecs'
+import { TARGET_LANG, highlightCode, highlightSource, type Span } from '../lib/highlight'
 import {
   analyzeCached,
   analyzeEdited,
   cachedAnalysis,
   loadCompiler,
-  loadManifest,
   loadSpecSource,
   prefetchSpec,
+  TARGET_LABEL,
   type Health,
+  type TargetId,
   type SpecEntry,
   type SpecManifest,
   type T27Analysis,
@@ -46,14 +58,35 @@ const UI = {
     subtitle: 'Every .t27 spec, layer by layer',
     metaTitle: 'Spec Explorer',
     metaDescription:
-      'Browse the whole t27 spec corpus and watch each spec through the real compiler: tokens, AST, HIR and five codegen backends.',
+      'Browse the whole t27 spec corpus and watch each spec through the real compiler: tokens, AST, HIR and every codegen backend.',
     search: 'Search specs',
     allCategories: 'All categories',
     specs: 'specs',
+    world: 'World',
+    worldClear: 'Show every world',
     loading: 'Loading compiler…',
     compiling: 'Analysing…',
     back: '← Home',
+    backToLibrary: 'All specs',
+    alsoIn: 'The same bytes are also vendored at:',
+    chipTitle: 'ON THE CHIP',
+    chipDerived:
+      'Derived from what this spec declares: the bit width of every constant, the field layout of every packed struct, and the parameter and return widths of every function. Those are hardware facts the language requires you to state.',
+    chipNotSynth:
+      'Not a placed-and-routed netlist. The .t27 → Verilog backend emits module shells: in the yosys sweep of 2026-09-06, over a corpus of 676 specs, 361 produced Verilog yosys accepts and every one yielded 0 LUTs and 0 flip-flops. The corpus has grown since; the sweep has not been re-run, so that is the last measurement rather than a count of today. There is no cell placement to show, so none is drawn.',
+    chipEmpty:
+      'This spec declares nothing with a fixed bit width, so there is no datapath to draw. Nothing is inferred to fill the space.',
+    chipConsts: 'constants',
+    chipStructs: 'packed structs',
+    chipFns: 'functions',
+    chipBits: 'bits',
+    chipUnsized: 'declaration(s) carry no fixed width and are not drawn.',
+    chipOmitted:
+      '{n} further declaration(s) are not drawn. The diagram scales to the panel, so past about a dozen rows every label stops being readable; the remainder is counted here rather than rendered too small to read.',
     source: 'Source',
+    castHeading: 'RECORDED RUN',
+    castHint: 'This tool card names a terminal recording of its command (the CAST constant). It shows that the command ran and that every step exited 0; it is not a test of the text above.',
+    castNone: 'No recording yet: this command card names no CAST, so no published tri cast session is attached to it.',
     tokens: 'Tokens',
     ast: 'AST',
     hir: 'HIR',
@@ -106,6 +139,9 @@ const UI = {
     lesson: 'LESSON',
     tags: 'Tags',
     share: 'Share',
+    skillsUsing: 'Skills that stand on this spec',
+    openSkill: 'Open in the Skill Explorer',
+    about: 'About this spec',
     copyLink: 'Copy link',
     contribute: 'Contribute',
     propose: 'Propose a fix →',
@@ -115,8 +151,6 @@ const UI = {
     editing: 'Editing — not the shipped spec',
     unrun: 'not compiled yet',
     runHint: 'RUN or ⌘⏎ to compile',
-    brokeIt: 'broke',
-    fixedIt: 'fixed',
     course: 'Course',
     courseNote: 'Eight lessons, in order, each one clean through every layer.',
     droppedItems: 'dropped',
@@ -127,14 +161,35 @@ const UI = {
     subtitle: 'Каждая .t27-спека, слой за слоем',
     metaTitle: 'Обозреватель спек',
     metaDescription:
-      'Просмотр всего корпуса спек t27 и каждой спеки через настоящий компилятор: токены, AST, HIR и пять бэкендов кодогенерации.',
+      'Просмотр всего корпуса спек t27 и каждой спеки через настоящий компилятор: токены, AST, HIR и все бэкенды кодогенерации.',
     search: 'Поиск по спекам',
     allCategories: 'Все категории',
     specs: 'спек',
+    world: 'Мир',
+    worldClear: 'Показать все миры',
     loading: 'Загрузка компилятора…',
     compiling: 'Анализ…',
     back: '← На главную',
+    backToLibrary: 'Все спеки',
+    alsoIn: 'Те же байты лежат также в:',
+    chipTitle: 'НА КРИСТАЛЛЕ',
+    chipDerived:
+      'Построено из того, что объявляет спека: разрядность каждой константы, раскладка полей каждой packed-структуры, ширины параметров и возврата каждой функции. Это аппаратные факты, которые язык требует указать явно.',
+    chipNotSynth:
+      'Это не размещённый и не разведённый нетлист. Бэкенд .t27 → Verilog выдаёт оболочки модулей: в прогоне yosys от 2026-09-06 по корпусу из 676 спек 361 дала Verilog, который принимает yosys, и каждая — 0 LUT и 0 триггеров. Корпус с тех пор вырос, а прогон не повторяли, так что это последнее измерение, а не счёт на сегодня. Размещать нечего, поэтому ничего и не нарисовано.',
+    chipEmpty:
+      'Эта спека не объявляет ничего с фиксированной разрядностью, поэтому тракт данных рисовать не из чего. Ничего не додумано.',
+    chipConsts: 'константы',
+    chipStructs: 'packed-структуры',
+    chipFns: 'функции',
+    chipBits: 'бит',
+    chipUnsized: 'объявлений без фиксированной разрядности не нарисованы.',
+    chipOmitted:
+      'Ещё {n} объявлений не нарисованы. Схема масштабируется под панель, и после десятка строк подписи перестают читаться; остаток посчитан здесь, а не отрисован нечитаемо мелко.',
     source: 'Исходник',
+    castHeading: 'ЗАПИСАННЫЙ ПРОГОН',
+    castHint: 'Эта карточка инструмента называет терминальную запись своей команды (константа CAST). Запись показывает, что команда запускалась и каждый шаг завершился с кодом 0; проверкой текста выше она не является.',
+    castNone: 'Записи пока нет: в карточке команды нет CAST, и опубликованная сессия tri cast к ней не привязана.',
     tokens: 'Токены',
     ast: 'AST',
     hir: 'HIR',
@@ -187,6 +242,9 @@ const UI = {
     lesson: 'УРОК',
     tags: 'Теги',
     share: 'Поделиться',
+    skillsUsing: 'Скилы, которые стоят на этой спеке',
+    openSkill: 'Открыть в Обозревателе скилов',
+    about: 'Об этой спеке',
     copyLink: 'Копировать ссылку',
     contribute: 'Внести вклад',
     propose: 'Предложить правку →',
@@ -196,8 +254,6 @@ const UI = {
     editing: 'Редактирование — это уже не исходная спека',
     unrun: 'ещё не скомпилировано',
     runHint: 'RUN или ⌘⏎ для компиляции',
-    brokeIt: 'сломал',
-    fixedIt: 'починил',
     course: 'Курс',
     courseNote: 'Восемь уроков по порядку, каждый чист на всех слоях.',
     droppedItems: 'отброшено',
@@ -250,21 +306,31 @@ const LAYERS = [
   { id: 'verilog_hir', kind: 'target' },
   { id: 'c', kind: 'target' },
   { id: 'rust', kind: 'target' },
+  { id: 'js', kind: 'target' },
+  { id: 'ts', kind: 'target' },
+  { id: 'chip', kind: 'chip' },
 ] as const
 
 type LayerId = (typeof LAYERS)[number]['id']
 
+// LAYERS stays written out -- half of it is not a backend, and a spread of
+// TARGET_IDS would widen every `id` to `string` and take LayerId with it. So
+// the list is checked instead of derived: add a backend without a layer to show
+// it in and this line stops compiling. LAYER_LABEL, being a Record<LayerId,_>,
+// already refuses a layer with no name.
+const _everyBackendHasALayer: TargetId extends LayerId ? true : never = true
+void _everyBackendHasALayer
+
+// The backend names come from t27Compiler's TARGET_LABEL, which every other
+// page that names t27's outputs reads too -- one list, not one per page.
 const LAYER_LABEL: Record<LayerId, string> = {
   source: 'Source',
   tokens: 'Tokens',
   ast: 'AST',
   typecheck: 'Types',
   hir: 'HIR',
-  zig: 'Zig',
-  verilog: 'Verilog',
-  verilog_hir: 'Verilog (HIR)',
-  c: 'C',
-  rust: 'Rust',
+  ...TARGET_LABEL,
+  chip: 'Chip',
 }
 
 // ---------------------------------------------------------------- AST tree
@@ -357,8 +423,20 @@ export default function SpecExplorer() {
   const { lang } = useI18n()
   const ui: Ui = lang === 'ru' ? UI.ru : UI.en
   usePageMeta(ui.metaTitle, ui.metaDescription)
+  const viewContext=useMemo(()=>{
+    const p=new URLSearchParams(window.location.hash.split('?')[1]||'')
+    return {path:p.get('spec'),sha256:p.get('sha256')??undefined,embedded:p.get('embed')==='1'}
+  },[])
+  const embedded=viewContext.embedded
+  const requestRef=useRef(0)
+  const [verifiedHash,setVerifiedHash]=useState<string|null>(null)
 
   const [manifest, setManifest] = useState<SpecManifest | null>(null)
+  // The store's part, for the corpus identity this frame prints on its root.
+  const [corpus, setCorpus] = useState<ManifestPart | null>(null)
+  // The world the address names (#/specs?world=ghashtag/t27): in the Queen, the one
+  // its header has chosen. The list shows that repository's specs only.
+  const [world, setWorld] = useState<string | null>(() => worldParam(new URLSearchParams(window.location.hash.split('?')[1] || '').get('world')))
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState<string>('')
   // The course first, by default. Someone arriving here has no way to know
@@ -371,7 +449,41 @@ export default function SpecExplorer() {
   const [tagSel, setTagSel] = useState<string[]>([])
   const [tagsOpen, setTagsOpen] = useState(false)
   const [selected, setSelected] = useState<SpecEntry | null>(null)
+
+  /**
+   * Below the phone tier's upper bound the two panes cannot both be useful.
+   *
+   * The desktop layout is a 300px library beside the detail pane. On a 375px
+   * phone that left 150-odd pixels for the detail, which wrapped every word of
+   * the description onto its own line -- and the row still overflowed, so the
+   * page scrolled sideways and the search box was clipped off the top.
+   *
+   * The bound is PHONE_MAX from specs/ui/viewport.t27, read through
+   * useViewport (matchMedia per tier plus `resize`; see the note there about
+   * programmatic viewport changes not always delivering a matchMedia change
+   * event). Tablets stay on the two-pane layout.
+   */
+  // Distinct from `narrow` below, which only trims chrome. This one changes
+  // the layout's shape, so it gets its own name.
+  const viewport = useViewport()
+  const phone = viewport.tier === 'phone'
+  // Phone and tablet lock the document (DOCUMENT_SCROLLS = false): the panes
+  // scroll, body's 80px bottom padding for the long pages does not apply.
+  useDocumentLock(viewport.tier === 'phone' || viewport.tier === 'tablet')
+
+  /**
+   * Which pane a narrow screen is showing. Master-detail, the way a phone
+   * expects: the library is the landing view, tapping a spec opens it, and a
+   * back control returns. Ignored entirely when the two-pane layout fits.
+   */
+  const [mobilePane, setMobilePane] = useState<'list' | 'detail'>('list')
   const [source, setSource] = useState('')
+  // The recorded run a tool card ends with. Read from the tool catalog, where
+  // scripts/agents-from-specs.mjs castProblems() already held the CAST to its files,
+  // so this page carries no second copy of the rule; null for every other spec.
+  const [cast, setCast] = useState<ToolCast | null>(null)
+  // True when the selected spec is a tri command card the catalog lists without a CAST.
+  const [castMissing, setCastMissing] = useState(false)
   const [result, setResult] = useState<T27Analysis | null>(null)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState<string | null>(null)
@@ -379,7 +491,7 @@ export default function SpecExplorer() {
   // can type into. Every other layer is one click away and already computed.
   const [layer, setLayer] = useState<LayerId>('source')
   const [open, setOpen] = useState<Set<string>>(new Set())
-  const [hoverLine, setHoverLine] = useState<number | null>(null)
+  const [, setHoverLine] = useState<number | null>(null)
   const [kindFilter, setKindFilter] = useState('')
   const [tokenLimit, setTokenLimit] = useState(400)
   const [ms, setMs] = useState<number | null>(null)
@@ -399,26 +511,77 @@ export default function SpecExplorer() {
     // Instantiate the compiler at mount, not at first click: instantiation
     // dominates a cold compile, and paying it here makes the first selection
     // as fast as every later one.
-    void loadCompiler()
-    loadManifest()
-      .then((m) => {
+    void loadCompiler().catch(()=>{/* The selected spec surfaces compiler failures. */})
+    loadCorpus('manifest')
+      .then((part) => {
+        const m = part.data
+        setCorpus(part)
         setManifest(m)
         // A shared link names its spec; honour it before falling back to the
         // teaching spec. Without this a share would only ever say "the
         // explorer, go find it yourself".
-        const wanted = new URLSearchParams(window.location.hash.split('?')[1] || '').get('spec')
-        const target = (wanted && m.specs.find((s) => s.path === wanted))
-          || m.specs.find((s) => s.featured)
-          || m.specs[0]
+        const named = new URLSearchParams(window.location.hash.split('?')[1] || '')
+        const wanted = named.get('spec')
+        const target = resolveManifestSpec(m,wanted)
         if (target) {
-          // A deep-linked spec is usually outside the course, and landing on a
-          // filter that excludes the very spec the link named would show an
-          // empty list next to an open file.
-          if (!target.tutorial) setHealthFilter('all')
+          // An address that names a spec is someone asking for the corpus at
+          // that spec, so the library beside it is the whole library. This used
+          // to lift the course filter only for a spec outside the course, and
+          // the homepage frame opens hello_world -- lesson 0 -- so it kept the
+          // course chip on and read "9 specs" beside a map saying 856. The
+          // course default is for an arrival that names nothing.
+          if (wanted || worldParam(named.get('world'))) setHealthFilter('all')
+          // A shared link names a spec on purpose, so on a phone it opens that
+          // spec. The featured-spec fallback does not: nobody asked for it, and
+          // the library is the honest landing view.
+          if (wanted && target.path === wanted) setMobilePane('detail')
           void pickRef.current?.(target)
         }
       })
-      .catch((e) => setErr(String(e)))
+      .catch((e) => {setErr(String(e));setMobilePane('detail')})
+  }, [])
+
+  // In a frame, a spec named by a later hash -- the Queen moving its frame after Back
+  // or a link -- opens that spec; the address used to be read once at mount, so a
+  // changed ?spec= left the old spec open under it. The page on its own still reads
+  // its address once, as before.
+  useEffect(() => {
+    if (!manifest || !embedded) return
+    const onHash = () => {
+      const wanted = new URLSearchParams(window.location.hash.split('?')[1] || '').get('spec')
+      if (!wanted || wanted === selected?.path) return
+      try {
+        const target = resolveManifestSpec(manifest, wanted)
+        setHealthFilter('all')
+        setMobilePane('detail')
+        void pickRef.current?.(target)
+      } catch {
+        // An unknown path in a later hash: keep the spec that is open.
+      }
+    }
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [manifest, selected, embedded])
+
+  // The world follows the address on every page, in a frame or not: the Queen moves
+  // its frame's fragment when the header picks a world, and nothing else would tell
+  // this page. A world narrows the list, so the course default would leave it empty.
+  useEffect(() => {
+    const onHash = () => {
+      const next = worldParam(new URLSearchParams(window.location.hash.split('?')[1] || '').get('world'))
+      setWorld(next)
+      if (next) setHealthFilter('all')
+    }
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [])
+  const inWorld = useCallback((s: SpecEntry) => !world || specWorld(s.repo) === world, [world])
+  /** On its own page the chip clears the world; in the Queen the header owns it. */
+  const clearWorld = useCallback(() => {
+    setWorld(null)
+    const p = new URLSearchParams(window.location.hash.split('?')[1] || '')
+    p.delete('world')
+    window.history.replaceState(null, '', `#/specs?${p}`)
   }, [])
 
   // Inline styles cannot carry media queries, and the header has three pieces
@@ -426,23 +589,47 @@ export default function SpecExplorer() {
   // drop the optional ones instead.
   // Embedded in the Queen HUD (?embed=1): the frame already sits under the
   // HUD's own chrome, so the page header would be a second title bar.
-  const embedded = useMemo(
-    () => new URLSearchParams(window.location.hash.split('?')[1] || '').get('embed') === '1',
-    [],
-  )
+  // HEADER_CHROME_MAX is the 1100 this page always used; it is not a tier.
+  const narrow = viewport.width < HEADER_CHROME_MAX
 
-  const [narrow, setNarrow] = useState(() => (typeof window === 'undefined' ? false : window.innerWidth < 1100))
+  // Embedded, the frame is the viewport, and the site's 80px body
+  // padding-bottom -- there for the mobile CTA -- means nothing inside one. It
+  // made the document 778px against a 698px frame, so the whole app scrolled
+  // and left a strip of background under the code. The Queen shell drops the
+  // same padding for the same reason.
+  //
+  // Only the padding: locking the body's overflow as well would fix desktop
+  // twice over and break the phone, where the pane is deliberately
+  // overflow:visible so the page scrolls instead of trapping the gesture in a
+  // nested scroller. With the padding gone the desktop frame does not overflow
+  // anyway.
   useEffect(() => {
-    const onResize = () => setNarrow(window.innerWidth < 1100)
-    onResize()
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
-  }, [])
+    if (!embedded) return
+    const body = document.body
+    const previous = body.style.paddingBottom
+    body.style.paddingBottom = '0px'
+    return () => { body.style.paddingBottom = previous }
+  }, [embedded])
+
+  // Which specs are also somewhere else, byte for byte. Vendoring keeps the
+  // first copy it sees and discards the rest, so the corpus shows one entry for
+  // a file that may live in four repositories -- true, and until now invisible.
+  // Keyed by the path that was kept, which is the one a reader has open.
+  const copiesOf = useMemo(() => {
+    const index = new Map<string, { path: string; repo: string }[]>()
+    for (const d of manifest?.duplicates ?? []) {
+      const list = index.get(d.sameAs)
+      if (list) list.push({ path: d.path, repo: d.repo })
+      else index.set(d.sameAs, [{ path: d.path, repo: d.repo }])
+    }
+    return index
+  }, [manifest])
 
   const filtered = useMemo(() => {
     if (!manifest) return []
     const q = query.trim().toLowerCase()
     return manifest.specs.filter((s) => {
+      if (!inWorld(s)) return false
       if (healthFilter === 'course') {
         if (!s.tutorial) return false
       } else if (healthFilter !== 'all' && s.health !== healthFilter) return false
@@ -456,7 +643,7 @@ export default function SpecExplorer() {
         (s.description ? s.description.toLowerCase().includes(q) : false)
       )
     })
-  }, [manifest, query, category, healthFilter, tagSel])
+  }, [manifest, query, category, healthFilter, tagSel, inWorld])
 
   /**
    * Counts for each tag *given the rest of the filter*, so a facet never
@@ -469,6 +656,7 @@ export default function SpecExplorer() {
     if (!manifest) return {}
     const q = query.trim().toLowerCase()
     const base = manifest.specs.filter((s) => {
+      if (!inWorld(s)) return false
       if (healthFilter === 'course') { if (!s.tutorial) return false }
       else if (healthFilter !== 'all' && s.health !== healthFilter) return false
       if (category && s.category !== category) return false
@@ -490,17 +678,18 @@ export default function SpecExplorer() {
       }
     }
     return out
-  }, [manifest, query, category, healthFilter, tagSel])
+  }, [manifest, query, category, healthFilter, tagSel, inWorld])
 
   const toggleTag = useCallback((t: string) => {
     setTagSel((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]))
   }, [])
 
   const pick = useCallback(async (spec: SpecEntry) => {
+    const request=++requestRef.current
     // Selection paints immediately -- that sub-100ms response IS the feedback.
-    // The previous result deliberately stays on screen while the new one
-    // compiles: blanking it would trade real content for a flash of nothing.
+    // Never label another source's analysis as the newly selected spec.
     setSelected(spec)
+    setSource('');setDraft(null);setResult(null);setLastCompiled('');setVerifiedHash(null)
     setErr(null)
     setTokenLimit(400)
     // A draft belongs to the spec it was typed against.
@@ -508,18 +697,23 @@ export default function SpecExplorer() {
     setDirty(false)
     // Keep the address bar on the selected spec so the link is always
     // shareable, without pushing 676 history entries as someone browses.
-    const base = window.location.hash.split('?')[0] || '#/specs'
-    window.history.replaceState(null, '', `${base}?spec=${encodeURIComponent(spec.path)}`)
-    const warm = cachedAnalysis(spec.path)
-    setBusy(!warm)
+    const expectedSha256=spec.path===viewContext.path?viewContext.sha256:undefined
+    setBusy(true)
     try {
-      const text = await loadSpecSource(spec.path)
+      const address=specExplorerHash(spec.path,{embedded,sha256:expectedSha256,world})
+      window.history.replaceState(null,'',address)
+      reportExplorerAddress(address)
+      const text = await loadSpecSource(spec.path,expectedSha256)
+      if(request!==requestRef.current)return
+      const warm=cachedAnalysis(spec.path,text)
+      setVerifiedHash(expectedSha256??null)
       setSource(text)
       // The source pane is editable from the moment it loads -- no mode to
       // enter, nothing to click first.
       setDraft(text)
       const t0 = performance.now()
       const r = await analyzeCached(spec.path, text)
+      if(request!==requestRef.current)return
       setMs(warm ? 0 : performance.now() - t0)
       setResult(r)
       setLastCompiled(text)
@@ -529,17 +723,18 @@ export default function SpecExplorer() {
       r.ast?.children.forEach((_, i) => seed.add(`0.${i}`))
       setOpen(seed)
     } catch (e) {
-      setErr(String(e))
+      if(request===requestRef.current)setErr(String(e))
     } finally {
-      setBusy(false)
+      if(request===requestRef.current)setBusy(false)
     }
-  }, [])
+  }, [embedded,viewContext,world])
 
   pickRef.current = pick
 
   /** Run the real compiler over the edited source. */
   const run = useCallback(async () => {
     if (draft === null) return
+    const request=++requestRef.current
     setBusy(true)
     setErr(null)
     try {
@@ -547,6 +742,7 @@ export default function SpecExplorer() {
       if (!baseline && result) setBaseline(result)
       const t0 = performance.now()
       const r = await analyzeEdited(draft)
+      if(request!==requestRef.current)return
       setMs(performance.now() - t0)
       setResult(r)
       setLastCompiled(draft)
@@ -555,9 +751,9 @@ export default function SpecExplorer() {
       r.ast?.children.forEach((_, i) => seed.add(`0.${i}`))
       setOpen(seed)
     } catch (e) {
-      setErr(String(e))
+      if(request===requestRef.current)setErr(String(e))
     } finally {
-      setBusy(false)
+      if(request===requestRef.current)setBusy(false)
     }
   }, [draft, baseline, result])
 
@@ -657,17 +853,30 @@ export default function SpecExplorer() {
 
   /** True once the draft diverges from the file as shipped. */
   const edited = draft !== null && draft !== source
+  const selectedPath = selected?.path ?? null
+  useEffect(() => {
+    setCast(null)
+    setCastMissing(false)
+    const isToolCard = selectedPath !== null && selectedPath.startsWith('specs/tools/')
+    if (!isToolCard) return
+    let live = true
+    loadToolSpecs()
+      .then((catalog) => {
+        const card = catalog.tools.find((t) => t.specPath === selectedPath)
+        if (!live) return
+        setCast(card?.cast ?? null)
+        const isCommandWithoutCast = card !== undefined && card.family === 'tri-cli' && !card.cast
+        setCastMissing(isCommandWithoutCast)
+      })
+      .catch(() => { /* No catalog, no recording: the source still renders. */ })
+    return () => { live = false }
+  }, [selectedPath])
 
   const activeTarget = LAYERS.find((l) => l.id === layer)?.kind === 'target' ? result?.targets?.[layer] : undefined
 
   const codeSpans: Span[][] | null = useMemo(() => {
-    if (layer === 'hir' && result?.hir.ok && result.hir.text) return highlightCode(result.hir.text, 'verilog')
-    if (activeTarget?.ok && activeTarget.code) {
-      const langOf: Record<string, string> = {
-        zig: 'zig', verilog: 'verilog', verilog_hir: 'verilog', c: 'c', rust: 'rust',
-      }
-      return highlightCode(activeTarget.code, langOf[layer] || 'plain')
-    }
+    if (layer === 'hir' && result?.hir.ok && result.hir.text) return highlightCode(result.hir.text, TARGET_LANG.hir)
+    if (activeTarget?.ok && activeTarget.code) return highlightCode(activeTarget.code, TARGET_LANG[layer] || 'plain')
     return null
   }, [layer, result, activeTarget])
 
@@ -675,14 +884,29 @@ export default function SpecExplorer() {
     (result?.discarded.length || 0) + (result?.swallowed.length || 0) + (result?.lexerDiscarded.length || 0)
 
   const box: React.CSSProperties = {
-    background: C.panel,
+    // Embedded in the HUD the panes float on the star map, so their ground is
+    // the shell's own veil rather than a solid panel: one 0.42 layer, the value
+    // every other panel out there uses. Standalone, the Explorer is a page and
+    // keeps its opaque panel.
+    background: embedded ? 'rgba(2, 8, 6, 0.66)' : C.panel,
+    // Frosted where the text is. Over the hive the code was legible only where
+    // the map happened to be empty: a cell's outline running through a line of
+    // source is a line you read twice. The blur keeps the map as depth behind
+    // the panel and takes its detail out of the words.
+    ...(embedded ? { backdropFilter: 'blur(7px)' } : null),
     border: `1px solid ${C.border}`,
     borderRadius: 6,
   }
 
   return (
     <div
-      className="spec-x"
+      className="spec-x" data-tier={viewport.tier} data-embedded={embedded ? "1" : undefined}
+      // The corpus on show, from the store the Queen shell reads: the shell's root
+      // carries the same three, and qa/queen-spec-sync-contract.mjs compares them.
+      data-spec-count={corpus?.identity.specCount}
+      data-corpus-version={corpus?.version}
+      data-corpus-source={corpus?.source}
+      data-spec-world={world ?? undefined}
       style={{
         height: '100dvh',
         display: 'flex',
@@ -709,11 +933,21 @@ export default function SpecExplorer() {
           overflow: 'hidden',
         }}
       >
-        <Link to="/" style={{ color: C.muted, textDecoration: 'none', fontSize: 13, flexShrink: 0 }}>
+        <Link to="/" className="spec-x-target" style={{ color: C.muted, textDecoration: 'none', fontSize: 13, flexShrink: 0 }}>
           {ui.back}
         </Link>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, minWidth: 0, flexShrink: 0 }}>
-          <span style={{ fontSize: 16, fontWeight: 700, color: C.golden, whiteSpace: 'nowrap' }}>{ui.title}</span>
+        {/* flexShrink 0 here pushed the language switcher 9px off a 375px
+            screen: the Russian title is longer than the English one and the
+            block refused to give. The header clips with overflow:hidden, so
+            nothing showed it -- the page-level mobile audit reads
+            documentElement.scrollWidth, which an ancestor's overflow:hidden
+            clamps. The title now truncates instead, which is the right thing
+            for a heading standing beside a control. */}
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, minWidth: 0, flexShrink: 1 }}>
+          <span style={{
+            fontSize: 16, fontWeight: 700, color: C.golden,
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          }}>{ui.title}</span>
           {!narrow && (
             <span
               style={{
@@ -741,7 +975,15 @@ export default function SpecExplorer() {
           }}
         >
           {!narrow && <span style={{ color: C.accent, whiteSpace: 'nowrap', flexShrink: 0 }}>◆ {ui.wasmNote}</span>}
-          {manifest && (
+          {/* Not on a phone. Making the title shrinkable so the language
+              switcher could fit had a cost I did not look for: with the
+              provenance line still competing for the same row, the title
+              collapsed to "О..." on a 375px screen. Provenance is developer
+              metadata about which corpus snapshot is loaded -- it was already
+              truncated to "Корпус и компи…" and told nobody anything. The page
+              title is its identity. On a phone the metadata goes and the title
+              stays. */}
+          {manifest && !phone && (
             <span
               style={{
                 fontFamily: C.mono,
@@ -757,18 +999,32 @@ export default function SpecExplorer() {
             </span>
           )}
         </div>
+        {/* The site is translated into five languages and this page was the
+            only one with no way to say so: it renders its own header instead of
+            <Navigation>, which is where the switcher had always lived. Someone
+            arriving here directly -- and /specs is the most-shared link on the
+            site -- had no control at all, only a ?lang= they would have to know
+            about.
+
+            Outside the provenance block and flexShrink: 0, because that block
+            is deliberately allowed to clip and a control that disappears on a
+            narrow header is the bug being fixed, not a smaller version of it. */}
+        <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', marginLeft: 12 }}>
+          <LanguageSwitcher />
+        </div>
       </header>}
 
-      <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>
+      <div style={{ flex: 1, display: 'flex', minHeight: 0, minWidth: 0 }}>
         {/* library */}
-        <aside
+        {(!phone || mobilePane === 'list') && <aside
           style={{
-            width: 300,
+            width: phone ? '100%' : 300,
             // Allowed to shrink on a narrow window rather than pushing the
-            // layer panes off-screen entirely.
-            minWidth: 180,
+            // layer panes off-screen entirely. On a phone it is the whole
+            // width, because the detail pane is not on screen beside it.
+            minWidth: phone ? 0 : 180,
             flexShrink: 1,
-            borderRight: `1px solid ${C.border}`,
+            borderRight: phone ? 'none' : `1px solid ${C.border}`,
             display: 'flex',
             flexDirection: 'column',
             minHeight: 0,
@@ -796,11 +1052,17 @@ export default function SpecExplorer() {
               onChange={(e) => setCategory(e.target.value)}
               aria-label={ui.allCategories}
               style={{
-                background: C.raised,
+                // The platform's own arrow is drawn hard against the control's
+                // right border and cannot be moved. This is the chevron the
+                // worlds select uses, with room around it, and the padding
+                // keeps the longest category name clear of it.
+                appearance: 'none',
+                background: `${C.raised} url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='m2 4 4 4 4-4' fill='none' stroke='%23e7f7fa' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 12px center`,
+                backgroundSize: '11px 11px',
                 border: `1px solid ${C.border}`,
                 borderRadius: 4,
                 color: C.text,
-                padding: '6px 8px',
+                padding: '6px 32px 6px 8px',
                 fontSize: 12.5,
                 fontFamily: 'inherit',
                 outline: 'none',
@@ -955,7 +1217,16 @@ export default function SpecExplorer() {
                 )}
               </div>
             )}
-            <div style={{ fontSize: 11, color: C.muted, fontFamily: C.mono }}>
+            {world && (
+              <div className="spec-x-world" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11.5, color: C.text, fontFamily: C.mono }}>
+                <span style={{ color: C.muted }}>◈ {ui.world}</span>
+                <span data-lang-exempt="live" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{world}</span>
+                {!embedded && (
+                  <button type="button" onClick={clearWorld} aria-label={ui.worldClear} title={ui.worldClear} style={{ background: 'none', border: 0, color: C.muted, cursor: 'pointer', padding: '0 4px', fontSize: 13 }}>✕</button>
+                )}
+              </div>
+            )}
+            <div className="spec-x-listed" data-spec-listed={manifest ? filtered.length : undefined} style={{ fontSize: 11, color: C.muted, fontFamily: C.mono }}>
               {filtered.length} {ui.specs}
             </div>
           </div>
@@ -972,7 +1243,12 @@ export default function SpecExplorer() {
               return (
                 <button
                   key={s.path}
-                  onClick={() => pick(s)}
+                  // The tap IS the navigation on a phone, so the pane switch
+                  // lives here rather than inside pick(): the explorer also
+                  // picks a spec on load, and that must land on the library,
+                  // not drop a first-time visitor into a file they did not
+                  // choose.
+                  onClick={() => { setMobilePane('detail'); void pick(s) }}
                   // Users hover 80-150ms before clicking; that is half the
                   // compile budget, free.
                   onPointerEnter={() => void prefetchSpec(s.path)}
@@ -1077,13 +1353,51 @@ export default function SpecExplorer() {
               )
             })}
           </div>
-        </aside>
+        </aside>}
 
         {/* main */}
-        <main style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0 }}>
+        {/* On a phone the detail column scrolls as ONE document.
+            The desktop shape is a fixed-height flex column inside a 100dvh
+            root with overflow:hidden, so the only thing that scrolls is the
+            innermost code pane. That works when the pane owns most of the
+            screen. On a 375x812 phone the description, tags, share row,
+            metrics and tab strip come first, and the pane was left about three
+            lines tall with its own scrollbar -- the code was effectively
+            invisible and the page underneath would not move. */}
+        {(!phone || mobilePane === 'detail') && <main style={{
+          flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0,
+          ...(phone ? { overflowY: 'auto', WebkitOverflowScrolling: 'touch' } : null),
+        }}>
+          {/* The way back on a phone. Nothing else returns to the library:
+              the aside is not on screen, and the browser's back button
+              belongs to the route, not to this pane. */}
+          {phone && (
+            <button
+              className="spec-x-back" onClick={() => setMobilePane('list')}
+              style={{
+                flexShrink: 0,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                background: 'transparent',
+                border: 'none',
+                borderBottom: `1px solid ${C.border}`,
+                color: C.accent,
+                font: `12px ${C.mono}`,
+                // 44px is the smallest reliably tappable target.
+                minHeight: 44,
+                padding: '0 14px',
+                cursor: 'pointer',
+                textAlign: 'left',
+              }}
+            >
+              ← {ui.backToLibrary}
+            </button>
+          )}
           {err && (
             <div style={{ padding: 14, color: C.bad, fontFamily: C.mono, fontSize: 13 }}>{err}</div>
           )}
+          {verifiedHash&&<p role="status" style={{padding:'0 14px',color:C.muted,fontSize:11,overflowWrap:'anywhere'}}>{lang==='ru'?'Исходник каталога: SHA-256 проверен':'Catalog source: SHA-256 verified'} · {verifiedHash}</p>}
 
           {!selected && !err && (
             <div style={{ margin: 'auto', color: C.muted, fontSize: 14, textAlign: 'center', padding: 24 }}>
@@ -1129,7 +1443,12 @@ export default function SpecExplorer() {
                 <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
                   {/* Reset only appears once there is something to reset. */}
                   {edited && <button onClick={reset} style={ctrlBtn}>{ui.reset}</button>}
-                  <button
+                  {/* On a phone this one is replaced by the sticky button at the
+                      bottom of the screen: this row sits at the TOP of a column
+                      that now scrolls, so after reading any distance the control
+                      is off-screen and out of thumb reach. Two identical RUN
+                      buttons would be worse than either alone. */}
+                  {!phone && <button
                     onClick={() => void run()}
                     disabled={busy}
                     title={ui.runHint}
@@ -1151,12 +1470,18 @@ export default function SpecExplorer() {
                     }}
                   >
                     {busy ? ui.compiling : 'RUN'}
-                  </button>
+                  </button>}
                 </span>
               </div>
 
-              {/* description + pipeline: what this spec is, and where it dies */}
+              {/* description + pipeline: what this spec is, and where it dies.
+                  Embedded on the landing this ran 284px tall and left the code
+                  332px, so there it collapses behind a summary and the code
+                  gets the height. On its own page it stays open, and the
+                  summary is hidden, so nothing about /specs changes. */}
               {(selected.description || result) && (
+                <details className={`spec-x-brief${embedded ? ' is-collapsible' : ''}`} open={!embedded}>
+                  <summary>{ui.about}</summary>
                 <div
                   style={{
                     flexShrink: 0,
@@ -1171,6 +1496,20 @@ export default function SpecExplorer() {
                     {selected.description && (
                       <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.55, color: '#b9bfc6', maxWidth: 'none' }}>
                         {selected.description}
+                      </p>
+                    )}
+                    {/* The same bytes, somewhere else. One entry can stand for
+                        copies in several repositories, and a reader deciding
+                        where a spec really lives needs to be told that. */}
+                    {(copiesOf.get(selected.path)?.length ?? 0) > 0 && (
+                      <p style={{ margin: 0, fontSize: 11.5, lineHeight: 1.5, color: C.golden, maxWidth: 'none' }}>
+                        {ui.alsoIn}{' '}
+                        {copiesOf.get(selected.path)!.map((c, i) => (
+                          <span key={c.path}>
+                            {i > 0 ? ', ' : ''}
+                            <code style={{ fontFamily: C.mono, fontSize: 11 }}>{c.path}</code>
+                          </span>
+                        ))}
                       </p>
                     )}
                     {/* Derived from the compile, not written by hand -- so it
@@ -1192,8 +1531,12 @@ export default function SpecExplorer() {
                         </button>
                       ))}
                     </div>
-                    <SpecShare spec={selected} labels={{ share: ui.share, copy: ui.copyLink, copied: ui.copied }} />
-                    <SpecContribute spec={selected} result={result} edited={edited} labels={{ contribute: ui.contribute, propose: ui.propose, report: ui.report }} />
+                    {/* The reverse direction of the skill link, derived at
+                        index time and never written into a .t27 file. Renders
+                        nothing when no skill names this spec. */}
+                    <SpecSkillChips specPath={selected.path} labels={{ skillsUsing: ui.skillsUsing, openSkill: ui.openSkill }} />
+                    <SpecShare key={selected.path} spec={selected} embedded={embedded} labels={{ share: ui.share, copy: ui.copyLink, copied: ui.copied }} />
+                    {!embedded&&<SpecContribute spec={selected} result={result} edited={edited} labels={{ contribute: ui.contribute, propose: ui.propose, report: ui.report }} />}
                   </div>
                   {result && (
                     <div style={{ flex: '0 1 340px', minWidth: 220 }}>
@@ -1202,6 +1545,7 @@ export default function SpecExplorer() {
                         active={layer}
                         onPick={(id) => setLayer(id as LayerId)}
                         labels={LAYER_LABEL}
+                        interactive={viewport.tier !== 'phone' && viewport.tier !== 'tablet'}
                       />
                     </div>
                   )}
@@ -1214,11 +1558,12 @@ export default function SpecExplorer() {
                         result={result}
                         baseline={baseline}
                         ms={ms}
-                        labels={{ ...LAYER_LABEL, tokens: ui.tokens, nodes: ui.nodes, depth: ui.depth, typeErrs: ui.typeErrs, droppedItems: ui.droppedItems, brokeIt: ui.brokeIt, fixedIt: ui.fixedIt }}
+                        labels={{ tokens: ui.tokens, nodes: ui.nodes, depth: ui.depth, typeErrs: ui.typeErrs, droppedItems: ui.droppedItems }}
                       />
                     </div>
                   )}
                 </div>
+                </details>
               )}
 
               {/* loss banner -- the honest bit */}
@@ -1246,12 +1591,17 @@ export default function SpecExplorer() {
 
               {/* layer tabs */}
               <div
+                // Every backend's name legible at once. The strip scrolled
+                // sideways, so past Zig the tabs existed only for whoever
+                // thought to drag a row that gives no sign it can be dragged —
+                // Verilog, and the HIR beside it, were off the end of an 804px
+                // pane. Wrapping costs one line and hides nothing.
                 style={{
                   flexShrink: 0,
                   display: 'flex',
+                  flexWrap: 'wrap',
                   gap: 2,
                   padding: '10px 14px 0',
-                  overflowX: 'auto',
                 }}
               >
                 {LAYERS.map((l) => {
@@ -1304,11 +1654,29 @@ export default function SpecExplorer() {
               </div>
 
               {/* layer body */}
-              <div style={{ flex: 1, minHeight: 0, padding: '0 14px 14px', display: 'flex' }}>
+              {/* On a phone this stops competing for the leftovers of a fixed
+                  column and simply asks for a readable height, letting <main>
+                  scroll. 70vh is about 30 lines of the mono face at this size:
+                  enough to read a function without the pane becoming a second
+                  scroll region fighting the page. */}
+              <div style={{
+                flex: phone ? 'none' : 1,
+                minHeight: phone ? '70vh' : 0,
+                padding: '0 14px 14px',
+                display: 'flex',
+              }}>
                 <div
                   className="spec-x-pane spec-x-scroll"
                   data-pending={busy ? 'true' : 'false'}
-                  style={{ ...box, flex: 1, minHeight: 0, borderTopLeftRadius: 0 }}
+                  style={{
+                    ...box,
+                    flex: 1,
+                    minHeight: 0,
+                    borderTopLeftRadius: 0,
+                    // The page is the scroller on a phone; a nested one here
+                    // traps the gesture and is what made the code unreachable.
+                    ...(phone ? { overflow: 'visible' } : null),
+                  }}
                 >
                   {/* Keyed on spec+layer so switching either replays the
                       90ms enter; the AST tree inside is never animated. */}
@@ -1351,6 +1719,21 @@ export default function SpecExplorer() {
                         onRun={() => void run()}
                         ariaLabel={ui.source}
                       />
+                      {cast && (
+                        <div style={{ padding: '12px 10px', borderTop: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          <div style={{ fontSize: 11, color: C.muted, fontFamily: C.mono }}>{ui.castHeading}</div>
+                          <div style={{ fontSize: 11.5, color: C.muted, lineHeight: 1.5 }}>{ui.castHint}</div>
+                          <div data-lang-exempt="live">
+                            <TerminalCast key={cast.src} src={cast.src} title={cast.title} share={cast.share} caption={cast.recorded ? `${cast.title} · ${cast.recorded}` : cast.title} />
+                          </div>
+                        </div>
+                      )}
+                      {castMissing && (
+                        <div data-cast-state="none" style={{ padding: '12px 10px', borderTop: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          <div style={{ fontSize: 11, color: C.muted, fontFamily: C.mono }}>{ui.castHeading}</div>
+                          <div style={{ fontSize: 11.5, color: C.muted, lineHeight: 1.5 }}>{ui.castNone}</div>
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -1536,6 +1919,26 @@ export default function SpecExplorer() {
                     )
                   )}
 
+                  {/* on-the-chip schematic, derived from declared widths */}
+                  {layer === 'chip' && result && (
+                    <SpecChipView
+                      ast={result.ast}
+                      specPath={selected?.path || ''}
+                      copy={{
+                        title: ui.chipTitle,
+                        derived: ui.chipDerived,
+                        notSynth: ui.chipNotSynth,
+                        empty: ui.chipEmpty,
+                        consts: ui.chipConsts,
+                        structs: ui.chipStructs,
+                        fns: ui.chipFns,
+                        bits: ui.chipBits,
+                        unsized: ui.chipUnsized,
+                        omitted: ui.chipOmitted,
+                      }}
+                    />
+                  )}
+
                   {/* codegen targets */}
                   {LAYERS.find((l) => l.id === layer)?.kind === 'target' && result && (
                     !activeTarget ? (
@@ -1559,7 +1962,50 @@ export default function SpecExplorer() {
               </div>
             </>
           )}
-        </main>
+        </main>}
+
+        {/* RUN, within reach of a thumb.
+            The inline control lives in a row at the TOP of a column that now
+            scrolls on a phone, so it leaves the screen as soon as you read any
+            distance -- and the top of a tall phone is the hardest place on the
+            device to reach one-handed. Fixed to the bottom instead, so the
+            action the page exists for is always one tap away.
+
+            Bottom-right rather than a full-width bar: it stays clear of the
+            text column, and env(safe-area-inset-bottom) keeps it off the home
+            indicator. */}
+        {phone && mobilePane === 'detail' && selected && (
+          <button
+            onClick={() => void run()}
+            disabled={busy}
+            title={ui.runHint}
+            aria-label={busy ? ui.compiling : 'RUN'}
+            style={{
+              position: 'fixed',
+              right: 16,
+              bottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
+              zIndex: 40,
+              // Same signal as the inline control: filled once the text differs
+              // from what was last compiled.
+              background: dirty ? C.accent : '#0f1a14',
+              color: dirty ? '#04150c' : C.accent,
+              border: `1px solid ${C.accent}`,
+              borderRadius: 999,
+              // 48px clears the 44px minimum with room for a shadow.
+              minHeight: 48,
+              padding: '0 22px',
+              fontSize: 14,
+              fontWeight: 700,
+              letterSpacing: 0.5,
+              fontFamily: 'inherit',
+              cursor: busy ? 'default' : 'pointer',
+              opacity: busy ? 0.7 : 1,
+              boxShadow: '0 6px 20px rgba(0,0,0,0.55)',
+            }}
+          >
+            {busy ? ui.compiling : '▶ RUN'}
+          </button>
+        )}
       </div>
     </div>
   )

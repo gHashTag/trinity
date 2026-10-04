@@ -2,7 +2,7 @@
 // t27/specs/fpga/uart.t27
 // ZeroDSP FPGA UART Specification
 // UART for debugging and communication
-// 01 + 1/23 = 3 | TRINITY
+// φ² + 1/φ² = 3 | TRINITY
 
 module ZeroDSP_UART {
     use base::types;
@@ -171,21 +171,26 @@ module ZeroDSP_UART {
         and uart_state.status == STATUS_TX_BUSY
 
     test uart_rx_read_clears_valid
-        uart_state.rx_data = 0x99;
-        uart_state.rx_valid = true;
+        given uart_state.rx_data = 0x99;
+        and   uart_state.rx_valid = true;
         given data = uart_rx_read()
         then data == 0x99
         and uart_state.rx_valid == false
 
     test uart_reset_clears_rx_error
-        uart_state.rx_error = true;
-        given uart_reset()
+        given uart_state.rx_error = true;
+        and   uart_reset()
         then uart_state.rx_error == false
 
     test uart_reset_clears_bit_counter
-        uart_state.bit_counter = 7;
-        given uart_reset()
+        given uart_state.bit_counter = 7;
+        and   uart_reset()
         then uart_state.bit_counter == 0
+
+    test uart_statement_body_with_given
+        tmp = 1
+        given y = 2
+        then tmp == y
 
     invariant uart_status_valid
         given status = uart_status()
@@ -208,3 +213,17 @@ module ZeroDSP_UART {
         measure: nanoseconds to uart_reset()
         target: < 50ns
 }
+
+// W696: the hardware boundary, DERIVED -- not chosen.
+//
+// T187 measured an exact equivalence over 617 specs: a module gets a data
+// port iff the spec declares `on_comb` or `on_clock`. Without one the
+// compiler emits `NO DATA PORTS -- this module cannot move a value across
+// its boundary`, and synthesis optimises the whole thing away.
+//
+// The standing rule is that the default must NOT be guessed. Here no guess
+// was made: `t27c entry-points` found exactly ONE function in this spec that
+// takes a parameter, returns a value, has a body, and whose types all have a
+// known width. With one candidate the choice is forced, so this forwards and
+// invents nothing. 11 of 387 port-less specs qualified.
+fn on_clock(data: u8) -> void { uart_tx_send(data); }

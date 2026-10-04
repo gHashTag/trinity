@@ -5,6 +5,7 @@ import Navigation from '../components/Navigation'
 import Footer from '../components/Footer'
 import QuantumBackground from '../components/QuantumBackground'
 import { useI18n } from '../i18n/context'
+import { TnfLineage, TnfAuthor } from '../components/sections/tnf'
 
 // Canonical external links (not translated)
 const LINKS = {
@@ -149,6 +150,9 @@ export default function AboutAuthor() {
           ))}
         </motion.div>
       </section>
+
+      <TnfLineage />
+      <TnfAuthor />
 
       <Footer />
     </main>

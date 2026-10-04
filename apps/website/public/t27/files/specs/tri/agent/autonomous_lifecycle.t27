@@ -11,9 +11,7 @@ module TriAutonomousLifecycle;
     // ═══════════════════════════════════════════════════════════
 
     pub const LifecycleState = struct {
-        // Recovered from the upstream spec this file was converted from:
-        // trinity-fpga specs/tri/autonomous_lifecycle.tri:27. The converter dropped bare `- name` bullets.
-        enum : [ideation, specification, generation, validation, deployment, monitoring, healing, stable],
+        variants : ,
     };
 
     pub const LifecycleEvent = struct {
@@ -21,7 +19,7 @@ module TriAutonomousLifecycle;
         from_state : LifecycleState,
         to_state : LifecycleState,
         timestamp : i64,
-        pas_score : Float,  // φ-weighted priority
+        pas_score : Float      # φ-weighted priority,
         trigger : String,
     };
 
@@ -44,15 +42,11 @@ module TriAutonomousLifecycle;
     };
 
     pub const TaskType = struct {
-        // Recovered from the upstream spec this file was converted from:
-        // trinity-fpga specs/tri/autonomous_lifecycle.tri:70. The converter dropped bare `- name` bullets.
-        enum : [create_spec, generate_code, run_tests, deploy, monitor, heal],
+        variants : ,
     };
 
     pub const TaskStatus = struct {
-        // Recovered from the upstream spec this file was converted from:
-        // trinity-fpga specs/tri/autonomous_lifecycle.tri:79. The converter dropped bare `- name` bullets.
-        enum : [pending, in_progress, completed, failed, retrying],
+        variants : ,
     };
 
     pub const PerformanceMetrics = struct {
@@ -67,6 +61,3 @@ module TriAutonomousLifecycle;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test "autonomous_lifecycle_smoke_test" {
-        expect(true)
-    }

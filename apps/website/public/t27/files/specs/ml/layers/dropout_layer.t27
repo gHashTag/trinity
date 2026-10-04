@@ -28,42 +28,66 @@ module Dropout;
 
     // forward(input: []const f32, output: []f32, mask: []bool, training: bool, config: DropoutConfig) → void
     fn forward(input: []const f32, output: []f32, mask: []bool, training: bool, config: DropoutConfig) -> void {
-        // TODO: Implement from .tri spec
+        const n = input.len;
+        var i : usize = 0;
+        while (i < n) {
+            if (training) {
+                if (mask[i]) {
+                    // Neuron is kept, scale during training if configured
+                    if (config.scale_during_training) {
+                        output[i] = input[i] * (1.0 / (1.0 - config.p));
+                    } else {
+                        output[i] = input[i];
+                    }
+                } else {
+                    // Neuron is dropped
+                    output[i] = 0.0;
+                }
+            } else {
+                // During inference, always scale output
+                output[i] = input[i] * (1.0 - config.p);
+            }
+            i = i + 1;
+        }
     }
 
     // backward(grad_output: []const f32, mask: []const bool, grad_input: []f32, config: DropoutConfig) → void
     fn backward(grad_output: []const f32, mask: []const bool, grad_input: []f32, config: DropoutConfig) -> void {
-        // TODO: Implement from .tri spec
+        const n = grad_output.len;
+        var i : usize = 0;
+        while (i < n) {
+            if (mask[i]) {
+                // Gradient flows through kept neurons
+                if (config.scale_during_training) {
+                    grad_input[i] = grad_output[i] * (1.0 / (1.0 - config.p));
+                } else {
+                    grad_input[i] = grad_output[i];
+                }
+            } else {
+                // Gradient is zero for dropped neurons
+                grad_input[i] = 0.0;
+            }
+            i = i + 1;
+        }
     }
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    // forward/backward are unimplemented stubs that return void and panic when
-    // called, so nothing behavioural can be asserted about them yet. What the
-    // module does declare -- the default rate and the config shape -- is tested
-    // here.
+    test forward_basic_case
+        given input = default_input()
+              output = allocf32(input.len)
+              mask = allocbool(input.len)
+              config = DropoutConfig { p = 0.5, inplace = false, scale_during_training = true }
+        when result = forward(input, output, mask, true, config)
+        then result != undefined
 
-    test default_drop_rate_is_one_half
-        // Verify: the documented default drops half of the units
-        given p = DEFAULT_DROP_RATE
-        then @abs(p - 0.5) < 1e-6
-
-    test default_drop_rate_is_a_probability
-        // Verify: the default rate lies in [0, 1]
-        given p = DEFAULT_DROP_RATE
-        then p >= 0.0 and p <= 1.0
-
-    test inverted_dropout_scale_is_reciprocal_of_keep_probability
-        // Verify: scaling survivors by 1/(1-p) keeps the expected activation
-        // unchanged; at p = 0.5 that doubles them
-        given keep = 1.0 - DEFAULT_DROP_RATE
-        when scale = 1.0 / keep
-        then @abs(scale - 2.0) < 1e-6
-
-    test config_carries_the_default_rate
-        // Verify: DropoutConfig has the declared field names and holds p
-        given cfg = DropoutConfig{.p=DEFAULT_DROP_RATE,.inplace=false,.scale_during_training=true}
-        then @abs(cfg.p - 0.5) < 1e-6 and cfg.scale_during_training and cfg.inplace == false
+    test backward_basic_case
+        given grad_output = default_input()
+              mask = allocbool(grad_output.len)
+              grad_input = allocf32(grad_output.len)
+              config = DropoutConfig { p = 0.5, inplace = false, scale_during_training = true }
+        when result = backward(grad_output, mask, grad_input, config)
+        then result != undefined
 

@@ -14,7 +14,16 @@ export const ROUTES = [
   '', 'gft', 'start', 'select', 'verification', 'ip', 'proof', 'blog',
   'cases', 'course', 'resources', 'formats', 'ladder', 'theorems', 'bounds',
   'landscape', 'reproduce', 'about', 'queen', 'dashboard', 'tree', 'play',
-  'chat', 'quantum', 'lab', 'canvas', 'wasm', 'specs',
+  'chat', 'quantum', 'lab', 'canvas', 'wasm', 'specs', 'skills', 'crons', 'agents', 'functions', 'providers',
+  // Signed out, /clients renders only its sign-in screen — which is exactly
+  // what an audit should see: no credential, no data, fully dictionary-driven.
+  'clients',
+  // Both faces of the passport, because they do not share a layout: the record
+  // face puts its figures straight into the section and the research face wraps
+  // each one with the case it belongs to. The wrapper was a flex item nobody had
+  // told to shrink, and it pushed 149px of sideways scroll onto a phone while
+  // this audit reported PASS across 33 routes — it had never visited either one.
+  'passport', 'passport/research',
 ]
 
 const CHROME_CANDIDATES = [
@@ -39,7 +48,20 @@ function openWebSocket(url) {
   })
 }
 
-export async function collectRouteText(language, baseUrl) {
+/**
+ * Drive every route once and return whatever `expression` evaluates to on each.
+ *
+ * The Chrome spawn, the CDP session and -- most importantly -- the settle loop
+ * live here ONCE. A second audit that copied this plumbing would eventually
+ * copy an older settle, and the whole point of the settle is that two audits
+ * cannot disagree about which route they are looking at.
+ *
+ * `windowSize` sets Chrome's REAL window size. Emulation.setDeviceMetricsOverride
+ * was tried first and silently did not take: the page kept laying out at 980px,
+ * the no-viewport-meta fallback, and a 900px probe injected into every route was
+ * not detected. The negative control caught that; nothing else would have.
+ */
+export async function forEachRoute(baseUrl, expression, { windowSize } = {}) {
   const chromePath = CHROME_CANDIDATES.find(path => existsSync(path))
   if (!chromePath) throw new Error('Chrome/Chromium не найден; задайте CHROME_PATH')
 
@@ -48,7 +70,7 @@ export async function collectRouteText(language, baseUrl) {
     '--headless=new', '--remote-debugging-port=0', `--user-data-dir=${profile}`,
     '--no-first-run', '--no-default-browser-check', '--disable-extensions',
     '--disable-background-networking', '--disable-sync', '--mute-audio',
-    '--window-size=1440,900', '--disable-dev-shm-usage',
+    `--window-size=${windowSize ? `${windowSize.width},${windowSize.height}` : '1440,900'}`, '--disable-dev-shm-usage',
     ...(process.platform === 'linux' ? ['--no-sandbox'] : []),
     '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader',
     'about:blank',
@@ -93,28 +115,63 @@ export async function collectRouteText(language, baseUrl) {
     const call = (method, params = {}) => send(method, params, sessionId)
     await call('Runtime.enable')
     await call('Page.enable')
+    // --window-size alone bottoms out at 500px in headless Chrome, which is a
+    // small tablet, not a phone. The metrics override takes it the rest of the
+    // way; both are applied because the override alone leaves the window at its
+    // default and some layouts read window.outerWidth.
+    if (windowSize) {
+      await call('Emulation.setDeviceMetricsOverride', {
+        width: windowSize.width,
+        height: windowSize.height,
+        deviceScaleFactor: 2,
+        mobile: true,
+      })
+    }
 
     const result = {}
     for (const route of ROUTES) {
       const url = `${baseUrl.replace(/#.*$/, '')}#/${route}`
       await call('Page.navigate', { url })
-      await wait(700)
-      const evaluated = await call('Runtime.evaluate', {
-        // Elements marked data-lang-exempt hold quoted source, not UI copy --
-        // the /specs page renders .t27 files whose comments are written in
-        // whatever language their author used. Translating them would
-        // misrepresent the files. The surrounding UI is still audited, so this
-        // narrows the gate rather than switching it off for the route.
-        expression: `(() => {
-          if (!document.body) return "";
-          const clone = document.body.cloneNode(true);
-          clone.querySelectorAll('[data-lang-exempt]').forEach((n) => n.remove());
-          return clone.innerText;
-        })()`,
-        returnByValue: true,
-      })
+
+      // Wait for the ROUTE, not for a duration.
+      //
+      // This used to be a flat `await wait(700)`. Page.navigate to a hash-only
+      // URL does not reload -- it fires hashchange and the SPA re-renders
+      // asynchronously -- so on a heavy route (Queen, /dashboard with its
+      // motion sections) 700ms often expired while the PREVIOUS route's DOM was
+      // still mounted. The harness then stored route A's text under route B's
+      // key. That is not slowness, it is misattribution, and it fails in both
+      // directions: a translated page captured under an untranslated route's
+      // name passes it, and vice versa. It is why /dashboard failed the RU
+      // audit on some branches and passed on others while nothing about
+      // /dashboard changed.
+      //
+      // Now: require the SPA to have committed the hash, then require the body
+      // text to stop changing for two consecutive samples. Falls through after
+      // the budget so a genuinely animating page still gets audited rather than
+      // hanging the run.
+      const settleExpr = `(() => ({
+        hash: location.hash,
+        len: document.body ? document.body.innerText.length : -1,
+      }))()`
+      let previousLen = -2
+      let settledFor = 0
+      for (let attempt = 0; attempt < 40; attempt++) {
+        await wait(150)
+        const probe = await call('Runtime.evaluate', { expression: settleExpr, returnByValue: true })
+        const state = probe.result?.value
+        if (!state) continue
+        const hashMatches = state.hash === `#/${route}` || (route === '' && (state.hash === '#/' || state.hash === ''))
+        if (!hashMatches) { previousLen = -2; settledFor = 0; continue }
+        if (state.len > 0 && state.len === previousLen) settledFor += 1
+        else settledFor = 0
+        previousLen = state.len
+        if (settledFor >= 2) break
+      }
+
+      const evaluated = await call('Runtime.evaluate', { expression, returnByValue: true })
       if (evaluated.exceptionDetails) throw new Error(`Не удалось прочитать /${route}`)
-      result[route] = String(evaluated.result?.value || '')
+      result[route] = evaluated.result?.value
     }
     await send('Target.closeTarget', { targetId })
     ws.close()
@@ -129,4 +186,35 @@ export async function collectRouteText(language, baseUrl) {
     try { rmSync(profile, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }) } catch {}
     throw error
   }
+}
+
+/**
+ * The language audits' view: the page's visible text.
+ *
+ * Elements marked data-lang-exempt hold quoted source, not UI copy -- /specs
+ * renders .t27 files whose comments are in whatever language their author used,
+ * and translating those would misrepresent the files. The surrounding UI is
+ * still audited, so this narrows the gate rather than switching it off.
+ *
+ * `language` is unused and kept for call-site compatibility: the locale is
+ * carried in baseUrl's query string, which is where the app reads it from.
+ */
+export async function collectRouteText(language, baseUrl) {
+  const texts = await forEachRoute(baseUrl, `(() => {
+    if (!document.body) return "";
+    const clone = document.body.cloneNode(true);
+    clone.querySelectorAll('[data-lang-exempt]').forEach((n) => n.remove());
+    // A detached clone has no layout, so innerText here means textContent --
+    // and textContent includes the SOURCE of every inline script and style in
+    // the body. One English comment written above the pre-mount hero's guard
+    // was therefore read as page copy on all 35 routes at once: 350 findings,
+    // 10 lines times 35, not one of them anything a reader can see. Script and
+    // style source is not copy in any language, and neither is a template that
+    // has not been stamped or the noscript branch of a page that has script.
+    clone.querySelectorAll('script, style, noscript, template').forEach((n) => n.remove());
+    return clone.innerText;
+  })()`)
+  const out = {}
+  for (const [route, value] of Object.entries(texts)) out[route] = String(value || '')
+  return out
 }

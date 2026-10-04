@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // specs/compiler/parser.t27
-// T27 Parser Specification -- Self-hosting compiler core
-// phi^2 + 1/phi^2 = 3 | TRINITY
+// T27 Parser Specification — Self-hosting compiler core
+// φ² + 1/φ² = 3 | TRINITY
 //
 // This module defines the complete recursive descent parser for the T27 language.
 // It is a 1:1 port of bootstrap/src/compiler.rs Parser to t27 spec format.
@@ -10,9 +10,9 @@ module Parsing {
     use base::types;
     use compiler::lexer;
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // 1. AST Node Types
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     const MAX_CHILDREN: u32 = 32;
 
@@ -69,9 +69,9 @@ module Parsing {
         children: [MAX_CHILDREN]Node;
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // 2. Parser State
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     struct Parser {
         lexer: lexer::Lexer;
@@ -89,9 +89,9 @@ module Parsing {
         return p;
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // 3. Movement Primitives
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     fn advance(self: *Parser) -> void {
         self.current = self.peek;
@@ -125,9 +125,9 @@ module Parsing {
         return self.error_msg;
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // 4. Error Recovery
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     fn skip_brace_body(self: *Parser) -> bool {
         var depth: i32 = 1;
@@ -260,9 +260,9 @@ module Parsing {
         }
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // 5. Type Annotation Parser
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     fn parse_type_annotation(self: *Parser) -> str {
         var ty: str = "";
@@ -324,9 +324,9 @@ module Parsing {
         return ty;
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // 6. Expression Parser (Precedence Levels)
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     fn node_new(kind: NodeKind) -> Node {
         return Node{
@@ -843,9 +843,9 @@ module Parsing {
         return sw;
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // 7. Statement Parser
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     fn parse_body_stmt(self: *Parser) -> Node {
         if (self.check(lexer::TokenKind::KwConst) or self.check(lexer::TokenKind::KwVar)) {
@@ -924,7 +924,7 @@ module Parsing {
         decl.extra_mutable = self.check(lexer::TokenKind::KwVar);
         self.advance();
 
-        if (self.check(lexer::TokenKind::Ident)) {
+        if (self.current.kind == lexer::TokenKind::Ident or self.current.kind == lexer::TokenKind::KwModule) {
             decl.name = self.current.lexeme;
             self.advance();
         }
@@ -1095,9 +1095,9 @@ module Parsing {
         }
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // 8. Struct and Enum Body Parsers
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     fn parse_struct_body(self: *Parser, decl: *Node) -> void {
         while (self.current.kind != lexer::TokenKind::RBrace 
@@ -1169,9 +1169,9 @@ module Parsing {
         }
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // 9. Top-Level Declaration Parsers
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     fn parse_top_level_decl(self: *Parser) -> Node {
         var is_pub = false;
@@ -1450,9 +1450,9 @@ module Parsing {
         return decl;
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // 10. Module Parser
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     fn parse(self: *Parser) -> Node {
         var module = node_new(NodeKind::Module);
@@ -1497,7 +1497,7 @@ module Parsing {
                     full_path = self.current.lexeme;
                     self.advance();
 
-                    if (self.check(lexer::TokenKind::Colon) and not self.check_peek(lexer::TokenKind::Colon)) {
+                    if (self.check(lexer::TokenKind::Colon) and !self.check_peek(lexer::TokenKind::Colon)) {
                         alias_name = full_path;
                         self.advance();
                         if (self.check(lexer::TokenKind::Ident)) {
@@ -1536,83 +1536,83 @@ module Parsing {
         }
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // 11. Tests
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     test "kind_values" {
-        assert(NodeKind::Module == 0)
-        assert(NodeKind::FnDecl == 4)
-        assert(NodeKind::ExprBinary == 22)
-        assert(NodeKind::ExprCall == 24)
+        assert(NodeKind::Module == 0);
+        assert(NodeKind::FnDecl == 4);
+        assert(NodeKind::ExprBinary == 22);
+        assert(NodeKind::ExprCall == 24);
     }
 
     test "precedence_order" {
-        const or_level = 0
-        const and_level = 1
-        const comp_level = 2
-        const add_level = 3
-        const mul_level = 4
-        const unary_level = 5
-        assert(or_level < and_level)
-        assert(and_level < comp_level)
-        assert(comp_level < add_level)
-        assert(add_level < mul_level)
-        assert(mul_level < unary_level)
+        const or_level = 0;
+        const and_level = 1;
+        const comp_level = 2;
+        const add_level = 3;
+        const mul_level = 4;
+        const unary_level = 5;
+        assert(or_level < and_level);
+        assert(and_level < comp_level);
+        assert(comp_level < add_level);
+        assert(add_level < mul_level);
+        assert(mul_level < unary_level);
     }
 
     test "max_children_constant" {
-        assert(MAX_CHILDREN == 32)
+        assert(MAX_CHILDREN == 32);
     }
 
     test "node_kind_count" {
-        assert(NodeKind::ExprReturn == 31)
-        assert(NodeKind::StmtLocal == 10)
+        assert(NodeKind::ExprReturn == 31);
+        assert(NodeKind::StmtLocal == 10);
     }
 
     test "node_kind_coverage" {
-        assert(NodeKind::Module == NodeKind::Module)
-        assert(NodeKind::FnDecl != NodeKind::StructDecl)
+        assert(NodeKind::Module == NodeKind::Module);
+        assert(NodeKind::FnDecl != NodeKind::StructDecl);
     }
 
     test "expression_precedence_levels" {
-        assert(10 > 9)
-        assert(9 > 8)
-        assert(8 > 7)
-        assert(7 > 6)
-        assert(6 > 5)
-        assert(5 > 4)
-        assert(4 > 3)
-        assert(3 > 2)
-        assert(2 > 1)
-        assert(1 > 0)
+        assert(10 > 9);
+        assert(9 > 8);
+        assert(8 > 7);
+        assert(7 > 6);
+        assert(6 > 5);
+        assert(5 > 4);
+        assert(4 > 3);
+        assert(3 > 2);
+        assert(2 > 1);
+        assert(1 > 0);
     }
 
     test "break_continue_node_kinds" {
-        assert(NodeKind::StmtBreak == 17)
-        assert(NodeKind::StmtContinue == 18)
-        assert(NodeKind::StmtBreak != NodeKind::StmtContinue)
+        assert(NodeKind::StmtBreak == 17);
+        assert(NodeKind::StmtContinue == 18);
+        assert(NodeKind::StmtBreak != NodeKind::StmtContinue);
     }
 
     test "error_recovery_skip_to_semicolon" {
         var p = parser_init("fn foo() { x; }", 16);
-        assert(p.current.kind != lexer::TokenKind::Eof)
+        assert(p.current.kind != lexer::TokenKind::Eof);
     }
 
     test "struct_decl_distinct_from_enum" {
-        assert(NodeKind::StructDecl == 6)
-        assert(NodeKind::EnumDecl == 5)
-        assert(NodeKind::StructDecl != NodeKind::EnumDecl)
+        assert(NodeKind::StructDecl == 6);
+        assert(NodeKind::EnumDecl == 5);
+        assert(NodeKind::StructDecl != NodeKind::EnumDecl);
     }
 
     test "all_statement_kinds_unique" {
-        assert(NodeKind::StmtLocal != NodeKind::StmtAssign)
-        assert(NodeKind::StmtAssign != NodeKind::StmtIf)
-        assert(NodeKind::StmtIf != NodeKind::StmtWhile)
-        assert(NodeKind::StmtWhile != NodeKind::StmtFor)
-        assert(NodeKind::StmtFor != NodeKind::StmtExpr)
-        assert(NodeKind::StmtExpr != NodeKind::ExprReturn)
-        assert(NodeKind::ExprReturn != NodeKind::StmtBreak)
-        assert(NodeKind::StmtBreak != NodeKind::StmtContinue)
+        assert(NodeKind::StmtLocal != NodeKind::StmtAssign);
+        assert(NodeKind::StmtAssign != NodeKind::StmtIf);
+        assert(NodeKind::StmtIf != NodeKind::StmtWhile);
+        assert(NodeKind::StmtWhile != NodeKind::StmtFor);
+        assert(NodeKind::StmtFor != NodeKind::StmtExpr);
+        assert(NodeKind::StmtExpr != NodeKind::ExprReturn);
+        assert(NodeKind::ExprReturn != NodeKind::StmtBreak);
+        assert(NodeKind::StmtBreak != NodeKind::StmtContinue);
     }
 }
