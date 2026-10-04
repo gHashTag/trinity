@@ -18,6 +18,7 @@ import { body as body_clara_proposal_submitted_not_reviewed, ruBody as ruBody_cl
 import { body as body_tri_claw_an_agent_you_can_audit, ruBody as ruBody_tri_claw_an_agent_you_can_audit } from './bodies/tri-claw-an-agent-you-can-audit'
 import { body as body_a_health_snapshot_changed_its_denominator, ruBody as ruBody_a_health_snapshot_changed_its_denominator } from './bodies/a-health-snapshot-changed-its-denominator'
 import { body as body_one_saturation_rule_five_artefacts, ruBody as ruBody_one_saturation_rule_five_artefacts } from './bodies/one-saturation-rule-five-artefacts'
+import { body as body_a_linux_target_with_no_abi_is_musl, ruBody as ruBody_a_linux_target_with_no_abi_is_musl } from './bodies/a-linux-target-with-no-abi-is-musl'
 import { body as body_ninety_tests_were_unreachable, ruBody as ruBody_ninety_tests_were_unreachable } from './bodies/ninety-tests-were-unreachable'
 import { body as body_four_languages_one_tri_extension, ruBody as ruBody_four_languages_one_tri_extension } from './bodies/four-languages-one-tri-extension'
 import { body as body_the_fpga_row_was_corrected, ruBody as ruBody_the_fpga_row_was_corrected } from './bodies/the-fpga-row-was-corrected'
@@ -108,6 +109,7 @@ const bodies: Record<string, PostBody> = {
   'four-languages-one-tri-extension': { body: body_four_languages_one_tri_extension, ruBody: ruBody_four_languages_one_tri_extension },
   'ninety-tests-were-unreachable': { body: body_ninety_tests_were_unreachable, ruBody: ruBody_ninety_tests_were_unreachable },
   'one-saturation-rule-five-artefacts': { body: body_one_saturation_rule_five_artefacts, ruBody: ruBody_one_saturation_rule_five_artefacts },
+  'a-linux-target-with-no-abi-is-musl': { body: body_a_linux_target_with_no_abi_is_musl, ruBody: ruBody_a_linux_target_with_no_abi_is_musl },
   'queen-foundation-snapshot-contract': { body: body_queen_foundation_snapshot_contract, ruBody: ruBody_queen_foundation_snapshot_contract },
   'clara-proposal-submitted-not-reviewed': { body: body_clara_proposal_submitted_not_reviewed, ruBody: ruBody_clara_proposal_submitted_not_reviewed },
   'queen-review-lifecycle-queues': { body: body_queen_review_lifecycle_queues, ruBody: ruBody_queen_review_lifecycle_queues },
