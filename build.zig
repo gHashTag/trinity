@@ -2957,6 +2957,9 @@ pub fn build(b: *std.Build) void {
     const learning_b_mod = brainModule(b, target, optimize, "src/brain/learning.zig", &.{});
     const evolution_b_mod = brainModule(b, target, optimize, "src/brain/evolution_simulation.zig", &.{});
     const state_recovery_b_mod = brainModule(b, target, optimize, "src/brain/state_recovery.zig", bg_rf);
+    // captureState() calls std.c.getpid(). macOS links libc implicitly, so this
+    // only fails on Linux: "dependency on libc must be explicitly specified".
+    state_recovery_b_mod.link_libc = true;
     const federation_b_mod = brainModule(b, target, optimize, "src/brain/federation.zig", bg_rf);
     const async_b_mod = brainModule(b, target, optimize, "src/brain/async_processor.zig", bg_rf);
     const metrics_b_mod = brainModule(b, target, optimize, "src/brain/metrics_dashboard.zig", &.{
