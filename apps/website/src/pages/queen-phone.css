@@ -74,9 +74,18 @@
         the third picture shows what it cost instead: the tiles past the edge
         did not exist for the owner. A control that cannot be seen is not a
         thumb-swipe away; it is gone. */
+  /* Rows 2px apart, like the footer rail's two rows of tiles. They were 6px,
+     with 4px above and 6px below, while the worlds row was 26px; at 44px that
+     row costs 18px more (the rule after the select's, below), and on the
+     kanban at 390x560 those 18px came out of the card box: 106.5 -> 88.5px
+     round a 92.8px card, so no column showed a whole one (check 11). Two
+     gaps and the padding give back 14 there: box 102.5px, head 112.4px
+     against 108.4 before. On the comb at 375x812 the head is 158.4px, as it
+     was -- three row gaps instead of two pay the whole 18. Across a row the
+     tiles stay 6px apart. */
   .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-vp-head {
-    padding: 4px 8px 6px;
-    gap: 6px;
+    padding: 2px 8px;
+    gap: 2px 6px;
   }
 
   .queen27-page.is-shell .queen27-hud-vp-tools {
@@ -126,6 +135,31 @@
      keeps the rest: 150px cut "ALL REPOSITORIES · SHARED CORE" mid-word. */
   .queen27-page.is-shell .queen27-hud-vp-head .queen27-hud-vp-worlds .queen-universe-nav select {
     max-width: min(200px, calc(100% - 160px));
+  }
+
+  /* The worlds row is a row of tiles too. Queen.css draws every control in
+     the head at 26px for the desktop strip, and the rules above lifted the
+     tools out of that and not this row: measured on main at 375x812 the
+     select was 167x26, "+ Repository" 44x26 and "Shared core" 93x26, three
+     26px targets side by side under a row of 44px ones. The select also
+     computed 9.28px, and iOS zooms the page into any field under 16px when
+     it takes focus -- on a board that is exactly one screen, the zoom is the
+     screen moving out from under the person. 16px it is, in the case the
+     names are written in: a repository is "ghashtag/t27", and at 16px in a
+     167px select the strip's capitals and 0.12em tracking showed "ALL
+     REPOSITORI" of the first option where this shows "All repositories ·
+     share". The row is 18px taller; the head's own gaps pay for it (the
+     head rule at the top of this section has the numbers), and check 12 of
+     qa/queen-viewport-contract.mjs holds this rule. */
+  .queen27-page.is-shell .queen27-hud-vp-head .queen27-hud-vp-worlds :is(button, select, a) {
+    height: auto;
+    min-height: 44px;
+  }
+
+  .queen27-page.is-shell .queen27-hud-vp-head .queen27-hud-vp-worlds select {
+    font-size: 16px;
+    letter-spacing: 0;
+    text-transform: none;
   }
 
   /* 2. THE BODY FOLLOWS THE HEAD. The head is in the flow on a phone (Queen.css,
