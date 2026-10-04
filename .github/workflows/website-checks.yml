@@ -208,6 +208,18 @@ jobs:
       # only our own /live/ is framed. Pure, no browser.
       - name: The BROWSER view
         run: npm run check:queen-browser
+      # Invite to watch: the render's read-only watch links on the live bar.
+      # The session token rides only in a header, a minted address is shown
+      # only if it is https://<host>/watch/<token> and revoked on the spot if
+      # it is not, an id that is not one is never sent, and a sixth link is
+      # never asked for. Pure, no browser.
+      - name: Invite to watch
+        run: npm run check:queen-watch
+      # Tasks side by side: a card is one more lane of the person's agent in a
+      # window of its own; the chat never names a lane, a render that answered
+      # from main is believed, and two lanes' steps never fold. Pure, no browser.
+      - name: Browser tasks side by side
+        run: npm run check:queen-browser-lanes
       # The runner cabinet: the session token rides only in a header with
       # credentials omitted, a runner token is shown once and kept nowhere, and
       # the page has no field for a provider key. Pure, no browser.
