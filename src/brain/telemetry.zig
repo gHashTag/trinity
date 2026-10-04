@@ -252,7 +252,7 @@ pub const BrainTelemetry = struct {
         for (1..scores.len) |i| {
             const key = scores[i];
             var j = i;
-            while (j > 0 and scores[j - 1] > key) : (j -= 1) {
+            while (j > 0 and scores[j - 1] < key) : (j -= 1) {
                 scores[j] = scores[j - 1];
             }
             scores[j] = key;
