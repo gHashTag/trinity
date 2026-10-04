@@ -26,6 +26,7 @@ import { skillExplorerHash } from '../lib/skillsCatalog'
 import { C, panelBox, pill, tagChip, type Health } from '../lib/explorerTheme'
 import { canonicalCronUrl, cronExplorerHash, describeCron, describeInterval, nextRuns, resolveManifestCron } from '../lib/cronsCatalog'
 import { loadCronsManifest, type CronEntry, type CronsManifest } from '../lib/cronsLoader'
+import { loadLastRun, type LastRun } from '../lib/cronLastRun'
 
 const UI = {
   en: {
@@ -87,6 +88,12 @@ const UI = {
     provenance: 'Jobs from',
     snapshotDirty: 'uncommitted changes',
     tz: 'All cron times are UTC.',
+    lastRun: 'Last real run',
+    lastRunLoading: 'Asking GitHub…',
+    lastRunNone: 'GitHub has no run of this workflow.',
+    lastRunPrivate: 'Private repository: GitHub does not show its runs to a visitor.',
+    lastRunNoSource: 'No live source the browser can read for this host.',
+    lastRunError: 'Could not ask GitHub',
     ladder: 'ladder',
     ladderSpecs: 'Specs',
     ladderSkills: 'Skills',
@@ -155,6 +162,12 @@ const UI = {
     provenance: 'Задания из',
     snapshotDirty: 'незакоммиченные правки',
     tz: 'Все времена кронов — UTC.',
+    lastRun: 'Последний настоящий запуск',
+    lastRunLoading: 'Спрашиваем GitHub…',
+    lastRunNone: 'У этого workflow на GitHub нет ни одного запуска.',
+    lastRunPrivate: 'Приватный репозиторий: GitHub не показывает его запуски посетителю.',
+    lastRunNoSource: 'У этого хоста нет живого источника, который браузер может прочитать.',
+    lastRunError: 'Не удалось спросить GitHub',
     ladder: 'лестница',
     ladderSpecs: 'Спеки',
     ladderSkills: 'Скиллы',
@@ -346,6 +359,18 @@ export default function CronExplorer() {
       }),
     [filtered, scheduleText, ui, specById, tagsOf],
   )
+
+  // The last run is read live when a card opens, never baked into the build.
+  const [lastRun, setLastRun] = useState<LastRun | null>(null)
+  useEffect(() => {
+    if (!selected) return
+    let alive = true
+    setLastRun(null)
+    loadLastRun(selected).then((r) => alive && setLastRun(r))
+    return () => {
+      alive = false
+    }
+  }, [selected])
 
   const runs = useMemo(() => {
     if (!selected || selected.schedule.kind !== 'cron' || !selected.schedule.expr) return []
@@ -548,6 +573,22 @@ export default function CronExplorer() {
                   ) : selected.kind === 'railway-cron' ? (
                     <div style={{ fontSize: 12, color: C.warn }}>{ui.nextUnknown}</div>
                   ) : null}
+                  <div data-testid="cron-last-run">
+                    <div style={{ fontSize: 11, color: C.muted, fontFamily: C.mono, marginBottom: 4 }}>{ui.lastRun}</div>
+                    {lastRun === null ? (
+                      <div style={{ fontSize: 12, color: C.muted }}>{ui.lastRunLoading}</div>
+                    ) : lastRun.kind === 'run' ? (
+                      <a href={lastRun.url} target="_blank" rel="noreferrer" style={{ fontFamily: C.mono, fontSize: 12, color: lastRun.conclusion === 'success' ? C.accent : lastRun.conclusion === null ? C.warn : C.bad }}>
+                        {lastRun.at.replace('T', ' ').slice(0, 16)} · {lastRun.event} · {lastRun.conclusion ?? lastRun.status}
+                      </a>
+                    ) : lastRun.kind === 'none' ? (
+                      <div style={{ fontSize: 12, color: C.warn }}>{ui.lastRunNone}</div>
+                    ) : (
+                      <div style={{ fontSize: 12, color: C.muted }}>
+                        {lastRun.reason === 'private' ? ui.lastRunPrivate : lastRun.reason === 'no-source' ? ui.lastRunNoSource : `${ui.lastRunError}: ${lastRun.detail ?? ''}`}
+                      </div>
+                    )}
+                  </div>
                   <div style={{ fontSize: 10.5, color: C.muted, opacity: 0.75 }}>{ui.tz}</div>
                 </div>
 
