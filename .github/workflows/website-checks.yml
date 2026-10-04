@@ -311,6 +311,15 @@ jobs:
       # the same contract reads the built page below with --browser.
       - name: Queen spec corpus is one corpus
         run: npm run check:queen-spec-sync
+      # The HUD's honesty pins: the round line, the copied bootstrap, the 24h
+      # windows, the castle and the hive's colour law, each run through the
+      # pure function or pinned to the line that makes it true. No workflow ran
+      # this file from #897 until this step, and three pins went stale unseen:
+      # 9316e9edd removed the round button one of them held, and #1206 moved
+      # the two corpus reads the other two named into the store above.
+      # Pure, no browser.
+      - name: Queen HUD honesty
+        run: npm run check:queen-honesty
       - name: Catalog generators
         run: npm run test:sync-skills && npm run test:sync-crons
       # The tiers, the touch minimum and the QA matrix come from
