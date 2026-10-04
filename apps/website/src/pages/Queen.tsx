@@ -13,6 +13,7 @@ import { QueenSpecs } from "../components/QueenSpecs";
 import { QueenAgents } from "../components/QueenAgents";
 import { SELECTION_KEY, isExplorerTab, leaveTabSelections } from "../lib/queenEmbed";
 import { specsChatSpec } from "../lib/queenSpecsChat";
+import { openCardInApp, openCardMessage } from "../lib/queenCardChat";
 import { hiveFeedHealth, hiveDisplayRecords, hiveSameRepositorySnapshot, placeHiveDisplays, type HiveDisplay } from "../components/queenHiveDisplay";
 import { QueenComb } from "../components/QueenComb";
 import { QueenCommandPanel, type CommandItem } from "../components/QueenCommand";
@@ -2624,6 +2625,12 @@ function KanbanView({
                   href={`https://github.com/${repo}/issues/${card.number}`}
                   target="_blank"
                   rel="noreferrer"
+                  // Framed by the app on its own origin, the tap opens the
+                  // card's conversation with the agent there; anywhere else,
+                  // and on cmd-click, the issue opens as before.
+                  onClick={(event) => {
+                    if (repo) openCardInApp(event, openCardMessage(repo, card.number, publicIssueTitle(card.title, card.number, lang), column.key));
+                  }}
                   // The title is clamped to three lines in a 126px column —
                   // measured, one card's title was nine lines and 147px of a
                   // 222px card. Clamping without this would be losing the
@@ -3020,6 +3027,9 @@ function MissionMapView({
                     href={`https://github.com/${repo}/issues/${card.number}`}
                     target="_blank"
                     rel="noreferrer"
+                    onClick={(event) => {
+                      if (repo) openCardInApp(event, openCardMessage(repo, card.number, publicIssueTitle(card.title, card.number, lang), column.key));
+                    }}
                     key={card.number}
                     layout
                     initial={{ opacity: 0, scale: 0.8 }}

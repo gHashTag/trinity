@@ -14,7 +14,7 @@ export type Witness = 'spec+code' | 'spec-only' | 'code-only'
 /** An agent's witness: at least one experience episode names its letter, or none does. */
 export type AgentWitness = 'spec+experience' | 'spec-only'
 export type Health = 'ok' | 'warn' | 'fail'
-export type CronHostKind = 'github-actions' | 'inngest' | 'railway-cron' | 'timer'
+export type CronHostKind = 'github-actions' | 'inngest' | 'railway-cron' | 'timer' | 'launchd'
 export type CronControl = 'github-actions-dispatch' | 'railway-dashboard' | 'inngest-dashboard' | 'code-only'
 
 export interface SkillSpecFields {
@@ -643,7 +643,7 @@ export function vendoredSpecUrl(specPath: string): string {
 
 export type RunNowTarget =
   | { kind: 'link'; url: string; via: 'github-actions' | 'railway' | 'inngest' }
-  | { kind: 'disabled'; reason: 'timer' | 'unknown-service' }
+  | { kind: 'disabled'; reason: 'timer' | 'launchd' | 'unknown-service' }
 
 // ---------------------------------------------------------------------------
 // The optional live control plane. See docs/agent-control-api.md.

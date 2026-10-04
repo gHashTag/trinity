@@ -13,8 +13,8 @@
 name: Pages Health Check
 
 on:
-  schedule:
-    - cron: '*/15 * * * *'  # Every 15 minutes
+  # No schedule: block. The Queen (Inngest app t27-queen) dispatches this workflow
+  # on '*/15 * * * *' UTC from the card specs/crons/trinity-pages-health-check.t27 in gHashTag/t27.
   workflow_dispatch:
 
 permissions:
