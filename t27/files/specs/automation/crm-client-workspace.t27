@@ -1,0 +1,240 @@
+// SPDX-License-Identifier: Apache-2.0
+// specs/automation/crm-client-workspace.t27 -- one CRM workspace PER CLIENT: a dashboard and a
+// conversation thread of the seller ABOUT one client, instead of one thread and one flat list
+// for everybody. Written after the owner said (2026-09-13) that every client's chat lands in the
+// same place.
+// Host: 999-multibots-telegraf apps/vibee-editor -- render: agent_messages.thread (conversation.ts),
+//       body.client / ?client= on the four /api/agent routes (routes.ts), clientContextBlock in
+//       runAgent (chat.ts), table crm_duet_runs and tool crm_duet_runs (crm-duet-tool.ts), tools
+//       crm_client_plan and crm_clients; player: routes /crm/:clientId (dashboard) and
+//       /crm/:clientId/chat (client thread), the list at /crm links every row to its client.
+// WHAT was measured before this spec (render Postgres, code read 2026-09-13): agent_messages was
+//       keyed by telegram_id only -- one thread per person across bot, app and phone; the mini
+//       app had one localStorage atom and "new conversation" DELETEd the whole server history;
+//       /crm showed three flat panels with no client page; duet runs lived in a process Map and
+//       the report went to the owner's Saved Messages -- a redeploy in the middle of a run
+//       (duet-mtzsz1la, 2026-09-13 19:41-19:44 +07) lost the run after its first pair.
+// WHY a thread key and not a second table: the four routes and both apps already speak
+//       agent_messages; a DEFAULT 'self' column keeps every existing row and caller unchanged,
+//       and 'client:<id>' gives the seller one thread per client with the client's profile,
+//       SOUL status, skills and DM history injected as context (not as instructions).
+// Generated: `t27c gen-ts` of this file is vendored into the host as
+//       apps/vibee-editor/render/src/spec/crm-client-workspace.gen.ts; the host imports the
+//       numbers from there and src/spec/crm-client-workspace.test.ts runs these tests against
+//       it (scripts/check-t27-specs.mjs holds both).
+// WHY the dashboard reads through /mcp tools and not new REST routes: visibility (owner,
+//       seller, stranger) is decided in one place -- the tool gate, before the first DB read
+//       (crm-owner-gate.test.ts is the canary); a REST route would be a second gate to keep.
+// Claim status: contract and gates written and unit-tested with doubles on both sides; the
+//       dashboard being SEEN live by the owner and a duet run SURVIVING a redeploy are shown by
+//       the host, not by this file.
+// v2 (2026-09-27), from binding v1 to the code: v1's thread_for turned a malformed client id
+//       into the seller's own thread, while the host refuses it (400) -- a request about a client
+//       never silently becomes a request about oneself; thread_kind says so. The dashboard has 7
+//       panels since the story reel (2026-09-26). The Queen's supervision of a client has its
+//       own thread beside the agent's ('client:<id>:queen', 2026-09-24), and a specialist called
+//       into a client's conversation keeps the CLIENT's memory (2026-09-26).
+// v3 (2026-09-27): the Queen's tasks went to the plain assistant whatever specialist the owner had
+//       chosen in the client's thread, so a task set for the Blogger was done by someone else,
+//       without the Blogger's brief. A task goes to the chosen specialist, or to the assistant
+//       when none is chosen (task_goes_to).
+// v4 (2026-09-27): the Queen names who does a task, as a handoff names its target: the marker
+//       [[task@<agent id>: ...]] with the catalogue's ids listed in her block (OpenAI's handoff
+//       tools and LangGraph's supervisor do the same: the model can name only declared agents).
+//       A named agent the owner may call gets the task; a name the owner may not call, or one
+//       that is no agent, falls back to the chosen specialist, then the assistant -- the task is
+//       never lost (task_owner).
+// phi^2 + 1/phi^2 = 3 | TRINITY
+
+module automation::crm_client_workspace {
+
+    pub const KIND : str = "automation";
+    pub const ID : str = "crm-client-workspace";
+    pub const REPO : str = "999-multibots-telegraf";
+    pub const VERSION : u8 = 4;
+
+    // ---- Who ----------------------------------------------------------------------------
+    pub const CALLER : str = "seller";  // owner id or a row in tg_sessions (crm-sellers.t27)
+    pub const CLIENT_IS : str = "telegram-id";  // numeric, 5..15 digits, never the caller
+    pub const CLIENT_ID_MIN_DIGITS : u8 = 5;
+    pub const CLIENT_ID_MAX_DIGITS : u8 = 15;
+
+    // ---- The thread -----------------------------------------------------------------------
+    pub const THREAD_COLUMN : str = "thread";  // agent_messages.thread
+    pub const THREAD_SELF : str = "self";  // DEFAULT: every row and caller from before this spec
+    pub const THREAD_CLIENT_PREFIX : str = "client:";  // 'client:<id>' -- the seller's thread about one client
+    pub const THREAD_SUPERVISOR_SUFFIX : str = ":queen";  // 'client:<id>:queen' -- the Queen's, beside it
+    pub const AGENT_KEEPS_CLIENT_MEMORY : bool = true;  // a specialist in a client's chat writes to 'client:<id>'
+    pub const QUEEN_TASK_TO_CHOSEN_SPECIALIST : bool = true;  // v3
+    pub const TASK_TO_ASSISTANT : u8 = 0;
+    pub const TASK_TO_SPECIALIST : u8 = 1;
+    pub const TASK_TO_NAMED : u8 = 2;  // v4
+    pub const TASK_MARKER : str = "[[task@";  // [[task@<agent id>: ...]]; plain [[task: ...]] still works
+    pub const QUEEN_LISTS_AGENT_IDS : bool = true;  // her block declares the ids she may name
+    pub const NAMED_TASK_NEVER_LOST : bool = true;  // an unknown or forbidden name falls back
+    // What a request's thread comes to (thread_kind).
+    pub const THREAD_KIND_SELF : u8 = 0;  // no client named
+    pub const THREAD_KIND_CLIENT : u8 = 1;  // 'client:<id>'
+    pub const THREAD_KIND_BAD_CLIENT : u8 = 2;  // HTTP 400: malformed, or the caller's own id
+    pub const THREAD_KIND_NOT_SELLER : u8 = 3;  // HTTP 403
+    pub const THREAD_PARAM : str = "client";  // body.client on POST, ?client= on GET/DELETE
+    pub const ROUTES_WITH_THREAD : u8 = 4;  // chat, history GET, history POST, history DELETE
+    pub const DELETE_CLEARS_ONLY_ITS_THREAD : bool = true;  // a client thread never wipes 'self'
+    pub const CONTEXT_INJECTED : str = "crm_client_profile+lead_context";  // as context, not instructions
+    pub const GATE_BEFORE_DB : bool = true;  // 400 bad client / 403 not a seller / 400 client == caller
+
+    // ---- The dashboard --------------------------------------------------------------------
+    pub const ROUTE_LIST : str = "/crm";
+    pub const ROUTE_CLIENT : str = "/crm/:clientId";
+    pub const ROUTE_CLIENT_CHAT : str = "/crm/:clientId/chat";
+    pub const READS_THROUGH : str = "/mcp";  // tools decide who sees whom; no new REST routes
+    pub const PANELS : u8 = 7;  // profile+soul+skills, plan, story reel, duets, touches+stage, media, messages
+    pub const UNREACHABLE_SAYS : str = "unavailable";  // never zeros (rule inherited from /crm)
+    pub const NEW_READ_TOOLS : u8 = 3;  // crm_clients, crm_client_plan, crm_duet_runs
+    pub const DASHBOARD_SENDS_NOTHING_UNASKED : bool = true;  // reads never send; the one sender is the explicit duet control below
+
+    // ---- The start-duet control on /crm/:clientId (#3611) --------------------------------
+    pub const DASHBOARD_STARTS_DUET : bool = true;  // calls crm_duet through the same /mcp gate
+    pub const DUET_CONTROL_GATE : str = "server";  // owner-only in the tool; the UI shows the refusal text, never guesses the role
+    pub const DUET_CONTROL_DEFAULT_DRY_RUN : bool = true;
+    pub const DUET_CONTROL_REAL_SEND_CONFIRMS : bool = true;  // dry_run off -> an inline confirm step before the call
+    pub const DUET_CONTROL_TURNS_MAX : u8 = 8;
+    pub const DUET_CONTROL_TURNS_DEFAULT : u8 = 4;
+
+    // ---- The /crm list (#3611) -------------------------------------------------------------
+    pub const LIST_PAID_BADGE : bool = true;  // rows with paid: true carry a badge
+    pub const LIST_FILTER : str = "all,clients,leads";  // clients = paid or stage client/winback; leads = the rest
+    pub const LIST_SAYS_PAID_UNKNOWN : bool = true;  // paid_known: false is one visible line, not a hidden zero
+
+    // ---- Persisted duet runs ----------------------------------------------------------------
+    pub const TABLE_RUNS : str = "crm_duet_runs";
+    pub const RUN_PERSISTED_AT : str = "start,turn,finish";
+    pub const RUN_LOST_AFTER_MIN : u8 = 30;  // a 'running' row older than this reads as 'lost'
+    pub const RUN_LOST_IS_STORED : bool = false;  // derived on read, never written
+
+    // ---- Not claimed ----------------------------------------------------------------------
+    pub const DASHBOARD_SEEN_LIVE : bool = true;  // 2026-09-13 ~20:40 +07: /crm, /crm/435572800 and its chat opened by the owner on app.t27.ai after the #2384 deploy (#3608)
+    pub const RUN_SURVIVED_REDEPLOY : bool = false;
+
+    // What a request's thread comes to. A named client that is malformed, or is the caller,
+    // is refused: a request about somebody never quietly becomes a request about oneself.
+    fn thread_kind(client_named: bool, client_digits: u8, is_caller: bool, is_seller: bool) -> u8 {
+        if !client_named {
+            return THREAD_KIND_SELF;
+        }
+        let malformed = client_digits < CLIENT_ID_MIN_DIGITS || client_digits > CLIENT_ID_MAX_DIGITS;
+        if malformed || is_caller {
+            return THREAD_KIND_BAD_CLIENT;
+        }
+        if !is_seller {
+            return THREAD_KIND_NOT_SELLER;
+        }
+        return THREAD_KIND_CLIENT;
+    }
+
+    // A request is refused before any read when the client is malformed, is the caller, or the caller is no seller.
+    fn refused_before_db(client_digits: u8, is_caller: bool, is_seller: bool) -> bool {
+        let malformed = client_digits < CLIENT_ID_MIN_DIGITS || client_digits > CLIENT_ID_MAX_DIGITS;
+        return malformed || is_caller || !is_seller;
+    }
+
+    // Who does a task the Queen set: the specialist chosen in the thread, else the assistant.
+    fn task_goes_to(specialist_chosen: bool) -> u8 {
+        if specialist_chosen {
+            return TASK_TO_SPECIALIST;
+        }
+        return TASK_TO_ASSISTANT;
+    }
+
+    // Who does a task the Queen set, v4: the agent she named when the owner may call it, else
+    // the specialist chosen in the thread, else the assistant.
+    fn task_owner(named_callable: bool, specialist_chosen: bool) -> u8 {
+        if named_callable {
+            return TASK_TO_NAMED;
+        }
+        return task_goes_to(specialist_chosen);
+    }
+
+    fn run_reads_as_lost(state_running: bool, minutes_since_start: u8) -> bool {
+        return state_running && minutes_since_start > RUN_LOST_AFTER_MIN;
+    }
+
+    test "a client thread is separate from the seller's own thread and clearing one keeps the other" {
+        assert(thread_kind(false, 0, false, true) == THREAD_KIND_SELF);
+        assert(thread_kind(true, 9, false, true) == THREAD_KIND_CLIENT);
+        assert(THREAD_SELF == "self");
+        assert(THREAD_CLIENT_PREFIX == "client:");
+        assert(DELETE_CLEARS_ONLY_ITS_THREAD);
+        assert(ROUTES_WITH_THREAD == 4);
+    }
+
+    test "a stranger, a malformed id and the caller's own id are refused before the first read" {
+        assert(GATE_BEFORE_DB);
+        assert(refused_before_db(9, false, false));
+        assert(refused_before_db(3, false, true));
+        assert(refused_before_db(16, false, true));
+        assert(refused_before_db(9, true, true));
+        assert(!refused_before_db(9, false, true));
+        assert(thread_kind(true, 3, false, true) == THREAD_KIND_BAD_CLIENT);
+        assert(thread_kind(true, 16, false, true) == THREAD_KIND_BAD_CLIENT);
+        assert(thread_kind(true, 9, true, true) == THREAD_KIND_BAD_CLIENT);
+        assert(thread_kind(true, 9, false, false) == THREAD_KIND_NOT_SELLER);
+    }
+
+    test "the Queen's thread sits beside the agent's, and a specialist keeps the client's memory" {
+        assert(THREAD_SUPERVISOR_SUFFIX == ":queen");
+        assert(AGENT_KEEPS_CLIENT_MEMORY);
+    }
+
+    test "the Queen's task goes to the specialist chosen in the thread, else to the assistant" {
+        assert(QUEEN_TASK_TO_CHOSEN_SPECIALIST);
+        assert(task_goes_to(true) == TASK_TO_SPECIALIST);
+        assert(task_goes_to(false) == TASK_TO_ASSISTANT);
+    }
+
+    test "the Queen may name who does a task; a name the owner cannot call falls back and the task is kept" {
+        assert(TASK_MARKER == "[[task@");
+        assert(QUEEN_LISTS_AGENT_IDS);
+        assert(NAMED_TASK_NEVER_LOST);
+        assert(task_owner(true, true) == TASK_TO_NAMED);
+        assert(task_owner(true, false) == TASK_TO_NAMED);
+        assert(task_owner(false, true) == TASK_TO_SPECIALIST);
+        assert(task_owner(false, false) == TASK_TO_ASSISTANT);
+    }
+
+    test "the dashboard reads through the tool gate, sends nothing unasked and says unavailable rather than zero" {
+        assert(READS_THROUGH == "/mcp");
+        assert(DASHBOARD_SENDS_NOTHING_UNASKED);
+        assert(DASHBOARD_STARTS_DUET);
+        assert(DUET_CONTROL_GATE == "server");
+        assert(DUET_CONTROL_DEFAULT_DRY_RUN);
+        assert(DUET_CONTROL_REAL_SEND_CONFIRMS);
+        assert(DUET_CONTROL_TURNS_DEFAULT <= DUET_CONTROL_TURNS_MAX);
+        assert(LIST_PAID_BADGE);
+        assert(LIST_FILTER == "all,clients,leads");
+        assert(LIST_SAYS_PAID_UNKNOWN);
+        assert(UNREACHABLE_SAYS == "unavailable");
+        assert(PANELS == 7);
+        assert(NEW_READ_TOOLS == 3);
+    }
+
+    test "duet runs are written at start, each turn and finish, and a stale running row reads as lost" {
+        assert(TABLE_RUNS == "crm_duet_runs");
+        assert(RUN_PERSISTED_AT == "start,turn,finish");
+        assert(run_reads_as_lost(true, 31));
+        assert(!run_reads_as_lost(true, 30));
+        assert(!run_reads_as_lost(false, 90));
+        assert(!RUN_LOST_IS_STORED);
+    }
+
+    test "the client is a telegram id, the caller is a seller, and only the dashboard is claimed live" {
+        assert(CLIENT_IS == "telegram-id");
+        assert(CALLER == "seller");
+        assert(ROUTE_CLIENT == "/crm/:clientId");
+        assert(ROUTE_CLIENT_CHAT == "/crm/:clientId/chat");
+        assert(DASHBOARD_SEEN_LIVE);
+        assert(!RUN_SURVIVED_REDEPLOY);
+    }
+}
+
+// phi^2 + 1/phi^2 = 3 | TRINITY

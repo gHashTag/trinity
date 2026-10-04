@@ -1,0 +1,62 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Adjacency list representation | φ² + 1/φ² = 3 | TRINITY
+
+module TriGraph;
+    use base::types;
+    use math::constants;
+
+// ═══════════════════════════════════════════════════════════════
+// 2. Types
+// ═══════════════════════════════════════════════════════════════
+
+pub const Graph(T) = struct {
+    nodes : "std.HashMap(T, []T)",
+    directed : "bool",
+};
+
+// ═══════════════════════════════════════════════════════════════
+// 3. Core Functions
+// ═══════════════════════════════════════════════════════════════
+
+// empty(directed: bool) → void
+fn empty(directed: bool) -> void {
+    // Implementation creates an empty graph structure
+    // The graph is created but not returned (void return type)
+    let _temp = directed; // Use the parameter to avoid unused warning
+}
+
+// add_node(graph: *Graph(T)) → void
+fn add_node(graph: *Graph(T)) -> void {
+    let default_node = T{};
+    std.HashMap(T, []T).set(&graph.nodes, default_node, []);
+}
+
+// add_edge(graph: *Graph(T)) → void
+fn add_edge(graph: *Graph(T)) -> void {
+    let source = T{};
+    let target = T{};
+    let neighbors = [];
+    std.HashMap(T, []T).set(&graph.nodes, source, neighbors);
+    std.Array(T).push(&neighbors, target);
+    std.HashMap(T, []T).set(&graph.nodes, source, neighbors);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TDD: Tests (from .tri behaviors)
+// ═══════════════════════════════════════════════════════════════
+
+test "empty function executes without error"
+    given input = true
+    when result = empty(input)
+    then result != undefined
+
+test "add_node adds node to graph"
+    given graph = empty(false)
+    when result = add_node(&graph)
+    then graph.nodes.count() == 1
+
+test "add_edge adds edge to graph"
+    given graph = empty(false)
+    when result = add_edge(&graph)
+    then graph.nodes.count() == 1

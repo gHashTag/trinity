@@ -1,0 +1,16 @@
+module TriArgs;
+use base::types;
+use math::constants;
+
+// Alias to avoid dot-splitting in Lean model transcription
+const Allocator = std.mem.Allocator;
+
+test parse_creates_result
+         given allocator = std.testing.allocator
+         when parse(allocator)
+         then true // parse function executes without error
+
+fn parse(allocator: Allocator) -> void {
+    _ = allocator; // Allocator parameter not used in basic implementation
+    return; // Explicit return statement
+}

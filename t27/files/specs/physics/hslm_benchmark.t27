@@ -1,0 +1,89 @@
+// SPDX-License-Identifier: Apache-2.0
+# HSLM BENCHMARK — Platform Benchmark Suite
+
+## Specification
+
+Standalone executable for arXiv paper Evaluation section.
+Measures: single-thread, multi-thread inference, ternary matmul, platform comparison.
+
+NOTE: model.zig uses 3 TrinityBlocks, FPGA uses 4 TrinityBlocks.
+Table notes configuration explicitly for paper honesty.
+
+## Configuration
+
+```
+VOCAB_SIZE = 8192
+EMBED_DIM = 512
+HIDDEN_DIM = 2048
+NUM_BLOCKS = 3
+ESTIMATED_PARAMS ≈ 1.58M ternary parameters
+CONTEXT_LEN = 512
+WARMUP_ITERS = 50
+BENCH_ITERS = 1000
+MATMUL_ITERS = 100_000
+```
+
+## Benchmark Sections
+
+### Part 1: Single-thread forward pass
+- Initializes HSLM model with 3 TrinityBlocks
+- Warmup with 50 iterations
+- Benchmark 1000 iterations
+- Measures: min, avg, max latency, throughput
+
+### Part 2: Multi-thread inference
+- Up to 8 threads (CPU count cap)
+- Parallel inference across threads
+- Measures: wall time, effective throughput, avg latency
+
+### Part 3: Ternary MatVec bandwidth
+- Scalar vs SIMD comparison
+- Matrix: EMBED_DIM × HIDDEN_DIM (512 × 2048)
+- Measures: ns/op, GOPS, speedup
+
+### Part 4: Memory usage
+- Ternary (1.58 bit/param) vs Float32 equivalent
+- Compression ratio calculation
+- Parameter count
+
+### Part 5: Platform comparison table
+
+| Platform | Latency | Throughput | Power | Cost |
+|----------|----------|------------|-------|------|
+| M1 Pro (1-thread)* | ~X ms | ~Y tok/s | 15W | $0/hr |
+| M1 Pro (N-thread)* | ~X ms | ~Y tok/s | 20W | $0/hr |
+| FPGA Artix-7** | 28.50 ms | 35 tok/s | 0.5W | $0/hr |
+| Railway CPU (est)*** | ~2X ms | ~Y/2 tok/s | ?W | $0.02/hr |
+
+## Key Functions
+
+```
+benchSingleThread(allocator, writer) -> LatencyStats
+    Single-thread forward pass benchmark
+
+benchMultiThread(allocator, writer) -> LatencyStats
+    Multi-thread inference benchmark
+
+benchMatmul(writer) -> void
+    Ternary matmul bandwidth benchmark
+
+printMemory(writer) -> void
+    Memory usage and compression ratio
+
+printPlatformTable(writer, single, multi) -> void
+    Platform comparison table for arXiv paper
+```
+
+## Tests
+
+```
+test "HSLM-Bench: parameter estimation" {
+    expect(ESTIMATED_PARAMS ≈ 1.58M)
+}
+
+test "HSLM-Bench: configuration consistency" {
+    expect(NUM_BLOCKS == 3)
+    expect(EMBED_DIM == 512)
+    expect(HIDDEN_DIM == 2048)
+}
+```
