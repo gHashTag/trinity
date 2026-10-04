@@ -114,6 +114,7 @@
       "Integration Framework - module coordination and message passing Enables seamless integration and communication between all T27 modules",
       "Integration tests for mesh stack modules Tests interactions between wire, routing, hello, and transport",
       "Internet call policy and lifecycle. Network adapters, APNs delivery, and LiveKit token signing are thin wrappers. phi^2 + phi^-2 = 3",
+      "Issue: https://github.com/dmitrii-f-t27/trinity-memory/issues/122 Coverage: https://github.com/dmitrii-f-t27/trinity-memory/issues/115 Retained layer-0 attention/residual qualification, not a new board run. The consumer first verifies all manifest source/* hashes against this tree, hashes the retained archive, then executes its raw CRC and simulation replay. No receipt flag, closed issue or generated seal alone constitutes this proof.",
       "Key Management - lightweight key rotation and distribution Simplified alternative to complex PKI for mesh networks",
       "Lightweight cryptography - simplified ChaCha20 and MD5 for T27 Provides basic security without bignum requirements",
       "Link quality monitoring with EWMA-based prediction Research: EWMA provides optimal balance between responsiveness and stability",

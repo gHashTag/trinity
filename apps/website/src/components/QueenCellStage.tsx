@@ -297,9 +297,10 @@ export default function QueenCellStage({
           <h4>{t.description}</h4>
           {issue?.proof && <div className="queen-cell-note" data-issue-proof={issue.proof.commit}>
             <strong>{t.proof}</strong>{' · '}
-            <a href={issue.proof.specUrl} target="_blank" rel="noopener noreferrer">.t27</a>{' · '}
-            <a href={issue.proof.ciUrl} target="_blank" rel="noopener noreferrer">CI</a>{' · '}
-            <a href={issue.proof.gdsUrl} target="_blank" rel="noopener noreferrer">GDS</a>
+            <a href={issue.proof.specUrl}>.t27</a>{' · '}
+            <a href={issue.proof.ciUrl}>CI</a>
+            {issue.proof.gdsUrl && <> · <a href={issue.proof.gdsUrl}>GDS</a></>}
+            {issue.proof.evidenceUrl && <> · <a href={issue.proof.evidenceUrl}>Evidence</a></>}
             <br/>{t.observed}: <time dateTime={new Date(issue.proof.observedAt).toISOString()}>{new Date(issue.proof.observedAt).toLocaleString()}</time>
           </div>}
           <pre className="queen-cell-body" data-lang-exempt="github-content">
