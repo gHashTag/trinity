@@ -40,6 +40,7 @@ import { createServer } from 'node:http';
 import { readFileSync, existsSync, mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join, extname, normalize } from 'node:path';
 import { tmpdir } from 'node:os';
+import { readToolCatalog } from '../scripts/agents-from-specs.mjs';
 
 const ROOT = new URL('..', import.meta.url).pathname;
 const DIST = join(ROOT, 'dist');
@@ -75,11 +76,14 @@ const EXPLORERS = [
   // Tools tab (#/tools?embed=1) shows. Every deep link above was a short id, so the
   // default card — a schema-2 qualified id with the `registry-export` witness —
   // threw on every boot and left the tab blank while this contract stayed green.
-  { name: 'tools-default', route: '#/tools', card: JSON.parse(readFileSync(join(ROOT, 'public/tools/spec-tools.json'), 'utf8')).tools[0].id, listOnPhone: true },
+  // The site joins spec-tools.json with its parts before picking that card, so this
+  // does too: the head file's own tools[0] is not what the page opens.
+  { name: 'tools-default', route: '#/tools', card: readToolCatalog().tools[0].id, listOnPhone: true },
   { name: 'skills', route: '#/skills?skill=t27%2Ftri-pipeline', card: 't27/tri-pipeline' },
   { name: 'crons', route: '#/crons?cron=github-actions%2Ft27%2Fpr-dashboard', card: 'github-actions/t27/pr-dashboard' },
   { name: 'agents', route: '#/agents?agent=D', card: 't27/D' },
   { name: 'functions', route: '#/functions?function=content-detailed-script-generate', card: 'content-detailed-script-generate' },
+  { name: 'providers', route: '#/providers?provider=gonka%2Fminimax-m2-7', card: 'gonka/minimax-m2-7' },
   // The spec explorer marks no card; its open detail is the code view.
   { name: 'specs', route: '#/specs?spec=specs%2Ftutorial%2F02_functions.t27', card: null, detail: '.spec-x main' },
 ];

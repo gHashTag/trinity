@@ -26,13 +26,14 @@
 import { agentExplorerHash, normalizeAgentLetter } from './agentsCatalog'
 import { cronExplorerHash } from './cronsCatalog'
 import { functionExplorerHash } from './functionsCatalog'
+import { providerExplorerHash } from './providersCatalog'
 import { explorerRouteParts } from './queenFrame'
 import { skillExplorerHash } from './skillsCatalog'
 import { specExplorerHash } from './specCatalog'
 import { systemDocsHash } from './systemDocs'
 import { toolExplorerHash } from './toolsCatalog'
 
-export type ExplorerTab = 'specs' | 'skills' | 'crons' | 'agents' | 'functions' | 'tools' | 'project'
+export type ExplorerTab = 'specs' | 'skills' | 'crons' | 'agents' | 'functions' | 'tools' | 'providers' | 'project'
 
 /** The key of the Queen address that names each tab's card. */
 export const SELECTION_KEY: Readonly<Record<ExplorerTab, string>> = {
@@ -42,7 +43,19 @@ export const SELECTION_KEY: Readonly<Record<ExplorerTab, string>> = {
   agents: 'agent',
   functions: 'function',
   tools: 'tool',
+  providers: 'provider',
   project: 'chapter',
+}
+
+/**
+ * A tab switch: drop every Explorer tab's card except the spec. The comb and
+ * SPECS show one corpus, so its selected spec is the corpus's, not a tab's --
+ * a spec opened on the comb is the one SPECS opens. The other cards are their
+ * own tab's and would name nothing on the next one.
+ */
+export function leaveTabSelections(params: URLSearchParams): URLSearchParams {
+  for (const [tab, key] of Object.entries(SELECTION_KEY)) if (tab !== 'specs') params.delete(key)
+  return params
 }
 
 export function isExplorerTab(value: string): value is ExplorerTab {
@@ -64,6 +77,7 @@ function cardHash(tab: ExplorerTab, id: string): string {
     case 'agents': return agentExplorerHash(id, { embedded: true })
     case 'functions': return functionExplorerHash(id, { embedded: true })
     case 'tools': return toolExplorerHash(id, { embedded: true })
+    case 'providers': return providerExplorerHash(id, { embedded: true })
     case 'project':
       if (!CHAPTER.test(id)) throw new Error('Invalid chapter stem')
       return systemDocsHash(id, { embedded: true })
@@ -81,11 +95,24 @@ export function validSelection(tab: ExplorerTab, id: string | null): string | nu
   }
 }
 
-/** The frame's route for a tab: the named card, or the Explorer's default when the id is missing or refused. */
-export function explorerFrameHash(tab: ExplorerTab, id: string | null): string {
+/**
+ * The spec SPECS' frame shows for the address's spec=: the named one when the Explorer
+ * accepts it, else FEATURED_SPEC. The frame's route and the chat's context
+ * (lib/queenSpecsChat.ts) both ask this, so the chat cannot name another spec.
+ */
+export function specsCardShown(id: string | null): string {
+  return validSelection('specs', id) ?? FEATURED_SPEC
+}
+
+/**
+ * The frame's route for a tab: the named card, or the Explorer's default when the id
+ * is missing or refused. `world` is the Queen's chosen world (lib/queenCorpusCheck
+ * worldParam); SPECS narrows its list to it, every other Explorer has no worlds.
+ */
+export function explorerFrameHash(tab: ExplorerTab, id: string | null, world: string | null = null): string {
+  if (tab === 'specs') return specExplorerHash(specsCardShown(id), { embedded: true, world })
   const valid = validSelection(tab, id)
   if (valid) return cardHash(tab, valid)
-  if (tab === 'specs') return specExplorerHash(FEATURED_SPEC, { embedded: true })
   if (tab === 'project') return systemDocsHash(FIRST_CHAPTER, { embedded: true })
   return `#/${tab}?embed=1`
 }

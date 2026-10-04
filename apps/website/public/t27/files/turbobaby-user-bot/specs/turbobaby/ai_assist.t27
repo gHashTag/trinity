@@ -146,6 +146,22 @@ pub const CORPUS_FILES_OTHER_THAN_THIS_ONE : u8 = 42;
 pub const SPECS_NAMING_THIS_FILE_2026_09_21 : u8 = 3;
 pub const SPECS_DEFERRING_TO_THIS_FILE_2026_09_21 : u8 = 3;
 pub const SPECS_CONSTRAINING_THE_BOUNDARY_ELSEWHERE : u8 = 0;
+; Re-measured 2026-09-22 and deliberately NOT bound: a census of the corpus moves with every new
+; contract. CORPUS_FILE_COUNT and CORPUS_FILES_OTHER_THAN_THIS_ONE above are KEPT at 43 and 42,
+; the 2026-09-21 reading and the denominator of the 2026_09_21 counts. The header's "finished
+; 43-file corpus" was not finished: 14b01ac added order_presentation.t27 and person_naming.t27
+; later on 2026-09-21, and specs/ holds 45 tracked .t27 files. Both censuses were re-run at a33e500
+; over the 45, and neither new file names either ID. The files naming the bot-surface ID are
+; still 9, this one and the owner included. The files other than this one naming this file's ID
+; are the same three, and all three still defer: turbobaby/bot-surface and turbobaby/rate-limit
+; name it exactly as they did, and turbobaby/promo-broadcast, which 2c21df1 edited, adds two
+; declarations that name this file as an owner and states no boundary of its own.
+pub const CORPUS_FILE_COUNT_REMEASURED : u8 = 45;
+pub const CORPUS_FILES_OTHER_THAN_THIS_ONE_REMEASURED : u8 = 44;
+pub const CORPUS_FILE_COUNT_REMEASURED_AT : str = "2026-09-22";
+pub const SPECS_NAMING_BOT_SURFACE_2026_09_22 : u8 = 9;
+pub const SPECS_NAMING_THIS_FILE_2026_09_22 : u8 = 3;
+pub const SPECS_DEFERRING_TO_THIS_FILE_2026_09_22 : u8 = 3;
 ; Two more from the same wave, each taking work off this file. promo-broadcast owns the
 ; draft-to-send boundary and the check applied to a drafted post; rate-limit owns the limiter
 ; whose verdict arrives here as the first argument of turn_outcome and nothing more.
@@ -173,6 +189,13 @@ pub const TRUNCATION_HELPER : str = "src/util.rs:8-15 truncate_string";
 ; and nothing else. In particular the src/ai.rs test module calls ask_grok ZERO times -- it
 ; exercises sanitize_user_text and build_system_prompt only -- so no test call had to be excluded
 ; from this count, and an earlier draft of this file wrongly said two were.
+; RE-MEASURED 2026-09-22: fifteen lines under src/ contain the name, not twelve, and one more
+; under tests/, so "and nothing else" above no longer holds. 2c21df1 added four doc comments that
+; name ask_grok without calling it -- three under src/ (src/ai.rs:303, src/promo.rs:469 and
+; :1117) and one under tests/ (tests/promo_copy_wiring.rs:13, a file that commit created). Over
+; src/ and tests/ together the count is 16. "In the tree" above meant src/: three reports under
+; docs/reports/ also name ask_grok and were in neither count. The six call sites are unchanged,
+; and so is the count below.
 pub const CALL_SITE_COUNT : u8 = 6;
 pub const CALL_SITES : [6]str = [
   "src/bot/commands.rs:355",
@@ -666,6 +689,18 @@ test this_file_is_still_the_only_contract_constraining_the_boundary {
   assert CORPUS_FILES_OTHER_THAN_THIS_ONE == 42;
   assert CORPUS_FILES_OTHER_THAN_THIS_ONE + 1 == CORPUS_FILE_COUNT;
   assert SPECS_NAMING_THIS_FILE_2026_09_21 < CORPUS_FILES_OTHER_THAN_THIS_ONE;
+  assert CORPUS_FILE_COUNT_REMEASURED == 45;
+  assert CORPUS_FILES_OTHER_THAN_THIS_ONE_REMEASURED == 44;
+  assert CORPUS_FILES_OTHER_THAN_THIS_ONE_REMEASURED + 1 == CORPUS_FILE_COUNT_REMEASURED;
+  assert CORPUS_FILE_COUNT_REMEASURED_AT == "2026-09-22";
+  assert CORPUS_FILE_COUNT_REMEASURED_AT != MEASURED_AT;
+  assert CORPUS_FILE_COUNT_REMEASURED > CORPUS_FILE_COUNT;
+  assert SPECS_NAMING_THIS_FILE_2026_09_22 == 3;
+  assert SPECS_DEFERRING_TO_THIS_FILE_2026_09_22 == 3;
+  assert SPECS_NAMING_THIS_FILE_2026_09_22 == SPECS_DEFERRING_TO_THIS_FILE_2026_09_22;
+  assert SPECS_NAMING_THIS_FILE_2026_09_22 < CORPUS_FILES_OTHER_THAN_THIS_ONE_REMEASURED;
+  assert SPECS_NAMING_BOT_SURFACE_2026_09_22 == 9;
+  assert SPECS_NAMING_BOT_SURFACE_2026_09_22 < CORPUS_FILE_COUNT_REMEASURED;
 }
 
 test nothing_a_neighbour_owns_is_restated_here {

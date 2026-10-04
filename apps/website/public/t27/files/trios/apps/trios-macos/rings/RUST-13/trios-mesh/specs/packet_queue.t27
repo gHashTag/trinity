@@ -30,7 +30,7 @@ module PacketQueue {
             return state;
         }
         
-        return ((((state >> 0) & 7) << 0) | (((increment_index(((state >> 3) & 7) as u8) as u32) << 3) | ((((get_count(state) + 1) as u32) << 6));
+        return ((((state >> 0) & 7) << 0) | (((increment_index(((state >> 3) & 7) as u8) as u32) << 3) | ((((get_count(state) + 1) as u32) << 6))));
     }
 
     fn dequeue(state: u32) -> u32 {
@@ -38,7 +38,7 @@ module PacketQueue {
             return state;
         }
         
-        return ((((increment_index(((state >> 0) & 7) as u8) as u32) << 0) | (((state >> 3) & 7) << 3) | ((((get_count(state) - 1) as u32) << 6));
+        return ((((increment_index(((state >> 0) & 7) as u8) as u32) << 0) | (((state >> 3) & 7) << 3) | ((((get_count(state) - 1) as u32) << 6))));
     }
 
     fn size(state: u32) -> u8 {

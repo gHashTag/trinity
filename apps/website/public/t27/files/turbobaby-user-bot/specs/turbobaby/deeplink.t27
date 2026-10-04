@@ -27,11 +27,11 @@
 ; is answerable. They can still disagree about WHERE it lands, and today they do. FIVE targets are
 ; declared (src/trios/deeplink.rs:75-103) and FOUR of them have a landing branch in the app:
 ; reorder, cart, product and order, at src/ui/app.rs:175, :183, :230 and :239, consumed by
-; src/ui/screens/home_screen.rs:176-203. The fifth, `Referrals`, has none. `parse_start_param`
+; src/ui/screens/home_screen.rs:177-204. The fifth, `Referrals`, has none. `parse_start_param`
 ; answers None for every non-product target (src/ui/share.rs:105-121, the `_` arm at :119) and no
 ; other reader exists: `grep -rn "Target::Referrals" src/` returns eleven hits, ten inside
-; `src/trios/deeplink.rs` itself and one comment at src/notification_queue.rs:157 (was :113; the 2026-09-21 drain rewrite moved it, the comment is unchanged). So the payload a
-; live notification button sends (src/notification_queue.rs:161-164, was :116-119, one per friend-joined,
+; `src/trios/deeplink.rs` itself and one comment at src/notification_queue.rs:174 (was :113; the 2026-09-21 drain rewrite moved it, the comment is unchanged; re-pinned 2026-09-26, when the held-kinds guard moved it 16 lines and the base's :157 was found one line short of it). So the payload a
+; live notification button sends (src/notification_queue.rs:177-180, was :116-119 and then :161-164, one per friend-joined,
 ; friend-ordered and milestone message) is classified as answerable, the bot renders a Mini App
 ; button for it (src/bot/commands.rs:232-252), the app sets no signal, and the customer lands on
 ; the application root. That is precisely the shape the file itself condemns at
@@ -56,7 +56,7 @@
 ; :242 and four call sites at :291, :305, :321 and :663, every one of them inside
 ; `#[cfg(test)] mod tests`. The table has no production caller. What actually places a customer is
 ; `ProductKind::route` at src/ui/share.rs:87-91, whose single caller is
-; src/ui/screens/home_screen.rs:180, and it sends ALL FIVE product kinds to one destination
+; src/ui/screens/home_screen.rs:181, and it sends ALL FIVE product kinds to one destination
 ; (src/ui/share.rs:70-86 records that as deliberate, dated 2026-09-16, because the per-kind screens
 ; are retired and an empty grid is a dead end). So the gated table separates five kinds, the
 ; shipped table collapses them, the two do not agree, and no test can notice: one lives where
@@ -120,6 +120,18 @@ pub const CONTRACTS_MENTIONING_DEEPLINK_2026_09_21 : u8 = 7;
 pub const CONTRACTS_MENTIONING_STARTAPP_2026_09_21 : u8 = 0;
 pub const THE_STARTAPP_ZERO_STILL_HOLDS : bool = true;
 pub const ZERO_GREP_COMMANDS : [2]str = ["grep -ril deeplink specs/", "grep -rl startapp specs/"];
+; Re-measured 2026-09-22 and deliberately NOT bound: a census of the corpus moves with every new
+; contract. The 43 and 42 above are KEPT as the 2026-09-21 reading and the denominator of the
+; 2026_09_21 counts. "The finished 43-file corpus" was not finished: 14b01ac added
+; order_presentation.t27 and person_naming.t27 later on 2026-09-21, and specs/ holds 45 tracked
+; .t27 files. Both commands re-run at a33e500 over the 45: `grep -ril deeplink specs/` prints NINE
+; paths, EIGHT others plus this file -- the new one is turbobaby/order-presentation, which declares
+; the deeplink edge by ID -- and `grep -rl startapp specs/` still prints one path, this file.
+pub const CORPUS_FILE_COUNT_REMEASURED : u8 = 45;
+pub const CORPUS_FILES_OTHER_THAN_THIS_ONE_REMEASURED : u8 = 44;
+pub const CORPUS_FILE_COUNT_REMEASURED_AT : str = "2026-09-22";
+pub const CONTRACTS_MENTIONING_DEEPLINK_2026_09_22 : u8 = 8;
+pub const CONTRACTS_MENTIONING_STARTAPP_2026_09_22 : u8 = 0;
 
 ; --- Ownership edges ------------------------------------------------------------------------------
 ; The pinned compiler lowers a brace import to an empty UseDecl, so an edge is a named ID plus a
@@ -346,7 +358,7 @@ pub const TARGETS_DECLARED : u8 = 5;
 pub const TARGETS_WITH_A_LIVE_LANDING : u8 = 4;
 pub const UNCONSUMED_TARGET_NAME : str = "referrals";
 pub const DESTINATION_TABLE_HAS_A_PRODUCTION_CALLER : bool = false;
-pub const SHIPPED_LANDING_SITE : str = "src/ui/share.rs:87-91 ProductKind::route, single caller src/ui/screens/home_screen.rs:180";
+pub const SHIPPED_LANDING_SITE : str = "src/ui/share.rs:87-91 ProductKind::route, single caller src/ui/screens/home_screen.rs:181";
 pub const GATED_LANDING_SITE : str = "src/trios/deeplink.rs:242-256 destination, five call sites all inside its own cfg(test) module";
 pub const TWO_LANDING_TABLES_DISAGREE : bool = true;
 pub const THE_DISAGREEMENT_IS_UNREACHABLE_BY_THE_HOST_SUITE : bool = true;
@@ -370,11 +382,42 @@ pub const WHICH_SCREEN_A_KIND_LANDS_ON_IS_NOT_DECLARED_HERE : bool = true;
 ; counts paths kept RESOLVABLE for links already sent, a link-compatibility set, which is why
 ; /skate is a member here and not there. A future edit that adds or drops an alias must move both
 ; numbers, and they are not equal by construction.
-pub const LEGACY_ALIAS_COUNT : u8 = 3;
-pub const LEGACY_ROUTE_ALIASES : [3]str = ["/skate", "/sets", "/sommelier"];
-pub const LEGACY_ALIAS_SURFACES : [3]str = ["ride", "catalog", "catalog"];
+pub const LEGACY_ALIAS_COUNT : u8 = 13;
+pub const LEGACY_ROUTE_ALIASES : [13]str = ["/skate", "/sets", "/sommelier", "/events", "/events/:id", "/my-bookings", "/accessories", "/tea", "/game", "/treasure-hunt", "/ar-hunt", "/location-quest", "/tech-tree"];
+pub const LEGACY_ALIAS_SURFACES : [13]str = ["ride", "catalog", "catalog", "catalog", "catalog", "catalog", "catalog", "catalog", "catalog", "catalog", "catalog", "catalog", "catalog"];
 pub const A_LEGACY_ALIAS_NEVER_MOUNTS_THE_RETIRED_SCREEN : bool = true;
 pub const LEGACY_LINKS_DO_NOT_EXPIRE : bool = true;
+; CORRECTED 2026-09-24: the compatibility set was three paths and is six. On the owner's ruling of
+; that day (rental only, Phuket only; REUSES_LEGACY_RETIREMENT_ID records it) the three events
+; paths -- /events, /events/:id and /my-bookings, src/ui/routes.rs:39-44 -- stopped mounting the
+; events screens and render the live catalog from their handlers at src/ui/routes.rs:175-200, for
+; the reason the paragraph above gives for the first three: a link already sent never expires. The
+; paragraph above is kept as the reading it was, and so is its adjudication, whose numbers moved
+; together as it said they must: this set grew by the three events paths, and so did
+; turbobaby/legacy-retirement's REPOINTED_ROUTE_COUNT, whose value is that file's and is not
+; restated here. The two still answer different questions and are still not equal by construction:
+; /skate is a member here and not there. What a p_event payload lands on did not change: the shipped
+; landing (SHIPPED_LANDING_SITE) already sent it to the fleet, and the parser still answers it.
+pub const LEGACY_ALIAS_COUNT_BEFORE_2026_09_24 : u8 = 3;
+pub const LEGACY_ROUTE_ALIASES_BEFORE_2026_09_24 : [3]str = ["/skate", "/sets", "/sommelier"];
+pub const LEGACY_ALIAS_SURFACES_BEFORE_2026_09_24 : [3]str = ["ride", "catalog", "catalog"];
+pub const EVENT_PAYLOAD_STAYS_ANSWERABLE : bool = true;
+; CORRECTED 2026-09-25: the compatibility set was six paths and is thirteen. On the owner's answer of
+; that day (REUSES_LEGACY_RETIREMENT_ID records it and splits the eight legacy paths) seven more
+; client paths -- /accessories, /tea, /game, /treasure-hunt, /ar-hunt, /location-quest and
+; /tech-tree -- stopped mounting their screens and render the live catalog; each is declared in
+; src/ui/routes.rs as before and answered by the handler of the same name there (fn Accessories,
+; fn Tea, fn Game, fn TreasureHunt, fn ArHunt, fn LocationQuest, fn TechTree), for the reason this
+; set exists: a link already sent never expires. They are appended after the events paths, so every
+; index above keeps its member. The adjudication above held again: this set grew by seven, and so did
+; turbobaby/legacy-retirement's REPOINTED_ROUTE_COUNT, whose value is that file's and is not
+; restated here. The eighth legacy path, /quest/:id, is not a member: the owner kept its screen, so
+; it is a live route and not an alias. What a shared accessory or tea payload lands on did not
+; change: the shipped landing (SHIPPED_LANDING_SITE) already sent every product kind to the fleet.
+pub const LEGACY_ALIAS_COUNT_BEFORE_2026_09_25 : u8 = 6;
+pub const LEGACY_ROUTE_ALIASES_BEFORE_2026_09_25 : [6]str = ["/skate", "/sets", "/sommelier", "/events", "/events/:id", "/my-bookings"];
+pub const LEGACY_ALIAS_SURFACES_BEFORE_2026_09_25 : [6]str = ["ride", "catalog", "catalog", "catalog", "catalog", "catalog"];
+pub const LEGACY_ALIASES_ADDED_ON_2026_09_25 : u8 = 7;
 
 ; The counter-member, and it is the more important half. One retired surface is deliberately given
 ; NO alias and NO parse, because nothing survives behind it to render: src/ui/routes.rs:57-61 draws
@@ -445,6 +488,13 @@ pub fn deeplink_may_act_as_owner(link_resolved: bool, identity_proof_passed: boo
 ; `startapp` parameter), and both the Mini App button copy and the fallback welcome are rendered from
 ; the resolved locale (src/bot/commands.rs:234-244, :290-317). Which locales exist and what an
 ; unpublished one falls to is REUSES_LOCALE_POLICY_ID's subject, restated nowhere here.
+; RE-MEASURED 2026-09-22: the command quoted above was blind to the hits it looks for. It is a basic
+; regex, where an unescaped `|` is a literal, so it counts only lines holding the string
+; "lang|locale"; a line naming lang or locale alone is not counted (on a three-line probe: -cin 1,
+; -ciE 3). The alternation it meant, `grep -ciE "lang|locale" src/trios/deeplink.rs`, also returns
+; 0, so the zero below stands. The command this file cited could not see a hit, and this
+; re-measurement is the first command in the file's history that could: `git log -S'lang|locale'`
+; on this file finds one commit, d1877db, and it wrote the basic form.
 pub const PAYLOAD_HAS_A_LOCALE_SEGMENT : bool = false;
 pub const PAYLOAD_LOCALE_GREP_HITS : u8 = 0;
 pub const TRANSPORT_CARRIES_THE_LOCALE : bool = true;
@@ -485,6 +535,21 @@ test deeplink_the_wave_reading_is_superseded_by_a_dated_one {
   assert CONTRACTS_MENTIONING_DEEPLINK_2026_09_21 == 7;
   assert CONTRACTS_MENTIONING_DEEPLINK_2026_09_21 > CONTRACTS_MENTIONING_DEEPLINK_AFTER_THIS_WAVE;
   assert CONTRACTS_MENTIONING_DEEPLINK_2026_09_21 < CORPUS_FILES_OTHER_THAN_THIS_ONE;
+}
+
+; Corrected 2026-09-22: the dated reading above was taken over 43 files, and the corpus grew to 45
+; the same day. Each reading is compared only with the corpus it was taken over.
+test deeplink_the_dated_reading_was_re_run_over_the_grown_corpus {
+  assert CORPUS_FILE_COUNT_REMEASURED == 45;
+  assert CORPUS_FILES_OTHER_THAN_THIS_ONE_REMEASURED == 44;
+  assert CORPUS_FILES_OTHER_THAN_THIS_ONE_REMEASURED + 1 == CORPUS_FILE_COUNT_REMEASURED;
+  assert CORPUS_FILE_COUNT_REMEASURED_AT == "2026-09-22";
+  assert CORPUS_FILE_COUNT_REMEASURED > CORPUS_FILE_COUNT;
+  assert CONTRACTS_MENTIONING_DEEPLINK_2026_09_22 == 8;
+  assert CONTRACTS_MENTIONING_DEEPLINK_2026_09_22 == CONTRACTS_MENTIONING_DEEPLINK_2026_09_21 + 1;
+  assert CONTRACTS_MENTIONING_DEEPLINK_2026_09_22 < CORPUS_FILES_OTHER_THAN_THIS_ONE_REMEASURED;
+  assert CONTRACTS_MENTIONING_STARTAPP_2026_09_22 == 0;
+  assert CONTRACTS_MENTIONING_STARTAPP_2026_09_22 == CONTRACTS_MENTIONING_STARTAPP;
 }
 
 ; The startapp zero is the one absence that did NOT move, and it is asserted as its own claim so
@@ -644,12 +709,35 @@ test deeplink_one_declared_target_in_five_has_no_landing_today {
 }
 
 test deeplink_compatibility_set_keeps_three_paths_on_live_surfaces {
+  // Three paths until 2026-09-24; the three events paths made it six, and the seven legacy paths
+  // of 2026-09-25 made it thirteen. The name is the old reading.
   assert LEGACY_ROUTE_ALIASES.len == LEGACY_ALIAS_COUNT;
   assert LEGACY_ALIAS_SURFACES.len == LEGACY_ALIAS_COUNT;
+  assert LEGACY_ALIAS_COUNT == 13;
+  assert LEGACY_ALIAS_COUNT_BEFORE_2026_09_25 == 6;
+  assert LEGACY_ROUTE_ALIASES_BEFORE_2026_09_25.len == LEGACY_ALIAS_COUNT_BEFORE_2026_09_25;
+  assert LEGACY_ALIAS_SURFACES_BEFORE_2026_09_25.len == LEGACY_ALIAS_COUNT_BEFORE_2026_09_25;
+  assert LEGACY_ALIAS_COUNT == LEGACY_ALIAS_COUNT_BEFORE_2026_09_25 + LEGACY_ALIASES_ADDED_ON_2026_09_25;
+  assert LEGACY_ROUTE_ALIASES[6] == "/accessories";
+  assert LEGACY_ROUTE_ALIASES[8] == "/game";
+  assert LEGACY_ROUTE_ALIASES[12] == "/tech-tree";
+  assert LEGACY_ALIAS_SURFACES[6] == "catalog";
+  assert LEGACY_ALIAS_SURFACES[8] == "catalog";
+  assert LEGACY_ALIAS_SURFACES[12] == "catalog";
+  assert LEGACY_ALIAS_COUNT_BEFORE_2026_09_24 == 3;
+  assert LEGACY_ROUTE_ALIASES_BEFORE_2026_09_24.len == LEGACY_ALIAS_COUNT_BEFORE_2026_09_24;
+  assert LEGACY_ALIAS_SURFACES_BEFORE_2026_09_24.len == LEGACY_ALIAS_COUNT_BEFORE_2026_09_24;
   assert LEGACY_ROUTE_ALIASES[0] == "/skate";
   assert LEGACY_ALIAS_SURFACES[0] == "ride";
   assert LEGACY_ALIAS_SURFACES[1] == "catalog";
   assert LEGACY_ALIAS_SURFACES[2] == "catalog";
+  assert LEGACY_ROUTE_ALIASES[3] == "/events";
+  assert LEGACY_ROUTE_ALIASES[5] == "/my-bookings";
+  assert LEGACY_ALIAS_SURFACES[3] == "catalog";
+  assert LEGACY_ALIAS_SURFACES[4] == "catalog";
+  assert LEGACY_ALIAS_SURFACES[5] == "catalog";
+  assert EVENT_PAYLOAD_STAYS_ANSWERABLE == true;
+  assert deeplink_payload_may_stay_answerable(true) == EVENT_PAYLOAD_STAYS_ANSWERABLE;
   assert A_LEGACY_ALIAS_NEVER_MOUNTS_THE_RETIRED_SCREEN == true;
   assert LEGACY_LINKS_DO_NOT_EXPIRE == true;
 }
@@ -764,3 +852,9 @@ invariant deeplink_the_payload_never_pins_a_language
 
 invariant deeplink_every_stage_is_load_bearing
   assert deeplink_chain_survives(false, true, true, true) == false and deeplink_chain_survives(true, false, true, true) == false and deeplink_chain_survives(true, true, false, true) == false and deeplink_chain_survives(true, true, true, false) == false
+
+invariant deeplink_every_alias_of_a_retired_events_path_lands_on_the_catalog
+  assert LEGACY_ALIAS_SURFACES[3] == "catalog" and LEGACY_ALIAS_SURFACES[4] == "catalog" and LEGACY_ALIAS_SURFACES[5] == "catalog" and LEGACY_ALIAS_COUNT_BEFORE_2026_09_25 == 6
+
+invariant deeplink_every_alias_of_a_previous_shop_path_lands_on_the_catalog
+  assert LEGACY_ALIAS_SURFACES[6] == "catalog" and LEGACY_ALIAS_SURFACES[7] == "catalog" and LEGACY_ALIAS_SURFACES[8] == "catalog" and LEGACY_ALIAS_SURFACES[9] == "catalog" and LEGACY_ALIAS_SURFACES[10] == "catalog" and LEGACY_ALIAS_SURFACES[11] == "catalog" and LEGACY_ALIAS_SURFACES[12] == "catalog" and LEGACY_ALIAS_COUNT == 13

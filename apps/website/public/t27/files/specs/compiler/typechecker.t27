@@ -370,7 +370,7 @@ module TypeChecking {
     fn check_stmt(stmt: parser::Node, table: *SymbolTable, reg: FnRegistry, expected_ret: TypeInfo) -> TypeCheckResult {
         if (stmt.kind == parser::NodeKind::ExprReturn) {
             if (stmt.children_count >= 1) {
-                var ret_type = infer_expr(stmt.children[0], *table, reg);
+                var ret_type = infer_expr(stmt.children[0], table, reg);
                 if (expected_ret != TypeInfo::Unknown and expected_ret != TypeInfo::Void) {
                     if (check_assign(expected_ret, ret_type) == false) {
                         return error_result(0, 0, "return type mismatch");
@@ -382,7 +382,7 @@ module TypeChecking {
         if (stmt.kind == parser::NodeKind::StmtLocal) {
             var var_type = resolve_type(stmt.extra_type);
             if (stmt.children_count >= 1) {
-                var init_type = infer_expr(stmt.children[0], *table, reg);
+                var init_type = infer_expr(stmt.children[0], table, reg);
                 if (var_type == TypeInfo::Unknown) {
                     var_type = init_type;
                 } else if (check_assign(var_type, init_type) == false) {
@@ -394,8 +394,8 @@ module TypeChecking {
         }
         if (stmt.kind == parser::NodeKind::StmtAssign) {
             if (stmt.children_count >= 2) {
-                var target_type = infer_expr(stmt.children[0], *table, reg);
-                var val_type = infer_expr(stmt.children[1], *table, reg);
+                var target_type = infer_expr(stmt.children[0], table, reg);
+                var val_type = infer_expr(stmt.children[1], table, reg);
                 if (check_assign(target_type, val_type) == false) {
                     return error_result(0, 0, "assignment type mismatch");
                 }
@@ -479,7 +479,7 @@ module TypeChecking {
             if (child.kind == parser::NodeKind::ConstDecl) {
                 var const_type = resolve_type(child.extra_type);
                 if (const_type == TypeInfo::Unknown and child.children_count > 0) {
-                    const_type = infer_expr(child.children[0], *table, *reg);
+                    const_type = infer_expr(child.children[0], table, reg);
                 }
                 insert(table, child.name, const_type, false, child.extra_pub, 0, 0);
             } else if (child.kind == parser::NodeKind::StructDecl) {
@@ -504,7 +504,7 @@ module TypeChecking {
                     insert(table, child.params[p].name, param_type, false, false, 0, 0);
                     p = p + 1;
                 }
-                var r = typecheck_fn_body(child, table, *reg);
+                var r = typecheck_fn_body(child, table, reg);
                 pop_scope(table);
                 if (r.ok == false) { return r; }
             }

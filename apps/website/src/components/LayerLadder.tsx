@@ -1,4 +1,4 @@
-// The ladder every Explorer stands on: Specs → Skills → Crons → Agents → Tools → Functions.
+// The ladder every Explorer stands on: Specs → Skills → Crons → Agents → Tools → Functions → Providers.
 //
 // One compact strip, one link and one live count per layer, drawn from the
 // catalog the page already loaded (spec-agents.json carries `ladder`). The
@@ -7,7 +7,7 @@
 //
 // ONE LADDER PER SCREEN. This is the ladder an Explorer draws when it is a page
 // of its own, standing at its own address. Inside the Queen's SPECS module the
-// Explorer is an iframe under components/QueenLadder, which is the same six
+// Explorer is an iframe under components/QueenLadder, which is the same seven
 // layers as buttons -- so drawing this one there put two ladders on one screen,
 // one above the other, and the reader had to be told twice which layer they
 // were on. Worse, five of the six Explorers drew it and the Spec Explorer did

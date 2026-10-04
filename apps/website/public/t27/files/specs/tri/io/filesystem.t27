@@ -351,9 +351,12 @@ module TriFilesystem;
         when result = normalize(allocator, path)
         then std.mem.eql(u8, result, "usr/bin/t27c")
 
-    test join_reconstructs_path
-        given path = "/usr/local/bin/t27c"
-        when parent = dirname(path)
-        and base = basename(path)
-        and result = join(allocator, &[_][]const u8{ parent, base })
-        then std.mem.eql(u8, result, path)
+    test join_reconstructs_path {
+        var allocator = std.testing.allocator;
+        var path = "/usr/local/bin/t27c";
+        var parent = dirname(path);
+        var base = basename(path);
+        var parts = [parent, base];
+        var result = join(allocator, &parts);
+        assert(std.mem.eql(u8, result, path));
+    }

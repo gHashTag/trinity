@@ -215,7 +215,18 @@ func (c *Client) Connect(ctx context.Context) error {
 }
 
 // SendCode sends authentication code to phone
-func (c *Client) SendCode(ctx context.Context, phone string) (string, error) {
+// Credentials returns the API credentials this client was built with, so a
+// restored session can be rebuilt with the same ones.
+func (c *Client) Credentials() (int, string) {
+	return c.appID, c.appHash
+}
+
+// SendCode starts the login flow and reports how Telegram delivered the code.
+//
+// The whole auth.sentCode response is kept, not just the hash: the delivery
+// channel, the code length, Telegram's own resend timeout and the channel a
+// resend would use. Discarding those is what forced the UI to guess.
+func (c *Client) SendCode(ctx context.Context, phone string) (SentCode, error) {
 	c.mu.Lock()
 	c.authFlow.phone = phone
 	c.mu.Unlock()
@@ -228,27 +239,10 @@ func (c *Client) SendCode(ctx context.Context, phone string) (string, error) {
 		Settings:    tg.CodeSettings{},
 	})
 	if err != nil {
-		return "", fmt.Errorf("send code: %w", err)
+		return SentCode{}, fmt.Errorf("send code: %w", err)
 	}
 
-	// Extract phone code hash based on type
-	var codeHash string
-	switch v := sentCode.(type) {
-	case *tg.AuthSentCode:
-		codeHash = v.PhoneCodeHash
-	case *tg.AuthSentCodeSuccess:
-		// Already authorized
-		c.mu.Lock()
-		c.isAuthed = true
-		c.mu.Unlock()
-		return "", nil
-	}
-
-	c.mu.Lock()
-	c.authFlow.codeHash = codeHash
-	c.mu.Unlock()
-
-	return codeHash, nil
+	return c.readSentCode(sentCode), nil
 }
 
 // SignIn verifies code and signs in
@@ -1189,6 +1183,18 @@ func (c *Client) extractChatID(peer tg.PeerClass) int64 {
 type authFlow struct {
 	phone    string
 	codeHash string
+	// codeType, nextType and timeout are what Telegram actually said about
+	// the delivery. They used to be discarded, which is why the UI guessed
+	// "app/SMS" and why the resend timer was invented locally instead of
+	// being read from the response.
+	codeType string
+	nextType string
+	timeout  int
+	sentAt   time.Time
+	// qrToken is the exported login token for the QR path, base64url as it
+	// appears in the tg://login?token=... URL.
+	qrToken   string
+	qrExpires time.Time
 }
 
 // computeSRP computes SRP parameters for 2FA using gotd/td crypto/srp package

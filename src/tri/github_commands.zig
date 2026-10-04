@@ -1600,7 +1600,12 @@ fn prMerge(allocator: std.mem.Allocator, args: []const []const u8, dry_run: bool
     };
     defer client.deinit();
 
-    try client.mergePr(number, method);
+    // mergePr refuses unless a reviewer bee passed the PR (APPROVED review +
+    // `bee-reviewed` label after the head commit); it prints why.
+    client.mergePr(number, method) catch |err| switch (err) {
+        error.NotBeeReviewed => return,
+        else => return err,
+    };
     std.debug.print("{s}✓ PR #{d} merged ({s}){s}\n", .{ GREEN, number, method, RESET });
 }
 
@@ -1878,7 +1883,7 @@ fn printGithubHelp() void {
         \\  {2s}tri protocol verify{1s}           Check Protocol v2 compliance
         \\  {2s}tri pr create{1s}                 Create pull request
         \\  {2s}tri pr list{1s}                   List pull requests
-        \\  {2s}tri pr merge <N>{1s}              Merge pull request
+        \\  {2s}tri pr merge <N>{1s}              Merge PR (needs APPROVED + bee-reviewed)
         \\  {2s}tri pr view <N>{1s}               View PR details
         \\  {2s}tri pr review <N>{1s}             Review PR (approve/comment/changes)
         \\  {2s}tri pr diff <N>{1s}               Show PR diff

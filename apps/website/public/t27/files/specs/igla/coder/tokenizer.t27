@@ -232,6 +232,9 @@ fn detokenize_inner(tokens: []u32, idx: u32) -> string {
     }
     if (tokens[idx] < 256) {
         let ch = decode_char(tokens[idx]);
+        if (ch == 0) {
+            return " " + detokenize_inner(tokens, idx + 1);
+        }
         return "" + ch + detokenize_inner(tokens, idx + 1);
     }
     let kw = decode_keyword(tokens[idx]);

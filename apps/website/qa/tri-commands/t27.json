@@ -1,0 +1,381 @@
+{
+  "cli": "t27",
+  "repo": "gHashTag/t27",
+  "source": "cli/tri/src/main.rs",
+  "commit": "1b12580ce699c1b5634b769247688bba622f046c",
+  "rule": "every variant of the clap `enum Commands` in cli/tri/src/main.rs, kebab-case as clap derives it",
+  "extractedBy": "apps/website/scripts/tri-commands.mjs",
+  "cardDirs": [
+    "tri"
+  ],
+  "count": 52,
+  "withHelp": 37,
+  "notCounted": [],
+  "notCountedNote": "",
+  "commands": [
+    {
+      "name": "status",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "Commands::Status"
+    },
+    {
+      "name": "skill",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "Commands::Skill"
+    },
+    {
+      "name": "kinds",
+      "aliases": [],
+      "help": "Match arms whose own comment names a case the pattern omits.",
+      "helpSource": "/// doc of Commands::Kinds, line 98",
+      "route": "Commands::Kinds"
+    },
+    {
+      "name": "lean",
+      "aliases": [],
+      "help": "Completeness theorems whose Lean model is empty.",
+      "helpSource": "/// doc of Commands::Lean, line 103",
+      "route": "Commands::Lean"
+    },
+    {
+      "name": "cell",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "Commands::Cell"
+    },
+    {
+      "name": "gen",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "Commands::Gen"
+    },
+    {
+      "name": "test",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "Commands::Test"
+    },
+    {
+      "name": "verdict",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "Commands::Verdict"
+    },
+    {
+      "name": "experience",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "Commands::Experience"
+    },
+    {
+      "name": "doctor",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "Commands::Doctor"
+    },
+    {
+      "name": "health",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "Commands::Health"
+    },
+    {
+      "name": "serve",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "Commands::Serve"
+    },
+    {
+      "name": "fpga",
+      "aliases": [],
+      "help": "FPGA programming via the in-tree DLC10 driver (pure Rust).",
+      "helpSource": "/// doc of Commands::Fpga, line 136",
+      "route": "Commands::Fpga"
+    },
+    {
+      "name": "mutate",
+      "aliases": [],
+      "help": "Find the constants in a checker that nothing actually checks.",
+      "helpSource": "/// doc of Commands::Mutate, line 141",
+      "route": "Commands::Mutate"
+    },
+    {
+      "name": "reseal",
+      "aliases": [],
+      "help": "Recompute the FROZEN_HASH seal from the file it seals.",
+      "helpSource": "/// doc of Commands::Reseal, line 146",
+      "route": "Commands::Reseal"
+    },
+    {
+      "name": "now",
+      "aliases": [],
+      "help": "Write a docs/now/ entry without hand-writing the frame.",
+      "helpSource": "/// doc of Commands::Now, line 151",
+      "route": "Commands::Now"
+    },
+    {
+      "name": "ci",
+      "aliases": [],
+      "help": "Is the hardware this plan assumes actually attached? CI questions about the repository's own gates.",
+      "helpSource": "/// doc of Commands::Ci, line 157",
+      "route": "Commands::Ci"
+    },
+    {
+      "name": "fleet",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "Commands::Fleet"
+    },
+    {
+      "name": "pr",
+      "aliases": [],
+      "help": "Is this pull request actually safe to merge?",
+      "helpSource": "/// doc of Commands::Pr, line 166",
+      "route": "Commands::Pr"
+    },
+    {
+      "name": "merging",
+      "aliases": [],
+      "help": "Is a merge in flight here, and does this branch carry the base?",
+      "helpSource": "/// doc of Commands::Merging, line 171",
+      "route": "Commands::Merging"
+    },
+    {
+      "name": "misread",
+      "aliases": [],
+      "help": "The specs the compiler reads WRONGLY. Every gate is green on them.",
+      "helpSource": "/// doc of Commands::Misread, line 173",
+      "route": "Commands::Misread"
+    },
+    {
+      "name": "one-away",
+      "aliases": [],
+      "help": "Failing specs one defect from compiling, and what that defect is",
+      "helpSource": "/// doc of Commands::OneAway, line 175",
+      "route": "Commands::OneAway"
+    },
+    {
+      "name": "window",
+      "aliases": [],
+      "help": "Was the base you measured against still the tip when you reported?",
+      "helpSource": "/// doc of Commands::Window, line 177",
+      "route": "Commands::Window"
+    },
+    {
+      "name": "worktrees",
+      "aliases": [],
+      "help": "What the checkouts on this disk are holding. Deletes nothing.",
+      "helpSource": "/// doc of Commands::Worktrees, line 179",
+      "route": "Commands::Worktrees"
+    },
+    {
+      "name": "sweep",
+      "aliases": [],
+      "help": "Synthesise across a parameter and check the area actually moves.",
+      "helpSource": "/// doc of Commands::Sweep, line 181",
+      "route": "Commands::Sweep"
+    },
+    {
+      "name": "synth",
+      "aliases": [],
+      "help": "Synthesise a top module and report area, with the instrument named.",
+      "helpSource": "/// doc of Commands::Synth, line 186",
+      "route": "Commands::Synth"
+    },
+    {
+      "name": "loop",
+      "aliases": [],
+      "help": "What is failing on the default branch right now, and since when. Take a named claim so two sessions of the loop cannot pick the same task.",
+      "helpSource": "/// doc of Commands::Loop, line 192",
+      "route": "Commands::Loop"
+    },
+    {
+      "name": "red",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "Commands::Red"
+    },
+    {
+      "name": "gates",
+      "aliases": [],
+      "help": "Find workflows that have never once succeeded.",
+      "helpSource": "/// doc of Commands::Gates, line 201",
+      "route": "Commands::Gates"
+    },
+    {
+      "name": "harness",
+      "aliases": [],
+      "help": "Source files no crate root reaches, and so nothing compiles. Test-harness hygiene.",
+      "helpSource": "/// doc of Commands::Harness, line 207",
+      "route": "Commands::Harness"
+    },
+    {
+      "name": "mods",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "Commands::Mods"
+    },
+    {
+      "name": "elab",
+      "aliases": [],
+      "help": "Classify a compiler's error output before quoting a number from it.",
+      "helpSource": "/// doc of Commands::Elab, line 216",
+      "route": "Commands::Elab"
+    },
+    {
+      "name": "rtl",
+      "aliases": [],
+      "help": "The structural check t27.ai offers, run locally: five verdicts, the yosys version beside the numbers, and no claim about correctness.",
+      "helpSource": "/// doc of Commands::Rtl, line 222",
+      "route": "Commands::Rtl"
+    },
+    {
+      "name": "abandoned",
+      "aliases": [],
+      "help": "Recovery sites whose own comment names the construct they discard.",
+      "helpSource": "/// doc of Commands::Abandoned, line 227",
+      "route": "Commands::Abandoned"
+    },
+    {
+      "name": "fmt",
+      "aliases": [],
+      "help": "Type names with more than one definition in the spec tree. Run the formatter and restore every file it rewrote that you had not touched.",
+      "helpSource": "/// doc of Commands::Fmt, line 233",
+      "route": "Commands::Fmt"
+    },
+    {
+      "name": "types",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "Commands::Types"
+    },
+    {
+      "name": "topic",
+      "aliases": [],
+      "help": "Has anyone already done this, or are they doing it now?",
+      "helpSource": "/// doc of Commands::Topic, line 246",
+      "route": "Commands::Topic"
+    },
+    {
+      "name": "quantifiers",
+      "aliases": [],
+      "help": "Every quantified clause, its binders, and the size of its domain.",
+      "helpSource": "/// doc of Commands::Quantifiers, line 255",
+      "route": "Commands::Quantifiers"
+    },
+    {
+      "name": "orphaned",
+      "aliases": [],
+      "help": "Checks whose input is not in the tree.",
+      "helpSource": "/// doc of Commands::Orphaned, line 260",
+      "route": "Commands::Orphaned"
+    },
+    {
+      "name": "discard",
+      "aliases": [],
+      "help": "What the parser reads and throws away, ranked against its pinned bound.",
+      "helpSource": "/// doc of Commands::Discard, line 265",
+      "route": "Commands::Discard"
+    },
+    {
+      "name": "prose",
+      "aliases": [],
+      "help": "Specs a literate author left prose in, and how far that prose is from code.",
+      "helpSource": "/// doc of Commands::Prose, line 270",
+      "route": "Commands::Prose"
+    },
+    {
+      "name": "ledgers",
+      "aliases": [],
+      "help": "Does each ledger's gate notice when one of its entries stops being true?",
+      "helpSource": "/// doc of Commands::Ledgers, line 275",
+      "route": "Commands::Ledgers"
+    },
+    {
+      "name": "census",
+      "aliases": [],
+      "help": "Specs the compiler cannot read, ranked by the construct that stops it. Every census's printed population, against one counted another way.",
+      "helpSource": "/// doc of Commands::Census, line 281",
+      "route": "Commands::Census"
+    },
+    {
+      "name": "competitors",
+      "aliases": [],
+      "help": "The competitor table against its own contract: how many of its published scores were never published, and how many papers it counts twice.",
+      "helpSource": "/// doc of Commands::Competitors, line 287",
+      "route": "Commands::Competitors"
+    },
+    {
+      "name": "issues",
+      "aliases": [],
+      "help": "Open issues whose headline calls a workflow red, against what that workflow concludes on master today.",
+      "helpSource": "/// doc of Commands::Issues, line 293",
+      "route": "Commands::Issues"
+    },
+    {
+      "name": "unparsed",
+      "aliases": [],
+      "help": "",
+      "helpSource": "",
+      "route": "Commands::Unparsed"
+    },
+    {
+      "name": "emit",
+      "aliases": [],
+      "help": "Does the same binary produce the same generated code twice?",
+      "helpSource": "/// doc of Commands::Emit, line 307",
+      "route": "Commands::Emit"
+    },
+    {
+      "name": "jumps",
+      "aliases": [],
+      "help": "What happened to every `break` and `continue` the Verilog emitter had to lower?",
+      "helpSource": "/// doc of Commands::Jumps, line 318",
+      "route": "Commands::Jumps"
+    },
+    {
+      "name": "vsim",
+      "aliases": [],
+      "help": "How far each spec gets when its generated Verilog is actually RUN.",
+      "helpSource": "/// doc of Commands::Vsim, line 326",
+      "route": "Commands::Vsim"
+    },
+    {
+      "name": "seals",
+      "aliases": [],
+      "help": "What `.trinity/seals` says about a spec, when it says it twice.",
+      "helpSource": "/// doc of Commands::Seals, line 331",
+      "route": "Commands::Seals"
+    },
+    {
+      "name": "hooks",
+      "aliases": [],
+      "help": "Pure-Rust ports of repository commit / push gates.",
+      "helpSource": "/// doc of Commands::Hooks, line 336",
+      "route": "Commands::Hooks"
+    },
+    {
+      "name": "vectors",
+      "aliases": [],
+      "help": "The executed-vector registry: run a module's vectors, or inventory which files are executed and which are only displayed.",
+      "helpSource": "/// doc of Commands::Vectors, line 342",
+      "route": "Commands::Vectors"
+    }
+  ]
+}

@@ -307,7 +307,7 @@ pub fn distinct_usable_values_yield_distinct_buckets(value_a: str, value_b: str)
 
 ; --- The guarded surface, as a shape and a count ------------------------------------------------------
 ; Measured 2026-09-21 by grepping the two check functions across src/ and excluding test modules
-; (src/api/orders.rs:2463 opens its own). The SHAPE is the claim: every call site passes the same
+; (src/api/orders.rs:2626 opens its own). The SHAPE is the claim: every call site passes the same
 ; five arguments -- a store, a key, a window, an attempt cap and a key cap -- and declares its three
 ; limits next to its own store, in the module that uses them. No route inherits a default, and there
 ; is no central limits table in this repository to inherit one from. Counts, not a route table:
@@ -349,7 +349,7 @@ pub const NARROWEST_WINDOW_SECONDS : u32 = 5;
 pub const WIDEST_WINDOW_SECONDS : u32 = 3600;
 pub const SMALLEST_MAX_ATTEMPTS : u32 = 1;
 
-; src/api/orders.rs:772 puts its guard inside `if req.telegram_id.is_none()`. A ROUTE is therefore
+; src/api/orders.rs:884 puts its guard inside `if req.telegram_id.is_none()`. A ROUTE is therefore
 ; not the unit that is guarded -- a request is. An identified caller passes that call site without
 ; being measured by it at all, and is serialised later by the per-id machinery the comment at
 ; src/api/orders.rs:27-30 names. Counting POST /orders as guarded without this sentence would
@@ -384,7 +384,7 @@ pub fn handlers_compete(store_is_shared: bool, key_is_prefixed_per_handler: bool
 ; --- What a refusal leaves behind --------------------------------------------------------------------
 ; src/metrics.rs:190-191 defines the counter. Six of the eight call sites increment it before
 ; returning: src/api/auth.rs:513, src/api/client_errors.rs:396 and :564, src/api/events.rs:537,
-; src/api/orders.rs:783, src/api/upload.rs:125. Two do not -- the broadcast refusal at
+; src/api/orders.rs:895, src/api/upload.rs:125. Two do not -- the broadcast refusal at
 ; src/api/admin.rs:773-776 and the bot cooldown at src/bot/mod.rs:29-37 -- so two of the eight
 ; refusal paths are invisible to the only instrument that counts refusals. The repository already
 ; guards against the mirror-image mistake: src/metrics.rs:413-433 fails a test for a metric helper

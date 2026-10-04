@@ -20,12 +20,13 @@
 ; could be reversed one key at a time with every one of the fifteen still green.
 ; --
 ; THE SECOND MEASUREMENT, and it is why the rule below reads content and never a name. The trust
-; block has four claim slots, at src/ui/screens/home_screen.rs:440, :441, :443 and :444-448
+; block has four claim slots, at src/ui/screens/home_screen.rs:441, :442, :444 and :445-449
 ; (:437, :438, :440 and :441-445 before the 2026-09-21 cart-price edits added three lines above
-; them; every slot was re-read at its new address and carries the same claim). They
+; them, and one more on 2026-09-23 when T27 defect 2 gave the order total a serde default; every
+; slot was re-read at its new address and carries the same claim). They
 ; select four keys declared at src/trios/i18n.rs:226-229. THREE of the four keys -- trust.gacp,
 ; trust.medical, trust.age -- are still named for the claim D20 retired, and all three now carry a
-; claim D20 permits: the rows at src/trios/i18n.rs:914-917 and :1513-1516 hold a legal entity with
+; claim D20 permits: the rows at src/trios/i18n.rs:917-920 and :1517-1520 hold a legal entity with
 ; a location, a helmet law and a licence requirement. A reader who classified these three rows
 ; from their key names would refuse all three and admit none, and would be wrong three times. The
 ; key name is not evidence and this contract never treats it as evidence.
@@ -36,8 +37,8 @@
 ;      deep-link payloads and :110-114 mounts HomeScreen only when one of them is set; an ordinary
 ;      visit to "/" renders CatalogScreen, which carries no trust block at all (a grep of
 ;      src/ui/screens/catalog_screen.rs for T_TRUST returns 0). Three of the four mounts then
-;      navigate away inside the same effect (src/ui/screens/home_screen.rs:176-192), so the block
-;      is a frame in transit; the fourth, the reorder branch at :198-238, awaits a network answer
+;      navigate away inside the same effect (src/ui/screens/home_screen.rs:177-193), so the block
+;      is a frame in transit; the fourth, the reorder branch at :202-242, awaits a network answer
 ;      first and leaves the block on screen for as long as that takes -- and for ever if the fetch
 ;      never resolves. The claims are therefore real, and the surface they live on is a deep-link
 ;      landing rather than a landing page. Both facts are pinned below.
@@ -134,7 +135,7 @@ pub const PRICING_HONESTY_SUPPLIES : str = "turbobaby/pricing-honesty owns is_pr
 pub const LOCALE_POLICY_SUPPLIES : str = "turbobaby/locale-policy owns locale_is_published and the declared key count. A claim is a row in two tables; which tables exist and what an unpublished variant resolves to are that file's, and no locale, fallback or key total is repeated here.";
 pub const DEEPLINK_SUPPLIES : str = "turbobaby/deeplink owns deeplink_landing and deeplink_is_a_dead_tap. A tab is the same destination reached by a tap instead of a link, so the dead-destination rule is shared; the payload grammar, the target list and the landing kinds stay there.";
 pub const AVAILABILITY_SUPPLIES : str = "turbobaby/availability owns is_bookable and may_confirm. A seed fact a screen may assert is admissible only because that file decided it; no stock count, unit status or family key appears here.";
-pub const RUNTIME_CONFIG_SUPPLIES : str = "turbobaby/runtime-config owns BOT_HANDLE_CLIENT_LITERAL_SITES, BOT_HANDLE_SERVER_READS_ENV and knob_governs_whole_deployment. The trust block's outbound link is one of the client literals that file enumerates; whether the handle knob governs the whole deployment is its ruling and its resolver measurement, and neither the environment variable nor its fallback behaviour is restated here. This file keeps only the surface consequence, in SUPPORT_LINK_FOLLOWS_CONFIGURATION. All three declaration names were opened on 2026-09-21 and all three still stand, and the enumeration was checked rather than assumed: BOT_HANDLE_CLIENT_LITERAL_SITES is a six-element array and src/ui/screens/home_screen.rs:445 -- this surface's one outbound link -- is a member of it, so 'already counts this slot' is a read fact and not a courtesy.";
+pub const RUNTIME_CONFIG_SUPPLIES : str = "turbobaby/runtime-config owns BOT_HANDLE_CLIENT_LITERAL_SITES, BOT_HANDLE_SERVER_READS_ENV and knob_governs_whole_deployment. The trust block's outbound link is one of the client literals that file enumerates; whether the handle knob governs the whole deployment is its ruling and its resolver measurement, and neither the environment variable nor its fallback behaviour is restated here. This file keeps only the surface consequence, in SUPPORT_LINK_FOLLOWS_CONFIGURATION. All three declaration names were opened on 2026-09-21 and all three still stand, and the enumeration was checked rather than assumed: BOT_HANDLE_CLIENT_LITERAL_SITES is a six-element array and src/ui/screens/home_screen.rs:446 -- this surface's one outbound link -- is a member of it, so 'already counts this slot' is a read fact and not a courtesy.";
 
 ; --- The one edge that runs in one direction only -------------------------------------------------
 ; MEASURED 2026-09-21, and declared because the paragraph above would otherwise let a reader assume
@@ -149,7 +150,7 @@ pub const RUNTIME_CONFIG_SUPPLIES : str = "turbobaby/runtime-config owns BOT_HAN
 ; substance held and the sentence did not, which is why the distinction is now carried in two
 ; separate constants instead of one: being MENTIONED and being DECLARED are different facts, and a
 ; bare grep count cannot tell them apart. His BOT_HANDLE_CLIENT_LITERAL_SITES still reaches this
-; surface by SOURCE PATH (src/ui/screens/home_screen.rs:445) and never by contract ID.
+; surface by SOURCE PATH (src/ui/screens/home_screen.rs:446) and never by contract ID.
 ;
 ; This file cannot repair the gap -- an edge is declared by the file that carries it, and this file
 ; does not own runtime_config.t27 -- so what it does is state the gap where a reader meets the
@@ -254,19 +255,19 @@ pub fn screen_may_supply_its_own_number() bool {
 }
 
 ; --- The claim is read from content, never from the key name ---------------------------------
-; Measured at src/trios/i18n.rs:226-229 against :914-917 and :1513-1516. Four slots; three keys
+; Measured at src/trios/i18n.rs:226-229 against :917-920 and :1517-1520. Four slots; three keys
 ; named for a claim D20 retired and now carrying a claim D20 permits; one key named for what it
 ; carries. The drift is invisible to a customer -- nobody sees a key -- and lethal to a reader.
 pub const TRUST_SLOT_COUNT : u8 = 4;
 pub const TRUST_KEYS_NAMED_FOR_A_RETIRED_CLAIM : u8 = 3;
 pub const TRUST_KEYS_NAMED_FOR_WHAT_THEY_CARRY : u8 = 1;
 pub const TRUST_KEY_DECLARATION_SITE : str = "src/trios/i18n.rs:226-229";
-pub const TRUST_ROW_SITES : [2]str = ["src/trios/i18n.rs:914-917", "src/trios/i18n.rs:1513-1516"];
+pub const TRUST_ROW_SITES : [2]str = ["src/trios/i18n.rs:917-920", "src/trios/i18n.rs:1517-1520"];
 pub const TRUST_SLOT_SITES : [4]str = [
-  "src/ui/screens/home_screen.rs:440",
   "src/ui/screens/home_screen.rs:441",
-  "src/ui/screens/home_screen.rs:443",
-  "src/ui/screens/home_screen.rs:444-448"
+  "src/ui/screens/home_screen.rs:442",
+  "src/ui/screens/home_screen.rs:444",
+  "src/ui/screens/home_screen.rs:445-449"
 ];
 pub const CLAIM_CLASS_IS_READ_FROM_CONTENT : bool = true;
 pub const CLAIM_CLASS_IS_READ_FROM_THE_KEY_NAME : bool = false;
@@ -287,12 +288,16 @@ pub fn slot_accounting_closes(slots: u8, stale_names: u8, sound_names: u8) bool 
 ; slots. It prints exactly one figure, an order total the server computed, through format_baht at
 ; :318 and rendered at :341; it asserts no fact out of data/fleet_seed.json at all, so the seed
 ; class is permitted here and currently unused.
+; CORRECTED 2026-09-23 (T27 defect 2, owned by the order-presentation contract): the one figure is
+; now declared an Option and printed through order_total_text, so a total the server withholds as
+; null renders as the dash instead of losing the widget; a measured total still goes to format_baht
+; inside that rule. Still one figure; the sites below moved one line with the declaration.
 pub const HOME_I18N_KEYS_SELECTED : u8 = 17;
 pub const HOME_PRODUCT_CLAIM_HITS : u8 = 0;
 pub const HOME_MEDICAL_CLAIM_HITS : u8 = 0;
 pub const HOME_SEED_FACTS_ASSERTED : u8 = 0;
 pub const HOME_FIGURES_PRINTED : u8 = 1;
-pub const HOME_FIGURE_SOURCE : str = "server order total, formatted at src/ui/screens/home_screen.rs:321 and rendered at :344";
+pub const HOME_FIGURE_SOURCE : str = "server order total, formatted at src/ui/screens/home_screen.rs:322 and rendered at :345";
 pub const D20_RULE_HOLDS_AT_THIS_MEASUREMENT : bool = true;
 
 pub fn surface_conforms(product_hits: u8, medical_hits: u8, unsourced_figures: u8) bool {
@@ -302,7 +307,7 @@ pub fn surface_conforms(product_hits: u8, medical_hits: u8, unsourced_figures: u
 ; --- The first screen ---------------------------------------------------------------------------
 ; src/ui/routes.rs:103-106 and :110-114. Four pending payloads, any one of which mounts the claim
 ; surface; none pending renders the catalog instead. Three mounts navigate away inside the same
-; effect (src/ui/screens/home_screen.rs:176-192); the reorder branch at :201-241 waits for a fetch
+; effect (src/ui/screens/home_screen.rs:177-193); the reorder branch at :202-242 waits for a fetch
 ; before it moves, which is the one mount under which the trust block is genuinely read.
 pub const FIRST_SCREEN_PATH : str = "/";
 pub const FIRST_SCREEN_COMPONENT : str = "CatalogScreen";
@@ -391,7 +396,14 @@ pub fn absence_from_the_bar_retires_a_route(route_is_absent_from_the_bar: bool) 
 ; five destinations at :110 and five retired route names at :118. It is a source-text scan because
 ; src/lib.rs:17-18 gates pub mod ui on target_arch = "wasm32" and cargo test therefore compiles no
 ; line of this surface -- so the scan is the only instrument, not the weaker of two.
-pub const WITNESS_LINES : u16 = 820;
+; CORRECTED 2026-09-25: 812 lines, not 820; still fifteen tests. The owner's ruling of that day (#12,
+; nothing cannabis-related anywhere) removed the six member-card images from assets/, whose artwork
+; was a cannabis bud, and the six constants in src/ui/assets.rs that named them. The witness's
+; asset-constant check kept those six on its decision list; the list is now empty and its parser floor
+; fell from seven constants to one, so the file shrank by eight lines and no test was added or
+; removed. The 820 of the 2026-09-21 reading is kept under a _BEFORE_ name.
+pub const WITNESS_LINES : u16 = 812;
+pub const WITNESS_LINES_BEFORE_2026_09_25 : u16 = 820;
 pub const WITNESS_TESTS : u8 = 15;
 ; RE-VERIFIED 2026-09-21, and a trap named while it is fresh. Both numbers above still hold --
 ; wc -l gives 820 and the witness declares fifteen test functions -- but the obvious re-measurement
@@ -441,7 +453,7 @@ pub const LEGAL_ENTITY_IS_VERIFIED_IN_REPO : bool = false;
 pub const LEGAL_ENTITY_VERIFICATION_NOTE : str = "The legal-entity row is admitted here as a class, not as a verified fact. No registry extract, certificate or incorporation document is tracked in this repository -- DECISIONS.md:386-388 records that the owner's own document folder holds sheets, agreements and passports and that no brand artifact was taken from it -- so nothing here can confirm the company name or its address. What is missing is a document, not a measurement, and the surface rule this file states is that the row must cite one.";
 
 pub const SUPPORT_LINK_FOLLOWS_CONFIGURATION : bool = false;
-pub const SUPPORT_LINK_NOTE : str = "The one outbound link in the trust block is a hardcoded literal at src/ui/screens/home_screen.rs:445, so a deployment that renames the bot moves every generated link and leaves this one pointing at the old handle, silently. The knob itself is NOT this file's finding: turbobaby/runtime-config owns BOT_HANDLE_CLIENT_LITERAL_SITES and knob_governs_whole_deployment and already counts this slot among its client literals, and the resolver that half-obeys the variable is measured there, not restated here. What this file adds is the surface half: the trust block's only outbound link is a claim of CONTACT, and a contact claim whose destination cannot follow configuration is a claim that goes stale without an edit. Declared as a refusal rather than repaired: this file measures the surface and changes no code.";
+pub const SUPPORT_LINK_NOTE : str = "The one outbound link in the trust block is a hardcoded literal at src/ui/screens/home_screen.rs:446, so a deployment that renames the bot moves every generated link and leaves this one pointing at the old handle, silently. The knob itself is NOT this file's finding: turbobaby/runtime-config owns BOT_HANDLE_CLIENT_LITERAL_SITES and knob_governs_whole_deployment and already counts this slot among its client literals, and the resolver that half-obeys the variable is measured there, not restated here. What this file adds is the surface half: the trust block's only outbound link is a claim of CONTACT, and a contact claim whose destination cannot follow configuration is a claim that goes stale without an edit. Declared as a refusal rather than repaired: this file measures the surface and changes no code.";
 
 pub const CLAIM_REVIEW_DATE_IS_PUBLISHED : bool = false;
 pub const CLAIM_REVIEW_NOTE : str = "Nothing records when a claim on this surface was last checked against the world. D20 is dated by the decision log and the rows themselves carry no review stamp, so a law that changes tomorrow leaves a row that is still permitted by class and no longer true. A staleness rule would need a date field that does not exist, and inventing one here would be the unsourced number this file forbids.";
@@ -672,7 +684,10 @@ test the_wave_census_is_measured_and_the_untimed_interval_is_refused {
 
 test the_witness_test_count_survives_its_own_naive_re_measurement {
   assert WITNESS_TESTS == 15;
-  assert WITNESS_LINES == 820;
+  // 820 until 2026-09-25, when the member-card constants left the witness's decision list.
+  assert WITNESS_LINES == 812;
+  assert WITNESS_LINES_BEFORE_2026_09_25 == 820;
+  assert WITNESS_LINES < WITNESS_LINES_BEFORE_2026_09_25;
   assert WITNESS_TESTS_BY_NAIVE_GREP == 19;
   assert WITNESS_TESTS_NAIVE_GREP_IS_CORRECT == false;
   assert WITNESS_TEST_TOKEN_NON_ATTRIBUTE_HITS == 4;

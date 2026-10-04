@@ -47,16 +47,18 @@ const T = {
     terms: 'Terms:',
     depin: 'DePIN NETWORK',
     trinityToken: 'Trinity Token',
-    totalSupply: 'Total Supply',
+    totalSupply: 'Supply cap',
     activeNodes: 'Active Nodes',
     tps: 'TPS',
     notLive: 'not yet live',
-    allocation: 'TOKEN ALLOCATION',
-    nodeRewards: 'Node Rewards',
-    founder: 'Founder',
-    community: 'Community',
-    treasury: 'Treasury',
-    liquidity: 'Liquidity',
+    // Superseded 40/20/20/10/10 allocation removed 2026-10-01. Source of truth:
+    // gHashTag/trinity-fpga@d7e9718e9 docs/docs/depin/tokenomics.md and
+    // specs/trinet/mint_on_acceptance.t27 (100% mined, GENESIS_MINTED 0).
+    allocation: 'TOKEN ALLOCATION: 100% MINED BY ACCEPTED WORK',
+    minedByWork: 'Mined by accepted work',
+    premine: 'Pre-mine / founder / team',
+    sale: 'Sale / treasury / liquidity',
+    chains: 'TON + Solana · not deployed',
     stakingTiers: 'STAKING TIERS',
     tierFree: 'Free',
     tierStaker: 'Staker',
@@ -93,16 +95,15 @@ const T = {
     terms: 'Членов:',
     depin: 'СЕТЬ DePIN',
     trinityToken: 'Токен Trinity',
-    totalSupply: 'Общая эмиссия',
+    totalSupply: 'Потолок эмиссии',
     activeNodes: 'Активные узлы',
     tps: 'TPS',
     notLive: 'ещё не запущено',
-    allocation: 'РАСПРЕДЕЛЕНИЕ ТОКЕНОВ',
-    nodeRewards: 'Награды узлам',
-    founder: 'Основатель',
-    community: 'Сообщество',
-    treasury: 'Казна',
-    liquidity: 'Ликвидность',
+    allocation: 'РАСПРЕДЕЛЕНИЕ: 100% НАМЫВАЕТСЯ ЗА ПРИНЯТУЮ РАБОТУ',
+    minedByWork: 'Намывается за принятую работу',
+    premine: 'Премайн / основатель / команда',
+    sale: 'Продажа / казна / ликвидность',
+    chains: 'TON + Solana · не развёрнут',
     stakingTiers: 'УРОВНИ СТЕЙКИНГА',
     tierFree: 'Бесплатный',
     tierStaker: 'Стейкер',
@@ -331,7 +332,7 @@ function DePINSection({ t }: { t: Copy }) {
             <span style={{ color: GOLD, fontSize: 22, fontWeight: 700 }}>$TRI</span>
             <span style={{ color: '#666', fontSize: 12, marginLeft: 8 }}>{t.trinityToken}</span>
           </div>
-          <div style={{ color: '#666', fontSize: 11 }}>Ethereum Sepolia</div>
+          <div style={{ color: '#666', fontSize: 11 }}>{t.chains}</div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(90px, 1fr))', gap: 12 }}>
           <div>
@@ -354,11 +355,9 @@ function DePINSection({ t }: { t: Copy }) {
       <div style={{ marginBottom: 20 }}>
         <div style={{ color: '#888', fontSize: 11, marginBottom: 8, fontWeight: 600 }}>{t.allocation}</div>
         {[
-          { label: t.nodeRewards, pct: 40, color: GREEN },
-          { label: t.founder, pct: 20, color: GOLD },
-          { label: t.community, pct: 20, color: CYAN },
-          { label: t.treasury, pct: 10, color: PURPLE },
-          { label: t.liquidity, pct: 10, color: '#ff6b6b' },
+          { label: t.minedByWork, pct: 100, color: GREEN },
+          { label: t.premine, pct: 0, color: GOLD },
+          { label: t.sale, pct: 0, color: '#ff6b6b' },
         ].map(a => (
           <div key={a.label} style={{ marginBottom: 6 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 2 }}>

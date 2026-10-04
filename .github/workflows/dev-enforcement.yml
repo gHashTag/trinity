@@ -74,7 +74,7 @@ jobs:
     continue-on-error: true
     steps:
       - name: Mark in progress
-        if: github.event.action == 'opened' || github.event.action == 'synchronize'
+        if: github.event.pull_request.head.repo.full_name == github.repository && (github.event.action == 'opened' || github.event.action == 'synchronize')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -84,7 +84,7 @@ jobs:
       # 'closed' while the workflow only listened for [opened, synchronize].
       # 'closed' is now in the trigger list, so the label finally comes off.
       - name: Mark completed on merge
-        if: github.event.action == 'closed' && github.event.pull_request.merged == true
+        if: github.event.pull_request.head.repo.full_name == github.repository && github.event.action == 'closed' && github.event.pull_request.merged == true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -94,8 +94,14 @@ jobs:
             --add-label "status:completed"
 
       - name: Drop in-progress on a close without merge
-        if: github.event.action == 'closed' && github.event.pull_request.merged != true
+        if: github.event.pull_request.head.repo.full_name == github.repository && github.event.action == 'closed' && github.event.pull_request.merged != true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: gh pr edit "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --remove-label "status:in-progress"
+
+      - name: Report read-only fork metadata
+        if: github.event.pull_request.head.repo.full_name != github.repository
+        run: |
+          echo 'Fork PR: labels cannot be written with its read-only GITHUB_TOKEN.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Title and source checks still execute; no label update is claimed.' >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,58 @@
+# Ask t27.ai's publisher to run now, instead of when its cron gets a slot.
+#
+# The apex (gHashTag/ghashtag.github.io, publish-website.yml) builds this
+# repository's main and publishes it. It was meant to run every 15 minutes, and
+# site-live-gate.yml here polls for 13 minutes after a website merge on that
+# promise. GitHub runs scheduled workflows when it has capacity: from
+# 2026-09-30 14:55Z to 2026-10-02 01:00Z the */15 cron fired eight times, 3 to
+# 7 hours apart, and the live gate failed on 5 of its 6 pushes on 2026-10-01 --
+# each time correctly, because the site really was hours behind main.
+#
+# This changes when the apex publishes, not what: whatever is on main was
+# already going out on the next scheduled run. deploy-site.yml stays the manual
+# door with its own reason input.
+#
+# repository_dispatch needs Contents: write on the target and nothing else,
+# which is what GHIO_TOKEN already holds (workflow_dispatch would also need
+# Actions: write). The apex accepts event type trinity-main; its schedule stays
+# as the backstop if this job fails.
+name: Publish the apex on merge
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/website/**'
+      # Its own edits too: merging a change to this file is then its own end-to-end test.
+      - '.github/workflows/publish-apex-on-merge.yml'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Send trinity-main to ghashtag.github.io
+        env:
+          TOKEN: ${{ secrets.GHIO_TOKEN }}
+        run: |
+          set -uo pipefail
+          if [ -z "$TOKEN" ]; then
+            echo "::error::GHIO_TOKEN is not set -- the apex will publish on its next scheduled run only"
+            exit 1
+          fi
+          # A 204 is the only success; anything else is printed (the body names the
+          # missing permission) and fails the job, so a revoked or narrowed token is
+          # red on the next merge rather than a silent return to hours of lag.
+          code=$(curl -sS -o body.json -w '%{http_code}' -X POST \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/gHashTag/ghashtag.github.io/dispatches \
+            -d "{\"event_type\":\"trinity-main\",\"client_payload\":{\"sha\":\"$GITHUB_SHA\"}}")
+          if [ "$code" != 204 ]; then
+            echo "::error::dispatch answered HTTP $code: $(head -c 300 body.json)"
+            exit 1
+          fi
+          echo "asked the apex to publish trinity ${GITHUB_SHA:0:8}" | tee -a "$GITHUB_STEP_SUMMARY"

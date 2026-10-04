@@ -104,8 +104,33 @@ pub const MEASURED_AT : str = "2026-09-20";
 ; with the same toast as a dropped connection: 5830, was 5802. MEASURED_AT below still reads
 ; 2026-09-20 on purpose -- this length was re-taken, the census of write bounds was not, and
 ; moving that date would claim a re-reading nobody did.
-pub const ADMIN_SCREEN_LINES : u16 = 5830;
-pub const NEXT_LARGEST_SOURCE_LINES : u16 = 4599;
+; RE-MEASURED 2026-09-23 after T27 defect 2 taught the admin order card, badges and CSV to read a
+; withheld (null) money figure: 5881, was 5830. The 51 lines are six helpers appended at the end
+; of the file, so no cited line above them moved. Same caveat on MEASURED_AT as above.
+; CORRECTED 2026-09-24: 5881 stopped being the length when the two Add buttons (a family, a unit)
+; stopped reporting success before the server answered and started naming the reason of a refusal.
+; Re-measured: 5910, was 5881. The 29 lines are one reason helper appended at the end of the file
+; (admin_add_failure_reason) with its doc comment; both Add handlers kept their own line count, so
+; no line cited above the helper moved (re-checked at :522, :2447, :2858, :2908-2917, :2945,
+; :2951, :3043 and :4724). The 2026-09-23 figure is kept below as history. Same caveat on
+; MEASURED_AT as above.
+; CORRECTED 2026-09-26: 6627, not 5910. The owner's answer R3 of that day (the referral credit)
+; gave the Loyalty tab a third sub-tab, the referral one, and its panel. Eight lines went into
+; LoyaltyTab (the button and the branch), so every line below :4118 moved by eight (re-pinned
+; where cited: market_profile.t27's clock site :4724 -> :4732, webapp_bridge.t27's header tuple
+; :4615 -> :4623; the 2026-09-24 re-check list above is kept as it was read). The other 709
+; lines are the panel (ReferralCreditPanel, its form and confirmation types and its helpers),
+; appended at the end of the file after admin_add_failure_reason, so no line above it moved for
+; their sake. The screen is still the largest file, and it writes no catalog field: the panel's
+; four routes are the referral credit's (turbobaby/referral-credit), not this contract's. The
+; 5910 of 2026-09-24 is kept below as history.
+pub const ADMIN_SCREEN_LINES : u16 = 6627;
+pub const ADMIN_SCREEN_LINES_BEFORE_2026_09_26 : u16 = 5910;
+pub const ADMIN_SCREEN_LINES_BEFORE_2026_09_24 : u16 = 5881;
+; Re-measured 2026-09-26: src/main.rs is 4603 lines, four more for the referral credit's three
+; SENSITIVE_FNS entries and their comment (R3). It is still the second largest file.
+pub const NEXT_LARGEST_SOURCE_LINES : u16 = 4603;
+pub const NEXT_LARGEST_SOURCE_LINES_BEFORE_2026_09_26 : u16 = 4599;
 
 ; --- Who cites this screen, counted over the corpus as it stands now -------------------------
 ; The header's count of citing contracts was TWO and is FIVE. It is pinned as a literal here
@@ -463,7 +488,11 @@ test the_sources_these_bounds_were_read_from_are_pinned {
     assert UNIT_MIGRATION == "migrations/078_bike_units.sql";
     assert ADMIN_SCREEN == "src/ui/screens/admin_screen.rs";
     assert MEASURED_AT == "2026-09-20";
-    assert ADMIN_SCREEN_LINES == 5830;
+    assert ADMIN_SCREEN_LINES == 6627;
+    assert ADMIN_SCREEN_LINES_BEFORE_2026_09_26 == 5910;
+    assert ADMIN_SCREEN_LINES - ADMIN_SCREEN_LINES_BEFORE_2026_09_26 == 717;
+    assert ADMIN_SCREEN_LINES_BEFORE_2026_09_24 == 5881;
+    assert ADMIN_SCREEN_LINES_BEFORE_2026_09_26 - ADMIN_SCREEN_LINES_BEFORE_2026_09_24 == 29;
     assert ADMIN_SCREEN_LINES > NEXT_LARGEST_SOURCE_LINES;
 }
 

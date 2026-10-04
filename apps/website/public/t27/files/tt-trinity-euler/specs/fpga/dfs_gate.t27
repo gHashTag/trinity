@@ -208,10 +208,10 @@ pub fn dfs_traverse(graph: [MAX_NODES]DfsNode, start_addr: u8, target_value: u16
     var current_depth : u8 = 0;
     var nodes_visited : u16 = 0;
 
-    while (not dfs_stack_is_empty(stack)) {
+    while (!dfs_stack_is_empty(stack)) {
         const peek = dfs_stack_peek(stack);
 
-        if (not peek.valid) {
+        if (!peek.valid) {
             break;
         }
 
@@ -335,15 +335,15 @@ pub fn decode_dfs_gate(encoded: u32) struct { mode: u8, start_addr: u8, target: 
 // ============================================================================
 
 test "max_stack_depth_sixteen" {
-    try std.testing.expect(MAX_STACK_DEPTH == 16);
+    assert(MAX_STACK_DEPTH == 16);
 }
 
 test "max_nodes_256" {
-    try std.testing.expect(MAX_NODES == 256);
+    assert(MAX_NODES == 256);
 }
 
 test "node_addr_bits_eight" {
-    try std.testing.expect(NODE_ADDR_BITS == 8);
+    assert(NODE_ADDR_BITS == 8);
 }
 
 test "visit_unvisited_zero" {
@@ -355,157 +355,158 @@ test "visit_visited_two" {
 }
 
 test "dfs_stack_init_empty" {
-    given stack = dfs_stack_init()
-    try std.testing.expect(dfs_stack_is_empty(stack) == true);
-    try std.testing.expect(dfs_stack_depth(stack) == 0);
+    const stack = dfs_stack_init();
+    assert(dfs_stack_is_empty(stack) == true);
+    assert(dfs_stack_depth(stack) == 0);
 }
 
 test "dfs_stack_push_pop" {
-    given stack = dfs_stack_init()
-    try std.testing.expect(pushed = dfs_stack_push(stack, 10));
-    try std.testing.expect(popped = dfs_stack_pop(pushed));
-    try std.testing.expect(popped.valid == true);
-    try std.testing.expect(popped.node == 10);
-    try std.testing.expect(dfs_stack_is_empty(popped.stack) == true);
+    const stack = dfs_stack_init();
+    const pushed = dfs_stack_push(stack, 10);
+    const popped = dfs_stack_pop(pushed);
+    assert(popped.valid == true);
+    assert(popped.node == 10);
+    assert(dfs_stack_is_empty(popped.stack) == true);
 }
 
 test "dfs_stack_push_multiple" {
-    given stack = dfs_stack_init()
-    try std.testing.expect(result = dfs_stack_push(dfs_stack_push(dfs_stack_push(stack, 1), 2), 3));
-    try std.testing.expect(popped = dfs_stack_pop(result));
-    try std.testing.expect(popped.node == 3);
-    try std.testing.expect(dfs_stack_depth(popped.stack) == 2);
+    const stack = dfs_stack_init();
+    const result = dfs_stack_push(dfs_stack_push(dfs_stack_push(stack, 1), 2), 3);
+    const popped = dfs_stack_pop(result);
+    assert(popped.node == 3);
+    assert(dfs_stack_depth(popped.stack) == 2);
 }
 
 test "dfs_stack_peek" {
-    given stack = dfs_stack_init()
-    try std.testing.expect(pushed = dfs_stack_push(stack, 10));
-    try std.testing.expect(peeked = dfs_stack_peek(pushed));
-    try std.testing.expect(peeked.valid == true);
-    try std.testing.expect(peeked.node == 10);
-    try std.testing.expect(dfs_stack_depth(pushed) == 1);
+    const stack = dfs_stack_init();
+    const pushed = dfs_stack_push(stack, 10);
+    const peeked = dfs_stack_peek(pushed);
+    assert(peeked.valid == true);
+    assert(peeked.node == 10);
+    assert(dfs_stack_depth(pushed) == 1);
 }
 
 test "dfs_stack_peek_empty" {
-    given stack = dfs_stack_init()
-    try std.testing.expect(peeked = dfs_stack_peek(stack));
-    try std.testing.expect(peeked.valid == false);
+    const stack = dfs_stack_init();
+    const peeked = dfs_stack_peek(stack);
+    assert(peeked.valid == false);
 }
 
 test "dfs_stack_depth" {
-    given stack = dfs_stack_init()
-    try std.testing.expect(result = dfs_stack_push(dfs_stack_push(dfs_stack_push(stack, 1), 2), 3));
-    try std.testing.expect(dfs_stack_depth(result) == 3);
+    const stack = dfs_stack_init();
+    const result = dfs_stack_push(dfs_stack_push(dfs_stack_push(stack, 1), 2), 3);
+    assert(dfs_stack_depth(result) == 3);
 }
 
 test "dfs_node_init" {
-    given node = dfs_node_init(10, 0x1234)
-    try std.testing.expect(node.address == 10);
-    try std.testing.expect(node.value == 0x1234);
-    try std.testing.expect(node.visited == VISIT_UNVISITED);
-    try std.testing.expect(node.child_count == 0);
+    const node = dfs_node_init(10, 0x1234);
+    assert(node.address == 10);
+    assert(node.value == 0x1234);
+    assert(node.visited == VISIT_UNVISITED);
+    assert(node.child_count == 0);
 }
 
 test "dfs_node_add_child" {
-    given node = dfs_node_init(10, 0x1234)
-    try std.testing.expect(result = dfs_node_add_child(node, 20));
-    try std.testing.expect(result.child_count == 1);
-    try std.testing.expect(result.children[0] == 20);
+    const node = dfs_node_init(10, 0x1234);
+    const result = dfs_node_add_child(node, 20);
+    assert(result.child_count == 1);
+    assert(result.children[0] == 20);
 }
 
 test "dfs_node_add_multiple_children" {
-    given node = dfs_node_init(10, 0x1234)
-    try std.testing.expect(result = dfs_node_add_child(dfs_node_add_child(dfs_node_add_child(node, 20), 21), 22));
-    try std.testing.expect(result.child_count == 3);
+    const node = dfs_node_init(10, 0x1234);
+    const result = dfs_node_add_child(dfs_node_add_child(dfs_node_add_child(node, 20), 21), 22);
+    assert(result.child_count == 3);
 }
 
 test "dfs_node_add_child_overflow" {
-    given node = DfsNode{.address = 10, .value = 0x1234, .children = [_]u8{20, 21, 22, 23}, .child_count = 4, .visited = 0, .depth = 0}
-    try std.testing.expect(result = dfs_node_add_child(node, 24));
-    try std.testing.expect(result.child_count == 4  // No change);
+    const node = DfsNode{.address = 10, .value = 0x1234, .children = [_]u8{20, 21, 22, 23}, .child_count = 4, .visited = 0, .depth = 0};
+    const result = dfs_node_add_child(node, 24);
+    assert(result.child_count == 4);  // No change
 }
 
 test "dfs_node_has_child_true" {
-    given node = dfs_node_add_child(dfs_node_init(10, 0x1234), 20)
-    try std.testing.expect(dfs_node_has_child(node, 20) == true);
+    const node = dfs_node_add_child(dfs_node_init(10, 0x1234), 20);
+    assert(dfs_node_has_child(node, 20) == true);
 }
 
 test "dfs_node_has_child_false" {
-    given node = dfs_node_add_child(dfs_node_init(10, 0x1234), 20)
-    try std.testing.expect(dfs_node_has_child(node, 21) == false);
+    const node = dfs_node_add_child(dfs_node_init(10, 0x1234), 20);
+    assert(dfs_node_has_child(node, 21) == false);
 }
 
 test "dfs_node_mark_visiting" {
-    given node = dfs_node_init(10, 0x1234)
-    try std.testing.expect(result = dfs_node_mark_visiting(node));
-    try std.testing.expect(result.visited == VISIT_VISITING);
+    const node = dfs_node_init(10, 0x1234);
+    const result = dfs_node_mark_visiting(node);
+    assert(result.visited == VISIT_VISITING);
 }
 
 test "dfs_node_mark_visited" {
-    given node = dfs_node_init(10, 0x1234)
-    try std.testing.expect(result = dfs_node_mark_visited(node));
-    try std.testing.expect(result.visited == VISIT_VISITED);
+    const node = dfs_node_init(10, 0x1234);
+    const result = dfs_node_mark_visited(node);
+    assert(result.visited == VISIT_VISITED);
 }
 
 test "dfs_node_is_visited_true" {
-    given node = dfs_node_mark_visited(dfs_node_init(10, 0x1234))
-    try std.testing.expect(dfs_node_is_visited(node) == true);
+    const node = dfs_node_mark_visited(dfs_node_init(10, 0x1234));
+    assert(dfs_node_is_visited(node) == true);
 }
 
 test "dfs_node_is_visited_false" {
-    given node = dfs_node_init(10, 0x1234)
-    try std.testing.expect(dfs_node_is_visited(node) == false);
+    const node = dfs_node_init(10, 0x1234);
+    assert(dfs_node_is_visited(node) == false);
 }
 
 test "dfs_node_is_visiting_true" {
-    given node = dfs_node_mark_visiting(dfs_node_init(10, 0x1234))
-    try std.testing.expect(dfs_node_is_visiting(node) == true);
+    const node = dfs_node_mark_visiting(dfs_node_init(10, 0x1234));
+    assert(dfs_node_is_visiting(node) == true);
 }
 
 test "dfs_traverse_found" {
-    given graph = [_]DfsNode{dfs_node_add_child(dfs_node_add_child(dfs_node_init(0, 0x1234), 1), 2)} ++ [_]DfsNode{dfs_node_init(1, 0x5678), .children = [_]u8{3}, 255, 255, 255], .child_count = 1, .visited = 0, .depth = 0} ++ [_]DfsNode{dfs_node_init(2, 0x5678), .children = [_]u8{255}, 255, 255, 255], .child_count = 0, .visited = 0, .depth = 0} ++ [_]DfsNode{dfs_node_init(3, 0x5678), .children = [_]u8{255}, 255, 255, 255], .child_count = 0, .visited = 0, .depth = 0} ++ [_]DfsNode{} ** 252
-    try std.testing.expect(config = DfsConfig{.mode = DFS_MODE_STANDARD, .depth_limit = 16, .pattern_mask = 0, .prune_threshold = 0});
-    try std.testing.expect(result = dfs_traverse(graph, 0, 0x5678, config));
-    try std.testing.expect(result.found == true);
-    try std.testing.expect(result.target_node == 1);
+    // was `dfs_node_init(a, v), .children = [_]u8{c0}, c1, c2, c3], ...` (unbalanced); same fields as a DfsNode literal
+    const graph = [_]DfsNode{dfs_node_add_child(dfs_node_add_child(dfs_node_init(0, 0x1234), 1), 2)} ++ [_]DfsNode{DfsNode{.address = 1, .value = 0x5678, .children = [_]u8{3, 255, 255, 255}, .child_count = 1, .visited = 0, .depth = 0}} ++ [_]DfsNode{DfsNode{.address = 2, .value = 0x5678, .children = [_]u8{255, 255, 255, 255}, .child_count = 0, .visited = 0, .depth = 0}} ++ [_]DfsNode{DfsNode{.address = 3, .value = 0x5678, .children = [_]u8{255, 255, 255, 255}, .child_count = 0, .visited = 0, .depth = 0}} ++ [_]DfsNode{} ** 252;
+    const config = DfsConfig{.mode = DFS_MODE_STANDARD, .depth_limit = 16, .pattern_mask = 0, .prune_threshold = 0};
+    const result = dfs_traverse(graph, 0, 0x5678, config);
+    assert(result.found == true);
+    assert(result.target_node == 1);
 }
 
 test "dfs_traverse_not_found" {
-    given graph = [_]DfsNode{dfs_node_init(0, 0x1234), .children = [_]u8{1}, 255, 255, 255], .child_count = 1, .visited = 0, .depth = 0} ++ [_]DfsNode{dfs_node_init(1, 0x2345), .children = [_]u8{2}, 255, 255, 255], .child_count = 1, .visited = 0, .depth = 0} ++ [_]DfsNode{dfs_node_init(2, 0x3456), .children = [_]u8{255}, 255, 255, 255], .child_count = 0, .visited = 0, .depth = 0} ++ [_]DfsNode{} ** 253
-    try std.testing.expect(config = DfsConfig{.mode = DFS_MODE_STANDARD, .depth_limit = 16, .pattern_mask = 0, .prune_threshold = 0});
-    try std.testing.expect(result = dfs_traverse(graph, 0, 0xFFFF, config));
-    try std.testing.expect(result.found == false);
+    // was `dfs_node_init(a, v), .children = [_]u8{c0}, c1, c2, c3], ...` (unbalanced); same fields as a DfsNode literal
+    const graph = [_]DfsNode{DfsNode{.address = 0, .value = 0x1234, .children = [_]u8{1, 255, 255, 255}, .child_count = 1, .visited = 0, .depth = 0}} ++ [_]DfsNode{DfsNode{.address = 1, .value = 0x2345, .children = [_]u8{2, 255, 255, 255}, .child_count = 1, .visited = 0, .depth = 0}} ++ [_]DfsNode{DfsNode{.address = 2, .value = 0x3456, .children = [_]u8{255, 255, 255, 255}, .child_count = 0, .visited = 0, .depth = 0}} ++ [_]DfsNode{} ** 253;
+    const config = DfsConfig{.mode = DFS_MODE_STANDARD, .depth_limit = 16, .pattern_mask = 0, .prune_threshold = 0};
+    const result = dfs_traverse(graph, 0, 0xFFFF, config);
+    assert(result.found == false);
 }
 
 test "dfs_traverse_depth_limited" {
-    given graph = [_]DfsNode{dfs_node_add_child(dfs_node_init(0, 0x1234), 1)} ++ [_]DfsNode{dfs_node_add_child(dfs_node_init(1, 0x5678), 2)} ++ [_]DfsNode{dfs_node_add_child(dfs_node_init(2, 0x5678), 3)} ++ [_]DfsNode{} ** 253
-    try std.testing.expect(config = DfsConfig{.mode = DFS_MODE_DEPTH_LIMITED, .depth_limit = 1, .pattern_mask = 0, .prune_threshold = 0});
-    try std.testing.expect(result = dfs_traverse(graph, 0, 0x5678, config));
-    try std.testing.expect(result.found == false);
-    try std.testing.expect(result.depth <= config.depth_limit);
+    const graph = [_]DfsNode{dfs_node_add_child(dfs_node_init(0, 0x1234), 1)} ++ [_]DfsNode{dfs_node_add_child(dfs_node_init(1, 0x5678), 2)} ++ [_]DfsNode{dfs_node_add_child(dfs_node_init(2, 0x5678), 3)} ++ [_]DfsNode{} ** 253;
+    const config = DfsConfig{.mode = DFS_MODE_DEPTH_LIMITED, .depth_limit = 1, .pattern_mask = 0, .prune_threshold = 0};
+    const result = dfs_traverse(graph, 0, 0x5678, config);
+    assert(result.found == false);
+    assert(result.depth <= config.depth_limit);
 }
 
 test "encode_dfs_gate" {
-    given encoded = encode_dfs_gate(1, 0x20, 0x1234)
-    try std.testing.expect((encoded >> 24) == OP_DFS_GATE);
+    const encoded = encode_dfs_gate(1, 0x20, 0x1234);
+    assert((encoded >> 24) == OP_DFS_GATE);
 }
 
 test "decode_dfs_gate" {
-    given decoded = decode_dfs_gate(0xE7080A34)
-    try std.testing.expect(decoded.mode == 1);
-    try std.testing.expect(decoded.start_addr == 0x20);
-    try std.testing.expect(decoded.target == 0x0A34);
+    const decoded = decode_dfs_gate(0xE7080A34);
+    assert(decoded.mode == 1);
+    assert(decoded.start_addr == 0x20);
+    assert(decoded.target == 0x0A34);
 }
 
 test "opcode_constant" {
-    try std.testing.expect(OP_DFS_GATE == 0xE7);
+    assert(OP_DFS_GATE == 0xE7);
 }
 
 // ============================================================================
 // Invariants
 // ============================================================================
 
-}
 invariant max_stack_depth_sixteen
     assert MAX_STACK_DEPTH == 16
 
@@ -513,13 +514,13 @@ invariant max_nodes_256
     assert MAX_NODES == 256
 
 invariant node_addr_bits_eight
-    try std.testing.expect(NODE_ADDR_BITS == 8);
+    assert NODE_ADDR_BITS == 8
 
 invariant visit_state_values
-    try std.testing.expect(VISIT_UNVISITED < VISIT_VISITING and VISIT_VISITING < VISIT_VISITED);
+    assert VISIT_UNVISITED < VISIT_VISITING and VISIT_VISITING < VISIT_VISITED
 
 invariant dfs_mode_values
-    try std.testing.expect(DFS_MODE_STANDARD <= DFS_MODE_PRUNE_SUBOPTIMAL and DFS_MODE_PRUNE_SUBOPTIMAL <= 3);
+    assert DFS_MODE_STANDARD <= DFS_MODE_PRUNE_SUBOPTIMAL and DFS_MODE_PRUNE_SUBOPTIMAL <= 3
 
 invariant dfs_stack_init_empty
     given stack = dfs_stack_init()
@@ -527,53 +528,57 @@ invariant dfs_stack_init_empty
 
 invariant dfs_stack_push_increases_depth
     given stack = dfs_stack_init()
-    try std.testing.expect(initial_depth = dfs_stack_depth(stack));
-    try std.testing.expect(pushed = dfs_stack_push(stack, 10));
+    and   initial_depth = dfs_stack_depth(stack)
+    and   pushed = dfs_stack_push(stack, 10)
     assert dfs_stack_depth(pushed) == initial_depth + 1
 
 invariant dfs_stack_pop_decreases_depth
     given stack = dfs_stack_init()
-    try std.testing.expect(pushed = dfs_stack_push(stack, 10));
-    try std.testing.expect(popped = dfs_stack_pop(pushed));
-    try std.testing.expect(popped.valid == true);
+    and   pushed = dfs_stack_push(stack, 10)
+    and   popped = dfs_stack_pop(pushed)
+    assert popped.valid == true
     assert dfs_stack_depth(popped.stack) < dfs_stack_depth(pushed)
 
 invariant dfs_stack_depth_bound
-    try std.testing.expect(dfs_stack_depth(dfs_stack_push(dfs_stack_push(dfs_stack_push(dfs_stack_init(), 1), 2), 3)) == 3);
+    assert dfs_stack_depth(dfs_stack_push(dfs_stack_push(dfs_stack_push(dfs_stack_init(), 1), 2), 3)) == 3
 
-invariant dfs_stack_depth_max_bound
+invariant dfs_stack_depth_max_bound {
     var stack = dfs_stack_init();
     for (0..MAX_STACK_DEPTH) |_| {
         stack = dfs_stack_push(stack, @as(u8, @truncate(0)));
     }
-    try std.testing.expect(dfs_stack_depth(stack) <= MAX_STACK_DEPTH);
+    assert dfs_stack_depth(stack) <= MAX_STACK_DEPTH;
+}
 
 invariant dfs_node_children_bound
-    try std.testing.expect(dfs_node_add_child(dfs_node_add_child(dfs_node_add_child(dfs_node_add_child(dfs_node_init(10, 0x1234), 20), 21), 22).child_count <= 4);
+    // the outermost dfs_node_add_child( had no second argument or `)`; its child is 23
+    assert dfs_node_add_child(dfs_node_add_child(dfs_node_add_child(dfs_node_add_child(dfs_node_init(10, 0x1234), 20), 21), 22), 23).child_count <= 4
 
 invariant dfs_node_visited_sequence
     given node = dfs_node_init(10, 0x1234)
-    try std.testing.expect(visiting = dfs_node_mark_visiting(node));
-    try std.testing.expect(visited = dfs_node_mark_visiting(visiting));
+    and   visiting = dfs_node_mark_visiting(node)
+    and   visited = dfs_node_mark_visiting(visiting)
     assert node.visited != visited.visited
 
 invariant dfs_traverse_found_has_valid_target
-    given graph = [_]DfsNode{dfs_node_add_child(dfs_node_init(0, 0x1234), 1)} ++ [_]DfsNode{dfs_node_init(1, 0x5678), .children = [_]u8{255}, 255, 255, 255], .child_count = 0, .visited = 0, .depth = 0} ++ [_]DfsNode{} ** 254
-    try std.testing.expect(config = DfsConfig{.mode = DFS_MODE_STANDARD, .depth_limit = 16, .pattern_mask = 0, .prune_threshold = 0});
-    try std.testing.expect(result = dfs_traverse(graph, 0, 0x5678, config));
-    try std.testing.expect(result.found implies (result.target_node < MAX_NODES));
+    // was `dfs_node_init(a, v), .children = [_]u8{c0}, c1, c2, c3], ...` (unbalanced); same fields as a DfsNode literal
+    given graph = [_]DfsNode{dfs_node_add_child(dfs_node_init(0, 0x1234), 1)} ++ [_]DfsNode{DfsNode{.address = 1, .value = 0x5678, .children = [_]u8{255, 255, 255, 255}, .child_count = 0, .visited = 0, .depth = 0}} ++ [_]DfsNode{} ** 254
+    and   config = DfsConfig{.mode = DFS_MODE_STANDARD, .depth_limit = 16, .pattern_mask = 0, .prune_threshold = 0}
+    and   result = dfs_traverse(graph, 0, 0x5678, config)
+    // `a implies b` spelled `!a or b` (t27 has no implies operator)
+    assert !result.found or (result.target_node < MAX_NODES)
 
 invariant dfs_traverse_nodes_visited_bound
     given graph = [_]DfsNode{} ** 256
-    try std.testing.expect(config = DfsConfig{.mode = DFS_MODE_STANDARD, .depth_limit = 16, .pattern_mask = 0, .prune_threshold = 0});
-    try std.testing.expect(result = dfs_traverse(graph, 0, 0xFFFF, config));
-    try std.testing.expect(result.nodes_visited <= MAX_NODES);
+    and   config = DfsConfig{.mode = DFS_MODE_STANDARD, .depth_limit = 16, .pattern_mask = 0, .prune_threshold = 0}
+    and   result = dfs_traverse(graph, 0, 0xFFFF, config)
+    assert result.nodes_visited <= MAX_NODES
 
 invariant dfs_traverse_depth_bound
     given graph = [_]DfsNode{} ** 256
-    try std.testing.expect(config = DfsConfig{.mode = DFS_MODE_DEPTH_LIMITED, .depth_limit = 5, .pattern_mask = 0, .prune_threshold = 0});
-    try std.testing.expect(result = dfs_traverse(graph, 0, 0xFFFF, config));
-    try std.testing.expect(result.depth <= config.depth_limit);
+    and   config = DfsConfig{.mode = DFS_MODE_DEPTH_LIMITED, .depth_limit = 5, .pattern_mask = 0, .prune_threshold = 0}
+    and   result = dfs_traverse(graph, 0, 0xFFFF, config)
+    assert result.depth <= config.depth_limit
 
 // ============================================================================
 // Benchmarks

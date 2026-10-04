@@ -19,7 +19,7 @@
 ; elsewhere -- the star credit the same submitter sends three lines later does carry one, which is
 ; recorded below -- so the zero is a property of this ledger and not of the repository. The table is
 ; migrations/027_game_high_scores.sql, and line 7 is the whole problem: telegram_id is the
-; PRIMARY KEY by itself. One player is one row, one row is one number, and src/api/game.rs:122
+; PRIMARY KEY by itself. One player is one row, one row is one number, and src/api/game.rs:120
 ; merges an arriving submission into that number with GREATEST. A ride-era run and a catch-era
 ; run by the same player therefore land in the SAME row, the larger number wins, and after the
 ; write no field anywhere in the row records which game produced the survivor. This file states
@@ -27,7 +27,7 @@
 ; --
 ; WHERE THE ISSUE IS REFUTED. "Adding only a game_key discriminator ... so skate-era rows stay
 ; distinguishable from ride-era rows" does not follow from adding a COLUMN. While telegram_id
-; remains the sole PRIMARY KEY, the upsert at src/api/game.rs:120 still conflicts on the player
+; remains the sole PRIMARY KEY, the upsert at src/api/game.rs:118 still conflicts on the player
 ; alone, so the second era overwrites the first era's discriminator inside the one row the
 ; player is allowed to have -- the new column is destroyed by the same statement that would have
 ; used it. Rows stay distinct only when the KEY is the pair. That is why eras_are_distinguishable
@@ -130,12 +130,29 @@ pub const CORPUS_FILE_COUNT : u8 = 43;
 pub const CONTRACTS_DECLARING_THE_ABSENCE : u8 = 1;
 pub const THE_ABSENCE_IS_DECLARED_ONLY_HERE : bool = true;
 pub const THE_CENSUS_COUNTS_DECLARATIONS_NOT_MENTIONS : bool = true;
+; Re-measured 2026-09-22 and deliberately NOT bound: a census of the corpus moves with every new
+; contract. CORPUS_FILE_COUNT above is KEPT at 43, the reading the declaration count was taken
+; over. 14b01ac added order_presentation.t27 and person_naming.t27 later on 2026-09-21, and specs/
+; holds 45 tracked .t27 files. Re-run at a33e500 over the 45, game_key occurs in one file, this
+; one, so no other contract can declare the absence and the declaration count is still one.
+pub const CORPUS_FILE_COUNT_REMEASURED : u8 = 45;
+pub const CORPUS_FILE_COUNT_REMEASURED_AT : str = "2026-09-22";
+pub const CONTRACTS_DECLARING_THE_ABSENCE_REMEASURED : u8 = 1;
 
 ; --- Who writes to the ledger (measured 2026-09-20) ---------------------------------------------
 pub const ENDPOINT_CALLERS_IN_REPOSITORY : u8 = 1;
 pub const GAME_ASSETS_POSTING_TO_THE_ENDPOINT : u8 = 0;
 pub const SKATE_ERA_ASSET_EXISTS : bool = false;
 pub const CATCH_ERA_ASSET_IS_MOUNTED : bool = false;
+; CORRECTED 2026-09-25: the catch-era asset no longer exists either. The owner's ruling of that day
+; (#12, nothing cannabis-related anywhere) removed assets/game/catch.js, whose falling pieces
+; included a leaf and a bud, with the rest of the old shop's served media; the removal is recorded
+; by turbobaby/legacy-retirement as ORPHANED_ASSET_REMOVED. No code mounted it before and none mounts
+; it now, so CATCH_ERA_ASSET_IS_MOUNTED is unchanged. The refutation paragraph in the header is the
+; 2026-09-21 reading: its "neither game asset" now has one member, ride.js, which still does not
+; post to this endpoint. The rows the catch era wrote are untouched; nothing here moves a score.
+pub const CATCH_ERA_ASSET_EXISTS : bool = false;
+pub const CATCH_ERA_ASSET_REMOVED_AT : str = "2026-09-25";
 ; src/ui/screens/ride_screen.rs:66 sends the run's DISTANCE in the score field. The catch-era
 ; game the table was built for counted points. Two different quantities have therefore been
 ; written into one INTEGER column across the eras, which is a second reason the surviving number
@@ -167,7 +184,7 @@ pub fn surviving_era_is_recoverable(same_player: bool, distinguishable: bool) bo
   return !two_runs_share_one_row(same_player, distinguishable);
 }
 
-; --- The merge (src/api/game.rs:118-124) ---------------------------------------------------------
+; --- The merge (src/api/game.rs:116-122) ---------------------------------------------------------
 ; INSERT ... ON CONFLICT (telegram_id) DO UPDATE SET high_score = GREATEST(existing, arriving).
 ; Stated as a function of two numbers and nothing else: no era, no timestamp, no game enters it.
 pub fn surviving_score(stored: i32, submitted: i32) i32 {
@@ -177,11 +194,11 @@ pub fn surviving_score(stored: i32, submitted: i32) i32 {
   return stored;
 }
 
-; --- Admission (src/api/game.rs:95-108) -----------------------------------------------------------
-; MAX_SCORE is src/api/game.rs:25; the floor is src/api/game.rs:98, which refuses a negative and
+; --- Admission (src/api/game.rs:97-106) -----------------------------------------------------------
+; MAX_SCORE is src/api/game.rs:25; the floor is src/api/game.rs:100, which refuses a negative and
 ; admits zero -- tests/integration_game_scores.rs:221-226 pins zero as a real score rather than an
-; invalid one. MAX_DISPLAY_NAME_LEN is src/api/game.rs:24 and is enforced at :106 after the blank
-; name is replaced at :101-105; the length is the only thing this file records about that value.
+; invalid one. MAX_DISPLAY_NAME_LEN is src/api/game.rs:24 and is enforced at :104 after the blank
+; name is replaced at :103; the length is the only thing this file records about that value.
 pub const SCORE_MIN_ACCEPTED : i32 = 0;
 pub const SCORE_MAX_ACCEPTED : i32 = 10000000;
 pub const DISPLAY_NAME_MAX_LEN : u16 = 50;
@@ -191,7 +208,7 @@ pub fn submitted_score_is_admissible(score: i32) bool {
 }
 
 ; identity_proved is request_identity.t27's verdict, arriving as a boolean. id_param_valid is the
-; separate numeric check at src/api/game.rs:95. The two are distinct: a well-formed identifier
+; separate numeric check at src/api/game.rs:97. The two are distinct: a well-formed identifier
 ; that belongs to somebody else is refused by the first and passed by the second, which is what
 ; tests/integration_game_scores.rs:330-364 proves by expecting a refusal rather than a write.
 pub fn submission_admitted(identity_proved: bool, id_param_valid: bool, score: i32, display_name_len: u16) bool {
@@ -217,7 +234,7 @@ pub fn replay_changes_the_stored_row(stored: i32, replayed: i32) bool {
 }
 
 ; --- What the response says, and what the row holds -------------------------------------------------
-; src/api/game.rs:162 answers with the score that arrived, and src/api/game.rs:144 counts the
+; src/api/game.rs:160 answers with the score that arrived, and src/api/game.rs:142 counts the
 ; players standing above the score that arrived. Neither reads the number that survived the merge,
 ; so both describe the row only when the arriving score is the survivor. The stored half of the
 ; scenario is witnessed by tests/integration_game_scores.rs:143-164 -- 5000 then 10 leaves 5000
@@ -251,26 +268,38 @@ pub fn absence_from_board_proves_absence_from_ledger(board_is_complete: bool) bo
 }
 
 ; --- Asymmetry of the two routes -------------------------------------------------------------------
-; The POST passes an owner gate (src/api/game.rs:96); the GET takes no headers at all
-; (src/api/game.rs:46-49) and returns whatever display name the row holds (src/api/game.rs:78).
+; The POST passes an owner gate (src/api/game.rs:98); the GET takes no headers at all
+; (src/api/game.rs:46-49) and answers with the name public_display_name allows (src/api/game.rs:80).
 ; What that gate PROVES is not judged here, and must not be read out of the line above:
 ; request_identity.t27 owns the gate and pins a lenient path that the strict one falls through to,
 ; so "passes the gate" is a weaker fact than "the signature verified". This file records which
 ; route carries a gate and which carries none, and restates no part of that tripwire.
-; Anonymity of the board is a property of what submitters put in that column, not a
-; property the endpoint enforces -- and the only shipped submitter builds the name out of the
-; player's own identifier (src/ui/screens/ride_screen.rs:66), which the anonymous route then
-; publishes verbatim. No name, real or placeholder, is carried in this file.
+; CORRECTED 2026-09-24. Until that day anonymity of the board was a property of what submitters
+; put in the column, not of the endpoint -- and the only shipped submitter built the name out of
+; the player's own identifier (src/ui/screens/ride_screen.rs:66 sent "Player" plus the id), which
+; the anonymous route published verbatim: every rider's Telegram id was public. Now the endpoint
+; enforces it on both routes: public_display_name (src/api/game.rs:178) turns a blank name, a name
+; holding the player's own id, or a name holding a run of IDENTIFIER_DIGIT_RUN digits into the
+; placeholder, on the read (so rows stored before the fix are covered with no write to the live
+; table) and on the write (src/api/game.rs:103). The ride screen sends no name at all. The unit
+; test a_name_carrying_the_players_telegram_id_is_never_published in src/api/game.rs pins it, and
+; tests/leaderboard_anonymity_wiring.rs pins the screen as text. No name, real or placeholder, is
+; carried in this file.
 pub const SUBMISSION_PASSES_THE_OWNER_GATE : bool = true;
 pub const OWNER_GATE_STRENGTH_IS_NOT_JUDGED_HERE : bool = true;
 pub const BOARD_READ_IS_ANONYMOUS : bool = true;
-pub const BOARD_RETURNS_THE_STORED_DISPLAY_NAME : bool = true;
-pub const SHIPPED_SUBMITTER_DERIVES_THE_NAME_FROM_THE_IDENTIFIER : bool = true;
+pub const BOARD_RETURNS_THE_STORED_DISPLAY_NAME : bool = false;
+pub const SHIPPED_SUBMITTER_DERIVES_THE_NAME_FROM_THE_IDENTIFIER : bool = false;
+pub const BOARD_MASKS_A_NAME_THAT_CARRIES_AN_IDENTIFIER : bool = true;
+pub const WRITE_STORES_THE_PLACEHOLDER_FOR_A_NAME_THAT_CARRIES_AN_IDENTIFIER : bool = true;
+pub const IDENTIFIER_DIGIT_RUN : u8 = 6;
+pub const STORED_ROWS_ARE_REWRITTEN_BY_THE_FIX : bool = false;
 
-; A submitter who sends nothing leaves the server's placeholder in the row (src/api/game.rs:101-105),
+; A submitter who sends nothing gets the server's placeholder in the row (src/api/game.rs:103),
 ; and a placeholder is the most anonymous entry a board can show. The unsupplied case is therefore
-; anonymous; anonymity fails only when a SUPPLIED name is built out of the player's own identifier,
-; which is exactly what the one shipped submitter does.
+; anonymous; before 2026-09-24 anonymity failed when a SUPPLIED name was built out of the player's
+; own identifier, which is exactly what the one shipped submitter did. The function below keeps
+; that reading of a name; the board no longer lets such a name through.
 pub fn board_entry_is_anonymous(name_is_submitter_supplied: bool, name_is_derived_from_the_identifier: bool) bool {
   if (!name_is_submitter_supplied) {
     return true;
@@ -331,6 +360,17 @@ test the_repository_contains_no_game_discriminator {
   assert THE_CENSUS_COUNTS_DECLARATIONS_NOT_MENTIONS == true;
 }
 
+; Corrected 2026-09-22: the declaration count above was taken over 43 files, and the corpus grew to
+; 45 the same day. Re-run over the 45, it has not moved.
+test the_declaration_census_was_re_run_over_the_grown_corpus {
+  assert CORPUS_FILE_COUNT_REMEASURED == 45;
+  assert CORPUS_FILE_COUNT_REMEASURED_AT == "2026-09-22";
+  assert CORPUS_FILE_COUNT_REMEASURED > CORPUS_FILE_COUNT;
+  assert CONTRACTS_DECLARING_THE_ABSENCE_REMEASURED == 1;
+  assert CONTRACTS_DECLARING_THE_ABSENCE_REMEASURED == CONTRACTS_DECLARING_THE_ABSENCE;
+  assert CONTRACTS_DECLARING_THE_ABSENCE_REMEASURED < CORPUS_FILE_COUNT_REMEASURED;
+}
+
 ; The coincidence with the catalog contract's page budgets, dated and pinned. Both files measured
 ; it independently on 2026-09-21 and both recorded that it is precedent rather than derivation;
 ; this assertion is this file's half, and it goes red if a later reader turns the coincidence into
@@ -386,6 +426,9 @@ test the_quantity_in_the_column_is_not_the_same_thing_across_eras {
   assert GAME_ASSETS_POSTING_TO_THE_ENDPOINT == 0;
   assert SKATE_ERA_ASSET_EXISTS == false;
   assert CATCH_ERA_ASSET_IS_MOUNTED == false;
+  // Removed 2026-09-25 (owner's ruling #12); unmounted before and after.
+  assert CATCH_ERA_ASSET_EXISTS == false;
+  assert CATCH_ERA_ASSET_REMOVED_AT == "2026-09-25";
 }
 
 test score_admission_is_a_closed_interval_that_admits_zero {
@@ -443,8 +486,12 @@ test the_write_passes_a_gate_and_the_read_passes_none {
   assert SUBMISSION_PASSES_THE_OWNER_GATE == true;
   assert OWNER_GATE_STRENGTH_IS_NOT_JUDGED_HERE == true;
   assert BOARD_READ_IS_ANONYMOUS == true;
-  assert BOARD_RETURNS_THE_STORED_DISPLAY_NAME == true;
-  assert SHIPPED_SUBMITTER_DERIVES_THE_NAME_FROM_THE_IDENTIFIER == true;
+  assert BOARD_RETURNS_THE_STORED_DISPLAY_NAME == false;
+  assert SHIPPED_SUBMITTER_DERIVES_THE_NAME_FROM_THE_IDENTIFIER == false;
+  assert BOARD_MASKS_A_NAME_THAT_CARRIES_AN_IDENTIFIER == true;
+  assert WRITE_STORES_THE_PLACEHOLDER_FOR_A_NAME_THAT_CARRIES_AN_IDENTIFIER == true;
+  assert IDENTIFIER_DIGIT_RUN == 6;
+  assert STORED_ROWS_ARE_REWRITTEN_BY_THE_FIX == false;
   assert board_entry_is_anonymous(true, false) == true;
   assert board_entry_is_anonymous(true, true) == false;
   assert board_entry_is_anonymous(false, false) == true;
@@ -514,8 +561,10 @@ invariant a_worse_arriving_score_is_reported_although_the_row_kept_the_better_on
 invariant a_truncated_board_proves_nothing_about_a_missing_row
   assert absence_from_board_proves_absence_from_ledger(board_shows_every_row(LEADERBOARD_LIMIT_MAX + 1)) == false
 
+; CORRECTED 2026-09-24: the conjunct SHIPPED_SUBMITTER_DERIVES_THE_NAME_FROM_THE_IDENTIFIER == true
+; recorded the leak; the fix makes it false and moves the refusal onto the board itself.
 invariant an_identifier_derived_name_is_not_an_anonymous_board_entry
-  assert board_entry_is_anonymous(true, true) == false and SHIPPED_SUBMITTER_DERIVES_THE_NAME_FROM_THE_IDENTIFIER == true
+  assert board_entry_is_anonymous(true, true) == false and SHIPPED_SUBMITTER_DERIVES_THE_NAME_FROM_THE_IDENTIFIER == false and BOARD_MASKS_A_NAME_THAT_CARRIES_AN_IDENTIFIER == true
 
 invariant the_absent_discriminator_is_absent_from_this_ledger_and_not_from_the_product
   assert GAME_DISCRIMINATOR_IS_NOT_SHIPPED_IN_THIS_LEDGER == true and SCORE_CALL_NAMES_NO_GAME == true and STAR_CALL_NAMES_ITS_GAME == true

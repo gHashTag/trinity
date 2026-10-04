@@ -131,6 +131,11 @@ module DFT_Testbench {
         test_mode = false;
         run_bist();
     }
+    test test_on_comb {
+        reset();
+        var result : u32 = on_comb(0xFFFFFFFF, 32);
+        invariant result == 0;
+    }
 }
 
 // W696: the hardware boundary, DERIVED -- not chosen.

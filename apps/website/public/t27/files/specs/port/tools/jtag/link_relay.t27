@@ -3,238 +3,240 @@
 // Port of tools/jtag/link_relay.py to t27
 
 module LinkRelay {
-    use base::types;
+    // MPSSE opcodes, spelled as the Python constants spell them.
+    const CLK_BITS_OUT_NEG : u32 = 0x11;
+    const CLK_TMS_OUT_NEG  : u32 = 0x4A;
 
-    // Opaque handle for MPSSE device
-    // In generated code this would map to the actual MPSSE type from the target language
-    pub struct Mpsse {
-        handle: usize,
+    // JTAG instructions. Every die on this chain has a six-bit IR, so the
+    // chain's instruction register is `chain * IR_WIDTH` bits wide and each
+    // die's opcode sits at its own index.
+    const INSTR_BYPASS : u32 = 0x1F;
+    const INSTR_IDCODE : u32 = 0x0E;
+    const INSTR_USER1  : u32 = 0x01;
+    const IR_WIDTH     : u32 = 6;
+
+    // The low half of an IDCODE that marks the controller die. Every other
+    // IDCODE on the chain is a target.
+    const CONTROLLER_ID_LOW : u32 = 0x2700;
+
+    // A whole DR word is 32 bits, which is four bytes back from the read.
+    const DR_BITS  : u32 = 32;
+    const DR_BYTES : u32 = 4;
+
+    // The device handle. Opening it is the target runtime's job and not the
+    // spec's, so every body below that touches hardware is `undefined` -- the
+    // same shape read_user1.t27 uses for the same device in this directory.
+    pub struct LinkRelayMpsse {
     }
 
-    // Constants from the Python code
-    const CLK_BITS_OUT_NEG : u8 = 0x11;
-    const CLK_TMS_OUT_NEG  : u8 = 0x4A;
-    const INSTR_BYPASS     : u8 = 0x1F;
-    const INSTR_IDCODE     : u8 = 0x0E;
-    const INSTR_USER1      : u8 = 0x01;
-
-    // IR shift: enter Shift-IR, shift 6 bits (5+1), exit to Run-Test/Idle
-    pub fn shift_ir(m: *Mpsse, val: u8) void {
-        // TMS sequence: 1,1,0,0 to enter Shift-IR from Run-Test/Idle
-        m.tms(&[1, 1, 0, 0]);
-        // Shift 5 bits on TCK falling edge (LSB first)
-        m.w(&[CLK_BITS_OUT_NEG, 4, val & 0x1F]);
-        // Shift the 6th bit with TMS=1 to exit Shift-IR
-        m.w(&[CLK_TMS_OUT_NEG, 0, (((val >> 5) & 1) << 7) | 0x01]);
-        // TMS sequence: 1,0 to go to Run-Test/Idle
-        m.tms(&[1, 0]);
+    pub fn mpsse_new(idx: u32) LinkRelayMpsse {
+        undefined;
     }
 
-    // DR read/write: shift nbits (default 32) in/out, return read word or None
-    pub fn shift_dr_rw(m: *Mpsse, out_word: u32, nbits: u32) ?u32 {
+    pub fn mpsse_tms(m: LinkRelayMpsse, bits: []u8) void {
+        undefined;
+    }
+
+    pub fn mpsse_w(m: LinkRelayMpsse, data: []u8) void {
+        undefined;
+    }
+
+    pub fn mpsse_r(m: LinkRelayMpsse, nbits: u32) []u8 {
+        undefined;
+    }
+
+    pub fn mpsse_close(m: LinkRelayMpsse) void {
+        undefined;
+    }
+
+    // What a DR read came back with. The Python returns `None` on a short
+    // read; a spec that has no optional says so with a field, so that a
+    // caller which forgets to look at `ok` reads a zero rather than a word
+    // the hardware never sent.
+    pub struct DrWord {
+        ok: bool,
+        value: u32,
+    }
+
+    // What a die said about itself.
+    pub struct DieRole {
+        ok: bool,
+        role: str,
+        idcode: u32,
+    }
+
+    // IR shift: enter Shift-IR, shift 6 bits (5+1), exit to Run-Test/Idle.
+    //
+    // `val` is the whole chain's IR word, and only its low six bits are
+    // shifted -- which is what the Python does too, by masking rather than by
+    // narrowing the parameter.
+    pub fn shift_ir(m: LinkRelayMpsse, val: u32) void {
+        // TMS 1,1,0,0 to enter Shift-IR from Run-Test/Idle.
+        mpsse_tms(m, [1, 1, 0, 0]);
+        // Five bits on the TCK falling edge, LSB first.
+        mpsse_w(m, [CLK_BITS_OUT_NEG, 4, val & 0x1F]);
+        // The sixth bit with TMS=1, which exits Shift-IR on the same clock.
+        mpsse_w(m, [CLK_TMS_OUT_NEG, 0, (((val >> 5) & 1) << 7) | 0x01]);
+        // TMS 1,0 back to Run-Test/Idle.
+        mpsse_tms(m, [1, 0]);
+    }
+
+    // DR read/write: shift `nbits` out and the same count back.
+    pub fn shift_dr_rw(m: LinkRelayMpsse, out_word: u32, nbits: u32) DrWord {
         if (nbits == 0) {
-            return null;
+            return DrWord { ok: false, value: 0 };
         }
-        const bytes = @intToBytes(out_word);
-        // Write nbits-1 bits on TCK falling edge
-        m.w(&[CLK_BITS_OUT_NEG, @intCast((nbits - 1) as u8), bytes[0], bytes[1], bytes[2], bytes[3]]);
-        // Write last bit with TMS=1 to exit Shift-DR
-        m.w(&[CLK_TMS_OUT_NEG, 0, ((bytes[3] >> 7) & 0x01) | 0x01]);
-        m.tms(&[1, 0]);
-        // Read nbits back
-        const got = m.r(nbits);
-        if (got.len < 4) {
-            return null;
+        const b0 = byte_of(out_word, 0);
+        const b1 = byte_of(out_word, 1);
+        const b2 = byte_of(out_word, 2);
+        const b3 = byte_of(out_word, 3);
+        // nbits-1 bits on the TCK falling edge.
+        mpsse_w(m, [CLK_BITS_OUT_NEG, nbits - 1, b0, b1, b2, b3]);
+        // The last bit with TMS=1, which exits Shift-DR.
+        mpsse_w(m, [CLK_TMS_OUT_NEG, 0, ((b3 >> 7) & 0x01) | 0x01]);
+        mpsse_tms(m, [1, 0]);
+        const got = mpsse_r(m, nbits);
+        if (got.len < DR_BYTES) {
+            return DrWord { ok: false, value: 0 };
         }
-        return @bytesToInt(got[0], got[1], got[2], got[3]);
+        return DrWord { ok: true, value: bytes_to_int(got[0], got[1], got[2], got[3]) };
     }
 
-    // Single JTAG transfer: select die, send IR+DR, return DR value
-    pub fn xfer(idx: u32, cmd: u8, chain: u32) u32 {
-        const m = Mpsse.open(0);
-        // Shift IR to select die: chain*6 bits, LSB first, target die gets USER1, others BYPASS
-        var ir_val: u32 = 0;
-        var i: u32 = 0;
-        while (i < chain) : (i += 1) {
+    // The chain's IR word for one selected die: `sel` at `idx`, BYPASS
+    // everywhere else. Pulled out of the two callers that used to spell the
+    // same loop twice each.
+    pub fn chain_ir(idx: u32, chain: u32, sel: u32) u32 {
+        var ir_val : u32 = 0;
+        var i : u32 = 0;
+        while (i < chain) {
             if (i == idx) {
-                ir_val |= @intCast(INSTR_USER1 as u32) << (i * 6);
+                ir_val = ir_val | (sel << (i * IR_WIDTH));
             } else {
-                ir_val |= @intCast(INSTR_BYPASS as u32) << (i * 6);
+                ir_val = ir_val | (INSTR_BYPASS << (i * IR_WIDTH));
             }
+            i = i + 1;
         }
-        shift_ir(m, @intCast(ir_val as u8));
-        // Shift DR with command
-        const dr_val = shift_dr_rw(m, @intCast(cmd as u32) << 24, 32);
-        m.close();
-        return dr_val.or(0);
+        return ir_val;
     }
 
-    // Request/response: send command, then read response with IDCODE
-    pub fn request(idx: u32, cmd: u8, chain: u32) ?u32 {
-        const m = Mpsse.open(0);
-        // First transfer: send command
-        var ir_val: u32 = 0;
-        var i: u32 = 0;
-        while (i < chain) : (i += 1) {
-            if (i == idx) {
-                ir_val |= @intCast(INSTR_USER1 as u32) << (i * 6);
-            } else {
-                ir_val |= @intCast(INSTR_BYPASS as u32) << (i * 6);
-            }
+    // Single JTAG transfer: select a die, send IR+DR, return the DR value.
+    pub fn xfer(idx: u32, cmd: u32, chain: u32) u32 {
+        const m = mpsse_new(0);
+        defer mpsse_close(m);
+        shift_ir(m, chain_ir(idx, chain, INSTR_USER1));
+        const dr = shift_dr_rw(m, cmd << 24, DR_BITS);
+        if (dr.ok) {
+            return dr.value;
         }
-        shift_ir(m, @intCast(ir_val as u8));
-        _ = shift_dr_rw(m, @intCast(cmd as u32) << 24, 32);
-        // Second transfer: read response with IDCODE
-        ir_val = 0;
-        i = 0;
-        while (i < chain) : (i += 1) {
-            if (i == idx) {
-                ir_val |= @intCast(INSTR_IDCODE as u32) << (i * 6);
-            } else {
-                ir_val |= @intCast(INSTR_BYPASS as u32) << (i * 6);
-            }
-        }
-        shift_ir(m, @intCast(ir_val as u8));
-        const resp = shift_dr_rw(m, 0, 32);
-        m.close();
-        return resp;
-    }
-
-    // Identify die role by reading IDCODE
-    pub fn role_of(idx: u32, chain: u32) ?struct{ role: []u8, idcode: u32 } {
-        const resp = request(idx, 0x00, chain);
-        if (resp.is_null()) {
-            return null;
-        }
-        const idcode = resp.unwrap();
-        const role = if ((idcode & 0xFFFF) == 0x2700) "controller" else "target";
-        return .{ .role = role, .idcode = idcode };
-    }
-
-    // CLI entry point: scan chain and print roles
-    pub fn main() i32 {
-        // Simplified: would parse args and scan chain
-        // For port purposes, we return success
         return 0;
     }
 
-    // Three-hop test: send command through three dice
+    // Request/response: send the command on USER1, then read the answer back
+    // on IDCODE. Two IR shifts, because the die answers on a different
+    // instruction than the one it was asked on.
+    pub fn request(idx: u32, cmd: u32, chain: u32) DrWord {
+        const m = mpsse_new(0);
+        defer mpsse_close(m);
+        shift_ir(m, chain_ir(idx, chain, INSTR_USER1));
+        // The echo from the command shift is discarded, as the Python
+        // discards it: a die on USER1 answers on the NEXT instruction, so
+        // what comes back here is the bypass register, not the reply.
+        shift_dr_rw(m, cmd << 24, DR_BITS);
+        shift_ir(m, chain_ir(idx, chain, INSTR_IDCODE));
+        return shift_dr_rw(m, 0, DR_BITS);
+    }
+
+    // Which die this is, by its IDCODE. A predicate rather than a string
+    // comparison: two `str` values that read the same are not necessarily
+    // equal in every backend, so the discriminator is the thing tested.
+    pub fn is_controller(idcode: u32) bool {
+        return (idcode & 0xFFFF) == CONTROLLER_ID_LOW;
+    }
+
+    pub fn role_name(idcode: u32) str {
+        if (is_controller(idcode)) {
+            return "controller";
+        }
+        return "target";
+    }
+
+    // Identify a die's role by reading its IDCODE.
+    pub fn role_of(idx: u32, chain: u32) DieRole {
+        const resp = request(idx, 0x00, chain);
+        if (resp.ok) {
+            return DieRole { ok: true, role: role_name(resp.value), idcode: resp.value };
+        }
+        return DieRole { ok: false, role: "", idcode: 0 };
+    }
+
+    // CLI entry point: scan the chain and print roles. The scan itself is the
+    // runtime's, so this returns the exit status and nothing more.
+    pub fn main() i32 {
+        return 0;
+    }
+
+    // Three-hop test: send a command through three dice.
     pub fn three_hop(chain: u32) void {
-        // Simplified: would perform three-hop test
+        undefined;
     }
 
-    // ============================================================================
-    // Helper functions for byte conversion (would be provided by runtime)
-    // ============================================================================
-
-    pub fn int_to_bytes(value: u32) [4]u8 {
-        return [
-            @intCast((value >> 24) & 0xFF),
-            @intCast((value >> 16) & 0xFF),
-            @intCast((value >> 8) & 0xFF),
-            @intCast(value & 0xFF),
-        ];
+    // Byte `n` of a word, counting from the most significant. The Python
+    // packs big-endian, so byte 0 is bits 31..24.
+    pub fn byte_of(value: u32, n: u32) u32 {
+        return (value >> ((3 - n) * 8)) & 0xFF;
     }
 
-    pub fn bytes_to_int(b0: u8, b1: u8, b2: u8, b3: u8) u32 {
-        return (@intCast(b0) << 24) | (@intCast(b1) << 16) | (@intCast(b2) << 8) | @intCast(b3);
+    pub fn bytes_to_int(b0: u32, b1: u32, b2: u32, b3: u32) u32 {
+        return (b0 << 24) | (b1 << 16) | (b2 << 8) | b3;
     }
 
-    // ============================================================================
+    // ========================================================================
     // Tests
-    // ============================================================================
+    // ========================================================================
 
-    test "shift_ir_encodes_value" {
-        // Test that shift_ir computes the correct bytes for a given value
-        // We can't test MPSSE calls directly, but we can verify the bit logic
-        const val: u8 = 0x2A; // 0b101010
-        const low5 = val & 0x1F; // 0b01010 = 0x0A
-        const high1 = (val >> 5) & 1; // 1
-        const tms_byte = (high1 << 7) | 0x01; // 0x81
-        try std.testing.expect(low5 == 0x0A);
-        try std.testing.expect(tms_byte == 0x81);
-    }
+    test "shift_ir splits a six-bit instruction into five bits and a TMS bit"
+        // 0x2A is 0b101010: low five are 0b01010, the sixth is 1, and the
+        // sixth rides out in bit 7 of the TMS byte alongside the exit bit.
+        assert((0x2A & 0x1F) == 0x0A);
+        assert(((((0x2A >> 5) & 1) << 7) | 0x01) == 0x81);
+        // And a value whose sixth bit is clear leaves the exit bit alone.
+        assert(((((0x0A >> 5) & 1) << 7) | 0x01) == 0x01);
 
-    test "shift_dr_rw_byte_conversion" {
-        // Test the byte conversion logic
-        const out_word: u32 = 0x12345678;
-        const bytes = int_to_bytes(out_word);
-        try std.testing.expect(bytes[0] == 0x12);
-        try std.testing.expect(bytes[1] == 0x34);
-        try std.testing.expect(bytes[2] == 0x56);
-        try std.testing.expect(bytes[3] == 0x78);
-        const back = bytes_to_int(bytes[0], bytes[1], bytes[2], bytes[3]);
-        try std.testing.expect(back == out_word);
-    }
+    test "a word survives the round trip through four big-endian bytes"
+        assert(byte_of(0x12345678, 0) == 0x12);
+        assert(byte_of(0x12345678, 1) == 0x34);
+        assert(byte_of(0x12345678, 2) == 0x56);
+        assert(byte_of(0x12345678, 3) == 0x78);
+        assert(bytes_to_int(0x12, 0x34, 0x56, 0x78) == 0x12345678);
 
-    test "xfer_computes_ir_val" {
-        // Test IR value computation for chain=3, idx=1
-        var ir_val: u32 = 0;
-        const chain: u32 = 3;
-        const idx: u32 = 1;
-        var i: u32 = 0;
-        while (i < chain) : (i += 1) {
-            if (i == idx) {
-                ir_val |= @intCast(INSTR_USER1 as u32) << (i * 6);
-            } else {
-                ir_val |= @intCast(INSTR_BYPASS as u32) << (i * 6);
-            }
-        }
-        // idx=0: BYPASS (0x1F) << 0 = 0x1F
-        // idx=1: USER1 (0x01) << 6 = 0x40
-        // idx=2: BYPASS (0x1F) << 12 = 0x1F000
-        // Total: 0x1F + 0x40 + 0x1F000 = 0x1F05F
-        try std.testing.expect(ir_val == 0x1F05F);
-    }
+    test "the chain IR selects one die and bypasses the rest"
+        // chain=3, idx=1: BYPASS at 0, USER1 at 1, BYPASS at 2.
+        //   0x1F | (0x01 << 6) | (0x1F << 12) = 0x1F + 0x40 + 0x1F000
+        assert(chain_ir(1, 3, INSTR_USER1) == 0x1F05F);
+        // The same chain on IDCODE: 0x0E << 6 = 0x380 in the middle slot, so
+        //   0x1F000 | 0x380 | 0x1F = 0x1F39F.
+        assert(chain_ir(1, 3, INSTR_IDCODE) == 0x1F39F);
+        // A single die is its own instruction with nothing bypassed.
+        assert(chain_ir(0, 1, INSTR_USER1) == INSTR_USER1);
+        // An index off the end bypasses every die, which is the safe word.
+        assert(chain_ir(9, 2, INSTR_USER1) == 0x7DF);
+        // An empty chain shifts nothing.
+        assert(chain_ir(0, 0, INSTR_USER1) == 0);
 
-    test "request_two_pass_logic" {
-        // Test that request does two IR shifts with different instructions
-        // First pass: USER1 for target, BYPASS for others
-        // Second pass: IDCODE for target, BYPASS for others
-        const chain: u32 = 3;
-        const idx: u32 = 1;
-        // First IR
-        var ir_val1: u32 = 0;
-        var i: u32 = 0;
-        while (i < chain) : (i += 1) {
-            if (i == idx) {
-                ir_val1 |= @intCast(INSTR_USER1 as u32) << (i * 6);
-            } else {
-                ir_val1 |= @intCast(INSTR_BYPASS as u32) << (i * 6);
-            }
-        }
-        // Second IR
-        var ir_val2: u32 = 0;
-        i = 0;
-        while (i < chain) : (i += 1) {
-            if (i == idx) {
-                ir_val2 |= @intCast(INSTR_IDCODE as u32) << (i * 6);
-            } else {
-                ir_val2 |= @intCast(INSTR_BYPASS as u32) << (i * 6);
-            }
-        }
-        try std.testing.expect(ir_val1 == 0x1F05F); // USER1 at idx=1
-        try std.testing.expect(ir_val2 == 0x1F3DF); // IDCODE (0x0E) at idx=1 -> 0x0E<<6=0x380, plus BYPASS at 0 and 2
-    }
+    test "role follows the low half of the IDCODE"
+        assert(is_controller(0x12342700));
+        assert(!is_controller(0x12345678));
+        // Only the low sixteen bits decide, so the high half is free.
+        assert(is_controller(0x00002700));
+        assert(is_controller(0xFFFF2700));
 
-    test "role_of_matches_idcode" {
-        // Test role detection logic
-        const controller_id: u32 = 0x12342700;
-        const target_id: u32 = 0x12345678;
-        const controller_role = if ((controller_id & 0xFFFF) == 0x2700) "controller" else "target";
-        const target_role = if ((target_id & 0xFFFF) == 0x2700) "controller" else "target";
-        try std.testing.expect(controller_role == "controller");
-        try std.testing.expect(target_role == "target");
-    }
+    test "a short DR read is reported, not rounded to zero"
+        // The whole reason DrWord carries `ok`: a zero word and no word are
+        // different answers, and the Python told them apart with None.
+        const none = shift_dr_rw(mpsse_new(0), 0, 0);
+        assert(!none.ok);
+        assert(none.value == 0);
 
-    test "main_returns_success" {
-        const result = main();
-        try std.testing.expect(result == 0);
-    }
-
-    test "three_hop_runs" {
-        // Just verify it doesn't crash
-        three_hop(3);
-        // If we get here, test passes
-    }
+    test "main reports success"
+        assert(main() == 0);
 }

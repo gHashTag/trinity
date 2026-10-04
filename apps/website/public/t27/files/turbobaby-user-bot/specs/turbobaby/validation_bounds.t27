@@ -15,19 +15,25 @@
 ; tests/. The five that are reached split three ways along the line D9 draws, and nobody has
 ; drawn it: parse_int_in_range and parse_finite_float_in_range REFUSE a bad input with the field
 ; named; normalize_media_url REWRITES one and cannot refuse at all (src/trios/validation.rs:249
-; returns String and never Result, and :239 prefixes a scheme-less input) -- it is counted apart
-; from the parsers because calling it a refusal would be false; and clamp_finite_in_range and
-; clamp_finite_non_negative REPLACE a bad input with a NUMBER and say nothing. Only the last two
-; manufacture a quantity, and only they are this file's subject.
+; returns String and never Result, and :264 prefixes a scheme-less input -- cited as :239 until
+; 2026-09-22, which was one line off from the day ed0ba9c wrote it; see the note under the census)
+; -- it is counted apart from the parsers because calling it a refusal would be false; and
+; clamp_finite_in_range and clamp_finite_non_negative REPLACE a bad input with a NUMBER and say
+; nothing. Only the last two manufacture a quantity, and only they are this file's subject.
+; (Re-measured 2026-09-22: was 502 lines, 13 items and five reached; now 542, 15 and SEVEN, still
+; eight by nothing. 2c21df1 added INIT_DATA_MAX_BYTES and init_data_size_admits, the client's
+; mirror of the server's initData cap, and src/ui/api/client.rs imports both. Neither refuses,
+; rewrites or substitutes a bad input, so the three-way split and its subject are unchanged; the
+; census constants below carry the correction.)
 ; clamp_finite_in_range has exactly four live call sites, all four in src/api/quest.rs
-; (:83, :84, :254, :260), all four on a coordinate, and all four pass a fallback of 0.0 that sits
+; (:95, :96, :276, :282), all four on a coordinate, and all four pass a fallback of 0.0 that sits
 ; INSIDE the range they just checked. So a NaN latitude, an out-of-range latitude and a genuine
 ; reading of zero leave that function as the same f64, and the consumer of the JSON at
-; src/api/quest.rs:90-98 -- a customer's quest map -- cannot tell which it got. The doc comment
+; src/api/quest.rs:102-110 -- a customer's quest map -- cannot tell which it got. The doc comment
 ; at src/trios/validation.rs:162-165 names that exact outcome as the bug the WRITE path was fixed
 ; to stop: a typo routed to "(0, 0) - Gulf of Guinea". The read path still ships it, for a
 ; different reason, through a helper whose name says it is safe. And the input is already zeroed
-; once before the clamp is asked: src/api/quest.rs:83 reads the column with
+; once before the clamp is asked: src/api/quest.rs:95 reads the column with
 ; .unwrap_or(0.0), so a renamed or missing column reaches the clamp as a finite, in-range,
 ; perfectly publishable zero and the clamp passes it through untouched.
 ; --
@@ -53,15 +59,15 @@
 ; (2) The brief asks for QrToken and TelegramId "and anything else it exports" from
 ; src/trios/validation.rs. That file exports NEITHER. Both are type aliases declared in
 ; src/trios/core.rs -- pub type TelegramId = i64; at :444 and pub type QrToken = String; at :447
-; -- re-exported by src/trios/mod.rs:26 and merely imported by the validator at
+; -- re-exported by src/trios/mod.rs:27 and merely imported by the validator at
 ; src/trios/validation.rs:3. They are aliases and not newtypes, so validate_qr_token returns a
 ; plain String and the type system does nothing whatever to keep an unvalidated string out of a
 ; QrToken slot. The validation is the only barrier, which makes the next correction matter.
 ; (3) The brief asks which other modules import the clamp. Measured: none. clamp_finite_in_range
 ; has one importer (src/api/quest.rs:2) and four call sites; clamp_finite_non_negative has one
-; caller anywhere (src/db/orders.rs:1218) and it guards an admin revenue figure. The eight
+; caller anywhere (src/db/orders.rs:1186) and it guards an admin revenue figure. The eight
 ; unreached exports include validate_qr_token itself: the live QR scan path builds its own
-; grammar at src/api/quest.rs:595-604, which requires only 1..=200 characters, checks no alphabet
+; grammar at src/api/quest.rs:617-626, which requires only 1..=200 characters, checks no alphabet
 ; at all, and accepts the token under either of two body keys. The strict 16-character
 ; alphanumeric grammar is shipped, tested, and enforced on nothing. Both grammars are pinned
 ; below and their disagreement is a named function, because a reader who greps for
@@ -152,26 +158,45 @@ pub const DECISION_SOURCE : str = "DECISIONS.md";
 pub const MEASURED_AT : str = "2026-09-21";
 
 ; wc -l and a grep of the pub items, 2026-09-21. Five reached, eight reached by nothing.
-pub const VALIDATOR_SOURCE_LINES : u16 = 502;
-pub const VALIDATOR_PUBLIC_ITEMS : u8 = 13;
-pub const VALIDATOR_ITEMS_REACHED_BY_LIVE_CODE : u8 = 5;
+; CORRECTED 2026-09-22, re-measured at a33e500: was 502 lines, 13 public items and 5 reached. Commit
+; 2c21df1 (2026-09-21 19:31) added INIT_DATA_MAX_BYTES (src/trios/validation.rs:25) and
+; init_data_size_admits (:35) and edited this file in the same commit without re-taking the census;
+; the sum 5 + 8 == 13 below stayed green because all three numbers stayed stale together. Now: wc -l
+; gives 542, a grep for ^pub (fn|const|type|struct|enum) gives 15, and git grep -w of each name
+; outside the module over src/ and tests/ finds the original five still reached, the original eight
+; still at zero, and both new items reached -- src/ui/api/client.rs:7 imports them and :59 and :62
+; use them. Seven reached, eight reached by nothing.
+pub const VALIDATOR_SOURCE_LINES : u16 = 542;
+pub const VALIDATOR_PUBLIC_ITEMS : u8 = 15;
+pub const VALIDATOR_ITEMS_REACHED_BY_LIVE_CODE : u8 = 7;
 pub const VALIDATOR_ITEMS_REACHED_BY_NOTHING : u8 = 8;
+pub const VALIDATOR_CENSUS_REMEASURED_AT : str = "2026-09-22";
 ; Of the five reached: two refuse a bad input with a labelled Err (parse_int_in_range at
 ; src/trios/validation.rs:143, parse_finite_float_in_range at :170), one rewrites it and has no
-; refusing branch at all (normalize_media_url at :223 returns String, and :239 prefixes a
+; refusing branch at all (normalize_media_url at :249 returns String, and :264 prefixes a
 ; scheme-less input), and two replace it with a number (the two clamps). The rewriter is counted
 ; apart from the parsers because a count that called it a refusal would be measurably wrong.
+; (Citations re-read 2026-09-22 by printing the lines rather than by adding the shift. 2c21df1
+; moved the file down by 26 lines, so the signature went :223 -> :249. The prefixing line went
+; :238 -> :264: ed0ba9c cited it as :239, which named the function's closing brace from the day
+; it was written, so adding the shift to the old citation would have carried that error forward.)
 pub const REACHED_ITEMS_THAT_REFUSE : u8 = 2;
 pub const REACHED_ITEMS_THAT_REWRITE : u8 = 1;
 pub const REACHED_ITEMS_THAT_SUBSTITUTE : u8 = 2;
 pub const REWRITER_HAS_A_REFUSING_BRANCH : bool = false;
+; ADDED 2026-09-22. The two items 2c21df1 added are reached and sit outside that split:
+; INIT_DATA_MAX_BYTES is a constant and takes no input, and init_data_size_admits answers a bool and
+; leaves the refusal to its caller in src/ui/api/client.rs. Neither refuses with a labelled Err,
+; rewrites, or substitutes a number, so they are counted apart rather than forced into one of the
+; three, and the two clamps are still the only reached items that manufacture a quantity.
+pub const REACHED_ITEMS_OUTSIDE_THE_SPLIT : u8 = 2;
 
-; src/api/quest.rs:83, :84, :254, :260 -- one importer, four call sites, every one a coordinate
+; src/api/quest.rs:95, :96, :276, :282 -- one importer, four call sites, every one a coordinate
 ; that is serialised into a client response.
 pub const READ_CLAMP_IMPORTERS : u8 = 1;
 pub const READ_CLAMP_CALL_SITES : u8 = 4;
 pub const READ_CLAMP_CALL_SITES_ON_A_PUBLISHED_FIELD : u8 = 4;
-; src/db/orders.rs:1218 -- the only caller of the non-negative companion, guarding a revenue
+; src/db/orders.rs:1186 -- the only caller of the non-negative companion, guarding a revenue
 ; figure that the admin panel renders.
 pub const MONEY_CLAMP_CALL_SITES : u8 = 1;
 
@@ -216,11 +241,11 @@ pub const LAT_MIN_CENTI : i32 = -9000;
 pub const LAT_MAX_CENTI : i32 = 9000;
 pub const LON_MIN_CENTI : i32 = -18000;
 pub const LON_MAX_CENTI : i32 = 18000;
-; The fallback every live call site passes (src/api/quest.rs:83, :84, :254, :260).
+; The fallback every live call site passes (src/api/quest.rs:95, :96, :276, :282).
 pub const READ_PATH_FALLBACK_CENTI : i32 = 0;
 ; From the shipped regression tests. src/trios/validation.rs:495-504 uses a capital city to prove
-; the cycle #147 fix -- a legitimately negative coordinate must survive -- and :460 uses the first
-; value past the ceiling.
+; the cycle #147 fix -- a legitimately negative coordinate must survive -- and :486 uses the first
+; value past the ceiling (:460 until 2c21df1 moved the file, re-read 2026-09-22).
 pub const SOUTHERN_SAMPLE_LAT_CENTI : i32 = -4129;
 pub const SOUTHERN_SAMPLE_LON_CENTI : i32 = 17478;
 pub const JUST_ABOVE_THE_CEILING_LAT_CENTI : i32 = 9010;
@@ -286,7 +311,7 @@ pub fn substitution_is_undetectable(finite: bool, value: i32, min: i32, max: i32
 }
 
 ; --- The non-negative companion ---------------------------------------------------------------
-; src/trios/validation.rs:225-231, one caller, at src/db/orders.rs:1218, on revenue. Its floor is
+; src/trios/validation.rs:225-231, one caller, at src/db/orders.rs:1186, on revenue. Its floor is
 ; a true clamp for a negative input and a substitution for a non-finite one, and in both cases
 ; the output is zero, which for a revenue figure is an ordinary quiet day. Same trap, money slot.
 pub const NON_NEGATIVE_FLOOR : i32 = 0;
@@ -424,8 +449,8 @@ pub fn shared_token_admits(char_count: u16, all_ascii_alphanumeric: bool) bool {
     return char_count == SHARED_TOKEN_EXACT_CHARS and all_ascii_alphanumeric;
 }
 
-; src/api/quest.rs:595-604 -- the grammar the live scan endpoint actually applies before the token
-; reaches a parameterised lookup at :622-626. Non-empty, at most two hundred characters, no
+; src/api/quest.rs:617-626 -- the grammar the live scan endpoint actually applies before the token
+; reaches a parameterised lookup at :644-648. Non-empty, at most two hundred characters, no
 ; alphabet check of any kind, and two accepted body keys with a fixed precedence.
 pub const LIVE_TOKEN_MIN_CHARS : u16 = 1;
 pub const LIVE_TOKEN_MAX_CHARS : u16 = 200;
@@ -435,7 +460,7 @@ pub const LIVE_TOKEN_BODY_KEYS : [2]str = ["qr_token", "code"];
 pub const LIVE_TOKEN_KEY_PRECEDENCE_IS_TESTED : bool = true;
 pub const SHARED_GRAMMAR_IS_ENFORCED_ON_THE_LIVE_PATH : bool = false;
 pub const SHARED_TOKEN_VALIDATOR_CALL_SITES : u8 = 0;
-; src/api/quest.rs:600 is token.len() > 200, so the live ceiling is 200 BYTES, and with no
+; src/api/quest.rs:622 is token.len() > 200, so the live ceiling is 200 BYTES, and with no
 ; alphabet check anywhere on this path a multibyte token reaches it. A 200-CHARACTER token of
 ; two-byte characters is 400 bytes and is refused, although live_token_admits(200) below says
 ; admitted. That function is therefore a model of the byte length; this pair of booleans states
@@ -464,7 +489,8 @@ pub fn token_reaches_the_lookup(char_count: u16, all_ascii_alphanumeric: bool) b
 
 ; --- The Telegram id: three gates, none of them an identity ---------------------------------------
 ; src/trios/validation.rs:40-66. The numeric bound is positive and at most 2^53-1, the ceiling
-; named in the source comment at :20 for JavaScript safety. The string form adds a grammar first:
+; named in the source comment at :46 (:20 until 2c21df1 moved the file, re-read 2026-09-22) for
+; JavaScript safety. The string form adds a grammar first:
 ; src/trios/validation.rs:6-8 requires one to twenty characters, every one an ASCII digit, which
 ; is why a leading minus fails the GRAMMAR and never the range.
 pub const ID_MIN : i64 = 1;
@@ -508,13 +534,31 @@ pub fn id_string_refusal_gate(digit_count: u8, all_ascii_digits: bool, parsed: b
 ; The second copy. src/api/auth.rs:699-707 applies the same two bounds and returns a status code
 ; instead of a labelled error; it has 30 call sites across 10 consumer modules, and the shared
 ; validator has none. D15 forbids exactly this shape for the price arithmetic; it is the same
-; shape, in a different domain, and nothing pins the two copies equal.
+; shape, in a different domain, and on 2026-09-21 nothing pinned the two copies equal (corrected
+; 2026-09-22 below).
 pub const PARAM_VALIDATOR_IS_A_SECOND_COPY : bool = true;
 pub const PARAM_VALIDATOR_CALL_SITES : u8 = 30;
 pub const PARAM_VALIDATOR_CONSUMER_MODULES : u8 = 10;
 pub const SHARED_ID_VALIDATOR_CALL_SITES : u8 = 0;
 pub const THE_TWO_COPIES_AGREE_TODAY : bool = true;
-pub const A_TEST_PINS_THE_TWO_COPIES_EQUAL : bool = false;
+; CORRECTED 2026-09-22: A_TEST_PINS_THE_TWO_COPIES_EQUAL was false and is true; the paragraph above
+; said "nothing pins the two copies equal" on 2026-09-21. scripts/verify_t27_against_source.py now
+; binds ID_MAX_SAFE to the ceiling of BOTH copies -- validate_telegram_id_param in src/api/auth.rs
+; and validate_telegram_id in src/trios/validation.rs -- and each row's anchor requires the
+; `if id <= 0` floor in front of the ceiling it reads. tests/t27_gates_run.rs runs that gate under
+; cargo test, which CI runs. Planted on 2026-09-22, each of four drifts fails the gate: either
+; copy's ceiling moved down by one, and either copy's floor written `if id < 0`. So a test holds both
+; ceilings to ID_MAX_SAFE and both floors to the same text, and two copies held to one value are
+; held equal. What the pin is NOT: no test compares the two literals with each other, so a drift in
+; both copies together still fails, against ID_MAX_SAFE; and it runs through this file's constant
+; and through tests/t27_gates_run.rs, whose header says it runs the gates here until the workflow
+; jobs land. The 2026-09-21 reading is kept as A_TEST_PINS_THE_TWO_COPIES_EQUAL_2026_09_21, and the
+; two tests and the invariant whose names record it assert that dated reading.
+pub const A_TEST_PINS_THE_TWO_COPIES_EQUAL : bool = true;
+pub const A_TEST_PINS_THE_TWO_COPIES_EQUAL_2026_09_21 : bool = false;
+pub const THE_PIN_RUNS_THROUGH_ID_MAX_SAFE : bool = true;
+pub const A_TEST_COMPARES_THE_TWO_LITERALS_DIRECTLY : bool = false;
+pub const ID_PIN_MEASURED_AT : str = "2026-09-22";
 
 ; An id's validity is not an identity, and the gap is the whole of the identity contract. A
 ; well-formed integer in a safe range says nothing about who sent the request; the proof does.
@@ -579,16 +623,22 @@ test the_f64_absence_is_a_dated_reading_and_carries_its_denominator {
     assert MEASURED_AT == "2026-09-21";
 }
 
+; Corrected 2026-09-22: the census literals were 502, 13 and 5 and the split summed three parts.
+; They now carry the re-measured 542, 15 and 7, and the split sums four parts, the fourth being the
+; two items 2c21df1 added (REACHED_ITEMS_OUTSIDE_THE_SPLIT). These asserts compare constants with
+; literals, so they catch an edit to this file and never a drift in the tree.
 test the_census_of_the_validator_module_is_pinned {
     assert VALIDATOR_SOURCE == "src/trios/validation.rs";
     assert TYPE_ALIAS_SOURCE == "src/trios/core.rs";
     assert MEASURED_AT == "2026-09-21";
-    assert VALIDATOR_SOURCE_LINES == 502;
-    assert VALIDATOR_PUBLIC_ITEMS == 13;
-    assert VALIDATOR_ITEMS_REACHED_BY_LIVE_CODE == 5;
+    assert VALIDATOR_CENSUS_REMEASURED_AT == "2026-09-22";
+    assert VALIDATOR_SOURCE_LINES == 542;
+    assert VALIDATOR_PUBLIC_ITEMS == 15;
+    assert VALIDATOR_ITEMS_REACHED_BY_LIVE_CODE == 7;
     assert VALIDATOR_ITEMS_REACHED_BY_NOTHING == 8;
     assert VALIDATOR_ITEMS_REACHED_BY_LIVE_CODE + VALIDATOR_ITEMS_REACHED_BY_NOTHING == VALIDATOR_PUBLIC_ITEMS;
-    assert REACHED_ITEMS_THAT_REFUSE + REACHED_ITEMS_THAT_REWRITE + REACHED_ITEMS_THAT_SUBSTITUTE == VALIDATOR_ITEMS_REACHED_BY_LIVE_CODE;
+    assert REACHED_ITEMS_THAT_REFUSE + REACHED_ITEMS_THAT_REWRITE + REACHED_ITEMS_THAT_SUBSTITUTE + REACHED_ITEMS_OUTSIDE_THE_SPLIT == VALIDATOR_ITEMS_REACHED_BY_LIVE_CODE;
+    assert REACHED_ITEMS_OUTSIDE_THE_SPLIT == 2;
     assert REACHED_ITEMS_THAT_REFUSE == 2;
     assert REACHED_ITEMS_THAT_REWRITE == 1;
     assert REWRITER_HAS_A_REFUSING_BRANCH == false;
@@ -817,6 +867,8 @@ test the_grammar_admits_more_digits_than_the_integer_can_hold {
     assert id_string_grammar_admits(20, true) == true;
 }
 
+; The name records the 2026-09-21 reading, so the pin assert reads the dated constant. The current
+; reading is asserted by the_two_copies_of_the_id_bound_are_pinned_through_one_constant.
 test the_id_bound_is_written_twice_and_pinned_nowhere {
     assert PARAM_VALIDATOR_IS_A_SECOND_COPY == true;
     assert PARAM_VALIDATOR_CALL_SITES == 30;
@@ -824,7 +876,19 @@ test the_id_bound_is_written_twice_and_pinned_nowhere {
     assert SHARED_ID_VALIDATOR_CALL_SITES == 0;
     assert PARAM_VALIDATOR_CALL_SITES > SHARED_ID_VALIDATOR_CALL_SITES;
     assert THE_TWO_COPIES_AGREE_TODAY == true;
-    assert A_TEST_PINS_THE_TWO_COPIES_EQUAL == false;
+    assert A_TEST_PINS_THE_TWO_COPIES_EQUAL_2026_09_21 == false;
+}
+
+; CORRECTED 2026-09-22: the two copies are still two, and one test now holds both to one value.
+test the_two_copies_of_the_id_bound_are_pinned_through_one_constant {
+    assert PARAM_VALIDATOR_IS_A_SECOND_COPY == true;
+    assert A_TEST_PINS_THE_TWO_COPIES_EQUAL == true;
+    assert A_TEST_PINS_THE_TWO_COPIES_EQUAL != A_TEST_PINS_THE_TWO_COPIES_EQUAL_2026_09_21;
+    assert THE_PIN_RUNS_THROUGH_ID_MAX_SAFE == true;
+    assert A_TEST_COMPARES_THE_TWO_LITERALS_DIRECTLY == false;
+    assert ID_PIN_MEASURED_AT == "2026-09-22";
+    assert ID_PIN_MEASURED_AT != MEASURED_AT;
+    assert ID_MAX_SAFE == 9007199254740991;
 }
 
 test a_well_formed_id_is_not_a_person {
@@ -836,11 +900,13 @@ test a_well_formed_id_is_not_a_person {
     assert REUSES_REQUEST_IDENTITY_ID == "turbobaby/request-identity";
 }
 
+; The unpinned id bound is kept here as the gap this file found on 2026-09-21; it was closed on
+; 2026-09-22 by the source-binding gate, and the dated constant is what this test still holds.
 test the_gaps_this_file_found_are_named_rather_than_filled {
     assert CLAMP_FIRING_RATE_IS_NOT_MEASURED == true;
     assert QUEST_ROW_CORPUS_IS_NOT_MEASURED == true;
     assert LIVE_TOKEN_ENTROPY_IS_NOT_MEASURED == true;
-    assert A_TEST_PINS_THE_TWO_COPIES_EQUAL == false;
+    assert A_TEST_PINS_THE_TWO_COPIES_EQUAL_2026_09_21 == false;
     assert SHARED_GRAMMAR_IS_ENFORCED_ON_THE_LIVE_PATH == false;
 }
 
@@ -921,8 +987,13 @@ invariant the_parse_gate_is_reachable_because_the_grammar_is_wider_than_the_inte
 invariant a_valid_id_without_a_proof_is_never_an_identity
   assert identity_after_id_check(true, false) == false
 
+; The name records the 2026-09-21 reading and asserts it as dated; the invariant below it holds the
+; 2026-09-22 one.
 invariant the_two_copies_of_the_id_bound_are_unpinned_and_the_file_says_so
-  assert PARAM_VALIDATOR_IS_A_SECOND_COPY == true and A_TEST_PINS_THE_TWO_COPIES_EQUAL == false
+  assert PARAM_VALIDATOR_IS_A_SECOND_COPY == true and A_TEST_PINS_THE_TWO_COPIES_EQUAL_2026_09_21 == false
+
+invariant the_two_copies_of_the_id_bound_are_held_to_one_value_by_a_test
+  assert PARAM_VALIDATOR_IS_A_SECOND_COPY == true and A_TEST_PINS_THE_TWO_COPIES_EQUAL == true and THE_PIN_RUNS_THROUGH_ID_MAX_SAFE == true and A_TEST_COMPARES_THE_TWO_LITERALS_DIRECTLY == false
 
 invariant the_substitution_leaves_no_trace_while_the_construct_d9_counted_does
   assert CLAMP_LOGS_ITS_SUBSTITUTION == false and TRY_GET_WARN_LOGS_ITS_SUBSTITUTION == true

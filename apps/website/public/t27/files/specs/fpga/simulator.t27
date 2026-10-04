@@ -234,6 +234,18 @@ module Simulator {
         and has_errors(r) == true
         and r.errors == 2
 
+    test is_idle_true
+        given r = SimResult{.cycles = 0, .state = 0, .errors = 0, .assertions_fired = 0, .coverage_points = 0}
+        then is_idle(r) == true
+
+    test is_idle_false_when_done
+        given r = sim_ok(100, 5)
+        then is_idle(r) == false
+
+    test is_idle_false_when_error
+        given r = sim_error(50, 1)
+        then is_idle(r) == false
+
     test probe_creation
         given p = probe("clk_probe", "clk", 1)
         then p.name == "clk_probe"

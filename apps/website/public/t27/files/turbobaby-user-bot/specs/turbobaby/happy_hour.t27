@@ -21,8 +21,8 @@
 ; seen: this repository's own HTTP client mentions a path under /api on 21 lines
 ; (src/ui/api/client.rs) and none of them is /happy-hour, and the five occurrences of the word
 ; happy anywhere under src/ui/ are the phrase "happy path" in screen doc comments
-; (src/ui/screens/home_screen.rs:48, orders_screen.rs:66, order_detail_screen.rs:86,
-; profile_screen.rs:312, success_screen.rs:61). Who sees the window is therefore a question
+; (src/ui/screens/home_screen.rs:48, orders_screen.rs:65, order_detail_screen.rs:84,
+; profile_screen.rs:313, success_screen.rs:61). Who sees the window is therefore a question
 ; about clients outside this tree, and this file does not answer it.
 ; The nested shape the reader wants is written by nothing: it appears only
 ; inside this file's own unit tests (src/api/happy_hour.rs:160, :172, :180, :188, :207, :214,
@@ -40,7 +40,7 @@
 ; What remains is that the clock is a build-time const (src/trios/market.rs:63-67, :72) and no
 ; file under src/ reads the seed's market block at runtime: editing data/fleet_seed.json alone
 ; moves no window, and the agreement between the three copies is held by a Rust test and a
-; Python verifier (scripts/verify_fleet_seed.py:82-84) rather than by a read. That is the gap
+; Python verifier (scripts/verify_fleet_seed.py:89-91) rather than by a read. That is the gap
 ; pinned below, and it is a smaller and truer one than the brief's.
 ; --
 ; WHAT THIS FILE NEVER DOES. It invents no window and no percentage: every hour and every
@@ -84,7 +84,7 @@ pub const REUSES_CATALOG_API_ID : str = "turbobaby/catalog-api";
 
 pub const MARKET_OWNS : str = "turbobaby/market owns TH_TIMEZONE, TH_UTC_OFFSET_HOURS, TH_DST and the utc_offset_is_real bound. The wall-clock hour enters this contract as an i64 argument and the DST case as a bool; no offset appears below.";
 pub const PRICING_OWNS : str = "turbobaby/pricing-honesty owns PRICE_AUTHORITY, the absent/present tag set and the rule that an absent rate renders as DASH and never as zero. A discount is not a price authority: applied to an absent rate it produces nothing, not a discounted nothing.";
-pub const RENTAL_TERMS_OWNS : str = "turbobaby/rental-terms owns the term-discount bands, SCOOTER_CLASS_DISCOUNT_BP, MOTORCYCLE_CLASS_DISCOUNT_BP and CLASS_TERM_COMPOSITION_IS_PINNED, which is deliberately false. A third axis composed against two whose own composition is open would be an invention, and the measurement below is that no third axis exists.";
+pub const RENTAL_TERMS_OWNS : str = "turbobaby/rental-terms owns the term-discount bands, SCOOTER_CLASS_DISCOUNT_BP, MOTORCYCLE_CLASS_DISCOUNT_BP and CLASS_TERM_COMPOSITION_IS_PINNED. That last one read false until 2026-09-21, when the owner's published formula pinned the composition as base times season times term step, and this sentence used to lean on the false reading. The finding below never rested on it: it measures that no third discount axis exists in this tree, which is a statement about what is here and not about whether the two axes that are compose. A third axis would still be an invention, and for the same reason.";
 pub const CATALOG_API_OWNS : str = "turbobaby/catalog-api owns the HTTP status vocabulary -- HTTP_OK, HTTP_INTERNAL_ERROR and the rest of that set -- and the rule its invariant catalog_api_query_parser_failure_never_becomes_a_default states. This endpoint takes no query parameter at all, so that rule is named and not re-derived; STATUS_OK and STATUS_INTERNAL_ERROR below are this endpoint's two answers under local names, carrying the same numbers and adding no sixth status to that vocabulary.";
 
 ; --- The clock this window is computed on (D18) --------------------------------------------------
@@ -120,7 +120,7 @@ pub const MARKET_CLOCK_IS_WIRED : bool = true;
 ; No file under src/ opens data/fleet_seed.json; every mention of it there is a doc comment.
 pub const MARKET_BLOCK_RUNTIME_READERS : u8 = 0;
 pub const CLOCK_IS_A_BUILD_TIME_CONST : bool = true;
-pub const CLOCK_PIN_KIND : str = "seed pinned to the Rust const by tests/market_clock_wiring.rs and to the contract by scripts/verify_fleet_seed.py:82-84, the three clock rows of its market field map; neither is a read";
+pub const CLOCK_PIN_KIND : str = "seed pinned to the Rust const by tests/market_clock_wiring.rs and to the contract by scripts/verify_fleet_seed.py:89-91, the three clock rows of its market field map; neither is a read";
 
 ; A seed edit reaches the customer only through a rebuild, because nothing reads it at runtime.
 pub fn seed_edit_moves_the_window(runtime_reads_the_seed: bool, rebuilt: bool) bool {
@@ -261,8 +261,8 @@ pub const ABSENT_WINDOW_MAY_RENDER_A_DEFAULT : bool = false;
 ; --- The shipped configuration gap ------------------------------------------------------------------
 ; The headline measurement. Reader keys: src/api/happy_hour.rs:38-43. Shipped keys:
 ; migrations/001_initial.sql:98-101, embedded and executed at src/db/mod.rs:32. The admin write
-; path replaces the whole blob (src/api/loyalty.rs:751-763) after validating four unrelated flat
-; keys (src/api/loyalty.rs:696-711), and the canonical defaults for the blob carry no happy-hour
+; path replaces the whole blob (src/api/loyalty.rs:772-784) after validating four unrelated flat
+; keys (src/api/loyalty.rs:717-732), and the canonical defaults for the blob carry no happy-hour
 ; key (src/trios/loyalty.rs:34-46), so no surface in this repository produces the nested shape.
 ; The two arrays are ordered to face each other key for key, not in file order: reader key i and
 ; seeded key i are the same setting spelled two ways. Reader order is src/api/happy_hour.rs:39,
@@ -341,8 +341,8 @@ pub fn window_to_serve(row_present: bool, shape_agrees: bool, bounds_legal: bool
 
 ; --- How far the number travels -----------------------------------------------------------------------
 ; src/trios/store.rs:271-316 is the only function in the tree that spends a happy-hour percent,
-; and it is called from five places, all of them its own unit tests (src/trios/store.rs:659,
-; :677, :710, :717, :728). No file under src/ui/, assets/ or e2e/ fetches the endpoint. The
+; and it is called from five places, all of them its own unit tests (src/trios/store.rs:674,
+; :692, :725, :732, :743). No file under src/ui/, assets/ or e2e/ fetches the endpoint. The
 ; discount is therefore published and unspent: a published number with no customer price behind
 ; it. That is the honest refusal this file declares in place of an effect it cannot find.
 pub const APPLIER : str = "src/trios/store.rs:271-316 calculate_cart_total";
@@ -355,6 +355,8 @@ pub const DISCOUNT_REACHES_A_PRICE : bool = false;
 ; /happy-hour. "Customer-visible" is therefore a word this file does not use of the window: the
 ; endpoint publishes it and nothing in this tree renders it.
 pub const UI_CLIENT_FETCHES_THIS_ENDPOINT : bool = false;
+; RE-POINTED 2026-09-24: the five src/trios/store.rs call sites cited above moved fifteen lines
+; down when served_zone_id was added above that file's test module; nothing they point at changed.
 
 pub fn reaches_a_customer_price(http_consumers: u8, production_appliers: u8) bool {
   return http_consumers >= 1 or production_appliers >= 1;

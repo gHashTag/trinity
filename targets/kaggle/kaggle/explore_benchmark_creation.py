@@ -2,9 +2,9 @@
 """Explore how to create Kaggle Community Benchmark."""
 
 import os
-os.environ["KAGGLE_API_TOKEN"] = "KGAT_2ea86c02d9642bed9a4a7b713f5b9a62"
+# KAGGLE_API_TOKEN is read from the environment (Railway/Infisical); never hardcode it.
 os.environ["MODEL_PROXY_URL"] = "https://api.openai.com/v1"
-os.environ["MODEL_PROXY_API_KEY"] = "ce8a4b21d9134c2988b3667d032bf88f.1votRIKGtIM99Duq"
+# MODEL_PROXY_API_KEY is read from the environment (Railway/Infisical); never hardcode it.
 os.environ["LLM_DEFAULT"] = "gpt-4o"
 
 from kaggle_benchmarks import kaggle

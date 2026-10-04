@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { useI18n } from '../../i18n/context';
 import type { TechNode as TechNodeType, NodeStatus } from './techTreeData';
+import { fillBackends } from './techTreeData';
 
 interface TechNodeProps {
   node: TechNodeType;
@@ -33,7 +34,7 @@ const TechNode = memo(function TechNode({ node, branchColor, isSelected, onClick
   // Localized content
   const localized = t.techTree.nodes?.[node.id] || {};
   const name = localized.name || node.name;
-  const metrics = localized.metrics || node.metrics;
+  const metrics = fillBackends(localized.metrics || node.metrics);
 
   return (
     <motion.div

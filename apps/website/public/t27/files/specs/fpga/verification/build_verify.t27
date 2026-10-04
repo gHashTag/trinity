@@ -80,6 +80,36 @@ module BuildVerify {
         invariant cov == 50;
     }
 
+    test test_check_build_clean_success {
+        var result : BuildResult = BuildResult {
+            total_specs: 66,
+            parse_ok: 66,
+            typecheck_ok: 66,
+            gen_zig_ok: 66,
+            gen_verilog_ok: 66,
+            gen_c_ok: 66,
+            gen_rust_ok: 66,
+            seal_ok: 66,
+            failures: 0
+        };
+        invariant check_build_clean(result) == true;
+    }
+
+    test test_check_build_clean_failure {
+        var result : BuildResult = BuildResult {
+            total_specs: 66,
+            parse_ok: 65,
+            typecheck_ok: 66,
+            gen_zig_ok: 66,
+            gen_verilog_ok: 66,
+            gen_c_ok: 66,
+            gen_rust_ok: 66,
+            seal_ok: 66,
+            failures: 1
+        };
+        invariant check_build_clean(result) == false;
+    }
+
     invariant total_specs_positive : TOTAL_SPECS > 0;
     invariant no_backend_gaps : NUM_BACKENDS == 4;
     invariant all_backends_equal : VERILOG_FILES == TOTAL_SPECS;

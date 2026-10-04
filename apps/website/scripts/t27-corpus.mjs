@@ -173,7 +173,8 @@ export function summarise(kinds, entry, health) {
 //
 // qa/t27-evolution-contract.mjs now checks this object and TARGET_IDS against
 // the backend names in public/t27/manifest.json -- what the vendored compiler
-// actually emitted over the corpus. Nothing here is counted any more.
+// actually emitted over the corpus -- and checks each name here against the
+// bundle's TARGET_LABEL. Nothing here is counted any more.
 export const TARGET_LABEL = { zig: 'Zig', verilog: 'Verilog', verilog_hir: 'Verilog (HIR)', c: 'C', rust: 'Rust', js: 'JavaScript', ts: 'TypeScript' }
 
 export function listy(a) {

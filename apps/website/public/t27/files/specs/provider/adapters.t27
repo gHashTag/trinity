@@ -206,9 +206,9 @@ pub fn http_response_create(status_code: i32, body: []u8) HttpResponse {
 /// Create adapter config
 pub fn adapter_config_create(provider_type: ProviderType, api_key: []u8) AdapterConfig {
     const base_url = if (provider_type == .anthropic) {
-        ENDPOINT_ANTHROPIC_MESSAGES;
+        ENDPOINT_ANTHROPIC_MESSAGES
     } else {
-        ENDPOINT_OPENAI_CHAT;
+        ENDPOINT_OPENAI_CHAT
     };
     return AdapterConfig{
         .provider_type = provider_type,
@@ -363,9 +363,9 @@ pub fn calculate_retry_delay(attempt: usize, policy: RetryPolicy, base_delay: us
 /// Get endpoint URL for provider
 pub fn get_endpoint(provider_type: ProviderType) []u8 {
     return if (provider_type == .anthropic) {
-        ENDPOINT_ANTHROPIC_MESSAGES;
+        ENDPOINT_ANTHROPIC_MESSAGES
     } else {
-        ENDPOINT_OPENAI_CHAT;
+        ENDPOINT_OPENAI_CHAT
     };
 }
 

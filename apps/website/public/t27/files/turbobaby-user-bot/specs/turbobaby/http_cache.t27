@@ -54,6 +54,17 @@
 ; decision deferred in a source file where nothing will ever check it. This contract is where it
 ; becomes checkable.
 ; --
+; AND IT IS DECIDED, THOUGH NOT HERE AND NOT IN SECONDS (read 2026-09-21). The paragraph above
+; was written against this repository and is still true of it. It is no longer the whole truth,
+; because the owner's knowledge base -- the brain -- publishes a rule for exactly this class of
+; value, and the rule was read today. It is cited the way a source file is cited, by node and
+; line: brain:knowledge_base:856-866. What it rules is not a ceiling. It rules that a number has
+; THREE outcomes rather than two, that a figure from a cache may be served while it says so and
+; says when it was true, and that where there is nothing to serve, nothing is what gets shown. So
+; the seconds refusal below stands untouched and the silence around it does not: the section "What
+; a number from a cache must call itself" carries the published rule, the incident it came from,
+; the date it was decided, and the two places this contract declines to extend it.
+; --
 ; WHERE THE BRIEF IS REFUTED, five times, all measured 2026-09-21.
 ; FIRST, and it moves the whole subject. The brief asks how "a cached body" is derived. No body
 ; is cached in this process. src/api/cache.rs:22 declares the map as String -> String: a key to a
@@ -95,10 +106,24 @@
 ; that body, so a replica that has never seen a key answers with a full, fresh body carrying the
 ; same tag. The cost of a replica miss is bandwidth, not a wrong answer.
 ; --
+; WHERE THE SECOND BRIEF IS REFUTED, once, and it is the load-bearing half of the rule it asked
+; for. The brief that added the published rule below asked this file to declare that a cached
+; figure carrying no timestamp is NOT SERVABLE. The brain rules the opposite for the same class of
+; value: brain:knowledge_base:864-866 says the cache is not switched off, that under a silent
+; source silence is the worse failure, that what changes is not the number but WHAT IT CALLS
+; ITSELF, and that with no date a figure says "time unknown" rather than "probably recent".
+; Withholding has one published cause and the brain names it once -- no cache at all. The brief
+; collapsed two different states into one: a figure with no DATE (published: show it, and let it
+; say the time is unknown) and a figure with no LABEL AT ALL (not published, because that cash
+; desk always had somewhere to put the words). This catalog's body is the second state and nothing
+; else, so the withhold that follows from it is declared as this file's own derivation, with the
+; published rule left saying what it actually says.
+; --
 ; WHAT THIS FILE NEVER DOES. It declares no HTTP status code, no header name and no header
-; string. It invents no cache size, no entry ceiling and no eviction rule: the code sets none,
-; and the refusal is declared as a named boolean with a note rather than filled with a plausible
-; number. It sets no time-to-live on a map entry, because src/api/cache.rs sets none -- the only
+; string. It invents no cache size, no entry ceiling and no eviction rule: the code sets none, the
+; brain publishes none either -- searched 2026-09-21 across all nine dumped nodes, one near miss
+; named below with the rest -- and the refusal is declared as a named boolean with a note rather
+; than filled with a plausible number. It sets no time-to-live on a map entry, because src/api/cache.rs sets none -- the only
 ; lifetime an entry has is the process. It copies no other surface's age budget: src/main.rs
 ; sets its own at :819, :834, :1016-1024, :1066 and :1093 for surfaces this contract does not
 ; own, and turbobaby/upload-media owns the stored-object read header, in
@@ -417,6 +442,10 @@ pub fn stale_door_price_is_reachable(door_is_wired: bool, max_age_seconds: u32) 
 ; The honest refusal, made executable. Nobody has decided what price age is acceptable, so the
 ; verdict has three outcomes and the undecided one is not a pass. A zero-second copy under an
 ; undecided policy still returns undecided: the age is not the question until the policy exists.
+; READ THIS REFUSAL AT ITS OWN SIZE. It is about a CEILING IN SECONDS and about nothing else.
+; What a figure of any age must call itself HAS been ruled on, and that rule is published in the
+; brain and declared in the section after this one; it changes no constant here, because a label
+; is not a ceiling and neither one answers the other's question.
 pub const AGE_UNDECIDED : u8 = 0;
 pub const AGE_ACCEPTABLE : u8 = 1;
 pub const AGE_TOO_OLD : u8 = 2;
@@ -438,6 +467,303 @@ pub fn age_verdict(policy_is_decided: bool, age_seconds: u32, acceptable_age_sec
     return AGE_ACCEPTABLE;
   }
   return AGE_TOO_OLD;
+}
+
+; --- What a number from a cache must call itself (decided 2026-08-13, read 2026-09-21) -----------
+; The question the section above leaves open -- what makes a number with an age fit to show -- has
+; an answer, and the answer is not in this repository. The owner's knowledge base publishes it and
+; this file cites that base the way it cites a source file, by node and line.
+;
+; THE INCIDENT IT CAME FROM (brain:knowledge_base:857-859). On 13 August 2026 the bridge behind a
+; cash desk in the owner's other system answered with nothing after three attempts, and what the
+; group then read carried TWO claims about the world -- "I wrote it" and "the balance is this" --
+; both made without grounds: a figure of 1529 was shown twice while the sheet held 1029. Neither
+; number is a price, a rate or a deposit; they are a till balance in another system, carried here
+; as the evidence a rule stands on and not as anything this catalog serves. The gap is 500. Which
+; of the two expenses named beside it, 120 and 500, the stale copy predated is NOT published, so
+; this file does not say either.
+;
+; THE RULE (brain:knowledge_base:860-866), translated and not summarised. A number has THREE
+; outcomes and not two. Recomputed from the source -> the ordinary answer. The source is silent
+; and a cache exists -> the number IS shown, marked NOT RECONCILED, together with the date on
+; which it was true. No cache -> no number at all, because a zero in place of a balance lies
+; louder than silence. And the sentence that generalises it, which is the reason the rule reaches
+; a catalog price at all: what changes is not the number but WHAT IT CALLS ITSELF, and with no
+; date it is "time unknown", never "probably recent".
+;
+; WHICH OUTCOME IS CHOSEN BY WHAT. By whether the source ANSWERED, never by how the number looks
+; (brain:knowledge_base:867-869 records the earlier version of this rule judging the truthfulness
+; of the value instead, and confusing an empty till with a sick bridge in both directions). A zero
+; a live source answered with is an honest zero and takes the ordinary branch.
+;
+; WHAT KIND OF FACT THIS IS, kept separate on purpose. The rule is a RULING IN FORCE, dated
+; 13 August 2026, and it is not a measurement. CORRECTED 2026-09-21 BY REVIEW: this sentence
+; read "the rule is the owner's decision", and the node does not say that. Node knowledge_base
+; uses no on-the-owner's-word marker at all -- zero lines of its 1114 carry one -- while that
+; marker is node business_rules's, which opens by saying the owner or the managers change it
+; (brain:business_rules:1-3) and marks each such rule where it stands (brain:business_rules:798
+; and :1364 are two of its 28 marked lines). brain:knowledge_base:856-877 has instead the shape
+; of an engineering decision record: an incident, "what applies now", a census, and a module
+; with its guard, its tests and its rollback switch (brain:knowledge_base:876). So the author
+; is UNNAMED at the source and is left unnamed here. Nothing the withdrawn claim carried is
+; lost: the rule is still not a measurement, and the measurement lying beside it in the same node
+; (brain:knowledge_base:875) is a different fact in different constants: over 73 days that cash
+; desk answered with a figure 320 times, 319 of them recomputed live and once from the cache. That
+; census is about that system. It is not about this one, the frequency here is not measured at
+; all, and what IS measurable here is that the branch cannot fire today at all, because the door
+; is a stub.
+;
+; WHAT THE RULE DOES NOT DECIDE. It sets no ceiling in seconds, so ACCEPTABLE_PRICE_AGE_SECONDS
+; keeps its sentinel and ACCEPTABLE_PRICE_AGE_IS_DECIDED stays false: what was ruled is that
+; the ceiling is not what governs, the label is. Nor does it turn a published figure into a client
+; quote. D11 is untouched, the door is still the price authority, turbobaby/pricing-honesty still
+; owns that rule, and what is declared here is what the shop PUBLISHES about how a number must
+; present itself -- not what anybody may charge for a bike.
+;
+; THE NEIGHBOUR, by ID and declaration name. turbobaby/pricing-honesty owns the spatial half:
+; render() maps an absent rate to SHAPE_DASH and never to a zero, and rate_zero_filled_record() is
+; the D9 case that rule exists to refuse. This section is its TEMPORAL TWIN -- an absent time is
+; not a recent time, exactly as an absent rate is not a zero -- and it adds no second renderer.
+; The wording, and the languages it has to reach a reader in, belong to the surface;
+; turbobaby/locale-policy holds copy and is named here as a bystander and not as an ownership
+; edge, because this file takes no declaration from it and the census of five above is unchanged.
+;
+; A SECOND NODE SAYS IT FROM TWO OTHER DIRECTIONS, and one of the two is a near miss for a refusal
+; this file keeps. brain:business_rules is the owner's rule book, moved into the brain on
+; 01.08.2026; its cash-desk section is four lines -- a heading and two rules -- and both rules
+; land here.
+; brain:business_rules:71 rules that the balance is NOT STORED and is recomputed from the sheet's
+; rows -- which is, for another system and by another route, exactly what
+; ORIGIN_REMEMBERS_A_BODY == false and BODY_IS_REBUILT_PER_REQUEST == true already say about this
+; one: correctness comes from recomputing, and a cache is only ever the answer of last resort.
+; brain:business_rules:72-73 rules that a balance must be recorded with EVERY currency in one
+; message, because naming a subset drops a currency from the cache. That is the nearest thing to
+; an eviction rule in the whole brain and it is not one: it says what a partial write does to one
+; record, not when a record dies or how many may live. The refusal stands and the near miss is
+; counted, which this file already holds to be worth more than an absence asserted.
+;
+; AND THE GENERAL RULE THE OWNER WROTE FIRST, about a service cell and not about money at all:
+; brain:business_rules:32-34 rules that an empty cell means NOT MEASURED -- neither "overdue" nor
+; "zero" -- and that the three outcomes are named separately. So this rule has four statements:
+; two the owner's, a service cell and a cash balance, and two this repository's, D9 at
+; DECISIONS.md:116-129 and pricing_honesty.t27's dash. The section here is the time dimension of
+; the same thing, and it was the last of the four to be written down.
+
+; The three outcomes, as published. They belong to a NUMBER and not to a response: the two
+; outcomes this file already owns are OUTCOME_NOT_MODIFIED and OUTCOME_FULL_BODY, a different
+; subject entirely. They are numbered from eleven so that no value of one census can be read as a
+; value of the other, and the tests below assert the disjointness rather than trusting the gap.
+; The gap means nothing else; eleven is not a quantity of anything.
+pub const FIGURE_RECOMPUTED : u8 = 11;
+pub const FIGURE_UNRECONCILED : u8 = 12;
+pub const FIGURE_WITHHELD : u8 = 13;
+pub const FIGURE_OUTCOME_COUNT : u8 = 3;
+
+; What the number calls itself: two obligations, not one -- WHAT it is, and WHEN it was true.
+; TIME_LABEL_NONE is no label at all, which is a different state from a label that says the time
+; is unknown, and the difference is the whole of the second brief's error. TIME_LABEL_PROBABLY_-
+; RECENT exists so the forbidden one has a name a test can refuse by; nothing here ever returns it.
+pub const TIME_LABEL_NONE : u8 = 0;
+pub const TIME_LABEL_DATED : u8 = 1;
+pub const TIME_LABEL_UNKNOWN : u8 = 2;
+pub const TIME_LABEL_PROBABLY_RECENT : u8 = 3;
+; The obligation in English, not the wording: the published strings are Russian and Thai, this
+; corpus is ASCII, and the surface says it in the reader's language. Same division of labour as
+; pricing_honesty.t27's MUST_SAY.
+pub const SAY_NOT_RECONCILED : str = "not reconciled";
+pub const SAY_TIME_UNKNOWN : str = "time unknown";
+pub const MUST_NOT_SAY : str = "probably recent";
+pub const LABEL_WORDING_IS_OWNED_HERE : bool = false;
+
+; Provenance of the rule, held apart from provenance of the measurement beside it, because a rule
+; is a different kind of fact from a number read off data. WHOSE rule it is is a third question
+; and the node does not answer it: see the correction above. The withdrawn claim is kept as a
+; constant so a reader can tell a retracted attribution from one that was never made.
+pub const RULE_SOURCE : str = "brain:knowledge_base:856-866";
+pub const RULE_CITATION_FORM : str = "brain:<node>:<line>";
+pub const RULE_SOURCE_IS_IN_THIS_REPOSITORY : bool = false;
+pub const RULE_DECIDED_AT : str = "2026-08-13";
+pub const RULE_READ_AT : str = "2026-09-21";
+pub const RULE_IS_A_RULING_IN_FORCE : bool = true;
+pub const RULE_AUTHOR_IS_NAMED_IN_THE_NODE : bool = false;
+pub const RULE_NODE_OWNER_WORD_MARKERS : u8 = 0;
+pub const RULE_WAS_DECLARED_THE_OWNERS_DECISION_UNTIL : str = "2026-09-21";
+pub const RULE_IS_A_MEASUREMENT : bool = false;
+pub const BRAIN_CITERS_IN_THE_CORPUS_ARE_COUNTED : bool = false;
+pub const BRAIN_CITERS_NOTE : str = "How many other contracts cite this knowledge base is not declared here. Sibling files were under edit in the same hour as this one, so a corpus count taken now would be a reading of a moving corpus rather than a fact, and every other census in this file is re-runnable in a way that one would not be.";
+
+pub const INCIDENT_SOURCE : str = "brain:knowledge_base:857-859";
+pub const INCIDENT_AT : str = "2026-08-13";
+pub const INCIDENT_ATTEMPTS_BEFORE_SILENCE : u8 = 3;
+pub const INCIDENT_UNGROUNDED_CLAIMS : u8 = 2;
+pub const INCIDENT_TIMES_THE_FIGURE_WAS_SHOWN : u8 = 2;
+pub const INCIDENT_FIGURE_SHOWN : u16 = 1529;
+pub const INCIDENT_FIGURE_RECONCILED : u16 = 1029;
+pub const INCIDENT_FIGURES_ARE_A_TILL_BALANCE : bool = true;
+pub const INCIDENT_FIGURES_ARE_A_PRICE_OR_A_RATE : bool = false;
+pub const WHICH_EXPENSE_THE_COPY_PREDATED_IS_PUBLISHED : bool = false;
+
+pub const CENSUS_SOURCE : str = "brain:knowledge_base:875";
+pub const CENSUS_DAYS : u16 = 73;
+pub const CENSUS_ANSWERS_WITH_A_FIGURE : u16 = 320;
+pub const CENSUS_RECOMPUTED : u16 = 319;
+pub const CENSUS_FROM_CACHE : u16 = 1;
+pub const CENSUS_IS_ABOUT_THIS_REPOSITORY : bool = false;
+
+pub fn figure_gap(shown: u16, reconciled: u16) u16 {
+  return shown - reconciled;
+}
+
+pub fn census_adds_up(answers: u16, recomputed: u16, from_cache: u16) bool {
+  return answers == recomputed + from_cache;
+}
+
+; The published selector. It reads the ANSWER and never the value.
+pub fn figure_outcome(source_answered: bool, cache_exists: bool) u8 {
+  if (source_answered) {
+    return FIGURE_RECOMPUTED;
+  }
+  if (cache_exists) {
+    return FIGURE_UNRECONCILED;
+  }
+  return FIGURE_WITHHELD;
+}
+
+pub fn zero_from_a_live_source_is_a_fact(source_answered: bool, figure_is_zero: bool) bool {
+  return source_answered and figure_is_zero;
+}
+
+; The time half of the label. A figure that carries no date is still served -- as "time unknown".
+pub fn time_label(figure_carries_a_date: bool) u8 {
+  if (figure_carries_a_date) {
+    return TIME_LABEL_DATED;
+  }
+  return TIME_LABEL_UNKNOWN;
+}
+
+pub fn time_label_is_permitted(label: u8) bool {
+  return label == TIME_LABEL_DATED or label == TIME_LABEL_UNKNOWN;
+}
+
+; What may reach a reader. A recomputed figure goes bare; an unreconciled one only while it says
+; both what it is and when it was true; a withheld one never, and nothing stands in for it.
+pub fn figure_may_be_shown(outcome: u8, says_not_reconciled: bool, label: u8) bool {
+  if (outcome == FIGURE_WITHHELD) {
+    return false;
+  }
+  if (outcome == FIGURE_RECOMPUTED) {
+    return true;
+  }
+  return says_not_reconciled and time_label_is_permitted(label);
+}
+
+; D9 arriving from the other direction. pricing_honesty.t27 refuses a zero standing in for a rate
+; nobody published; this refuses one standing in for a figure nobody could reconcile.
+pub const ZERO_STANDS_IN_FOR_A_WITHHELD_FIGURE : bool = false;
+
+pub fn zero_may_stand_in_for_a_withheld_figure() bool {
+  return ZERO_STANDS_IN_FOR_A_WITHHELD_FIGURE;
+}
+
+; A label does not promote a number. An unreconciled figure is honest and is still not the door's
+; answer NOW -- which is the rule pricing_honesty.t27 owns and this file only composes with.
+pub fn served_figure_is_authoritative(outcome: u8, door_answered_at_origin: bool, age_seconds: u32) bool {
+  if (outcome != FIGURE_RECOMPUTED) {
+    return false;
+  }
+  return price_in_a_served_body_is_authoritative(door_answered_at_origin, age_seconds);
+}
+
+; Can this transport obey the rule today? Measured 2026-09-21. src/api/bikes.rs:478 builds the body
+; as one object of families; a family says WHERE its number came from -- src/api/bikes.rs:641
+; inserts client_rate_source, whose two values are declared at :178 and :184 -- and says nowhere
+; WHEN it was true: src/db/bikes.rs:107 and the struct it flattens carry no time field, and the
+; body carries no envelope. So the body can state one half of the label and not the other, and the
+; published rule needs a third source value ("not reconciled") that the two above do not include.
+pub const BODY_CARRIES_A_SOURCE_FIELD : bool = true;
+pub const BODY_CARRIES_A_TIME_FIELD : bool = false;
+pub const BODY_SOURCE_FIELD : str = "client_rate_source";
+pub const BODY_SOURCE_FIELD_VALUES : [2]str = ["door", "unavailable"];
+pub const BODY_SOURCE_FIELD_VALUE_COUNT : u8 = 2;
+pub const RULE_NEEDS_A_SOURCE_VALUE_THAT_DOES_NOT_EXIST_YET : bool = true;
+
+pub fn body_can_carry_the_published_label(source_field_exists: bool, time_field_exists: bool) bool {
+  return source_field_exists and time_field_exists;
+}
+
+; DERIVED HERE, AND SAID SO. The brain publishes one withhold and names its cause once: no cache.
+; It publishes no withhold for a missing DATE -- a dateless figure is shown, saying the time is
+; unknown. This file adds a second cause for a case that cash desk does not have: a transport with
+; no field to carry any label at all. A bare number in a body claims to be current, the rule
+; forbids the claim, and the only honest move left is to omit the number -- which is where D9 and
+; pricing_honesty.t27's dash arrive from the other direction.
+pub const THE_OWNER_PUBLISHED_A_WITHHOLD_FOR_NO_CACHE : bool = true;
+pub const THE_OWNER_PUBLISHED_A_WITHHOLD_FOR_A_MISSING_DATE : bool = false;
+pub const WITHHOLD_WITHOUT_A_LABEL_FIELD_IS_DERIVED_HERE : bool = true;
+
+pub fn outcome_this_transport_can_honestly_produce(source_answered: bool, cache_exists: bool, label_field_exists: bool) u8 {
+  if (source_answered) {
+    return FIGURE_RECOMPUTED;
+  }
+  if (!cache_exists) {
+    return FIGURE_WITHHELD;
+  }
+  if (!label_field_exists) {
+    return FIGURE_WITHHELD;
+  }
+  return FIGURE_UNRECONCILED;
+}
+
+; The one local frequency there is. While the door is a stub no figure enters a body, so the
+; second outcome is unreachable here today -- armed and empty, exactly like the price-age window
+; above, and it arms itself on the same day for the same reason.
+pub fn unreconciled_branch_is_reachable(door_is_wired: bool) bool {
+  return door_is_wired;
+}
+
+; WHAT THIS FILE DECLARED BEFORE 2026-09-21, kept rather than overwritten. The sentence was
+; "Nobody has decided what price age is acceptable", and it was true of THIS REPOSITORY when it
+; was written: the grep recorded in the WHY block returned 0 lines from DECISIONS.md and the call
+; site had deferred the choice to issue #25 in a comment nothing checks. What was wrong with it
+; was its reach and not its subject -- it read as though nobody anywhere had decided, while the
+; owner had decided in August, in a system this repository does not read. A ceiling in seconds is
+; still refused; a label rule is published; they are different questions and stay different
+; constants.
+pub const AGE_RULE_REFUSAL_REPLACED_AT : str = "2026-09-21";
+pub const AGE_RULE_REFUSAL_AS_WRITTEN : str = "Nobody has decided what price age is acceptable, so the verdict has three outcomes and the undecided one is not a pass.";
+pub const AGE_RULE_REFUSAL_WAS_TRUE_OF_THIS_REPOSITORY : bool = true;
+pub const AGE_RULE_REFUSAL_SEARCHED : str = "DECISIONS.md";
+pub const AGE_RULE_REFUSAL_SEARCH_HITS : u8 = 0;
+pub const A_SECONDS_CEILING_IS_PUBLISHED : bool = false;
+pub const A_LABEL_RULE_IS_PUBLISHED : bool = true;
+
+; The two refusals the brain does not lift either. Searched 2026-09-21 across all nine dumped
+; nodes for a capacity, an entry ceiling and an eviction rule: none is published. The one near
+; miss is named rather than left for a reader to trip over -- brain:knowledge_base:1007 and :1025
+; set a thirty-minute TTL on a confirmation request, which bounds how long a question waits for an
+; answer and is not the lifetime of a cached entry, exactly as turbobaby/request-identity's
+; AUTH_DATE_MAX_AGE_SECONDS is not the lifetime of a served copy.
+pub const BRAIN_NODES_SEARCHED : u8 = 9;
+pub const BRAIN_SEARCHED_AT : str = "2026-09-21";
+pub const BRAIN_PUBLISHES_AN_ENTRY_CEILING : bool = false;
+pub const BRAIN_PUBLISHES_AN_EVICTION_RULE : bool = false;
+pub const BRAIN_NEAR_MISS_TTL_MINUTES : u16 = 30;
+pub const BRAIN_NEAR_MISS_IS_A_CACHE_TTL : bool = false;
+pub const BRAIN_NEAR_MISS_PARTIAL_WRITE : str = "brain:business_rules:72-73";
+pub const BRAIN_NEAR_MISS_PARTIAL_WRITE_IS_AN_EVICTION_RULE : bool = false;
+
+; The second node, and what it agrees with rather than adds.
+pub const SECOND_RULE_SOURCE : str = "brain:business_rules:71";
+pub const SECOND_RULE_NODE_MOVED_AT : str = "2026-08-01";
+pub const THE_OWNER_ALSO_RECOMPUTES_RATHER_THAN_STORES : bool = true;
+pub const ABSENCE_RULE_SOURCE : str = "brain:business_rules:32-34";
+pub const ABSENCE_RULE_OUTCOMES : u8 = 3;
+pub const ABSENCE_RULE_STATEMENTS : u8 = 4;
+pub const ABSENCE_RULE_STATEMENTS_THE_OWNERS : u8 = 2;
+pub const ABSENCE_RULE_STATEMENTS_THIS_REPOSITORYS : u8 = 2;
+
+pub fn statement_census_adds_up(total: u8, owners: u8, ours: u8) bool {
+  return total == owners + ours;
 }
 
 ; --- The age of an availability claim --------------------------------------------------------------
@@ -470,6 +796,11 @@ pub const DECLARED_REGIONS : u8 = 1;
 pub const DECLARED_REPLICAS : u16 = 1;
 pub const COHERENCE_IS_A_DEPLOYMENT_FACT : bool = true;
 pub const REPLICA_NOTE : str = "The count above is read from railway.toml:18 and is a deployment declaration, not a property of src/. It can change in one edit to a file no test in this repository reads. The contract therefore takes the replica count as a parameter everywhere below and asserts the coherence rule, never the count alone.";
+; RE-MEASURED 2026-09-22: "a file no test in this repository reads" is the 2026-09-21 reading.
+; scripts/verify_t27_against_source.py now binds DECLARED_REPLICAS to the one numReplicas entry in
+; railway.toml, and tests/t27_gates_run.rs runs that gate under cargo test, so an edit to the
+; replica count or a second region now fails a test. The contract's stance is unchanged: it still
+; takes the replica count as a parameter and asserts the coherence rule, never the count alone.
 
 pub fn map_is_coherent_across_the_fleet(replicas: u16, store_is_shared: bool) bool {
   if (store_is_shared) {
@@ -713,6 +1044,196 @@ test nobody_has_decided_what_age_is_acceptable_and_undecided_is_not_a_pass {
   assert AGE_UNDECIDED != AGE_ACCEPTABLE;
 }
 
+; The published rule, executed. Three outcomes, chosen by whether the source answered and never by
+; what the number looks like.
+test a_number_has_three_outcomes_and_the_answer_picks_them_not_the_value {
+  assert FIGURE_OUTCOME_COUNT == 3;
+  assert FIGURE_RECOMPUTED != FIGURE_UNRECONCILED;
+  assert FIGURE_UNRECONCILED != FIGURE_WITHHELD;
+  assert FIGURE_RECOMPUTED != FIGURE_WITHHELD;
+  assert figure_outcome(true, true) == FIGURE_RECOMPUTED;
+  assert figure_outcome(true, false) == FIGURE_RECOMPUTED;
+  assert figure_outcome(false, true) == FIGURE_UNRECONCILED;
+  assert figure_outcome(false, false) == FIGURE_WITHHELD;
+  assert zero_from_a_live_source_is_a_fact(true, true) == true;
+  assert zero_from_a_live_source_is_a_fact(false, true) == false;
+  assert RULE_SOURCE == "brain:knowledge_base:856-866";
+  assert RULE_SOURCE_IS_IN_THIS_REPOSITORY == false;
+}
+
+; The figure census and the response census share this file and share no value.
+test the_two_outcome_vocabularies_do_not_overlap {
+  assert FIGURE_RECOMPUTED != OUTCOME_NOT_MODIFIED;
+  assert FIGURE_RECOMPUTED != OUTCOME_FULL_BODY;
+  assert FIGURE_UNRECONCILED != OUTCOME_NOT_MODIFIED;
+  assert FIGURE_UNRECONCILED != OUTCOME_FULL_BODY;
+  assert FIGURE_WITHHELD != OUTCOME_NOT_MODIFIED;
+  assert FIGURE_WITHHELD != OUTCOME_FULL_BODY;
+  assert OUTCOME_KIND_COUNT == 2;
+  assert FIGURE_OUTCOME_COUNT == 3;
+}
+
+; The half the second brief got backwards, executable so it cannot drift back. No date is not no
+; label: a dateless figure is served and says the time is unknown, and the sentence it must never
+; say has a name here so a test can refuse it.
+test a_dateless_figure_is_still_served_and_says_the_time_is_unknown {
+  assert time_label(true) == TIME_LABEL_DATED;
+  assert time_label(false) == TIME_LABEL_UNKNOWN;
+  assert time_label(false) != TIME_LABEL_PROBABLY_RECENT;
+  assert time_label(true) != TIME_LABEL_PROBABLY_RECENT;
+  assert time_label_is_permitted(TIME_LABEL_DATED) == true;
+  assert time_label_is_permitted(TIME_LABEL_UNKNOWN) == true;
+  assert time_label_is_permitted(TIME_LABEL_NONE) == false;
+  assert time_label_is_permitted(TIME_LABEL_PROBABLY_RECENT) == false;
+  assert figure_may_be_shown(FIGURE_UNRECONCILED, true, TIME_LABEL_UNKNOWN) == true;
+  assert THE_OWNER_PUBLISHED_A_WITHHOLD_FOR_A_MISSING_DATE == false;
+  assert MUST_NOT_SAY == "probably recent";
+  assert SAY_TIME_UNKNOWN == "time unknown";
+}
+
+; What may reach a reader, and the one thing that may not stand in for what may not.
+test an_unreconciled_figure_travels_with_both_halves_of_its_label_or_not_at_all {
+  assert figure_may_be_shown(FIGURE_UNRECONCILED, true, TIME_LABEL_DATED) == true;
+  assert figure_may_be_shown(FIGURE_UNRECONCILED, false, TIME_LABEL_DATED) == false;
+  assert figure_may_be_shown(FIGURE_UNRECONCILED, true, TIME_LABEL_NONE) == false;
+  assert figure_may_be_shown(FIGURE_UNRECONCILED, true, TIME_LABEL_PROBABLY_RECENT) == false;
+  assert figure_may_be_shown(FIGURE_RECOMPUTED, false, TIME_LABEL_NONE) == true;
+  assert figure_may_be_shown(FIGURE_WITHHELD, true, TIME_LABEL_DATED) == false;
+  assert figure_may_be_shown(FIGURE_WITHHELD, false, TIME_LABEL_NONE) == false;
+  assert zero_may_stand_in_for_a_withheld_figure() == false;
+  assert ZERO_STANDS_IN_FOR_A_WITHHELD_FIGURE == false;
+  assert SAY_NOT_RECONCILED == "not reconciled";
+  assert LABEL_WORDING_IS_OWNED_HERE == false;
+}
+
+; A label makes a number honest; it does not make it the door's answer now. D11 is untouched and
+; the neighbour that owns it is named by ID.
+test a_labelled_figure_is_honest_and_is_still_not_the_authority {
+  assert served_figure_is_authoritative(FIGURE_RECOMPUTED, true, 0) == true;
+  assert served_figure_is_authoritative(FIGURE_RECOMPUTED, true, 1) == false;
+  assert served_figure_is_authoritative(FIGURE_RECOMPUTED, false, 0) == false;
+  assert served_figure_is_authoritative(FIGURE_UNRECONCILED, true, 0) == false;
+  assert served_figure_is_authoritative(FIGURE_WITHHELD, true, 0) == false;
+  assert A_CACHE_MAY_BECOME_THE_PRICE_AUTHORITY == false;
+  assert REUSES_PRICING_HONESTY_ID == "turbobaby/pricing-honesty";
+  assert DECISION == "D11";
+}
+
+; Provenance. The rule is a dated ruling in force; the census beside it is a measurement of
+; another system; neither is the other and neither is about this repository. THE NAME OF THIS
+; TEST CHANGED on 2026-09-21 and its subject did not: it was
+; the_rule_is_the_owners_word_and_the_census_beside_it_is_somebody_elses_measurement, on an
+; attribution the node never made. The third and fourth asserts are the correction, and the
+; fifth keeps the withdrawn claim readable instead of letting it vanish.
+test the_rule_is_a_dated_ruling_and_the_census_beside_it_is_somebody_elses_measurement {
+  assert RULE_IS_A_RULING_IN_FORCE == true;
+  assert RULE_IS_A_MEASUREMENT == false;
+  assert RULE_AUTHOR_IS_NAMED_IN_THE_NODE == false;
+  assert RULE_NODE_OWNER_WORD_MARKERS == 0;
+  assert RULE_WAS_DECLARED_THE_OWNERS_DECISION_UNTIL == "2026-09-21";
+  assert RULE_DECIDED_AT == "2026-08-13";
+  assert RULE_READ_AT == "2026-09-21";
+  assert RULE_CITATION_FORM == "brain:<node>:<line>";
+  assert CENSUS_SOURCE == "brain:knowledge_base:875";
+  assert CENSUS_DAYS == 73;
+  assert CENSUS_IS_ABOUT_THIS_REPOSITORY == false;
+  assert census_adds_up(CENSUS_ANSWERS_WITH_A_FIGURE, CENSUS_RECOMPUTED, CENSUS_FROM_CACHE) == true;
+  assert census_adds_up(CENSUS_ANSWERS_WITH_A_FIGURE, CENSUS_RECOMPUTED, 0) == false;
+  assert CENSUS_FROM_CACHE == 1;
+  assert BRAIN_CITERS_IN_THE_CORPUS_ARE_COUNTED == false;
+}
+
+; The incident, with the one thing about it that is not published left unsaid.
+test the_incident_is_two_ungrounded_claims_and_a_gap_of_five_hundred {
+  assert INCIDENT_AT == "2026-08-13";
+  assert INCIDENT_SOURCE == "brain:knowledge_base:857-859";
+  assert INCIDENT_ATTEMPTS_BEFORE_SILENCE == 3;
+  assert INCIDENT_UNGROUNDED_CLAIMS == 2;
+  assert INCIDENT_TIMES_THE_FIGURE_WAS_SHOWN == 2;
+  assert figure_gap(INCIDENT_FIGURE_SHOWN, INCIDENT_FIGURE_RECONCILED) == 500;
+  assert INCIDENT_FIGURE_SHOWN != INCIDENT_FIGURE_RECONCILED;
+  assert WHICH_EXPENSE_THE_COPY_PREDATED_IS_PUBLISHED == false;
+  assert INCIDENT_FIGURES_ARE_A_TILL_BALANCE == true;
+  assert INCIDENT_FIGURES_ARE_A_PRICE_OR_A_RATE == false;
+}
+
+; The rule is published and this transport cannot obey it: the body says where a number came from
+; and has nowhere to say when it was true. The withhold that follows is this file's derivation and
+; is labelled as one.
+test the_body_can_say_what_a_number_is_and_not_when_it_was_true {
+  assert BODY_CARRIES_A_SOURCE_FIELD == true;
+  assert BODY_CARRIES_A_TIME_FIELD == false;
+  assert BODY_SOURCE_FIELD == "client_rate_source";
+  assert BODY_SOURCE_FIELD_VALUE_COUNT == 2;
+  assert BODY_SOURCE_FIELD_VALUES[0] == "door";
+  assert BODY_SOURCE_FIELD_VALUES[1] == "unavailable";
+  assert RULE_NEEDS_A_SOURCE_VALUE_THAT_DOES_NOT_EXIST_YET == true;
+  assert body_can_carry_the_published_label(BODY_CARRIES_A_SOURCE_FIELD, BODY_CARRIES_A_TIME_FIELD) == false;
+  assert body_can_carry_the_published_label(true, true) == true;
+  assert body_can_carry_the_published_label(false, true) == false;
+  assert WITHHOLD_WITHOUT_A_LABEL_FIELD_IS_DERIVED_HERE == true;
+  assert THE_OWNER_PUBLISHED_A_WITHHOLD_FOR_NO_CACHE == true;
+  assert outcome_this_transport_can_honestly_produce(true, false, false) == FIGURE_RECOMPUTED;
+  assert outcome_this_transport_can_honestly_produce(false, true, false) == FIGURE_WITHHELD;
+  assert outcome_this_transport_can_honestly_produce(false, true, true) == FIGURE_UNRECONCILED;
+  assert outcome_this_transport_can_honestly_produce(false, false, true) == FIGURE_WITHHELD;
+}
+
+; The local frequency, which is zero by construction and not by luck.
+test the_unreconciled_branch_cannot_fire_here_until_the_door_is_wired {
+  assert unreconciled_branch_is_reachable(DOOR_IS_WIRED) == false;
+  assert unreconciled_branch_is_reachable(true) == true;
+  assert DOOR_IS_WIRED == false;
+  assert body_can_carry_a_door_price(DOOR_IS_WIRED) == false;
+}
+
+; The superseded refusal, kept readable, with the half of it that still holds asserted beside the
+; half that no longer does.
+test the_old_refusal_is_still_readable_and_the_seconds_ceiling_is_still_refused {
+  assert AGE_RULE_REFUSAL_REPLACED_AT == "2026-09-21";
+  assert AGE_RULE_REFUSAL_WAS_TRUE_OF_THIS_REPOSITORY == true;
+  assert AGE_RULE_REFUSAL_SEARCHED == "DECISIONS.md";
+  assert AGE_RULE_REFUSAL_SEARCH_HITS == 0;
+  assert A_SECONDS_CEILING_IS_PUBLISHED == false;
+  assert A_LABEL_RULE_IS_PUBLISHED == true;
+  assert ACCEPTABLE_PRICE_AGE_IS_DECIDED == false;
+  assert ACCEPTABLE_PRICE_AGE_SECONDS == NOT_A_DURATION_SECONDS;
+  assert acceptable_price_age_seconds() == -1;
+  assert age_verdict(ACCEPTABLE_PRICE_AGE_IS_DECIDED, 0, 0) == AGE_UNDECIDED;
+}
+
+; What neither source publishes, and the near miss that a grep for it will find.
+test no_ceiling_and_no_eviction_rule_comes_from_either_source {
+  assert ENTRY_LIMIT_IS_SET == false;
+  assert EVICTION_RULE_EXISTS == false;
+  assert BRAIN_PUBLISHES_AN_ENTRY_CEILING == false;
+  assert BRAIN_PUBLISHES_AN_EVICTION_RULE == false;
+  assert BRAIN_NODES_SEARCHED == 9;
+  assert BRAIN_SEARCHED_AT == "2026-09-21";
+  assert BRAIN_NEAR_MISS_TTL_MINUTES == 30;
+  assert BRAIN_NEAR_MISS_IS_A_CACHE_TTL == false;
+  assert BRAIN_NEAR_MISS_PARTIAL_WRITE == "brain:business_rules:72-73";
+  assert BRAIN_NEAR_MISS_PARTIAL_WRITE_IS_AN_EVICTION_RULE == false;
+  assert MAX_ENTRIES == NOT_A_COUNT;
+  assert map_entries_are_bounded(ENTRY_LIMIT_IS_SET, EVICTION_RULE_EXISTS) == false;
+  assert GROWTH_IS_ANNOUNCED == true;
+}
+
+; The second node agrees with what this file already measured, and states the general rule of
+; which the section above is the temporal case. Four statements, two of them the owner's.
+test the_owner_recomputes_rather_than_stores_and_names_absence_as_absence {
+  assert SECOND_RULE_SOURCE == "brain:business_rules:71";
+  assert SECOND_RULE_NODE_MOVED_AT == "2026-08-01";
+  assert THE_OWNER_ALSO_RECOMPUTES_RATHER_THAN_STORES == true;
+  assert ORIGIN_REMEMBERS_A_BODY == false;
+  assert BODY_IS_REBUILT_PER_REQUEST == true;
+  assert ABSENCE_RULE_SOURCE == "brain:business_rules:32-34";
+  assert ABSENCE_RULE_OUTCOMES == 3;
+  assert statement_census_adds_up(ABSENCE_RULE_STATEMENTS, ABSENCE_RULE_STATEMENTS_THE_OWNERS, ABSENCE_RULE_STATEMENTS_THIS_REPOSITORYS) == true;
+  assert statement_census_adds_up(ABSENCE_RULE_STATEMENTS, ABSENCE_RULE_STATEMENTS_THE_OWNERS, 1) == false;
+  assert SECOND_RULE_SOURCE != RULE_SOURCE;
+}
+
 test an_aged_availability_claim_is_not_a_confirmation {
   assert A_HELD_COPY_IS_A_LIVE_CHECK == false;
   assert served_copy_is_a_confirmation(true, 0) == true;
@@ -817,3 +1338,39 @@ invariant an_edit_surface_is_never_cached_at_all
 
 invariant this_file_declares_no_wire_number
   assert THIS_FILE_DECLARES_NO_HTTP_STATUS == true and OUTCOME_NOT_MODIFIED == 1 and OUTCOME_FULL_BODY == 2 and REUSES_CATALOG_API_ID == "turbobaby/catalog-api"
+
+; A figure from a cache travels with both halves of its label or it does not travel. Both permitted
+; time labels are asserted here, because dropping the dateless one is precisely how the published
+; rule would quietly become the stricter thing it is not.
+invariant an_unreconciled_figure_never_reaches_a_reader_bare
+  assert figure_may_be_shown(FIGURE_UNRECONCILED, true, TIME_LABEL_NONE) == false and figure_may_be_shown(FIGURE_UNRECONCILED, false, TIME_LABEL_DATED) == false and figure_may_be_shown(FIGURE_UNRECONCILED, true, TIME_LABEL_DATED) == true and figure_may_be_shown(FIGURE_UNRECONCILED, true, TIME_LABEL_UNKNOWN) == true
+
+invariant a_withheld_figure_is_replaced_by_nothing_and_never_by_a_zero
+  assert figure_may_be_shown(FIGURE_WITHHELD, true, TIME_LABEL_DATED) == false and figure_may_be_shown(FIGURE_WITHHELD, false, TIME_LABEL_NONE) == false and zero_may_stand_in_for_a_withheld_figure() == false and ZERO_STANDS_IN_FOR_A_WITHHELD_FIGURE == false
+
+invariant an_unknown_time_is_never_dressed_as_a_recent_one
+  assert time_label(false) == TIME_LABEL_UNKNOWN and time_label(false) != TIME_LABEL_PROBABLY_RECENT and time_label(true) != TIME_LABEL_PROBABLY_RECENT and time_label_is_permitted(TIME_LABEL_PROBABLY_RECENT) == false
+
+invariant a_label_never_promotes_a_figure_to_the_authority
+  assert served_figure_is_authoritative(FIGURE_UNRECONCILED, true, 0) == false and served_figure_is_authoritative(FIGURE_RECOMPUTED, true, 1) == false and served_figure_is_authoritative(FIGURE_RECOMPUTED, true, 0) == true and A_CACHE_MAY_BECOME_THE_PRICE_AUTHORITY == false
+
+; The published rule answered the label question and not the ceiling question. Both halves are
+; asserted together so that neither can drift into the other later.
+invariant the_seconds_ceiling_stays_refused_while_the_label_rule_is_published
+  assert A_SECONDS_CEILING_IS_PUBLISHED == false and ACCEPTABLE_PRICE_AGE_IS_DECIDED == false and ACCEPTABLE_PRICE_AGE_SECONDS == NOT_A_DURATION_SECONDS and A_LABEL_RULE_IS_PUBLISHED == true and AGE_RULE_REFUSAL_WAS_TRUE_OF_THIS_REPOSITORY == true
+
+; The rule and the measurement beside it never merge, and the rule never re-acquires an author
+; the node does not give it. Until 2026-09-21 the first term of this invariant read
+; RULE_IS_THE_OWNERS_DECISION == true; the attribution was withdrawn by review and the guard
+; against merging the two kinds of fact stayed where it was.
+invariant the_ruling_never_merges_with_the_measurement_beside_it
+  assert RULE_IS_A_RULING_IN_FORCE == true and RULE_IS_A_MEASUREMENT == false and RULE_AUTHOR_IS_NAMED_IN_THE_NODE == false and CENSUS_IS_ABOUT_THIS_REPOSITORY == false and census_adds_up(CENSUS_ANSWERS_WITH_A_FIGURE, CENSUS_RECOMPUTED, CENSUS_FROM_CACHE) == true
+
+invariant the_derived_withhold_is_never_read_back_as_the_owners_word
+  assert body_can_carry_the_published_label(BODY_CARRIES_A_SOURCE_FIELD, BODY_CARRIES_A_TIME_FIELD) == false and outcome_this_transport_can_honestly_produce(false, true, false) == FIGURE_WITHHELD and WITHHOLD_WITHOUT_A_LABEL_FIELD_IS_DERIVED_HERE == true and THE_OWNER_PUBLISHED_A_WITHHOLD_FOR_A_MISSING_DATE == false and THE_OWNER_PUBLISHED_A_WITHHOLD_FOR_NO_CACHE == true
+
+invariant neither_source_publishes_a_ceiling_or_an_eviction_rule
+  assert BRAIN_PUBLISHES_AN_ENTRY_CEILING == false and BRAIN_PUBLISHES_AN_EVICTION_RULE == false and ENTRY_LIMIT_IS_SET == false and EVICTION_RULE_EXISTS == false and MAX_ENTRIES == NOT_A_COUNT and BRAIN_NEAR_MISS_IS_A_CACHE_TTL == false and BRAIN_NEAR_MISS_PARTIAL_WRITE_IS_AN_EVICTION_RULE == false
+
+invariant the_figure_vocabulary_and_the_response_vocabulary_share_no_value
+  assert FIGURE_RECOMPUTED != OUTCOME_NOT_MODIFIED and FIGURE_RECOMPUTED != OUTCOME_FULL_BODY and FIGURE_UNRECONCILED != OUTCOME_NOT_MODIFIED and FIGURE_UNRECONCILED != OUTCOME_FULL_BODY and FIGURE_WITHHELD != OUTCOME_NOT_MODIFIED and FIGURE_WITHHELD != OUTCOME_FULL_BODY

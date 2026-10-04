@@ -287,7 +287,10 @@ pub fn index_get(state: IndexState, key: []u8) ?IndexEntry {
 /// Query index
 pub fn index_query(state: IndexState, query: IndexQuery) []IndexEntry {
     var result : []IndexEntry = &[_]IndexEntry{};
-    const limit = query.limit.? MAX_INDEX_ENTRIES;
+    // (Was `query.limit.? MAX_INDEX_ENTRIES` -- a garbled Zig
+    // `query.limit orelse MAX_INDEX_ENTRIES`, whose default was silently
+    // dropped. t27 has no `orelse`: explicit null test + unwrap.)
+    const limit = if (query.limit != null) query.limit.? else MAX_INDEX_ENTRIES;
 
     for (0..min(result.len, limit)) |_| {
         // Would match and add to result
@@ -335,7 +338,9 @@ pub fn delta_replay(state: *IndexState, delta: SyncDelta) ReplayResult {
     var skipped : usize = 0;
     var conflicts : usize = 0;
 
-    for (delta.operations, 0..) |op| {
+    // (Zig multi-object loop `for (xs, 0..) |op|` bound no index capture, so
+    // the `0..` counter carried nothing; written as a plain loop over xs.)
+    for (delta.operations) |op| {
         // Apply operation (simplified)
         applied += 1;
     }
@@ -495,63 +500,64 @@ pub fn checksum_compute(data: []u8) [32]u8 {
 // ============================================================================
 // TDD - Tests
 // ============================================================================
+// (Zig `try std.testing.expect(x);` is written as t27's `assert x;`.)
 
 test "sync_index_state_new" {
     const state = index_state_new();
-    try std.testing.expect(state.metadata.version == INDEX_VERSION);
+    assert state.metadata.version == INDEX_VERSION;
 }
 
 test "sync_entry_create" {
     const entry = entry_create("key", 1, "value");
-    try std.testing.expect(std.mem.eql(entry.key, "key"));
-    try std.testing.expect(entry.version == 1);
+    assert std.mem.eql(entry.key, "key");
+    assert entry.version == 1;
 }
 
 test "sync_entry_tombstone" {
     const entry = entry_tombstone("key", 1);
-    try std.testing.expect(entry.entry_type == .tombstone);
+    assert entry.entry_type == .tombstone;
 }
 
 test "sync_delta_add" {
     const op = delta_add("key", "value", 0, 1);
-    try std.testing.expect(op.op_type == 0);
+    assert op.op_type == 0;
 }
 
 test "sync_delta_remove" {
     const op = delta_remove("key", 0, 1);
-    try std.testing.expect(op.op_type == 1);
+    assert op.op_type == 1;
 }
 
 test "sync_delta_modify" {
     const op = delta_modify("key", "old", "new", 0, 1);
-    try std.testing.expect(op.op_type == 2);
+    assert op.op_type == 2;
 }
 
 test "sync_block_create" {
     const entry = entry_create("key", 1, "value");
     const block = block_create(&[_]IndexEntry{entry}, 0);
-    try std.testing.expect(block.block_index == 0);
+    assert block.block_index == 0;
 }
 
 test "sync_query_create" {
     const query = query_create("test");
-    try std.testing.expect(std.mem.eql(query.key_pattern, "test"));
+    assert std.mem.eql(query.key_pattern, "test");
 }
 
 test "sync_query_with_version_range" {
     const query = query_with_version_range("test", 10, 100);
-    try std.testing.expect(query.min_version.? == 10);
+    assert query.min_version.? == 10;
 }
 
 test "sync_replay_position_create" {
     const pos = replay_position_create(sync_id_generate(), 10);
-    try std.testing.expect(pos.operation_index == 10);
+    assert pos.operation_index == 10;
 }
 
 test "sync_checkpoint_create" {
     const state = index_state_new();
     const checkpoint = checkpoint_create(&state);
-    try std.testing.expect(checkpoint_count(state.checkpoints) > 0);
+    assert checkpoint_count(state.checkpoints) > 0;
 }
 
 test "sync_trim_checkpoints" {
@@ -565,7 +571,7 @@ test "sync_trim_checkpoints" {
         });
     }
     const trimmed = trim_checkpoints(checkpoints, checkpoints[checkpoints.len - 1]);
-    try std.testing.expect(checkpoint_count(trimmed) == CHECKPOINT_RETENTION);
+    assert checkpoint_count(trimmed) == CHECKPOINT_RETENTION;
 }
 
 // ============================================================================

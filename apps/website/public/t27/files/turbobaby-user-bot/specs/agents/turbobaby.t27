@@ -6,7 +6,7 @@ module turbobaby-agent;
 ; definition issue #23 asks for, stated once in the form the corpus already uses for an
 ; agent: KIND/ID/NAME identity, the documents that bind it, entry and exit invariants,
 ; and SKILLS/TOOLS bound only where a source names them.
-;
+//
 ; WHY (measured 2026-09-12). The epic names an owner agent; nothing in the repository
 ; defined one, so the assignment was a label with nothing behind it. Two further
 ; measurements shaped what is below. First, this world is not a letter of the t27
@@ -16,7 +16,7 @@ module turbobaby-agent;
 ; (27%) carry no test, invariant or bench, and all 27 agent cards are in that 187. L4
 ; TESTABILITY is therefore declared but not enforced; this card carries tests anyway,
 ; because a card nobody can check is a claim, not a specification.
-;
+//
 ; What this card never does: it does not grant the agent write access to the owner's
 ; operations spreadsheets, it does not name a price, and it does not restate the fleet.
 ; Numbers live in data/fleet_seed.json with their provenance; decisions live in
@@ -25,8 +25,14 @@ module turbobaby-agent;
 
 pub const KIND : str = "agent";
 pub const ID : str = "turbobaby/BOT";
-pub const NAME : str = "TurboBaby (Rental & Sales)";
-pub const DOMAIN : str = "Motorbike rental and sales, Kamala, Phuket";
+pub const NAME : str = "TurboBaby (Rental)";
+pub const DOMAIN : str = "Motorbike rental, Kamala, Phuket";
+; CORRECTED 2026-09-24: the owner ruled that day that a customer may only rent, and only in Phuket
+; (specs/turbobaby/legacy_retirement.t27 records the ruling), so the sale half of NAME and DOMAIN
+; is gone, word for word and nothing added. The old values are kept below. The card on t27.ai
+; changes only when it is next published from this file.
+pub const NAME_BEFORE_2026_09_24 : str = "TurboBaby (Rental & Sales)";
+pub const DOMAIN_BEFORE_2026_09_24 : str = "Motorbike rental and sales, Kamala, Phuket";
 ; The market this deployment runs in, and what "any market" means. The owner's standing
 ; instruction (2026-09-13) is that this agent runs on any market, country and currency.
 ; The contract that makes that true is specs/turbobaby/market_profile.t27 (D18); this card
@@ -98,6 +104,13 @@ test the_card_is_an_agent_of_its_own_world {
   assert KIND == "agent";
   assert ID == "turbobaby/BOT";
   assert WORLD == "gHashTag/turbobaby-user-bot";
+}
+
+test the_card_names_a_rental_only_domain {
+  assert NAME == "TurboBaby (Rental)";
+  assert DOMAIN == "Motorbike rental, Kamala, Phuket";
+  assert NAME_BEFORE_2026_09_24 != NAME;
+  assert DOMAIN_BEFORE_2026_09_24 != DOMAIN;
 }
 
 test no_alphabet_seat_is_claimed {

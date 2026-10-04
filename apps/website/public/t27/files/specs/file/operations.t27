@@ -70,7 +70,12 @@ module FileOperations {
     }
 
     // delete removes lines from a file
-    fn delete(path: str, startLine: u32, endLine: u32) -> Result<void, FileError> {
+    // (renamed from `delete`: t27 has no overloading, and the one-argument
+    // `delete(path)` further down -- delete a file, called by delete_dir --
+    // already owns that name; two functions called `delete` are a duplicate
+    // definition (the Verilog HIR rejects the duplicate port). This is the
+    // line-range form.)
+    fn delete_lines(path: str, startLine: u32, endLine: u32) -> Result<void, FileError> {
         // Implementation: Delete line range
     }
 

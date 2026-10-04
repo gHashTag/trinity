@@ -43,7 +43,7 @@ const KNOWN = [
   // invest.community.cta.{node,docs,buy}.url: unread dead data. No file in src/
   // reads community.cta, and InvestSection, the only reader of t.invest, is
   // imported nowhere. It still ships in the bundle.
-  ...['de', 'en', 'es', 'ru', 'zh'].flatMap((locale) =>
+  ...['en', 'ru'].flatMap((locale) =>
     ['/docs/node-setup', '/docs', '/buy'].map((url) => ({ file: `messages/${locale}.json`, url }))),
 ]
 

@@ -17,7 +17,10 @@
 ; -- tests/money_is_never_invented.rs:10-16 says exactly that in its own words, and adds that the
 ; only other compiler, the wasm clippy gate, "has no opinion about unwrap_or(0.0)". The size of
 ; the blind spot is countable: src/ui holds FIVE `#[cfg(test)]` modules (src/ui/api/local_client.rs:181,
-; src/ui/lang.rs:135, src/ui/screens/bike_detail.rs:599, src/ui/screens/catalog_screen.rs:966,
+; src/ui/lang.rs:135, src/ui/screens/bike_detail.rs:572 (:570 until the 2026-09-25 edit that
+; removed the all-taken line above it, and :600 until the 2026-09-24 rental-only edit removed the
+; buy-out block above it), src/ui/screens/catalog_screen.rs:953 (:954 until the 2026-09-26 Book-control edit)
+; (:599 and :966 until the 2026-09-24 availability edit, re-verified that day),
 ; src/ui/share.rs:409) containing THIRTY-TWO `#[test]` functions, and not one of the thirty-two is
 ; ever compiled, let alone run. The instrument that does exist is a text scan for four literal
 ; spellings of unwrap_or. A contract is the only other instrument available here, which is why the
@@ -36,7 +39,7 @@
 ;      submit_order_with_retry at src/ui/screens/checkout_screen.rs:148 (:128 before the
 ;      2026-09-21 edits in items 4 and 5 below), it wraps exactly one
 ;      call, and it lives in a screen rather than in the transport. Three other screens carry a
-;      retry BUTTON (src/ui/screens/events_screen.rs:924, src/ui/screens/profile_screen.rs:662,
+;      retry BUTTON (src/ui/screens/events_screen.rs:924, src/ui/screens/profile_screen.rs:663,
 ;      src/ui/screens/success_screen.rs:479 -- :920, :659 and :476 before the same day's
 ;      cart-price edits moved them); those are a customer tap re-arming a resource, not
 ;      a re-send the code decides on, and they are counted separately. A request deadline does not
@@ -47,10 +50,13 @@
 ;      mirror rule is not at risk, it is already refuted, and the count says by how much. Of
 ;      172 declared fields in src/ui/api/types.rs, 44 carry `#[serde(default)]` -- a plain
 ;      `grep -c` answers 45, because the comment at :37 names the attribute without being one, so
-;      the count below is of attribute lines and not of matches; 28 of those
+;      the count below is of attribute lines and not of matches (46 since 2c21df1 added the doc
+;      line at :424, which names it too; re-measured 2026-09-22); 28 of those
 ;      default an Option, where absence stays absence, and SIX default a bare number, where
 ;      absence becomes a zero the server never sent. TWO of the six are the cart's own money
-;      and counts: ServerCartItem.quantity (:421) and ServerCart.total (:448).
+;      and counts: ServerCartItem.quantity (:423) and ServerCart.total (:450). (RE-POINTED
+;      2026-09-24: :421 and :448 until DeliveryZone gained two attribute lines above them; the
+;      DTO census below records that change. 44 and 28 are the 2026-09-22 counts, 46 and 30 now.)
 ;      SUPERSEDED READING, true until 2026-09-21: "27 of those default an Option ... and SEVEN
 ;      default a bare number ... Three of the seven are the cart's own money and counts:
 ;      ServerCartItem.quantity (:421), ServerCartItem.unit_price (:423) and ServerCart.total
@@ -68,8 +74,8 @@
 ;      duplicated write -- the 409 arm at src/ui/screens/checkout_screen.rs:162-178, whose own
 ;      comment at :125 calls 409 'already accepted' -- is written against a status
 ;      POST /api/orders never returns. The server answers a replay with 200 and a body flag
-;      (src/api/orders.rs:1245-1249), refuses a malformed key with 400 (:764), and the only
-;      StatusCode::CONFLICT in src/api/orders.rs is :2210 in cancel_order. The branch is
+;      (src/api/orders.rs:1371-1375), refuses a malformed key with 400 (:876), and the only
+;      StatusCode::CONFLICT in src/api/orders.rs is :2336 in cancel_order. The branch is
 ;      unreachable from the endpoint it guards."
 ;      The premise held and the arm is GONE rather than repaired: it recovered an order by
 ;      RECENCY, never matched against the idempotency key that was sent, and built its URL from
@@ -333,6 +339,22 @@ pub const SITES_SENDING_THE_LABEL : u8 = 7;
 pub const SITES_OMITTING_THE_LABEL : u8 = 2;
 ; client.rs:63 moved to :100 when the constructor grew a refusal; http.rs:368 did not move.
 pub const UNLABELLED_SITES : [2]str = ["src/ui/api/http.rs:368", "src/ui/api/client.rs:100"];
+; SCOPE, measured 2026-09-22. The nine are the two transport modules named above and nothing
+; wider. src/ui holds 44 more `.header("X-Telegram-Init-Data", ...)` calls outside src/ui/api --
+; src/ui/screens/admin_screen.rs 34, src/ui/screens/profile_screen.rs 4,
+; src/ui/screens/order_detail_screen.rs 3, src/ui/screens/orders_screen.rs 1,
+; src/ui/pages/referrals.rs 1 and src/ui/game/shop_game.rs 1 -- plus two spellings that are not a
+; .header( call, a JS fetch headers object at admin_screen.rs:638 and a header tuple at :4623. None
+; of them sends the label: in src/ui the label literal occurs only in src/ui/api/http.rs, seven
+; times. The three counts above are true of their stated scope; read as a census of the whole
+; client they would understate how many call sites send the proof without the label.
+; RE-PINNED 2026-09-26: the header tuple :4615 -> :4623, when the Loyalty tab grew its referral
+; sub-tab (R3) eight lines above it. Re-counted the same day: admin_screen.rs still makes 34
+; calls, and the referral credit's panel and page reach the server through src/ui/api/http.rs
+; (AdminAuth, fetch_text_authed_full, post_json_authed), so no count above moved.
+pub const IDENTITY_HEADER_CALLS_OUTSIDE_THE_TRANSPORT : u8 = 44;
+pub const OTHER_IDENTITY_HEADER_SPELLINGS_OUTSIDE_THE_TRANSPORT : u8 = 2;
+pub const LABEL_SITES_OUTSIDE_THE_TRANSPORT : u8 = 0;
 pub const MISSING_LABEL_DEFAULTS_TO_TAMPERING : bool = true;
 
 pub fn reconstruction_label(origin: u8) bool {
@@ -420,7 +442,7 @@ pub const ATTEMPTS_CLAIMED_BY_THE_DOC_COMMENT : u8 = 4;
 pub const ATTEMPTS_CLAIMED_BEFORE_2026_09_21 : u8 = 3;
 pub const DOC_COMMENT_AGREES_WITH_THE_LOOP : bool = true;
 ; A retry BUTTON is not a retry. Three screens re-arm a failed resource on a customer tap --
-; src/ui/screens/events_screen.rs:924, src/ui/screens/profile_screen.rs:662 and
+; src/ui/screens/events_screen.rs:924, src/ui/screens/profile_screen.rs:663 and
 ; src/ui/screens/success_screen.rs:479 (:920, :659 and :476 before the 2026-09-21 edits) --
 ; and none of the three re-sends anything by itself.
 ; They are counted here so "one call retries" is read as one AUTOMATIC re-send and not as the
@@ -484,7 +506,7 @@ pub fn resubmission_reuses_a_key_with_a_new_payload(key_stable: bool, payload_ch
 
 ; The client never learns which arm the server took. It reads order_id out of a 2xx body
 ; (src/ui/screens/checkout_screen.rs:173-174) and ignores the idempotent_replay flag the server
-; sets beside it at src/api/orders.rs:1248, so a replayed order and a newly created one are
+; sets beside it at src/api/orders.rs:1374, so a replayed order and a newly created one are
 ; indistinguishable on this side.
 pub const SERVER_REPLAY_STATUS : u16 = 200;
 pub const SERVER_REPLAY_FLAG_NAME : str = "idempotent_replay";
@@ -497,7 +519,7 @@ pub fn client_distinguishes_replay_from_create(reads_replay_flag: bool) bool {
 ; --- The conflict arm that could not fire, and is gone ---------------------------------------------
 ; REMOVED 2026-09-21. It stood at src/ui/screens/checkout_screen.rs:162-178, treated 409 as
 ; "already accepted", fetched /api/orders/user/{id} and returned the FIRST element of the array as
-; the order the customer had just placed. The list is newest-first -- src/api/orders.rs:2375 orders
+; the order the customer had just placed. The list is newest-first -- src/api/orders.rs:2501 orders
 ; by created_at descending -- so the pick was at least the newest order, but it was chosen by
 ; recency and not by the key that was sent, and nothing checked that it was the same order. The
 ; telegram id used to build the recovery URL was itself a fabricated zero when identity was absent
@@ -505,8 +527,8 @@ pub fn client_distinguishes_replay_from_create(reads_replay_flag: bool) bool {
 ; queried a user that does not exist.
 ; Removed rather than repaired, because the measurement says it cannot fire and a correct version
 ; would have had nothing to guard: POST /api/orders answers a replay with 200
-; (src/api/orders.rs:1245-1250), refuses an unusable key with 400 (:764), and the only
-; StatusCode::CONFLICT in that file is cancel_order at :2210. A 409 now falls to the terminal arm
+; (src/api/orders.rs:1371-1376), refuses an unusable key with 400 (:876), and the only
+; StatusCode::CONFLICT in that file is cancel_order at :2336. A 409 now falls to the terminal arm
 ; and reaches the customer, which is the honest outcome for a status nothing in the server is known
 ; to send. The measurement is not trusted to a comment: tests/wire_absence_wiring.rs re-takes it on
 ; every run and fails if a CONFLICT appears outside cancel_order, so a server that starts answering
@@ -550,24 +572,83 @@ pub fn request_can_hang_until_the_browser_gives_up(deadline_shipped: bool) bool 
 
 ; --- The DTO mirror ------------------------------------------------------------------------------
 ; src/ui/api/types.rs declares 24 structs and 3 enums over 172 fields. A field the server stops
-; sending breaks deserialization -- ApiClient::run turns that into ApiError::Parse -- UNLESS the
-; field carries `#[serde(default)]`, in which case serde writes the type's Default and nothing
-; anywhere notices. 44 fields carry it. For the ones that default an Option the value is None,
-; which is still an absence and still renderable as one. For the ones that default a bare number
-; the value is a zero the server never sent.
+; sending breaks deserialization -- ApiClient::run turns that into ApiError::Parse -- UNLESS serde
+; can fill it, and nothing anywhere notices when it does. It fills it two ways: a field with
+; `default` in a serde attribute gets the type's Default, and a field of type Option<T> with no
+; default gets None. 44 fields carry the bare `#[serde(default)]`. For the ones that default an
+; Option the value is None, which is still an absence and still renderable as one. For the ones
+; that default a bare number the value is a zero the server never sent.
+; CORRECTED 2026-09-22. Until this date the second sentence ended "UNLESS the field carries
+; `#[serde(default)]`, in which case serde writes the type's Default", which names one of the two
+; ways and implies that an Option with no attribute breaks. It does not: serde_derive fills a
+; missing field that has no default through serde's missing_field, which answers None for an
+; Option<T> and an error for every other type (serde 1.0.228, the version Cargo.lock pins). The
+; loud count below carried the same assumption and is corrected with it.
 ; MOVED 2026-09-21: ServerCartItem.unit_price left the bare-number column for the Option column,
 ; so the split went 27/7 -> 28/6 while the total stayed 44 and the field count stayed 172. One
 ; field changed type; none was added or removed. The partition is re-counted here rather than
 ; adjusted by hand -- the six remaining numeric sites are listed below and each was re-read.
+; CORRECTED 2026-09-24, with the owner's no-ETA decision (turbobaby/delivery-terms): the two ETA
+; fields of DeliveryZone, min_eta_minutes and max_eta_minutes, were bare u32 with no default --
+; LOUD, so a zone list without them lost the whole checkout picker. They are Option<u32> carrying
+; #[serde(default)] now, because the server sends null for an ETA nobody published. Two fields
+; moved from the loud column to the defaulted-Option column; none was added or removed, so the
+; field count stays 172, the bare-number column stays 6, and: 46 bare defaults (30 on an Option,
+; 6 on a number, 10 on a bool, string or vec), 87 loud, and 166 = 46 + 2 combined + 31 Options +
+; 87 loud. The two new attribute lines sit above every site this file cites past types.rs:402, so
+; each of those moved two lines down and is re-pointed. The 2026-09-22 figures are kept under
+; _BEFORE_THE_ETA_FIX names.
 pub const DTO_STRUCT_COUNT : u8 = 24;
 pub const DTO_ENUM_COUNT : u8 = 3;
 pub const DTO_FIELD_COUNT : u16 = 172;
-pub const DTO_FIELDS_WITH_A_DEFAULT : u8 = 44;
-pub const DEFAULTS_ON_AN_OPTION : u8 = 28;
+pub const DTO_FIELDS_WITH_A_DEFAULT : u8 = 46;
+pub const DEFAULTS_ON_AN_OPTION : u8 = 30;
+pub const DTO_FIELDS_WITH_A_DEFAULT_BEFORE_THE_ETA_FIX : u8 = 44;
+pub const DEFAULTS_ON_AN_OPTION_BEFORE_THE_ETA_FIX : u8 = 28;
+pub const ETA_FIELDS_MOVED_FROM_LOUD_TO_A_DEFAULTED_OPTION : u8 = 2;
 pub const DEFAULTS_ON_A_BARE_NUMBER : u8 = 6;
 pub const DEFAULTS_ON_A_BARE_NUMBER_BEFORE_THE_FIX : u8 = 7;
 pub const DEFAULTS_ON_A_BOOL_STRING_OR_VEC : u8 = 10;
-pub const FIELDS_THAT_BREAK_LOUDLY : u16 = 128;
+; CORRECTED 2026-09-22, re-measured at a33e500 by what serde does rather than by which attribute is
+; written. FIELDS_THAT_BREAK_LOUDLY read 128 until this date: 172 - 44, which counted as loud every
+; field without the bare attribute. Three groups inside that 128 do not break when absent.
+;   SIX are never deserialized: BookEventRequest (2 fields, :366) and BroadcastRequest (4, :381)
+;   derive Serialize and not Deserialize, so no parse of them exists to fail. The other 22 structs
+;   derive both and hold 166 fields.
+;   TWO carry `default` inside a combined attribute: :121 `#[serde(rename = "type", default)]`
+;   over set_type, a String (:122), and :130 over is_deal_of_day, a bool (:131).
+;   THIRTY are Option<T> with no default in any spelling -- among them Strain.thc (:12),
+;   Order.updated_at (:166) and BroadcastProduct.image_url (:393) -- and a missing one arrives as
+;   None, as the correction above the counts says.
+; What remains is the definition from this date: FIELDS_THAT_BREAK_LOUDLY counts the fields of the
+; 22 structs that derive Deserialize whose absence makes that derived Deserialize return an error,
+; which is exactly a field with no serde default in any spelling and a type other than Option<T>.
+; types.rs writes no deserialize_with, flatten, untagged, skip_deserializing or struct-level
+; default -- its one skip_serializing_if (:368) sits in a Serialize-only struct -- so nothing else
+; changes the answer. 166 = 46 defaulted + 30 Options + 90 loud, and 172 = 166 + 6. It is a
+; property of the types: which of the 22 the client actually reads off the wire is not counted.
+; The 44 and its 28/6/10 split above are unchanged and still count the bare attribute; counted by
+; what serde does, the bool/string/vec column is 12, and the numeric column -- the one that
+; fabricates a zero -- is still 6. A missing Option fabricates nothing. A second reading moved with
+; the unit_price fix: a plain `grep -c` for the attribute now answers 46 and not the 45 quoted in
+; item 2 of the header, because the doc line that fix added at :424 (:426 since 2026-09-24) names
+; the attribute too; with the two ETA attributes of 2026-09-24 that grep answers 48.
+; CORRECTED 2026-09-23, T27 defect 2: the order endpoints now send null for a money figure the
+; server withholds (src/db/orders.rs, money_withheld), so types::Order.total (src/ui/api/types.rs:163)
+; is Option<f64> without a default. One field moves from loud to Option: 166 = 46 defaulted +
+; 31 Options + 89 loud, and 128 = 89 + 2 + 31 + 6 still holds.
+pub const FIELDS_THAT_BREAK_LOUDLY : u16 = 87;
+pub const FIELDS_THAT_BREAK_LOUDLY_BEFORE_THE_ETA_FIX : u16 = 89;
+pub const FIELDS_THAT_BREAK_LOUDLY_AS_FIRST_STATED : u16 = 128;
+pub const DTO_STRUCTS_THAT_DERIVE_DESERIALIZE : u8 = 22;
+pub const DTO_STRUCTS_THAT_ONLY_SERIALIZE : u8 = 2;
+pub const DTO_FIELDS_DESERIALIZED : u16 = 166;
+pub const DTO_FIELDS_NEVER_DESERIALIZED : u8 = 6;
+pub const DEFAULTS_IN_A_COMBINED_ATTRIBUTE : u8 = 2;
+pub const COMBINED_DEFAULT_SITES : [2]str = ["src/ui/api/types.rs:122", "src/ui/api/types.rs:131"];
+pub const COMBINED_DEFAULTS_ON_A_NUMBER : u8 = 0;
+pub const OPTION_FIELDS_WITHOUT_A_DEFAULT : u8 = 31;
+pub const A_MISSING_OPTION_WITHOUT_A_DEFAULT_IS_NONE : bool = true;
 ; Still false, and by six fields rather than seven. A count that fell by one is not a rule that
 ; now holds, and saying so is the difference between a fix and a claim of one.
 pub const MIRROR_RULE_HOLDS_ON_EVERY_FIELD : bool = false;
@@ -576,17 +657,25 @@ pub const NUMERIC_DEFAULT_SITES : [6]str = [
   "src/ui/api/types.rs:28",
   "src/ui/api/types.rs:40",
   "src/ui/api/types.rs:311",
-  "src/ui/api/types.rs:421",
-  "src/ui/api/types.rs:448",
-  "src/ui/api/types.rs:459"
+  "src/ui/api/types.rs:423",
+  "src/ui/api/types.rs:450",
+  "src/ui/api/types.rs:461"
 ];
 ; The site that left the list, and where it went. :423 was ServerCartItem.unit_price; the field is
 ; now an Option at :436 and the two lines below it that used to be :435 and :446 are :448 and :459.
+; RE-POINTED 2026-09-24: two lines further down again, :438, :450 and :461, and the last three list
+; entries read :421, :448 and :459 until then. NUMERIC_DEFAULT_SITE_THAT_WAS_FIXED is a line of
+; the file as it stood before 2026-09-21 and does not move; that today's quantity site also reads
+; :423 is a coincidence of two shifts, not the same line.
 pub const NUMERIC_DEFAULT_SITE_THAT_WAS_FIXED : str = "src/ui/api/types.rs:423";
-pub const FIXED_SITE_IS_NOW_AN_OPTION_AT : str = "src/ui/api/types.rs:436";
+pub const FIXED_SITE_IS_NOW_AN_OPTION_AT : str = "src/ui/api/types.rs:438";
 
-pub fn dropped_field_breaks_the_client(field_has_serde_default: bool) bool {
-  return !field_has_serde_default;
+; CORRECTED 2026-09-22: this took one input and answered !field_has_serde_default, the assumption
+; the 128 carried. A missing Option<T> with no default arrives as None, so the type is the second
+; input. It answers for a field of a struct that derives Deserialize; the six fields of the two
+; Serialize-only structs are never parsed and are outside the question.
+pub fn dropped_field_breaks_the_client(field_has_serde_default: bool, field_is_an_option: bool) bool {
+  return !field_has_serde_default and !field_is_an_option;
 }
 
 pub fn dropped_field_renders_an_invented_value(field_has_serde_default: bool, default_is_a_number: bool) bool {
@@ -793,6 +882,9 @@ test two_of_nine_sites_hand_the_cohort_a_false_input {
   assert SITES_OMITTING_THE_LABEL == 2;
   assert UNLABELLED_SITES[0] == "src/ui/api/http.rs:368";
   assert UNLABELLED_SITES[1] == "src/ui/api/client.rs:100";
+  assert IDENTITY_HEADER_CALLS_OUTSIDE_THE_TRANSPORT == 44;
+  assert OTHER_IDENTITY_HEADER_SPELLINGS_OUTSIDE_THE_TRANSPORT == 2;
+  assert LABEL_SITES_OUTSIDE_THE_TRANSPORT == 0;
   assert cohort_input_is_faithful(ORIGIN_REBUILT, true) == true;
   assert cohort_input_is_faithful(ORIGIN_REBUILT, false) == false;
   assert cohort_input_is_faithful(ORIGIN_SIGNED, false) == true;
@@ -934,21 +1026,44 @@ test no_deadline_is_declared_because_none_is_implemented {
 
 test the_mirror_counts_add_up {
   assert DTO_FIELD_COUNT == 172;
-  assert DTO_FIELDS_WITH_A_DEFAULT == 44;
-  assert DEFAULTS_ON_AN_OPTION == 28;
+  assert DTO_FIELDS_WITH_A_DEFAULT == 46;
+  assert DEFAULTS_ON_AN_OPTION == 30;
+  assert DTO_FIELDS_WITH_A_DEFAULT == DTO_FIELDS_WITH_A_DEFAULT_BEFORE_THE_ETA_FIX + ETA_FIELDS_MOVED_FROM_LOUD_TO_A_DEFAULTED_OPTION;
+  assert DEFAULTS_ON_AN_OPTION == DEFAULTS_ON_AN_OPTION_BEFORE_THE_ETA_FIX + ETA_FIELDS_MOVED_FROM_LOUD_TO_A_DEFAULTED_OPTION;
   assert DEFAULTS_ON_A_BARE_NUMBER == 6;
   assert DEFAULTS_ON_A_BARE_NUMBER_BEFORE_THE_FIX == 7;
   assert DEFAULTS_ON_A_BARE_NUMBER + 1 == DEFAULTS_ON_A_BARE_NUMBER_BEFORE_THE_FIX;
   assert DEFAULTS_ON_A_BOOL_STRING_OR_VEC == 10;
   assert DEFAULTS_ON_AN_OPTION + DEFAULTS_ON_A_BARE_NUMBER + DEFAULTS_ON_A_BOOL_STRING_OR_VEC == DTO_FIELDS_WITH_A_DEFAULT;
-  assert FIELDS_THAT_BREAK_LOUDLY == 128;
+  assert FIELDS_THAT_BREAK_LOUDLY == 87;
+  assert FIELDS_THAT_BREAK_LOUDLY + ETA_FIELDS_MOVED_FROM_LOUD_TO_A_DEFAULTED_OPTION == FIELDS_THAT_BREAK_LOUDLY_BEFORE_THE_ETA_FIX;
+  assert FIELDS_THAT_BREAK_LOUDLY_AS_FIRST_STATED == 128;
+  assert DTO_FIELD_COUNT - DTO_FIELDS_WITH_A_DEFAULT_BEFORE_THE_ETA_FIX == FIELDS_THAT_BREAK_LOUDLY_AS_FIRST_STATED;
+  assert DTO_STRUCTS_THAT_DERIVE_DESERIALIZE == 22;
+  assert DTO_STRUCTS_THAT_ONLY_SERIALIZE == 2;
+  assert DTO_STRUCTS_THAT_DERIVE_DESERIALIZE + DTO_STRUCTS_THAT_ONLY_SERIALIZE == DTO_STRUCT_COUNT;
+  assert DTO_FIELDS_DESERIALIZED == 166;
+  assert DTO_FIELDS_NEVER_DESERIALIZED == 6;
+  assert DTO_FIELDS_DESERIALIZED + DTO_FIELDS_NEVER_DESERIALIZED == DTO_FIELD_COUNT;
+  assert DEFAULTS_IN_A_COMBINED_ATTRIBUTE == 2;
+  assert COMBINED_DEFAULT_SITES.len == DEFAULTS_IN_A_COMBINED_ATTRIBUTE;
+  assert COMBINED_DEFAULT_SITES[0] == "src/ui/api/types.rs:122";
+  assert COMBINED_DEFAULT_SITES[1] == "src/ui/api/types.rs:131";
+  assert COMBINED_DEFAULTS_ON_A_NUMBER == 0;
+  assert OPTION_FIELDS_WITHOUT_A_DEFAULT == 31;
+  assert A_MISSING_OPTION_WITHOUT_A_DEFAULT_IS_NONE == true;
+  assert DTO_FIELDS_WITH_A_DEFAULT + DEFAULTS_IN_A_COMBINED_ATTRIBUTE + OPTION_FIELDS_WITHOUT_A_DEFAULT + FIELDS_THAT_BREAK_LOUDLY == DTO_FIELDS_DESERIALIZED;
+  assert FIELDS_THAT_BREAK_LOUDLY_BEFORE_THE_ETA_FIX + DEFAULTS_IN_A_COMBINED_ATTRIBUTE + OPTION_FIELDS_WITHOUT_A_DEFAULT + DTO_FIELDS_NEVER_DESERIALIZED == FIELDS_THAT_BREAK_LOUDLY_AS_FIRST_STATED;
+  assert DTO_FIELDS_WITH_A_DEFAULT_BEFORE_THE_ETA_FIX + DEFAULTS_IN_A_COMBINED_ATTRIBUTE + OPTION_FIELDS_WITHOUT_A_DEFAULT + FIELDS_THAT_BREAK_LOUDLY_BEFORE_THE_ETA_FIX == DTO_FIELDS_DESERIALIZED;
   assert DTO_STRUCT_COUNT == 24;
   assert DTO_ENUM_COUNT == 3;
 }
 
 test a_dropped_field_is_loud_only_when_it_has_no_default {
-  assert dropped_field_breaks_the_client(false) == true;
-  assert dropped_field_breaks_the_client(true) == false;
+  assert dropped_field_breaks_the_client(false, false) == true;
+  assert dropped_field_breaks_the_client(true, false) == false;
+  assert dropped_field_breaks_the_client(false, true) == false;
+  assert dropped_field_breaks_the_client(true, true) == false;
   assert dropped_field_renders_an_invented_value(true, true) == true;
   assert dropped_field_renders_an_invented_value(true, false) == false;
   assert dropped_field_renders_an_invented_value(false, true) == false;
@@ -961,11 +1076,11 @@ test the_six_numeric_default_sites_are_named {
   assert NUMERIC_DEFAULT_SITES.len == 6;
   assert NUMERIC_DEFAULT_SITES.len == DEFAULTS_ON_A_BARE_NUMBER;
   assert NUMERIC_DEFAULT_SITES[0] == "src/ui/api/types.rs:28";
-  assert NUMERIC_DEFAULT_SITES[3] == "src/ui/api/types.rs:421";
-  assert NUMERIC_DEFAULT_SITES[4] == "src/ui/api/types.rs:448";
-  assert NUMERIC_DEFAULT_SITES[5] == "src/ui/api/types.rs:459";
+  assert NUMERIC_DEFAULT_SITES[3] == "src/ui/api/types.rs:423";
+  assert NUMERIC_DEFAULT_SITES[4] == "src/ui/api/types.rs:450";
+  assert NUMERIC_DEFAULT_SITES[5] == "src/ui/api/types.rs:461";
   assert NUMERIC_DEFAULT_SITE_THAT_WAS_FIXED == "src/ui/api/types.rs:423";
-  assert FIXED_SITE_IS_NOW_AN_OPTION_AT == "src/ui/api/types.rs:436";
+  assert FIXED_SITE_IS_NOW_AN_OPTION_AT == "src/ui/api/types.rs:438";
   assert NUMERIC_DEFAULT_SITE_THAT_WAS_FIXED != FIXED_SITE_IS_NOW_AN_OPTION_AT;
   assert NUMERIC_DEFAULT_SITES[4] != NUMERIC_DEFAULT_SITE_THAT_WAS_FIXED;
   assert NUMERIC_DEFAULT_SITES[5] != NUMERIC_DEFAULT_SITE_THAT_WAS_FIXED;
@@ -1074,7 +1189,14 @@ invariant an_oversize_payload_is_refused_here_and_the_cap_is_not_raised
   assert oversize_is_refused(true, false, OVERSIZE_IS_REFUSED_LOUDLY_ON_THE_CLIENT) == true and oversize_becomes_anonymous(true, false, OVERSIZE_IS_REFUSED_LOUDLY_ON_THE_CLIENT) == false and CAP_WAS_RAISED_BY_THE_FIX == false and CAP_VALUE_IS_RESTATED_HERE == false
 
 invariant a_defaulted_number_is_the_only_silent_drop
-  assert dropped_field_renders_an_invented_value(true, true) == true and dropped_field_renders_an_invented_value(false, true) == false and dropped_field_breaks_the_client(false) == true
+  assert dropped_field_renders_an_invented_value(true, true) == true and dropped_field_renders_an_invented_value(false, true) == false and dropped_field_breaks_the_client(false, false) == true and dropped_field_breaks_the_client(false, true) == false
+
+; The loud count is what serde refuses, and the four groups close on the declared total. Until
+; 2026-09-22 it was 172 - 44 = 128, which counted as loud two combined defaults, thirty Options
+; serde fills with None and six fields that are never parsed. No field in those three groups is a
+; defaulted number, so the fabricated-zero count was right throughout.
+invariant the_loud_count_is_what_serde_refuses_and_the_groups_close
+  assert DTO_FIELDS_WITH_A_DEFAULT + DEFAULTS_IN_A_COMBINED_ATTRIBUTE + OPTION_FIELDS_WITHOUT_A_DEFAULT + FIELDS_THAT_BREAK_LOUDLY == DTO_FIELDS_DESERIALIZED and DTO_FIELDS_DESERIALIZED + DTO_FIELDS_NEVER_DESERIALIZED == DTO_FIELD_COUNT and FIELDS_THAT_BREAK_LOUDLY_BEFORE_THE_ETA_FIX + DEFAULTS_IN_A_COMBINED_ATTRIBUTE + OPTION_FIELDS_WITHOUT_A_DEFAULT + DTO_FIELDS_NEVER_DESERIALIZED == FIELDS_THAT_BREAK_LOUDLY_AS_FIRST_STATED and FIELDS_THAT_BREAK_LOUDLY + ETA_FIELDS_MOVED_FROM_LOUD_TO_A_DEFAULTED_OPTION == FIELDS_THAT_BREAK_LOUDLY_BEFORE_THE_ETA_FIX and COMBINED_DEFAULTS_ON_A_NUMBER == 0
 
 invariant the_default_partition_is_complete
   assert DEFAULTS_ON_AN_OPTION + DEFAULTS_ON_A_BARE_NUMBER + DEFAULTS_ON_A_BOOL_STRING_OR_VEC == DTO_FIELDS_WITH_A_DEFAULT and NUMERIC_DEFAULT_SITES.len == DEFAULTS_ON_A_BARE_NUMBER
@@ -1082,8 +1204,10 @@ invariant the_default_partition_is_complete
 ; One field changed column; none was added or removed. A partition that moved without the total
 ; moving is the shape of a type change, and a total that also moved would mean the recount was
 ; wrong.
+; Stated on the 2026-09-22 counts since 2026-09-24: the ETA fix moved two more fields, and it moved
+; them from the loud column INTO the defaults, so there the total moved by exactly two on purpose.
 invariant moving_one_field_between_columns_left_the_total_alone
-  assert DEFAULTS_ON_A_BARE_NUMBER + 1 == DEFAULTS_ON_A_BARE_NUMBER_BEFORE_THE_FIX and DEFAULTS_ON_AN_OPTION - 1 + DEFAULTS_ON_A_BARE_NUMBER_BEFORE_THE_FIX + DEFAULTS_ON_A_BOOL_STRING_OR_VEC == DTO_FIELDS_WITH_A_DEFAULT
+  assert DEFAULTS_ON_A_BARE_NUMBER + 1 == DEFAULTS_ON_A_BARE_NUMBER_BEFORE_THE_FIX and DEFAULTS_ON_AN_OPTION_BEFORE_THE_ETA_FIX - 1 + DEFAULTS_ON_A_BARE_NUMBER_BEFORE_THE_FIX + DEFAULTS_ON_A_BOOL_STRING_OR_VEC == DTO_FIELDS_WITH_A_DEFAULT_BEFORE_THE_ETA_FIX
 
 ; The rule is unchanged and its input changed. A surviving line hides its absence exactly when the
 ; price field can fabricate a number, which an Option cannot.

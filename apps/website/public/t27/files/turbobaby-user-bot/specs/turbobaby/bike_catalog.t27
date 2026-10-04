@@ -320,6 +320,10 @@ pub fn band_of(displacement_cc: u16) u8 {
 ; units_total == units_rented + units_available holds on all 14 in-stock rows. It is stated
 ; as a predicate because units_available is the number a customer acts on: if the three
 ; counters stop agreeing, the one the screen shows is the one that lies.
+; CORRECTED 2026-09-24: the customer screens no longer print this count (turbobaby/availability,
+; FILE_MAY_CONFIRM and CUSTOMER_SCREENS_CONFIRM_FROM_THE_FILE). The admin screen still prints it,
+; and a customer still acts on its zero, which rules a family out of booking; the predicate
+; matters for the same reason, on those two surfaces.
 pub fn units_add_up(units_total: u8, units_rented: u8, units_available: u8) bool {
     if (units_rented + units_available == units_total) {
         return true;

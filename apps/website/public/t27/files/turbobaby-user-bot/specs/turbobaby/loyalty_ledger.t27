@@ -12,14 +12,16 @@
 ;    bonus_transactions the "append-only ledger of every bonus credit / debit", and
 ;    src/api/loyalty.rs:530-531 writes the equation out: the sum of one account's amounts equals
 ;    its stored balance. Cycle #161 added the missing debit row to make it true again. It is not
-;    true. Ten statements in src/ perform arithmetic on loyalty_profiles.bonus_balance; SIX pair
+;    true. Ten statements in src/ performed arithmetic on loyalty_profiles.bonus_balance; SIX paired
 ;    with a ledger insert (src/api/loyalty.rs:353 behind :342, src/api/loyalty.rs:508 behind :554,
-;    src/db/orders.rs:356 behind :351, src/db/referrals.rs:429 behind :419, :489 behind :481, and
-;    :855 behind :847) and FOUR do not (src/api/orders.rs:1292 debits at checkout,
-;    src/api/orders.rs:2013 refunds on reject, src/api/orders.rs:2247 refunds on cancel, and
-;    src/bot/callbacks.rs:760 refunds on reject from the bot, all four with zero occurrences of
+;    src/db/orders.rs:375 behind :370, and the referral domain's three, src/db/referrals.rs:429
+;    behind :419, :489 behind :481 and :855 behind :847, those three at e39221e) and FOUR do not.
+;    R3 (2026-09-26) deleted the referral domain's three with its bonus points, so SEVEN remain,
+;    THREE of them paired, and the same FOUR do not (src/api/orders.rs:1418 debits at checkout,
+;    src/api/orders.rs:2139 refunds on reject, src/api/orders.rs:2373 refunds on cancel, and
+;    src/bot/callbacks.rs:687 refunds on reject from the bot, all four with zero occurrences of
 ;    BonusTx or bonus_transaction as a WRITE in their modules -- src/api/orders.rs holds exactly
-;    one mention, the read-only import at :16 used at :1836-1838, and src/bot/callbacks.rs holds
+;    one mention, the read-only import at :16 used at :1962-1964, and src/bot/callbacks.rs holds
 ;    none). The audit trail is therefore missing the single largest category of movement, the
 ;    spend, and every refund of it.
 ; 2. A KEY STRING IS THE WHOLE IDENTITY OF A REQUEST. Replay protection is opt-in: the header is
@@ -59,7 +61,7 @@
 ;    this into add_bonus / use_bonus" and "this entity is intentionally unreferenced -- see the
 ;    loyalty_idempotency_key entry in ALLOWED_UNWIRED_ENTITIES". Both halves are stale. The entity
 ;    is imported and used at src/api/loyalty.rs:262 and :458, and ALLOWED_UNWIRED_ENTITIES at
-;    src/db/mod.rs:1929-1951 lists exactly two names, quest_place and event_photo. A reader who
+;    src/db/mod.rs:1941-1963 lists exactly two names, quest_place and event_photo. A reader who
 ;    trusted that comment would contract for protection that is wired, or skip the file believing
 ;    nothing runs. migrations/033_loyalty_idempotency_keys.sql:1 is stale in the same way: it names
 ;    the route add-bonus, and the registration at src/api/loyalty.rs:25 is /bonus.
@@ -80,12 +82,15 @@
 ; in ENDPOINT_TO_GATE_MAP_IS_NOT_OWNED_HERE. It declares no per-window
 ; ceiling of its own -- turbobaby/star-award owns the only capped non-purchase credit in the
 ; corpus (re-measured 2026-09-21: of the 43 .t27 files, that one is the sole owner of a per-window
-; credit ceiling) and is named as the precedent, not copied. It carries no leaderboard content, no
-; rank and no row: the
+; credit ceiling; re-run 2026-09-22 over the 45, still the sole owner) and is named as the
+; precedent, not copied. It carries no leaderboard content, no rank and no row: the
 ; board at src/api/loyalty.rs:31 is named as a route and nothing of it is reproduced. It names no
 ; renter, handle, phone, key code, plate, debt, purchase price or personal note in any constant,
 ; fixture or comment, and no account id is written down anywhere below -- only compared. Shipped
 ; Cyrillic strings in the cited sources are referred to by path and never quoted.
+; RE-POINTED 2026-09-24: every src/db/mod.rs line this file cites past line 385 moved four lines
+; down when migrations/087_delivery_zones_phuket.sql joined MIGRATIONS, and four more with
+; migrations/088_unpublish_events.sql the same day; re-measured, and nothing they point at changed.
 ; phi^2 + 1/phi^2 = 3 | TRINITY
 
 module turbobaby-loyalty-ledger;
@@ -170,6 +175,32 @@ pub const IDENTITY_EDGE_DECLARERS_OUTSIDE_THE_SNAPSHOT : u8 = 0;
 pub const NAMED_BY_THE_OWNER_WITHOUT_DECLARING_THE_EDGE : u8 = 4;
 pub const SNAPSHOT_MOVED_WHILE_THIS_FILE_WAS_BEING_CORRECTED : bool = true;
 pub const CORPUS_T27_FILE_COUNT : u8 = 43;
+; Re-measured 2026-09-22 and deliberately NOT bound: a census of the corpus moves with every new
+; contract. specs/ holds 45 .t27 files, all tracked. The two beyond the 43 above,
+; order_presentation.t27 and person_naming.t27, landed in 14b01ac later on 2026-09-21. The 43 and
+; the 2026-09-21 identity census above are kept as the reading they were; the census is re-run
+; beside them.
+; CORRECTED 2026-09-22: the identity census moved, and in the direction it exists to catch. Re-run
+; at a33e500 over the 45 files, REUSES_REQUEST_IDENTITY_ID is declared by 19 files other than the
+; owner, not 18. 18 are inside the snapshot, which still holds 22 names, and ONE is outside it:
+; turbobaby/person-naming declares the edge and is not in the owner's CONSUMERS. The four the owner
+; names without a declaration back are the same four. So "it is declared in eighteen places" was
+; true on 2026-09-21 and is nineteen now, and IDENTITY_EDGE_DECLARERS_OUTSIDE_THE_SNAPSHOT went
+; 0 -> 1. The snapshot belongs to turbobaby/request-identity; this file records the census, names
+; the edge by ID, and does not amend that owner's list. The two per-window-ceiling sentences, in
+; the header and above THIS_LEDGER_HAS_A_PER_WINDOW_CEILING, were re-run over the two new files
+; the same day: a case-insensitive grep for ceiling or per-window returns 0 in both, so both
+; sentences still hold over the 45.
+pub const CORPUS_T27_FILE_COUNT_REMEASURED : u8 = 45;
+pub const CORPUS_T27_FILE_COUNT_REMEASURED_AT : str = "2026-09-22";
+pub const IDENTITY_EDGE_CENSUS_REMEASURED_AT : str = "2026-09-22";
+pub const IDENTITY_EDGE_DECLARERS_IN_CORPUS_REMEASURED : u8 = 19;
+pub const IDENTITY_EDGE_DECLARERS_INSIDE_THE_SNAPSHOT_REMEASURED : u8 = 18;
+pub const IDENTITY_EDGE_DECLARERS_OUTSIDE_THE_SNAPSHOT_REMEASURED : u8 = 1;
+pub const IDENTITY_EDGE_DECLARER_OUTSIDE_THE_SNAPSHOT : str = "turbobaby/person-naming";
+pub const IDENTITY_CONSUMER_SNAPSHOT_SIZE_REMEASURED : u8 = 22;
+pub const NAMED_BY_THE_OWNER_WITHOUT_DECLARING_THE_EDGE_REMEASURED : u8 = 4;
+pub const PER_WINDOW_CEILING_SENTENCES_RERUN_AT : str = "2026-09-22";
 
 pub fn identity_edge_census_closes(inside: u8, outside: u8, declarers: u8) bool {
   return inside + outside == declarers;
@@ -192,14 +223,29 @@ pub fn a_snapshot_figure_may_be_quoted_flatly(measured_at: str, quoted_at: str, 
 
 ; --- Who may move the money ----------------------------------------------------------------------
 ; src/api/loyalty.rs:21-34. Eight registrations over seven paths, and the gate is not uniform:
-; three carry none (:23 tiers, :31 leaderboard, :32 config read), two carry the owner gate
-; (:24 profile via src/api/loyalty.rs:87, :27-30 bonus history via :605), and three carry the admin
-; gate (:25 via :230, :26 via :418, :33 via :742).
+; one carries none (:23 tiers), two carry the owner gate (:24 profile via src/api/loyalty.rs:87,
+; :27-30 bonus history via :605), four carry the admin gate (:25 via :230, :26 via :418, :31 the
+; leaderboard via get_leaderboard's first line since R1, :33 via :763), and one is a CLOSED READ
+; (:32, the config GET), which answers a caller without admin proof exactly as an unmatched /api
+; path does (crate::api::admin_or_missing_route, R2). Until 2026-09-26 three carried none (:23
+; tiers, :31 leaderboard, :32 config read) and three the admin gate.
+; R1 and R2, the owner's answers of 2026-09-26 (verbatim in DECISIONS.md, "R1-R3, the owner's
+; answers of 2026-09-26"): of the leaderboard (first names, total spend, tier, to anyone), "only
+; for the admin"; of the config read no mounted screen uses, "close it to customers". The config
+; GET stays registered because the admin POST shares its path, and an unregistered GET would
+; answer 405 rather than the missing-route 404.
 pub const ROUTE_REGISTRATION_COUNT : u8 = 8;
 pub const DISTINCT_PATH_COUNT : u8 = 7;
-pub const UNGATED_ROUTE_COUNT : u8 = 3;
+pub const UNGATED_ROUTE_COUNT : u8 = 1;
 pub const OWNER_GATED_ROUTE_COUNT : u8 = 2;
-pub const ADMIN_GATED_ROUTE_COUNT : u8 = 3;
+pub const ADMIN_GATED_ROUTE_COUNT : u8 = 4;
+pub const CLOSED_READ_ROUTE_COUNT : u8 = 1;
+pub const UNGATED_ROUTE_COUNT_BEFORE_2026_09_26 : u8 = 3;
+pub const ADMIN_GATED_ROUTE_COUNT_BEFORE_2026_09_26 : u8 = 3;
+pub const OWNER_R1_DECIDED_AT : str = "2026-09-26";
+pub const OWNER_R2_DECIDED_AT : str = "2026-09-26";
+; Bound by gate 3: get_leaderboard's first statement is the admin gate.
+pub const LEADERBOARD_GATE_SITES : u8 = 1;
 
 pub const GATE_NONE : u8 = 0;
 pub const GATE_OWNER : u8 = 1;
@@ -229,11 +275,11 @@ pub fn a_third_party_may_move_this_balance(gate: u8) bool {
 
 ; --- What makes two credits the same credit --------------------------------------------------------
 ; src/api/loyalty.rs:238-247 and :430-439. The header is optional and its syntax is borrowed whole
-; from the order module: crate::api::orders::is_valid_idempotency_key at src/api/orders.rs:413-418
+; from the order module: crate::api::orders::is_valid_idempotency_key at src/api/orders.rs:419-424
 ; admits a non-empty string of at most 100 ASCII alphanumerics, hyphen and underscore.
 pub const IDEMPOTENCY_HEADER : str = "x-idempotency-key";
 pub const IDEMPOTENCY_HEADER_IS_REQUIRED : bool = false;
-pub const KEY_SYNTAX_VALIDATOR : str = "src/api/orders.rs:413";
+pub const KEY_SYNTAX_VALIDATOR : str = "src/api/orders.rs:419";
 pub const KEY_MAX_LEN : u16 = 100;
 
 pub fn key_syntax_is_legal(length: u16, chars_are_key_safe: bool) bool {
@@ -322,6 +368,11 @@ pub const BALANCE_FLOOR_MINOR : i64 = 0;
 ; :217 and the debit gate at :405 name the same constant. The reason recorded at :193-200 is the
 ; extra-zeros typo, not a policy about what a customer may hold.
 pub const GRANT_CEILING_MAJOR_UNITS : i64 = 1000000;
+; Added 2026-09-22: how many comparisons in src/api/loyalty.rs test that constant, measured 2 --
+; :217 credit and :405 debit, the two above. Declared apart from MONEY_ROUTE_COUNT because it is
+; a different fact: a money route that tested an inline literal instead would still be a money
+; route. "Shared by both routes" is the claim that the two are equal, asserted below.
+pub const ROUTES_TESTING_THE_GRANT_CEILING : u8 = 2;
 
 pub fn grant_ceiling_minor(minor_unit_scale: i64) i64 {
   return GRANT_CEILING_MAJOR_UNITS * minor_unit_scale;
@@ -402,10 +453,11 @@ pub fn clamp_fires_under_the_guard(balance_minor: i64, amount_minor: i64, guard_
 
 ; The ceiling bounds ONE grant, not the balance. src/api/loyalty.rs:353 is an unbounded
 ; bonus_balance + $1 with no upper test anywhere in the handler, and no rate limit stands on the
-; route -- src/api/orders.rs:1270-1285 shows what one looks like on the checkout path and
+; route -- src/api/orders.rs:1396-1411 shows what one looks like on the checkout path and
 ; src/api/loyalty.rs:223-231 has no equivalent. turbobaby/star-award owns the only capped
 ; non-purchase credit in this system -- re-measured 2026-09-21 across the 43 .t27 files and still
-; the only one; this ledger has no per-window ceiling of any size.
+; the only one (re-run 2026-09-22 over the 45 and still the only one); this ledger has no
+; per-window ceiling of any size.
 pub const BALANCE_HAS_NO_CEILING : bool = true;
 pub const THIS_LEDGER_HAS_A_PER_WINDOW_CEILING : bool = false;
 pub const THE_OTHER_NON_PURCHASE_CREDIT_HAS_ONE : bool = true;
@@ -450,14 +502,18 @@ pub fn tx_type_is_legal(length: u16) bool {
 ; The equation and the four statements that break it. The count is of arithmetic writes to
 ; loyalty_profiles.bonus_balance in src/, excluding the seeding writes that set a fresh row to zero.
 pub const BOOKKEEPING_EQUATION : str = "the sum of one account's bonus_transactions.amount equals its loyalty_profiles.bonus_balance";
-pub const BALANCE_WRITE_SITE_COUNT : u8 = 10;
-pub const BALANCE_WRITES_WITH_A_LEDGER_ROW : u8 = 6;
+; Re-measured 2026-09-26 after R3 deleted the referral domain's three paired credits: 10 -> 7 and
+; 6 -> 3; the four bypasses are untouched. The earlier readings keep their _BEFORE_2026_09_26 names.
+pub const BALANCE_WRITE_SITE_COUNT : u8 = 7;
+pub const BALANCE_WRITES_WITH_A_LEDGER_ROW : u8 = 3;
 pub const BALANCE_WRITES_WITHOUT_A_LEDGER_ROW : u8 = 4;
+pub const BALANCE_WRITE_SITE_COUNT_BEFORE_2026_09_26 : u8 = 10;
+pub const BALANCE_WRITES_WITH_A_LEDGER_ROW_BEFORE_2026_09_26 : u8 = 6;
 pub const LEDGER_BYPASS_SITES : [4]str = [
-  "src/api/orders.rs:1292",
-  "src/api/orders.rs:2013",
-  "src/api/orders.rs:2247",
-  "src/bot/callbacks.rs:760",
+  "src/api/orders.rs:1418",
+  "src/api/orders.rs:2139",
+  "src/api/orders.rs:2373",
+  "src/bot/callbacks.rs:687",
 ];
 pub const THE_LEDGER_SUMS_TO_THE_BALANCE_TODAY : bool = false;
 
@@ -465,10 +521,14 @@ pub fn ledger_sums_to_the_balance(bypass_site_count: u8) bool {
   return bypass_site_count == 0;
 }
 
-; --- Who writes three of the six paired rows, and the fact we co-declare -----------------------------
-; Added 2026-09-21. Three of the six paired movements above are the referral domain's
-; (src/db/referrals.rs:429 behind :419, :489 behind :481, :855 behind :847) and that domain has a
-; contract: turbobaby/referral-program owns the edge those credits pay on. It already names this
+; --- Who wrote three of the six paired rows, and the fact we co-declare -----------------------------
+; Added 2026-09-21. Three of the six paired movements above were the referral domain's
+; (src/db/referrals.rs:429 behind :419, :489 behind :481, :855 behind :847, at e39221e) and that
+; domain has a contract: turbobaby/referral-program owns the edge those credits paid on. Since
+; 2026-09-26 (R3) that domain writes no balance: its three credits are deleted, and what a referral
+; earns is turbobaby/referral-credit's THB ledger, which is NOT this ledger -- it never touches
+; loyalty_profiles.bonus_balance or bonus_transactions (bound by gate 3 there), and a points
+; balance never reaches a referral payout. It already names this
 ; file by ID in its own LOYALTY_LEDGER_SUPPLIES and reads the same six-of-ten split from its side,
 ; so the citation runs both ways by ID and by declaration name, and in neither direction by line.
 ; Checked 2026-09-21 and the two agree: it claims all three of its credits sit inside the paired
@@ -476,7 +536,10 @@ pub fn ledger_sums_to_the_balance(bypass_site_count: u8) bool {
 ; bot callback site. This is a co-declared fact and not a decision this file consumes, so it is
 ; deliberately outside REUSE_EDGE_COUNT above.
 pub const REFERRAL_PROGRAM_ID : str = "turbobaby/referral-program";
-pub const REFERRAL_CREDIT_SITES_INSIDE_THE_PAIRED_SIX : u8 = 3;
+pub const REFERRAL_CREDIT_SITES_INSIDE_THE_PAIRED_SIX : u8 = 0;
+pub const REFERRAL_CREDIT_SITES_INSIDE_THE_PAIRED_SIX_BEFORE_2026_09_26 : u8 = 3;
+pub const REFERRAL_CREDIT_ID : str = "turbobaby/referral-credit";
+pub const REFERRAL_CREDIT_IS_THIS_LEDGER : bool = false;
 pub const REFERRAL_CREDIT_SITES_AMONG_THE_BYPASSES : u8 = 0;
 pub const LEDGER_ORDERING_AGREES_WITH_THE_REFERRAL_CONTRACT : bool = true;
 pub const LEDGER_ORDERING_AGREEMENT_CHECKED_AT : str = "2026-09-21";
@@ -526,6 +589,10 @@ pub const SEED_MEASUREMENT_OWNER_ID : str = "turbobaby/order-money";
 ; cashback, so the cashback zero has no owner in the corpus and is declared here as this file's own
 ; re-run, dated. Re-run 2026-09-21: data/ holds exactly one file, data/fleet_seed.json at 19434
 ; bytes, and a case-insensitive grep of it returns 0 for loyalty, 0 for bonus and 0 for cashback.
+; CORRECTED 2026-09-24: the 19434 here and in the header was a CRLF working copy's size. The committed
+; blob is 19084 bytes with 350 lines, and turbobaby/order-money, which owns the seed measurement,
+; now declares the blob's size as FLEET_SEED_BYTES and the old reading under a _BEFORE_ name. The
+; three zeros do not depend on line endings; re-run the same day on the blob, still 0, 0 and 0.
 pub const SEED_MEASUREMENT_OWNER_DECLARATIONS : [2]str = [
   "FLEET_SEED_LOYALTY_MENTIONS",
   "FLEET_SEED_BONUS_MENTIONS",
@@ -558,7 +625,12 @@ pub fn a_bonus_expires(expiry_is_published: bool) bool {
 test the_route_table_is_eight_registrations_over_seven_paths {
   assert ROUTE_REGISTRATION_COUNT == 8;
   assert DISTINCT_PATH_COUNT == 7;
-  assert UNGATED_ROUTE_COUNT + OWNER_GATED_ROUTE_COUNT + ADMIN_GATED_ROUTE_COUNT == ROUTE_REGISTRATION_COUNT;
+  assert UNGATED_ROUTE_COUNT + OWNER_GATED_ROUTE_COUNT + ADMIN_GATED_ROUTE_COUNT + CLOSED_READ_ROUTE_COUNT == ROUTE_REGISTRATION_COUNT;
+  assert 1 + 2 + 4 + 1 == ROUTE_REGISTRATION_COUNT;
+  assert UNGATED_ROUTE_COUNT_BEFORE_2026_09_26 + OWNER_GATED_ROUTE_COUNT + ADMIN_GATED_ROUTE_COUNT_BEFORE_2026_09_26 == ROUTE_REGISTRATION_COUNT;
+  assert LEADERBOARD_GATE_SITES == 1;
+  assert OWNER_R1_DECIDED_AT == "2026-09-26";
+  assert OWNER_R2_DECIDED_AT == OWNER_R1_DECIDED_AT;
   assert MONEY_ROUTE_COUNT == 2;
   assert MONEY_ROUTES.len == MONEY_ROUTE_COUNT;
 }
@@ -646,6 +718,8 @@ test the_credit_route_admits_zero_and_the_debit_route_does_not {
 
 test both_routes_share_one_per_call_ceiling {
   assert GRANT_CEILING_MAJOR_UNITS == 1000000;
+  assert ROUTES_TESTING_THE_GRANT_CEILING == 2;
+  assert ROUTES_TESTING_THE_GRANT_CEILING == MONEY_ROUTE_COUNT;
   assert grant_ceiling_minor(100) == 100000000;
   assert grant_ceiling_minor(1) == 1000000;
   assert credit_is_admitted(100000000, true, 100000000) == true;
@@ -715,9 +789,12 @@ test the_category_column_has_no_closed_vocabulary {
 }
 
 test the_ledger_does_not_sum_to_the_balance {
-  assert BALANCE_WRITE_SITE_COUNT == 10;
-  assert BALANCE_WRITES_WITH_A_LEDGER_ROW == 6;
+  assert BALANCE_WRITE_SITE_COUNT == 7;
+  assert BALANCE_WRITES_WITH_A_LEDGER_ROW == 3;
   assert BALANCE_WRITES_WITHOUT_A_LEDGER_ROW == 4;
+  assert BALANCE_WRITE_SITE_COUNT_BEFORE_2026_09_26 == 10;
+  assert BALANCE_WRITES_WITH_A_LEDGER_ROW_BEFORE_2026_09_26 == 6;
+  assert BALANCE_WRITES_WITH_A_LEDGER_ROW_BEFORE_2026_09_26 + BALANCE_WRITES_WITHOUT_A_LEDGER_ROW == BALANCE_WRITE_SITE_COUNT_BEFORE_2026_09_26;
   assert BALANCE_WRITES_WITH_A_LEDGER_ROW + BALANCE_WRITES_WITHOUT_A_LEDGER_ROW == BALANCE_WRITE_SITE_COUNT;
   assert LEDGER_BYPASS_SITES.len == BALANCE_WRITES_WITHOUT_A_LEDGER_ROW;
   assert ledger_sums_to_the_balance(BALANCE_WRITES_WITHOUT_A_LEDGER_ROW) == false;
@@ -780,6 +857,31 @@ test this_file_is_named_in_the_identity_snapshot_and_declares_the_edge_back {
   assert IDENTITY_EDGE_DECLARERS_INSIDE_THE_SNAPSHOT < IDENTITY_CONSUMER_SNAPSHOT_SIZE;
   assert IDENTITY_EDGE_CENSUS_MEASURED_AT == "2026-09-21";
   assert CORPUS_T27_FILE_COUNT == 43;
+  assert CORPUS_T27_FILE_COUNT_REMEASURED == 45;
+  assert CORPUS_T27_FILE_COUNT_REMEASURED_AT == "2026-09-22";
+  assert CORPUS_T27_FILE_COUNT_REMEASURED_AT != IDENTITY_EDGE_CENSUS_MEASURED_AT;
+  assert CORPUS_T27_FILE_COUNT_REMEASURED > CORPUS_T27_FILE_COUNT;
+}
+
+; Corrected 2026-09-22: the census re-run over the 45 files, beside the 2026-09-21 reading above.
+test the_identity_census_re_run_found_a_declarer_outside_the_snapshot {
+  assert IDENTITY_EDGE_CENSUS_REMEASURED_AT == "2026-09-22";
+  assert IDENTITY_EDGE_CENSUS_REMEASURED_AT == CORPUS_T27_FILE_COUNT_REMEASURED_AT;
+  assert IDENTITY_EDGE_CENSUS_REMEASURED_AT != IDENTITY_EDGE_CENSUS_MEASURED_AT;
+  assert IDENTITY_EDGE_DECLARERS_IN_CORPUS_REMEASURED == 19;
+  assert IDENTITY_EDGE_DECLARERS_INSIDE_THE_SNAPSHOT_REMEASURED == 18;
+  assert IDENTITY_EDGE_DECLARERS_OUTSIDE_THE_SNAPSHOT_REMEASURED == 1;
+  assert IDENTITY_EDGE_DECLARER_OUTSIDE_THE_SNAPSHOT == "turbobaby/person-naming";
+  assert IDENTITY_EDGE_DECLARER_OUTSIDE_THE_SNAPSHOT != ID;
+  assert IDENTITY_CONSUMER_SNAPSHOT_SIZE_REMEASURED == 22;
+  assert IDENTITY_CONSUMER_SNAPSHOT_SIZE_REMEASURED == IDENTITY_CONSUMER_SNAPSHOT_SIZE;
+  assert NAMED_BY_THE_OWNER_WITHOUT_DECLARING_THE_EDGE_REMEASURED == 4;
+  assert identity_edge_census_closes(IDENTITY_EDGE_DECLARERS_INSIDE_THE_SNAPSHOT_REMEASURED, IDENTITY_EDGE_DECLARERS_OUTSIDE_THE_SNAPSHOT_REMEASURED, IDENTITY_EDGE_DECLARERS_IN_CORPUS_REMEASURED) == true;
+  assert snapshot_accounting_closes(IDENTITY_EDGE_DECLARERS_INSIDE_THE_SNAPSHOT_REMEASURED, NAMED_BY_THE_OWNER_WITHOUT_DECLARING_THE_EDGE_REMEASURED, IDENTITY_CONSUMER_SNAPSHOT_SIZE_REMEASURED) == true;
+  assert IDENTITY_EDGE_DECLARERS_IN_CORPUS_REMEASURED == IDENTITY_EDGE_DECLARERS_IN_CORPUS + 1;
+  assert IDENTITY_EDGE_DECLARERS_OUTSIDE_THE_SNAPSHOT_REMEASURED > IDENTITY_EDGE_DECLARERS_OUTSIDE_THE_SNAPSHOT;
+  assert PER_WINDOW_CEILING_SENTENCES_RERUN_AT == CORPUS_T27_FILE_COUNT_REMEASURED_AT;
+  assert THIS_LEDGER_HAS_A_PER_WINDOW_CEILING == false;
 }
 
 test the_identity_snapshot_moved_under_this_file_and_the_date_is_what_saved_it {
@@ -796,9 +898,13 @@ test the_identity_snapshot_moved_under_this_file_and_the_date_is_what_saved_it {
 
 test the_referral_contract_is_named_by_id_and_the_two_agree {
   assert REFERRAL_PROGRAM_ID == "turbobaby/referral-program";
-  assert REFERRAL_CREDIT_SITES_INSIDE_THE_PAIRED_SIX == 3;
+  assert REFERRAL_CREDIT_SITES_INSIDE_THE_PAIRED_SIX == 0;
+  assert REFERRAL_CREDIT_SITES_INSIDE_THE_PAIRED_SIX_BEFORE_2026_09_26 == 3;
   assert REFERRAL_CREDIT_SITES_AMONG_THE_BYPASSES == 0;
   assert REFERRAL_CREDIT_SITES_INSIDE_THE_PAIRED_SIX < BALANCE_WRITES_WITH_A_LEDGER_ROW;
+  assert BALANCE_WRITES_WITH_A_LEDGER_ROW_BEFORE_2026_09_26 - REFERRAL_CREDIT_SITES_INSIDE_THE_PAIRED_SIX_BEFORE_2026_09_26 == BALANCE_WRITES_WITH_A_LEDGER_ROW;
+  assert REFERRAL_CREDIT_ID == "turbobaby/referral-credit";
+  assert REFERRAL_CREDIT_IS_THIS_LEDGER == false;
   assert LEDGER_ORDERING_AGREES_WITH_THE_REFERRAL_CONTRACT == true;
   assert LEDGER_ORDERING_AGREEMENT_CHECKED_AT == "2026-09-21";
   assert the_two_ledger_contracts_agree(REFERRAL_CREDIT_SITES_INSIDE_THE_PAIRED_SIX, REFERRAL_CREDIT_SITES_AMONG_THE_BYPASSES, BALANCE_WRITES_WITH_A_LEDGER_ROW) == true;
@@ -877,3 +983,9 @@ invariant no_referral_credit_is_a_ledger_bypass
 
 invariant the_grant_ceiling_bounds_one_call_and_not_the_balance
   assert BALANCE_HAS_NO_CEILING == true and credit_is_admitted(100000001, true, 100000000) == false and balance_after_credit(100000000000, 100000000, true, 100000000) == 100100000000
+
+invariant the_referral_credit_is_not_this_ledger
+  assert REFERRAL_CREDIT_IS_THIS_LEDGER == false and REFERRAL_CREDIT_SITES_INSIDE_THE_PAIRED_SIX == 0
+
+invariant the_leaderboard_answers_an_admin_only_and_the_config_read_is_closed
+  assert LEADERBOARD_GATE_SITES == 1 and CLOSED_READ_ROUTE_COUNT == 1 and UNGATED_ROUTE_COUNT == 1

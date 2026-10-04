@@ -60,7 +60,9 @@
 ; src/api/bikes.rs:478; admin_list_bikes serves the same unpaged shape at src/api/bikes.rs:1100.
 ; A grep for cursor over src/api/ returns zero, and the 184 lines that carry the word over src/
 ; are the CSS property with TWO exceptions (re-measured 2026-09-21). 182 of the 184 hold the
-; literal property (src/main.rs:1910 is one). The other two are Rust identifiers that PRODUCE a
+; literal property (src/main.rs:1910 is one). (Re-measured 2026-09-22: 185 lines, 183 of them the
+; property; the same two exceptions, and still zero under src/api/. CURSOR_WORD_LINES_IN_SRC says
+; which line was added.) The other two are Rust identifiers that PRODUCE a
 ; value for that property and never a pagination token: cursor_style at
 ; src/ui/game/shop_game.rs:1710 returns "pointer" or "default", and btn_cursor at
 ; src/ui/screens/checkout_screen.rs:1664 picks "pointer" or "not-allowed". The exceptions are
@@ -340,12 +342,12 @@ pub const CURSOR_OCCURRENCES_IN_THE_API_MODULE : u8 = 0;
 ;     ladder serves belongs to turbobaby/game-score; only the transport numbers are read here);
 ;   src/api/loyalty.rs:592-596 -- default 50, clamped into 1..100 at src/api/loyalty.rs:608-609,
 ;     with an offset floored at 0 at src/api/loyalty.rs:609;
-;   src/api/orders.rs:1674-1683 -- default 100, clamped into 1..500, offset floored at 0;
+;   src/api/orders.rs:1800-1809 -- default 100, clamped into 1..500, offset floored at 0;
 ;   src/api/referrals.rs:208 -- default 10, clamped into 1..50, no offset.
 ; Two of the six carry an offset; every one of the six floors at 1; not one of the six carries a
 ; cursor, which is the claim this census exists to make and the only one the wrong count did not
-; damage. src/api/bikes.rs:755 and src/api/orders.rs:2376 are NOT in the census: both are fixed
-; caps the handler chooses, not a number the client supplies.
+; damage. src/api/bikes.rs:755 and src/api/orders.rs:2503 (:2502 until 2026-09-26) are NOT in the
+; census: both are fixed caps the handler chooses, not a number the client supplies.
 pub const SHIPPED_PAGE_LADDERS : u8 = 6;
 pub const SHIPPED_CURSOR_LADDERS : u8 = 0;
 pub const SHIPPED_PAGE_LADDER_DEFAULTS : [6]u16 = [50, 100, 20, 50, 100, 10];
@@ -361,10 +363,21 @@ pub const SHIPPED_PAGE_LADDERS_ON_THIS_ENDPOINT : u8 = 0;
 ; the property. The split is declared because "all" is checked by one counterexample, and a
 ; reader who finds one stops trusting the sentence that mattered -- which is the last number
 ; here, not the first two. Measured 2026-09-21.
-pub const CURSOR_WORD_LINES_IN_SRC : u16 = 184;
-pub const CURSOR_WORD_LINES_AS_CSS_PROPERTY : u16 = 182;
+; CORRECTED 2026-09-22: the first two were 184 and 182. Re-measured at a33e500, git grep -n cursor
+; over src/ returns 185 lines in .rs files, against 184 at 2c21df1^. 2c21df1 (2026-09-21 19:31)
+; split the cart's checkout button in src/ui/screens/cart_screen.rs into a disabled copy for an
+; unpriced cart (cursor: not-allowed) and the linked one (cursor: pointer), where one cursor:
+; pointer line stood before, so the added line is the CSS property. The
+; two identifier lines above are unchanged and the pagination count is still zero, which is the
+; number this census exists for.
+pub const CURSOR_WORD_LINES_IN_SRC : u16 = 185;
+pub const CURSOR_WORD_LINES_AS_CSS_PROPERTY : u16 = 183;
 pub const CURSOR_WORD_LINES_AS_CSS_IDENTIFIER : u16 = 2;
 pub const CURSOR_WORD_LINES_AS_PAGINATION : u16 = 0;
+; RE-POINTED 2026-09-26, not re-measured: cursor_style, cited twice above at
+; src/ui/game/shop_game.rs:1710, stands at :1415 since the shop game's farm left that file on that
+; date (legacy_retirement.t27, LEFTOVERS_2026_09_26_*); the function itself did not change. The
+; three counts above keep the reading of the tree they were taken on.
 
 ; REFUTED 2026-09-21: this file used to assert that no shipped ladder agrees with the budget it
 ; chose, and offered that as the proof the budget was not derived. One does, and it agrees on all
@@ -393,7 +406,7 @@ pub const UNIT_ROLLUP_QUERY_ROW_CAP : u32 = 1000;
 pub const UNIT_ROLLUP_CAP_IS_A_PAGE_LIMIT : bool = false;
 
 pub const PAGINATION_TRANSPORT_IS_NOT_SHIPPED : bool = true;
-pub const PAGINATION_TRANSPORT_NOTE : str = "No page limit and no cursor reaches GET /api/bikes. list_bikes at src/api/bikes.rs:412-525 parses neither and serves the whole offered catalog in one document at src/api/bikes.rs:478, and admin_list_bikes repeats that shape at src/api/bikes.rs:1100. A grep for cursor over src/api/ returns zero on 2026-09-21. PAGE_LIMIT_MIN, PAGE_LIMIT_DEFAULT, PAGE_LIMIT_MAX and CURSOR_BYTES_MAX therefore refuse nothing, and catalog_api_normalize_limit, catalog_api_cursor_valid and catalog_api_may_emit_next_cursor have never been entered by a shipped request. Closing this needs a limit parsed at the handler and a cursor encoder beside it; until then these numbers are a proposal with a test suite. CORRECTED 2026-09-21: this sentence used to say the repository ships three page ladders and that all three are offset ladders. Both halves were wrong -- the census above measures six, and only two of the six (src/api/loyalty.rs:609 and src/api/orders.rs:1679-1683) carry an offset at all, the other four being bare clamped limits. What survives is the part that mattered: not one of the six is cursor-shaped, so a cursor here is a change of shape for this repository and not only a new parameter.";
+pub const PAGINATION_TRANSPORT_NOTE : str = "No page limit and no cursor reaches GET /api/bikes. list_bikes at src/api/bikes.rs:412-525 parses neither and serves the whole offered catalog in one document at src/api/bikes.rs:478, and admin_list_bikes repeats that shape at src/api/bikes.rs:1100. A grep for cursor over src/api/ returns zero on 2026-09-21. PAGE_LIMIT_MIN, PAGE_LIMIT_DEFAULT, PAGE_LIMIT_MAX and CURSOR_BYTES_MAX therefore refuse nothing, and catalog_api_normalize_limit, catalog_api_cursor_valid and catalog_api_may_emit_next_cursor have never been entered by a shipped request. Closing this needs a limit parsed at the handler and a cursor encoder beside it; until then these numbers are a proposal with a test suite. CORRECTED 2026-09-21: this sentence used to say the repository ships three page ladders and that all three are offset ladders. Both halves were wrong -- the census above measures six, and only two of the six (src/api/loyalty.rs:609 and src/api/orders.rs:1805-1809) carry an offset at all, the other four being bare clamped limits. What survives is the part that mattered: not one of the six is cursor-shaped, so a cursor here is a change of shape for this repository and not only a new parameter.";
 
 ; Does a declared bound refuse anything? Only if something parses the thing it bounds. Both
 ; arguments are measured facts above, and both are false today.
@@ -466,6 +479,47 @@ pub fn deposit_is_released_to_the_wire(amount_is_publishable: bool, audit_report
         return false;
     }
     return amount_is_publishable;
+}
+
+; --- The sale offer on the public wire (added 2026-09-24) -----------------------------------------
+; The owner ruled on 2026-09-24 that a customer may only rent (rental only, Phuket only;
+; turbobaby/legacy-retirement records the ruling). for_sale still LEAVES IN THE BODY -- the key is on
+; every family, so RESPONSE_ONLY_FIELDS above is unchanged and an old cached client keeps parsing --
+; but the two PUBLIC reads no longer carry the stored value. list_bikes and get_bike serialise the
+; family through BikeListing::with_sale_withheld (src/db/bikes.rs), which serves for_sale = false and
+; sale_price_thb = null whatever the row holds. admin_list_bikes reuses family_json on the stored
+; listing, so the admin is not blinded, and no row is written: the stored flag and asking price are
+; kept, which is the mask-on-read shape public_display_name already set. The test pinning
+; family_json's output (src/api/bikes.rs:2205-2220) pins the SHARED serialiser and stays true; the
+; public mask is pinned by the_public_catalog_serves_both_sale_keys_withheld beside it. Until this
+; date the public reads carried the stored values, and the bike detail screen showed a buy-out block
+; whenever either was set: a data gate, one admin tick from every customer.
+pub const PUBLIC_READS_WITHHOLDING_THE_SALE_OFFER : u8 = 2;
+pub const PUBLIC_READS_WITHHOLDING_THE_SALE_OFFER_BEFORE_2026_09_24 : u8 = 0;
+pub const PUBLIC_READ_COUNT_SERVING_A_FAMILY : u8 = 2;
+pub const ADMIN_READ_CARRIES_THE_STORED_SALE_OFFER : bool = true;
+pub const SALE_KEYS_STAY_ON_THE_PUBLIC_WIRE : bool = true;
+pub const PUBLIC_SALE_MASK_WRITES_A_ROW : bool = false;
+; Where the served sale fields used to land. src/ui/screens/bike_detail.rs rendered the buy-out block
+; from them -- the T_BIKE_SALE_TITLE heading and the T_BIKE_SALE_PRICE label -- and was the only
+; client screen that did. Counted as code lines under src/ui naming either key: 3 on the tree before
+; the ruling (the import line and the two render lines), 0 after. The keys stay declared and
+; translated in src/trios/i18n.rs, and the wire fields stay parsed in catalog_screen.rs, unrendered.
+pub const SALE_BLOCK_KEY_LINES_IN_UI : u8 = 0;
+pub const SALE_BLOCK_KEY_LINES_IN_UI_BEFORE_2026_09_24 : u8 = 3;
+
+pub fn public_for_sale(stored_for_sale: bool, public_read: bool) bool {
+    if (public_read) {
+        return false;
+    }
+    return stored_for_sale;
+}
+
+pub fn public_sale_price_present(stored_price_present: bool, public_read: bool) bool {
+    if (public_read) {
+        return false;
+    }
+    return stored_price_present;
 }
 
 test catalog_api_filter_vocabulary_is_exact_and_transport_only {
@@ -609,6 +663,22 @@ test catalog_api_for_sale_leaves_in_the_body_and_never_in_the_query {
     // stays correct the day a for_sale query word ships. It is not evidence that one exists.
     assert catalog_api_filter_matches(false, false, false, false, false, false, true, false) == false;
     assert catalog_api_filter_matches(false, false, false, false, false, false, true, true) == true;
+}
+
+test catalog_api_the_public_reads_serve_the_sale_offer_withheld {
+    assert PUBLIC_READS_WITHHOLDING_THE_SALE_OFFER == PUBLIC_READ_COUNT_SERVING_A_FAMILY;
+    assert PUBLIC_READS_WITHHOLDING_THE_SALE_OFFER_BEFORE_2026_09_24 == 0;
+    assert public_for_sale(true, true) == false;
+    assert public_for_sale(true, false) == true;
+    assert public_sale_price_present(true, true) == false;
+    assert public_sale_price_present(true, false) == true;
+    assert ADMIN_READ_CARRIES_THE_STORED_SALE_OFFER == true;
+    assert SALE_KEYS_STAY_ON_THE_PUBLIC_WIRE == true;
+    assert PUBLIC_SALE_MASK_WRITES_A_ROW == false;
+    assert SALE_BLOCK_KEY_LINES_IN_UI == 0;
+    assert SALE_BLOCK_KEY_LINES_IN_UI_BEFORE_2026_09_24 == 3;
+    // The key still leaves in the body; only its value is withheld.
+    assert RESPONSE_ONLY_FIELDS[0] == "for_sale";
 }
 
 test catalog_api_page_and_cursor_budgets_bind_no_shipped_request {
@@ -776,3 +846,6 @@ invariant catalog_api_the_page_ladder_census_counts_exactly_what_it_lists
 
 invariant catalog_api_a_precedent_for_the_budget_is_never_a_derivation_of_it
     assert SHIPPED_LADDERS_AGREEING_WITH_THIS_BUDGET == 1 and budget_is_precedented(SHIPPED_LADDERS_AGREEING_WITH_THIS_BUDGET) == true and PAGE_BUDGET_WAS_DERIVED_FROM_A_MEASUREMENT == false and THE_AGREEING_LADDER_IS_ON_THIS_ENDPOINT == false and SHIPPED_PAGE_LADDERS_ON_THIS_ENDPOINT == 0
+
+invariant catalog_api_no_public_read_serves_a_stored_sale_offer
+    assert public_for_sale(true, true) == false and public_sale_price_present(true, true) == false and PUBLIC_READS_WITHHOLDING_THE_SALE_OFFER == PUBLIC_READ_COUNT_SERVING_A_FAMILY

@@ -9,6 +9,22 @@
    to be third, so switching tabs moved the growing row onto a paragraph. A
    flex column says the thing that is actually true: everything is its own
    height except the body, which takes what is left. */
+/* The panel is the backdrop root for everything inside it.
+   A `backdrop-filter` on a parent low-passes the field for its whole subtree,
+   so the chips, the find box and the log below all see an already-blurred hive
+   and none of them pays for a compositing layer of its own: the conversation is
+   read while the map moves under it, and the thing that makes a moving lattice
+   stop reading as strokes inside the letters is the low pass, not the 0.72.
+
+   Belt and braces on the board, and deliberately so. In the shell this panel
+   sits in .queen27-hud-intel, which the matte roster in Queen.css frosts at
+   6px while she is open, so the 8px here filters a field that has already been
+   through a filter once. It stays because the roster is not the only place this
+   component mounts: QueenCellStage renders the same .queen-chat inside
+   .queen-cell-say, and that stage is a fixed, fully opaque #020605 overlay with
+   no intel column anywhere above it. One ancestor cannot be named for both
+   routes, and a declaration that is redundant on one of them is cheaper than an
+   excuse that is true on only one. */
 .queen-chat {
   display: flex;
   flex-direction: column;
@@ -17,6 +33,8 @@
   padding: 10px 12px;
   border: 1px solid rgba(0, 255, 136, 0.18);
   background: rgba(3, 12, 14, 0.72);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
 }
 
 /* THE THREE TABS. The conversation is first and is where she opens: the owner
@@ -51,8 +69,8 @@
   cursor: pointer;
 }
 .queen-chat-tabbtn.is-on {
-  border-bottom-color: var(--hud-gold, #ffd45a);
-  color: var(--hud-gold, #ffd45a);
+  border-bottom-color: var(--hud-gold, #ffd700);
+  color: var(--hud-gold, #ffd700);
 }
 .queen-chat-tabbtn > b {
   color: #b9cad5;
@@ -78,7 +96,7 @@
 }
 
 .queen-chat-title {
-  color: var(--hud-gold, #ffd45a);
+  color: var(--hud-gold, #ffd700);
   font-family: "JetBrains Mono", ui-monospace, monospace;
   font-size: 11px;
   letter-spacing: 0.16em;
@@ -94,6 +112,7 @@
 .queen-chat-state.is-live { color: #00ff88; }
 .queen-chat-state.is-offline { color: #ff6b6b; }
 .queen-chat-state.is-checking { color: #8b9490; }
+.queen-chat-state.is-agent { color: #8b9490; }
 
 .queen-chat-hide,
 .queen-chat-tab {
@@ -112,6 +131,33 @@
    the button stretched into a full-height bordered box with "Ask the Queen"
    floating in the middle of it, which is the panel the chat was hidden to get
    rid of. Small, at the top, and the column below it is sky. */
+/* This button is the one control on the board with nothing above it and nothing
+   under it: its column is explicitly NOT frosted while she is hidden (Queen.css,
+   `.queen27-hud-intel:has(> .queen-chat-tab)`), because a backdrop-filter on an
+   empty box drew a soft band down the side of the screen. So the whole of the
+   treatment has to live here.
+
+   rgba(3,12,14,0.55) with gold on it measures 3.13:1 over a lit hive -- and
+   gold is the reason, not the saving grace: #ffd700 is a LIGHT ink, so against
+   the bright part of the field it has less to work with than the muted white
+   every other label uses, not more. Read the ink from the token and not from
+   the fallback beside it: this file writes `var(--hud-gold, #ffd700)` sixteen
+   times and --hud-gold is declared #ffd700 on .queen27-page.is-shell, so not
+   one of those sixteen fallbacks is ever reached. They said #ffd45a until the
+   running page was asked which value draws -- the same dead-fallback shape
+   QueenBrowser.css and QueenTri.css each carry a note about. Two bare literals
+   near the foot of this file DO paint #ffd45a, and that is the drift those
+   fallbacks were hiding: a reader who took the fallback for the colour saw one
+   gold in this file where the screen shows two. Left as found; it is a
+   separate change from this one. The panel token is what the rest of this
+   board's chrome carries, and
+   the blur is safe here for the same reason it was wrong on the column: this
+   box paints.
+
+   "Nothing above it and nothing under it" is the intel column, which is where
+   the unfrosting rule is written. QueenCellStage renders the same collapsed tab
+   inside .queen-cell-say, on a fully opaque overlay -- the treatment here is
+   simply spare there, never wrong. */
 .queen-chat-tab {
   width: auto;
   justify-self: end;
@@ -119,8 +165,10 @@
   margin: 0;
   padding: 0 12px;
   min-height: 34px;
-  color: var(--hud-gold, #ffd45a);
-  background: rgba(3, 12, 14, 0.55);
+  color: var(--hud-gold, #ffd700);
+  background: var(--hud-panel, rgba(2, 8, 6, 0.88));
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
 }
 
 .queen-chat-context {
@@ -152,6 +200,36 @@
   line-height: 1.5;
 }
 
+/* BROWSER only (lib/queenBrowserHelp.ts): the first question, one press away.
+   A column of whole sentences, not a scrolling chip row -- each is read
+   before it is pressed, and each press is sent as the person's own words. */
+.queen-chat-starters {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.queen-chat-starter {
+  min-height: 44px;
+  padding: 6px 10px;
+  border: 1px solid rgba(0, 255, 136, 0.2);
+  border-radius: 6px;
+  background: transparent;
+  color: #8b9490;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: left;
+  cursor: pointer;
+}
+
+.queen-chat-starter:hover,
+.queen-chat-starter:focus-visible {
+  border-color: #00ff88;
+  color: #00ff88;
+}
+
 /* On a phone the column is a drawer, and a chat that takes the whole of it
    leaves no room for what it is talking about. */
 @media (max-width: 900px) {
@@ -172,7 +250,7 @@
   border-left: 2px solid rgba(0, 255, 136, 0.35);
   background: rgba(255, 255, 255, 0.02);
 }
-.queen-chat-event.is-subject { border-left-color: var(--hud-gold, #ffd45a); }
+.queen-chat-event.is-subject { border-left-color: var(--hud-gold, #ffd700); }
 .queen-chat-event[data-kind="refusal"],
 .queen-chat-event[data-kind="failure"] { border-left-color: #ff6b6b; }
 
@@ -197,7 +275,7 @@
   padding: 0 6px;
   border: 0;
   background: transparent;
-  color: var(--hud-gold, #ffd45a);
+  color: var(--hud-gold, #ffd700);
   font: inherit;
   font-size: 10.5px;
   text-decoration: none;
@@ -219,7 +297,7 @@
   margin-left: auto;
   border: 0;
   background: transparent;
-  color: var(--hud-gold, #ffd45a);
+  color: var(--hud-gold, #ffd700);
   font: inherit;
   font-size: 10.5px;
   cursor: pointer;
@@ -247,9 +325,9 @@
   align-items: center;
   margin-left: auto;
   padding: 0 0.7rem;
-  border: 1px solid var(--hud-gold, #ffd45a);
+  border: 1px solid var(--hud-gold, #ffd700);
   border-radius: 6px;
-  color: var(--hud-gold, #ffd45a);
+  color: var(--hud-gold, #ffd700);
   font-size: 10.5px;
   letter-spacing: 0.06em;
   text-decoration: none;
@@ -329,8 +407,8 @@
    in — the count beside each one is of the whole window, so a chip always says
    how much pressing it would bring back. */
 .queen-chat-chip.is-on {
-  border-color: var(--hud-gold, #ffd45a);
-  color: var(--hud-gold, #ffd45a);
+  border-color: var(--hud-gold, #ffd700);
+  color: var(--hud-gold, #ffd700);
 }
 .queen-chat-chip[data-kind="error"].is-on { border-color: #ff6b6b; color: #ff6b6b; }
 
@@ -357,7 +435,7 @@
   padding: 0 8px;
   border: 0;
   background: transparent;
-  color: var(--hud-gold, #ffd45a);
+  color: var(--hud-gold, #ffd700);
   font: inherit;
   font-size: 10.5px;
   cursor: pointer;
@@ -394,7 +472,7 @@
 }
 .queen-chat-net-sum dd {
   margin: 0;
-  color: var(--hud-gold, #ffd45a);
+  color: var(--hud-gold, #ffd700);
   font-family: "JetBrains Mono", ui-monospace, monospace;
   font-size: 12px;
   font-variant-numeric: tabular-nums;
@@ -424,7 +502,7 @@
    the one message that closes a loop; a send-back does not, so a link she sent
    work back on stays lit rather than reading as done. */
 .queen-chat-link[data-stance="accepted"] { border-left-color: #2f6f52; opacity: 0.72; }
-.queen-chat-link[data-stance="with-worker"] { border-left-color: var(--hud-gold, #ffd45a); }
+.queen-chat-link[data-stance="with-worker"] { border-left-color: var(--hud-gold, #ffd700); }
 
 .queen-chat-link-head {
   display: flex;
@@ -434,7 +512,7 @@
   font-family: "JetBrains Mono", ui-monospace, monospace;
   font-size: 11px;
 }
-.queen-chat-link-head > b { color: var(--hud-gold, #ffd45a); font-weight: 500; }
+.queen-chat-link-head > b { color: var(--hud-gold, #ffd700); font-weight: 500; }
 .queen-chat-link-head > em {
   margin-left: auto;
   color: #8b9490;
@@ -457,4 +535,138 @@
   color: #b9cad5;
   font-size: 11.5px;
   line-height: 1.4;
+}
+
+/* The agent at work on the BROWSER tab: each tool it calls, as it calls it,
+   and the words that have arrived so far. */
+.queen-chat-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 6px 0;
+  padding: 8px 10px;
+  border-left: 2px solid rgba(0, 255, 136, 0.45);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 12px;
+}
+.queen-chat-step {
+  margin: 0;
+  color: #00ff88;
+}
+.queen-chat-partial {
+  margin: 0;
+  color: var(--text, #FFFFFF);
+  white-space: pre-wrap;
+}
+
+/* WHAT SHE DID WITH AN ANSWER (queenDirectives): the tab she opened, and a
+   draft for the person's agent that only the person sends. */
+.queen-chat-turn {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.queen-chat-opened {
+  margin: 0 0 0 4px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: rgba(0, 255, 136, 0.8);
+}
+.queen-chat-draft {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 215, 0, 0.35);
+  border-radius: 8px;
+  /* Blurred as well as dark: alpha alone leaves the lattice's edges crossing
+     the letters (qa/queen-contrast-contract.mjs). */
+  background: rgba(2, 8, 6, 0.88);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+.queen-chat-draft-title {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ffd700;
+}
+.queen-chat-draft textarea {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  padding: 6px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  /* An opaque ground: this is a text field over the lit map, and the contrast
+     contract measures what shows through (qa/queen-contrast-contract.mjs
+     refused 0.35 here). */
+  background: rgba(2, 8, 6, 0.94);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  color: #e8f5ee;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.queen-chat-draft-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.queen-chat-draft-actions button {
+  padding: 6px 12px;
+  border: 1px solid #ffd700;
+  border-radius: 6px;
+  background: rgba(255, 215, 0, 0.12);
+  color: #ffd700;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.queen-chat-draft-actions button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.queen-chat-draft-note {
+  margin: 0;
+  font-size: 12px;
+  color: rgba(232, 245, 238, 0.75);
+}
+.queen-chat-draft.is-failed .queen-chat-draft-note {
+  color: #ff6b6b;
+}
+
+/* NO ZOOM ON A PHONE. iOS Safari zooms the whole page into a focused text
+   field whose font-size is under 16px, and does not zoom back out: every tap
+   on the composer zoomed the board. A coarse pointer gets 16px in every field
+   this panel draws; a mouse keeps the sizes above.
+   Three of them are ChatInput's (components/chat/ChatInput.tsx), which sets
+   its sizes inline -- 14px on the message, 11px on the two attachment paths --
+   and an inline declaration loses to nothing but !important. The ids are
+   ChatInput's own; the .queen-chat scope keeps CosmicChat's copy as it was.
+   The two rules of this file's own carry .queen-chat as well, so they outrank
+   .queen-chat-draft textarea, .queen-chat-find input and the cell stage's
+   .queen-cell-stage textarea wherever the panel is mounted.
+   16px also makes those three wider: an input is as wide as its size in
+   characters of its own font, and this panel is a <section>, which index.css
+   centres in a column, so the composer is as wide as its widest row rather than
+   the panel. With the attachment row open that row needed 486px -- past the
+   edge of a 375px phone. width: 100% lets a field give way to the panel
+   instead (349px there); ChatInput sets no width inline, so no !important.
+   Pinned in qa/queen-chat-tabs-contract.mjs, with broken copies that must
+   fail. */
+@media (pointer: coarse) {
+  .queen-chat .queen-chat-draft textarea,
+  .queen-chat .queen-chat-find input {
+    font-size: 16px;
+  }
+  .queen-chat #chat-input-field,
+  .queen-chat #chat-image-input,
+  .queen-chat #chat-audio-input {
+    font-size: 16px !important;
+    width: 100%;
+  }
 }

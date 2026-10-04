@@ -17,9 +17,17 @@ module TriAhoCorasick;
         is_end : bool,
     };
 
+    // The pattern list was a `[][]const u8` (a slice of sub-slices of the
+    // comma-separated input). The Verilog backend cannot lower a 2-D array of
+    // slices, so the list is kept as the source string plus start/end offsets:
+    // pattern k is source[pattern_start[k]..pattern_end[k]] (see pattern_at),
+    // for k < pattern_count, at most 256 patterns as in the original build.
     pub const ACAutomaton = struct {
         root : ?*ACTrieNode,
-        patterns : [][]const u8,
+        source : []const u8,
+        pattern_start : [256]usize,
+        pattern_end : [256]usize,
+        pattern_count : usize,
     };
 
     pub const Match = struct {
@@ -35,7 +43,9 @@ module TriAhoCorasick;
     // build(allocator: std.mem.Allocator, patterns: []const u8) → ACAutomaton
     fn build(allocator: std.mem.Allocator, patterns: []const u8) -> ACAutomaton {
         // Parse comma-separated patterns into array
-        var pattern_array : [256][]const u8 = undefined;
+        // (stored as start/end offsets into `patterns`, see ACAutomaton)
+        var pattern_start : [256]usize = undefined;
+        var pattern_end : [256]usize = undefined;
         var pattern_count : usize = 0;
         
         if (patterns.len > 0) {
@@ -43,18 +53,26 @@ module TriAhoCorasick;
             var i : usize = 0;
             while (i < patterns.len) {
                 if (patterns[i] == ',') {
-                    pattern_array[pattern_count] = patterns[start..i];
+                    pattern_start[pattern_count] = start;
+                    pattern_end[pattern_count] = i;
                     pattern_count += 1;
                     start = i + 1;
                 }
                 i += 1;
             }
             // Add last pattern
-            pattern_array[pattern_count] = patterns[start..];
+            pattern_start[pattern_count] = start;
+            pattern_end[pattern_count] = patterns.len;
             pattern_count += 1;
         }
         
-        var ac = ACAutomaton{ .root = null, .patterns = pattern_array[0..pattern_count] };
+        var ac = ACAutomaton{
+            .root = null,
+            .source = patterns,
+            .pattern_start = pattern_start,
+            .pattern_end = pattern_end,
+            .pattern_count = pattern_count,
+        };
         
         // Build trie
         var root : *ACTrieNode = allocator.create(ACTrieNode);
@@ -143,6 +161,12 @@ module TriAhoCorasick;
         }
         
         return ac;
+    }
+
+    // pattern_at(ac: *ACAutomaton, k: usize) -> []const u8
+    // The k-th parsed pattern (what `ac.patterns[k]` was before).
+    fn pattern_at(ac: *ACAutomaton, k: usize) -> []const u8 {
+        return ac.source[ac.pattern_start[k]..ac.pattern_end[k]];
     }
 
     // search(ac: *ACAutomaton, text: []const u8) → []Match

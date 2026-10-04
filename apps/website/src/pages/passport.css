@@ -3,7 +3,7 @@
 
 .pp {
   padding: 5rem 1.25rem 6rem;
-  color: var(--text, #e8e4dc);
+  color: var(--text, #FFFFFF);
   /* Every accent below was written `var(--accent, #d4af37)` by an author who
      believed the fallback would apply. It never did: index.css sets --accent
      to #00FF88 on :root, so the fallback is dead and the page rendered green.
@@ -271,15 +271,34 @@
 
 /* Inside the Queen's shell the views are stacked in one grid cell on top of the
    hive scene. A record read through a hex field is not read: this view owns its
-   own backdrop and its own scroll, like every other named scroll owner. */
+   own backdrop and its own scroll, like every other named scroll owner.
+
+   The ground was only half of it. At 0.94 six per cent of the hive still came
+   through, and alpha compositing is a linear mix: it scales the field's
+   amplitude and leaves its spatial frequency exactly where it was, so a hexagon
+   edge crossed the prose at full sharpness however dark this ground got, and an
+   edge through a letterform is read as a stroke of the letter. The blur is the
+   half that takes the edges out. 8px and not 6px because this face is long-form
+   reading over a scene that keeps moving; .mcp-view in QueenMcp.css is the same
+   surface at the same 0.94 and took the same figure. It stays inside the
+   is-shell scope with the rest of the rule -- on the standalone /passport route
+   this rule paints no ground and there is no hive behind the page to low-pass.
+   One layer here and none on the sections inside it: backdrop-filter makes this
+   element a backdrop root, so the whole record is low-passed once. */
 .queen27-page.is-shell .pp {
   height: 100%;
   min-height: 0;
   overflow-y: auto;
   padding-top: 2.5rem;
   background: rgba(6, 8, 10, 0.94);
+  backdrop-filter: blur(8px);
   position: relative;
-  z-index: 3;
+  /* No z-index. Queen.tsx mounts <Passport> as a direct child of
+     .queen27-hud-vp-body, and Queen.css now sets position and z-index on every
+     child of that element except the hive, at a higher specificity than this
+     rule can reach -- so a `z-index: 3` written here computed to 1 and read to
+     a debugger as though it were 3. One owner for the stacking order of that
+     row, and it is the rule that owns the row. */
 }
 
 @media (max-width: 640px) {

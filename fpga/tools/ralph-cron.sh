@@ -50,7 +50,7 @@ MAX_IDLE_CYCLES=999999  # Effectively infinite (24/7 mode)
 # Telegram (from .ralphrc)
 RALPH_REPORT_ENABLED="${RALPH_REPORT_ENABLED:-true}"
 RALPH_TELEGRAM_CHAT_ID="${RALPH_TELEGRAM_CHAT_ID:-144022504}"
-RALPH_TELEGRAM_BOT_TOKEN="${RALPH_TELEGRAM_BOT_TOKEN:-8110000341:AAHn9c7e8Jx0f1eY-4hT5Gd9Xh8iJ0kL1mN}"
+RALPH_TELEGRAM_BOT_TOKEN="${RALPH_TELEGRAM_BOT_TOKEN:-}"
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # UTILITIES

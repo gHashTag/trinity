@@ -1,0 +1,70 @@
+{
+  "spec_path": "specs/queen/memory_issue_proof.t27",
+  "spec_hash": "7875901e265be6cca4915b21f6d9dad525922383406f9243ea5891e56f8056e9",
+  "vectors": [
+    {
+      "mask": 0,
+      "expected": 0
+    },
+    {
+      "mask": 1,
+      "expected": 0
+    },
+    {
+      "mask": 2,
+      "expected": 0
+    },
+    {
+      "mask": 3,
+      "expected": 0
+    },
+    {
+      "mask": 4,
+      "expected": 0
+    },
+    {
+      "mask": 5,
+      "expected": 0
+    },
+    {
+      "mask": 6,
+      "expected": 0
+    },
+    {
+      "mask": 7,
+      "expected": 0
+    },
+    {
+      "mask": 8,
+      "expected": 0
+    },
+    {
+      "mask": 9,
+      "expected": 0
+    },
+    {
+      "mask": 10,
+      "expected": 0
+    },
+    {
+      "mask": 11,
+      "expected": 0
+    },
+    {
+      "mask": 12,
+      "expected": 0
+    },
+    {
+      "mask": 13,
+      "expected": 0
+    },
+    {
+      "mask": 14,
+      "expected": 0
+    },
+    {
+      "mask": 15,
+      "expected": 1
+    }
+  ]
+}

@@ -40,6 +40,6 @@ pub const EmaSync = struct {
 
 ## References
 
-- [Source: docs/lab/papers/2026-03-15-hslm-tjepa.md](../../../lab/papers/2026-03-15-hslm-tjepa.md)
-- [Source: docs/experiments/FOUND_EXPERIMENTS_SUMMARY.md](../../../experiments/FOUND_EXPERIMENTS_SUMMARY.md)
-- [Source: crates/trios-train-cpu/src/tjepa.rs](../../../../../crates/trios-train-cpu/src/tjepa.rs)
+- [Source: docs/lab/papers/2026-03-15-hslm-tjepa.md](../../lab/papers/2026-03-15-hslm-tjepa.md)
+- [Source: docs/experiments/FOUND_EXPERIMENTS_SUMMARY.md](../../experiments/FOUND_EXPERIMENTS_SUMMARY.md)
+- Source: crates/trios-train-cpu/src/tjepa.rs (historical path `../../../../../crates/trios-train-cpu/src/tjepa.rs`; not present in this checkout)

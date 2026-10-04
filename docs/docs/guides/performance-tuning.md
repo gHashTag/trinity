@@ -451,4 +451,4 @@ Use this checklist before deploying to production:
 
 ---
 
-**Need more performance tips?** Check the [community forum](https://github.com/gHashTag/trinity/discussions) or open a GitHub issue.
+**Need more performance tips?** Check the [issue tracker](https://github.com/gHashTag/trinity/issues) or open a GitHub issue.

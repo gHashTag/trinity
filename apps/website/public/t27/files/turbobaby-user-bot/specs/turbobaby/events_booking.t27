@@ -30,6 +30,18 @@
 ; gives the column NOT NULL DEFAULT TRUE and the create handler defaults the same way at
 ; src/api/events.rs:211. So the first TurboBaby event the owner inserts is public the instant it
 ; lands, on a machine whose capacity rule, waitlist rule and promotion rule had no contract.
+; CORRECTED 2026-09-24, and the paragraph above is kept as the reading it was. Two of its sentences
+; stopped being true that day, one of them was never quite true, and the numbers are pinned below
+; under their own names with the old values kept beside them. "Routes two screens onto them" was
+; short by one: src/ui/routes.rs declared THREE client paths onto this surface -- /events and
+; /events/:id at :39-42, and /my-bookings at :43-44, whose handler mounted this module's
+; MyBookingsScreen -- and since the owner's ruling of 2026-09-24 (rental only, Phuket only;
+; turbobaby/legacy-retirement records it) all three render the live catalog instead, as /sets does.
+; And "public the instant it lands" is over: the admin API now stores an event's flag ANDed with
+; EVENTS_PUBLISHABLE, which is false, so no event it creates or edits is public; every customer
+; read below filters on that flag; and migrations/088_unpublish_events.sql hides, in 085's shape,
+; any row still public when it runs. The HTTP router did not move -- it is still merged, and
+; neither hide became a retirement of it.
 ; --
 ; THE SHARPEST SINGLE MEASUREMENT is the pair of comparisons that decide which door opens.
 ; src/api/events.rs:626 refuses a booking on `taken + seats > cap`; src/api/events.rs:1359 refuses
@@ -49,8 +61,9 @@
 ;   2. "An attendee reachout is a queue row" is refuted at both of the tree's two reachouts.
 ;      send_event_reminders sends directly at src/api/events.rs:2130 and send_event_bookings sends
 ;      directly at :2026. A grep for `notification` over src/api/events.rs returns 0, and
-;      src/db/notifications.rs declares exactly three enqueue functions (:16, :38, :52), all three
-;      referral. The consequence is not cosmetic: the queue retries three times
+;      src/db/notifications.rs declared exactly three enqueue functions (:16, :38, :52), all three
+;      referral; since 2026-09-26 (R3) it declares one (:16), and the other two are dated comments
+;      where they stood. The consequence is not cosmetic: the queue retries three times
 ;      (src/notification_queue.rs:21, was :20) and a direct send has one attempt and a `continue`
 ;      (src/api/events.rs:2134-2142). The edge to notification-queue is still taken below, as the
 ;      owner of the shape these two reachouts do NOT use.
@@ -64,12 +77,16 @@
 ;   5. The same-day question has no limit to find. migrations/043 declares no unique key over
 ;      `events` beyond the primary key at :6, and src/api/events.rs:1454-1477 is a plain INSERT
 ;      with no ON CONFLICT arm. tests/integration_events_same_day.rs designs four events onto one
-;      date through the admin handler (:279-338) -- but all four of its tests are `#[ignore]`d
+;      date through the admin handler (:279-375) -- but all four of its tests are `#[ignore]`d
 ;      (:134, :210, :237, :278) and return early without a database, so the test is a named case
 ;      and not a proof, and the schema is what carries the verdict. The real rule
 ;      the test names at :68-72 is a GROUPING rule, and it is a timezone rule: the date comes from
 ;      the market-local instant (src/ui/screens/events_screen.rs:73-77 over :63-67), so two events
 ;      can share a calendar day while their UTC days differ.
+; CORRECTED 2026-09-24, refutation 1's last sentence: "the events screens are two of them" was
+; false when written. The events paths were never members of turbobaby/legacy-retirement's
+; LEGACY_LIVE_ROUTES, whose members and count are that file's to state; which is why that set did
+; not change when the owner's ruling repointed the three event paths on 2026-09-24.
 ; --
 ; WHAT THIS FILE NEVER DOES. It carries no attendee: no telegram id, no handle, no first name, no
 ; booking id, no event fixture standing for a real evening. The guest-list formatter's own
@@ -121,10 +138,27 @@ pub const SAME_DAY_WITNESS : str = "tests/integration_events_same_day.rs";
 ; would make the quote say something it never said. Corrected 2026-09-21 by this file's
 ; adversarial review, which found the sentence above claiming ALL citations were post-change
 ; while four quoted ones were not.
-pub const HTTP_SOURCE_LINES : u16 = 2496;
+; CORRECTED 2026-09-26: 2545 until that day's reversal of the reminder (REMINDER_REVERSED_AT), which
+; changed the reminder's join and doc comment in place and appended one database test at the end of
+; the test module, below every line this file cites; no citation moved.
+pub const HTTP_SOURCE_LINES : u16 = 2680;
+pub const HTTP_SOURCE_LINES_BEFORE_2026_09_26 : u16 = 2545;
+; CORRECTED 2026-09-24: HTTP_SOURCE_LINES was 2496. The owner's ruling of that day added 49 lines to
+; src/api/events.rs, every one of them BELOW the last line this file cites -- the EVENTS_PUBLISHABLE
+; constant, the storable_public_flag gate and one test, all after spawn_event_reminder_loop -- and
+; changed two lines in place, the create default at :211 and the edit's flag at :312. So no citation
+; into the file moved, and none is re-pointed here.
+pub const HTTP_SOURCE_LINES_BEFORE_2026_09_24 : u16 = 2496;
 pub const CALENDAR_SOURCE_LINES : u16 = 482;
 pub const ATTENDEE_SOURCE_LINES : u16 = 357;
-pub const SAME_DAY_WITNESS_LINES : u16 = 339;
+pub const SAME_DAY_WITNESS_LINES : u16 = 376;
+; CORRECTED 2026-09-24: SAME_DAY_WITNESS_LINES was 339. Under the owner's ruling of that day the
+; admin API stores every event non-public, so the witness's write-side test could no longer find
+; its four events on the customer calendar; it now asserts that the calendar shows none of them and
+; reads the four from the admin's own list, each stored non-public. All 37 new lines sit inside that
+; test, below its start at :279, so the witness citations above it (:68-72, :134, :210, :237, :278)
+; did not move; its span, cited as :279-338 in refutation 5, is re-pointed there to :279-375.
+pub const SAME_DAY_WITNESS_LINES_BEFORE_2026_09_24 : u16 = 339;
 
 ; --- Ownership edges ------------------------------------------------------------------------------
 ; The pinned compiler lowers a brace import to an empty UseDecl and the gate rejects it, so a
@@ -211,9 +245,20 @@ pub const HANDLER_COUNT : u8 = 14;
 pub const PUBLIC_PATH_COUNT : u8 = 6;
 pub const ADMIN_PATH_COUNT : u8 = 5;
 pub const ROUTER_MERGE_SITE : str = "src/api/mod.rs:90";
-pub const SCREEN_ROUTE_COUNT : u8 = 2;
-pub const SCREEN_ROUTES : [2]str = ["/events", "/events/:id"];
-pub const SCREEN_ROUTE_SITE : str = "src/ui/routes.rs:39-42";
+pub const SCREEN_ROUTE_COUNT : u8 = 3;
+pub const SCREEN_ROUTES : [3]str = ["/events", "/events/:id", "/my-bookings"];
+pub const SCREEN_ROUTE_SITE : str = "src/ui/routes.rs:39-44";
+; CORRECTED 2026-09-24: the client paths onto this surface were three, not two -- /my-bookings at
+; src/ui/routes.rs:43 mounted this module's MyBookingsScreen and was left out. The old values are
+; kept below. Since the owner's ruling of the same day the three are still DECLARED (a link already
+; sent never expires) and none of them MOUNTS an events screen: their handlers render the catalog,
+; which is what EVENT_SCREENS_MOUNTED_BY_THE_CLIENT_ROUTER counts. The screens themselves still
+; compile in SCREEN_SOURCE, unmounted.
+pub const SCREEN_ROUTE_COUNT_BEFORE_2026_09_24 : u8 = 2;
+pub const SCREEN_ROUTES_BEFORE_2026_09_24 : [2]str = ["/events", "/events/:id"];
+pub const SCREEN_ROUTE_SITE_BEFORE_2026_09_24 : str = "src/ui/routes.rs:39-42";
+pub const EVENT_SCREENS_MOUNTED_BY_THE_CLIENT_ROUTER : u8 = 0;
+pub const EVENT_SCREENS_MOUNTED_BY_THE_CLIENT_ROUTER_BEFORE_2026_09_24 : u8 = 3;
 
 ; --- D19: a hidden row is not a retired route -------------------------------------------------
 ; migrations/085_unpublish_woody_catalog.sql:25 flips events.is_public to FALSE; :23 states no
@@ -230,6 +275,12 @@ pub const EVENT_SCREENS_RETIRED_BY_THE_HIDE : u8 = 0;
 
 ; A hide retires a surface only if the surface stopped answering. Both the router merge and the
 ; screen routes are measured live, so this returns false on the state this repository is in.
+; CORRECTED 2026-09-24: half of that sentence is now false. The screen routes no longer mount a
+; screen (EVENT_SCREENS_MOUNTED_BY_THE_CLIENT_ROUTER is 0), and the router merge is still live, so
+; the function still returns false on this tree -- for one reason now, not two. And it would
+; return false even with both: the screens went on the owner's ruling, not on the hide.
+pub const EVENT_HTTP_ROUTER_STILL_MERGED : bool = true;
+pub const EVENT_SCREENS_UNROUTED_BY_THE_RULING : u8 = 3;
 pub fn hide_retired_the_surface(rows_hidden: bool, routes_unmerged: bool, screens_unrouted: bool) bool {
   if (!rows_hidden) {
     return false;
@@ -247,6 +298,103 @@ pub fn new_event_is_public(flag_supplied: bool, flag_value: bool) bool {
   }
   return true;
 }
+
+; CORRECTED 2026-09-24. new_event_is_public still describes the REQUEST: an omitted flag still
+; reads as a request for public at src/api/events.rs:211. What is STORED is not that any more. On
+; the owner's ruling the handler stores storable_public_flag(requested), which is the requested
+; flag ANDed with EVENTS_PUBLISHABLE, and an edit stores a supplied flag the same way (:312) and
+; leaves an omitted one alone. EVENTS_PUBLISHABLE is false, so no event the admin API creates or
+; edits is public, and every customer read -- the calendar, one event, a booking, a waitlist join --
+; filters on the flag. EVENTS_PUBLISHABLE_BEFORE_2026_09_24 is the value the old behaviour had, and
+; flipping the constant back restores the write path exactly.
+; The write gate alone cannot reach a row that is ALREADY public: one made public between migration
+; 085 and this change, which D19 expected (TurboBaby events on a clean public slate) and the create
+; default made easy. Whether such a row exists is a production read this lane does not make, so the
+; answer does not wait on it: migrations/088_unpublish_events.sql flips every row still public to
+; hidden in 085's shape -- one visibility UPDATE on events, no row deleted, no table dropped, and
+; idempotent where 085 left nothing public. After it runs no row is public, and the admin API can
+; make none, so the four public reads and the promo sweeper's event scans have nothing to answer
+; with. What stays is what never filtered the flag, and it is listed below.
+pub const EVENTS_PUBLISHABLE : bool = false;
+pub const EVENTS_PUBLISHABLE_BEFORE_2026_09_24 : bool = true;
+pub const RULING_HIDE_MIGRATION : str = "migrations/088_unpublish_events.sql";
+pub const RULING_HIDE_VISIBILITY_UPDATES_ON_EVENTS : u8 = 1;
+pub const RULING_HIDE_ROW_DELETES : u16 = 0;
+pub const RULING_HIDE_TABLE_DROPS : u16 = 0;
+pub const RULING_HIDE_READ_PRODUCTION_FIRST : bool = false;
+
+pub fn new_event_is_stored_public(flag_supplied: bool, flag_value: bool, publishable: bool) bool {
+  return new_event_is_public(flag_supplied, flag_value) and publishable;
+}
+
+pub fn edit_stores_public(flag_supplied: bool, flag_value: bool, publishable: bool, stored_before: bool) bool {
+  if (!flag_supplied) {
+    return stored_before;
+  }
+  return flag_value and publishable;
+}
+
+; Whether an event row can be public once this change is deployed. A row the admin API writes is
+; public only if the write gate lets it be; a row that was public before is public only while 088
+; has not run. hide_retired_the_surface above still says what neither of them is: a retirement.
+pub fn a_public_row_survives(public_before_088: bool, migration_088_ran: bool, written_by_admin_after: bool, publishable: bool) bool {
+  if (written_by_admin_after) {
+    return publishable;
+  }
+  if (public_before_088) {
+    return !migration_088_ran;
+  }
+  return false;
+}
+
+; --- What the ruling of 2026-09-24 reached, and what it kept -------------------------------------
+; The share card. POST /api/share/prepare built a Telegram card for kind=event from the events row
+; with no is_public filter, so a hidden event could still be rendered into a card by id. Since the
+; ruling the event kind answers as the retired strain kind already did: it stays parseable, so the
+; client's wire vocabulary and the server's cannot diverge, and it answers not found.
+pub const EVENT_SHARE_CARD_IS_BUILT : bool = false;
+pub const EVENT_SHARE_CARD_IS_BUILT_BEFORE_2026_09_24 : bool = true;
+pub const EVENT_SHARE_KIND_STAYS_PARSEABLE : bool = true;
+pub const EVENT_SHARE_REFUSAL_ARMS : u8 = 1;
+; Kept on purpose, because each carries money or a promise already made, and named rather than
+; decided: the customer's own bookings list and self-cancel over HTTP (the Stars refund path), the
+; admin's guest list and cancel (the other refund path), and the 24-hour reminder to a confirmed
+; seat, which fires only for a booking a customer already holds. The Mini App no longer shows the
+; list: /my-bookings renders the catalog. The four other public paths answer only is_public rows,
+; of which 088 leaves none and the admin API can make none. The promo sweeper's event scans filter
+; the same flag and are therefore dormant, not removed. None of the kept paths filters the flag, so
+; 088 changes none of them. Whether any of these should go too is the owner's question.
+; REVERSED 2026-09-26 for the reminder, by the operator, under the owner's answer 3 of 2026-09-25
+; (quoted verbatim in the rules' module, src/trios/legacy_view.rs; this file stays ASCII), read as:
+; analyse all the previous shop's content a customer can still see and take it out of sight. The reminder was kept because it carries a promise already made. But since 085 and 088
+; every event is hidden, and every event that can still be reminded is one the previous shop made:
+; the reminder mailed its stored title and venue to the seat holder, a message a customer reads in
+; Telegram, outside any screen the ruling of 2026-09-24 closed. So it now joins public events only
+; (REMINDER_FILTERS_THE_FLAG, the join in send_event_reminders): a hidden event is never reminded,
+; its booking keeps reminder_sent_at empty, and nothing is written for it. A public event is reminded
+; exactly as before, so flipping EVENTS_PUBLISHABLE back brings the reminder back with it. The two
+; kept HTTP paths -- the customer's bookings list and self-cancel with its Stars refund -- and the
+; admin's guest list and cancel with theirs are not touched: a seat already held can still be
+; cancelled and refunded as before (REMINDER_REVERSAL_TOUCHES_A_REFUND).
+pub const KEPT_CUSTOMER_EVENT_HTTP_PATHS : u8 = 2;
+pub const PUBLIC_EVENT_PATHS_GATED_ON_THE_FLAG : u8 = 4;
+pub const REMINDER_KEPT_FOR_SEATS_ALREADY_HELD : bool = false;
+pub const REMINDER_KEPT_FOR_SEATS_ALREADY_HELD_BEFORE_2026_09_26 : bool = true;
+pub const REMINDER_REVERSED_AT : str = "2026-09-26";
+pub const REMINDER_REVERSED_BY : str = "operator, under the owner's answer 3 of 2026-09-25";
+pub const REMINDER_REVERSAL_READS : str = "Hidden events are the previous shop's, and the reminder mailed their stored titles and venues to seat holders.";
+pub const REMINDER_FILTERS_THE_FLAG : bool = true;
+pub const REMINDER_FLAG_FILTERED_JOINS : u8 = 1;
+pub const REMINDER_REVERSAL_TOUCHES_A_REFUND : bool = false;
+pub const REMINDER_REVERSAL_WRITES_A_ROW : bool = false;
+
+; Whether the 24-hour reminder is sent for a confirmed, unreminded booking of an event starting in
+; its window: only when the event is public.
+pub fn reminder_is_sent(event_is_public: bool) bool {
+  return event_is_public;
+}
+pub const CUSTOMER_BOOKINGS_SCREEN_IS_MOUNTED : bool = false;
+pub const CUSTOMER_BOOKINGS_SCREEN_IS_MOUNTED_BEFORE_2026_09_24 : bool = true;
 
 ; --- The three booking states -------------------------------------------------------------------
 ; migrations/045_events_waitlist_status.sql:9 is the whole vocabulary. Zero is UNSET and is never
@@ -891,6 +1039,54 @@ pub fn handle_bounds_agree(declared_min: u32, enforced_min: u32) bool {
   return declared_min == enforced_min;
 }
 
+; Why the gap between those two readings stayed green, measured 2026-09-22 by reading every value
+; the module's own tests hand the normaliser as a username. The GAP is the lengths the check admits
+; and its comment refuses: from HANDLE_MIN_ENFORCED up to, not including, HANDLE_MIN_DECLARED. No
+; test offers a value in it -- every non-blank username the tests pass is at least
+; HANDLE_MIN_DECLARED long. Exactly one test value is refused for its length alone: the
+; 35-character entry at src/trios/attendees.rs:331, above HANDLE_MAX_ENFORCED, in
+; text_that_cannot_be_a_handle_does_not_become_a_dead_link (src/trios/attendees.rs:324-340); the
+; other three values there are refused for their alphabet. Length zero IS tested -- the three
+; values at src/trios/attendees.rs:313 that normalise to nothing -- but it never reaches the
+; length check at src/trios/attendees.rs:41: the emptiness check at src/trios/attendees.rs:36-38
+; refuses it first, and that check is the whole of what HANDLE_MIN_ENFORCED records. So it tests
+; the enforced floor and neither end of the gap. ATTENDEE_SOURCE_TESTS counts the #[test]
+; attributes in the module, and scripts/verify_t27_against_source.py binds it the way it binds
+; ATTENDEE_SOURCE_LINES.
+;
+; The three constants arrived 2026-09-22 from turbobaby/person-naming, which held them under other
+; names beside a restatement of this bound, bound by nothing. Two were renamed on arrival to what
+; was measured: that file's "one length example" was one OVER-length example, and its "tests cover
+; the lower bound" is asked here of the gap, because length zero is tested and is not a test of
+; either minimum.
+pub const HANDLE_GAP_EXAMPLES_IN_TESTS : u8 = 0;
+pub const HANDLE_OVER_MAX_EXAMPLES_IN_TESTS : u8 = 1;
+pub const ATTENDEE_SOURCE_TESTS : u8 = 16;
+
+; WHAT GATE 3 SEES OF A FIX TO THE FLOOR, measured 2026-09-22 against planted copies of the module.
+; An edit that changes the module's line count or its #[test] count turns ATTENDEE_SOURCE_LINES or
+; ATTENDEE_SOURCE_TESTS red. An edit that changes neither turns neither, and the fix this section
+; waits for can be exactly that: the emptiness check at src/trios/attendees.rs:36 rewritten in
+; place as `handle.len() < 5` keeps 357 lines and 16 tests, and HANDLE_MIN_ENFORCED, the fact it
+; flips, is bound by nothing, because the floor it records is an emptiness check with no numeral
+; in it. With the bindings gate 3 held before this constant, that plant left the gate green.
+; ATTENDEE_SOURCE_LENGTH_COMPARISONS is the separately named fact that sees it: how many times the
+; module orders a length against something -- `<`, `<=`, `>` or `>=` on either side of a len() or
+; a count(), or a range `contains` over one. It is 1, the upper check at src/trios/attendees.rs:41;
+; the module's only other len(), at src/trios/attendees.rs:119, is printed and not compared. It
+; counts comparisons and not their direction, because `len() > N` is a ceiling where a condition
+; refuses and a floor where it accepts; a floor written as an ordering comparison makes it 2
+; whichever way it faces. Turned red on plants: the checker's, the same comparison reversed,
+; `chars().count() < N`, a range `contains`, a second comparison beside the one at
+; src/trios/attendees.rs:41, and a `len() >= N` or `len() > N` filter in the caller. A floor
+; written as `len().lt(&N)` or `get(N..).is_none()` still turns nothing red: HANDLE_MIN_ENFORCED
+; and HANDLE_GAP_EXAMPLES_IN_TESTS are then the facts it flips, and nothing sends a reader here.
+pub const ATTENDEE_SOURCE_LENGTH_COMPARISONS : u8 = 1;
+
+pub fn length_is_in_the_handle_gap(length: u32) bool {
+  return length >= HANDLE_MIN_ENFORCED and length < HANDLE_MIN_DECLARED;
+}
+
 ; --- Honest refusals --------------------------------------------------------------------------------
 ; Six things this repository does not publish. Each is a named boolean and a note saying what is
 ; missing. None of them is a plausible number, because a plausible number here would read as a
@@ -1226,6 +1422,8 @@ test a_hidden_row_did_not_retire_this_surface {
 }
 
 test the_first_new_event_is_public_whatever_the_hidden_rows_say {
+  // The REQUEST's default. What is stored since 2026-09-24 is pinned by
+  // no_event_is_stored_public_while_events_are_retired below.
   assert new_event_is_public(false, false) == true;
   assert new_event_is_public(true, true) == true;
   assert new_event_is_public(true, false) == false;
@@ -1240,6 +1438,31 @@ test the_handle_check_enforces_one_of_its_two_declared_bounds {
   assert handle_is_accepted(0) == false;
   assert handle_bounds_agree(HANDLE_MIN_DECLARED, HANDLE_MIN_ENFORCED) == false;
   assert handle_bounds_agree(HANDLE_MAX_DECLARED, HANDLE_MAX_ENFORCED) == true;
+}
+
+; Added 2026-09-22 with the three constants that moved here from turbobaby/person-naming.
+test the_checks_own_tests_never_offer_a_length_in_the_gap {
+  assert length_is_in_the_handle_gap(3) == true;
+  assert length_is_in_the_handle_gap(HANDLE_MIN_ENFORCED) == true;
+  assert length_is_in_the_handle_gap(HANDLE_MIN_DECLARED) == false;
+  assert length_is_in_the_handle_gap(0) == false;
+  assert length_is_in_the_handle_gap(33) == false;
+  assert HANDLE_GAP_EXAMPLES_IN_TESTS == 0;
+  assert HANDLE_OVER_MAX_EXAMPLES_IN_TESTS == 1;
+  assert ATTENDEE_SOURCE_TESTS == 16;
+}
+
+; Added 2026-09-22. The source-side reason HANDLE_MIN_ENFORCED is the emptiness check and nothing
+; more, under its own name, so that a floor fixed in place has a bound fact to trip: the module
+; compares a length once, and that once is the upper bound. A fix that raises the count flips
+; HANDLE_MIN_ENFORCED with it, and the invariant the_handle_lower_bound_is_declared_and_not_enforced
+; after both.
+test the_attendee_module_compares_a_length_once_and_from_above {
+  assert ATTENDEE_SOURCE_LENGTH_COMPARISONS == 1;
+  assert handle_bounds_agree(HANDLE_MAX_DECLARED, HANDLE_MAX_ENFORCED) == true;
+  assert HANDLE_MIN_ENFORCED == 1;
+  assert handle_is_accepted(HANDLE_MIN_ENFORCED) == true;
+  assert handle_is_accepted(0) == false;
 }
 
 test every_reuse_edge_names_its_owner_by_id {
@@ -1276,8 +1499,93 @@ test the_surface_census_adds_up {
   assert PUBLIC_PATH_COUNT + ADMIN_PATH_COUNT == HTTP_PATH_COUNT;
   assert HTTP_METHOD_BINDING_COUNT == 14;
   assert HANDLER_COUNT == HTTP_METHOD_BINDING_COUNT;
-  assert SCREEN_ROUTE_COUNT == 2;
+  // 2 until 2026-09-24, when /my-bookings was counted; none of the three mounts a screen now.
+  assert SCREEN_ROUTE_COUNT == 3;
   assert SCREEN_ROUTES.len == SCREEN_ROUTE_COUNT;
+  assert SCREEN_ROUTES_BEFORE_2026_09_24.len == SCREEN_ROUTE_COUNT_BEFORE_2026_09_24;
+  assert SCREEN_ROUTES[2] == "/my-bookings";
+  assert EVENT_SCREENS_MOUNTED_BY_THE_CLIENT_ROUTER == 0;
+  assert EVENT_SCREENS_MOUNTED_BY_THE_CLIENT_ROUTER_BEFORE_2026_09_24 == SCREEN_ROUTE_COUNT;
+  assert KEPT_CUSTOMER_EVENT_HTTP_PATHS + PUBLIC_EVENT_PATHS_GATED_ON_THE_FLAG == PUBLIC_PATH_COUNT;
+}
+
+test no_event_is_stored_public_while_events_are_retired {
+  assert EVENTS_PUBLISHABLE == false;
+  assert EVENTS_PUBLISHABLE_BEFORE_2026_09_24 == true;
+  assert new_event_is_stored_public(false, false, EVENTS_PUBLISHABLE) == false;
+  assert new_event_is_stored_public(true, true, EVENTS_PUBLISHABLE) == false;
+  assert new_event_is_stored_public(true, false, EVENTS_PUBLISHABLE) == false;
+  // Flipped back, the old behaviour returns exactly.
+  assert new_event_is_stored_public(false, false, EVENTS_PUBLISHABLE_BEFORE_2026_09_24) == true;
+  assert new_event_is_stored_public(true, false, EVENTS_PUBLISHABLE_BEFORE_2026_09_24) == false;
+  assert edit_stores_public(true, true, EVENTS_PUBLISHABLE, false) == false;
+  assert edit_stores_public(true, true, EVENTS_PUBLISHABLE, true) == false;
+  assert edit_stores_public(true, true, EVENTS_PUBLISHABLE_BEFORE_2026_09_24, false) == true;
+  // An edit that does not name the flag leaves the stored one: the edit does not reach a row 085
+  // missed. 088 does, below.
+  assert edit_stores_public(false, false, EVENTS_PUBLISHABLE, true) == true;
+}
+
+test a_row_made_public_after_085_does_not_survive_088 {
+  assert RULING_HIDE_MIGRATION == "migrations/088_unpublish_events.sql";
+  assert RULING_HIDE_MIGRATION != HIDE_MIGRATION;
+  assert RULING_HIDE_VISIBILITY_UPDATES_ON_EVENTS == HIDE_VISIBILITY_UPDATES_ON_EVENTS;
+  assert RULING_HIDE_ROW_DELETES == 0;
+  assert RULING_HIDE_TABLE_DROPS == 0;
+  assert RULING_HIDE_READ_PRODUCTION_FIRST == false;
+  // Undeployed, such a row is still served; deployed, it is not, whichever way it was made.
+  assert a_public_row_survives(true, false, false, EVENTS_PUBLISHABLE) == true;
+  assert a_public_row_survives(true, true, false, EVENTS_PUBLISHABLE) == false;
+  assert a_public_row_survives(false, true, true, EVENTS_PUBLISHABLE) == false;
+  assert a_public_row_survives(false, true, false, EVENTS_PUBLISHABLE) == false;
+  // An edit that leaves the flag alone after 088 leaves it hidden.
+  assert edit_stores_public(false, false, EVENTS_PUBLISHABLE, a_public_row_survives(true, true, false, EVENTS_PUBLISHABLE)) == false;
+  // Flipped back, the admin API publishes again, and 088 is no obstacle to that.
+  assert a_public_row_survives(false, true, true, EVENTS_PUBLISHABLE_BEFORE_2026_09_24) == true;
+  // Hiding is still not retiring: the router is merged.
+  assert hide_retired_the_surface(true, false, true) == false;
+}
+
+test the_screens_left_on_the_ruling_and_the_router_did_not {
+  assert hide_retired_the_surface(true, false, true) == false;
+  assert EVENT_HTTP_ROUTER_STILL_MERGED == true;
+  assert EVENT_SCREENS_UNROUTED_BY_THE_RULING == SCREEN_ROUTE_COUNT;
+  assert EVENT_ROUTES_RETIRED_BY_THE_HIDE == 0;
+  assert EVENT_SCREENS_RETIRED_BY_THE_HIDE == 0;
+  assert CUSTOMER_BOOKINGS_SCREEN_IS_MOUNTED == false;
+  assert CUSTOMER_BOOKINGS_SCREEN_IS_MOUNTED_BEFORE_2026_09_24 == true;
+  // kept until 2026-09-26, reversed that day for hidden events (next test)
+  assert REMINDER_KEPT_FOR_SEATS_ALREADY_HELD_BEFORE_2026_09_26 == true;
+  assert REMINDER_KEPT_FOR_SEATS_ALREADY_HELD == false;
+}
+
+test a_hidden_event_is_never_reminded_and_a_held_seat_keeps_its_refund {
+  assert REMINDER_REVERSED_AT == "2026-09-26";
+  assert REMINDER_REVERSED_BY != "";
+  assert REMINDER_REVERSAL_READS != "";
+  assert REMINDER_FILTERS_THE_FLAG == true;
+  assert REMINDER_FLAG_FILTERED_JOINS == 1;
+  assert reminder_is_sent(false) == false;
+  assert reminder_is_sent(true) == true;
+  // every event is hidden since 088 and the admin API can make none public, so none is reminded
+  assert EVENTS_PUBLISHABLE == false;
+  assert reminder_is_sent(a_public_row_survives(true, true, false, EVENTS_PUBLISHABLE)) == false;
+  assert reminder_is_sent(new_event_is_stored_public(true, true, EVENTS_PUBLISHABLE)) == false;
+  // flipped back, a public event is reminded again
+  assert reminder_is_sent(new_event_is_stored_public(true, true, EVENTS_PUBLISHABLE_BEFORE_2026_09_24)) == true;
+  assert REMINDER_REVERSAL_TOUCHES_A_REFUND == false;
+  assert KEPT_CUSTOMER_EVENT_HTTP_PATHS == 2;
+  assert REMINDER_REVERSAL_WRITES_A_ROW == false;
+  // the reversal changed the reminder in place and added a test below every cited line
+  assert HTTP_SOURCE_LINES_BEFORE_2026_09_26 == 2545;
+  assert HTTP_SOURCE_LINES > HTTP_SOURCE_LINES_BEFORE_2026_09_26;
+}
+
+test a_hidden_event_is_never_rendered_into_a_share_card {
+  assert EVENT_SHARE_CARD_IS_BUILT == false;
+  assert EVENT_SHARE_CARD_IS_BUILT_BEFORE_2026_09_24 == true;
+  assert EVENT_SHARE_KIND_STAYS_PARSEABLE == true;
+  assert EVENT_SHARE_REFUSAL_ARMS == 1;
 }
 
 test every_refusal_is_named_and_none_carries_a_number {
@@ -1424,3 +1732,15 @@ invariant a_number_that_moves_while_it_is_read_is_never_pinned_as_a_constant
 
 invariant this_contract_names_no_person
   assert CARRIES_AN_ATTENDEE == false and CARRIES_A_PHONE == false and CARRIES_AN_EVENT_FIXTURE == false
+
+invariant no_event_is_stored_public_while_events_are_retired_by_the_owner
+  assert new_event_is_stored_public(false, false, EVENTS_PUBLISHABLE) == false and new_event_is_stored_public(true, true, EVENTS_PUBLISHABLE) == false and edit_stores_public(true, true, EVENTS_PUBLISHABLE, false) == false
+
+invariant no_client_path_mounts_an_events_screen_and_every_path_stays_declared
+  assert EVENT_SCREENS_MOUNTED_BY_THE_CLIENT_ROUTER == 0 and SCREEN_ROUTES.len == SCREEN_ROUTE_COUNT and SCREEN_ROUTE_COUNT == 3
+
+invariant no_public_event_row_survives_a_deployed_088
+  assert a_public_row_survives(true, true, false, EVENTS_PUBLISHABLE) == false and a_public_row_survives(false, true, true, EVENTS_PUBLISHABLE) == false and RULING_HIDE_ROW_DELETES == 0 and RULING_HIDE_TABLE_DROPS == 0
+
+invariant a_hidden_event_is_never_reminded
+  assert reminder_is_sent(false) == false and REMINDER_FILTERS_THE_FLAG == true and REMINDER_REVERSAL_WRITES_A_ROW == false and REMINDER_REVERSAL_TOUCHES_A_REFUND == false

@@ -195,6 +195,11 @@ export const EXCLUDED: Record<string, string> = {
   'tt-trinity-euler/specs/numeric/gf64.t27': 'format above the silicon-verified GF4-GF24 ladder',
   'tt-trinity-euler/specs/numeric/gf128.t27': 'format above the silicon-verified GF4-GF24 ladder',
   'tt-trinity-euler/specs/numeric/gf256.t27': 'structural by design — bias is an open R&D parameter',
+  // tt-trinity-gamma carries its own copies of the same three (catalog refresh of
+  // 2026-09-24, #1039); same widths, same reasons.
+  'tt-trinity-gamma/specs/numeric/gf64.t27': 'format above the silicon-verified GF4-GF24 ladder',
+  'tt-trinity-gamma/specs/numeric/gf128.t27': 'format above the silicon-verified GF4-GF24 ladder',
+  'tt-trinity-gamma/specs/numeric/gf256.t27': 'structural by design — bias is an open R&D parameter',
 
   // Widths the GitHub-sourced refresh brought in from t27 master, none of them
   // rungs of the silicon-verified ladder (GF4, GF8, GF12, GF16, GF20, GF24 --
@@ -225,6 +230,18 @@ export const EXCLUDED: Record<string, string> = {
   'tt-trinity-euler/specs/fpga/gf16_to_fp16.t27': 'a converter between two formats',
   'tt-trinity-euler/specs/fpga/gf16_to_posit16.t27': 'a converter between two formats',
   'tt-trinity-euler/specs/fpga/gf32_to_fp32.t27': 'a converter between two formats',
+  'tt-trinity-gamma/specs/fpga/gf16_to_fp16.t27': 'a converter between two formats',
+  'tt-trinity-gamma/specs/fpga/gf16_to_posit16.t27': 'a converter between two formats',
+  'tt-trinity-gamma/specs/fpga/gf32_to_fp32.t27': 'a converter between two formats',
+  // Vivado ports brought in by the 1737-spec catalog refresh (#1176).
+  'specs/port/fpga/vivado/gf16_dot4.t27': 'a dot-product unit that consumes GF16, not a declaration of the format',
+  'specs/port/fpga/vivado/gf16_matmul_top.t27': 'a board top (LED counter around gf16_dot4), not a declaration of the format',
+  // dmitrii-f-t27/trinity-memory RTL (issues #103-#113 there), vendored by the first scan
+  // after those merged. Each says in its own header what it is; none declares the format.
+  'dmitrii-f-t27/trinity-memory/t27/rtl/gf16_codec.t27': 'an RNE converter between FP32 and GF16 bit patterns, not a declaration of the format',
+  'dmitrii-f-t27/trinity-memory/t27/rtl/gf16_ffn.t27': 'an FFN controller that computes in GF16, not a declaration of the format',
+  'dmitrii-f-t27/trinity-memory/t27/rtl/gf16_scalar.t27': 'clocked scalar arithmetic on GF16 operands, not a declaration of the format',
+  'dmitrii-f-t27/trinity-memory/t27/rtl/gf16_wide_norm.t27': 'a wide product and normalization unit over GF16, not a declaration of the format',
 }
 
 /**

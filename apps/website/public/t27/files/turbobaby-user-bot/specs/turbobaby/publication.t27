@@ -5,13 +5,13 @@ module turbobaby-publish-proof;
 ; This contract owns only publication evidence. Domain behavior remains in the other canonical
 ; specs under specs/turbobaby, and deployment remains an owner-controlled action outside this
 ; repository. A file being parseable is not proof that it was discovered, published, or shown.
-;
+; --
 ; WHY (measured 2026-09-13). The published t27 world scan accepts public repositories owned by
 ; its configured owners, but deliberately skips GitHub repositories marked as formal forks. The
 ; TurboBaby repository preserves the upstream content and history as a standalone derivative and
 ; reports isFork false, so it can be discovered after canonical files are tracked. Recreating it
 ; as a formal fork would make every correct local contract invisible to that scan.
-;
+; --
 ; WHY (measured 2026-09-20, spec browser). There are two independent public surfaces and they no
 ; longer have the same answer. The spec browser is proved: the generated manifest answers with
 ; this repository's entry, the deployed shared-core route resolves this repository's modules by
@@ -20,7 +20,7 @@ module turbobaby-publish-proof;
 ; that both were observed. The live claim below is written as the conjunction of those witnesses
 ; and the local commit check, so it cannot outlive them: remove a witness and the claim stops
 ; following.
-;
+; --
 ; WHY (measured 2026-09-20, Queen). The Queen board is still not publication of this world, and
 ; the reason recorded on 2026-09-13 was right in its verdict and wrong in its fact. The endpoint
 ; is not absent. It answered 404 when this file was written and served a payload today: 200, one
@@ -31,7 +31,7 @@ module turbobaby-publish-proof;
 ; snapshot and not the board. This repository cannot remove that external blocker, and this file
 ; never claims the board or the agent card is live. It only defines the evidence that would make
 ; such a claim true.
-;
+; --
 ; The namespaced owner card is specs/agents/turbobaby.t27 with ID turbobaby/BOT. It intentionally
 ; takes no seat in the closed t27 alphabet. Current upstream agent generation recognizes that
 ; alphabet schema, not an arbitrary namespaced world, so tracked source is necessary but not yet
@@ -54,9 +54,32 @@ pub const REPOSITORY_IS_STANDALONE_DERIVATIVE : bool = true;
 pub const WORLD_SCAN_SKIPS_FORMAL_FORKS : bool = true;
 ; Published scanner bounds. PROBE_FILES is a one-based window here: a qualifying file may be
 ; first through eighth, never ninth. MAX_FILE_BYTES is inclusive, matching the published maximum.
+; SOURCE NAMED 2026-09-24. Until this edit the three numbers below were called "published" with
+; no publisher named, which a review of 2026-09-23 recorded as an unsourced number. The publisher
+; is the t27 catalog's own contract, ID catalog/discovery, which t27.ai serves as
+; t27/files/specs/catalog/discovery.t27 and which names itself the source of truth for the world
+; scan (scripts/discover-t27-worlds.mjs and .github/workflows/t27-world-scan.yml in gHashTag/trinity,
+; apps/website). It declares the same three facts under its own names: PROBE_FILES 8 ("files
+; compiled per candidate at most", spread over the specs/ paths first, the probe stopping at the
+; first file that qualifies), MIN_DECLARATIONS 1, and MAX_FILE_BYTES 1048576 ("larger files are
+; skipped and counted", which is why the bound here is inclusive). Read 2026-09-24 from a local
+; checkout of the site repository gHashTag/ghashtag.github.io (CNAME t27.ai) at 068db99, where that
+; file last changed in 3421016 on 2026-09-12; its sha256 there begins e2bfdb46a76f2851. What that
+; read is NOT: that repository is the one the contract itself lists under MIRRORS -- build output,
+; "a copy is never a source" -- and the upstream file in gHashTag/trinity was not re-read, because
+; this change makes no network call. So the SOURCE is named and the VALUES are the published
+; copy's, and nothing in this repository checks either against the scanner that runs.
 pub const PROBE_FILES : u8 = 8;
 pub const MAX_FILE_BYTES : u32 = 1048576;
 pub const MIN_DECLARATIONS_PER_PROBED_FILE : u16 = 1;
+pub const SCANNER_BOUNDS_SOURCE_IS_NAMED : bool = true;
+pub const SCANNER_BOUNDS_SOURCE_ID : str = "catalog/discovery";
+pub const SCANNER_BOUNDS_SOURCE_PATH : str = "t27/files/specs/catalog/discovery.t27";
+pub const SCANNER_BOUNDS_SOURCE_NAMES : [3]str = ["PROBE_FILES", "MIN_DECLARATIONS", "MAX_FILE_BYTES"];
+pub const SCANNER_BOUNDS_READ_AT : str = "2026-09-24";
+pub const SCANNER_BOUNDS_WERE_READ_FROM_THE_PUBLISHED_MIRROR : bool = true;
+pub const SCANNER_BOUNDS_UPSTREAM_WAS_REREAD : bool = false;
+pub const SCANNER_BOUNDS_ARE_CHECKED_BY_A_GATE : bool = false;
 
 pub fn scanner_probe_witness_valid(probe_ordinal: u8, probed_file_bytes: u32, declaration_count: u16) bool {
   return probe_ordinal >= 1 and probe_ordinal <= PROBE_FILES and probed_file_bytes <= MAX_FILE_BYTES and declaration_count >= MIN_DECLARATIONS_PER_PROBED_FILE;
@@ -378,6 +401,23 @@ test a_formal_fork_is_deliberately_not_scanner_eligible {
   assert world_scan_eligible(true, true, true, 1, 4096, 20) == false;
   assert world_scan_eligible(true, false, false, 1, 4096, 20) == false;
   assert world_scan_eligible(false, true, false, 1, 4096, 20) == false;
+}
+
+; The bounds carry a named publisher since 2026-09-24, and the test says how far that goes: the
+; source is named, it was read from the published mirror, and no gate re-reads it.
+test the_scanner_bounds_name_their_publisher {
+  assert SCANNER_BOUNDS_SOURCE_IS_NAMED == true;
+  assert SCANNER_BOUNDS_SOURCE_ID == "catalog/discovery";
+  assert SCANNER_BOUNDS_SOURCE_ID != ID;
+  assert SCANNER_BOUNDS_SOURCE_PATH == "t27/files/specs/catalog/discovery.t27";
+  assert SCANNER_BOUNDS_SOURCE_NAMES.len == 3;
+  assert SCANNER_BOUNDS_SOURCE_NAMES[0] == "PROBE_FILES";
+  assert SCANNER_BOUNDS_SOURCE_NAMES[1] == "MIN_DECLARATIONS";
+  assert SCANNER_BOUNDS_SOURCE_NAMES[2] == "MAX_FILE_BYTES";
+  assert SCANNER_BOUNDS_READ_AT == "2026-09-24";
+  assert SCANNER_BOUNDS_WERE_READ_FROM_THE_PUBLISHED_MIRROR == true;
+  assert SCANNER_BOUNDS_UPSTREAM_WAS_REREAD == false;
+  assert SCANNER_BOUNDS_ARE_CHECKED_BY_A_GATE == false;
 }
 
 test scanner_probe_window_and_file_size_fail_closed {

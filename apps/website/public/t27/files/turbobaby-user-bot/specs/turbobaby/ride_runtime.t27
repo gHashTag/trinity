@@ -5,7 +5,7 @@ module turbobaby-ride-lifecycle;
 ; This contract owns the runtime edges that do not belong in turbobaby/ride-game's catalog and
 ; handling model: horizontal control, terminal collisions, event classification, once-only
 ; score submission, generation guards, teardown, and the client side of a star award.
-;
+//
 ; WHY (measured 2026-09-13). The live bridge has four failure boundaries before a player can
 ; ride: dynamic module import, roster fetch, roster filtering, and renderer start. An earlier
 ; implementation reported those failures as an end event. Because the host's only score-write
@@ -13,7 +13,7 @@ module turbobaby-ride-lifecycle;
 ; implementation emits unavailable for those boundaries, and only a real terminal collision
 ; emits end. A real collision can happen before the first distance unit is crossed, so distance
 ; zero remains a valid completed run; event kind, not a positive score threshold, identifies it.
-;
+//
 ; OWNERSHIP. This file consumes three decisions as booleans and does not restate their data:
 ; roster eligibility comes from turbobaby/ride-game, identity comes from the host, and the server
 ; decides whether a requested star award is accepted or capped. It contains no fleet rows, no

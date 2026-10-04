@@ -8,11 +8,13 @@
    tenth, a 135deg white gradient two steps darker than the border, and a
    radius. That is the card restored here, written once so the four blocks
    that show cards cannot drift apart again.
-   Green stays where it belongs: on the numbers, the links, the figures. */
+   Green stays where it belongs: on the numbers, the links, the figures.
+   2026-10-03 the owner asked for the cards black, so the glass went too: the
+   ground is #000 and the card is drawn by its border alone. */
 .site-card {
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 14px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.018));
+  background: #000;
   padding: clamp(1.25rem, 2.8vw, 1.9rem);
   transition: border-color 160ms ease, background 160ms ease;
 }
@@ -23,8 +25,8 @@
 a.site-card:hover,
 a.site-card:focus-visible,
 .site-card:has(> a:hover) {
-  border-color: rgba(255, 255, 255, 0.22);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+  border-color: rgba(255, 255, 255, 0.32);
+  background: #000;
 }
 
 a.site-card:focus-visible {

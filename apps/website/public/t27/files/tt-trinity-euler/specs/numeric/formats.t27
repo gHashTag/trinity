@@ -10,6 +10,9 @@ module Formats {
     use base::types;
     use numeric::gf16;
 
+    // Signature-only fns: a Zig/Rust prototype `fn f(...) -> T;` is written
+    // as `fn f(...) -> T { }` (empty body), as in t27 specs/numeric/formats.t27.
+
     // ========================================================================
     // 1. GF16 Bit Layout Constants
     // ========================================================================
@@ -58,7 +61,7 @@ module Formats {
     //      value = (-1)^s * (1 + m/2^9) * 2^(e - Bias)
     //
     // Complexity: O(1)
-    pub fn gf16_to_f32(x: u16) -> gf16;
+    pub fn gf16_to_f32(x: u16) -> gf16 { }
 
     // ========================================================================
     // 3. f32 1 GF16 (encode, round-to-nearest)
@@ -76,7 +79,7 @@ module Formats {
     //   6. Check underflow/overflow
     //
     // Complexity: O(1)
-    pub fn f32_to_gf16(a: f32) -> u16;
+    pub fn f32_to_gf16(a: f32) -> u16 { }
 
     // ========================================================================
     // 4. Ternary Quantization
@@ -98,14 +101,14 @@ module Formats {
     //   - Otherwise: return 0
     //
     // Complexity: O(1)
-    pub fn f32_to_ternary(x: f32) -> Trit;
+    pub fn f32_to_ternary(x: f32) -> Trit { }
 
     // ternary_to_f32(t: Trit) -> gf16
     // Convert ternary to f32
     //
     // Mapping: -1 -> -1.0, 0 -> 0.0, +1 -> 1.0
     // Complexity: O(1)
-    pub fn ternary_to_f32(t: Trit) -> gf16;
+    pub fn ternary_to_f32(t: Trit) -> gf16 { }
 
     // ========================================================================
     // 5. Format Enum
@@ -172,7 +175,7 @@ module Formats {
     // - posit16: 2 bytes (16 bits)
     //
     // Complexity: O(1)
-    pub fn format_bytes(fmt: Format) -> usize;
+    pub fn format_bytes(fmt: Format) -> usize { }
 
     // ========================================================================
     // 6. Quantization Utility
@@ -182,7 +185,7 @@ module Formats {
     // Quantize f32 to target format
     //
     // Complexity: O(1)
-    pub fn quantize_value(x: f32, fmt: Format) -> gf16;
+    pub fn quantize_value(x: f32, fmt: Format) -> gf16 { }
 
     // ========================================================================
     // TDD - Tests
@@ -445,93 +448,104 @@ module Formats {
     // TDD - Invariants
     // ========================================================================
 
-    invariant gf16_to_f32_preserves_zero
+    invariant gf16_to_f32_preserves_zero {
         // Zero should decode to zero
-        assert gf16.to_f64(gf16_to_f32(0)) == 0.0;
-        assert gf16.to_f64(gf16_to_f32(0x8000)) == -0.0;
+        assert(gf16.to_f64(gf16_to_f32(0)) == 0.0);
+        assert(gf16.to_f64(gf16_to_f32(0x8000)) == -0.0);
+    }
 
-    invariant gf16_to_f32_preserves_infinity
+    invariant gf16_to_f32_preserves_infinity {
         // Infinity should decode to infinity
-        assert gf16.to_f64(gf16_to_f32(0x7E00)) == std.math.inf(f32);
-        assert gf16.to_f64(gf16_to_f32(0xFE00)) == -std.math.inf(f32);
+        assert(gf16.to_f64(gf16_to_f32(0x7E00)) == std.math.inf(f32));
+        assert(gf16.to_f64(gf16_to_f32(0xFE00)) == -std.math.inf(f32));
+    }
 
-    invariant f32_to_gf16_roundtrip_loss
+    invariant f32_to_gf16_roundtrip_loss {
         // Roundtrip should be within tolerance for normal values
         const original = gf16.from_f64(1.5);
         const encoded = f32_to_gf16(gf16.to_f64(original));
         const decoded = gf16_to_f32(encoded);
         const error = gf16.abs(gf16.sub(original, decoded));
-        assert gf16.to_f64(error) < gf16.from_f64(0.01);
+        assert(gf16.to_f64(error) < gf16.from_f64(0.01));
+    }
 
-    invariant ternary_quantization_symmetric
+    invariant ternary_quantization_symmetric {
         // Quantization threshold is symmetric
         const p = f32_to_ternary(0.5);
         const n = f32_to_ternary(-0.5);
         const p_decoded = ternary_to_f32(p);
         const n_decoded = ternary_to_f32(n);
-        assert gf16.to_f64(p_decoded) == -gf16.to_f64(n_decoded);
+        assert(gf16.to_f64(p_decoded) == -gf16.to_f64(n_decoded));
+    }
 
-    invariant ternary_to_f32_is_inverse
+    invariant ternary_to_f32_is_inverse {
         // ternary_to_f32 is inverse of f32_to_ternary
-        const values = [_]f32{ -1.0, -0.5, 0.0, 0.5, 1.0 };
-        for (values) |v| {
+        const values = [5]f32{ -1.0, -0.5, 0.0, 0.5, 1.0 };
+        for i in 0..5 {
+            const v = values[i];
             const t = f32_to_ternary(v);
             const recovered = ternary_to_f32(t);
             const diff = gf16.abs(gf16.sub(v, recovered));
-            assert gf16.eq(v, recovered) or (gf16.to_f64(diff) < gf16.from_f64(0.01));
+            assert(gf16.eq(v, recovered) or (gf16.to_f64(diff) < gf16.from_f64(0.01)));
         }
+    }
 
-    invariant format_bytes_positive
+    invariant format_bytes_positive {
         // All format byte sizes should be positive
-        assert format_bytes(.fp32) > 0;
-        assert format_bytes(.fp16) > 0;
-        assert format_bytes(.ternary) > 0;
+        assert(format_bytes(.fp32) > 0);
+        assert(format_bytes(.fp16) > 0);
+        assert(format_bytes(.ternary) > 0);
+    }
 
     // ========================================================================
     // TDD - Benchmarks
     // ========================================================================
 
-    bench gf16_to_f32_latency
+    bench gf16_to_f32_latency {
         // Measure: cycles for gf16_to_f32 conversion
         // Target: < 50 cycles (simple bit extraction + lookup)
         @setEvalBranchQuota(10000);
         var result : gf16;
         const test_value: u16 = 0x3C00;
-        for (0..1000) |_| {
+        for _ in 0..1000 {
             result = gf16_to_f32(test_value);
         }
         _ = result;
+    }
 
-    bench f32_to_gf16_latency
+    bench f32_to_gf16_latency {
         // Measure: cycles for f32_to_gf16 conversion
         // Target: < 100 cycles (frexp + bit packing)
         @setEvalBranchQuota(10000);
         var result : u16;
         const test_value: f32 = 1.5;
-        for (0..1000) |_| {
+        for _ in 0..1000 {
             result = f32_to_gf16(test_value);
         }
         _ = result;
+    }
 
-    bench f32_to_ternary_latency
+    bench f32_to_ternary_latency {
         // Measure: cycles for f32_to_ternary conversion
         // Target: < 10 cycles (single comparison)
         @setEvalBranchQuota(10000);
         var result : Trit;
         const test_value: f32 = 0.75;
-        for (0..1000) |_| {
+        for _ in 0..1000 {
             result = f32_to_ternary(test_value);
         }
         _ = result;
+    }
 
-    bench ternary_to_f32_latency
+    bench ternary_to_f32_latency {
         // Measure: cycles for ternary_to_f32 conversion
         // Target: < 10 cycles (simple switch)
         @setEvalBranchQuota(10000);
         var result : gf16;
         const test_trit: Trit = .pos;
-        for (0..1000) |_| {
+        for _ in 0..1000 {
             result = ternary_to_f32(test_trit);
         }
         _ = result;
+    }
 }

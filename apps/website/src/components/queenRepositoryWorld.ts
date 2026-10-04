@@ -1,4 +1,5 @@
 import type { HiveDisplay } from './queenHiveDisplay';
+import {proveWorldIssues,invalidateIssueProof,type IssueProof} from '../lib/queenIssueProof.ts';
 
 export const PINNED_WORLDS = ['ghashtag/trios', 'ghashtag/t27'];
 export const WORLD_STORAGE = 'queen.public-worlds.v1';
@@ -19,7 +20,7 @@ export function savedWorlds(raw: string | null): string[] {
   catch { return [...PINNED_WORLDS]; }
 }
 function object(value: unknown): Record<string,unknown> { return value!==null&&typeof value==='object'&&!Array.isArray(value)?value as Record<string,unknown>:{}; }
-export type WorldIssue = HiveDisplay & { updatedAt:string|null; body?:string; assignees?:string[] };
+export type WorldIssue = HiveDisplay & { updatedAt:string|null; body?:string; assignees?:string[]; proof?:IssueProof };
 export type WorldMetadata = { repo:string; description:string; issuesEnabled:boolean };
 export function githubWorldMetadata(repo:string,raw:unknown):WorldMetadata {
   const value=object(raw);
@@ -57,7 +58,7 @@ export async function loadWorldIssues(repo:string,page:number,signal:AbortSignal
   const response=await githubRead(repo,`/issues?state=all&sort=created&direction=asc&per_page=100&page=${page}`,signal,fetcher);
   const raw:unknown=await response.json();
   const link=response.headers.get('link');
-  return {rows:githubWorldIssues(repo,raw),hasMore:link?link.includes('rel="next"'):Array.isArray(raw)&&raw.length===100};
+  return {rows:await proveWorldIssues(githubWorldIssues(repo,raw),repo,signal,fetcher),hasMore:link?link.includes('rel="next"'):Array.isArray(raw)&&raw.length===100};
 }
 export async function loadWorldBacklog(repo:string,page:number,signal:AbortSignal,fetcher:Fetcher=fetch) {
   if(!Number.isInteger(page)||page<1||page>100)throw new Error('invalid-page');
@@ -80,6 +81,7 @@ const DETAILS_TTL_MS=60_000,DETAILS_MAX=100;
 export async function loadWorldIssueDetailsCached(repo:string,number:number,signal:AbortSignal,fresh=false,fetcher:Fetcher=fetch) {
   const key=`${repo}#${number}`,cached=detailsCache.get(key);
   if(!fresh&&cached&&Date.now()-cached.at<DETAILS_TTL_MS)return cached.row;
+  if(fresh)invalidateIssueProof(repo);
   const row=await loadWorldIssueDetails(repo,number,signal,fetcher);
   if(detailsCache.size>=DETAILS_MAX)detailsCache.delete(detailsCache.keys().next().value!);
   detailsCache.set(key,{at:Date.now(),row});
@@ -93,5 +95,5 @@ export async function loadWorldIssueDetails(repo:string,number:number,signal:Abo
   if(!row)throw new Error('issue-identity');
   const assignees=object(raw).assignees;
   row.assignees=Array.isArray(assignees)?assignees.flatMap(a=>{const login=object(a).login;return typeof login==='string'&&/^[a-z0-9-]+$/i.test(login)?[login]:[];}):[];
-  return row;
+  return (await proveWorldIssues([row],repo,signal,fetcher))[0];
 }

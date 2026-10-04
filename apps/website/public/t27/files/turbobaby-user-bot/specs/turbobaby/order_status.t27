@@ -15,20 +15,20 @@
 ; --
 ; WHY (measured 2026-09-20): one VARCHAR(30) column is closed by FIVE separate declarations in
 ; this repository, carrying FOUR different vocabularies, and no two of the four agree. The admin
-; write path whitelists nine names (src/api/orders.rs:1865-1875); src/trios/store.rs:175-182
+; write path whitelists nine names (src/api/orders.rs:1991-2001); src/trios/store.rs:175-182
 ; enumerates six and is missing preparing, out_for_delivery and delivered;
 ; src/ui/api/types.rs:179-189 enumerates nine that are not the same nine -- it adds processing and
 ; shipped and drops preparing and out_for_delivery; and two const ORDER_PIPELINE slices, at
-; src/ui/components/status_stepper.rs:16-23 and src/ui/screens/admin_screen.rs:2909-2916, carry the
+; src/trios/order_status_view.rs:65-72 and src/ui/screens/admin_screen.rs:2910-2917 (both re-pointed 2026-09-22: the first moved out of src/ui/components/status_stepper.rs that day, the second had drifted one line since 2c21df1), carry the
 ; same six display names and drop completed, rejected and cancelled. The matching count is the
 ; trap: nine equals nine and the write-path and UI sets still differ by four names, so any check
 ; written on totals alone reports agreement between two models that share only seven values. It is
 ; not theoretical either. A shipped test asserts that the name shipped is a 400
-; (src/api/orders.rs:3115-3119), so the UI type declares a variant the server refuses by name. The
+; (src/api/orders.rs:3279-3283), so the UI type declares a variant the server refuses by name. The
 ; readers disagree once more on terminality alone: src/bot/callbacks.rs:120-122 treats exactly two
-; names as terminal where the API reject path at src/api/orders.rs:1968-1971 treats four, and the
+; names as terminal where the API reject path at src/api/orders.rs:2094-2097 treats four, and the
 ; repository's own test for it is called
-; should_refund_bonus_is_dangerously_true_for_unknown_status (src/bot/callbacks.rs:1175-1181). The
+; should_refund_bonus_is_dangerously_true_for_unknown_status (src/bot/callbacks.rs:1090-1096). The
 ; column constrains none of this: migrations/001_initial.sql:67 is status VARCHAR(30) NOT NULL
 ; DEFAULT 'pending' with no CHECK clause, so the names live in Rust only, and nothing at the
 ; database stops one more writer from storing a tenth. That is the number that forced this file:
@@ -36,15 +36,15 @@
 ; --
 ; WHERE THE BRIEF IS REFUTED (twice, both measured). First: src/trios/store.rs is not the second
 ; model of two, it is one of five, and counting READERS is itself the trap -- src/bot/callbacks.rs
-; is a reader, and so is every match arm in six UI screens, so the count rises with the next grep
+; is a reader, and so is every match arm in six UI screens (corrected 2026-09-22: four screens since then -- the orders list, the order detail screen and the stepper they share now read through src/trios/order_status_view.rs, whose arm_of is itself a reader), so the count rises with the next grep
 ; and settles nowhere. The countable thing is a declaration that CLOSES the vocabulary, and there
 ; are exactly five of those. The measurements below are therefore recorded per declaration, each
 ; with its own missing and extra list, instead of as one pairwise disagreement. Second, and
 ; load-bearing:
-; src/api/orders.rs:1872 carries the in-source comment calling completed a legacy alias for
+; src/api/orders.rs:1998 carries the in-source comment calling completed a legacy alias for
 ; delivered, which reads as completed being the alias. The write path runs the other way. Both
-; names enter the same branch (src/api/orders.rs:1928) and that branch writes the literal
-; completed into the column at src/db/orders.rs:203 and :247. So delivered is accepted at the
+; names enter the same branch (src/api/orders.rs:2054) and that branch writes the literal
+; completed into the column at src/db/orders.rs:222 and :266. So delivered is accepted at the
 ; door, routed, and never persisted by this path: the alias resolves delivered -> completed, and
 ; a reader who trusts the comment will look for stored rows that cannot exist.
 ; --
@@ -52,8 +52,8 @@
 ; refund amount, fee or currency. The refund guard appears below only as a COUNT of names in a
 ; terminal set, never as a refund rule, because the two disagreeing terminal sets are a
 ; vocabulary fact and the refund they gate is not this file's business. Nothing about WHO may
-; transition: authorization is checked at src/api/orders.rs:1889, one line after the vocabulary
-; check at :1888, and this file owns the first and is silent about the second. No cart, no quote
+; transition: authorization is checked at src/api/orders.rs:2015, one line after the vocabulary
+; check at :2014, and this file owns the first and is silent about the second. No cart, no quote
 ; snapshot, no idempotency decision -- commerce.t27 owns all three. No unit status: the four wire
 ; values of bike_units belong to availability.t27 and are a different table with a different set,
 ; named here only so the two are never confused. No delivery ETA, no notification text, no locale
@@ -94,8 +94,8 @@ pub const REUSES_AVAILABILITY_ID : str = "turbobaby/availability";
 ; written, and the array had moved again before either file was finished. A line number into a
 ; sibling stops being checkable the moment the sibling is edited, which is why every cross-contract
 ; citation in this file names an owner ID plus a declaration. Line numbers into src/ are a
-; different thing and stay: the authorization at src/api/orders.rs:1889 is check_admin, one line
-; after the vocabulary check this file owns at :1888, both re-read on 2026-09-21. Named so the
+; different thing and stay: the authorization at src/api/orders.rs:2015 is check_admin, one line
+; after the vocabulary check this file owns at :2014, both re-read on 2026-09-21. Named so the
 ; seam is greppable; no gate, no precedence order and no attempt bound of that contract is
 ; repeated below.
 pub const REUSES_REQUEST_IDENTITY_ID : str = "turbobaby/request-identity";
@@ -109,7 +109,7 @@ pub const INBOUND_EDGE_COUNT : u8 = 2;
 pub const INBOUND_EDGES : [2]str = ["turbobaby/bot-surface", "turbobaby/cart-persistence"];
 
 ; --- The nine accepted names --------------------------------------------------------------------
-; src/api/orders.rs:1865-1875, the VALID_STATUSES slice of validate_update_order_status. The u8
+; src/api/orders.rs:1991-2001, the VALID_STATUSES slice of validate_update_order_status. The u8
 ; codes are this file's own ordinals in the slice's own order; the strings are what the column
 ; stores. Zero is UNSET and is never an accepted status, for the reason availability.t27 gives for
 ; its own set: an unwritten slot in a fixed-length array already holds zero, and a vocabulary
@@ -188,7 +188,7 @@ pub fn order_status_is_known(code: u8) bool {
 
 ; Name to code, closed over the whitelist. A name the slice does not carry -- a misspelling, a
 ; different case, a variant of another model, an empty string -- yields UNSET, which is the same
-; verdict the shipped path gives it at src/api/orders.rs:1876-1878: a 400, never a stored value.
+; verdict the shipped path gives it at src/api/orders.rs:2002-2004: a 400, never a stored value.
 pub fn order_status_code_of(name: str) u8 {
   if (name == "pending") {
     return STATUS_PENDING;
@@ -221,8 +221,8 @@ pub fn order_status_code_of(name: str) u8 {
 }
 
 ; --- Terminality, and the one boolean this file exports -------------------------------------------
-; src/api/orders.rs:1920-1923. Four of the nine are terminal, in the source's own order. The same
-; four appear again in the API reject path at src/api/orders.rs:1968-1971, which is why the
+; src/api/orders.rs:2046-2049. Four of the nine are terminal, in the source's own order. The same
+; four appear again in the API reject path at src/api/orders.rs:2094-2097, which is why the
 ; disagreement recorded further down is with a fourth reader and not with this list.
 pub const TERMINAL_COUNT : u8 = 4;
 pub const TERMINAL_NAMES : [4]str = ["completed", "delivered", "rejected", "cancelled"];
@@ -242,7 +242,7 @@ pub fn order_status_current_is_terminal(current: u8) bool {
   return order_status_is_terminal(current);
 }
 
-; MEASURED FAIL-OPEN, recorded rather than smoothed. src/api/orders.rs:1920 is a matches! over the
+; MEASURED FAIL-OPEN, recorded rather than smoothed. src/api/orders.rs:2046 is a matches! over the
 ; raw column string, so a stored value outside the nine -- written by a fifth reader, a migration,
 ; or a hand-edited row, all possible because the column carries no CHECK -- does not match,
 ; is_terminal is false, and the write proceeds. The direction is the opposite of the vocabulary
@@ -251,7 +251,7 @@ pub fn order_status_current_is_terminal(current: u8) bool {
 ; contradict.
 pub const UNKNOWN_STORED_STATUS_IS_TREATED_AS_NON_TERMINAL : bool = true;
 
-; The equal-status exemption of src/api/orders.rs:1924: a terminal order refuses every transition
+; The equal-status exemption of src/api/orders.rs:2050: a terminal order refuses every transition
 ; except the one that asks for the state it is already in. The requested name must be in the
 ; vocabulary first, because the shipped guard is reached only after the whitelist passes -- so two
 ; unreadable statuses are never an exemption for each other.
@@ -259,7 +259,7 @@ pub fn order_status_same_state(current: u8, requested: u8) bool {
   return order_status_is_known(requested) and current == requested;
 }
 
-; src/api/orders.rs:1876-1878 and :1924-1926 in one predicate: the requested name is in the
+; src/api/orders.rs:2002-2004 and :2050-2052 in one predicate: the requested name is in the
 ; vocabulary, and either it repeats the current state or the current state is not terminal.
 pub fn order_status_write_admitted(current: u8, requested: u8) bool {
   if (!order_status_is_known(requested)) {
@@ -272,17 +272,17 @@ pub fn order_status_write_admitted(current: u8, requested: u8) bool {
 }
 
 ; --- The alias, which runs the other way ----------------------------------------------------------
-; src/api/orders.rs:1928 sends completed and delivered into one branch; src/db/orders.rs:203 and
-; :247 write the literal completed. Nothing in the shipped write path ever stores delivered.
+; src/api/orders.rs:2054 sends completed and delivered into one branch; src/db/orders.rs:222 and
+; :266 write the literal completed. Nothing in the shipped write path ever stores delivered.
 pub const ALIAS_ACCEPTED_NAME : str = "delivered";
 pub const ALIAS_PERSISTED_NAME : str = "completed";
 pub const IN_SOURCE_COMMENT_CALLS_COMPLETED_THE_ALIAS : bool = true;
 pub const IN_SOURCE_COMMENT_ALIAS_DIRECTION_IS_REVERSED : bool = true;
 pub const DELIVERED_IS_NEVER_PERSISTED_BY_THE_WRITE_PATH : bool = true;
-pub const ALIAS_NOTE : str = "src/api/orders.rs:1872 comments completed as a legacy alias for delivered, and src/ui/screens/admin_screen.rs:2907-2908 repeats the same sentence; the branch at :1928 and the writes at src/db/orders.rs:203 and :247 persist completed for both names, and no line under src/ writes the literal delivered, so the resolution is delivered -> completed and both comments name the wrong side.";
+pub const ALIAS_NOTE : str = "src/api/orders.rs:1998 comments completed as a legacy alias for delivered, and src/ui/screens/admin_screen.rs:2908-2909 repeats the same sentence (re-pointed 2026-09-22: one line of drift since 2c21df1); the branch at :2040 and the writes at src/db/orders.rs:222 and :266 persist completed for both names, and no line under src/ writes the literal delivered, so the resolution is delivered -> completed and both comments name the wrong side.";
 
 ; Every other accepted name is written verbatim by the generic branch at
-; src/api/orders.rs:2114-2120, so preparing, ready and out_for_delivery are storable values and
+; src/api/orders.rs:2240-2246, so preparing, ready and out_for_delivery are storable values and
 ; not display-only labels.
 pub fn order_status_persisted_code(requested: u8) u8 {
   if (!order_status_is_known(requested)) {
@@ -295,7 +295,7 @@ pub fn order_status_persisted_code(requested: u8) u8 {
 }
 
 ; --- Path input caps ------------------------------------------------------------------------------
-; src/api/orders.rs:1858-1864, both breaches a 400, checked before the whitelist. The order of the
+; src/api/orders.rs:1984-1990, both breaches a 400, checked before the whitelist. The order of the
 ; three refusals below is the shipped order; all three carry the same HTTP code, so the reason
 ; discriminant exists to keep the precedence checkable rather than to change an answer.
 pub const ORDER_ID_CHARS_MAX : u16 = 200;
@@ -387,8 +387,8 @@ pub fn order_status_name_fits_column(name_chars: u16) bool {
 }
 
 ; --- The one status precondition on a customer cancellation ---------------------------------------
-; src/api/orders.rs:2209-2211: a self-service cancellation refuses with 409 unless the order is
-; still pending. The write it performs is cancelled (src/api/orders.rs:2321). Ownership, blocking
+; src/api/orders.rs:2335-2337: a self-service cancellation refuses with 409 unless the order is
+; still pending. The write it performs is cancelled (src/api/orders.rs:2447). Ownership, blocking
 ; and the telegram id parameter are checked in the same handler and are not status facts, so they
 ; are not modelled here.
 pub const CANCEL_WRITES_NAME : str = "cancelled";
@@ -407,7 +407,7 @@ pub fn order_status_customer_cancel_refusal(current: u8) u16 {
 
 ; --- The drift, counted so a fix has to flip it ----------------------------------------------------
 ; Three typed models of one column. Measured 2026-09-20 by reading each declaration.
-pub const WRITE_PATH_MODEL : str = "src/api/orders.rs:1865-1875";
+pub const WRITE_PATH_MODEL : str = "src/api/orders.rs:1991-2001";
 pub const TRIOS_STORE_MODEL : str = "src/trios/store.rs:175-182";
 pub const UI_TYPES_MODEL : str = "src/ui/api/types.rs:179-189";
 pub const TRIOS_STORE_VARIANT_COUNT : u8 = 6;
@@ -419,7 +419,7 @@ pub const UI_TYPES_MISSING_COUNT : u8 = 2;
 pub const UI_TYPES_MISSING_NAMES : [2]str = ["preparing", "out_for_delivery"];
 pub const UI_TYPES_EXTRA_COUNT : u8 = 2;
 pub const UI_TYPES_EXTRA_NAMES : [2]str = ["processing", "shipped"];
-; src/api/orders.rs:3115-3119 asserts one of those two extras is a 400 by name. The other has no
+; src/api/orders.rs:3279-3283 asserts one of those two extras is a 400 by name. The other has no
 ; test, which is a smaller fact and not a safer one.
 pub const SHIPPED_TEST_PINS_SHIPPED_AS_A_BAD_REQUEST : bool = true;
 ; THE CONSTANT A FUTURE FIX MUST FLIP. It is not an opinion held beside the counts: the invariant
@@ -434,13 +434,30 @@ pub fn order_status_models_agree(trios_variants: u8, trios_missing: u8, trios_ex
 ; The fourth and fifth declarations, and the only two that agree with each other. Both are a
 ; const ORDER_PIPELINE : &[&str] of the SAME six display names, so neither carries completed,
 ; rejected or cancelled -- the three names a reader most needs when an order has stopped moving.
-; src/ui/components/status_stepper.rs:16-23 only renders. The other one is not display-only:
-; src/ui/screens/admin_screen.rs:2909-2916 is read by next_pipeline_status at :2944-2948, and the
-; admin advance button PUTs whatever that returns to /api/orders/{id}/status at :3345-3365. They
-; are kept out of order_status_models_agree deliberately: that predicate pins the two declarations
-; that claim to TYPE the column, and these two claim to order it.
-pub const DISPLAY_PIPELINE_MODEL_A : str = "src/ui/components/status_stepper.rs:16-23";
-pub const DISPLAY_PIPELINE_MODEL_B : str = "src/ui/screens/admin_screen.rs:2909-2916";
+; The customer stepper's, src/trios/order_status_view.rs:65-72, only renders. The other one is
+; not display-only: src/ui/screens/admin_screen.rs:2910-2917 is read by next_pipeline_status at
+; :2945-2949, and the admin advance button PUTs whatever that returns to
+; /api/orders/{id}/status at :3346-3366. They are kept out of order_status_models_agree
+; deliberately: that predicate pins the two declarations that claim to TYPE the column, and these
+; two claim to order it.
+; CORRECTED 2026-09-22, two moves and no new declaration. FIRST, model A moved. It was a private
+; const of src/ui/components/status_stepper.rs:16-23, a file compiled only for wasm32, so no host
+; test could read it. It is now a pub const of src/trios/order_status_view.rs, the module
+; turbobaby/order-presentation owns, and the host tests there read THIS file's STATUS_NAMES,
+; DISPLAY_PIPELINE_MISSING_NAMES and DISPLAY_PIPELINE_VARIANT_COUNT and fail when its content
+; disagrees. The content is still this file's: the declaration moved, it was not written a second
+; time, so COLUMN_ENUMERATION_COUNT stays five. The same module's arm_of is a READER -- a match
+; with a fallback that answers every string -- and not a sixth declaration that closes the
+; vocabulary; gate 3 binds its arms set-equal to STATUS_NAMES and its terminal arms set-equal to
+; TERMINAL_NAMES, so it cannot drift from either in silence. SECOND, model B and the two admin
+; sites that go with it had drifted one line since 2c21df1 inserted an import above them, and are
+; re-pointed here and below.
+pub const DISPLAY_PIPELINE_MODEL_A : str = "src/trios/order_status_view.rs:65-72";
+pub const DISPLAY_PIPELINE_MODEL_A_BEFORE_REPAIR : str = "src/ui/components/status_stepper.rs:16-23";
+pub const DISPLAY_PIPELINE_MODEL_A_MOVED_AT : str = "2026-09-22";
+pub const DISPLAY_PIPELINE_MODEL_A_IS_HOST_COMPILED : bool = true;
+pub const DISPLAY_PIPELINE_MODEL_B : str = "src/ui/screens/admin_screen.rs:2910-2917";
+pub const ADMIN_SITES_REPOINTED_AT : str = "2026-09-22";
 pub const DISPLAY_PIPELINE_VARIANT_COUNT : u8 = 6;
 pub const DISPLAY_PIPELINE_MISSING_COUNT : u8 = 3;
 pub const DISPLAY_PIPELINE_MISSING_NAMES : [3]str = ["completed", "rejected", "cancelled"];
@@ -457,9 +474,9 @@ pub fn order_status_display_pipeline_agrees(variant_count: u8, missing_count: u8
 
 ; The fourth reader, and the only one that disagrees about terminality rather than about the
 ; vocabulary. src/bot/callbacks.rs:120-122 is status != "rejected" && status != "completed", so
-; delivered and cancelled read as non-terminal there while src/api/orders.rs:1968-1971 reads all
-; four. src/bot/callbacks.rs:721 is the raw-SQL read that feeds it, and the repository's own test
-; at src/bot/callbacks.rs:1175-1181 already names the unknown-status case dangerous.
+; delivered and cancelled read as non-terminal there while src/api/orders.rs:2094-2097 reads all
+; four. src/bot/callbacks.rs:648 is the raw-SQL read that feeds it, and the repository's own test
+; at src/bot/callbacks.rs:1090-1096 already names the unknown-status case dangerous.
 pub const REFUND_GUARD_SOURCE : str = "src/bot/callbacks.rs:120-122";
 pub const REFUND_GUARD_TERMINAL_COUNT : u8 = 2;
 pub const REFUND_GUARD_MISSING_COUNT : u8 = 2;
@@ -467,6 +484,18 @@ pub const REFUND_GUARD_MISSING_NAMES : [2]str = ["delivered", "cancelled"];
 pub const API_REJECT_GUARD_TERMINAL_COUNT : u8 = 4;
 pub const API_REJECT_GUARD_MISSING_COUNT : u8 = 0;
 pub const TERMINAL_GUARDS_AGREE : bool = false;
+; DATED NOTE, 2026-09-26 (R3, turbobaby/referral-credit). The bot's reject, CallbackAction::RejectOrder,
+; is the one path that can move a completed order to rejected, because the guard above does not read
+; completed as terminal. Since that day it also reverses the order's referral-credit record, whole,
+; inside the same transaction and before the flip, and a failed reversal rolls the whole reject back
+; (fail closed). It moves no status and changes no guard: TERMINAL_GUARDS_AGREE stays false, and the
+; reject is still the only un-completion. update_order_status and cancel_order cannot reach a
+; completed order, so neither needs the hook.
+pub const REFERRAL_CREDIT_ID : str = "turbobaby/referral-credit";
+pub const BOT_REJECT_REVERSES_A_REFERRAL_CREDIT_RECORD : bool = true;
+pub const BOT_REJECT_REVERSAL_IS_IN_THE_REJECT_TRANSACTION : bool = true;
+pub const BOT_REJECT_REVERSAL_FAILS_CLOSED : bool = true;
+pub const REFERRAL_CREDIT_REVERSAL_NOTED_AT : str = "2026-09-26";
 
 pub fn order_status_terminal_guard_agrees(guard_terminal_count: u8, guard_missing_count: u8) bool {
   return guard_terminal_count == TERMINAL_COUNT and guard_missing_count == 0;
@@ -475,20 +504,21 @@ pub fn order_status_terminal_guard_agrees(guard_terminal_count: u8, guard_missin
 ; --- What the repository does not ship -------------------------------------------------------------
 ; Named refusals, not gaps filled with a plausible rule.
 pub const NO_SERVER_SIDE_TRANSITION_EDGE_TABLE_IS_SHIPPED : bool = true;
-pub const NO_TRANSITION_EDGE_TABLE_NOTE : str = "No SERVER source constrains which non-terminal status may follow which. The only shipped server constraints are the whitelist, the terminal guard and the pending-only cancellation; the generic branch at src/api/orders.rs:2114-2120 writes any accepted name over any non-terminal one, so ready -> pending and pending -> out_for_delivery are both admitted today. An ENFORCED edge table would have to be measured from a decision that does not exist yet, so none is declared here.";
+pub const NO_TRANSITION_EDGE_TABLE_NOTE : str = "No SERVER source constrains which non-terminal status may follow which. The only shipped server constraints are the whitelist, the terminal guard and the pending-only cancellation; the generic branch at src/api/orders.rs:2240-2246 writes any accepted name over any non-terminal one, so ready -> pending and pending -> out_for_delivery are both admitted today. An ENFORCED edge table would have to be measured from a decision that does not exist yet, so none is declared here.";
 ; An earlier draft of this file said no source in this repository declares which status may
 ; follow which. That is refuted by one grep and the refutation is kept rather than the claim: an
 ; ORDERING does exist, it is client-side and nothing enforces it.
-; src/ui/screens/admin_screen.rs:2909-2916 lists six names in order, next_pipeline_status at
-; :2944-2948 returns the element after the current one and None past the end, and the advance
-; button at :3345-3365 PUTs exactly that name. So the admin UI walks pending -> confirmed ->
+; src/ui/screens/admin_screen.rs:2910-2917 lists six names in order, next_pipeline_status at
+; :2945-2949 returns the element after the current one and None past the end, and the advance
+; button at :3346-3366 PUTs exactly that name (all three re-pointed 2026-09-22, one line of drift
+; since 2c21df1). So the admin UI walks pending -> confirmed ->
 ; preparing -> ready -> out_for_delivery -> delivered and offers no other move, while the server
 ; accepts any of the nine in any direction. What is true is not that no order is declared; it is
 ; that no order is enforced, and that the one declared order stops at a name the write path never
 ; stores (ALIAS_ACCEPTED_NAME above).
 pub const CLIENT_SIDE_TRANSITION_ORDER_IS_SHIPPED : bool = true;
-pub const CLIENT_PIPELINE_SOURCE : str = "src/ui/screens/admin_screen.rs:2909-2916";
-pub const CLIENT_PIPELINE_ADVANCE_SOURCE : str = "src/ui/screens/admin_screen.rs:2944-2948";
+pub const CLIENT_PIPELINE_SOURCE : str = "src/ui/screens/admin_screen.rs:2910-2917";
+pub const CLIENT_PIPELINE_ADVANCE_SOURCE : str = "src/ui/screens/admin_screen.rs:2945-2949";
 pub const CLIENT_PIPELINE_LENGTH : u8 = 6;
 pub const CLIENT_PIPELINE_IS_ENFORCED_ANYWHERE : bool = false;
 pub const CLIENT_PIPELINE_LAST_NAME : str = "delivered";
@@ -496,7 +526,7 @@ pub const BACKWARD_TRANSITION_IS_ADMITTED : bool = true;
 pub const ORDER_STATUS_HAS_NO_DATABASE_CONSTRAINT : bool = true;
 pub const ORDER_STATUS_DATABASE_NOTE : str = "migrations/001_initial.sql:67 declares status VARCHAR(30) NOT NULL DEFAULT 'pending' with no CHECK clause, and no later migration adds one. The nine names are enforced in Rust by one function on one route; a writer that does not call it is bounded by the column width alone.";
 pub const TRANSITION_AUTHORITY_IS_NOT_OWNED_HERE : bool = true;
-pub const TRANSITION_AUTHORITY_NOTE : str = "Who may move an order is decided at src/api/orders.rs:1889, one line after the vocabulary check at :1888, and belongs to the request-identity owner. This file answers only whether a name is in the vocabulary and whether the current state permits a write.";
+pub const TRANSITION_AUTHORITY_NOTE : str = "Who may move an order is decided at src/api/orders.rs:2015, one line after the vocabulary check at :2014, and belongs to the request-identity owner. This file answers only whether a name is in the vocabulary and whether the current state permits a write.";
 
 ; --- Tests ------------------------------------------------------------------------------------------
 
@@ -653,7 +683,7 @@ test order_status_customer_cancellation_needs_pending_and_refuses_with_conflict 
 }
 
 test order_status_five_declarations_of_one_column_carry_four_vocabularies {
-  assert WRITE_PATH_MODEL == "src/api/orders.rs:1865-1875";
+  assert WRITE_PATH_MODEL == "src/api/orders.rs:1991-2001";
   assert TRIOS_STORE_MODEL == "src/trios/store.rs:175-182";
   assert UI_TYPES_MODEL == "src/ui/api/types.rs:179-189";
   assert TRIOS_STORE_VARIANT_COUNT == 6;
@@ -672,8 +702,13 @@ test order_status_five_declarations_of_one_column_carry_four_vocabularies {
   assert TYPED_MODELS_AGREE == false;
   assert TYPED_MODELS_AGREE == order_status_models_agree(TRIOS_STORE_VARIANT_COUNT, TRIOS_STORE_MISSING_COUNT, TRIOS_STORE_EXTRA_COUNT, UI_TYPES_VARIANT_COUNT, UI_TYPES_MISSING_COUNT, UI_TYPES_EXTRA_COUNT);
   ; The fourth and fifth, which the first draft of this file did not count at all.
-  assert DISPLAY_PIPELINE_MODEL_A == "src/ui/components/status_stepper.rs:16-23";
-  assert DISPLAY_PIPELINE_MODEL_B == "src/ui/screens/admin_screen.rs:2909-2916";
+  assert DISPLAY_PIPELINE_MODEL_A == "src/trios/order_status_view.rs:65-72";
+  assert DISPLAY_PIPELINE_MODEL_A_BEFORE_REPAIR == "src/ui/components/status_stepper.rs:16-23";
+  assert DISPLAY_PIPELINE_MODEL_A != DISPLAY_PIPELINE_MODEL_A_BEFORE_REPAIR;
+  assert DISPLAY_PIPELINE_MODEL_A_MOVED_AT == "2026-09-22";
+  assert DISPLAY_PIPELINE_MODEL_A_IS_HOST_COMPILED == true;
+  assert DISPLAY_PIPELINE_MODEL_B == "src/ui/screens/admin_screen.rs:2910-2917";
+  assert ADMIN_SITES_REPOINTED_AT == "2026-09-22";
   assert DISPLAY_PIPELINE_VARIANT_COUNT == 6;
   assert DISPLAY_PIPELINE_MISSING_NAMES.len == DISPLAY_PIPELINE_MISSING_COUNT;
   assert DISPLAY_PIPELINE_MISSING_NAMES[0] == "completed";
@@ -889,3 +924,12 @@ invariant order_status_the_display_pipelines_stay_marked_as_disagreeing
 
 invariant order_status_no_edge_table_is_enforced_but_one_is_declared
   assert NO_SERVER_SIDE_TRANSITION_EDGE_TABLE_IS_SHIPPED == true and CLIENT_SIDE_TRANSITION_ORDER_IS_SHIPPED == true and CLIENT_PIPELINE_IS_ENFORCED_ANYWHERE == false and BACKWARD_TRANSITION_IS_ADMITTED == true and order_status_write_admitted(STATUS_READY, STATUS_PENDING) == true
+
+test the_bot_reject_reverses_a_referral_credit_record_and_changes_no_guard {
+  assert REFERRAL_CREDIT_ID == "turbobaby/referral-credit";
+  assert BOT_REJECT_REVERSES_A_REFERRAL_CREDIT_RECORD == true;
+  assert BOT_REJECT_REVERSAL_IS_IN_THE_REJECT_TRANSACTION == true;
+  assert BOT_REJECT_REVERSAL_FAILS_CLOSED == true;
+  assert REFERRAL_CREDIT_REVERSAL_NOTED_AT == "2026-09-26";
+  assert TERMINAL_GUARDS_AGREE == false;
+}

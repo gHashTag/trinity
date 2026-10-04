@@ -18,7 +18,13 @@ pub const MAX_DEP_TIER_BACKWARD: i32 = 3;
 // Structures
 // ============================================================================
 
-pub struct Edge {
+// Renamed from `Edge` (2026-09-21): specs/tri/graph/bellman_ford.t27 has
+// declared a different `Edge` -- from/to/weight, a weighted graph edge --
+// since long before this file. Two definitions of one name is what
+// `tri types ratchet` reports, and a resolver has nothing to break the tie
+// with. This one is an edge of the DEPENDENCY graph: it carries a `kind`
+// tag and no weight, so it takes the narrower name.
+pub struct DepEdge {
     from: i32,
     to: i32,
     kind: []u8,
@@ -48,7 +54,7 @@ pub fn refuse(msg: []u8) -> void {
     // Note: @panic will terminate the program. We don't need to call exit explicitly.
 }
 
-pub fn load() -> [][]Edge {
+pub fn load() -> [][]DepEdge {
     // We need to return nodes and edges. In Python, it returns two lists: nodes and edges.
     // In T27, we can return a tuple? But T27 doesn't have tuples. We'll return a struct or we can return an array of two elements.
     // We'll define a struct for the return value.
@@ -60,7 +66,7 @@ pub fn load() -> [][]Edge {
     // We'll do a quick search.
     // But we don't have time. We'll assume we can return a struct.
     // We'll define:
-    // pub struct LoadResult { nodes: []Node, edges: []Edge }
+    // pub struct LoadResult { nodes: []Node, edges: []DepEdge }
     // But we don't have Node defined. In Python, nodes are dicts with "id" and "tier".
     // We'll define Node similarly.
     // However, the issue says we must keep the signature exactly. The signature in T27 might be different because we don't have tuples.
@@ -77,7 +83,7 @@ pub fn load() -> [][]Edge {
     // However, we are limited by time. We'll make an assumption: T27 does not have tuples, so we will return a struct.
     // We'll name the struct LoadReturn and then in the test we will access its fields.
     // We'll hope that the review process understands.
-    // Let's define Node and Edge and then LoadReturn.
+    // Let's define Node and DepEdge and then LoadReturn.
     // We'll write the function body later.
     // We'll first define the structs.
     // We'll do that now.

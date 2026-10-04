@@ -42,10 +42,20 @@ jobs:
           [[ "$PR_NUMBER" =~ ^[1-9][0-9]*$ ]]
           gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" > /tmp/pr.json
           python3 -c 'import json; from pathlib import Path; p=json.loads(Path("/tmp/pr.json").read_text()); Path("/tmp/event.json").write_text(json.dumps({"repository":{"full_name":p["base"]["repo"]["full_name"]},"number":p["number"],"pull_request":p}))'
+      - name: Load changed files and commits as data
+        run: |
+          set -euo pipefail
+          # Only used for the Dependabot dependency-bump exemption; see scripts/pr_blog_report.py.
+          gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files?per_page=100" \
+            --jq '.[] | {filename, status}' > /tmp/pr-files.jsonl
+          gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/commits?per_page=100" \
+            --jq '.[] | {sha, author: .author.login, committer: .committer.login, verified: .commit.verification.verified}' > /tmp/pr-commits.jsonl
       - name: Validate mandatory report and generate blog draft
         id: validate
         continue-on-error: true
-        run: python3 scripts/pr_blog_report.py validate --event /tmp/event.json --output /tmp/pr-blog
+        run: >-
+          python3 scripts/pr_blog_report.py validate --event /tmp/event.json --output /tmp/pr-blog
+          --files /tmp/pr-files.jsonl --commits /tmp/pr-commits.jsonl
       - name: Bind the required status to the current PR head
         if: always()
         env:
@@ -59,6 +69,9 @@ jobs:
           if [ "$VALIDATION" = success ]; then
             STATE=success
             DESC='Current-head work report validated; blog draft generated'
+            if jq -e '.kind == "dependency-bump"' /tmp/pr-blog/report.json > /dev/null; then
+              DESC='Dependabot manifest/lockfile bump: the bump is its own report'
+            fi
           fi
           gh api --method POST "repos/$GITHUB_REPOSITORY/statuses/$SHA" \
             -f state="$STATE" -f context='T27 work report' -f description="$DESC" \

@@ -4,8 +4,8 @@
    its definition -- which also gives a screen reader the pairing for free. */
 .faq-block {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  background: #010403;
-  color: var(--text, #e7f7fa);
+  background: #000;
+  color: var(--text, #FFFFFF);
 }
 
 .faq-block-inner {

@@ -89,6 +89,15 @@
 ; availability.t27 a second time for the unit floor MIN_UNITS_AVAILABLE_TO_RIDE restates, and
 ; ride-runtime.t27 for the classification of failure this file answers in its own vocabulary.
 ; The last two were found by review on 2026-09-20, after the audit below was first written.
+; CORRECTED 2026-09-24. Two counts in the paragraphs above are the audit's of 2026-09-20 and are no
+; longer this file's. The displacement domain is not copied here any more: DISPLACEMENTS_CC,
+; DISPLACEMENT_MIN_CC and DISPLACEMENT_MAX_CC are turbobaby/bike-catalog's alone, this file names
+; that owner and hands top_speed a bare u16, and the three names are listed in
+; DISPLACEMENT_RESTATEMENT_DROPPED. So the seven copies are six (COPY_COUNT; the audit's seven are
+; kept as COPY_COUNT_BEFORE_2026_09_24). And the zero of PRICE_LIST_ONLY_UNITS_TOTAL is now a copy
+; of turbobaby/availability's PRICE_LIST_ONLY_UNITS, because turbobaby/deposit-tiers dropped its own
+; declaration of that count the same day. Owners of copies are still three. The width argument above
+; still holds, for the owner: cc is u16 there, and top_speed takes u16.
 ; --
 ; IMPLEMENTATION RECONCILIATION (2026-09-13). assets/game/ride.js now evaluates this exact
 ; affine top-speed function and the same closed two-class steering lookup before it mounts a
@@ -118,19 +127,30 @@ pub const SPEED_UNIT : str = "game speed unit (gu); not km/h";
 pub const STEER_UNIT : str = "game steer unit per second (su/s); not degrees";
 
 ; --- Top speed: a function of displacement alone --------------------------------------------
-; The seven distinct displacements the fleet actually contains, ascending; the name, the
-; width and the values are bike_catalog.t27's DISPLACEMENTS_CC, restated and not redesigned.
-; Seven, not fourteen, and here is the whole of the collapse, measured family by family over
-; the seed: 650 carries three families (cb-650r, cbr-650r, vulcan-s-650), 300 carries five
-; (cb-300r, forza-300, mt-03-300, xmax-300, xmax-300-new) and 155 carries two (nmax-155,
-; xsr-155). That is 2 + 4 + 1 = 7 rows repeating a value already in the list, and 14 - 7 = 7
-; values left. The other four values -- 125, 350, 400 and 750 -- have one family each, and
-; 3 + 5 + 2 + 4 = 14 families, so no row is counted twice and none is missing.
-pub const DISPLACEMENTS_CC : [7]u16 = [125, 155, 300, 350, 400, 650, 750];
-; Measured extremes of the fleet of 2026-09-12, under bike_catalog.t27's names for them.
-; Reported, never used as a bound: the next machine the shop buys must not be rejected here.
-pub const DISPLACEMENT_MIN_CC : u16 = 125;
-pub const DISPLACEMENT_MAX_CC : u16 = 750;
+; The displacement DOMAIN -- the distinct displacements the fleet contains, ascending, and its two
+; reported extremes -- is turbobaby/bike-catalog's, declared there as DISPLACEMENTS_CC,
+; DISPLACEMENT_MIN_CC and DISPLACEMENT_MAX_CC (REUSES_CATALOG_ID in the edge block below). Why
+; fourteen families give seven values, measured family by family over the seed: 650 carries three
+; families (cb-650r, cbr-650r, vulcan-s-650), 300 carries five (cb-300r, forza-300, mt-03-300,
+; xmax-300, xmax-300-new) and 155 carries two (nmax-155, xsr-155). That is 2 + 4 + 1 = 7 rows
+; repeating a value already in the list, and 14 - 7 = 7 values left. The other four values -- 125,
+; 350, 400 and 750 -- have one family each, and 3 + 5 + 2 + 4 = 14 families, so no row is counted
+; twice and none is missing.
+; RESOLVED 2026-09-24: THE DOMAIN IS NAMED, NOT COPIED. Until this edit the list and the two
+; extremes were declared here as well, byte-identical to the owner's and held to it only by a
+; snapshot of the owner's values written in this same file, which cannot move when the owner does;
+; a review of 2026-09-23 found that no gate read both sides. Nothing here needs the list: top_speed
+; takes a bare u16, the tests pass the displacement of a named seed family, and the extremes were
+; only ever reported, never used as a bound. So the three declarations, and the three snapshot
+; constants that shadowed them, are dropped and listed by name, so that a grep for any of them
+; lands here rather than on nothing.
+pub const DISPLACEMENT_DOMAIN_IS_DECLARED_HERE : bool = false;
+pub const CATALOG_DISPLACEMENT_DECLARATIONS : [3]str = ["DISPLACEMENTS_CC", "DISPLACEMENT_MIN_CC", "DISPLACEMENT_MAX_CC"];
+pub const DISPLACEMENT_RESTATEMENT_DROPPED : [6]str = [
+  "DISPLACEMENTS_CC", "DISPLACEMENT_MIN_CC", "DISPLACEMENT_MAX_CC",
+  "CATALOG_OWNED_DISPLACEMENT_LEN", "CATALOG_OWNED_DISPLACEMENT_FIRST_CC", "CATALOG_OWNED_DISPLACEMENT_LAST_CC",
+];
+pub const DISPLACEMENT_RESTATEMENT_DROPPED_AT : str = "2026-09-24";
 
 ; SPEED_INTERCEPT_GU is CHOSEN, not measured. A purely proportional map would put the
 ; 750 at 750/125 = 6.0x the 125 and leave the small scooter unplayable next to it; the
@@ -247,6 +267,9 @@ pub const EXCLUDED_NONE_FREE : [2]str = ["forza-300", "mt-03-300"];
 ; MIN_UNITS_AVAILABLE_TO_RIDE. Named here so a later reader who finds a tariff without
 ; stock does not invent the stock. A COPY: deposit_tiers.t27 declares the same seven keys under
 ; the same name, and the same zero as PRICE_LIST_ONLY_UNITS. Measured identical on 2026-09-20.
+; CORRECTED 2026-09-24: deposit-tiers no longer declares that zero. A unit count is fleet
+; availability; turbobaby/availability declares it as PRICE_LIST_ONLY_UNITS, and the zero below is
+; now a copy of that owner's. The seven keys are still deposit-tiers'.
 pub const PRICE_LIST_ONLY_KEYS : [7]str = [
   "pcx-150", "adv-150", "pcx-160", "adv-160", "rebel-300", "xsr-900", "r7",
 ];
@@ -374,17 +397,24 @@ pub fn ride_can_start(outcome: u8, rideable_count: u8) bool {
 ; table this file needs in order to state its own laws. Both are served by making the second copy
 ; IMPOSSIBLE TO EDIT ALONE, which is what copy_edit_is_legal and the invariants say.
 pub const COPIES_MEASURED_AT : str = "2026-09-20";
-pub const COPY_COUNT : u8 = 7;
-pub const COPY_NAMES : [7]str = [
+; CORRECTED 2026-09-24: six, not seven. The displacement domain stopped being a copy that day (see
+; the top-speed section); the list as the audit wrote it is kept under the _BEFORE_ names.
+pub const COPY_COUNT : u8 = 6;
+pub const COPY_NAMES : [6]str = [
+  "class algebra", "catalog keys", "price-list-only keys",
+  "offered-but-out pair", "not-offered key", "bookable counts",
+];
+pub const COPY_COUNT_BEFORE_2026_09_24 : u8 = 7;
+pub const COPY_NAMES_BEFORE_2026_09_24 : [7]str = [
   "class algebra", "displacement domain", "catalog keys", "price-list-only keys",
   "offered-but-out pair", "not-offered key", "bookable counts",
 ];
 pub const COPY_RULE : str = "Each vocabulary named in COPY_NAMES is declared in full by the contract named in its owner constant. What stands in this file is a COPY, kept only because no import form resolves, and it is edited ONLY in the commit that edits its owner. A copy edited alone is a defect even when it compiles, and the invariants below are what make that defect fail instead of ship.";
 
-; THE REFUSAL, and the reason all seven are still copies. No import form in the pinned compiler
+; THE REFUSAL, and the reason all seven are still copies (six since 2026-09-24). No import form in the pinned compiler
 ; carries a constant across files. scripts/verify_t27_specs.py fails any malformed UseDecl
-; (lines 431-436), keeps EMPTY_IMPORT_PATTERNS for an emitted empty import (lines 290-293), and
-; fails the file when any of the five generators emits one (lines 458-461). The corpus reaches
+; (verify_spec, its UseDecl walk), keeps EMPTY_IMPORT_PATTERNS for an emitted empty import, and fails
+; the file when any of the five generators emits one (verify_spec's GENERATORS loop). The corpus reaches
 ; the same conclusion in prose at docs/t27-semantic-merge-matrix.md:127-129: the pinned compiler
 ; does not provide a sound cross-file import form, so the contracts exchange abstract inputs and
 ; do not pretend that brace imports resolve. What is missing is the import, not the number, and
@@ -399,8 +429,10 @@ pub const COPY_RULE : str = "Each vocabulary named in COPY_NAMES is declared in 
 ; in that file several hundred lines down at once. The three checks themselves were re-read and
 ; are unchanged in substance; only their addresses moved. The matrix sentence moved for the same
 ; kind of reason and now reads the same words at 127-129.
+; RE-CITED BY NAME 2026-09-24: the three verifier addresses had drifted again (to about 444-450, 304
+; and 472-475), so they now name verify_spec and EMPTY_IMPORT_PATTERNS rather than lines.
 pub const SHARED_VOCABULARY_IMPORT_IS_NOT_SHIPPED : bool = true;
-pub const SHARED_VOCABULARY_IMPORT_NOTE : str = "No import form in the pinned compiler carries a constant across files: scripts/verify_t27_specs.py rejects a malformed UseDecl and fails any file whose five generators emit an empty import, and docs/t27-semantic-merge-matrix.md records that the contracts exchange abstract inputs rather than pretend brace imports resolve. Until an import exists, a shared vocabulary can only be a pinned copy with a named owner. Deleting a copy is not the alternative: without DISPLACEMENTS_CC or CATALOG_KEYS this file cannot state its own laws, and a new shared-facts contract would be a thirteenth copy, not a single source.";
+pub const SHARED_VOCABULARY_IMPORT_NOTE : str = "No import form in the pinned compiler carries a constant across files: scripts/verify_t27_specs.py rejects a malformed UseDecl and fails any file whose five generators emit an empty import, and docs/t27-semantic-merge-matrix.md records that the contracts exchange abstract inputs rather than pretend brace imports resolve. Until an import exists, a shared vocabulary can only be a pinned copy with a named owner. Deleting a copy is not the alternative for a table this file needs to state its own laws, such as CATALOG_KEYS, and a new shared-facts contract would be a thirteenth copy, not a single source. CORRECTED 2026-09-24: this note named DISPLACEMENTS_CC beside CATALOG_KEYS until that day. Measured, no law here needed the displacement list as a declaration -- top_speed takes a bare displacement -- so that copy was dropped and its owner named instead.";
 
 ; --- The owners, by ID and by path ------------------------------------------------------------
 ; Named by ID and never by line: these files move, and this file already carries one paragraph
@@ -503,9 +535,8 @@ pub const CATALOG_OWNED_CLASS_SCOOTER : u8 = 0;
 pub const CATALOG_OWNED_CLASS_MOTORCYCLE : u8 = 1;
 pub const CATALOG_OWNED_CLASS_COUNT : u8 = 2;
 pub const CATALOG_OWNED_CLASS_NONE : u8 = 255;
-pub const CATALOG_OWNED_DISPLACEMENT_LEN : u8 = 7;
-pub const CATALOG_OWNED_DISPLACEMENT_FIRST_CC : u16 = 125;
-pub const CATALOG_OWNED_DISPLACEMENT_LAST_CC : u16 = 750;
+; The three CATALOG_OWNED_DISPLACEMENT_* snapshots stood here until 2026-09-24, beside a copy that
+; is gone; they are listed in DISPLACEMENT_RESTATEMENT_DROPPED.
 pub const AVAILABILITY_OWNED_KEY_ARRAY_NAME : str = "FAMILY_KEYS";
 pub const AVAILABILITY_OWNED_KEY_LEN : u8 = 14;
 pub const AVAILABILITY_OWNED_KEY_FIRST : str = "click-125";
@@ -520,7 +551,10 @@ pub const DEPOSIT_OWNED_PRICE_LIST_ARRAY_NAME : str = "PRICE_LIST_ONLY_KEYS";
 pub const DEPOSIT_OWNED_PRICE_LIST_LEN : u8 = 7;
 pub const DEPOSIT_OWNED_PRICE_LIST_FIRST : str = "pcx-150";
 pub const DEPOSIT_OWNED_PRICE_LIST_LAST : str = "r7";
-pub const DEPOSIT_OWNED_PRICE_LIST_UNITS : u8 = 0;
+; CORRECTED 2026-09-24: the zero's owner moved. deposit-tiers declared it until that day and does
+; not any more; availability declares it as PRICE_LIST_ONLY_UNITS.
+pub const DEPOSIT_OWNED_PRICE_LIST_UNITS_BEFORE_2026_09_24 : u8 = 0;
+pub const AVAILABILITY_OWNED_PRICE_LIST_UNITS : u8 = 0;
 pub const DEPOSIT_OWNED_NOT_OFFERED_ARRAY_NAME : str = "NOT_OFFERED_KEYS";
 pub const DEPOSIT_OWNED_NOT_OFFERED_LEN : u8 = 1;
 pub const DEPOSIT_OWNED_NOT_OFFERED_ONLY : str = "click-125";
@@ -530,7 +564,7 @@ pub const DEPOSIT_OWNED_NOT_OFFERED_ONLY : str = "click-125";
 ; assumed so that a later worker who measures a FALSE has somewhere to write it: a divergence
 ; between a copy and its owner is a finding to report, not a line to quietly re-type.
 pub const CLASS_ALGEBRA_COPY_AGREES : bool = true;
-pub const DISPLACEMENT_DOMAIN_COPY_AGREES : bool = true;
+pub const DISPLACEMENT_DOMAIN_COPY_AGREES_BEFORE_2026_09_24 : bool = true;
 pub const CATALOG_KEYS_COPY_AGREES : bool = true;
 pub const PRICE_LIST_ONLY_COPY_AGREES : bool = true;
 pub const OUT_ON_CONTRACT_COPY_AGREES : bool = true;
@@ -538,9 +572,9 @@ pub const NOT_OFFERED_COPY_AGREES : bool = true;
 pub const BOOKABLE_COUNTS_COPY_AGREES : bool = true;
 
 pub const CLASS_ALGEBRA_COPY_NOTE : str = "CLASS_NAMES, CLASS_SCOOTER, CLASS_MOTORCYCLE, CLASS_COUNT and CLASS_NONE are a COPY. Owner turbobaby/bike-catalog at specs/turbobaby/bike_catalog.t27, where the array is called CLASSES. Measured 2026-09-20: the four discriminant declarations of the two files, sorted and diffed, show no difference, and the two arrays hold the same two strings in the same order under different constant names. RE-VERIFIED 2026-09-21, element by element: no difference. CLASS_COUNT 2, CLASS_MOTORCYCLE 1, CLASS_NONE 255, CLASS_SCOOTER 0 on both sides, and CLASSES still holds scooter then motorcycle. Change here only in the commit that changes the owner.";
-pub const DISPLACEMENT_DOMAIN_COPY_NOTE : str = "DISPLACEMENTS_CC, DISPLACEMENT_MIN_CC and DISPLACEMENT_MAX_CC are a COPY. Owner turbobaby/bike-catalog at specs/turbobaby/bike_catalog.t27, under the same three names. Measured 2026-09-20: all three declaration lines are byte-identical in the two files, widths included. RE-VERIFIED 2026-09-21: the three lines diff clean again, still byte-identical and still [7]u16 = [125, 155, 300, 350, 400, 650, 750] with the extremes 125 and 750. The owner also declares DISPLACEMENT_COUNT, which this file does not copy and does not need, because its own length invariant reads DISPLACEMENTS_CC.len. Change here only in the commit that changes the owner.";
+pub const DISPLACEMENT_DOMAIN_COPY_NOTE_BEFORE_2026_09_24 : str = "HISTORY: the copy this note describes was dropped on 2026-09-24 (DISPLACEMENT_RESTATEMENT_DROPPED). As written until then: DISPLACEMENTS_CC, DISPLACEMENT_MIN_CC and DISPLACEMENT_MAX_CC are a COPY. Owner turbobaby/bike-catalog at specs/turbobaby/bike_catalog.t27, under the same three names. Measured 2026-09-20: all three declaration lines are byte-identical in the two files, widths included. RE-VERIFIED 2026-09-21: the three lines diff clean again, still byte-identical and still [7]u16 = [125, 155, 300, 350, 400, 650, 750] with the extremes 125 and 750. The owner also declares DISPLACEMENT_COUNT, which this file does not copy and does not need, because its own length invariant reads DISPLACEMENTS_CC.len. Change here only in the commit that changes the owner.";
 pub const CATALOG_KEYS_COPY_NOTE : str = "CATALOG_KEYS is a COPY of FAMILY_KEYS in specs/turbobaby/availability.t27, owner turbobaby/availability. Measured 2026-09-20: an ANCHORED grep for each declaration piped to tail -2 emits the same two element lines from both files, diff reports no difference, and both extracts hash to sha256 61547e83c41496c5f874dcb17dbd2f36841e04b35f4764f4c7717cde1477a2bd. This sentence said only grep -A2 until 2026-09-21, and in that unanchored form it also matches this very constant further down the file and returns the wrong extract; the anchors are given in THE MEASUREMENT above and they are part of the command, not decoration. RE-VERIFIED 2026-09-21 with the anchored form: both extracts still reproduce that same sha256 byte for byte. Only the declaration line differs, and only in the constant name. Both are the fourteen in-stock family keys of data/fleet_seed.json lines 121-238 in the seed's own order, re-read the same day and unchanged. Change here only in the commit that changes the owner.";
-pub const PRICE_LIST_ONLY_COPY_NOTE : str = "PRICE_LIST_ONLY_KEYS and PRICE_LIST_ONLY_UNITS_TOTAL are a COPY. Owner turbobaby/deposit-tiers at specs/turbobaby/deposit_tiers.t27, which declares an array of the same name and the same zero as PRICE_LIST_ONLY_UNITS. Measured 2026-09-20: the element line is byte-identical in both files, sha256 d3db4c253e0cc918617763a7f22b112f5591a24f9ff03107057f5ac381aeaecf. RE-VERIFIED 2026-09-21, and this is the copy whose owner moved furthest: deposit-tiers gained 350 committed lines that day and more again in the working tree, and the element line and PRICE_LIST_ONLY_UNITS 0 both came through untouched, reproducing the same sha256. Both are the seven tariff rows of data/fleet_seed.json lines 255-261 that own no unit, re-read the same day and unchanged. Change here only in the commit that changes the owner.";
+pub const PRICE_LIST_ONLY_COPY_NOTE : str = "PRICE_LIST_ONLY_KEYS and PRICE_LIST_ONLY_UNITS_TOTAL are a COPY. Owner turbobaby/deposit-tiers at specs/turbobaby/deposit_tiers.t27, which declares an array of the same name and the same zero as PRICE_LIST_ONLY_UNITS. Measured 2026-09-20: the element line is byte-identical in both files, sha256 d3db4c253e0cc918617763a7f22b112f5591a24f9ff03107057f5ac381aeaecf. RE-VERIFIED 2026-09-21, and this is the copy whose owner moved furthest: deposit-tiers gained 350 committed lines that day and more again in the working tree, and the element line and PRICE_LIST_ONLY_UNITS 0 both came through untouched, reproducing the same sha256. Both are the seven tariff rows of data/fleet_seed.json lines 255-261 that own no unit, re-read the same day and unchanged. Change here only in the commit that changes the owner. CORRECTED 2026-09-24: deposit-tiers no longer declares the zero. It is fleet availability, turbobaby/availability declares it as PRICE_LIST_ONLY_UNITS, and PRICE_LIST_ONLY_UNITS_TOTAL is now a copy of that; only the seven keys are deposit-tiers'.";
 
 ; --- The seven copies, re-verified element by element after the corpus grew ----------------------
 ; The audit above was taken on 2026-09-20 against a corpus of 12 tracked specs. 31 more were
@@ -568,6 +602,17 @@ pub const COPY_OWNER_COUNT : u8 = 3;
 pub const TRACKED_SPECS_WHEN_THE_COPIES_WERE_FIRST_MEASURED : u8 = 12;
 pub const TRACKED_SPECS_AT_REVERIFICATION : u8 = 43;
 pub const ELEVEN_KEY_FAMILY_ARRAYS_ELSEWHERE_IN_SPECS : u8 = 0;
+; RE-VERIFIED A SECOND TIME 2026-09-24, on the change that dropped the displacement copy. The six
+; copies that remain were compared value by value with their owners' declarations: the class
+; algebra with bike-catalog's CLASSES, CLASS_SCOOTER, CLASS_MOTORCYCLE, CLASS_COUNT and CLASS_NONE;
+; CATALOG_KEYS with availability's FAMILY_KEYS; PRICE_LIST_ONLY_KEYS with deposit-tiers' array of
+; that name and the zero with availability's PRICE_LIST_ONLY_UNITS; the two exclusion rosters with
+; OFFERED_OUT_ON_CONTRACT_KEYS and NOT_OFFERED_KEYS; and 11 with 26 against BOOKABLE_FAMILIES and
+; FLEET_AVAILABLE. All six agree. The re-run of 2026-09-21 above counted seven, which was every copy
+; there was that day, and it keeps its own constants.
+pub const COPIES_REVERIFIED_ON_RESOLUTION_AT : str = "2026-09-24";
+pub const COPIES_REVERIFIED_ON_RESOLUTION : u8 = 6;
+pub const COPIES_FOUND_DRIFTED_ON_RESOLUTION : u8 = 0;
 
 ; A re-run counts only if it covered every copy and found every one of them agreeing. Written as a
 ; function so that a worker who finds a drift writes the number and watches the assert fail,
@@ -607,23 +652,22 @@ test the_module_names_its_own_world {
 ; reason given in the header. Both classes are covered: nmax-155 and xmax-300 are scooters,
 ; cb-650r is a motorcycle. Each cc is the family's displacement_cc as the seed records it.
 test handling_of_three_real_families {
-  ; nmax-155, scooter, displacement_cc 155
+  // nmax-155, scooter, displacement_cc 155
   assert top_speed(155) == 555;
   assert steer_rate(CLASS_SCOOTER) == 120;
-  ; xmax-300, scooter, displacement_cc 300
+  // xmax-300, scooter, displacement_cc 300
   assert top_speed(300) == 700;
-  ; cb-650r, motorcycle, displacement_cc 650
+  // cb-650r, motorcycle, displacement_cc 650
   assert top_speed(650) == 1050;
   assert steer_rate(CLASS_MOTORCYCLE) == 90;
-  ; and across these three distinct displacements the top speed does increase strictly
+  // and across these three distinct displacements the top speed does increase strictly
   assert top_speed(155) < top_speed(300);
   assert top_speed(300) < top_speed(650);
 }
 
-; The whole domain the fleet exhibits, as a ladder. Six strict steps over seven values.
+; The whole domain the fleet exhibits, as a ladder. Six strict steps over seven values -- the seven
+; of turbobaby/bike-catalog's DISPLACEMENTS_CC, each passed as a bare displacement.
 test every_distinct_displacement_climbs {
-  assert DISPLACEMENTS_CC[0] == 125;
-  assert DISPLACEMENTS_CC[6] == 750;
   assert top_speed(125) == 525;
   assert top_speed(155) == 555;
   assert top_speed(300) == 700;
@@ -658,8 +702,9 @@ test the_three_650_families_share_one_handling_pair {
 test the_smallest_and_largest_engines_differ {
   assert top_speed(125) == 525;
   assert top_speed(750) == 1150;
-  assert top_speed(DISPLACEMENT_MAX_CC) - top_speed(DISPLACEMENT_MIN_CC) == 625;
-  assert DISPLACEMENT_MAX_CC - DISPLACEMENT_MIN_CC == 625;
+  // xadv-750 and click-125: the families at the two extremes the catalog reports.
+  assert top_speed(750) - top_speed(125) == 625;
+  assert top_speed(750) - top_speed(125) == (750 - 125) * SPEED_PER_CC_GU;
 }
 
 test steer_rate_separates_the_two_classes {
@@ -726,7 +771,7 @@ test the_price_list_only_families_can_never_be_ridden {
 
 test the_measured_counts_are_the_seeds_own {
   assert RIDEABLE_FAMILIES_AT_MEASURED_AT == 11;
-  ; 5+1+1+3+6+5+1+1+1+1+1, which is the seed's totals.units_available
+  // 5+1+1+3+6+5+1+1+1+1+1, which is the seed's totals.units_available
   assert RIDEABLE_UNITS_AT_MEASURED_AT == 26;
   assert RIDEABLE_KEYS.len == RIDEABLE_FAMILIES_AT_MEASURED_AT;
 }
@@ -814,14 +859,27 @@ test the_class_algebra_copy_tracks_the_catalog {
   assert CLASS_ALGEBRA_COPY_AGREES == true;
 }
 
-test the_displacement_domain_copy_tracks_the_catalog {
-  assert DISPLACEMENTS_CC.len == CATALOG_OWNED_DISPLACEMENT_LEN;
-  assert DISPLACEMENTS_CC[0] == CATALOG_OWNED_DISPLACEMENT_FIRST_CC;
-  assert DISPLACEMENTS_CC[6] == CATALOG_OWNED_DISPLACEMENT_LAST_CC;
-  assert DISPLACEMENT_MIN_CC == CATALOG_OWNED_DISPLACEMENT_FIRST_CC;
-  assert DISPLACEMENT_MAX_CC == CATALOG_OWNED_DISPLACEMENT_LAST_CC;
-  assert copy_tracks_owner(DISPLACEMENTS_CC.len, CATALOG_OWNED_DISPLACEMENT_LEN, DISPLACEMENTS_CC[0] == CATALOG_OWNED_DISPLACEMENT_FIRST_CC, DISPLACEMENTS_CC[6] == CATALOG_OWNED_DISPLACEMENT_LAST_CC) == true;
-  assert DISPLACEMENT_DOMAIN_COPY_AGREES == true;
+; The displacement domain is the catalog's, named and not copied since 2026-09-24. What this file
+; keeps is the edge and the names it dropped; the law never needed the list.
+test the_displacement_domain_is_consumed_from_the_catalog {
+  assert DISPLACEMENT_DOMAIN_IS_DECLARED_HERE == false;
+  assert REUSES_CATALOG_ID == "turbobaby/bike-catalog";
+  assert CATALOG_OWNER_PATH == "specs/turbobaby/bike_catalog.t27";
+  assert CATALOG_DISPLACEMENT_DECLARATIONS.len == 3;
+  assert CATALOG_DISPLACEMENT_DECLARATIONS[0] == "DISPLACEMENTS_CC";
+  assert CATALOG_DISPLACEMENT_DECLARATIONS[1] == "DISPLACEMENT_MIN_CC";
+  assert CATALOG_DISPLACEMENT_DECLARATIONS[2] == "DISPLACEMENT_MAX_CC";
+  assert DISPLACEMENT_RESTATEMENT_DROPPED.len == 6;
+  assert DISPLACEMENT_RESTATEMENT_DROPPED[0] == CATALOG_DISPLACEMENT_DECLARATIONS[0];
+  assert DISPLACEMENT_RESTATEMENT_DROPPED[1] == CATALOG_DISPLACEMENT_DECLARATIONS[1];
+  assert DISPLACEMENT_RESTATEMENT_DROPPED[2] == CATALOG_DISPLACEMENT_DECLARATIONS[2];
+  assert DISPLACEMENT_RESTATEMENT_DROPPED[3] == "CATALOG_OWNED_DISPLACEMENT_LEN";
+  assert DISPLACEMENT_RESTATEMENT_DROPPED[4] == "CATALOG_OWNED_DISPLACEMENT_FIRST_CC";
+  assert DISPLACEMENT_RESTATEMENT_DROPPED[5] == "CATALOG_OWNED_DISPLACEMENT_LAST_CC";
+  assert DISPLACEMENT_RESTATEMENT_DROPPED_AT == "2026-09-24";
+  assert DISPLACEMENT_DOMAIN_COPY_AGREES_BEFORE_2026_09_24 == true;
+  assert COPY_NAMES_BEFORE_2026_09_24[1] == "displacement domain";
+  assert COPY_COUNT + 1 == COPY_COUNT_BEFORE_2026_09_24;
 }
 
 ; The largest of THIS FILE'S seven copies, and the one the measurement hashed. It read "the largest
@@ -842,7 +900,8 @@ test the_price_list_only_copy_tracks_deposit_tiers {
   assert PRICE_LIST_ONLY_KEYS.len == DEPOSIT_OWNED_PRICE_LIST_LEN;
   assert PRICE_LIST_ONLY_KEYS[0] == DEPOSIT_OWNED_PRICE_LIST_FIRST;
   assert PRICE_LIST_ONLY_KEYS[6] == DEPOSIT_OWNED_PRICE_LIST_LAST;
-  assert PRICE_LIST_ONLY_UNITS_TOTAL == DEPOSIT_OWNED_PRICE_LIST_UNITS;
+  assert PRICE_LIST_ONLY_UNITS_TOTAL == AVAILABILITY_OWNED_PRICE_LIST_UNITS;
+  assert DEPOSIT_OWNED_PRICE_LIST_UNITS_BEFORE_2026_09_24 == AVAILABILITY_OWNED_PRICE_LIST_UNITS;
   assert DEPOSIT_OWNED_PRICE_LIST_ARRAY_NAME == "PRICE_LIST_ONLY_KEYS";
   assert copy_tracks_owner(PRICE_LIST_ONLY_KEYS.len, DEPOSIT_OWNED_PRICE_LIST_LEN, PRICE_LIST_ONLY_KEYS[0] == DEPOSIT_OWNED_PRICE_LIST_FIRST, PRICE_LIST_ONLY_KEYS[6] == DEPOSIT_OWNED_PRICE_LIST_LAST) == true;
   assert PRICE_LIST_ONLY_COPY_AGREES == true;
@@ -876,10 +935,11 @@ test the_small_roster_copies_track_their_owners {
 test the_one_roster_this_file_owns_is_not_in_the_copy_list {
   assert RIDEABLE_KEYS.len == RIDEABLE_FAMILIES_AT_MEASURED_AT;
   assert RIDEABLE_KEYS.len != AVAILABILITY_OWNED_KEY_LEN;
-  assert COPY_COUNT == 7;
+  assert COPY_COUNT == 6;
   assert COPY_NAMES.len == COPY_COUNT;
   assert COPY_NAMES[0] == "class algebra";
-  assert COPY_NAMES[6] == "bookable counts";
+  assert COPY_NAMES[5] == "bookable counts";
+  assert COPY_NAMES_BEFORE_2026_09_24.len == COPY_COUNT_BEFORE_2026_09_24;
   assert ELEVEN_KEY_FAMILY_ARRAYS_ELSEWHERE_IN_SPECS == 0;
 }
 
@@ -890,7 +950,9 @@ test every_copy_was_reverified_against_its_owner_after_the_corpus_grew {
   assert COPIES_REVERIFIED_AT == "2026-09-21";
   assert COPIES_REVERIFIED_AT != COPIES_MEASURED_AT;
   assert COPIES_REVERIFIED_AT != MEASURED_AT;
-  assert COPIES_REVERIFIED_COUNT == COPY_COUNT;
+  assert COPIES_REVERIFIED_COUNT == COPY_COUNT_BEFORE_2026_09_24;
+  assert COPIES_REVERIFIED_ON_RESOLUTION == COPY_COUNT;
+  assert COPIES_REVERIFIED_ON_RESOLUTION_AT != COPIES_REVERIFIED_AT;
   assert COPIES_FOUND_DRIFTED == 0;
   assert COPY_OWNERS_EDITED_SINCE_THE_FIRST_MEASUREMENT == 3;
   assert COPY_OWNER_COUNT == 3;
@@ -898,11 +960,12 @@ test every_copy_was_reverified_against_its_owner_after_the_corpus_grew {
   assert TRACKED_SPECS_WHEN_THE_COPIES_WERE_FIRST_MEASURED == 12;
   assert TRACKED_SPECS_AT_REVERIFICATION == 43;
   assert TRACKED_SPECS_AT_REVERIFICATION > TRACKED_SPECS_WHEN_THE_COPIES_WERE_FIRST_MEASURED;
-  assert every_copy_still_agrees(COPIES_REVERIFIED_COUNT, COPIES_FOUND_DRIFTED) == true;
-  assert every_copy_still_agrees(COPIES_REVERIFIED_COUNT, 1) == false;
-  assert every_copy_still_agrees(6, 0) == false;
+  assert every_copy_still_agrees(COPIES_REVERIFIED_ON_RESOLUTION, COPIES_FOUND_DRIFTED_ON_RESOLUTION) == true;
+  assert every_copy_still_agrees(COPIES_REVERIFIED_ON_RESOLUTION, 1) == false;
+  assert every_copy_still_agrees(5, 0) == false;
+  assert every_copy_still_agrees(COPIES_REVERIFIED_COUNT, COPIES_FOUND_DRIFTED) == false;
   assert CLASS_ALGEBRA_COPY_AGREES == true;
-  assert DISPLACEMENT_DOMAIN_COPY_AGREES == true;
+  assert DISPLACEMENT_DOMAIN_COPY_AGREES_BEFORE_2026_09_24 == true;
   assert CATALOG_KEYS_COPY_AGREES == true;
   assert PRICE_LIST_ONLY_COPY_AGREES == true;
   assert OUT_ON_CONTRACT_COPY_AGREES == true;
@@ -921,7 +984,7 @@ test the_owners_filter_array_changed_and_the_pinned_value_survived {
   assert CATALOG_API_OWNED_AVAILABLE_ONLY_FILTER == "available_only";
   assert CATALOG_API_OWNED_LIST_ENDPOINT == "GET /api/bikes";
   assert RIDEABLE_SOURCE_IS_A_COMPOSED_ROUTE == true;
-  assert COPY_COUNT == 7;
+  assert COPY_COUNT == 6;
 }
 
 ; The rule itself. A copy may change only in the commit that changes its owner; an untouched copy
@@ -958,7 +1021,7 @@ test the_rideable_source_is_composed_from_the_transport_contract {
   assert RIDEABLE_SOURCE == "/api/bikes?available_only=true";
   assert RIDEABLE_SOURCE != CATALOG_API_OWNED_LIST_ENDPOINT;
   assert RIDEABLE_SOURCE_IS_A_COMPOSED_ROUTE == true;
-  assert COPY_COUNT == 7;
+  assert COPY_COUNT == 6;
 }
 
 ; The class discount pair is quoted in this file and declared in another.
@@ -979,7 +1042,7 @@ test the_unit_floor_is_the_availability_owners_floor {
   assert AVAILABILITY_OWNED_FLOOR_SITE == "has_an_available_unit returns units_available >= 1";
   assert RIDE_BOOKABILITY_OWNER_ID == "turbobaby/availability";
   assert PRICE_LIST_ONLY_UNITS_TOTAL < AVAILABILITY_OWNED_UNIT_FLOOR;
-  assert COPY_COUNT == 7;
+  assert COPY_COUNT == 6;
 }
 
 ; The runtime neighbour, named at last. The inequality against the transport path is the cheap
@@ -994,7 +1057,7 @@ test the_runtime_neighbour_is_named_as_an_edge {
   assert ROSTER_OUTCOME_IS_PLAYER_VISIBLE == true;
   assert EMPTY_ROSTER_IS_CLASSIFIED_DIFFERENTLY_BY_THE_RUNTIME == true;
   assert ROSTER_OUTCOME_EMPTY != ROSTER_OUTCOME_UNAVAILABLE;
-  assert COPY_COUNT == 7;
+  assert COPY_COUNT == 6;
 }
 
 ; --- Invariants ---------------------------------------------------------------------------------
@@ -1033,17 +1096,17 @@ invariant an_unknown_class_yields_no_playable_rate
 invariant the_game_never_invents_a_bike
   assert HAS_FALLBACK_FAMILY == false
 
-invariant the_measured_displacement_domain_is_seven_wide
-  assert DISPLACEMENTS_CC.len == 7
+; The displacement domain is the catalog's (resolved 2026-09-24). These three used to pin a local
+; copy to its own ends; they now pin the edge that replaced it, so a copy that comes back without
+; this section being rewritten fails here.
+invariant the_displacement_domain_is_named_and_not_declared_here
+  assert DISPLACEMENT_DOMAIN_IS_DECLARED_HERE == false and CATALOG_DISPLACEMENT_DECLARATIONS.len == 3 and REUSES_CATALOG_ID == "turbobaby/bike-catalog"
 
-; The extremes are the ends of the array and not two numbers typed beside it, so a fleet
-; change that edits one without the other cannot pass. This is the claim the old CC_MIN /
-; CC_MAX names made nowhere.
-invariant the_reported_extremes_are_the_ends_of_the_domain
-  assert DISPLACEMENTS_CC[0] == DISPLACEMENT_MIN_CC
+invariant every_dropped_displacement_name_is_listed
+  assert DISPLACEMENT_RESTATEMENT_DROPPED.len == 6 and DISPLACEMENT_RESTATEMENT_DROPPED[0] == "DISPLACEMENTS_CC" and DISPLACEMENT_RESTATEMENT_DROPPED[2] == "DISPLACEMENT_MAX_CC"
 
-invariant the_largest_reported_extreme_is_the_last_of_the_domain
-  assert DISPLACEMENTS_CC[6] == DISPLACEMENT_MAX_CC
+invariant the_copy_list_lost_exactly_the_displacement_domain
+  assert COPY_COUNT + 1 == COPY_COUNT_BEFORE_2026_09_24 and COPY_NAMES_BEFORE_2026_09_24[1] == "displacement domain" and COPY_NAMES.len == COPY_COUNT
 
 ; The sentinel restated from bike_catalog.t27 earns its width here: it must sit outside the
 ; class domain, or the guard would alias onto a real class and hand back a playable rate.
@@ -1076,8 +1139,11 @@ invariant the_class_name_copy_holds_its_owners_length_and_ends
 invariant the_class_discriminant_copy_holds_its_owners_codes
   assert CLASS_SCOOTER == CATALOG_OWNED_CLASS_SCOOTER and CLASS_MOTORCYCLE == CATALOG_OWNED_CLASS_MOTORCYCLE and CLASS_NONE == CATALOG_OWNED_CLASS_NONE
 
-invariant the_displacement_copy_holds_its_owners_length_and_ends
-  assert DISPLACEMENTS_CC.len == CATALOG_OWNED_DISPLACEMENT_LEN and DISPLACEMENTS_CC[0] == CATALOG_OWNED_DISPLACEMENT_FIRST_CC and DISPLACEMENTS_CC[6] == CATALOG_OWNED_DISPLACEMENT_LAST_CC
+; Replaces the displacement copy's length-and-ends pin (2026-09-24). What the law says about the
+; domain's two ends is arithmetic on the function, not a table: the speed span of the fleet's
+; smallest and largest engines is the slope times their displacement span.
+invariant the_top_speed_span_is_the_slope_times_the_displacement_span
+  assert top_speed(750) - top_speed(125) == (750 - 125) * SPEED_PER_CC_GU
 
 invariant the_catalog_key_copy_holds_its_owners_length_and_ends
   assert CATALOG_KEYS.len == AVAILABILITY_OWNED_KEY_LEN and CATALOG_KEYS[0] == AVAILABILITY_OWNED_KEY_FIRST and CATALOG_KEYS[13] == AVAILABILITY_OWNED_KEY_LAST
@@ -1110,7 +1176,7 @@ invariant the_copies_stay_only_because_no_import_form_exists
 ; forty-three, which is the exact way a true measurement turns into a false one without being
 ; edited.
 invariant the_copy_audit_carries_the_day_it_was_last_re_run
-  assert every_copy_still_agrees(COPIES_REVERIFIED_COUNT, COPIES_FOUND_DRIFTED) == true and COPIES_REVERIFIED_AT != COPIES_MEASURED_AT and TRACKED_SPECS_AT_REVERIFICATION > TRACKED_SPECS_WHEN_THE_COPIES_WERE_FIRST_MEASURED
+  assert every_copy_still_agrees(COPIES_REVERIFIED_ON_RESOLUTION, COPIES_FOUND_DRIFTED_ON_RESOLUTION) == true and COPIES_REVERIFIED_ON_RESOLUTION_AT != COPIES_REVERIFIED_AT and COPIES_REVERIFIED_AT != COPIES_MEASURED_AT and TRACKED_SPECS_AT_REVERIFICATION > TRACKED_SPECS_WHEN_THE_COPIES_WERE_FIRST_MEASURED
 
 ; The composed route survived a change to the array it indexes. The pin is on the VALUE, so this
 ; holds whatever the owner's array length becomes next.

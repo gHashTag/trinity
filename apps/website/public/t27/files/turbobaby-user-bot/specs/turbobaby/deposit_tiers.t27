@@ -17,13 +17,15 @@
 ; matters: this corpus is wired to a COMPILER GATE and not to a consumer, and no shipped surface
 ; reads FAMILY_DEPOSIT_THB. A reader who took the old sentence at face value would have
 ; concluded that no .t27 is wired to anything, which stopped being true without this file
-; noticing. The catalog
+; noticing. (Re-measured 2026-09-22, and stale again within the day: the same grep returns 19
+; files, three of which name THIS file and all three of which are gates, two of them reading a
+; deposit. WIRING_REMEASURED_NOTE below has the list; still no shipped surface.) The catalog
 ; screen renders deposit_thb as it arrives from the API (the field at
-; src/ui/screens/catalog_screen.rs:124 rendered through money_thb at :834, and the field at
-; src/ui/components/bike_card.rs:115 rendered through thb_or_dash at :203 (:107 and :195 before
-; the 2026-09-21 published_money edit) -- both addresses
-; re-verified 2026-09-21, and both had drifted from the :126 and :102 this paragraph used to
-; give), and the API is seeded by migrations/082_bikes_seed.sql.
+; src/ui/screens/catalog_screen.rs:123 rendered through money_thb at :821 (:822 until 2026-09-26) -- :124 and :834 until
+; the 2026-09-24 availability edit -- and the field at src/ui/components/bike_card.rs:115 rendered
+; through thb_or_dash at :203 (:107 and :195 before the 2026-09-21 published_money edit); all four
+; addresses re-verified 2026-09-24, and both pairs had drifted from the :126 and :102 this
+; paragraph used to give), and the API is seeded by migrations/082_bikes_seed.sql.
 ; FAMILY_DEPOSIT_THB below is therefore a THIRD copy of the deposit column -- after
 ; data/fleet_seed.json and migrations/082_bikes_seed.sql -- and a copy is a drift risk (D15).
 ; It is here because none of the arithmetic below can be checked without it, and the copy is
@@ -43,6 +45,16 @@
 ; no second copy to gate and says so in its own words at :116, "declares no second copy of that
 ; algebra". An undeclared third copy
 ; of a money column is exactly the defect D15 names, so it is declared here.
+; Re-measured 2026-09-22: still ungated as a TABLE. scripts/verify_t27_against_source.py now binds
+; TIER_2_THB and TIER_3_THB to the xmax-300 and xmax-300-new rows of migrations/082_bikes_seed.sql,
+; and the executed asserts tie deposit_thb_of_family on those two keys to FAMILY_DEPOSIT_THB[6] and
+; [7], so two of its fourteen entries are held to their own seed rows through that chain. The COUNT
+; of absent entries is held to the seed as well: the same script binds
+; FAMILIES_WITHOUT_PUBLISHED_DEPOSIT to the NULL-deposit family rows of that migration, and an
+; executed assert recounts it from FAMILY_DEPOSIT_THB through families_on_tier(TIER_NONE) -- though
+; no gate ties entry [0] to click-125's own row. No other entry is compared with its own row: [2],
+; [4] and [8] carry the amounts of the two bound rungs, and equal amounts are not the same rows. The
+; table as a whole is not compared.
 ; --
 ; WHY (measured 2026-09-12): the deposit is the sixth heaviest topic in the dialog history the
 ; tariff was derived from -- 375 client messages -- and issue #18 asked for
@@ -98,10 +110,21 @@ pub const CURRENCY : str = "THB";
 ; stopped being true and the sentence went on asserting it, which is the one failure mode a
 ; reader never checks. The live numbers are kept here so the next drift shows up as a failing
 ; assert rather than as confident prose. Measured 2026-09-21.
-pub const WIRING_GREP_HITS : u8 = 6;
-pub const WIRING_GREP_HITS_NAMING_THIS_FILE : u8 = 1;
+; CORRECTED 2026-09-22: that promise could not be kept, and the numbers below are re-measured.
+; Each assert on them compares a constant with a literal, so a drift in the TREE never fails one;
+; only an edit to this file can. The grep went from 6 files at 32ebe5c to 8 at f4d84a1 and 19 at
+; 2c21df1, all on 2026-09-21 and with every assert here green -- and 2c21df1 edited this very file.
+; These are a DATED READING: re-measure and re-date them, do not trust them as a live check. They
+; are also not bound in scripts/verify_t27_against_source.py, on purpose: the scope is six globs
+; and a tree binding takes one, and a census of the whole tree bound as a live check would go red
+; on every new file that cites a spec. Was 6 and 1 (2026-09-21), now 19 and 3; the old reading is
+; kept word for word in WIRING_NOTE and the new one is WIRING_REMEASURED_NOTE.
+pub const WIRING_GREP_HITS : u8 = 19;
+pub const WIRING_GREP_HITS_NAMING_THIS_FILE : u8 = 3;
 pub const WIRING_CONSUMERS_OF_THIS_FILE : u8 = 0;
-pub const WIRING_NOTE : str = "grep for .t27 and specs/turbobaby across *.rs, *.toml, *.py, *.sh, .github/ and Makefile returns six files on 2026-09-21: scripts/verify_fleet_seed.py, scripts/verify_t27_specs.py, src/trios/market.rs, src/trios/pricing.rs, tests/market_clock_wiring.rs, .github/workflows/ci.yml. One of the six names this file -- scripts/verify_t27_specs.py:119-121 -- and it pins the module name and the ID only. Zero of the six read a deposit. The contract-versus-wiring gap is therefore real and narrower than it was stated: this corpus is wired to a compiler gate, not to a consumer.";
+pub const WIRING_REMEASURED_AT : str = "2026-09-22";
+pub const WIRING_NOTE : str = "grep for .t27 and specs/turbobaby across *.rs, *.toml, *.py, *.sh, .github/ and Makefile returns six files on 2026-09-21: scripts/verify_fleet_seed.py, scripts/verify_t27_specs.py, src/trios/market.rs, src/trios/pricing.rs, tests/market_clock_wiring.rs, .github/workflows/ci.yml. One of the six names this file -- scripts/verify_t27_specs.py, its SPEC_MANIFEST entry for this file (cited by name since 2026-09-24; the line numbers drifted) -- and it pins the module name and the ID only. Zero of the six read a deposit. The contract-versus-wiring gap is therefore real and narrower than it was stated: this corpus is wired to a compiler gate, not to a consumer.";
+pub const WIRING_REMEASURED_NOTE : str = "re-measured 2026-09-22 at a33e500 with the commerce source bindings applied: was 6 files and 1 naming this file on 2026-09-21. The same grep over the same six globs returns 19 files: .github/workflows/ci.yml, scripts/execute_t27_assertions.py, scripts/verify_fleet_seed.py, scripts/verify_t27_against_source.py, scripts/verify_t27_specs.py, src/api/cache.rs, src/notification_queue.rs, src/promo.rs, src/trios/market.rs, src/trios/pricing.rs, src/trios/validation.rs, src/ui/api/types.rs, tests/api_document_pairing.rs, tests/events_money_decision_wiring.rs, tests/market_clock_wiring.rs, tests/notification_drain_wiring.rs, tests/promo_copy_wiring.rs, tests/t27_gates_run.rs, tests/wire_absence_wiring.rs. Three name this file and all three are gates. scripts/verify_t27_specs.py pins its module name, its ID, a declaration floor and a check floor -- the floors were already there at 32ebe5c, so the old note's module name and the ID only was narrower than that file. scripts/execute_t27_assertions.py executes every assert here, FAMILY_DEPOSIT_THB included, and lists three of its functions as measured front-end disagreements. scripts/verify_t27_against_source.py binds TIER_2_THB, TIER_3_THB, NOT_OFFERED_KEYS and FAMILIES_WITHOUT_PUBLISHED_DEPOSIT to migrations/082_bikes_seed.sql. So two of the three READ a deposit out of this file, both are gates and neither is a consumer: WIRING_CONSUMERS_OF_THIS_FILE counts shipped consumers and is still 0.";
 
 ; --- The six tiers ----------------------------------------------------------------------
 ; The closed set of tier values measured in the published seed. The sources publish an AMOUNT
@@ -181,7 +204,10 @@ pub const TIER_FAMILY_COUNT_SUM : u8 = 13;
 ; catalog owns DISPLACEMENTS_CC and turbobaby/ride-game declares DISPLACEMENTS_CC under the same
 ; name, and both are now pub const DISPLACEMENTS_CC : [7]u16 with identical elements
 ; -- and the sentence is kept in the past tense rather than deleted, because
-; the reason this file carries no copy is the drift being POSSIBLE, not the drift being present. A file whose whole argument is that displacement and class are NOT its
+; the reason this file carries no copy is the drift being POSSIBLE, not the drift being present.
+; CORRECTED 2026-09-24: turbobaby/ride-game no longer declares DISPLACEMENTS_CC at all. It names
+; turbobaby/bike-catalog as the owner of the displacement domain and takes a displacement as a bare
+; argument, so the second declaration measured above is gone and only the owner's remains. A file whose whole argument is that displacement and class are NOT its
 ; axis has no business carrying one more copy of either, so both are gone. The class of a family
 ; is read from the seed's class column (families[13].class == "scooter" for xadv-750) and cited
 ; in prose where it is needed; the displacement of a family is carried by the family key itself
@@ -197,7 +223,18 @@ pub const DEPOSIT_10000_OCCURRENCES : u8 = 0;
 ; deposits are all drawn from the same six tiers, which is the evidence that the set is closed
 ; rather than merely enumerated from the 14 in-stock rows. They must never read as available,
 ; and deposit_thb_of_family() deliberately does not answer for them.
-pub const PRICE_LIST_ONLY_UNITS : u8 = 0;
+; RESOLVED 2026-09-24: HOW MANY UNITS these families have is not this file's fact. A unit count is
+; fleet availability, and turbobaby/availability (REUSES_AVAILABILITY_ID above) declares this one as
+; PRICE_LIST_ONLY_UNITS, 0, beside PRICE_LIST_ONLY_FAMILIES. This file declared the same zero under
+; the same name until this edit, although its own header says it validates only the lengths and
+; totals of its own deposit tables; a review of 2026-09-23 recorded the pair as a restated fact
+; with no gate reading both sides. The copy is dropped, not pinned. What it stood for here -- these
+; rows never read as available -- is carried by deposit_thb_of_family refusing them
+; (DEPOSIT_NOT_IN_FLEET), and the count itself is consumed from the owner by name.
+pub const PRICE_LIST_ONLY_UNIT_COUNT_IS_DECLARED_HERE : bool = false;
+pub const AVAILABILITY_UNIT_COUNT_DECLARATION : str = "PRICE_LIST_ONLY_UNITS";
+pub const RESTATEMENT_DROPPED_ON_RESOLUTION : [1]str = ["PRICE_LIST_ONLY_UNITS"];
+pub const RESTATEMENT_RESOLVED_AT : str = "2026-09-24";
 pub const PRICE_LIST_ONLY_KEYS : [7]str = [
   "pcx-150", "adv-150", "pcx-160", "adv-160", "rebel-300", "xsr-900", "r7",
 ];
@@ -241,12 +278,12 @@ pub const DEPOSIT_DISCOUNT_APPLIES : bool = false;
 ;       turbobaby/market owns EXCHANGE_RATES_PUBLISHED, declared as [0]str = [], and
 ;       DECISIONS.md:347 states that no exchange rate enters this repository without a source.
 ;   (b) THE REFUND DOES NOT NEED ONE, and the record it needs already exists. Measured in
-;       src/db/orders.rs:595-618: enum DepositForm { Money { amount: Option<f64>,
+;       src/db/orders.rs:551-586: enum DepositForm { Money { amount: Option<f64>,
 ;       currency: Option<String>, method: Option<String> }, Passport }. Its own doc comment
-;       (orders.rs:596-598) says the money "must be returned by the same method and at the
+;       (orders.rs:622-624) says the money "must be returned by the same method and at the
 ;       same fixed amount that was agreed, which is why the method is recorded next to the
 ;       figure rather than inferred later", and the Passport variant "carries no amount at
-;       all" (orders.rs:615-617). Same method, same currency, same figure is a COMPARISON of
+;       all" (orders.rs:653-655). Same method, same currency, same figure is a COMPARISON of
 ;       three fields that are already written down. No rate is read, so no rate is needed.
 ; The rule below is therefore CURRENCY-PRESERVING by construction: the two currencies are
 ; compared and neither is privileged, and no expression anywhere on the money path multiplies,
@@ -264,7 +301,7 @@ pub const REUSES_MARKET_PROFILE_ID : str = "turbobaby/market";
 ; above used to cite it as market_profile.t27:135, and a line number into a sibling is stale the
 ; day that sibling is edited; the owner plus the declaration name is not.
 pub const MARKET_FX_DECLARATION : str = "EXCHANGE_RATES_PUBLISHED";
-pub const REFUND_SOURCE_ENUM : str = "src/db/orders.rs:595-618 enum DepositForm { Money { amount, currency, method }, Passport }";
+pub const REFUND_SOURCE_ENUM : str = "src/db/orders.rs:551-586 enum DepositForm { Money { amount, currency, method }, Passport }";
 ; This file's own naming of the rule, like DEPOSIT_FORMS above, and NOT presented as a
 ; quotation: the seed's own sentence is DEPOSIT_FOREIGN_CURRENCY_RULE and stays byte for byte.
 pub const REFUND_RULE : str = "A deposit comes back in the form it was taken: the passport as the document and no money at all, money by the method it arrived by, in the currency it was agreed in and at the figure that was agreed. A request that changes the method, the currency or the amount is not a refund this contract authorizes.";
@@ -483,12 +520,19 @@ pub fn money_method_index_of(method: str) u8 {
 
 ; The refund of one deposit, decided from what was agreed and what is being asked for.
 ;   money_taken, passport_held   the two form discriminants deposit_form_is_legal() judges
-;   agreed_*                     what src/db/orders.rs:595-618 recorded when the bike went out
+;   agreed_*                     what src/db/orders.rs:551-586 recorded when the bike went out
 ;   requested_*                  what is being asked for now
 ; agreed_amount and requested_amount are figures in their own currency -- THB for the six
 ; published rungs, the door's agreed USD/EUR figure for a foreign-currency deposit -- and this
 ; function only ever COMPARES them. DEPOSIT_ABSENT stands for the orders.rs amount None, and
 ; DEPOSIT_FIELD_UNRECORDED for a currency or method None.
+; CORRECTED 2026-09-24 (T27 C3): an order no longer records the door's USD/EUR FIGURE. The
+; order path refuses a figure in any currency but THB (turbobaby/commerce
+; CLIENT_DEPOSIT_FOREIGN_FIGURE_IS_ADMITTED false, DepositRefusal::NotComparable in
+; src/api/orders.rs) until the owner decides how a foreign deposit is recorded; only the money
+; form with no figure passes in another currency, so a foreign deposit can reach an order as a
+; currency with amount None (DEPOSIT_ABSENT here) and never as a figure. The sentence above is
+; kept as written, and this function is unchanged: it still compares whatever it is given.
 ; --
 ; Order of the gates, and why it is this order:
 ;   1. an illegal form pair (both, or neither) is refused before any figure is read at all;
@@ -503,10 +547,10 @@ pub fn refund_decision(money_taken: bool, passport_held: bool, agreed_amount: i3
         return REFUND_REFUSED_FORM_ILLEGAL;
     }
     if (passport_held == true) {
-        ; The document goes back and nothing else moves. A request that names a method, a
-        ; currency or an amount is asking for something this deposit never was -- buying a
-        ; held passport out for money is a different transaction, not a refund -- so each of
-        ; the three is refused by the gate that owns it.
+        // The document goes back and nothing else moves. A request that names a method, a
+        // currency or an amount is asking for something this deposit never was -- buying a
+        // held passport out for money is a different transaction, not a refund -- so each of
+        // the three is refused by the gate that owns it.
         if (requested_method != DEPOSIT_FIELD_UNRECORDED) {
             return REFUND_REFUSED_METHOD_CHANGED;
         }
@@ -518,19 +562,19 @@ pub fn refund_decision(money_taken: bool, passport_held: bool, agreed_amount: i3
         }
         return REFUND_RETURN_DOCUMENT;
     }
-    ; Past the form gate and not the passport, so money_taken is true: those are the only two
-    ; legal states of the pair.
+    // Past the form gate and not the passport, so money_taken is true: those are the only two
+    // legal states of the pair.
     if (money_method_index_of(agreed_method) == MONEY_METHOD_NONE) {
         return REFUND_REFUSED_METHOD_UNRECORDED;
     }
     if (agreed_currency == DEPOSIT_FIELD_UNRECORDED) {
         return REFUND_REFUSED_CURRENCY_UNRECORDED;
     }
-    ; publishable_deposit() is reused here for exactly what it is: a sign test on an amount.
-    ; Its parameter is named for THB because every published rung is in THB, but the test it
-    ; performs is currency-free and nothing here converts. An amount that is not positive was
-    ; never agreed -- DEPOSIT_ABSENT is the orders.rs amount None, and 0 is the D9 defect, a
-    ; figure that reads as "no deposit owed".
+    // publishable_deposit() is reused here for exactly what it is: a sign test on an amount.
+    // Its parameter is named for THB because every published rung is in THB, but the test it
+    // performs is currency-free and nothing here converts. An amount that is not positive was
+    // never agreed -- DEPOSIT_ABSENT is the orders.rs amount None, and 0 is the D9 defect, a
+    // figure that reads as "no deposit owed".
     if (!publishable_deposit(agreed_amount)) {
         return REFUND_REFUSED_AMOUNT_UNAGREED;
     }
@@ -605,7 +649,7 @@ test the_tier_the_issue_asked_for_is_published_nowhere {
     assert DEPOSIT_10000_OCCURRENCES == 0;
     assert is_published_tier(10000) == false;
     assert tier_index_of(10000) == TIER_NONE;
-    ; ...and the constant is the recount of all 21 published rows, not a number typed twice.
+    // ...and the constant is the recount of all 21 published rows, not a number typed twice.
     assert published_rows_at_amount(10000) == DEPOSIT_10000_OCCURRENCES;
     assert published_rows_at_amount(10000) == 0;
 }
@@ -767,7 +811,7 @@ test at_750cc_the_top_rung_is_the_xadv_and_only_the_xadv {
 ; ---- the measurement that forced the shape of this spec --------------------------------
 
 test the_xmax_300_pair_refutes_a_function_of_class_and_displacement {
-    ; Both rows: class "scooter", displacement_cc 300. Different deposits.
+    // Both rows: class "scooter", displacement_cc 300. Different deposits.
     assert deposit_thb_of_family("xmax-300") == 5000;
     assert deposit_thb_of_family("xmax-300-new") == 7000;
     assert deposit_thb_of_family("xmax-300-new") != deposit_thb_of_family("xmax-300");
@@ -783,7 +827,23 @@ test a_tariff_only_key_and_an_unknown_key_are_not_answered_here {
     assert deposit_thb_of_family("r7") == DEPOSIT_NOT_IN_FLEET;
     assert deposit_thb_of_family("") == DEPOSIT_NOT_IN_FLEET;
     assert DEPOSIT_NOT_IN_FLEET < 0;
-    assert PRICE_LIST_ONLY_UNITS == 0;
+    assert PRICE_LIST_ONLY_UNIT_COUNT_IS_DECLARED_HERE == false;
+}
+
+; The unit count of the price-list-only families belongs to turbobaby/availability. The edge is the
+; owner's ID plus the owner's declaration name, the same shape as MARKET_FX_DECLARATION, and the
+; dropped name is listed so a grep for it lands on the resolution rather than on nothing.
+test the_price_list_only_unit_count_is_consumed_from_availability {
+    assert REUSES_AVAILABILITY_ID == "turbobaby/availability";
+    assert REUSES_AVAILABILITY_ID != ID;
+    assert AVAILABILITY_UNIT_COUNT_DECLARATION == "PRICE_LIST_ONLY_UNITS";
+    assert PRICE_LIST_ONLY_UNIT_COUNT_IS_DECLARED_HERE == false;
+    assert RESTATEMENT_DROPPED_ON_RESOLUTION.len == 1;
+    assert RESTATEMENT_DROPPED_ON_RESOLUTION[0] == AVAILABILITY_UNIT_COUNT_DECLARATION;
+    assert RESTATEMENT_RESOLVED_AT == "2026-09-24";
+    assert RESTATEMENT_RESOLVED_AT != MEASURED_AT;
+    assert deposit_thb_of_family("pcx-150") == DEPOSIT_NOT_IN_FLEET;
+    assert deposit_thb_of_family("r7") == DEPOSIT_NOT_IN_FLEET;
 }
 
 ; Row by row, key beside amount, the way the in-stock table is checked above. Membership in the
@@ -806,8 +866,8 @@ test the_tariff_only_rows_pin_each_key_to_its_own_published_deposit {
     assert PRICE_LIST_ONLY_DEPOSIT_THB[5] == TIER_5_THB;
     assert PRICE_LIST_ONLY_KEYS[6] == "r7";
     assert PRICE_LIST_ONLY_DEPOSIT_THB[6] == TIER_6_THB;
-    ; No tariff-only family sits on the 7000 rung, which is why the set of six is closed over
-    ; these rows without any of them being the reason a rung exists.
+    // No tariff-only family sits on the 7000 rung, which is why the set of six is closed over
+    // these rows without any of them being the reason a rung exists.
     assert published_rows_at_amount(TIER_3_THB) == TIER_FAMILY_COUNTS[2];
 }
 
@@ -834,14 +894,18 @@ test zero_is_not_a_tier_and_absent_is_not_zero {
 ; The header's wiring claim, as literals. It is asserted rather than described because the
 ; sentence it replaces was false for an unknown length of time and nothing could have caught
 ; it: a prose absence has no failing state. These three numbers do.
+; Corrected 2026-09-22: they do not. Each assert below compares a constant with a literal, so
+; only an edit to this file can fail one, and the tree moved from 6 to 19 under them in a day.
+; They pin the dated reading in the constants, re-taken on 2026-09-22 (WIRING_REMEASURED_NOTE).
 test the_wiring_absence_is_a_measured_number_and_not_a_flat_nothing {
-    // Six files outside specs/ name a .t27 or specs/turbobaby. The old claim was zero.
-    assert WIRING_GREP_HITS == 6;
-    // Exactly one of them names this file, and it is the corpus gate.
-    assert WIRING_GREP_HITS_NAMING_THIS_FILE == 1;
+    // Nineteen files outside specs/ name a .t27 or specs/turbobaby, re-measured 2026-09-22.
+    // Six on 2026-09-21. The old claim was zero.
+    assert WIRING_GREP_HITS == 19;
+    // Three of them name this file and all three are gates. One on 2026-09-21.
+    assert WIRING_GREP_HITS_NAMING_THIS_FILE == 3;
     assert WIRING_GREP_HITS_NAMING_THIS_FILE < WIRING_GREP_HITS;
     // The claim that actually mattered, and the only one that survived re-measurement:
-    // nothing READS a deposit out of this file.
+    // no shipped consumer READS a deposit out of this file. Two gates do, re-measured 2026-09-22.
     assert WIRING_CONSUMERS_OF_THIS_FILE == 0;
 }
 
@@ -934,7 +998,7 @@ test money_comes_back_by_the_method_it_arrived_by_at_the_agreed_figure {
 }
 
 ; USDT in, cash out is not a refund of this deposit, and neither is the reverse. The method is
-; recorded next to the figure (src/db/orders.rs:610-613) for exactly this reason.
+; recorded next to the figure (src/db/orders.rs:578-581) for exactly this reason.
 test a_changed_method_is_not_a_refund_this_contract_authorizes {
     assert refund_decision(true, false, TIER_2_THB, "THB", "USDT", TIER_2_THB, "THB", "cash THB") == REFUND_REFUSED_METHOD_CHANGED;
     assert refund_decision(true, false, TIER_2_THB, "THB", "cash THB", TIER_2_THB, "THB", "bank transfer") == REFUND_REFUSED_METHOD_CHANGED;

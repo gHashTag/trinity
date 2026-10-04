@@ -6,27 +6,29 @@
 ; absence is supposed to be noticed at boot (D10), and the fail-open read macro D9 calls the
 ; single most dangerous construct in the tree. It owns no table, no column type and no DDL.
 ; --
-; WHY (measured 2026-09-21). 86 migration files, 4271 lines, applied by a runner whose every
+; WHY (measured 2026-09-21; 87 files and 4362 lines after 087, and 88 files and 4387 lines after
+; 088, both on 2026-09-24; 89 files and 4462 lines after 089, on 2026-09-26). 86 migration files, 4271
+; lines, applied by a runner whose every
 ; read of its own bookkeeping ends in a default. Three of them, all inside run_migrations:
-; src/db/mod.rs:653 defaults an unreadable tracker count to 0, :664 defaults an unreadable
-; established probe to false, :709 defaults an unreadable applied flag to false. Each default
+; src/db/mod.rs:665 defaults an unreadable tracker count to 0, :676 defaults an unreadable
+; established probe to false, :721 defaults an unreadable applied flag to false. Each default
 ; picks the branch that does MORE work against the database -- tracker empty, database fresh,
 ; migration not yet applied -- so the direction of the residual error is toward re-applying
-; 86 migrations, including seeds, over live rows. That is not a bug this file reports; it is
+; every migration, including seeds, over live rows. That is not a bug this file reports; it is
 ; the shape the file exists to make visible, because none of the three reads is wrong often
 ; enough to be noticed and all three are wrong the same way.
 ; --
 ; WHY THE PROBE IS ONE LINE AND NOT A PARAGRAPH. D3 calls its subject the highest-consequence
 ; single line in the change, and the arithmetic behind that is checkable: the probe asks whether
 ; one table exists, and the answer routes the boot between marking 76 migrations applied without
-; running them and running all 86. Wrong in one direction it applies 001-076 over a populated
+; running them and running all of them. Wrong in one direction it applies 001-076 over a populated
 ; production database; wrong in the other it marks a base schema applied that was never created
 ; and the very next migration fails the boot. Those two directions are NOT symmetric -- one is
 ; silent and destroys data, the other is loud and destroys nothing -- and the runner's default
 ; on an unreadable probe is the silent one.
 ; --
 ; WHERE THE BRIEF IS REFUTED. The brief asked for "the columns whose absence must stop a boot".
-; No such column exists. src/db/mod.rs:738 states that the check never blocks startup,
+; No such column exists. src/db/mod.rs:750 states that the check never blocks startup,
 ; src/main.rs:454 calls it non-fatal, and src/main.rs:455-471 logs a tracing::error!, sets a
 ; Prometheus gauge and prints "Database connected (with schema warnings above)". A missing
 ; critical column stops nothing. What it does is raise a number an alert can fire on, which is
@@ -34,12 +36,12 @@
 ; --
 ; WHERE DECISIONS.md IS OUT OF DATE (measured 2026-09-21, every citation opened). Four of its
 ; line numbers have rotted and two of its present-tense sentences describe a state that has
-; since been fixed. D1 cites src/db/mod.rs:1021-1047 for the sequence test; it is at :1384.
-; D2 cites :488-520 for the backfill; run_migrations begins at :600 and the backfill branch is
-; :654-695. D3 cites :495 and quotes the probe as reading public.strains; the live line is :659
+; since been fixed. D1 cites src/db/mod.rs:1021-1047 for the sequence test; it is at :1396.
+; D2 cites :488-520 for the backfill; run_migrations begins at :612 and the backfill branch is
+; :666-707. D3 cites :495 and quotes the probe as reading public.strains; the live line is :671
 ; and it reads public.orders, so D3 has been APPLIED and its text is a record of the defect, not
 ; of the code. D10 cites :340-353 and says CRITICAL_COLUMNS "currently guards only"
-; accessory_sets, tea_sets and sets; the live list is at :402-434 and carries bikes and
+; accessory_sets, tea_sets and sets; the live list is at :414-446 and carries bikes and
 ; bike_units, so D10 has been applied too. Only D9's citation survives unchanged: try_get_warn!
 ; is exactly src/db/macros.rs:28-44. The numbers below are the measured ones; the decisions are
 ; cited by identifier, which does not rot.
@@ -49,8 +51,8 @@
 ; by turbobaby/deposit-tiers in the comment above FAMILY_DEPOSIT_THB: that
 ; scripts/verify_fleet_seed.py "knows nothing about .t27". It is false, and the measurement is
 ; unchanged -- that gate reads exactly one .t27 file (MARKET_SPEC at
-; scripts/verify_fleet_seed.py:34, read at :112, parsed one constant at a time by spec_const at
-; :90-95) and pins the seed's 13-field market block to its constants.
+; scripts/verify_fleet_seed.py:41, read at :119, parsed one constant at a time by spec_const at
+; :97-102) and pins the seed's 13-field market block to its constants.
 ; Re-opened at review on 2026-09-21 and BOTH OWNERS HAVE CORRECTED THEIR OWN TEXT. Neither now
 ; claims the gate is .t27-blind; each says instead that the script gates turbobaby/market and
 ; not its own table, and each gives a narrower checkable reason for its copy still being
@@ -112,15 +114,47 @@ pub const REUSES_OBSERVABILITY_ID : str = "turbobaby/observability";
 ; duplicate (verified by sorting the prefixes: first 001, last 086, count 86, no index mismatch).
 ; wc -l migrations/*.sql -> 4271 total. src/db/mod.rs:29 holds the same 86 as include_str!
 ; entries, so disk and code agree by count as well as by name.
-pub const MIGRATION_FILES : u8 = 86;
-pub const MIGRATION_LINES : u16 = 4271;
-pub const MIGRATION_ENTRIES_IN_CODE : u8 = 86;
+; CORRECTED 2026-09-24: 87 files, 001..087, 4362 lines, and 87 include_str! entries.
+; migrations/087_delivery_zones_phuket.sql (91 lines) carries the owner's Phuket delivery zones
+; (turbobaby/delivery-terms) and took the next free number, as D1 requires. Every src/db/mod.rs
+; line this file cites past line 385 moved four lines down with it and is re-pointed; the old
+; numbers are the new ones minus four. The 2026-09-21 census is kept under _BEFORE_087 names.
+; CORRECTED 2026-09-24, the same day: 88 files, 001..088, 4387 lines, and 88 include_str!
+; entries. migrations/088_unpublish_events.sql (25 lines) hides every event still public, on
+; the owner's rental-only ruling (turbobaby/events-booking), and took the next free number. Its
+; MIGRATIONS entry moved every src/db/mod.rs line past 389 four more lines, so the citations
+; below are re-measured after both insertions. The census between the two changes is kept under
+; _BEFORE_088 names, and the one before either under _BEFORE_087.
+; CORRECTED 2026-09-26: 89 files, 001..089, 4462 lines, and 89 include_str! entries.
+; migrations/089_referral_credit.sql (75 lines) creates the referral credit's three tables on the
+; owner's R3 answer (turbobaby/referral-credit) and took the next free number; it creates only,
+; reading and writing no existing row. Its MIGRATIONS entry moved every src/db/mod.rs line past
+; 393 four lines down, and the citations below are re-pinned. The census before it is kept under
+; _BEFORE_089 names.
+pub const MIGRATION_FILES : u8 = 89;
+pub const MIGRATION_LINES : u16 = 4462;
+pub const MIGRATION_ENTRIES_IN_CODE : u8 = 89;
 pub const SEQUENCE_FIRST : u8 = 1;
-pub const SEQUENCE_LAST : u8 = 86;
+pub const SEQUENCE_LAST : u8 = 89;
+pub const MIGRATION_FILES_BEFORE_089 : u8 = 88;
+pub const MIGRATION_LINES_BEFORE_089 : u16 = 4387;
+pub const MIGRATION_ENTRIES_IN_CODE_BEFORE_089 : u8 = 88;
+pub const SEQUENCE_LAST_BEFORE_089 : u8 = 88;
+pub const LINES_ADDED_BY_089 : u16 = 75;
+pub const MIGRATION_FILES_BEFORE_088 : u8 = 87;
+pub const MIGRATION_LINES_BEFORE_088 : u16 = 4362;
+pub const MIGRATION_ENTRIES_IN_CODE_BEFORE_088 : u8 = 87;
+pub const SEQUENCE_LAST_BEFORE_088 : u8 = 87;
+pub const LINES_ADDED_BY_088 : u16 = 25;
+pub const MIGRATION_FILES_BEFORE_087 : u8 = 86;
+pub const MIGRATION_LINES_BEFORE_087 : u16 = 4271;
+pub const MIGRATION_ENTRIES_IN_CODE_BEFORE_087 : u8 = 86;
+pub const SEQUENCE_LAST_BEFORE_087 : u8 = 86;
+pub const LINES_ADDED_BY_087 : u16 = 91;
 ; D1: the sequence test asserts a gap-free run from 001, so a reserved gap is not an option and
 ; the bike domain starts at the first free slot above the last pre-bike migration.
 pub const BIKE_DOMAIN_FIRST : u8 = 77;
-pub const SEQUENCE_GUARD : str = "src/db/mod.rs:1384 migration_numbers_are_sequential_and_unique";
+pub const SEQUENCE_GUARD : str = "src/db/mod.rs:1396 migration_numbers_are_sequential_and_unique";
 
 pub fn sequence_is_gap_free(first: u8, last: u8, file_count: u8) bool {
   if (last < first) {
@@ -165,10 +199,10 @@ pub fn change_is_expressible(number: u8, is_a_new_file: bool) bool {
 ; migrations/wip/077_quest_progress.sql claims 077, and migrations/077_bikes.sql already owns it.
 ; Both halves verified here rather than taken from D1. The walks that DECIDE the numbering are
 ; std::fs::read_dir with no recursion and a .sql filter, and there are FOUR of them in
-; src/db/mod.rs, not one: :1133 (every_migration_file_is_included), :1333 (migration_files, shared
-; by the numbering and wiring tests), :1483 (read_migrations_corpus) and :1644 (migration_tables).
+; src/db/mod.rs, not one: :1145 (every_migration_file_is_included), :1345 (migration_files, shared
+; by the numbering and wiring tests), :1495 (read_migrations_corpus) and :1656 (migration_tables).
 ; A directory entry survives none of the four, so the duplicate prefix never reaches the guard at
-; :1384 and the collision is latent, not live. tests/retired_table_wiring.rs:97 is a fifth shallow
+; :1396 and the collision is latent, not live. tests/retired_table_wiring.rs:98 (:97 until 2026-09-26) is a fifth shallow
 ; walk, outside the runner module and named separately below.
 ; It does NOT follow that nothing reads the subdirectory, and that correction is the point of the
 ; two constants after the walk list: src/main.rs:2679 collect_files_with_ext recurses at :2687, so
@@ -178,16 +212,17 @@ pub fn change_is_expressible(number: u8, is_a_new_file: bool) bool {
 ; cannot see the collision; what it refutes is the weaker sentence "nothing reads migrations/wip",
 ; which is false, and with it the idea that promotion is the first moment the file's contents
 ; matter.
-; The arithmetic that proves the file is there: find migrations -name '*.sql' -> 87,
-; ls migrations/*.sql -> 86, and the difference is exactly the one wip file. ls migrations/ also
-; prints 87, counting the wip DIRECTORY rather than the wip file -- the right number by the wrong
+; The arithmetic that proves the file is there: find migrations -name '*.sql' -> 90,
+; ls migrations/*.sql -> 89, and the difference is exactly the one wip file. ls migrations/ also
+; prints 90 (all three were one lower before 089 on 2026-09-26, two lower before 088 and three
+; lower before 087, both 2026-09-24), counting the wip DIRECTORY rather than the wip file -- the right number by the wrong
 ; arithmetic, which turbobaby/pricing-honesty already records beside its own
 ; MIGRATION_FILES_SEARCHED.
 ; --
 ; WHO OWNS THE RECURSIVE COUNT, and why three contracts declare it (measured 2026-09-21, all
 ; three opened). This file owns the migration-file census: the sequence law, the shallow walks'
 ; input and the wip tripwire are its subject, so SQL_FILES_TOP_LEVEL and SQL_FILES_RECURSIVE are
-; declared here and the 86 is the shallow walks' input. turbobaby/pricing-honesty and
+; declared here and the 88 is the shallow walks' input. turbobaby/pricing-honesty and
 ; turbobaby/locale-policy each declare the same recursive total under the name
 ; MIGRATION_FILES_SEARCHED, and neither is a second census: it is the DENOMINATOR of a recursive
 ; grep each of them ran over the same directory -- for divergence in the one, for a CHECK
@@ -195,20 +230,22 @@ pub fn change_is_expressible(number: u8, is_a_new_file: bool) bool {
 ; search is reported or the absence it proves cannot be read. Three declarations are therefore
 ; correct, and what they carry is a drift risk rather than a duplication. The copy here is
 ; pinned against its OWN components and not against theirs, because those two files are not this
-; one's to edit: 86 shallow plus the 1 file in migrations/wip equals the 87 recursive, asserted
-; below, so this file cannot go on carrying an 87 that its own two halves stop producing.
+; one's to edit: 89 shallow plus the 1 file in migrations/wip equals the 90 recursive, asserted
+; below, so this file cannot go on carrying a 90 that its own two halves stop producing. (88 and
+; 89 before 089 on 2026-09-26, under _BEFORE_089 names; 87, 88 and 88 between 087 and 088 on
+; 2026-09-24, under _BEFORE_088 names.)
 pub const WIP_DIRECTORY : str = "migrations/wip";
 pub const WIP_FILE : str = "migrations/wip/077_quest_progress.sql";
 pub const WIP_CLAIMED_NUMBER : u8 = 77;
 pub const NUMBERING_WALK_IS_RECURSIVE : bool = false;
 pub const MIGRATION_DIRECTORY_READERS : u8 = 4;
 pub const MIGRATION_DIRECTORY_READER_SITES : [4]str = [
-  "src/db/mod.rs:1133",
-  "src/db/mod.rs:1333",
-  "src/db/mod.rs:1483",
-  "src/db/mod.rs:1644",
+  "src/db/mod.rs:1145",
+  "src/db/mod.rs:1345",
+  "src/db/mod.rs:1495",
+  "src/db/mod.rs:1656",
 ];
-pub const SHALLOW_WALK_OUTSIDE_THE_RUNNER_MODULE : str = "tests/retired_table_wiring.rs:97";
+pub const SHALLOW_WALK_OUTSIDE_THE_RUNNER_MODULE : str = "tests/retired_table_wiring.rs:98";
 pub const RECURSIVE_READER_SITE : str = "src/main.rs:2679 collect_files_with_ext, recursing at :2687";
 pub const RECURSIVE_READER_ENTRY : str = "src/main.rs:2720 parse_migration_schema";
 pub const RECURSIVE_READER_TESTS : u8 = 4;
@@ -220,8 +257,14 @@ pub const RECURSIVE_READER_TEST_SITES : [4]str = [
 ];
 pub const WIP_FILE_IS_READ_BY_SOMETHING : bool = true;
 pub const WIP_PREFIX_IS_READ_BY_SOMETHING : bool = false;
-pub const SQL_FILES_TOP_LEVEL : u8 = 86;
-pub const SQL_FILES_RECURSIVE : u8 = 87;
+pub const SQL_FILES_TOP_LEVEL : u8 = 89;
+pub const SQL_FILES_RECURSIVE : u8 = 90;
+pub const SQL_FILES_TOP_LEVEL_BEFORE_089 : u8 = 88;
+pub const SQL_FILES_RECURSIVE_BEFORE_089 : u8 = 89;
+pub const SQL_FILES_TOP_LEVEL_BEFORE_088 : u8 = 87;
+pub const SQL_FILES_RECURSIVE_BEFORE_088 : u8 = 88;
+pub const SQL_FILES_TOP_LEVEL_BEFORE_087 : u8 = 86;
+pub const SQL_FILES_RECURSIVE_BEFORE_087 : u8 = 87;
 pub const WIP_SQL_FILES : u8 = 1;
 pub const SQL_FILE_CENSUS_OWNER_ID : str = "turbobaby/schema-provenance";
 pub const SQL_FILE_CENSUS_SIBLING_COPIES : u8 = 2;
@@ -229,7 +272,18 @@ pub const SQL_FILE_CENSUS_SIBLING_COPY_OWNERS : [2]str = [
   "turbobaby/pricing-honesty", "turbobaby/locale-policy",
 ];
 pub const SQL_FILE_CENSUS_SIBLING_COPY_DECLARATION : str = "MIGRATION_FILES_SEARCHED";
-pub const WIP_COLLISION_TRIPWIRE : str = "migrations/wip/077_quest_progress.sql claims a number migrations/077_bikes.sql owns. Three non-recursive read_dir walks of migrations/ keep the subdirectory invisible, so nothing collides today and nothing reports it either. The moment the file is moved up it becomes a duplicate prefix and src/db/mod.rs:1384 fails. Renumber the promoted file to the next free slot above the highest migrations/*.sql on disk at that time; never renumber the bike migrations (D1).";
+; INBOUND CONFIRMED 2026-09-24. Until that day this file called itself the census owner and the
+; sibling it listed first, turbobaby/pricing-honesty, called ITSELF the owner of the same count and
+; never named this file; turbobaby/locale-policy followed pricing-honesty. A review of 2026-09-23
+; recorded the two self-declared owners. Resolved by subject in this file's favour: pricing-honesty
+; now declares MIGRATION_COUNT_IS_OWNED_HERE false and names this ID and SQL_FILES_RECURSIVE,
+; SQL_FILES_TOP_LEVEL and WIP_SQL_FILES as the owner's declarations, and locale-policy's copy names
+; this ID and SQL_FILES_RECURSIVE. Gate 3 binds the three figures here to the tree, where until then
+; only the two copies were bound -- the self-declared owner was the one unguarded declaration.
+pub const SQL_FILE_CENSUS_OWNERSHIP_IS_CONTESTED : bool = false;
+pub const SQL_FILE_CENSUS_OWNERSHIP_WAS_CONTESTED_BEFORE_2026_09_24 : bool = true;
+pub const SQL_FILE_CENSUS_SIBLINGS_NAMING_THIS_OWNER : u8 = 2;
+pub const WIP_COLLISION_TRIPWIRE : str = "migrations/wip/077_quest_progress.sql claims a number migrations/077_bikes.sql owns. Three non-recursive read_dir walks of migrations/ keep the subdirectory invisible, so nothing collides today and nothing reports it either. The moment the file is moved up it becomes a duplicate prefix and src/db/mod.rs:1396 fails. Renumber the promoted file to the next free slot above the highest migrations/*.sql on disk at that time; never renumber the bike migrations (D1).";
 
 pub fn collision_is_live(candidate: u8, in_wip_subdirectory: bool) bool {
   if (in_wip_subdirectory and !NUMBERING_WALK_IS_RECURSIVE) {
@@ -257,22 +311,26 @@ pub fn recursive_excess(recursive: u8, top_level: u8) u8 {
 }
 
 ; --- The established-versus-fresh decision (D3) ----------------------------------------------
-; src/db/mod.rs:659 asks SELECT to_regclass('public.orders') IS NOT NULL. The rejected form asked
+; src/db/mod.rs:671 asks SELECT to_regclass('public.orders') IS NOT NULL. The rejected form asked
 ; for public.strains, which 083_drop_cannabis_catalog.sql drops: keyed on a table the rebrand
 ; deletes, the probe would answer "fresh" for a populated production database the moment 083 had
 ; run. orders is created by 001_initial.sql:57 and survives, because a rental is still an order.
 pub const ESTABLISHED_PROBE_TABLE : str = "public.orders";
 pub const ESTABLISHED_PROBE_REJECTED_TABLE : str = "public.strains";
-pub const ESTABLISHED_PROBE_SITE : str = "src/db/mod.rs:659";
+pub const ESTABLISHED_PROBE_SITE : str = "src/db/mod.rs:671";
 pub const PROBE_TABLE_SURVIVES_THE_REBRAND : bool = true;
 
 ; The backfill stops at the last pre-bike migration instead of walking the whole list, because
 ; the claim it encodes -- these have demonstrably run before -- is only true of migrations that
-; existed before this deploy. 76 marked, 10 left to run, and 76 < 86 is the property the shipped
-; guard at src/db/mod.rs:1437 asserts.
+; existed before this deploy. 76 marked, 13 left to run, and 76 < 89 is the property the shipped
+; guard at src/db/mod.rs:1449 asserts. (10 and 86 before 087 arrived on 2026-09-24, 11 and 87
+; before 088 arrived the same day, and 12 and 88 before 089 on 2026-09-26.)
 pub const BACKFILL_BOUNDARY : str = "076_promo_broadcast.sql";
 pub const BACKFILL_THROUGH : u8 = 76;
-pub const MIGRATIONS_AFTER_BOUNDARY : u8 = 10;
+pub const MIGRATIONS_AFTER_BOUNDARY : u8 = 13;
+pub const MIGRATIONS_AFTER_BOUNDARY_BEFORE_089 : u8 = 12;
+pub const MIGRATIONS_AFTER_BOUNDARY_BEFORE_087 : u8 = 10;
+pub const MIGRATIONS_AFTER_BOUNDARY_BEFORE_088 : u8 = 11;
 
 pub const RUN_APPLY_ALL : u8 = 1;
 pub const RUN_BACKFILL_THEN_APPLY : u8 = 2;
@@ -307,7 +365,7 @@ pub fn boundary_leaves_work(file_count: u8, through: u8) bool {
 }
 
 ; The two directions, and why naming them separately is the point. A probe that says FRESH about
-; an established database skips the backfill and applies 001-086 over live rows: silent, and the
+; an established database skips the backfill and applies 001-088 over live rows: silent, and the
 ; damage is the data. A probe that says ESTABLISHED about a fresh database marks a base schema
 ; applied that was never created, and the first migration that needs it fails the boot: loud, and
 ; the damage is a failed deploy. Only one of these is recoverable by reading a log.
@@ -327,9 +385,9 @@ pub fn probe_error_fails_the_boot(probe_says_established: bool, database_is_esta
 ; back to when the value it just queried cannot be read out of the row.
 pub const RUNNER_DEFAULT_COUNT : u8 = 3;
 pub const RUNNER_DEFAULT_SITES : [3]str = [
-  "src/db/mod.rs:653",
-  "src/db/mod.rs:664",
-  "src/db/mod.rs:709",
+  "src/db/mod.rs:665",
+  "src/db/mod.rs:676",
+  "src/db/mod.rs:721",
 ];
 pub const DEFAULT_TRACKER_ROWS : u16 = 0;
 pub const DEFAULT_PROBE_ESTABLISHED : bool = false;
@@ -340,10 +398,10 @@ pub fn runner_applies(applied_flag: bool) bool {
 }
 
 ; --- The boot-time column check (D10) ---------------------------------------------------------
-; CRITICAL_COLUMNS at src/db/mod.rs:402-434: five tables, nineteen columns, of which the bike
+; CRITICAL_COLUMNS at src/db/mod.rs:414-446: five tables, nineteen columns, of which the bike
 ; catalog contributes two tables and seven columns. Seven is also the number of columns the
 ; 22e26660 false alarm named on 2026-09-13, every one of which was present minutes later, which
-; is why the check now reads twice with 500 ms between them -- src/db/mod.rs:460, against the
+; is why the check now reads twice with 500 ms between them -- src/db/mod.rs:472, against the
 ; 11 ms that separated the false alarm from the last migration of a first-boot burst.
 pub const CRITICAL_TABLES : u8 = 5;
 pub const CRITICAL_COLUMNS_TOTAL : u8 = 19;
@@ -366,7 +424,7 @@ pub fn critical_column_budget(a: u8, b: u8, c: u8, d: u8, e: u8) u8 {
 ; exactly backwards: a running process proves only that the check ran, and it always continues.
 pub const MISSING_COLUMN_STOPS_BOOT : bool = false;
 pub const MISSING_COLUMN_RAISES_GAUGE : bool = true;
-pub const BOOT_HALT_NOTE : str = "No column absence halts startup. src/db/mod.rs:738 says the self-check never blocks startup, src/main.rs:454 calls it non-fatal, and src/main.rs:455-471 logs tracing::error! with the column names, sets the schema_missing_columns gauge and then prints Database connected with schema warnings. The gauge is set even at zero so the series exists and a recovery is observable. Making an absence fatal would be a change to src/main.rs, not to this contract.";
+pub const BOOT_HALT_NOTE : str = "No column absence halts startup. src/db/mod.rs:750 says the self-check never blocks startup, src/main.rs:454 calls it non-fatal, and src/main.rs:455-471 logs tracing::error! with the column names, sets the schema_missing_columns gauge and then prints Database connected with schema warnings. The gauge is set even at zero so the series exists and a recovery is observable. Making an absence fatal would be a change to src/main.rs, not to this contract.";
 pub const BOOT_OK : u8 = 1;
 pub const BOOT_OK_WITH_WARNINGS : u8 = 2;
 
@@ -479,8 +537,26 @@ pub fn drift_evidence_is_only_a_log_line(read_succeeded: bool) bool {
 ; references to the log target db.schema_drift anywhere in src/, tests/ and scripts/ are the
 ; macro's own doc comment and the warn! inside it. The discipline is a human one, the census
 ; above is its only artefact, and a number in a spec is not a gate.
-pub const FAIL_OPEN_GATES : u8 = 0;
+; CORRECTED 2026-09-22: FAIL_OPEN_GATES was 0 and is 1. scripts/verify_t27_against_source.py now
+; binds FAIL_OPEN_CALL_SITES to a count of try_get_warn! invocations over src/**/*.rs -- the
+; defining module's three references to itself excluded by their text -- and
+; FAIL_OPEN_SITES_ON_BIKE_PATH to a zero over src/**/*bike*.rs with a witness, and
+; tests/t27_gates_run.rs runs that script under cargo test. A call site added anywhere under src/,
+; or one removed, now fails the build until the census above is re-taken. What it does NOT do is
+; judge whether a new site sits on a money or gating path: it counts, and that reading stays a
+; human one. FAIL_OPEN_GATE_NOTE is the 2026-09-21 reading, kept word for word;
+; FAIL_OPEN_GATE_REMEASURED_NOTE is this one. The 0 is kept as FAIL_OPEN_GATES_2026_09_21, and the
+; invariant whose name records it asserts that dated reading.
+; Later on 2026-09-22 the same script bound FAIL_OPEN_CALL_SITE_FILES as well, over the same
+; pattern counted per file, after a review planted a site leaving src/api/catalog.rs and one
+; arriving in src/api/orders.rs: the total stayed 21 and only the file count moved, to 4. It is
+; still one gate -- one script -- so FAIL_OPEN_GATES does not move; a site that moves between the
+; three files already named is still seen by nobody.
+pub const FAIL_OPEN_GATES : u8 = 1;
+pub const FAIL_OPEN_GATES_2026_09_21 : u8 = 0;
+pub const FAIL_OPEN_GATES_MEASURED_AT : str = "2026-09-22";
 pub const FAIL_OPEN_GATE_NOTE : str = "No automated check reads the try_get_warn call sites. grep -rn try_get_warn tests/ returns 0, and db.schema_drift appears twice in the tree, both inside src/db/macros.rs. Closing this needs a source-walking test that pins the call-site count and fails when a new one is added on a money or gating path, with the floor discipline D16 requires so an empty match cannot pass as a clean result.";
+pub const FAIL_OPEN_GATE_REMEASURED_NOTE : str = "re-measured 2026-09-22, was 0 gates: one automated check now reads the try_get_warn call sites. scripts/verify_t27_against_source.py holds FAIL_OPEN_CALL_SITES = 21 to src/**/*.rs and FAIL_OPEN_SITES_ON_BIKE_PATH = 0 to src/**/*bike*.rs, the zero carrying a witness, and tests/t27_gates_run.rs runs that script under cargo test. The census is compared for equality, so a scan gone blind reads 0 against 21 and fails: the D16 floor is the expected value itself. It counts sites and does not classify them, so a new site on a money or gating path fails exactly as any other new site does, and whether it is on such a path is still read by a human. grep -rn try_get_warn tests/ still returns 0; the check lives in scripts/.";
 
 ; --- The direction of the residual error --------------------------------------------------------
 ; availability.t27's header states the shape this borrows: the direction of a residual error is
@@ -514,7 +590,7 @@ pub fn direction_writes_to_a_live_database(direction: u8) bool {
 ; --- What the seed gate covers -------------------------------------------------------------------
 ; scripts/verify_fleet_seed.py pins migrations/082_bikes_seed.sql to data/fleet_seed.json field by
 ; field, and it is the only gate in this repository that takes a .t27 constant as EVIDENCE ABOUT
-; ANOTHER ARTIFACT: MARKET_SPEC at scripts/verify_fleet_seed.py:34, read at :112 and parsed one
+; ANOTHER ARTIFACT: MARKET_SPEC at scripts/verify_fleet_seed.py:41, read at :119 and parsed one
 ; constant at a time by spec_const at :90-95 -- a regex over the file's own text, no compiler
 ; involved -- comparing the seed's market block to the 13 contract fields listed at :72-86. The
 ; spec there is the source of truth and the SQL is the thing on trial.
@@ -636,12 +712,24 @@ pub const CUSTOMER_DATA_FIELDS : u8 = 0;
 ; --- Tests --------------------------------------------------------------------------------------
 
 test the_sequence_is_gap_free_and_code_agrees_with_disk {
-  assert MIGRATION_FILES == 86;
-  assert MIGRATION_LINES == 4271;
+  assert MIGRATION_FILES == 89;
+  assert MIGRATION_LINES == 4462;
   assert sequence_is_gap_free(SEQUENCE_FIRST, SEQUENCE_LAST, MIGRATION_FILES) == true;
-  assert sequence_is_gap_free(SEQUENCE_FIRST, SEQUENCE_LAST, 85) == false;
-  assert sequence_is_gap_free(2, SEQUENCE_LAST, 85) == false;
+  assert sequence_is_gap_free(SEQUENCE_FIRST, SEQUENCE_LAST, 88) == false;
+  assert sequence_is_gap_free(2, SEQUENCE_LAST, 88) == false;
   assert disk_and_code_agree(MIGRATION_FILES, MIGRATION_ENTRIES_IN_CODE) == true;
+  assert MIGRATION_FILES == MIGRATION_FILES_BEFORE_089 + 1;
+  assert MIGRATION_LINES == MIGRATION_LINES_BEFORE_089 + LINES_ADDED_BY_089;
+  assert sequence_is_gap_free(SEQUENCE_FIRST, SEQUENCE_LAST_BEFORE_089, MIGRATION_FILES_BEFORE_089) == true;
+  assert disk_and_code_agree(MIGRATION_FILES_BEFORE_089, MIGRATION_ENTRIES_IN_CODE_BEFORE_089) == true;
+  assert MIGRATION_FILES_BEFORE_089 == MIGRATION_FILES_BEFORE_088 + 1;
+  assert MIGRATION_LINES_BEFORE_089 == MIGRATION_LINES_BEFORE_088 + LINES_ADDED_BY_088;
+  assert MIGRATION_FILES_BEFORE_088 == MIGRATION_FILES_BEFORE_087 + 1;
+  assert MIGRATION_LINES_BEFORE_088 == MIGRATION_LINES_BEFORE_087 + LINES_ADDED_BY_087;
+  assert sequence_is_gap_free(SEQUENCE_FIRST, SEQUENCE_LAST_BEFORE_088, MIGRATION_FILES_BEFORE_088) == true;
+  assert disk_and_code_agree(MIGRATION_FILES_BEFORE_088, MIGRATION_ENTRIES_IN_CODE_BEFORE_088) == true;
+  assert sequence_is_gap_free(SEQUENCE_FIRST, SEQUENCE_LAST_BEFORE_087, MIGRATION_FILES_BEFORE_087) == true;
+  assert disk_and_code_agree(MIGRATION_FILES_BEFORE_087, MIGRATION_ENTRIES_IN_CODE_BEFORE_087) == true;
 }
 
 test the_bike_domain_owns_seventy_seven_onward {
@@ -649,10 +737,15 @@ test the_bike_domain_owns_seventy_seven_onward {
   assert number_is_bike_domain(76) == false;
   assert number_is_bike_domain(77) == true;
   assert number_is_bike_domain(86) == true;
-  assert number_is_bike_domain(87) == false;
-  assert number_is_taken(86) == true;
-  assert number_is_taken(87) == false;
-  assert next_free_number(SEQUENCE_LAST) == 87;
+  assert number_is_bike_domain(87) == true;
+  assert number_is_bike_domain(88) == true;
+  assert number_is_bike_domain(89) == true;
+  assert number_is_bike_domain(90) == false;
+  assert number_is_taken(88) == true;
+  assert number_is_taken(89) == true;
+  assert number_is_taken(90) == false;
+  assert next_free_number(SEQUENCE_LAST) == 90;
+  assert next_free_number(SEQUENCE_LAST_BEFORE_089) == 89;
 }
 
 test an_existing_migration_cannot_be_edited_in_place {
@@ -660,9 +753,15 @@ test an_existing_migration_cannot_be_edited_in_place {
   assert migration_is_frozen(1) == true;
   assert migration_is_frozen(76) == true;
   assert migration_is_frozen(86) == true;
-  assert migration_is_frozen(87) == false;
+  assert migration_is_frozen(87) == true;
+  assert migration_is_frozen(88) == true;
+  assert migration_is_frozen(89) == true;
+  assert migration_is_frozen(90) == false;
   assert change_is_expressible(8, false) == false;
-  assert change_is_expressible(87, true) == true;
+  assert change_is_expressible(87, false) == false;
+  assert change_is_expressible(88, false) == false;
+  assert change_is_expressible(89, false) == false;
+  assert change_is_expressible(90, true) == true;
 }
 
 test the_wip_collision_is_latent_and_becomes_live_on_promotion {
@@ -670,18 +769,23 @@ test the_wip_collision_is_latent_and_becomes_live_on_promotion {
   assert NUMBERING_WALK_IS_RECURSIVE == false;
   assert MIGRATION_DIRECTORY_READERS == 4;
   assert MIGRATION_DIRECTORY_READER_SITES.len == 4;
-  assert MIGRATION_DIRECTORY_READER_SITES[0] == "src/db/mod.rs:1133";
+  assert MIGRATION_DIRECTORY_READER_SITES[0] == "src/db/mod.rs:1145";
   assert collision_is_live(WIP_CLAIMED_NUMBER, true) == false;
   assert collision_is_live(WIP_CLAIMED_NUMBER, false) == true;
-  assert collision_is_live(87, false) == false;
-  assert promotion_number_is_safe(87, SEQUENCE_LAST) == true;
+  assert collision_is_live(90, false) == false;
+  assert promotion_number_is_safe(90, SEQUENCE_LAST) == true;
+  assert promotion_number_is_safe(89, SEQUENCE_LAST) == false;
+  assert promotion_number_is_safe(88, SEQUENCE_LAST) == false;
   assert promotion_number_is_safe(WIP_CLAIMED_NUMBER, SEQUENCE_LAST) == false;
 }
 
 test the_recursive_and_top_level_counts_differ_by_exactly_the_wip_file {
   assert SQL_FILES_TOP_LEVEL == MIGRATION_FILES;
-  assert SQL_FILES_RECURSIVE == 87;
+  assert SQL_FILES_RECURSIVE == 90;
   assert recursive_excess(SQL_FILES_RECURSIVE, SQL_FILES_TOP_LEVEL) == 1;
+  assert recursive_excess(SQL_FILES_RECURSIVE_BEFORE_089, SQL_FILES_TOP_LEVEL_BEFORE_089) == 1;
+  assert recursive_excess(SQL_FILES_RECURSIVE_BEFORE_088, SQL_FILES_TOP_LEVEL_BEFORE_088) == 1;
+  assert recursive_excess(SQL_FILES_RECURSIVE_BEFORE_087, SQL_FILES_TOP_LEVEL_BEFORE_087) == 1;
   assert WIP_SQL_FILES == 1;
   assert SQL_FILES_TOP_LEVEL + WIP_SQL_FILES == SQL_FILES_RECURSIVE;
 }
@@ -696,6 +800,9 @@ test the_recursive_count_names_its_owner_and_its_two_sibling_copies {
   assert SQL_FILE_CENSUS_SIBLING_COPY_OWNERS[0] != ID;
   assert SQL_FILE_CENSUS_SIBLING_COPY_OWNERS[1] != ID;
   assert SQL_FILE_CENSUS_SIBLING_COPY_DECLARATION == "MIGRATION_FILES_SEARCHED";
+  assert SQL_FILE_CENSUS_OWNERSHIP_IS_CONTESTED == false;
+  assert SQL_FILE_CENSUS_OWNERSHIP_WAS_CONTESTED_BEFORE_2026_09_24 == true;
+  assert SQL_FILE_CENSUS_SIBLINGS_NAMING_THIS_OWNER == SQL_FILE_CENSUS_SIBLING_COPIES;
 }
 
 test the_wip_file_is_read_by_a_recursive_walk_and_its_number_is_not {
@@ -717,15 +824,18 @@ test the_boot_takes_one_of_three_plans {
   assert run_plan(1, false) == RUN_APPLY_UNRECORDED;
 }
 
-test the_backfill_stops_short_of_the_list_and_leaves_ten_to_run {
+test the_backfill_stops_short_of_the_list_and_leaves_thirteen_to_run {
   assert BACKFILL_THROUGH == 76;
-  assert MIGRATIONS_AFTER_BOUNDARY == 10;
+  assert MIGRATIONS_AFTER_BOUNDARY == 13;
+  assert BACKFILL_THROUGH + MIGRATIONS_AFTER_BOUNDARY_BEFORE_089 == MIGRATION_FILES_BEFORE_089;
+  assert BACKFILL_THROUGH + MIGRATIONS_AFTER_BOUNDARY_BEFORE_087 == MIGRATION_FILES_BEFORE_087;
+  assert BACKFILL_THROUGH + MIGRATIONS_AFTER_BOUNDARY_BEFORE_088 == MIGRATION_FILES_BEFORE_088;
   assert BACKFILL_THROUGH + MIGRATIONS_AFTER_BOUNDARY == MIGRATION_FILES;
   assert boundary_leaves_work(MIGRATION_FILES, BACKFILL_THROUGH) == true;
   assert boundary_leaves_work(MIGRATION_FILES, MIGRATION_FILES) == false;
   assert backfilled_count(RUN_BACKFILL_THEN_APPLY) == 76;
   assert backfilled_count(RUN_APPLY_ALL) == 0;
-  assert applied_after_backfill(RUN_BACKFILL_THEN_APPLY) == 10;
+  assert applied_after_backfill(RUN_BACKFILL_THEN_APPLY) == 13;
   assert applied_after_backfill(RUN_APPLY_UNRECORDED) == 0;
 }
 
@@ -812,7 +922,10 @@ test neither_branch_of_the_fail_open_read_is_an_error {
   assert read_can_error(false) == false;
   assert drift_evidence_is_only_a_log_line(false) == true;
   assert drift_evidence_is_only_a_log_line(true) == false;
-  assert FAIL_OPEN_GATES == 0;
+  // 0 until 2026-09-22, when the source-binding gate began counting the call sites.
+  assert FAIL_OPEN_GATES == 1;
+  assert FAIL_OPEN_GATES_2026_09_21 == 0;
+  assert FAIL_OPEN_GATES_MEASURED_AT == "2026-09-22";
 }
 
 test none_of_the_three_mechanisms_leans_the_conservative_way {
@@ -899,7 +1012,7 @@ test this_file_transcribes_no_schema_and_reserves_no_number {
 ; --- Invariants ----------------------------------------------------------------------------------
 
 invariant the_numbering_admits_no_gap_and_no_reservation
-  assert sequence_is_gap_free(SEQUENCE_FIRST, SEQUENCE_LAST, MIGRATION_FILES) == true and next_free_number(SEQUENCE_LAST) == 87
+  assert sequence_is_gap_free(SEQUENCE_FIRST, SEQUENCE_LAST, MIGRATION_FILES) == true and next_free_number(SEQUENCE_LAST) == 90
 
 invariant code_and_disk_carry_the_same_migration_count
   assert disk_and_code_agree(MIGRATION_FILES, MIGRATION_ENTRIES_IN_CODE) == true
@@ -949,8 +1062,15 @@ invariant the_fail_open_read_has_no_error_branch
 invariant the_fail_open_census_is_a_sum_and_not_an_estimate
   assert call_site_census(16, 3, 2) == FAIL_OPEN_CALL_SITES and FAIL_OPEN_SITES_ON_BIKE_PATH == 0
 
+; Corrected 2026-09-22: the name records the 2026-09-21 reading and is left standing rather than
+; quietly rewritten, so it asserts that dated reading. It stopped being true when the
+; source-binding gate began counting the call sites; the invariant below holds today's reading,
+; and FAIL_OPEN_GATE_REMEASURED_NOTE says what that gate does and does not judge.
 invariant the_fail_open_construct_is_guarded_by_nothing
-  assert FAIL_OPEN_GATES == 0
+  assert FAIL_OPEN_GATES_2026_09_21 == 0
+
+invariant the_fail_open_census_is_counted_by_one_gate
+  assert FAIL_OPEN_GATES == 1 and FAIL_OPEN_GATES > FAIL_OPEN_GATES_2026_09_21
 
 invariant not_one_of_the_three_mechanisms_defaults_conservatively
   assert direction_is_conservative(MECHANISM_DIRECTIONS[0]) == false and direction_is_conservative(MECHANISM_DIRECTIONS[1]) == false and direction_is_conservative(MECHANISM_DIRECTIONS[2]) == false and CONSERVATIVE_MECHANISMS == 0

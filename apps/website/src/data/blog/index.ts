@@ -3,6 +3,647 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: "a-terminal-for-seven-backends-in-an-x-post",
+    title: "A terminal for t27's seven backends, inside an X post",
+    summary: "[one spec, hello_world; only JavaScript runs in the browser; the native results are one macOS machine on one day; nothing posted on X] The t27 player now has a terminal: the compiler, as WebAssembly in the page, prints what each of its seven backends emits and runs the spec's tests. Each backend has its own share page. Every word the terminal says lives in the spec. Run natively, hello_world as committed builds in two of the seven languages, and the post says why.",
+    date: "2026-10-04",
+    readingMinutes: 6,
+    tags: ["t27", "Compiler", "Terminal"],
+    receipts: [
+      { label: "The recording shown in the post: the terminal's own gates, 21 pass, 0 fail", href: "https://t27.ai/term/play-terminal-gates/" },
+      { label: "The player, with the terminal as its last tab", href: "https://t27.ai/play/hello-world/" },
+      { label: "trinity#1366: this work, the terminal, the seven pages and this post", href: "https://github.com/gHashTag/trinity/pull/1366" },
+      { label: "trinity#1365: a terminal for every t27 backend, one share page per backend (the issue this work closes)", href: "https://github.com/gHashTag/trinity/issues/1365" },
+      { label: "trinity#1359: typed code shows at once in the spec editor (the base of this work) · MERGED 2026-10-04", href: "https://github.com/gHashTag/trinity/pull/1359" },
+      { label: "trinity#1340: the X player card, generated from specs/x/player.t27 · MERGED 2026-10-04", href: "https://github.com/gHashTag/trinity/pull/1340" },
+      { label: "t27#6100: hello_world.t27 calls cast(), which nothing declares · OPEN", href: "https://github.com/gHashTag/t27/issues/6100" },
+      { label: "t27#6101: gen-js, an opt-in lowering of fn bodies · OPEN", href: "https://github.com/gHashTag/t27/issues/6101" },
+      { label: "t27#5966: gen-verilog and gen-verilog-hir output for hello_world is refused by iverilog · OPEN", href: "https://github.com/gHashTag/t27/issues/5966" },
+      { label: "t27#4471: the gen-js backend, declarations only, by design · CLOSED 2026-09-20", href: "https://github.com/gHashTag/t27/issues/4471" },
+    ],
+    openQuestions: [
+      "Only JavaScript runs in the browser. For the other six backends the page prints a command and claims nothing; the native results in the post are one macOS machine on one day (zig 0.16.0, Apple clang 21.0.0, rustc 1.98.1, Icarus Verilog 12.0, tsc 5.8.3).",
+      "hello_world as committed does not build natively in five of the seven languages, and the terminal hands out those files anyway, with the command. Until t27#6100 and t27#5966 are fixed, a reader who runs them gets the errors in the table.",
+      "The page's test evaluator treats the undeclared cast() as a conversion, so in the browser the spec's tests pass on a line that Zig, C and Rust refuse.",
+      "The terminal's behaviour is 361 hand-written lines of JavaScript; only its words and facts are in the spec. Moving the behaviour waits on t27#6101, which changes what gen-js promises and may be declined.",
+      "X's player cards may not collect data entry. Whether a terminal page can be posted as a player card is not decided, and nothing has been posted.",
+      "One spec has terminal pages. Every other play would need its own seven.",
+    ],
+    published: true,
+    ru: {
+      title: "Терминал для семи бэкендов t27 внутри поста в X",
+      summary: "[одна спека, hello_world; в браузере работает только JavaScript; нативные результаты получены на одной машине с macOS в один день; в X ничего не опубликовано] В плеере t27 теперь есть терминал: компилятор, работающий в странице как WebAssembly, печатает то, что выдаёт каждый из семи его бэкендов, и запускает тесты спеки. У каждого бэкенда своя страница для ссылок. Каждое слово терминала живёт в спеке. При нативной сборке hello_world в нынешнем виде собирается на двух языках из семи, и пост объясняет почему.",
+      openQuestions: [
+        "В браузере работает только JavaScript. Для остальных шести бэкендов страница печатает команду и ничего не заявляет; нативные результаты в посте получены на одной машине с macOS в один день (zig 0.16.0, Apple clang 21.0.0, rustc 1.98.1, Icarus Verilog 12.0, tsc 5.8.3).",
+        "hello_world в нынешнем виде не собирается нативно на пяти языках из семи, а терминал всё равно выдаёт эти файлы вместе с командой. Пока t27#6100 и t27#5966 не исправлены, читатель, который их запустит, получит ошибки из таблицы.",
+        "Вычислитель тестов в странице считает необъявленный cast() преобразованием, поэтому в браузере тесты спеки проходят на строке, которую Zig, C и Rust отвергают.",
+        "Поведение терминала — это 361 строка JavaScript, написанная вручную; в спеке только его слова и факты. Перенос поведения ждёт t27#6101, который меняет то, что обещает gen-js, и может быть отклонён.",
+        "Карточкам-плеерам X запрещено собирать ввод данных. Можно ли публиковать страницу терминала как карточку-плеер, не решено, и ничего не опубликовано.",
+        "Страницы терминала есть у одной спеки. Каждому другому плееру понадобятся свои семь.",
+      ],
+    },
+  },
+  {
+    slug: "t27c-compile-time-and-a-backend-without-llvm",
+    title: "Where t27c's compile time goes, and a first backend without LLVM",
+    summary: "[one M1 Pro, one synthetic program; the t27b numbers were taken at a load average of 83–165 on 8 cores; t27b handles 37 of 1174 specs and its JIT runs only on arm64 macOS; three of the four bugs it found are not fixed yet] t27c type-checks a function in 29.9 µs, 5.2 times faster than rustc check, but it emits no machine code, so its full path to an object file is 2.1 times slower than clang on the same program written in C. Its own clean release build went from 142.7 s to 66.0 s after three merged PRs removed unused machine-learning crates and the aws-lc-sys build. t27b, a native AArch64 backend with no LLVM, now merged, compiles and runs the same tests 23 to 381 times faster than the Zig path, writes code at about the clang -O0 level, and found four bugs in t27c and in a spec.",
+    date: "2026-10-04",
+    readingMinutes: 10,
+    tags: ["t27", "Compiler", "Measurement"],
+    receipts: [
+      { label: "t27#5979: t27b, a native AArch64 backend for a subset of t27, no LLVM · MERGED 2026-10-04", href: "https://github.com/gHashTag/t27/pull/5979" },
+      { label: "t27#5976: the t27b issue · CLOSED 2026-10-04", href: "https://github.com/gHashTag/t27/issues/5976" },
+      { label: "t27#5989: the orphan-ceiling ledger names cli/t27b, a follow-up to #5979 · MERGED 2026-10-04", href: "https://github.com/gHashTag/t27/pull/5989" },
+      { label: "t27#5977: t27b structs, strings, enums, casts and invariant blocks · OPEN", href: "https://github.com/gHashTag/t27/issues/5977" },
+      { label: "t27#5992: t27b coverage, invariant blocks run like tests · OPEN, submitted, not merged", href: "https://github.com/gHashTag/t27/pull/5992" },
+      { label: "t27#5993: the Zig signed % fix, lowered to @rem · OPEN, submitted, not merged", href: "https://github.com/gHashTag/t27/pull/5993" },
+      { label: "t27#5900: drop unused candle-core/candle-nn, 142.7 s → 97.9 s · MERGED 2026-10-04", href: "https://github.com/gHashTag/t27/pull/5900" },
+      { label: "t27#5914: the web stack behind cargo features, 212 → 49 crates · MERGED 2026-10-04", href: "https://github.com/gHashTag/t27/pull/5914" },
+      { label: "t27#5920: reqwest on native-tls, no aws-lc-sys build · MERGED 2026-10-04", href: "https://github.com/gHashTag/t27/pull/5920" },
+      { label: "t27#5945: the fast t27c inner loop in CONTRIBUTING · MERGED 2026-10-04", href: "https://github.com/gHashTag/t27/pull/5945" },
+      { label: "t27#5972: ternary_model dot27 shifts an i32 by up to 52 bits · CLOSED 2026-10-04", href: "https://github.com/gHashTag/t27/issues/5972" },
+      { label: "t27#5975: the dot27 fix, u64 lanes and corrected test values · MERGED 2026-10-04", href: "https://github.com/gHashTag/t27/pull/5975" },
+      { label: "t27#5905: epic, t27c's measured weak points · OPEN", href: "https://github.com/gHashTag/t27/issues/5905" },
+    ],
+    openQuestions: [
+      "One machine, under load. The t27b session ran at a load average of 83 to 165 on 8 cores, so its absolute times are inflated; nothing was re-measured on a quiet machine or on Linux.",
+      "One synthetic program, thousands of copies of one loop over a u32. Real Rust and C++ spend their time on generics, templates, macros and imports, which this program barely has.",
+      "t27b handles 37 of 1174 specs, 26 of those 37 have no tests, and its JIT runs only on arm64 macOS. Its code is slower than clang -O2.",
+      "The self-build figures are single runs; building the #5900 tree again gave 110.9 s instead of 97.9 s. Splitting compiler.rs into 24 files showed no speed-up within the noise.",
+      "Three of the four bugs t27b found are not fixed. The Zig signed % fix is #5993, submitted, not merged; the gen-c undefined arithmetic and the dotted module name have no PR yet.",
+      "Covering every spec the reference path passes is planned and in progress, in two lanes: memory (structs, arrays and slices, strings on one address-plus-offset and read-only-data model) and scalar (enums, f64, casts), ordered by a greedy unlock ranking. There are no numbers yet; only #5992 (invariant blocks) is a PR, submitted, not merged.",
+    ],
+    published: true,
+    ru: {
+      title: "Куда уходит время компиляции t27c, и первый бэкенд без LLVM",
+      summary: "[один M1 Pro, одна синтетическая программа; цифры t27b сняты при load average 83–165 на 8 ядрах; t27b понимает 37 из 1174 спек, а его JIT работает только на arm64 macOS; три из четырёх найденных им ошибок ещё не исправлены] t27c проверяет типы одной функции за 29,9 мкс, в 5,2 раза быстрее rustc check, но машинного кода не выдаёт, поэтому его полный путь до объектного файла в 2,1 раза медленнее clang на той же программе, написанной на C. Чистая release-сборка самого t27c сократилась со 142,7 с до 66,0 с после трёх влитых PR, убравших неиспользуемые библиотеки машинного обучения и сборку aws-lc-sys. t27b, собственный бэкенд AArch64 без LLVM, уже влит: он компилирует и запускает те же тесты в 23–381 раз быстрее пути через Zig, пишет код примерно уровня clang -O0 и нашёл четыре ошибки в t27c и в одной спеке.",
+      openQuestions: [
+        "Одна машина, под нагрузкой. Сеанс t27b шёл при load average от 83 до 165 на 8 ядрах, так что абсолютные времена завышены; на тихой машине и на Linux ничего не перемеряли.",
+        "Одна синтетическая программа: тысячи копий одного цикла над u32. Настоящие Rust и C++ тратят время на обобщения, шаблоны, макросы и импорты, которых здесь почти нет.",
+        "t27b понимает 37 из 1174 спек, у 26 из этих 37 тестов нет, а его JIT работает только на arm64 macOS. Его код медленнее, чем после clang -O2.",
+        "Цифры сборки t27c — по одному прогону; повторная сборка ветки #5900 дала 110,9 с вместо 97,9 с. Разбиение compiler.rs на 24 файла ускорения сверх шума не показало.",
+        "Три из четырёх ошибок, найденных t27b, не исправлены. Исправление знакового % для Zig — #5993, отправлен, не влит; для неопределённой арифметики в gen-c и точечного имени модуля PR пока нет.",
+        "Покрыть каждую спеку, которую проходит эталонный путь, — запланировано и в работе, двумя дорожками: память (структуры, массивы и срезы, строки на одной модели «адрес плюс смещение» с данными только для чтения) и скаляры (перечисления, f64, приведения), в порядке жадного рейтинга по числу открываемых спек. Цифр пока нет; PR есть только #5992 (блоки invariant), отправлен, не влит.",
+      ],
+    },
+  },
+  {
+    slug: "three-bits-each-necessary",
+    title: "Three bits, each one necessary: the MMCM's performance clock on silicon",
+    summary: "[one clock path on one AX7203 board; LEDs read by eye, no counter readback; built with a nextpnr-xilinx 115 commits behind main, with one merged fix applied locally; the faster loop was timed on one small design] An MMCM output can reach a regional clock buffer through a performance-clock path, and two rows in Project X-Ray's database say which bits switch that path on. With the rows on prjxray-db master, a counter clocked through it does not run on an XC7A200T. With the rows we proposed in openXC7/prjxray-db#30, it runs, and the two bitstreams differ in exactly three bits. Clearing any one of the three stops the counter again, so each is necessary. nextpnr-xilinx main still pins a database with the old rows. Along the way, the edit-to-board loop went from about 104–111 s to about 19–28 s, mostly from a router flag, the t27-spec assembler and a faster JTAG clock.",
+    date: "2026-10-04",
+    readingMinutes: 6,
+    tags: ["FPGA", "Open toolchain", "Verification"],
+    receipts: [
+      { label: "openXC7/prjxray-db#30: the CLK_PERF and PERFCLK rows, c030ed6 (open)", href: "https://github.com/openXC7/prjxray-db/pull/30" },
+      { label: "openXC7/nextpnr#24: where the rows are discussed", href: "https://github.com/openXC7/nextpnr/issues/24" },
+      { label: "The verification scripts behind the rows", href: "https://gist.github.com/gHashTag/3c9216880b77946385dfc5bea317d927" },
+      { label: "cavearr's perfclk campaign, 1083 Vivado specimens", href: "https://github.com/cavearr/prjxray/releases/tag/perfclk-campaign-2026-10" },
+      { label: "openXC7/prjxray-db#13: the rows nextpnr-xilinx main pins · MERGED 2026-09-07", href: "https://github.com/openXC7/prjxray-db/pull/13" },
+      { label: "openXC7/nextpnr-xilinx#191: the MMCM RST/PWRDWN fix · MERGED 2026-09-09", href: "https://github.com/openXC7/nextpnr-xilinx/pull/191" },
+      { label: "openXC7/nextpnr-xilinx#205: the BUFR regional clock enables · MERGED 2026-09-24", href: "https://github.com/openXC7/nextpnr-xilinx/pull/205" },
+      { label: "Two bitstreams, one bit apart (the earlier one-bit A/B)", href: "https://t27.ai/#/blog/two-bitstreams-one-bit-apart" },
+      { label: "The FPGA flow, layer by layer (the previous timing post)", href: "https://t27.ai/#/blog/the-fpga-flow-layer-by-layer" },
+      { label: "The recording: the three bits and the knockout bitstreams", href: "https://t27.ai/term/perf2-knockouts/" },
+      { label: "The recording: one cycle from place-and-route to SRAM, timed", href: "https://t27.ai/term/perf2-loop/" },
+    ],
+    openQuestions: [
+      "One clock path on one board, with LEDs read by eye. The knockouts show that each bit is necessary here, not that the three are sufficient on other paths.",
+      "nextpnr-xilinx main pins rows that left this counter dead. Whether main routes a design through this path at all was not tested.",
+      "router1 was timed on a design with a few hundred wires. On a large design it may be slower than router2 or fail to route.",
+    ],
+    published: true,
+    ru: {
+      title: "Три бита, и каждый нужен: performance clock у MMCM на кремнии",
+      summary: "[один тактовый тракт на одной плате AX7203; светодиоды читались глазом, считывания счётчика нет; сборка nextpnr-xilinx на 115 коммитов позади main, с одним влитым исправлением, применённым локально; быстрый цикл засекался на одном маленьком дизайне] Выход MMCM может дойти до регионального тактового буфера через тракт performance clock, и две строки в базе Project X-Ray говорят, какие биты этот тракт включают. Со строками master prjxray-db счётчик, тактируемый через него, на XC7A200T не идёт. Со строками, которые мы предложили в openXC7/prjxray-db#30, идёт, а два битстрима различаются ровно в трёх битах. Сброс любого одного из трёх снова останавливает счётчик, так что нужен каждый. main nextpnr-xilinx всё ещё фиксирует базу со старыми строками. Попутно цикл от правки до платы сократился с примерно 104–111 с до примерно 19–28 с, в основном за счёт флага роутера, ассемблера из t27-спеков и более быстрого такта JTAG.",
+      openQuestions: [
+        "Один тактовый тракт на одной плате, светодиоды читались глазом. Нокауты показывают, что здесь нужен каждый бит, а не что трёх хватит на других трактах.",
+        "main nextpnr-xilinx фиксирует строки, с которыми этот счётчик стоял. Разводит ли main дизайн через этот тракт вообще, не проверялось.",
+        "router1 засекался на дизайне из нескольких сотен проводов. На большом дизайне он может оказаться медленнее router2 или не развести его.",
+      ],
+    },
+  },
+  {
+    slug: "tri-cast-from-command-to-card",
+    title: "tri cast: record a command, check the recording, publish it as a page",
+    summary: "[one machine, one day per recording; 10 of 596 commands have one; tri cast is not in a tri release yet] A recorded command can be replayed and checked, a described one can only be believed. tri cast records real terminal output, scrubs and checks it, and publishes a page, a preview card and a player.",
+    date: "2026-10-03",
+    readingMinutes: 4,
+    tags: ["tri", "Verification", "Terminal"],
+    receipts: [
+      { label: "The recording shown in the post: tri selftest", href: "https://t27.ai/term/tri-selftest/" },
+      { label: "The gallery of recorded sessions", href: "https://t27.ai/term/" },
+      { label: "trinity#1273: the recorded-session player and gallery · MERGED 2026-10-03", href: "https://github.com/gHashTag/trinity/pull/1273" },
+      { label: "trinity#1288: recordings for eight tri commands · MERGED 2026-10-03", href: "https://github.com/gHashTag/trinity/pull/1288" },
+      { label: "The FPGA flow, layer by layer (a post built on a recording)", href: "https://t27.ai/#/blog/the-fpga-flow-layer-by-layer" },
+    ],
+    openQuestions: [
+      "A recording shows what a command printed on one machine on one day, not that it is correct for every input.",
+      "Only 10 of 596 commands have a recording; the other 586 have a card and no run.",
+      "tri cast lives in the maintainer's skills directory and is not in a tri release, so a reader cannot install it yet.",
+    ],
+    published: true,
+    ru: {
+      title: "tri cast: записать команду, проверить запись, опубликовать страницей",
+      summary: "[одна машина и один день на запись; запись есть у 10 из 596 команд; tri cast пока не входит в релиз tri] Записанную команду можно проиграть и проверить, описанную — только принять на веру. tri cast записывает настоящий вывод терминала, чистит и проверяет его и публикует страницу, карточку-превью и плеер.",
+      openQuestions: [
+        "Запись показывает, что команда напечатала на одной машине в один день, а не что она верна для любого ввода.",
+        "Запись есть только у 10 из 596 команд; у остальных 586 карточка есть, а прогона нет.",
+        "tri cast живёт в каталоге навыков мейнтейнера и не входит в релиз tri, так что читатель пока не может его установить.",
+      ],
+    },
+  },
+  {
+    slug: "the-fpga-flow-layer-by-layer",
+    title: "The FPGA flow, layer by layer: what a rewrite from specs is worth",
+    summary: "[one design, one laptop at a load of 12.6 on 8 cpus; L1 and L2 figures are Amdahl ceilings, not results; hours a year rest on stated assumptions] We timed every layer of one real XC7A200T build through openXC7. Synthesis took 12.7 s, place and route 70.1 s, FASM to frames 33.9 s and frames to bitstream 0.2 s, 116.9 s in all. With the two layers already rebuilt from t27 specs, the flow takes 83.5 s, 1.40 times faster, and the bitstream is byte-identical. Place and route is now 60% of the build: if it took no time the flow would be 8.75 times faster, while an instant synthesis step caps out at 1.65 times. The numbers are in a recorded terminal session. The tools are not in a tri release yet.",
+    date: "2026-10-03",
+    readingMinutes: 5,
+    tags: ["FPGA", "Open toolchain", "t27"],
+    receipts: [
+      { label: "The recorded run: tri devkit flow and impact", href: "https://t27.ai/term/devkit-flow/" },
+      { label: "The layer calculator", href: "https://t27.ai/#/devkit" },
+      { label: "trinity#1272: tri devkit and bitwalk in a tri release (open)", href: "https://github.com/gHashTag/trinity/issues/1272" },
+      { label: "The back half of openXC7, from a spec (previous post)", href: "https://t27.ai/#/blog/the-back-half-of-openxc7-from-a-spec" },
+      { label: "t27#5609: bitwalk and the three specs (open)", href: "https://github.com/gHashTag/t27/pull/5609" },
+    ],
+    openQuestions: [
+      "One design on one laptop; a design that spends less of its build in fasm2frames gains less.",
+      "Place and route is the largest layer, and nothing here shows a spec-driven route to making it faster.",
+    ],
+    published: true,
+    ru: {
+      title: "FPGA-flow по слоям: сколько стоит переписать его из спеков",
+      summary: "[один дизайн, один ноутбук при нагрузке 12,6 на 8 ядрах; цифры L1 и L2 — потолки по Амдалу, а не результаты; часы в год опираются на названные допущения] Мы засекли каждый слой одной настоящей сборки XC7A200T через openXC7. Синтез занял 12,7 с, размещение и разводка 70,1 с, FASM в кадры 33,9 с, кадры в битстрим 0,2 с, всего 116,9 с. С двумя слоями, уже пересобранными из t27-спеков, flow занимает 83,5 с, в 1,40 раза быстрее, и битстрим совпадает байт в байт. Размещение и разводка теперь 60% сборки: если бы они не занимали времени, flow был бы в 8,75 раза быстрее, а мгновенный синтез упирается в 1,65 раза. Числа — в записанной терминальной сессии. В релизе tri этих инструментов пока нет.",
+      openQuestions: [
+        "Один дизайн на одном ноутбуке; дизайн, который тратит меньшую долю сборки в fasm2frames, выиграет меньше.",
+        "Размещение и разводка — самый большой слой, и ничто здесь не показывает пути из спеков, который сделал бы его быстрее.",
+      ],
+    },
+  },
+  {
+    slug: "the-back-half-of-openxc7-from-a-spec",
+    title: "The back half of openXC7, from a spec: FASM to frames to bitstream",
+    summary: "[one design on one board, equivalence not a better bitstream; timings on one busy laptop, ratios are rough; the fpga-assembler speed figure is its README's, not ours] openXC7 turns FASM into a Xilinx 7-series bitstream with two prjxray tools, fasm2frames in Python and xc7frames2bit in C++. We rebuilt that half so every bit position, frame address and packet word comes from three t27 specs. Against the two tools it matches byte for byte on 22 of 22 FASM files and 16 of 16 frame files, and it is about 6 to 14 times faster on small real designs, about 85 times on a 121,587-line one, and up to about 200 times on synthetic test files. The comparison found a silent bit-wrap in fasm2frames (f4pga/prjxray#2574), a missing part check in xc7frames2bit (#2573), and a bug of our own on kintex7. On an AX7203 board (XC7A200T), a .bit written this way for a 121,587-line design was byte-identical to openXC7's, loaded into SRAM, and returned 403,200 of 403,200 tagged receipts.",
+    date: "2026-10-03",
+    readingMinutes: 8,
+    tags: ["FPGA", "Open toolchain", "Verification", "t27"],
+    receipts: [
+      { label: "t27#5609: bitwalk and the three specs (open)", href: "https://github.com/gHashTag/t27/pull/5609" },
+      { label: "prjxray#2574: fasm2frames wraps or drops bits of a site a SING tile lacks", href: "https://github.com/f4pga/prjxray/issues/2574" },
+      { label: "prjxray#2573: xc7frames2bit accepts frames for the wrong part", href: "https://github.com/f4pga/prjxray/issues/2573" },
+      { label: "openXC7/prjxray#27: xc7frames2bit refuses frame addresses the part does not have (open)", href: "https://github.com/openXC7/prjxray/pull/27" },
+      { label: "openXC7/prjxray#28: xc7frames2bit exits 1 when the bitstream cannot be written (open)", href: "https://github.com/openXC7/prjxray/pull/28" },
+      { label: "trinity-fpga: the AX7203 run, logs and receipts", href: "https://github.com/gHashTag/trinity-fpga/blob/421ae920fb477c98505e4143df3cab7954c268a7/conformance/X7_BITWALK_ON_THE_BOARD.md" },
+      { label: "fpga-assembler#49: the reference-parity cases", href: "https://github.com/lromor/fpga-assembler/issues/49" },
+      { label: "fpga-assembler, a C++ FASM-to-bitstream tool", href: "https://github.com/lromor/fpga-assembler" },
+    ],
+    openQuestions: [
+      "One design, one board: the AX7203 run covers trinet node 0 only, and its .bit is byte-identical to openXC7's, so it cannot show a case where the two differ.",
+      "Apart from the board design, there is no xc7a200t FASM in the corpus, and there is no Vivado reference for xc7a100t or xc7a200t.",
+      "gHashTag/t27#5609 has no review yet. f4pga/prjxray#2573 and #2574 and openXC7/prjxray#27 and #28 have no maintainer reply yet.",
+      "fpga-assembler was not timed here, so the table carries its README's figure, not a measurement.",
+    ],
+    published: true,
+    ru: {
+      title: "Задняя половина openXC7 из спека: FASM в кадры и в битстрим",
+      summary: "[один дизайн на одной плате, эквивалентность, а не лучший битстрим; время на одном занятом ноутбуке, отношения грубые; скорость fpga-assembler — из его README, не наша] openXC7 превращает FASM в битстрим Xilinx 7-series двумя инструментами prjxray: fasm2frames на Python и xc7frames2bit на C++. Мы пересобрали эту половину так, что каждая позиция бита, адрес кадра и слово пакета берутся из трёх t27-спеков. Против двух инструментов она совпадает байт в байт на 22 из 22 файлов FASM и 16 из 16 файлов кадров и быстрее примерно в 6–14 раз на небольших настоящих дизайнах, примерно в 85 раз на дизайне в 121 587 строк и до примерно 200 раз на синтетических тестах. Сравнение нашло тихий заворот битов в fasm2frames (f4pga/prjxray#2574), отсутствующую проверку микросхемы в xc7frames2bit (#2573) и наш собственный баг на kintex7. На плате AX7203 (XC7A200T) .bit, записанный так для дизайна в 121 587 строк, совпал с openXC7 байт в байт, загрузился в SRAM и вернул 403 200 из 403 200 помеченных квитанций.",
+      openQuestions: [
+        "Один дизайн, одна плата: прогон на AX7203 покрывает только trinet node 0, и его .bit совпадает с openXC7 байт в байт, так что он не может показать случай, где они расходятся.",
+        "Кроме дизайна для платы, в корпусе нет FASM для xc7a200t, и нет эталона Vivado для xc7a100t и xc7a200t.",
+        "У gHashTag/t27#5609 ещё нет ревью. На f4pga/prjxray#2573 и #2574 и openXC7/prjxray#27 и #28 мейнтейнеры ещё не ответили.",
+        "fpga-assembler здесь не засекали, поэтому в таблице цифра из его README, а не измерение.",
+      ],
+    },
+  },
+  {
+    slug: "one-regional-clock-twelve-pull-requests",
+    title: "One regional clock, twelve pull requests, and a spec that found a compiler bug",
+    summary: "[counts measured through the GitHub API on 2026-10-02; merged means merged by the openXC7 maintainer, not shipped in a release; bitstream checks are cavearr's Vivado bench and our XC7A200T board] Since 1 September we opened 12 pull requests in repositories we do not own: 11 in openXC7, the open toolchain for Xilinx 7-series, and 1 in inngest. 5 are merged and 7 are open. Most follow one thread: a design with a regional clock buffer (BUFR) on an XC7A200T did not build through the open flow, and fixing it took the placer, the router, the bitstream writer and the bit database. A t27 spec of the database rows then found a parser bug in the t27 compiler, which we fixed in our own repository.",
+    date: "2026-10-02",
+    readingMinutes: 6,
+    tags: ["FPGA", "Open toolchain", "Verification", "t27"],
+    receipts: [
+      { label: "nextpnr-xilinx#170: a pad-fed BUFR on its dedicated site (merged)", href: "https://github.com/openXC7/nextpnr-xilinx/pull/170" },
+      { label: "nextpnr-xilinx#171: a regional buffer's sinks inside its clock region (merged)", href: "https://github.com/openXC7/nextpnr-xilinx/pull/171" },
+      { label: "nextpnr-xilinx#205: the BUFRCLK enables (merged)", href: "https://github.com/openXC7/nextpnr-xilinx/pull/205" },
+      { label: "prjxray-db#30: CLK_PERF and PHSR_PERFCLK rows with all their bits (open)", href: "https://github.com/openXC7/prjxray-db/pull/30" },
+      { label: "nextpnr#53 to #57: himbaechel ports (open)", href: "https://github.com/openXC7/nextpnr/pulls?q=is%3Apr+author%3AgHashTag" },
+      { label: "nextpnr#58: IDDR behind an IDELAYE2 (merged)", href: "https://github.com/openXC7/nextpnr/pull/58" },
+      { label: "demo-projects#22: RAM32X2S/X1S regression designs (merged)", href: "https://github.com/openXC7/demo-projects/pull/22" },
+      { label: "inngest#4860: forward Authorization to REST API v2 (open)", href: "https://github.com/inngest/inngest/pull/4860" },
+      { label: "t27#5593: the assert parse bug", href: "https://github.com/gHashTag/t27/issues/5593" },
+      { label: "t27#5594: the fix (open)", href: "https://github.com/gHashTag/t27/pull/5594" },
+    ],
+    openQuestions: [
+      "prjxray-db#30 was opened today and has no maintainer review yet.",
+      "nextpnr#53 and #54 show approved on GitHub, but the approval is from the Sourcery bot. No maintainer has reviewed them yet.",
+      "nextpnr#55, #56 and #57 have requested changes. The revisions were pushed on 30 September and are not yet re-reviewed.",
+      "inngest#4860 has had no maintainer reply since 13 September.",
+      "The t27 spec of the rows is not yet committed to any repository, so a reader cannot run it yet. It is planned for gHashTag/t27 specs/fpga after #5594 merges.",
+      "gHashTag/t27#5594 is open and its CI has not finished.",
+      "The spec covers the database rows only. The nextpnr code that reads them is still hand-written C++.",
+    ],
+    published: true,
+    ru: {
+      title: "Один региональный клок, двенадцать pull request'ов и спек, который нашёл баг в компиляторе",
+      summary: "[счётчики измерены через GitHub API 2 октября 2026; смержен значит принят мейнтейнером openXC7, а не вошёл в релиз; проверки битстримов — стенд cavearr с Vivado и наша плата XC7A200T] С 1 сентября мы открыли 12 pull request'ов в чужих репозиториях: 11 в openXC7, открытой цепочке сборки для Xilinx 7-series, и 1 в inngest. 5 смержены, 7 открыты. Большая часть идёт по одной нитке: дизайн с региональным клоковым буфером (BUFR) на XC7A200T не собирался открытым flow, и чтобы это исправить, пришлось пройти плейсер, трассировщик, запись битстрима и базу битов. Потом t27-спек строк этой базы нашёл баг в парсере компилятора t27, и мы исправили его в своём репозитории.",
+      openQuestions: [
+        "prjxray-db#30 открыт сегодня, ревью мейнтейнера ещё нет.",
+        "nextpnr#53 и #54 на GitHub показаны как approved, но одобрил их бот Sourcery. Мейнтейнер их ещё не смотрел.",
+        "В nextpnr#55, #56 и #57 запрошены изменения. Правки запушены 30 сентября и ещё не пересмотрены.",
+        "На inngest#4860 мейнтейнеры не ответили с 13 сентября.",
+        "t27-спек строк пока не закоммичен ни в один репозиторий, так что читатель ещё не может его запустить. Он запланирован в gHashTag/t27 specs/fpga после мержа #5594.",
+        "gHashTag/t27#5594 открыт, его CI ещё не завершился.",
+        "Спек покрывает только строки базы. Код nextpnr, который их читает, по-прежнему написан руками на C++.",
+      ],
+    },
+  },
+  {
+    slug: "the-seed-moved-it-the-pins-moved-it-more",
+    title: "The seed moved Fmax 1.22x. The pins moved it 2.6x.",
+    summary: "[nextpnr-xilinx post-route estimates on xc7a200tfbg484-2, not sign-off timing; a stand-alone unit on synthetic pins, not a full design; JTAG result from our own bench] Two bench questions became two commands. tri fpga-seeds treats Fmax as a range over placement seeds: a 321-LUT ternary dot-product unit ran 164.15 to 200.40 MHz over 20 seeds, and 62.68 to 76.75 MHz with its pins spread across the package, with the same netlist on every run. tri fpga-jtag reads which chip is on the chain, never programs, and tells a silent TDO from a broken cable. On our bench it caught an XC7A200T where an XC7A100T was expected.",
+    date: "2026-10-01",
+    readingMinutes: 5,
+    tags: ["FPGA", "Open toolchain", "Verification", "Tooling"],
+    receipts: [
+      { label: "nextpnr-xilinx, the place-and-route tool whose seeds were swept", href: "https://github.com/openXC7/nextpnr-xilinx" },
+      { label: "openFPGALoader, used for the FTDI path of fpga-jtag", href: "https://github.com/trabucayre/openFPGALoader" },
+      { label: "xc3sprog, used for the Platform Cable USB II path", href: "https://sourceforge.net/projects/xc3sprog/" },
+    ],
+    openQuestions: [
+      "The unit is measured stand-alone on synthetic pins. Its Fmax inside a real SoC is set by a different critical path and is not claimed here.",
+      "The spread-pinout sweep has 10 seeds, not 20: one seed did not finish under machine load and the rest were not run.",
+      "Seed spread was measured for one small unit on one part. Larger designs may spread more or less.",
+      "The second bench, an XC7A100T on a DLC10 clone, still returns no chain; the cause is not yet found.",
+      "The two commands live in a private repository for now, so a reader cannot yet run them.",
+    ],
+    published: true,
+    ru: {
+      title: "Seed сдвинул Fmax в 1,22 раза. Выводы — в 2,6 раза.",
+      summary: "[оценки nextpnr-xilinx после разводки на xc7a200tfbg484-2, не подписанный тайминг; отдельный блок на синтетических выводах, а не целый дизайн; результат JTAG — с нашего стенда] Два вопроса стенда стали двумя командами. tri fpga-seeds считает Fmax диапазоном по seed размещения: тернарный блок скалярного произведения на 321 LUT дал от 164,15 до 200,40 МГц на 20 seed и от 62,68 до 76,75 МГц с выводами, разнесёнными по корпусу, при одном и том же нетлисте во всех прогонах. tri fpga-jtag читает, какой чип стоит в цепочке, никогда не прошивает и отличает молчащий TDO от сломанного кабеля. На нашем стенде она поймала XC7A200T там, где ожидался XC7A100T.",
+      openQuestions: [
+        "Блок измерен отдельно, на синтетических выводах. Его Fmax внутри настоящей SoC задаётся другим критическим путём и здесь не заявляется.",
+        "В переборе с разнесёнными выводами 10 seed, а не 20: один seed не завершился под нагрузкой машины, остальные не запускались.",
+        "Разброс по seed измерен для одного маленького блока на одной микросхеме. У больших дизайнов он может быть больше или меньше.",
+        "Второй стенд, XC7A100T на клоне DLC10, по-прежнему не показывает цепочку; причина пока не найдена.",
+        "Обе команды пока лежат в закрытом репозитории, так что читатель ещё не может их запустить.",
+      ],
+    },
+  },
+  {
+    slug: "mask-over-scale-ternary-drafts-that-compile",
+    title: "Mask over scale: a 9M ternary model whose drafts compile",
+    summary: "[measured on the 391-item strict t27 bench: 0/150 flat vs 3/150 masked on the same 30 hardest items; 65% of flat first compile errors are undeclared identifiers; strict loop closed at 30 rounds / 8083 samples = 4/391 pass, 283/391 compile; three decode constraints, zero parameters; benched checkpoint = t27-domain finetune of tern_tc, the package ships the base] tern_tc, a 9M ternary model sized to XC7A200T block RAM, cannot learn the names of a scope -- so instead of scaling it we constrained its decoder: a scope mask at every decode step, diversity by mask rule rather than temperature (15/30 vs 3/30 union compile), and a repeat-n-gram ban after 1517/2177 blocked candidates turned out to be repetition cascades. The result is not a solver: 1.0% of the strict set passes. It is a draft model for a verifier -- 72% of the strict set gets a compiling body, tri tc-draft returns the first test-verified one or an honest refusal.",
+    date: "2026-09-29",
+    readingMinutes: 7,
+    tags: ["tern_tc", "Ternary", "t27", "Code generation", "Verification"],
+    receipts: [
+      { label: "The package: model, tokenizer, verify.sh, sha256 receipts", href: "https://huggingface.co/playra/tern-tc-9m" },
+      { label: "The public verify workflow -- green against today's hub bytes", href: "https://github.com/gHashTag/tern-tc-9m-verify/actions" },
+      { label: "Earlier: a small agent needs an exact judge", href: "https://t27.ai/blog/a-small-agent-needs-an-exact-judge/" },
+      { label: "Earlier: ternary won the wire, not the gate", href: "https://t27.ai/blog/ternary-won-the-wire-not-the-gate/" },
+    ],
+    openQuestions: [
+      "The selfcheck loop is not a clean A/B on --no-repeat: the flag went in at round 25 of a live run, so the two late passes are consistent with the ban but not isolated by it.",
+      "The strict loop ran one seed of the model; ternary training spread at 52m was measured at ~1.7%, so 4-vs-3 passes is within noise and the honest number is 'a handful, not a rate'.",
+      "Mask rules and the repeat ban were tuned on the same bench they are reported on; no held-out spec set exists for them.",
+      "The 72% compile union is per-item over unlimited retries (~21 samples median); compile@1 on fresh items is far lower.",
+      "The bench's judge is the spec's own tests, and some of those tests are weak -- that is what the strict subset is for, but weak-test leakage outside it is unquantified.",
+      "Every number here comes from the t27-finetuned bench checkpoint; the HF package ships the base checkpoint whose card claims no quality. The finetune is now published as playra/tern-tc-9m-t27; its finetune corpus and the bench corpus are both t27 specs at pinned commits, so no held-out set separates them.",
+    ],
+    published: true,
+    ru: {
+      title: "Маска вместо масштаба: тернарная модель на 9M, чьи черновики компилируются",
+      summary: "[измерено на строгом сете t27 из 391 айтемов: 0/150 плоской генерации против 3/150 маскированной на тех же 30 труднейших; 65% первых ошибок компиляции — необъявленные идентификаторы; строгая петля закрыта на 30 раундах / 8083 сэмплах = 4/391 pass, 283/391 compile; три ограничения декодера, ноль параметров; чекпоинт бенчмарка = t27-файнтюн tern_tc, пакет шипит базовый] tern_tc, тернарная модель на 9M под блочную память XC7A200T, не может выучить имена областей видимости — и вместо масштабирования мы ограничили её декодер: маска области видимости на каждом шаге, разнообразие правилами маски, а не температурой (15/30 против 3/30 union compile), и запрет n-граммов повторов после того, как 1517/2177 нескомпилированных кандидатов оказались каскадами повторов. Результат — не решатель: 1.0% строгого сета проходит тесты. Это модель-черновик для верификатора: 72% сета получает компилируемое тело, tri tc-draft возвращает первое проверенное тестами или честный отказ.",
+      openQuestions: [
+        "Петля самопроверки — не чистый A/B по --no-repeat: флаг вошёл в живой прогон на 25-м раунде, поэтому два поздних прохождения согласуются с запретом, но не изолированы им.",
+        "Строгая петля гонялась на одном сиде модели; разброс тернарного обучения на 52m измерен как ~1.7%, поэтому 4 против 3 прохождений — внутри шума, честная формулировка — «горстка, а не rate».",
+        "Правила маски и запрет повторов настраивались на том же бенчмарке, на котором отчётываются; held-out сета спек для них нет.",
+        "Union compile 72% — на айтем при неограниченных повторах (медиана ~21 сэмпл); compile@1 на свежих айтемах сильно ниже.",
+        "Судья бенчмарка — собственные тесты спеки, и часть тестов слабая — для этого и есть строгое подмножество, но утечка слабых тестов вне его не квантифицирована.",
+        "Все числа — с файнтюннутого t27-чекпоинта; HF-пакет шипит базовый, чья карточка не делает заявлений о качестве. Файнтюн опубликован как playra/tern-tc-9m-t27; его файнтюн-корпус и корпус бенчмарка — оба спеки t27 на запиненных коммитах, held-out сета между ними нет.",
+      ],
+    },
+  },
+  {
+    slug: "golden-ratio-weights-ran-on-the-board",
+    title: "Golden-ratio weights ran on the board. The phi cost one add per output.",
+    summary: "[measured on FPGA: layer 0, 403,200 of 403,200 receipts verified, registered before the run; the phi step and digit recombination are host arithmetic; one synthetic activation vector] The TNF paper's GFTernary weights, t*phi, applied to activations in Z[phi], ran on the unchanged AX7203 node with no multiplier. Each output is W.b + (W.a + W.b)*phi, so the node computes only ternary dots and the host adds once per output. All 5,632 Z[phi] rows of layer 0 matched a plain Z[phi] multiplication oracle bit for bit.",
+    date: "2026-09-27",
+    readingMinutes: 6,
+    tags: ["FPGA", "Ternary", "Number formats", "Verification", "TRI-NET"],
+    receipts: [
+      { label: "The pre-registration and the result, side by side", href: "https://github.com/gHashTag/trinity-fpga/blob/8a203217084eb3499d6dee5815be6a462575878f/conformance/GFT_ZPHI_ON_THE_NODE.md" },
+      { label: "The board log: 403,200 / 403,200 receipts, 5,632 / 5,632 Z[phi] rows", href: "https://github.com/gHashTag/trinity-fpga/blob/8a203217084eb3499d6dee5815be6a462575878f/conformance/board_runs/gft_zphi_l0.log" },
+      { label: "The harness, with its Z[phi] oracle and negative controls", href: "https://github.com/gHashTag/trinity-fpga/blob/8a203217084eb3499d6dee5815be6a462575878f/conformance/gft_zphi_ax7203.py" },
+      { label: "Ten weak points of the tern_tc record, ranked", href: "https://github.com/gHashTag/trinity-fpga/blob/8a203217084eb3499d6dee5815be6a462575878f/conformance/TERN_TC_WEAK_POINTS.md" },
+      { label: "The pull request that carries it: gHashTag/trinity-fpga 800", href: "https://github.com/gHashTag/trinity-fpga/pull/800" },
+      { label: "Earlier: the golden ratio in this format is a scale factor, not information", href: "https://t27.ai/blog/phi-is-a-scale-not-information/" },
+      { label: "Earlier: the board's receipts were never checked; now all 403,200 are", href: "https://t27.ai/blog/trained-weights-ran-receipts-were-not-checked/" },
+    ],
+    openQuestions: [
+      "Only layer 0 ran, with one synthetic Z[phi] activation vector, not the activations of a real forward pass.",
+      "The TNF accumulator and its rounding have no RTL, so the part of the claim beyond the dot products is untested on hardware.",
+      "The node computes ternary dots; the digit recombination and the phi step run on the host. The result says the linear path needs no multiplier, not that the FPGA did all of it.",
+      "Speed is not claimed: about 151,000 ternary multiply-accumulates per second over UART (derived).",
+      "A SipHash receipt is not publicly verifiable, and it does not stop an operator forging their own.",
+    ],
+    published: true,
+    ru: {
+      title: "Веса с золотым сечением отработали на плате. phi стоил одно сложение на выход.",
+      summary: "[измерено на FPGA: слой 0, проверено 403 200 из 403 200 квитанций, зарегистрировано до запуска; шаг phi и сборка разрядов — арифметика хоста; один синтетический вектор активаций] Веса GFTernary из статьи о TNF, t*phi, применённые к активациям из Z[phi], отработали на неизменённом узле AX7203 без умножителя. Каждый выход равен W.b + (W.a + W.b)*phi, так что узел считает только тернарные скалярные произведения, а хост делает одно сложение на выход. Все 5 632 строки Z[phi] слоя 0 совпали бит в бит с оракулом обычного умножения в Z[phi].",
+      openQuestions: [
+        "Прогнан только слой 0 с одним синтетическим вектором активаций из Z[phi], а не с активациями настоящего прямого прохода.",
+        "У аккумулятора TNF и его округления нет RTL, так что часть утверждения сверх скалярных произведений на железе не проверена.",
+        "Узел считает тернарные скалярные произведения; сборка разрядов и шаг phi выполняются на хосте. Результат говорит, что линейному пути не нужен умножитель, а не что всё сделала FPGA.",
+        "Скорость не заявляется: около 151 000 тернарных умножений с накоплением в секунду через UART (выведено).",
+        "Квитанция SipHash не проверяется публично и не мешает оператору подделать свои собственные.",
+      ],
+    },
+  },
+  {
+    slug: "trained-weights-ran-receipts-were-not-checked",
+    title: "The board's receipts were never checked. Now all 403,200 are.",
+    summary: "[measured on FPGA: all 42 trained matrices, every receipt verified; the activations were test vectors, not a forward pass] An AX7203 computed 28,416 of 28,416 rows of the trained tern_tc model's weight matrices bit-exact, while its harness reported 284,160 authenticated receipts without comparing a single tag. The fixed harness fails on seven kinds of misbehaving cell. On the board it then verified all 403,200 receipts across all 42 ternary matrices, with 33,792 of 33,792 rows bit-exact, plus 51,840 for w_down with int8 activations. Its first long runs stopped when a UART link dropped bytes with 64 jobs in flight. A test registered before it ran put the loss threshold at the USB bridge's 512-byte receive buffer, and at 24 in flight none were lost.",
+    date: "2026-09-27",
+    readingMinutes: 11,
+    tags: ["IGLA", "FPGA", "Ternary", "Verification", "TRI-NET", "Correction"],
+    receipts: [
+      { label: "The fix: gHashTag/trinity-fpga pull request 800", href: "https://github.com/gHashTag/trinity-fpga/pull/800" },
+      { label: "The commit whose receipt count is withdrawn (1f131fd)", href: "https://github.com/gHashTag/trinity-fpga/commit/1f131fdd3fdf1c78317a923a7cd070e11f101a8a" },
+      { label: "What is verified, by what, and how to reproduce it; every board run, the controls, the registered buffer test and the byte analysis", href: "https://github.com/gHashTag/trinity-fpga/blob/09b3d6f733e4fe2df8aa09791db1ecde8b2f54c6/conformance/TERN_TC_LAYER_RECEIPTS.md" },
+      { label: "The full 42-matrix board log: 403,200 / 403,200 receipts verified", href: "https://github.com/gHashTag/trinity-fpga/blob/09b3d6f733e4fe2df8aa09791db1ecde8b2f54c6/conformance/board_runs/tern_tc_all_w24.log" },
+      { label: "The window-64 control log: the link lost 59 bytes after 6,744 jobs", href: "https://github.com/gHashTag/trinity-fpga/blob/09b3d6f733e4fe2df8aa09791db1ecde8b2f54c6/conformance/board_runs/tern_tc_all_w64.log" },
+      { label: "The registered buffer test: window 26 (494 B) clean, window 30 (570 B) slipped", href: "https://github.com/gHashTag/trinity-fpga/blob/09b3d6f733e4fe2df8aa09791db1ecde8b2f54c6/conformance/board_runs/tern_tc_all_w30.log" },
+      { label: "All raw board logs from 2026-09-27", href: "https://github.com/gHashTag/trinity-fpga/tree/09b3d6f733e4fe2df8aa09791db1ecde8b2f54c6/conformance/board_runs" },
+      { label: "Prior art for tern_tc, with the CP2102N figures checked against its datasheet", href: "https://github.com/gHashTag/trinity-fpga/blob/09b3d6f733e4fe2df8aa09791db1ecde8b2f54c6/conformance/TERN_TC_PRIOR_ART.md" },
+      { label: "The fixed harness that ran them, with its negative controls", href: "https://github.com/gHashTag/trinity-fpga/blob/b1e95f6fd5ec43b5be709af86b179750ae8b27a5/conformance/tern_tc_layer_ax7203.py" },
+      { label: "The RTL testbench that replays the harness over UART", href: "https://github.com/gHashTag/trinity-fpga/blob/2b9830c5837aa47ad142a90a7279c2d8a8d401fe/formal/tern_tc_layer_rtl_tb.v" },
+      { label: "The node cell under test: trinet_node_core.v", href: "https://github.com/gHashTag/trinity-fpga/blob/2b9830c5837aa47ad142a90a7279c2d8a8d401fe/fpga/portable/trinet_node_core.v" },
+    ],
+    openQuestions: [
+      "The loss threshold sits between 494 and 570 bytes in flight, around the CP2102N's 512-byte receive buffer, and the node has no flow control. What stalls the bridge's USB transfers long enough to fill it is not measured, and the hub is not excluded.",
+      "The activation vectors were random test vectors, not the model's real activations. int8 activations have run on the board for one matrix.",
+      "No forward pass, token rate or power figure has been measured on the board.",
+      "A SipHash receipt is not publicly verifiable, and it does not stop an operator forging their own.",
+    ],
+    published: true,
+    ru: {
+      title: "Квитанции с платы никто не проверял. Теперь проверены все 403 200.",
+      summary: "[измерено на FPGA: все 42 обученные матрицы, проверена каждая квитанция; активации — тестовые векторы, а не прямой проход] AX7203 посчитала 28 416 из 28 416 строк матриц весов обученной модели tern_tc бит-точно, а её харнесс сообщил о 284 160 аутентифицированных квитанциях, не сравнив ни одного тега. Исправленный харнесс падает на семи видах неисправной ячейки. На плате он затем проверил все 403 200 квитанций по всем 42 тернарным матрицам, 33 792 из 33 792 строк бит-точно, и ещё 51 840 для w_down с int8-активациями. Первые длинные прогоны остановились, когда канал UART терял байты при 64 задачах в полёте. Проверка, зарегистрированная до запуска, поместила порог потерь на приёмный буфер USB-моста в 512 байт, а при 24 задачах в полёте не потерялось ни одного байта.",
+      openQuestions: [
+        "Порог потерь лежит между 494 и 570 байтами в полёте, около приёмного буфера CP2102N в 512 байт, а у узла нет управления потоком. Что задерживает USB-передачи моста настолько, чтобы буфер заполнился, не измерено, и хаб не исключён.",
+        "Векторы активаций были случайными тестовыми, а не настоящими активациями модели. int8-активации на плате прогнаны для одной матрицы.",
+        "Ни прямой проход, ни скорость в токенах, ни мощность на плате не измерены.",
+        "Квитанция SipHash не проверяется публично и не мешает оператору подделать свои собственные.",
+      ],
+    },
+  },
+  {
+    slug: "a-small-agent-needs-an-exact-judge",
+    title: "A small agent is only useful next to an exact judge",
+    summary: "[model results measured on GPUs; board throughput derived, not measured] One Artix-7 200T holds the layers of a 13M-parameter ternary model in its own block memory. In our own twin experiment the 100M ternary model passes 1.01% vs 1.68% for full precision across eight languages, and compile rate, not correctness, is the gap. A model that is wrong most of the time becomes useful only where a compiler checks every answer.",
+    date: "2026-09-26",
+    readingMinutes: 9,
+    tags: ["IGLA", "Agents", "FPGA", "Ternary", "Verification", "Plan"],
+    receipts: [
+      { label: "Codex paper, Table 1: pass@k for 12M-85M code models (arXiv:2107.03374)", href: "https://arxiv.org/abs/2107.03374" },
+      { label: "JetBrains Full Line Code Completion: a local 100M model, 16,384-token vocabulary (arXiv:2405.08704)", href: "https://arxiv.org/abs/2405.08704" },
+      { label: "Branch-Train-Merge (arXiv:2208.03306)", href: "https://arxiv.org/abs/2208.03306" },
+      { label: "c-BTM: scaling expert language models with unsupervised domain discovery (arXiv:2303.14177)", href: "https://arxiv.org/abs/2303.14177" },
+      { label: "TerEffic: on-chip vs HBM ternary inference on FPGA (arXiv:2502.16473)", href: "https://arxiv.org/abs/2502.16473" },
+      { label: "nextpnr-xilinx releases: 0.9.5, LiteX DDR3 memtest passing on hardware", href: "https://github.com/openXC7/nextpnr-xilinx/releases" },
+      { label: "AMD DS180: 7-series block RAM counts", href: "https://docs.amd.com/api/khub/documents/2LByHkO~nSZXcei2D55fTg/content" },
+      { label: "TRI CLAW: an agent you can audit (the device this lane runs on)", href: "https://t27.ai/blog/tri-claw-an-agent-you-can-audit/" },
+      { label: "MultiPL-E: MultiPL-E benchmark, HumanEval-164 in 18+ languages (arXiv:2208.08227)", href: "https://arxiv.org/abs/2208.08227" },
+    ],
+    openQuestions: [
+      "Update 2026-09-27: the trained tern_tc model's 320-input weight matrices ran bit-exact on an AX7203 (see the follow-up post). No forward pass has run on a board, and every throughput figure here is still a ceiling derived from memory bandwidth and LUT counts.",
+      "The code ability of a 13M model on .t27 is unknown. The HumanEval figures above are for Python and for another model family.",
+      "The open DDR3 path on Artix-7 has passed memtest on hardware only since nextpnr-xilinx 0.9.5 (13 September 2026). The independent UberDDR3 test reached a 333 MHz DDR clock, not the 400 MHz the AX7203 is rated for.",
+      "Integer inference must be shown to cost little quality against the float model before receipts can rest on it.",
+      "The c-BTM experts had 1.3B parameters or more, a hundred times the size of a board-sized one. Whether the result holds at 13M is a measurement, not an inference.",
+      "The twin numbers are for 100M-parameter models trained on GPUs. A board-sized ternary model (tern_tc, 9.08M parameters) has since been trained; its code ability has not been measured.",
+    ],
+    published: true,
+    ru: {
+      title: "Маленький агент полезен только рядом с точным судьёй",
+      summary: "[результаты моделей измерены на GPU; пропускная способность платы выведена, не измерена] Одна Artix-7 200T держит слои тернарной модели на 13M параметров в собственной блочной памяти. В нашем парном эксперименте тернарная модель на 100M проходит 1,01% против 1,68% у полной точности на восьми языках, и разрыв — это компиляция, а не корректность. Модель, чаще ошибающаяся, полезна только там, где каждый ответ проверяет компилятор.",
+      openQuestions: [
+        "Обновление 2026-09-27: матрицы весов с входом 320 обученной модели tern_tc посчитались на AX7203 бит-точно (см. следующий пост). Прямой проход на плате не запускался, и каждая цифра скорости здесь по-прежнему потолок, выведенный из пропускной способности памяти и числа LUT.",
+        "Способность модели на 13M писать .t27 неизвестна. Цифры HumanEval выше относятся к Python и к другому семейству моделей.",
+        "Открытый путь к DDR3 на Artix-7 проходит memtest на железе только с nextpnr-xilinx 0.9.5 (13 сентября 2026). Независимый тест UberDDR3 достиг частоты DDR 333 МГц, а не 400 МГц, на которые рассчитана AX7203.",
+        "Нужно показать, что целочисленный вывод почти не теряет в качестве по сравнению с плавающей точкой. Только после этого на него могут опираться квитанции.",
+        "Эксперты в c-BTM имели 1,3B параметров и больше — в сто раз больше, чем модель размером с плату. Держится ли результат при 13M, решит замер, а не рассуждение.",
+        "Числа двойняшек относятся к моделям на 100M параметров, обученным на GPU. С тех пор обучена тернарная модель размером с плату (tern_tc, 9,08M параметров); её способность писать код не измерена.",
+      ],
+    },
+  },
+  {
+    slug: 'tri-mined-not-sold',
+    title: 'The token is mined, not sold',
+    summary: '[design] 100% of TRI is mined by accepted .t27 work with zero pre-mine; the mint-on-acceptance rule is a Zig golden oracle (11/11 tests) with a TON and Solana minter whose digest matches cross-language (cargo test 4/4). Nothing is deployed.',
+    date: '2026-09-24',
+    readingMinutes: 5,
+    tags: ['DePIN', 'TRI', 'Tokenomics', 'TON', 'Solana', 'Design'],
+    receipts: [
+      { label: 'Protocol spec: mint_on_acceptance.t27', href: 'https://github.com/gHashTag/trinity-fpga/blob/trinet-fleet-truth/specs/trinet/mint_on_acceptance.t27' },
+      { label: 'Tested oracle + reference contracts (commit 2901c62)', href: 'https://github.com/gHashTag/trinity-fpga/commit/2901c6273' },
+      { label: '100% mined, zero pre-mine (commit c31157a)', href: 'https://github.com/gHashTag/trinity-fpga/commit/c31157ae0' },
+    ],
+    openQuestions: [
+      'Nothing is deployed: no contract, key, or mint exists on any live network.',
+      'V1 trusts an honest majority of the attestor set; it is not trustless, and who holds the keys is undecided.',
+      'The reference contracts are unaudited, and the cross-chain shared-nonce mechanism is unspecified.',
+      'No legal review of issuance or secondary trading has been done; that is the first task the decision creates.',
+      'The oracle is tested in software; it is not a hardware, silicon, or deployed-network result.',
+    ],
+    published: true,
+    ru: {
+      title: 'Токен намывают, а не продают',
+      summary: '[дизайн] 100% TRI намывается за принятую работу .t27, без премайна; правило чеканки-при-принятии — золотой оракул на Zig (11/11 тестов), с минтерами TON и Solana, чей дайджест совпадает межъязыково (cargo test 4/4). Ничего не задеплоено.',
+      openQuestions: [
+        'Ничего не задеплоено: ни контракта, ни ключа, ни чеканки в живой сети.',
+        'V1 доверяет честному большинству аттестаторов; это не трастлесс, и кто держит ключи — не решено.',
+        'Эталонные контракты без аудита, а механизм общего nonce между цепями не специфицирован.',
+        'Юридической проверки выпуска и вторичного рынка не было; это первая задача, которую создаёт решение.',
+        'Оракул проверен в софте; это не результат на железе, кремнии или в живой сети.',
+      ],
+    },
+  },
+  {
+    "slug": "queen-browser-actions-you-can-follow",
+    "title": "The browser agent should show its work",
+    "summary": "Queen’s merged browser changes expose actions as they arrive, keep a compact journal, and let human input request server-side control—with the remaining handover limits made explicit.",
+    "date": "2026-09-23",
+    "readingMinutes": 6,
+    "tags": [
+      "Queen",
+      "BrowserAutomation",
+      "Agents",
+      "Observability",
+      "Testing"
+    ],
+    "receipts": [
+      {
+        "label": "Trinity #1088 — one remote browser in Queen · MERGED 2026-09-21",
+        "href": "https://github.com/gHashTag/trinity/pull/1088"
+      },
+      {
+        "label": "Trinity #1094 — chat reaches the browser-equipped agent · MERGED 2026-09-21",
+        "href": "https://github.com/gHashTag/trinity/pull/1094"
+      },
+      {
+        "label": "Trinity #1096 — incremental action and text events · MERGED 2026-09-21",
+        "href": "https://github.com/gHashTag/trinity/pull/1096"
+      },
+      {
+        "label": "Trinity #1104 — connection-state messages · MERGED 2026-09-21",
+        "href": "https://github.com/gHashTag/trinity/pull/1104"
+      },
+      {
+        "label": "Trinity #1107 — recent browser journal · MERGED 2026-09-21",
+        "href": "https://github.com/gHashTag/trinity/pull/1107"
+      },
+      {
+        "label": "Trinity #1109 — human-control request from the board · MERGED 2026-09-22",
+        "href": "https://github.com/gHashTag/trinity/pull/1109"
+      },
+      {
+        "label": "Trinity #1111 — consecutive journal repeats folded · MERGED 2026-09-22",
+        "href": "https://github.com/gHashTag/trinity/pull/1111"
+      },
+      {
+        "label": "Website checks — browser contract passed in run 35689898918",
+        "href": "https://github.com/gHashTag/trinity/actions/runs/35689898918/job/106624452015"
+      }
+    ],
+    "openQuestions": [
+      "The source diffs and browser contract were inspected and the contract rerun for this article; no fresh signed-in end-to-end remote-browser session was independently tested.",
+      "The driving indicator updates before server acknowledgement and a failed wheel request is not surfaced; the indicator alone is not evidence of accepted control, and cancellation of in-flight actions is not established.",
+      "The journal shows at most six folded lines from up to 24 recent entries, polls every five seconds, and is not a complete audit archive.",
+      "Connection handling and human-control enforcement depend on the matching viewer and server deployments; a source merge alone does not establish live delivery. Server behaviour is attributed to the public #1109 report, not independently reproduced here.",
+      "The public #1109 report says a human-control lease can persist until its ten-minute expiry after a tab is closed; this article does not claim a general security guarantee or measured productivity improvement."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Браузерный агент должен показывать свою работу",
+      "summary": "Смерженные изменения Queen показывают действия по мере поступления, сохраняют компактный журнал и позволяют вводу человека запрашивать управление на сервере — с явными ограничениями передачи руля.",
+      "openQuestions": [
+        "Для статьи изучены изменения и браузерный контракт, который также запущен повторно; новая сквозная проверка удалённого браузера в авторизованной сессии независимо не выполнялась.",
+        "Индикатор управления меняется до подтверждения сервера, а отказ запроса не показывается; одного индикатора недостаточно для подтверждения принятого управления, отмена уже начатых действий не установлена.",
+        "Журнал показывает не более шести свёрнутых строк из максимум 24 последних записей, опрашивается каждые пять секунд и не является полным архивом аудита.",
+        "Обработка соединения и ограничение действий зависят от соответствующих версий окна просмотра и сервера; слияние исходников само по себе не подтверждает доставку на живой сайт. Поведение сервера приведено по публичному отчёту #1109, а не независимо воспроизведено здесь.",
+        "По публичному отчёту #1109 после закрытия вкладки право управления может сохраняться до истечения десятиминутного срока; статья не заявляет общей гарантии безопасности или измеренного роста производительности."
+      ]
+    }
+  },
+  {
+    "slug": "a-partial-module-needs-its-own-verdict",
+    "title": "A partial module needs its own verdict",
+    "summary": "JavaScript and TypeScript generation gained explicit omission records, so the Spec Explorer can distinguish a useful partial module from a complete one and from a failed compilation.",
+    "date": "2026-09-23",
+    "readingMinutes": 6,
+    "tags": [
+      "Compiler",
+      "TypeScript",
+      "Testing",
+      "Reproducibility"
+    ],
+    "receipts": [
+      {
+        "label": "Trinity #1084 — partial output becomes a warning · MERGED 2026-09-21",
+        "href": "https://github.com/gHashTag/trinity/pull/1084"
+      },
+      {
+        "label": "t27 #4529 — references and explicit omission records · MERGED 2026-09-21",
+        "href": "https://github.com/gHashTag/t27/pull/4529"
+      },
+      {
+        "label": "t27 #4502 — TypeScript shares the JS value layer · MERGED 2026-09-21",
+        "href": "https://github.com/gHashTag/t27/pull/4502"
+      },
+      {
+        "label": "Reviewed manifest — 1,419-spec snapshot at e7a11be",
+        "href": "https://github.com/gHashTag/trinity/blob/e7a11be07eb73fceaf41fb693a628d10ec245637/apps/website/public/t27/manifest.json"
+      },
+      {
+        "label": "Website checks for #1084 · SUCCESS 2026-09-21",
+        "href": "https://github.com/gHashTag/trinity/actions/runs/35599487248/job/106331933482"
+      }
+    ],
+    "openQuestions": [
+      "The reviewed website snapshot still has 211 specifications with no AST and seven parsed specifications losing a backend; their causes are not resolved by this article.",
+      "The upstream 1,414-spec test corpus and the website's 1,419-spec snapshot are different populations, so their counts are not interchangeable.",
+      "A partial declaration artifact does not establish complete language support or runtime correctness for every generated program.",
+      "Upstream test results are attributed to their merged PR reports, not presented as independently rerun compiler benchmarks."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Частичному модулю нужен собственный вердикт",
+      "summary": "Генераторы JavaScript и TypeScript получили явные записи о пропусках: Spec Explorer теперь отличает полезный, но частичный модуль от полного результата и от неудачной компиляции.",
+      "openQuestions": [
+        "В изученном снимке сайта остаются 211 спецификаций без AST и семь разобранных файлов с отказом backend; статья не устраняет причины этих ошибок.",
+        "Корпус upstream-проверки из 1 414 спецификаций и снимок сайта из 1 419 — разные выборки, их числа нельзя подменять друг другом.",
+        "Частичный артефакт объявлений не устанавливает полную поддержку языка или корректность исполнения каждой сгенерированной программы.",
+        "Результаты upstream-тестов приведены по отчётам смерженных PR, а не как независимо повторённые бенчмарки компилятора."
+      ]
+    }
+  },
+  {
+    "slug": "an-invitation-in-the-language-it-describes",
+    "title": "An invitation in the language it describes",
+    "summary": "T27's agent-facing introduction is one compiler-checked module served at two addresses, with executable claim checks and an explicit boundary around the reader's authority.",
+    "date": "2026-09-23",
+    "readingMinutes": 6,
+    "tags": [
+      "Agents",
+      "Compiler",
+      "Spec-first",
+      "Testing"
+    ],
+    "receipts": [
+      {
+        "label": "Trinity #1047 — one .t27 onboarding source · MERGED 2026-09-20",
+        "href": "https://github.com/gHashTag/trinity/pull/1047"
+      },
+      {
+        "label": "Trinity #1074 — backend and corpus claims checked · MERGED 2026-09-21",
+        "href": "https://github.com/gHashTag/trinity/pull/1074"
+      },
+      {
+        "label": "Reviewed generator — schema, assertions, consent and rendered-output checks",
+        "href": "https://github.com/gHashTag/trinity/blob/e7a11be07eb73fceaf41fb693a628d10ec245637/apps/website/scripts/onboarding-from-spec.mjs"
+      },
+      {
+        "label": "Reviewed onboarding source — nine tests and declared unknowns",
+        "href": "https://github.com/gHashTag/trinity/blob/e7a11be07eb73fceaf41fb693a628d10ec245637/apps/website/specs/catalog/onboarding.t27"
+      },
+      {
+        "label": "Website checks — nine blocks, 49 assertions · SUCCESS 2026-09-21",
+        "href": "https://github.com/gHashTag/trinity/actions/runs/35599487248/job/106331933482"
+      }
+    ],
+    "openQuestions": [
+      "Serving the document at llms.txt does not establish compatibility with every consumer, crawler indexing or external adoption.",
+      "The consent checks constrain this generated document; they are not a universal prompt-injection defence.",
+      "Comparing declared counts with the shipped manifest proves agreement, not independent correctness of the corpus classification.",
+      "The initial audit and negative-control results are attributed to the merged PR; no count of outside readers or contributions is established."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Приглашение на языке, о котором оно рассказывает",
+      "summary": "Введение T27 для агентов — один проверяемый компилятором модуль по двум адресам, с исполняемыми проверками утверждений и явной границей полномочий читателя.",
+      "openQuestions": [
+        "Публикация документа по адресу llms.txt не устанавливает совместимость со всеми потребителями, индексацию или внешнее использование.",
+        "Проверки согласия ограничивают данный сгенерированный документ, но не являются универсальной защитой от prompt injection.",
+        "Сравнение объявленных чисел с поставляемым manifest доказывает согласованность, а не независимую правильность классификации корпуса.",
+        "Исходный аудит и отрицательные контроли приведены по смерженному PR; число внешних читателей или вкладов не установлено."
+      ]
+    }
+  },
+  {
     slug: 'the-fpga-row-was-corrected',
     title: 'The FPGA row was corrected before it became evidence',
     summary: '[proven] A merged t27 PR corrected an invalid Yosys invocation and changed three FPGA status rows from green to red after 881 historical runs showed 36 successes, 842 failures, and 3 cancellations.',
@@ -2451,6 +3092,80 @@ export const postsIndex: PostMeta[] = [
         "Аппаратный захват IDDR на Artix-7 не работает, и открыт сам диагноз, а не только починка: issue #114 отзывает собственный первый вывод («Q1 мёртв, Q2 жив») после того, как детектор оказался односторонним. Оба выхода инертны во всех испробованных режимах фронта. Приёмный тракт использует захват DDR на фабрике как обходной путь.",
         "Sigma ~= 470 пс никогда не измерялась. Она выведена из размаха перекоса в пять шагов через закон длины кадра, а значит не может служить подтверждением этого же закона. Независимое измерение джиттера — тот единственный опыт, который закрыл бы вопрос; значение около 50 пс опровергло бы объяснение.",
         "Частота ошибок по кадрам не измерялась напрямую, а только выводилась из того, поднялся ли линк. Три точки по перекосу цензурированы справа на отсчёте 31 и не позволяют различить конкурирующие модели."
+      ]
+    }
+  },
+  {
+    "slug": "how-to-join-the-swarm",
+    "title": "How to join the swarm",
+    "summary": "A hive of coding agents is rewriting this stack into its own language, one file per issue. There are two ways in - write a spec, or lend a provider key - and this is what each costs, what each earns, and which providers' terms quietly forbid the second one.",
+    "date": "2026-09-23",
+    "readingMinutes": 9,
+    "tags": [
+      "onboarding",
+      "queen",
+      "leaderboard",
+      "t27"
+    ],
+    "receipts": [
+      {
+        "label": "LEADERBOARD - the lanes and their XP, live",
+        "href": "https://app.t27.ai/queen/#/queen?tab=leaderboard"
+      },
+      {
+        "label": "ROADMAP - the .t27 share of the stack, live",
+        "href": "https://app.t27.ai/queen/#/queen?tab=roadmap"
+      },
+      {
+        "label": "The rules of the game, machine-readable and test-checked",
+        "href": "https://t27.ai/llms.txt"
+      },
+      {
+        "label": "The open port issues, one file each",
+        "href": "https://github.com/gHashTag/t27/issues?q=is%3Aissue+in%3Atitle+%22Port+tools%2F%22+is%3Aopen"
+      },
+      {
+        "label": "NVIDIA API Trial Terms of Service (bars production use and making the service available to others)",
+        "href": "https://assets.ngc.nvidia.com/products/api-catalog/legal/NVIDIA%20API%20Trial%20Terms%20of%20Service.pdf"
+      },
+      {
+        "label": "OpenRouter rate limits (20/min, 50/day free; 1,000/day after a $10 lifetime top-up)",
+        "href": "https://openrouter.ai/docs/api-reference/limits"
+      },
+      {
+        "label": "GitHub Models retired 2026-07-30",
+        "href": "https://docs.github.com/en/github-models"
+      },
+      {
+        "label": "Anthropic Consumer Terms - \"You may not share your Account login information, Anthropic API key, or Account credentials with anyone else\"",
+        "href": "https://www.anthropic.com/legal/consumer-terms"
+      },
+      {
+        "label": "Google APIs Terms of Service - \"Developer credentials may not be embedded in open source projects\"",
+        "href": "https://developers.google.com/terms"
+      },
+      {
+        "label": "AI Horde - donated GPUs for kudos, and its rule that kudos are not a currency",
+        "href": "https://aihorde.net/"
+      },
+      {
+        "label": "Z.AI pricing - GLM-4.7-Flash and GLM-4.5-Flash at zero",
+        "href": "https://docs.z.ai/guides/overview/pricing"
+      }
+    ],
+    "openQuestions": [
+      "A bee that runs on your own machine on your own key is the shape that lets someone contribute capacity without breaching a provider agreement - the way AI Horde and BOINC have always worked. It is not built here, and nothing in this post should be read as a promise that it is coming.",
+      "Free-tier rate limits at Google, Z.AI and Mistral are no longer published or are login-gated, so the table states what each provider states and marks the rest unknown rather than guessing.",
+      "Whether a donated key breaches a given provider's terms is a question about YOUR agreement with them, and the reading here is ours, not legal advice."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Как войти в рой",
+      "summary": "Рой кодовых агентов переписывает этот стек на собственный язык, по одному файлу на задачу. Войти можно двумя способами - написать спеку или одолжить ключ провайдера, - и здесь сказано, чего стоит каждый, что приносит, и чьи условия тихо запрещают второй.",
+      "openQuestions": [
+        "Пчела, работающая на вашей машине на вашем ключе, — та форма, которая позволяет отдавать мощность, не нарушая соглашения с провайдером, и именно так всегда работали AI Horde и BOINC. Здесь она не построена, и ничто в этом тексте не следует читать как обещание, что она будет.",
+        "Лимиты бесплатных тарифов у Google, Z.AI и Mistral больше не публикуются или закрыты логином, поэтому таблица приводит то, что заявляет сам провайдер, а остальное помечает неизвестным, вместо того чтобы угадывать.",
+        "Нарушает ли одолженный ключ условия конкретного провайдера - это вопрос о ВАШЕМ соглашении с ним, и прочтение здесь наше, а не юридическая консультация."
       ]
     }
   }

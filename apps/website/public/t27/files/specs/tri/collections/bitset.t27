@@ -36,7 +36,7 @@ module TriBitset;
     }
 
     // test(bs: *Bitset) → void
-    fn test(bs: *Bitset) -> void {
+    fn test_bit(bs: *Bitset) -> void {
         // TODO: Implement from .tri spec
     }
 
@@ -76,7 +76,7 @@ module TriBitset;
 
     test test_basic_case
         given input = default_input()
-        when result = test(input)
+        when result = check(input)
         then result != undefined
 
     test union_basic_case

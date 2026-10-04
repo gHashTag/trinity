@@ -22,13 +22,6 @@ module TriSort;
     fn sort(items: []const T) -> void {
         return;
     }
-        if (items.len <= 1) {
-            return items;
-        }
-        
-        // Simple implementation - return input as-is for now
-        return items;
-    }
 
     // sort_by(items: []const T) -> void
     fn sort_by(items: []const T) -> void {
@@ -54,4 +47,9 @@ module TriSort;
         given input = default_input()
         when result = sort_by(input)
         then result != undefined
+
+    test sort_order_is_an_enum_whose_two_directions_are_alternatives
+        given ascending = @intFromEnum(SortOrder.Ascending)
+        and descending = @intFromEnum(SortOrder.Descending)
+        then ascending == 0 and descending == 1
 
