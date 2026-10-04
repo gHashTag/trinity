@@ -3,6 +3,47 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: "a-terminal-for-seven-backends-in-an-x-post",
+    title: "A terminal for t27's seven backends, inside an X post",
+    summary: "[one spec, hello_world; only JavaScript runs in the browser; the native results are one macOS machine on one day; nothing posted on X] The t27 player now has a terminal: the compiler, as WebAssembly in the page, prints what each of its seven backends emits and runs the spec's tests. Each backend has its own share page. Every word the terminal says lives in the spec. Run natively, hello_world as committed builds in two of the seven languages, and the post says why.",
+    date: "2026-10-04",
+    readingMinutes: 6,
+    tags: ["t27", "Compiler", "Terminal"],
+    receipts: [
+      { label: "The recording shown in the post: the terminal's own gates, 21 pass, 0 fail", href: "https://t27.ai/term/play-terminal-gates/" },
+      { label: "The player, with the terminal as its last tab", href: "https://t27.ai/play/hello-world/" },
+      { label: "trinity#1366: this work, the terminal, the seven pages and this post", href: "https://github.com/gHashTag/trinity/pull/1366" },
+      { label: "trinity#1365: a terminal for every t27 backend, one share page per backend (the issue this work closes)", href: "https://github.com/gHashTag/trinity/issues/1365" },
+      { label: "trinity#1359: typed code shows at once in the spec editor (the base of this work) · MERGED 2026-10-04", href: "https://github.com/gHashTag/trinity/pull/1359" },
+      { label: "trinity#1340: the X player card, generated from specs/x/player.t27 · MERGED 2026-10-04", href: "https://github.com/gHashTag/trinity/pull/1340" },
+      { label: "t27#6100: hello_world.t27 calls cast(), which nothing declares · OPEN", href: "https://github.com/gHashTag/t27/issues/6100" },
+      { label: "t27#6101: gen-js, an opt-in lowering of fn bodies · OPEN", href: "https://github.com/gHashTag/t27/issues/6101" },
+      { label: "t27#5966: gen-verilog and gen-verilog-hir output for hello_world is refused by iverilog · OPEN", href: "https://github.com/gHashTag/t27/issues/5966" },
+      { label: "t27#4471: the gen-js backend, declarations only, by design · CLOSED 2026-09-20", href: "https://github.com/gHashTag/t27/issues/4471" },
+    ],
+    openQuestions: [
+      "Only JavaScript runs in the browser. For the other six backends the page prints a command and claims nothing; the native results in the post are one macOS machine on one day (zig 0.16.0, Apple clang 21.0.0, rustc 1.98.1, Icarus Verilog 12.0, tsc 5.8.3).",
+      "hello_world as committed does not build natively in five of the seven languages, and the terminal hands out those files anyway, with the command. Until t27#6100 and t27#5966 are fixed, a reader who runs them gets the errors in the table.",
+      "The page's test evaluator treats the undeclared cast() as a conversion, so in the browser the spec's tests pass on a line that Zig, C and Rust refuse.",
+      "The terminal's behaviour is 361 hand-written lines of JavaScript; only its words and facts are in the spec. Moving the behaviour waits on t27#6101, which changes what gen-js promises and may be declined.",
+      "X's player cards may not collect data entry. Whether a terminal page can be posted as a player card is not decided, and nothing has been posted.",
+      "One spec has terminal pages. Every other play would need its own seven.",
+    ],
+    published: true,
+    ru: {
+      title: "Терминал для семи бэкендов t27 внутри поста в X",
+      summary: "[одна спека, hello_world; в браузере работает только JavaScript; нативные результаты получены на одной машине с macOS в один день; в X ничего не опубликовано] В плеере t27 теперь есть терминал: компилятор, работающий в странице как WebAssembly, печатает то, что выдаёт каждый из семи его бэкендов, и запускает тесты спеки. У каждого бэкенда своя страница для ссылок. Каждое слово терминала живёт в спеке. При нативной сборке hello_world в нынешнем виде собирается на двух языках из семи, и пост объясняет почему.",
+      openQuestions: [
+        "В браузере работает только JavaScript. Для остальных шести бэкендов страница печатает команду и ничего не заявляет; нативные результаты в посте получены на одной машине с macOS в один день (zig 0.16.0, Apple clang 21.0.0, rustc 1.98.1, Icarus Verilog 12.0, tsc 5.8.3).",
+        "hello_world в нынешнем виде не собирается нативно на пяти языках из семи, а терминал всё равно выдаёт эти файлы вместе с командой. Пока t27#6100 и t27#5966 не исправлены, читатель, который их запустит, получит ошибки из таблицы.",
+        "Вычислитель тестов в странице считает необъявленный cast() преобразованием, поэтому в браузере тесты спеки проходят на строке, которую Zig, C и Rust отвергают.",
+        "Поведение терминала — это 361 строка JavaScript, написанная вручную; в спеке только его слова и факты. Перенос поведения ждёт t27#6101, который меняет то, что обещает gen-js, и может быть отклонён.",
+        "Карточкам-плеерам X запрещено собирать ввод данных. Можно ли публиковать страницу терминала как карточку-плеер, не решено, и ничего не опубликовано.",
+        "Страницы терминала есть у одной спеки. Каждому другому плееру понадобятся свои семь.",
+      ],
+    },
+  },
+  {
     slug: "t27c-compile-time-and-a-backend-without-llvm",
     title: "Where t27c's compile time goes, and a first backend without LLVM",
     summary: "[one M1 Pro, one synthetic program; the t27b numbers were taken at a load average of 83–165 on 8 cores; t27b handles 37 of 1174 specs and its JIT runs only on arm64 macOS; three of the four bugs it found are not fixed yet] t27c type-checks a function in 29.9 µs, 5.2 times faster than rustc check, but it emits no machine code, so its full path to an object file is 2.1 times slower than clang on the same program written in C. Its own clean release build went from 142.7 s to 66.0 s after three merged PRs removed unused machine-learning crates and the aws-lc-sys build. t27b, a native AArch64 backend with no LLVM, now merged, compiles and runs the same tests 23 to 381 times faster than the Zig path, writes code at about the clang -O0 level, and found four bugs in t27c and in a spec.",

@@ -90,6 +90,8 @@ zig-macos-*/
 zig-linux-*/
 zig-windows-*/
 zig/
+# ...but a play's zig terminal page is a page, not an SDK download (play-from-spec.mjs writes it)
+!apps/website/public/play/*/zig/
 *.tar.xz
 
 # Ralph logs (keep config)
