@@ -14,6 +14,16 @@ env:
   BRAIN_HEALTH_THRESHOLD: "80"  # Minimum health score for merge
   STRESS_TEST_THRESHOLD: "270"  # Minimum stress test score (270/300 = 90%)
 
+# The repository's default GITHUB_TOKEN is read-only, so every github-script
+# step here that comments on the PR (health, stress, critical state) failed
+# with 403 "Resource not accessible by integration". Nobody saw it while the
+# health check failed first and those steps were skipped. pull-requests: write
+# covers listing and posting comments on a PR; contents: read keeps checkout
+# working. A PR from a fork still gets a read-only token.
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   # =========================================================================
   # Phase 0: Quick Health Check (fast feedback, runs on all commits)
