@@ -5,9 +5,8 @@ on:
     branches: [main, ralph/dev-*, vibee-v5-production]
   pull_request:
     branches: [main]
-  schedule:
-    # Daily run at 00:00 UTC
-    - cron: '0 0 * * *'
+  # No schedule: block. The Queen (Inngest app t27-queen) dispatches this workflow
+  # on '0 0 * * *' UTC from the card specs/crons/trinity-codegen.t27 in gHashTag/t27.
   workflow_dispatch:
 
 jobs:
