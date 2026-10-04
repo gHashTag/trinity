@@ -12,8 +12,8 @@ name: Discover RTL check callers
 # designer is the same one that makes its gallery self-maintaining.
 
 on:
-  schedule:
-    - cron: '41 5 * * *'
+  # No schedule: block. The Queen (Inngest app t27-queen) dispatches this workflow
+  # on '41 5 * * *' UTC from the card specs/crons/trinity-discover-callers.t27 in gHashTag/t27.
   workflow_dispatch:
 
 permissions:

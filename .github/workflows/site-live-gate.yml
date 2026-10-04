@@ -28,9 +28,8 @@ on:
     paths:
       - 'apps/website/**'
       - '.github/workflows/site-live-gate.yml'
-  schedule:
-    # Catches the other direction: the apex drifting behind without a push here.
-    - cron: '17 6 * * *'
+  # No schedule: block. The Queen (Inngest app t27-queen) dispatches this workflow
+  # on '17 6 * * *' UTC from the card specs/crons/trinity-site-live-gate.t27 in gHashTag/t27.
   workflow_dispatch:
 
 permissions:
