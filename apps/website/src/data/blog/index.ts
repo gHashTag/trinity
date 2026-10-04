@@ -12,6 +12,7 @@ export const postsIndex: PostMeta[] = [
     receipts: [
       { label: "The recording shown in the post: the terminal's own gates, 21 pass, 0 fail", href: "https://t27.ai/term/play-terminal-gates/" },
       { label: "The player, with the terminal as its last tab", href: "https://t27.ai/play/hello-world/" },
+      { label: "trinity#1366: this work, the terminal, the seven pages and this post · OPEN, submitted, not merged", href: "https://github.com/gHashTag/trinity/pull/1366" },
       { label: "trinity#1365: a terminal for every t27 backend, one share page per backend · OPEN", href: "https://github.com/gHashTag/trinity/issues/1365" },
       { label: "trinity#1359: typed code shows at once in the spec editor (the base of this work) · OPEN, submitted, not merged", href: "https://github.com/gHashTag/trinity/pull/1359" },
       { label: "trinity#1340: the X player card, generated from specs/x/player.t27 · MERGED 2026-10-04", href: "https://github.com/gHashTag/trinity/pull/1340" },
