@@ -247,7 +247,7 @@ export interface AgentSpecCatalog extends Omit<SpecCatalogBase, 'codeOnly'> {
     specPlusExperience: number; specOnly: number; byLayer: Record<AgentLayer, number>
     episodesAttributed: number; episodesUnattributed: number | null; episodesTotal: number | null
   }
-  /** Specs -> Skills -> Crons -> Agents -> Tools -> Functions, the counts the ladder header shows. */
+  /** Specs -> Skills -> Crons -> Agents -> Tools -> Functions -> Providers, the counts the ladder header shows. */
   ladder: LadderCounts
   pin: { ref: string; source: string }
   experienceSnapshot: {
@@ -259,7 +259,7 @@ export interface AgentSpecCatalog extends Omit<SpecCatalogBase, 'codeOnly'> {
   agents: AgentSpecEntry[]
 }
 
-export interface LadderCounts { specs: number | null; skills: number; crons: number; agents: number; tools: number; functions: number }
+export interface LadderCounts { specs: number | null; skills: number; crons: number; agents: number; tools: number; functions: number; providers: number }
 
 // ---------------------------------------------------------------------------
 // Layer 5: tools (public/tools/spec-tools.json). Two families, never merged:
@@ -350,6 +350,185 @@ export interface ToolSpecCatalog extends Omit<SpecCatalogBase, 'codeOnly'> {
   tools: ToolSpecEntry[]
 }
 
+// ---------------------------------------------------------------------------
+// Layer 7: providers (public/providers/spec-providers.json). Two families from
+// specs/providers/catalog.t27: `model` (one card per model the Gonka chain lists,
+// every number copied from a public chain endpoint) and `host-class` (a device a
+// person could rent out to TRI-NET for $TRI). The vocabularies below are the
+// catalog's; the generator fails the build if either side drifts.
+// ---------------------------------------------------------------------------
+export type ProviderFamily = 'model' | 'host-class'
+export type ProviderNetwork = 'gonka' | 'trinet'
+export type ProviderStatus = 'serving' | 'listed' | 'measured' | 'planned'
+export type ProviderWitness = 'chain-read' | 'bench-measured' | 'design-only'
+export type ProviderCall = 'needs-key' | 'none'
+
+interface ProviderCommonFields {
+  KIND: 'provider'
+  ID: string
+  FAMILY: ProviderFamily
+  NETWORK: ProviderNetwork
+  NAME: string
+  SUMMARY_EN: string
+  STATUS: ProviderStatus
+  WITNESS: ProviderWitness
+  CHECKED: string
+  SOURCES: string[]
+  NOTE: string
+  ENABLED: boolean
+}
+
+export interface ProviderModelFields extends ProviderCommonFields {
+  FAMILY: 'model'
+  MODEL_ID: string
+  HF_COMMIT: string
+  CONTEXT_TOKENS: number
+  VRAM_GB: number
+  THROUGHPUT_PER_NONCE: number
+  VALIDATION_PERMILLE: number
+  POC_MODEL: boolean
+  POC_WEIGHT_SCALE_E4: number
+  HOSTS: number
+  EPOCH: number
+  UNITS_OF_COMPUTE_PER_TOKEN: number
+  PRICE_PER_TOKEN: number
+  PRICE_UNIT: string
+  API: string
+  CALL: ProviderCall
+  VLLM_ARGS: string[]
+}
+
+export interface ProviderHostFields extends ProviderCommonFields {
+  FAMILY: 'host-class'
+  DEVICE: string
+  MEMORY_GB: number
+  UNITS_PER_GONKA_NODE: number
+  PROOF: string
+  REWARD: string
+  STAKE: string
+  GONKA_PARALLEL: string
+  MEASURED: string[]
+  GAPS: string[]
+  TOKEN: string
+}
+
+interface ProviderEntryBase {
+  id: string
+  specPath: string
+  summary: Localized
+  name: Localized
+  sha256: string
+  typecheckOk: boolean
+  discarded: number
+  moduleName: string | null
+  inSpecCorpus: boolean
+  network: ProviderNetwork
+  status: ProviderStatus
+  witness: ProviderWitness
+  health: Health
+  messages: string[]
+  searchText: string
+}
+
+export interface ProviderModelEntry extends ProviderEntryBase { family: 'model'; fields: ProviderModelFields }
+export interface ProviderHostEntry extends ProviderEntryBase { family: 'host-class'; fields: ProviderHostFields }
+export type ProviderSpecEntry = ProviderModelEntry | ProviderHostEntry
+
+/**
+ * specs/providers/tri_gnk_pair.t27 as plain values. Every u64 the spec states
+ * (ngonka amounts, block heights, the $TRI cap) arrives as an exact decimal
+ * string, because a JS number loses digits above 2^53; format it with BigInt.
+ */
+export interface ProviderStudyFields {
+  KIND: 'providers-study'
+  ID: string
+  CHECKED: string
+  ROUTES: string[]
+  CONFLICT: string
+  PARALLELS: string[]
+  TRI_CHAINS: string[]
+  TRI_MAINNET: boolean
+  TRI_CAP: string
+  GONKA_POOL_REGISTERED: boolean
+  BRIDGE_CHAINS: string[]
+  GONKA_APPROVED_FOR_TRADE: string[]
+  IBC_CHANNELS: string[]
+  WGNK_ETHEREUM: string
+  WGNK_USDT_UNISWAP_V3_POOL: string
+  WGNK_DECIMALS: number
+  GNK_DECIMALS: number
+  EPOCH: number
+  ACTIVE_HOSTS: number
+  CHAIN_HEIGHT: string
+  ALLOWLIST_UNTIL_HEIGHT: string
+  SUPPLY_NGONKA: string
+  TOTAL_FEES_NGONKA: string
+  TOTAL_SUBSIDIES_NGONKA: string
+  TOTAL_BURNED_NGONKA: string
+  INITIAL_EPOCH_REWARD_NGONKA: string
+  VESTING_EPOCHS: number
+  EPOCH_LENGTH_BLOCKS: number
+  EPOCH_SECONDS_MEASURED: number
+  BASE_WEIGHT_PERMILLE: number
+  SLASH_INVALID_PERMILLE: number
+  SLASH_DOWNTIME_PERMILLE: number
+  SMALLEST_POC_MODEL_GB: number
+  MOST_SERVED_MODEL_GB: number
+  LARGEST_POC_MODEL_GB: number
+  CONSUMER_CARD_GB: number
+  CONSUMER_ERA_MIN_GB: number
+  DATACENTER_CARD_GB: number
+  [key: string]: unknown
+}
+
+export interface ProviderStudy {
+  id: string
+  specPath: string
+  sha256: string
+  typecheckOk: boolean
+  moduleName: string | null
+  fields: ProviderStudyFields
+  /** Computed by the generator from the fields above, never typed by hand. */
+  derived: {
+    allowlistActive: boolean
+    /** TOTAL_SUBSIDIES_NGONKA / TOTAL_FEES_NGONKA, rounded down, as a decimal string. */
+    subsidyPerFee: string
+    vestingDays: number
+    consumerCardsPerNode: { smallest: number; mostServed: number; largest: number }
+  }
+}
+
+export interface ProviderSpecCatalog extends Omit<SpecCatalogBase, 'codeOnly'> {
+  counts: {
+    specs: number; typecheckOk: number; enabled: number
+    byFamily: Record<ProviderFamily, number>; byNetwork: Record<ProviderNetwork, number>
+    byStatus: Record<ProviderStatus, number>; byWitness: Record<ProviderWitness, number>
+  }
+  ladder: LadderCounts
+  catalog: {
+    specPath: string; sha256: string; typecheckOk: boolean; schemaVersion: number
+    families: ProviderFamily[]; networks: ProviderNetwork[]; directories: string[]; idRule: string
+    commonFields: string[]; modelFields: string[]; hostFields: string[]; fieldSourceRule: string
+    statuses: ProviderStatus[]; statusRule: string; witnesses: ProviderWitness[]; witnessRule: string
+    calls: ProviderCall[]; callRule: string
+  }
+  study: ProviderStudy
+  providers: ProviderSpecEntry[]
+}
+
+let providersPromise: Promise<ProviderSpecCatalog> | null = null
+
+export function loadProviderSpecs(): Promise<ProviderSpecCatalog> {
+  if (!providersPromise) {
+    providersPromise = fetch('providers/spec-providers.json', { credentials: 'omit' }).then((r) => {
+      if (!r.ok) throw new Error(`could not load spec-providers (${r.status})`)
+      return r.json() as Promise<ProviderSpecCatalog>
+    })
+    providersPromise.catch(() => { providersPromise = null })
+  }
+  return providersPromise
+}
+
 let toolsPromise: Promise<ToolSpecCatalog> | null = null
 
 export function loadToolSpecs(): Promise<ToolSpecCatalog> {
@@ -411,12 +590,12 @@ export function loadSkillSpecs(): Promise<SkillSpecCatalog> {
 }
 
 /**
- * The six ladder counts alone, for a caller that wants the numbers without a
+ * The seven ladder counts alone, for a caller that wants the numbers without a
  * catalog -- the Queen's own rungs, which stand outside the Explorer frames and
  * so cannot read what those frames loaded.
  *
  * Every catalog carries the same generated `ladder`; this reads the smallest of
- * the six (spec-skills.json, ~32 kB against spec-tools.json's ~420 kB plus its trios part) and
+ * the seven (spec-skills.json, ~32 kB against spec-tools.json's ~420 kB plus its trios part) and
  * shares the promise the Skill Explorer already uses, so a reader who opens
  * SKILLS pays for it once. The numbers are still generated, never typed here.
  */
@@ -449,7 +628,7 @@ export async function loadAgentSpecSource(specPath: string): Promise<string> {
 export const T27_DEFAULT_BRANCH = 'master'
 
 export function specSlug(specPath: string): string {
-  return specPath.replace(/^specs\/(skills|crons|agents|functions|tools\/(tri|mcp))\//, '').replace(/\.t27$/, '')
+  return specPath.replace(/^specs\/(skills|crons|agents|functions|providers|tools\/(tri|mcp))\//, '').replace(/\.t27$/, '')
 }
 
 /** The canonical spec: the file in gHashTag/t27, opened in GitHub's editor. */
@@ -494,7 +673,7 @@ export async function requestControl(base: string, kind: 'skill' | 'cron', id: s
 // ---------------------------------------------------------------------------
 // Labels shared by both Explorers.
 // ---------------------------------------------------------------------------
-export const WITNESS_LABEL: Record<Witness | AgentWitness | ToolWitness, { en: string; ru: string }> = {
+export const WITNESS_LABEL: Record<Witness | AgentWitness | ToolWitness | ProviderWitness, { en: string; ru: string }> = {
   'spec+code': { en: 'spec+code', ru: 'спека+код' },
   'spec-only': { en: 'spec-only', ru: 'только спека' },
   'code-only': { en: 'code-only', ru: 'только код' },
@@ -504,6 +683,10 @@ export const WITNESS_LABEL: Record<Witness | AgentWitness | ToolWitness, { en: s
   'registry-export': { en: 'registry-export', ru: 'экспорт реестра' },
   'help-output': { en: 'help-output', ru: 'вывод --help' },
   'runtime': { en: 'runtime', ru: 'запуск' },
+  // Providers: where a card's numbers came from (specs/providers/catalog.t27 WITNESS_RULE).
+  'chain-read': { en: 'chain-read', ru: 'прочитано с цепи' },
+  'bench-measured': { en: 'bench-measured', ru: 'измерено на стенде' },
+  'design-only': { en: 'design-only', ru: 'только проект' },
 }
 
 export function witnessOf<T extends { id: string }>(specById: Map<string, T>, id: string): Witness {

@@ -143,6 +143,12 @@ jobs:
       # rate the ledger did not state; the block reads its figures. Pure.
       - name: TRI mine
         run: npm run check:tri-mine
+      # The PROVIDERS tab re-reads the Gonka chain in the browser. Recorded
+      # responses rebuilt from the model cards must come back with zero
+      # differences, each bent value alone; a host's address, seed or key never
+      # leaves the parser, and the page sends nothing to a model. Pure, no network.
+      - name: Providers (Gonka live read)
+        run: npm run check:providers
       # The Queen's kanban grew a second lane, and it is the first thing on that
       # page that differs per person. Signed in, it asks the hive for the
       # clients this visitor answers for — on the game token, one identity
