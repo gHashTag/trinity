@@ -9,6 +9,7 @@
 
 import QueenPeople from './QueenPeople'
 import QueenRunners from './QueenRunners'
+import QueenSpecEarnings from './QueenSpecEarnings'
 import './QueenLeaderboard.css'
 
 export interface LeaderboardCopy {
@@ -45,6 +46,11 @@ export default function QueenLeaderboard({ lang }: { lang: 'en' | 'ru' }) {
 
       {/* PEOPLE: GitHub's own record of who wrote the specs. */}
       <QueenPeople lang={l} />
+
+      {/* What accepted .t27 work has EARNED, as a record rather than XP: an
+          earning is a row that stays, beside its revocation when one comes.
+          It ranks people by name, never lanes by index. */}
+      <QueenSpecEarnings lang={l} />
 
       {/* Lend a lane by running it yourself, with your key on your machine. */}
       <QueenRunners lang={l} />

@@ -328,6 +328,10 @@ jobs:
       # still refuse a spec whose own tests do not hold.
       - name: Viewport spec
         run: npm run check:viewport && npm run test:viewport-spec
+      # A card tap posts open-card to the app framing the board on its own
+      # origin, and nowhere else (specs/automation/kanban-card-chat.t27 in t27).
+      - name: Card opens its chat
+        run: npm run test:card-chat
       # The agent-facing surface (/agents.t27 and /llms.txt) is generated from
       # specs/catalog/onboarding.t27 through the compiler, and the generator
       # re-compiles what it is about to publish. This step is also what keeps

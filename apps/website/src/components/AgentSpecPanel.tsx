@@ -65,6 +65,7 @@ const COPY = {
     viaRailway: 'Railway service',
     viaInngest: 'Inngest dashboard',
     timerDisabled: 'timer inside the process — controlled by the service’s deployment',
+    launchdDisabled: 'launchd job on the owner’s Mac — no remote handle',
     unknownService: 'the Railway service id is not known to the site',
     skillRun: 'a skill is launched by an agent with its command; there is no run button without a control plane',
     command: 'command',
@@ -128,6 +129,7 @@ const COPY = {
     viaRailway: 'сервис в Railway',
     viaInngest: 'панель Inngest',
     timerDisabled: 'таймер внутри процесса — управляется деплоем сервиса',
+    launchdDisabled: 'задача launchd на Mac владельца — удалённого запуска нет',
     unknownService: 'id сервиса Railway сайту не известен',
     skillRun: 'скилл запускает агент по его команде; без контура управления кнопки запуска нет',
     command: 'команда',
@@ -495,7 +497,7 @@ export function AgentSpecPanel({ lang, kind, id, entry, links, embedded, i18n = 
                 <span aria-disabled="true" style={{ ...pill, cursor: 'default', opacity: 0.5 }}>
                   {t.runNow}
                 </span>
-                <span style={{ fontSize: 11, color: C.muted }}>{runNow.reason === 'timer' ? t.timerDisabled : t.unknownService}</span>
+                <span style={{ fontSize: 11, color: C.muted }}>{runNow.reason === 'timer' ? t.timerDisabled : runNow.reason === 'launchd' ? t.launchdDisabled : t.unknownService}</span>
               </>
             )
           ) : (

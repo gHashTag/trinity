@@ -50,7 +50,7 @@ const COPY = {
       {
         n: '03',
         name: MOTTO.en.verbs[2],
-        body: 'An accepted turn is recorded against the name that made it, as a non-transferable integer, and it will stay one. Attach a tradable token to a unit of proof and the cheapest way to make units becomes renting the compute this network exists to replace. So the counters are real and the wallet is not: every one of them is watch-only today, and this page would rather say so than imply otherwise.',
+        body: 'An accepted turn is recorded against the name that made it. An accepted .t27 spec is authored work, judged on a named commit, and each one is written down as an earning anyone can recompute from the repository, issue and commit. TRI is the token those earnings are designed to mint: 100% mined by accepted work, no pre-mine. It is not deployed yet, so today the counters are real and the wallet is not, and this page would rather say so than imply otherwise.',
       },
     ],
     whyTitle: 'Why it is built this way, and what the community gets',
@@ -87,7 +87,7 @@ const COPY = {
       {
         n: '03',
         name: MOTTO.ru.verbs[2],
-        body: 'Принятый ход записывается на имя того, кто его сделал, непередаваемым целым числом — и останется таким. Привяжите к единице доказательства торгуемый токен, и самым дешёвым способом делать единицы станет аренда тех самых вычислений, ради замены которых сеть и существует. Поэтому счётчики настоящие, а кошелька нет: сегодня каждый из них — только для чтения, и страница скорее скажет это прямо, чем намекнёт на обратное.',
+        body: 'Принятый ход записывается на имя того, кто его сделал. Принятая спека .t27 — это авторская работа, принятая на конкретном коммите, и каждая записывается как заработок, который любой может пересчитать по репозиторию, задаче и коммиту. TRI — токен, который по замыслу чеканится из этих заработков: 100% добывается принятой работой, без предвыпуска. Он ещё не развёрнут, поэтому сегодня счётчики настоящие, а кошелька нет, и страница скорее скажет это прямо, чем намекнёт на обратное.',
       },
     ],
     whyTitle: 'Почему именно так — и что с этого сообществу',
