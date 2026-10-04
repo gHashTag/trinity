@@ -266,7 +266,7 @@ export default function QueenChat({
       (onOpen ? ` [${directiveHelp(onAgentTab && Boolean(onSendToAgent))}]` : '')
     const asked: Promise<ChatResponse> =
       context.view === 'browser'
-        ? askQueenInBrowser(history, question, lang, (soFar) => setProgress({ tools: soFar.tools, text: soFar.text }))
+        ? askQueenInBrowser(history, question, lang, (soFar) => setProgress({ tools: soFar.tools, text: soFar.text }), context.spec ?? null)
         : askQueen(`${prefix}${quoted ? ` ${quoted}` : ''} ${question}`)
     asked
       .then((res) => {

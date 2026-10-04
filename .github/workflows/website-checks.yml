@@ -208,6 +208,22 @@ jobs:
       # only our own /live/ is framed. Pure, no browser.
       - name: The BROWSER view
         run: npm run check:queen-browser
+      # Signed out, the same view says what it does once signed in and names
+      # the address's spec only if it is a plain path the Explorer accepts;
+      # every line of the guide is pinned to the code that makes it true, and
+      # every pin has a negative control. Reads public/t27/manifest.json.
+      - name: The BROWSER guide, signed out
+        run: npm run check:queen-browser-guide
+      # The agent on BROWSER is told the address's spec only when it names one
+      # catalog entry -- path, module and card from the catalog, never the
+      # address's own words or the entry's free-text description. Pure, no browser.
+      - name: The BROWSER agent hears which spec the page shows
+        run: npm run check:queen-browser-page
+      # The chat on SPECS names the spec the frame shows (one rule,
+      # lib/queenEmbed.ts specsCardShown), and only a path the guide would print
+      # goes into the Queen's prompt. Pure, no browser.
+      - name: The SPECS chat names the spec on show
+        run: npm run check:queen-specs-chat
       # Invite to watch: the render's read-only watch links on the live bar.
       # The session token rides only in a header, a minted address is shown
       # only if it is https://<host>/watch/<token> and revoked on the spot if

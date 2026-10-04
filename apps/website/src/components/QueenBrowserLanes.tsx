@@ -70,6 +70,7 @@ export function QueenBrowserLanes({ c, lang, env, live }: { c: BrowserLanesCopy;
         question,
         lang,
         soFar => update(card.lane, { tools: soFar.tools, partial: soFar.text }),
+        null,
         card.lane,
       )
       setSupport(prev => supportAfter(prev, card.lane, a.lane))

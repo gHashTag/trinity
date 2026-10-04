@@ -96,13 +96,22 @@ export function validSelection(tab: ExplorerTab, id: string | null): string | nu
 }
 
 /**
+ * The spec SPECS' frame shows for the address's spec=: the named one when the Explorer
+ * accepts it, else FEATURED_SPEC. The frame's route and the chat's context
+ * (lib/queenSpecsChat.ts) both ask this, so the chat cannot name another spec.
+ */
+export function specsCardShown(id: string | null): string {
+  return validSelection('specs', id) ?? FEATURED_SPEC
+}
+
+/**
  * The frame's route for a tab: the named card, or the Explorer's default when the id
  * is missing or refused. `world` is the Queen's chosen world (lib/queenCorpusCheck
  * worldParam); SPECS narrows its list to it, every other Explorer has no worlds.
  */
 export function explorerFrameHash(tab: ExplorerTab, id: string | null, world: string | null = null): string {
+  if (tab === 'specs') return specExplorerHash(specsCardShown(id), { embedded: true, world })
   const valid = validSelection(tab, id)
-  if (tab === 'specs') return specExplorerHash(valid ?? FEATURED_SPEC, { embedded: true, world })
   if (valid) return cardHash(tab, valid)
   if (tab === 'project') return systemDocsHash(FIRST_CHAPTER, { embedded: true })
   return `#/${tab}?embed=1`
