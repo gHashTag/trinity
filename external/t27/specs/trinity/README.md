@@ -45,21 +45,25 @@ owns its contract.
 ```
 python3 tools/trinity_manifest.py inventory --trinity-root <clean clone of gHashTag/trinity at PINNED_REVISION>
 python3 tools/trinity_manifest.py check
-python3 tools/trinity_manifest.py --self-check     # negative control: thirteen planted defects, each reported
+python3 tools/trinity_manifest.py --self-check     # negative control: sixteen planted defects, each reported, and the comment and vendored-copy rules end to end
 ```
 
 `inventory` refuses a tree with a modified tracked file. It reads `build.zig` (every
 `addExecutable` / `addTest` / `addLibrary`, every `b.step`, every `installArtifact` and the `if`
 that guards it), `build.zig.zon`, `.gitmodules`, the tracked tree (one entry per directory), the `.t27` / `.tri` /
-`.vibee` / `.zig` counts with the website mirror (`apps/website/public/t27/files/`) set apart,
+`.vibee` / `.zig` counts with the website mirror (`apps/website/public/t27/files/`) and the
+consumer's vendored copies of this repository's contracts (`external/t27/`) each set apart,
 the reachability of every `.zig` file from the files `build.zig` names through relative
-`@import`, `.trinity/registry.json` and the vendored catalog counts.
+`@import`, `.trinity/registry.json` and the vendored catalog counts. `build.zig` and the `.zig`
+files are read with their `//` comments blanked in place; a `//` inside a string or a multiline
+string line is kept, so a step, an install or an `@import` that exists only in a comment is not
+counted.
 
 `check` fails on: a pinned revision or a count that differs from the inventory; a dirty
 inventory; a target `build.zig` defines that no card owns, or two cards own, or a card owns
 that the build does not define; a default-installed target on a non-headless card or a
 `!ci_mode`-guarded target on a headless one; a `trinity:` path that is not tracked; a mirrored
-file cited as canonical; a `DIALECT` that disagrees with the extension of `CANONICAL_SPEC`; a
+or vendored file cited as canonical; a `DIALECT` that disagrees with the extension of `CANONICAL_SPEC`; a
 backend claimed by a card that is not executable, adapter or research; two owners for one
 canonical spec; two cards with one `ID`; `EVIDENCE = "measured"` without `ACCEPTANCE` and
 `EVIDENCE_SOURCE`; a work package without a card or a card naming a package the project does
@@ -97,13 +101,18 @@ in a repository or a public CI log, command and revision recorded in `EVIDENCE_S
 path is a file of this repository; `<repo>:<path>` names another repository and is recorded,
 not checked.
 
-## What the inventory measured at gHashTag/trinity@976df517 (2026-09-12)
+## What the inventory measured at gHashTag/trinity@976df517 (2026-09-12, corrected 2026-10-01)
 
-- 51 executables, 6 libraries, 73 tests and 68 steps in `build.zig`; 46 targets installed by
-  `zig build -Dci=true`, 5 guarded by `!ci_mode` (the raylib canvas and the node GUI).
-- 31 `.t27` files outside the website mirror, 1044 inside it; 764 `.tri`; 1981 `.vibee` (1428 of
-  them under `deploy/trinity-nexus`); 2830 `.zig`, of which 749 are reachable from the 173 files
-  `build.zig` names and 2081 are not.
+- 51 executables, 6 libraries, 73 tests and 66 steps in `build.zig`; 46 targets installed by
+  `zig build -Dci=true`, 3 guarded by `!ci_mode` (photon-demo, photon-immersive and the node GUI).
+  The steps `needle-mcp` and `trinity-mcp` and the installs of `trinity-canvas` and
+  `trinity-canvas-wasm-check` exist only in commented-out lines. Until 2026-10-01 the inventory
+  read comments and counted 68 steps and 5 guarded installs, and the two MCP cards owned the
+  two steps (gHashTag/trinity#989).
+- 31 `.t27` files outside the website mirror, 1044 inside it, none under `external/t27/` at this
+  revision; 764 `.tri`; 1981 `.vibee` (1428 of them under `deploy/trinity-nexus`); 2830 `.zig`, of
+  which 748 are reachable from the 173 files `build.zig` names and 2082 are not (749 and 2081
+  until 2026-10-01: one file is reached only through a commented-out `@import`).
 - Four pinned dependencies (`emsdk`, `raylib`, `zig_hdc`, `zig_golden_float`) and one submodule
   (`external/zig-golden-float`, a second, unpinned reference to the same repository).
 - 29 commands in `.trinity/registry.json`; the vendored catalog holds 856 distinct specs from 8
@@ -111,6 +120,12 @@ not checked.
 - The measured evidence of the headless profile is one public CI run (`Build & Test`,
   ubuntu-latest, zig 0.15.2) in which `zig build -Dci=true` succeeded; the test step is piped
   through `tee` there and its exit code is not measured (gHashTag/trinity#616).
+- One card is ahead of the pin. `brain.regions` (2026-10-04, gHashTag/t27#5953) owns the eleven
+  brain test targets that gHashTag/trinity#1333 puts back into `build.zig`: five steps and six
+  `src/brain` test roots. None of them exists at this revision, so `check` reports eleven
+  `UNKNOWN_TARGET` findings, and `report.json` keeps them until S01 re-pins. Against an
+  inventory of gHashTag/trinity@291ac8b24, the head of #1333, the card has no finding and none of
+  the eleven is unassigned. `research.unreferenced-sources` no longer names `src/brain`.
 
 ## The compiler matrix (S02)
 
@@ -551,7 +566,7 @@ python3 tools/trinity_queen_views.py --self-check --zig <zig 0.15.2> [--sysroot 
 `specs/fpga/adapter.t27` (card: `trinity/fpga.adapter`) is the FPGA adapter
 contract of [gHashTag/t27#3573](https://github.com/gHashTag/t27/issues/3573):
 the versioned inputs a caller brings (bitstream path, sha256 tied to its
-provenance, board identity under the full-IDCODE rule — the full 32-bit value
+provenance, board identity under the full-IDCODE rule -- the full 32-bit value
 recorded beside the printed nibble-dropped form, so a masked match can never
 pass), the configuration (flasher, cable, sram/flash target), the eight
 distinct error statuses, and the receipt schema `trinity.fpga-receipt.v1`
@@ -562,5 +577,5 @@ bit-exact` line. No hardware run may be inferred from synthesis (#3573's
 law). `tools/trinity_fpga_adapter.py check` holds the receipts of
 `conformance/trinity/fpga_adapter.json` to the contract and `self-check`
 plants every defect; the device receipts are the stage-2 runs of
-dmitrii-f-t27/trinity-memory on the AX7203 — the golden chunk (dense5 and
+dmitrii-f-t27/trinity-memory on the AX7203 -- the golden chunk (dense5 and
 baseline2, 320/320 Y lines bit-exact) and the #65 measurements.

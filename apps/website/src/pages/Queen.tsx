@@ -12,6 +12,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { QueenSpecs } from "../components/QueenSpecs";
 import { QueenAgents } from "../components/QueenAgents";
 import { SELECTION_KEY, isExplorerTab, leaveTabSelections } from "../lib/queenEmbed";
+import { specsChatSpec } from "../lib/queenSpecsChat";
 import { hiveFeedHealth, hiveDisplayRecords, hiveSameRepositorySnapshot, placeHiveDisplays, type HiveDisplay } from "../components/queenHiveDisplay";
 import { QueenComb } from "../components/QueenComb";
 import { QueenCommandPanel, type CommandItem } from "../components/QueenCommand";
@@ -439,6 +440,12 @@ const COPY = {
     browserJournal: "What the agent did here",
     browserDriving: "You are driving. The agent watches and waits.",
     browserHandBack: "Hand back to the agent",
+    browserGuideTitle: "What this tab does once you are signed in",
+    browserGuideLive: "It shows your own browser, running on a server, and your agent drives it.",
+    browserGuideJournal: "Every step the agent takes is listed under the window. Press inside the window and you drive while the agent waits, until you hand it back or leave it untouched for ten minutes.",
+    browserGuidePasswords: "This page never asks for a password. You type passwords yourself, inside the window.",
+    browserGuideSpec: "This address names a spec:",
+    browserGuideReadSpec: "read it on SPECS, no sign-in needed",
     browserWatchInvite: "Invite to watch",
     browserWatchNote: "A watch link shows this browser live and read-only: no clicks, no typing, no agent. A bank, a mail box and the sites on your ask or block list are held, not shown -- but a payment form framed inside a shop page is shown with the page. Two viewers per link; revoke it any time.",
     browserWatchFor: "For",
@@ -912,6 +919,12 @@ const COPY = {
     browserJournal: "Что здесь делал агент",
     browserDriving: "Руль у вас. Агент смотрит и ждёт.",
     browserHandBack: "Вернуть агенту",
+    browserGuideTitle: "Что делает эта вкладка после входа",
+    browserGuideLive: "Здесь виден ваш собственный браузер, запущенный на сервере, и им водит ваш агент.",
+    browserGuideJournal: "Каждый шаг агента записывается под окном. Нажмите внутри окна, и руль ваш, а агент ждёт, пока вы не вернёте руль или десять минут ничего не трогаете.",
+    browserGuidePasswords: "Эта страница никогда не спрашивает пароль. Пароли вы вводите сами, внутри окна.",
+    browserGuideSpec: "Этот адрес называет спеку:",
+    browserGuideReadSpec: "прочитать её во вкладке СПЕКИ, без входа",
     browserWatchInvite: "Пригласить посмотреть",
     browserWatchNote: "Ссылка для просмотра показывает этот браузер вживую и только для чтения: без кликов, без ввода, без агента. Банк, почта и сайты из вашего списка «спросить» или «запретить» скрыты -- но платёжная форма, встроенная в страницу магазина, видна вместе со страницей. До двух зрителей на ссылку; отозвать можно в любой момент.",
     browserWatchFor: "На",
@@ -3839,7 +3852,11 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
         context={{
           view: boardView,
           repo,
-          spec: boardView === "specs" ? "specs/demos/hello_world.t27" : null,
+          // On SPECS, the spec the frame shows, when its path may go into the
+          // Queen's prompt (lib/queenSpecsChat.ts). On BROWSER, the address's
+          // own spec= (raw: askQueenInBrowser names it to the agent only if it
+          // is a catalog entry, queenBrowserPage.ts).
+          spec: boardView === "specs" ? specsChatSpec(hashParams.get("spec")) : boardView === "browser" ? hashParams.get("spec") : null,
           label: railLabelNow,
           screen: boardView === "tri" ? triScreenNow : null,
           sees: screenNow,
@@ -4334,6 +4351,11 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
             <QueenBrowser
               embedded={embedded}
               lang={lang === 'ru' ? 'ru' : 'en'}
+              // The spec the address names (kept across tab switches, lib/queenEmbed
+              // leaveTabSelections); the signed-out guide links to it on SPECS
+              // through the same setView every tab switch uses.
+              spec={hashParams.get("spec")}
+              onReadSpec={(named) => setView("specs", named)}
               c={{
                 preview: c.browserPreview,
                 signin: c.browserSignin,
@@ -4352,6 +4374,12 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                 journal: c.browserJournal,
                 driving: c.browserDriving,
                 handBack: c.browserHandBack,
+                guideTitle: c.browserGuideTitle,
+                guideLive: c.browserGuideLive,
+                guideJournal: c.browserGuideJournal,
+                guidePasswords: c.browserGuidePasswords,
+                guideSpec: c.browserGuideSpec,
+                guideReadSpec: c.browserGuideReadSpec,
                 watch: {
                   invite: c.browserWatchInvite,
                   note: c.browserWatchNote,

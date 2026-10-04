@@ -35,7 +35,7 @@ pub const RESOURCES_ABOUT : [0]str = [];
 pub const TOOLS_NOTE : str = "Static list parsed from writeToolsList (210 entries; 32 entries have an unbalanced trailing brace in the source literal and were parsed after adding or removing one). Cell-generated tools from data/cells/mcp_tools.json are appended at runtime and are not listed here. .trinity/mcp_schemas.json lists a different, shorter set (29 names) and is not used as the source.";
 ; true when the server is a third-party package launched by npx or an outside binary.
 pub const EXTERNAL : bool = false;
-pub const AGENTS : [0]str = [];
-pub const AGENTS_NOTE : str = "No source binds an agent letter to this server: docs/agents/AGENTS_ALPHABET.md, specs/OWNERS.md and .claude/agents/*.md do not name it.";
+pub const AGENTS : [2]str = ["T", "B"];
+pub const AGENTS_NOTE : str = "docs/agents/AGENTS_ALPHABET.md \"Who holds a tool, and who holds a skill\" binds every tool to the Queen (T). Domain lead B: Changed from B,O to B: ABOUT leads with \"exposes the tri pipeline, Golden Chain links\", and the chain_* tools run \"Chain Link 0\" through \"Chain Link 25\" (spec, codegen, test, bench, fix, docs, verdict, git, loop, \"Chain Link 20: Auto-deploy to cloud\") -- B's DOMAIN is literally Build / Pipeline with KEY_FILES build.tri and src/tri/pipeline/. O was dropped: the coordination tools the O case rested on are swarm_task_add / swarm_assign / job_start / job_cancel, which fit J's \"all jobs assigned\" at least as well, and the same ABOUT also lists swarm, cloud/farm, FPGA, doctor, issue, deploy, experience, oracle and needle -- a dozen subjects, so no second letter can claim it over the rest.";
 pub const WITNESS : str = "source-parse";
 pub const ENABLED : bool = true;

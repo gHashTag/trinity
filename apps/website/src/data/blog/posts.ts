@@ -1,3 +1,4 @@
+import { body as body_t27c_compile_time_and_a_backend_without_llvm, ruBody as ruBody_t27c_compile_time_and_a_backend_without_llvm } from './bodies/t27c-compile-time-and-a-backend-without-llvm'
 import { body as body_three_bits_each_necessary, ruBody as ruBody_three_bits_each_necessary } from './bodies/three-bits-each-necessary'
 import { body as body_tri_cast_from_command_to_card, ruBody as ruBody_tri_cast_from_command_to_card } from './bodies/tri-cast-from-command-to-card'
 import { body as body_the_fpga_flow_layer_by_layer, ruBody as ruBody_the_fpga_flow_layer_by_layer } from './bodies/the-fpga-flow-layer-by-layer'
@@ -86,6 +87,7 @@ import { body as body_real_value_in_integer_container, ruBody as ruBody_real_val
 import { body as body_one_commit_nine_workflow_outcomes, ruBody as ruBody_one_commit_nine_workflow_outcomes } from './bodies/one-commit-nine-workflow-outcomes'
 
 const bodies: Record<string, PostBody> = {
+  't27c-compile-time-and-a-backend-without-llvm': { body: body_t27c_compile_time_and_a_backend_without_llvm, ruBody: ruBody_t27c_compile_time_and_a_backend_without_llvm },
   'three-bits-each-necessary': { body: body_three_bits_each_necessary, ruBody: ruBody_three_bits_each_necessary },
   'tri-cast-from-command-to-card': { body: body_tri_cast_from_command_to_card, ruBody: ruBody_tri_cast_from_command_to_card },
   'the-fpga-flow-layer-by-layer': { body: body_the_fpga_flow_layer_by_layer, ruBody: ruBody_the_fpga_flow_layer_by_layer },
