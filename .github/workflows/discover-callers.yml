@@ -30,9 +30,16 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -euo pipefail
-          python3 tools/discover_rtl_check_callers.py \
-            --out apps/website/src/data/communityRuns.json
+          set -uo pipefail
+          # code search is rate-limited (HTTP 429); retry with backoff, then
+          # keep the previous answer rather than failing the scheduled run.
+          for wait in 0 60 180; do
+            sleep "$wait"
+            if python3 tools/discover_rtl_check_callers.py \
+                 --out apps/website/src/data/communityRuns.json; then exit 0; fi
+          done
+          git checkout -- apps/website/src/data/communityRuns.json 2>/dev/null || true
+          echo "::warning::code search still rate-limited after retries — keeping the previous communityRuns.json"
 
       # The report shown on the page comes from a real run, so it has to be
       # refreshed with the same cadence as everything else it sits beside.
@@ -68,5 +75,9 @@ jobs:
             exit 0
           fi
           git commit -q -m "Discovered callers: $N"
-          git push -q
+          if ! git push -q; then
+            say "- push rejected (branch protection on main); not published"
+            echo "::warning::push to the default branch was rejected by repository rules"
+            exit 0
+          fi
           say "- committed"
