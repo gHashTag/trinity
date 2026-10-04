@@ -33,6 +33,13 @@ jobs:
               \"variables\": { \"id\": \"${RAILWAY_PROJECT_ID}\" }
             }")
 
+          # Railway may answer with an HTML/error body (bad token, rate limit).
+          # Soft-skip instead of failing the scheduled run on a jq parse error.
+          if ! echo "$DEPLOYMENTS" | jq -e '.data.project.services' >/dev/null 2>&1; then
+            echo "::warning::Railway API returned no project data (token/project/rate limit?) — skipping drain"
+            exit 0
+          fi
+
           # Check pool services by ID
           POOL_0="acfee27a-74e8-4436-961c-698ae93508ca"  # ubuntu
           POOL_1="12c2bdf9-d124-4a45-93ad-22921e842d1b"  # Agents Anywhere
