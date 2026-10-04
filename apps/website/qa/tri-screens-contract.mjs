@@ -188,8 +188,9 @@ assert.equal(HUD_KEYS[at], 'r', 'TRI opens on r')
 // here. The fourteenth is b: PASSPORT. The digits were spent at ten, and t, p
 // and r are TOOLS, PROJECT and TRI. Then w: BROWSER, m: ROADMAP, and l:
 // LEADERBOARD, whose lane the bees ran on. The eighteenth is x (the crossed
-// blades): WARS.
-assert.equal(HUD_KEYS.slice(0, HUD_VIEWS.length).join(''), '1234567890tprbwmlxk')
+// blades): WARS, then k: TOKEN, and the twentieth is g: PROVIDERS, the GPUs
+// and boards that sell compute.
+assert.equal(HUD_KEYS.slice(0, HUD_VIEWS.length).join(''), '1234567890tprbwmlxkg')
 // The typed Latin letter or digit decides, as the rail's badge says; the
 // physical key (KeyboardEvent.code) only when the character is not one, so r
 // opens TRI on a Russian layout too.

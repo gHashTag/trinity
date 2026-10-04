@@ -410,7 +410,7 @@ test('an agent spec typechecks, resolves its skills, derives its crons from RUNS
   assert.equal(a.links.alphabet, `https://github.com/gHashTag/t27/blob/${'c'.repeat(40)}/docs/agents/AGENTS_ALPHABET.md`)
   assert.equal(a.links.experienceLog, `https://github.com/gHashTag/t27/tree/${'c'.repeat(40)}/.trinity/experience`)
   assert.equal(r.agents.pin.ref, 'c'.repeat(40))
-  assert.deepEqual(r.agents.ladder, { specs: null, skills: 1, crons: 1, agents: 1, tools: 0, functions: 0 })
+  assert.deepEqual(r.agents.ladder, { specs: null, skills: 1, crons: 1, agents: 1, tools: 0, functions: 0, providers: 0 })
   assert.equal(r.agents.counts.episodesUnattributed, 2)
   assert.equal(r.agents.counts.withCrons, 1)
 })
@@ -619,7 +619,7 @@ test('a tri tool spec typechecks into a card with its actions, its owner letters
   assert.equal(t.links.source, `https://github.com/gHashTag/t27/blob/${'c'.repeat(40)}/cli/tri/src/main.rs`)
   assert.equal(t.links.pinnedAt, 'c'.repeat(40))
   assert.ok(t.searchText.includes('checkpoint') && t.searchText.includes('w'))
-  assert.deepEqual(r.tools.ladder, { specs: null, skills: 1, crons: 1, agents: 1, tools: 1, functions: 0 })
+  assert.deepEqual(r.tools.ladder, { specs: null, skills: 1, crons: 1, agents: 1, tools: 1, functions: 0, providers: 0 })
   assert.equal(r.tools.counts.tri, 1)
   assert.equal(r.tools.counts.triActions, 2)
   assert.equal(r.tools.counts.withAgents, 1)
@@ -1049,4 +1049,83 @@ test('the committed recordings: tri x7-board and tri devkit of the trios CLI, tr
   // each belongs to.
   assert.equal(r.tools.counts.withCast, 35)
   assert.equal(r.tools.counts.byWitness.runtime, 0)
+})
+
+// ---- Layer seven: providers. The fixtures are the committed cards, read from the
+//      vendored corpus and bent one constant at a time, so a test cannot drift
+//      from the schema catalog.t27 states.
+const PROVIDER_DIR = 'public/t27/files/specs/providers'
+const providerFile = (rel) => ({ path: `specs/providers/${rel}`, text: readFileSync(join(SITE, PROVIDER_DIR, rel), 'utf8') })
+const providerCatalog = () => analyzeSpecFiles(analyze, [providerFile('catalog.t27')])[0]
+const buildProviderCards = (cards, over = {}) => build([], [], { providerSpecs: analyzeSpecFiles(analyze, cards), providerCatalogSpec: providerCatalog(), providerDirs: ['gonka', 'trinet'], ...over })
+const bend = (card, from, to) => {
+  assert.ok(card.text.includes(from), `${card.path} no longer carries ${from}`)
+  return { ...card, text: card.text.replace(from, to) }
+}
+
+test('a model card read from the chain and a host design: no problems, models first, the design says nothing has run', () => {
+  const r = buildProviderCards([providerFile('trinet/gpu-consumer-24gb.t27'), providerFile('gonka/minimax-m2-7.t27')])
+  assert.deepEqual(r.problems, [])
+  const [model, host] = r.providers.providers
+  assert.equal(model.id, 'gonka/minimax-m2-7', 'a model card sorts before a host class')
+  assert.equal(model.family, 'model')
+  assert.equal(model.status, 'serving')
+  assert.equal(model.witness, 'chain-read')
+  assert.equal(model.health, 'ok')
+  assert.equal(model.moduleName, 'provider_gonka_minimax_m2_7')
+  assert.equal(host.id, 'trinet/gpu-consumer-24gb')
+  assert.equal(host.witness, 'design-only')
+  assert.equal(host.health, 'warn', 'a design never reads ok')
+  assert.deepEqual(host.messages, ['a design: nothing has run'])
+  assert.deepEqual(r.providers.counts.byFamily, { model: 1, 'host-class': 1 })
+  assert.equal(r.agents.ladder.providers, 2, 'the ladder counts the seventh layer')
+  assert.deepEqual(r.providers.ladder, r.agents.ladder)
+})
+
+test('STATUS follows HOSTS for a model and MEASURED for a host; a design cannot claim a bench', () => {
+  const noHosts = bend(providerFile('gonka/minimax-m2-7.t27'), 'pub const HOSTS : u32 = 26;', 'pub const HOSTS : u32 = 0;')
+  let r = buildProviderCards([noHosts])
+  assert.ok(r.problems.some((p) => /HOSTS 0 makes the STATUS listed, the card says serving/.test(p)), r.problems.join('\n'))
+  const notRead = bend(providerFile('gonka/minimax-m2-7.t27'), 'pub const WITNESS : str = "chain-read";', 'pub const WITNESS : str = "design-only";')
+  r = buildProviderCards([notRead])
+  assert.ok(r.problems.some((p) => /WITNESS must be chain-read/.test(p)), r.problems.join('\n'))
+  const claims = bend(providerFile('trinet/gpu-consumer-24gb.t27'), 'pub const STATUS : str = "planned";', 'pub const STATUS : str = "measured";')
+  r = buildProviderCards([bend(claims, 'pub const WITNESS : str = "design-only";', 'pub const WITNESS : str = "bench-measured";')])
+  assert.ok(r.problems.some((p) => /MEASURED is empty, so STATUS must be planned/.test(p)), r.problems.join('\n'))
+  assert.ok(r.problems.some((p) => /MEASURED is empty, so WITNESS must be design-only/.test(p)), r.problems.join('\n'))
+})
+
+test('provider gates: ID is the path, the module follows it, a card in an unnamed directory, a duplicate and a catalog the generator does not encode', () => {
+  const wrongId = bend(providerFile('gonka/minimax-m2-7.t27'), 'pub const ID : str = "gonka/minimax-m2-7";', 'pub const ID : str = "gonka/minimax";')
+  let r = buildProviderCards([wrongId])
+  assert.ok(r.problems.some((p) => /ID must be the path under specs\/providers without \.t27 \(gonka\/minimax-m2-7\)/.test(p)), r.problems.join('\n'))
+  const wrongModule = bend(providerFile('gonka/minimax-m2-7.t27'), 'module provider_gonka_minimax_m2_7;', 'module provider_minimax;')
+  r = buildProviderCards([wrongModule])
+  assert.ok(r.problems.some((p) => /module must be provider_gonka_minimax_m2_7/.test(p)), r.problems.join('\n'))
+  r = buildProviderCards([providerFile('gonka/minimax-m2-7.t27')], { providerDirs: ['aws', 'gonka', 'trinet'] })
+  assert.ok(r.problems.some((p) => /specs\/providers\/aws\/: not a network of/.test(p)), r.problems.join('\n'))
+  r = buildProviderCards([providerFile('gonka/minimax-m2-7.t27'), providerFile('gonka/minimax-m2-7.t27')])
+  assert.ok(r.problems.some((p) => /duplicate provider ID gonka\/minimax-m2-7/.test(p)), r.problems.join('\n'))
+  const catalog = providerFile('catalog.t27')
+  const renamed = bend(catalog, 'pub const STATUSES : [4]str = ["serving", "listed", "measured", "planned"];', 'pub const STATUSES : [4]str = ["serving", "listed", "benched", "planned"];')
+  r = build([], [], { providerSpecs: [], providerCatalogSpec: analyzeSpecFiles(analyze, [renamed])[0], providerDirs: [] })
+  assert.ok(r.problems.some((p) => /STATUSES is .*change both together/.test(p)), r.problems.join('\n'))
+  r = build([], [], { providerSpecs: analyzeSpecFiles(analyze, [providerFile('gonka/minimax-m2-7.t27')]) })
+  assert.ok(r.problems.some((p) => /provider cards without specs\/providers\/catalog\.t27/.test(p)), r.problems.join('\n'))
+})
+
+test('the committed provider catalog: five Gonka models from epoch 413, two host classes, the study derived, no host address anywhere', async () => {
+  const { generate } = await import('./agents-from-specs.mjs')
+  const r = await generate({ generatedAt: '2026-01-01T00:00:00.000Z' })
+  assert.deepEqual(r.problems, [])
+  const p = r.providers
+  assert.deepEqual(p.counts.byFamily, { model: 5, 'host-class': 2 })
+  assert.deepEqual(p.counts.byWitness, { 'chain-read': 5, 'bench-measured': 1, 'design-only': 1 })
+  assert.ok(p.providers.filter((x) => x.family === 'model').every((x) => x.fields.EPOCH === 413), 'every model card read the same epoch')
+  assert.equal(p.providers.find((x) => x.id === 'trinet/fpga-xc7a200t').witness, 'bench-measured')
+  assert.equal(p.study.fields.TRI_MAINNET, false, 'the study does not pretend $TRI has a mainnet')
+  assert.equal(p.study.fields.GONKA_POOL_REGISTERED, false)
+  assert.equal(p.study.derived.allowlistActive, false)
+  assert.match(p.study.derived.subsidyPerFee, /^\d+$/, 'a ratio of wide integers stays an exact decimal string')
+  assert.doesNotMatch(JSON.stringify(p), /inference_url|validator_key|\b(?:\d{1,3}\.){3}\d{1,3}\b/, 'no participant address or key on a public page')
 })

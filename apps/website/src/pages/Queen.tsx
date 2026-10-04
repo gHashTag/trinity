@@ -370,9 +370,9 @@ const COPY = {
     combHint: "The board as a field of marks",
     specsView: "SPECS",
     specsHint: "The corpus she is generated from",
-    // The SPECS module's own sub-navigation: the six layers of the ladder,
-    // which used to be six buttons of the rail.
-    ladderAria: "The ladder: specs, skills, crons, agents, tools, functions",
+    // The SPECS module's own sub-navigation: the seven layers of the ladder,
+    // six of which used to be buttons of the rail.
+    ladderAria: "The ladder: specs, skills, crons, agents, tools, functions, providers",
     skillsView: "SKILLS",
     skillsHint: "Agent skills, each stated by a .t27 spec",
     cronsView: "CRONS",
@@ -484,6 +484,14 @@ const COPY = {
     functionsDirective: "FUNCTIONS ARE SPECS",
     functionsDirectiveBody:
       "The layer where a spec meets a running service — sixth on this site's ladder, after Tools; t27 specs/functions/README.md calls it layer 5, as specs/tools/README.md does for tools, and the two READMEs disagree: each Inngest function of 999-multibots-telegraf is stated by a .t27 spec under specs/functions — its trigger, event and legacy events or cron, its steps in source order, retries, what happens on failure, its side effects, guard, safe probe and probe result — and witnessed by a vendored copy of the functions manifest read from the repository at a named commit. Where spec and manifest disagree the card says so. Live run counts are read from the bot once a minute and never invented: an offline status source is shown as offline, and a count it did not send is unknown, not zero.",
+    // The seventh layer, on g (the GPU): who sells the compute the ladder spends.
+    providersView: "PROVIDERS",
+    providersHint: "Who sells compute: the Gonka models, and a GPU or FPGA rented out for TRI (key g)",
+    providersDirective: "PROVIDERS ARE SPECS",
+    providersDirectiveBody:
+      "The seventh layer: Specs → Skills → Crons → Agents → Tools → Functions → Providers — who sells the compute the rest of the ladder spends. A provider exists when a .t27 spec under specs/providers states it: a model the Gonka chain lists, every number copied from a public chain endpoint on the date the card names (hosts serving it, GPU memory, context, validation threshold, price), or a class of hardware a person could rent out to TRI-NET for TRI — an Artix-7 FPGA measured on three boards, and a 24 GB gaming GPU that is a design and claims no measurement. The page re-reads the Gonka chain from your browser when you ask and prints every difference; it never calls a paid model, never asks for a key and never shows a host's address. Under both families sits specs/providers/tri_gnk_pair.t27: TRI is on testnet, Gonka has no DEX pool, and its bridge goes to Ethereum, not to TON or Solana.",
+    providersRead: "read from a chain or a bench",
+    providersDesign: "design only",
     specsTitle: "SPEC CORPUS",
     specsDirective: "STANDING DIRECTIVE",
     specsDirectiveBody:
@@ -813,7 +821,7 @@ const COPY = {
     combHint: "Доска как поле из меток",
     specsView: "СПЕКИ",
     specsHint: "Корпус, из которого её порождают",
-    ladderAria: "Лестница: спеки, скиллы, кроны, агенты, инструменты, функции",
+    ladderAria: "Лестница: спеки, скиллы, кроны, агенты, инструменты, функции, провайдеры",
     skillsView: "СКИЛЛЫ",
     skillsHint: "Скиллы агентов, каждый заявлен спекой .t27",
     cronsView: "КРОНЫ",
@@ -920,6 +928,13 @@ const COPY = {
     functionsDirective: "ФУНКЦИИ — ЭТО СПЕКИ",
     functionsDirectiveBody:
       "Слой, где спека встречается с работающим сервисом — шестой на лестнице этого сайта, после инструментов; specs/functions/README.md в t27 называет его пятым, как и specs/tools/README.md — инструменты, и два README расходятся: каждая функция Inngest бота 999-multibots-telegraf заявлена спекой .t27 в specs/functions — триггер, событие и старые события или крон, шаги в порядке исходника, повторы, действие при сбое, побочные эффекты, страж, безопасная проба и её результат — и засвидетельствована копией манифеста функций, прочитанного из репозитория на названном коммите. Где спека и манифест расходятся, карточка говорит об этом. Живые счётчики запусков читаются с бота раз в минуту и не придумываются: недоступный источник статуса показан как недоступный, а счётчик, которого он не прислал, — как «неизвестно», а не ноль.",
+    providersView: "ПРОВАЙДЕРЫ",
+    providersHint: "Кто продаёт вычисления: модели Gonka и GPU или FPGA в аренду за TRI (клавиша g)",
+    providersDirective: "ПРОВАЙДЕРЫ — ЭТО СПЕКИ",
+    providersDirectiveBody:
+      "Седьмой слой: спеки → скиллы → кроны → агенты → инструменты → функции → провайдеры — кто продаёт вычисления, которые тратит вся остальная лестница. Провайдер существует, когда его заявляет спека .t27 в specs/providers: модель из списка цепи Gonka, где каждое число скопировано с публичного эндпоинта цепи в дату, которую называет карточка (сколько хостов её обслуживают, память GPU, контекст, порог валидации, цена), или класс железа, который человек мог бы сдать в аренду TRI-NET за TRI — FPGA Artix-7, измеренная на трёх платах, и игровая GPU на 24 ГБ, которая пока проект и не заявляет измерений. Страница по вашему запросу перечитывает цепь Gonka из вашего браузера и печатает каждое расхождение; она никогда не вызывает платную модель, не просит ключ и не показывает адрес хоста. Под обоими семействами лежит specs/providers/tri_gnk_pair.t27: TRI в testnet, у Gonka нет пула на DEX, а её мост ведёт в Ethereum, а не в TON или Solana.",
+    providersRead: "прочитано с цепи или стенда",
+    providersDesign: "только проект",
     specsTitle: "КОРПУС СПЕК",
     specsDirective: "ПОСТОЯННАЯ ДИРЕКТИВА",
     specsDirectiveBody:
@@ -3604,6 +3619,9 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
     { view: "leaderboard" as const, glyph: "⚙", label: c.leaderboardView, hint: c.leaderboardHint },
     { view: "wars" as const, glyph: "⚔", label: c.warsView, hint: c.warsHint },
     { view: "token" as const, glyph: "¤", label: c.tokenView, hint: c.tokenHint },
+    // On the letter g (the GPU): the seventh layer of the ladder, who sells
+    // compute. Folded into SPECS like the other layers, so it has no rail button.
+    { view: "providers" as const, glyph: "⌬", label: c.providersView, hint: c.providersHint },
   ].map((item) => ({ ...item, hotkey: hudKeyOf(item.view) }));
   // TRI is drawn as one button per screen, owner's word 2026-09-21: every
   // screen of the app its own tab. The first keeps TRI's key; the rest are
@@ -3938,7 +3956,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
       className={`queen27-page is-shell${commandCollapsed ? " is-command-collapsed" : ""}${bare ? " is-bare" : ""}${toolsShown ? " is-tools" : ""}${embedded ? " is-embed" : ""}`}
       data-view={view}
       // Which module the reader is in, as against which layer of it: for the
-      // six layers of the ladder this is "specs" for all six. A rule that
+      // seven layers of the ladder this is "specs" for all seven. A rule that
       // wants "inside the SPECS module" -- the map's command row does not
       // belong there, and the body must not reserve its height -- asks this,
       // not data-view, which said "specs" on one of the six and left the other
@@ -4191,7 +4209,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                 broken: c.specsBroken,
               }}
             />
-          ) : boardView === "skills" || boardView === "crons" || boardView === "agents" || boardView === "functions" || boardView === "tools" || boardView === "project" ? (
+          ) : boardView === "skills" || boardView === "crons" || boardView === "agents" || boardView === "functions" || boardView === "tools" || boardView === "providers" || boardView === "project" ? (
             <QueenAgents
               kind={boardView}
               showDirective={isNarrow}
@@ -4200,8 +4218,8 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
               // it keeps its own rail button and gets no rung row.
               ladder={isSpecLayer(boardView) ? ladderNav : boardView === "project" ? projectNav : undefined}
               c={{
-                directive: boardView === "skills" ? c.skillsDirective : boardView === "crons" ? c.cronsDirective : boardView === "functions" ? c.functionsDirective : boardView === "tools" ? c.toolsDirective : boardView === "project" ? c.projectDirective : c.agentsDirective,
-                directiveBody: boardView === "skills" ? c.skillsDirectiveBody : boardView === "crons" ? c.cronsDirectiveBody : boardView === "functions" ? c.functionsDirectiveBody : boardView === "tools" ? c.toolsDirectiveBody : boardView === "project" ? c.projectDirectiveBody : c.agentsDirectiveBody,
+                directive: boardView === "skills" ? c.skillsDirective : boardView === "crons" ? c.cronsDirective : boardView === "functions" ? c.functionsDirective : boardView === "tools" ? c.toolsDirective : boardView === "providers" ? c.providersDirective : boardView === "project" ? c.projectDirective : c.agentsDirective,
+                directiveBody: boardView === "skills" ? c.skillsDirectiveBody : boardView === "crons" ? c.cronsDirectiveBody : boardView === "functions" ? c.functionsDirectiveBody : boardView === "tools" ? c.toolsDirectiveBody : boardView === "providers" ? c.providersDirectiveBody : boardView === "project" ? c.projectDirectiveBody : c.agentsDirectiveBody,
                 open: c.specsOpen,
                 loading: c.agentsLoading,
                 specs: c.agentsSpecs,
@@ -4215,6 +4233,8 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                 projectChapters: c.projectChapters,
                 projectRu: c.projectRu,
                 projectSources: c.projectSources,
+                providersRead: c.providersRead,
+                providersDesign: c.providersDesign,
               }}
             />
           ) : boardView === "tri" ? (
@@ -4735,6 +4755,8 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                       ? c.functionsDirective
                     : boardView === "tools"
                       ? c.toolsDirective
+                    : boardView === "providers"
+                      ? c.providersDirective
                       : boardView === "project"
                         ? c.projectDirective
                         : c.hudIntel

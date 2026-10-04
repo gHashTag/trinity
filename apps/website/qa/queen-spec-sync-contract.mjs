@@ -311,7 +311,7 @@ const READ = `(() => {
 try {
   if (!(await until(`!!document.querySelector('main[data-view][data-corpus-version]')`, 150000))) report(2, 'the Queen shell never reported a corpus');
   const tabs = await settle(`[...document.querySelectorAll('button.queen27-hud-cmd[data-view]')].map((b) => b.dataset.view)`);
-  const views = [...new Set([...tabs, 'specs', 'skills', 'crons', 'agents', 'functions', 'tools'])];
+  const views = [...new Set([...tabs, 'specs', 'skills', 'crons', 'agents', 'functions', 'tools', 'providers'])];
   const readings = [];
   let specsSeen = null;
   for (const view of views) {

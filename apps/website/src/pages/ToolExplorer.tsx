@@ -60,6 +60,7 @@ const UI = {
     ladderAgents: 'Agents',
     ladderTools: 'Tools',
     ladderFunctions: 'Functions',
+    ladderProviders: 'Providers',
     familyTri: 'tri CLI',
     familyMcp: 'MCP servers',
     synopsis: 'SYNOPSIS',
@@ -142,6 +143,7 @@ const UI = {
     ladderAgents: 'Агенты',
     ladderTools: 'Инструменты',
     ladderFunctions: 'Функции',
+    ladderProviders: 'Провайдеры',
     familyTri: 'Команды tri',
     familyMcp: 'MCP-серверы',
     synopsis: 'СИНОПСИС',
@@ -367,8 +369,9 @@ export default function ToolExplorer() {
       { key: 'agents', label: ui.ladderAgents, count: l?.agents ?? null, href: `#/agents${embed}` },
       { key: 'tools', label: ui.ladderTools, count: l?.tools ?? null, href: `#/tools${embed}`, current: true },
       { key: 'functions', label: ui.ladderFunctions, count: l?.functions ?? null, href: `#/functions${embed}` },
+      { key: 'providers', label: ui.ladderProviders, count: l?.providers ?? null, href: `#/providers${embed}` },
     ]
-  }, [catalog, embedded, ui.ladderSpecs, ui.ladderSkills, ui.ladderCrons, ui.ladderAgents, ui.ladderTools, ui.ladderFunctions])
+  }, [catalog, embedded, ui.ladderSpecs, ui.ladderSkills, ui.ladderCrons, ui.ladderAgents, ui.ladderTools, ui.ladderFunctions, ui.ladderProviders])
 
   const heading = (text: string) => <div style={{ fontSize: 11, color: C.muted, fontFamily: C.mono }}>{text}</div>
   const row = (label: string, value: React.ReactNode) => (

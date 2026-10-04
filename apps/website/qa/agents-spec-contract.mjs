@@ -18,7 +18,7 @@ import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
-import { generate, SKILLS_OUT, CRONS_OUT, AGENTS_OUT, FUNCTIONS_OUT, TOOLS_OUT, readToolCatalog, FUNCTIONS_MANIFEST, EXPERIENCE_PATH, AGENT_COUNT, AGENT_LAYERS, HOSTS, CONTROLS, ON_FAILURE, FN_TRIGGERS, FN_ON_FAILURE, FN_SIDE_EFFECTS, FN_PROBE_RESULTS, FN_CONTROLS, functionDifferences, I18N_SPEC_DIR, I18N_FIELD_SOURCE, REPO_ROOT } from '../scripts/agents-from-specs.mjs'
+import { generate, SKILLS_OUT, CRONS_OUT, AGENTS_OUT, FUNCTIONS_OUT, TOOLS_OUT, readToolCatalog, FUNCTIONS_MANIFEST, EXPERIENCE_PATH, AGENT_COUNT, AGENT_LAYERS, HOSTS, CONTROLS, ON_FAILURE, FN_TRIGGERS, FN_ON_FAILURE, FN_SIDE_EFFECTS, FN_PROBE_RESULTS, FN_CONTROLS, functionDifferences, PROVIDERS_OUT, PROVIDER_WORDS, PROVIDER_FAMILY_FIELDS, PROVIDER_CATALOG_SPEC, PROVIDER_STUDY_SPEC, I18N_SPEC_DIR, I18N_FIELD_SOURCE, REPO_ROOT } from '../scripts/agents-from-specs.mjs'
 import { canonicalSpecEditUrl, vendoredSpecUrl, specSlug } from '../src/lib/agentSpecs.ts'
 import { MODULES } from '../src/lib/queenModules.ts'
 import { HUD_VIEWS, HUD_KEYS, RAIL_VIEWS, SPEC_LAYERS, BOARD_VIEWS, PROJECT_VIEWS, railViewOf } from '../src/components/queenHud.ts'
@@ -29,6 +29,7 @@ const crons = JSON.parse(readFileSync(CRONS_OUT, 'utf8'))
 const agents = JSON.parse(readFileSync(AGENTS_OUT, 'utf8'))
 const functions = JSON.parse(readFileSync(FUNCTIONS_OUT, 'utf8'))
 const functionsCode = JSON.parse(readFileSync(FUNCTIONS_MANIFEST, 'utf8'))
+const providers = JSON.parse(readFileSync(PROVIDERS_OUT, 'utf8'))
 const tools = readToolCatalog()
 const experience = JSON.parse(readFileSync(EXPERIENCE_PATH, 'utf8'))
 const skillsCode = JSON.parse(readFileSync('public/skills/manifest.json', 'utf8'))
@@ -43,7 +44,9 @@ assert.equal(skills.contentSha256, fresh.skills.contentSha256, `${SKILLS_OUT} is
 assert.equal(crons.contentSha256, fresh.crons.contentSha256, `${CRONS_OUT} is stale or hand-edited; run node scripts/agents-from-specs.mjs`)
 assert.equal(agents.contentSha256, fresh.agents.contentSha256, `${AGENTS_OUT} is stale or hand-edited; run node scripts/agents-from-specs.mjs`)
 assert.equal(functions.contentSha256, fresh.functions.contentSha256, `${FUNCTIONS_OUT} is stale or hand-edited; run node scripts/agents-from-specs.mjs`)
+assert.equal(providers.contentSha256, fresh.providers.contentSha256, `${PROVIDERS_OUT} is stale or hand-edited; run node scripts/agents-from-specs.mjs`)
 assert.equal(functions.compilerWasmSha256, skills.compilerWasmSha256)
+assert.equal(providers.compilerWasmSha256, skills.compilerWasmSha256)
 assert.equal(agents.compilerWasmSha256, skills.compilerWasmSha256)
 assert.equal(skills.compilerWasmSha256, sha256(readFileSync('public/t27/t27_compiler.wasm')), 'the catalog names a compiler other than the vendored one')
 assert.equal(crons.compilerWasmSha256, skills.compilerWasmSha256)
@@ -57,7 +60,7 @@ const FORBIDDEN = [
   { name: 'url credential', re: /:\/\/[^\s/:@]+:[^\s@]+@/ },
   { name: 'github token', re: /\bgh[pousr]_[A-Za-z0-9]{20,}\b/ },
 ]
-for (const [name, text] of [['spec-skills', JSON.stringify(skills)], ['spec-crons', JSON.stringify(crons)], ['spec-agents', JSON.stringify(agents)], ['spec-functions', JSON.stringify(functions)], ['functions-manifest', JSON.stringify(functionsCode)], ['experience', JSON.stringify(experience)]]) {
+for (const [name, text] of [['spec-skills', JSON.stringify(skills)], ['spec-crons', JSON.stringify(crons)], ['spec-agents', JSON.stringify(agents)], ['spec-functions', JSON.stringify(functions)], ['spec-providers', JSON.stringify(providers)], ['functions-manifest', JSON.stringify(functionsCode)], ['experience', JSON.stringify(experience)]]) {
   for (const f of FORBIDDEN) {
     const hit = f.re.exec(text)
     assert.ok(!hit, `${name} carries something shaped like a ${f.name} (${hit ? hit[0].slice(0, 4) : ''}…)`)
@@ -257,7 +260,7 @@ assert.equal(agents.counts.withCrons, agents.agents.filter((a) => a.crons.length
 assert.equal(agents.counts.withTools, agents.agents.filter((a) => a.tools.length).length)
 assert.equal(agents.counts.withExperience, agents.counts.specPlusExperience)
 for (const l of AGENT_LAYERS) assert.equal(agents.counts.byLayer[l], agents.agents.filter((a) => a.fields.LAYER === l).length)
-assert.deepEqual(agents.ladder, { specs: t27Manifest.specCount, skills: skills.skills.length, crons: crons.crons.length, agents: agents.agents.length, tools: tools.tools.length, functions: functions.functions.length }, 'the ladder counts are the catalogs, tools and functions included')
+assert.deepEqual(agents.ladder, { specs: t27Manifest.specCount, skills: skills.skills.length, crons: crons.crons.length, agents: agents.agents.length, tools: tools.tools.length, functions: functions.functions.length, providers: providers.providers.length }, 'the ladder counts are the catalogs, tools, functions and providers included')
 assert.deepEqual(skills.ladder, agents.ladder, 'the skills catalog shows the same ladder as the agents catalog')
 assert.deepEqual(crons.ladder, agents.ladder, 'the crons catalog shows the same ladder as the agents catalog')
 // The snapshot's own attribution rule names the letters it can assign; every agent letter is among them.
@@ -339,8 +342,71 @@ assert.deepEqual(functions.ladder, agents.ladder, 'the functions catalog shows t
 assert.equal(functionsCode.deployedApp.mainRegisters, functionsCode.functions.length, 'main registers every manifest function')
 assert.equal(functionsCode.deployedApp.baseFunctions, functions.counts.deployed, 'the production build carries exactly the deployed functions')
 
-// 5. The Queen knows the five explorer views and the PROJECT view, at the keys the modules list promises.
-for (const tab of ['skills', 'crons', 'agents', 'functions', 'tools', 'project']) {
+// 4c. Layer seven: every provider spec is a card. A model card copies the Gonka
+//     chain and says on which day; a host card is our own device class and says
+//     whether anything has run on it. The words a card may use are the ones
+//     specs/providers/catalog.t27 names, and no card names a host's address.
+const providerIds = new Set(providers.providers.map((p) => p.id))
+assert.equal(providerIds.size, providers.providers.length, 'duplicate provider ids')
+assert.equal(providers.catalog.specPath, PROVIDER_CATALOG_SPEC)
+assert.equal(providers.catalog.sha256, sha256(readFileSync(join('public/t27/files', PROVIDER_CATALOG_SPEC))), 'the provider catalog spec changed under the catalog')
+assert.equal(providers.study.specPath, PROVIDER_STUDY_SPEC)
+assert.deepEqual(providers.catalog.families, PROVIDER_WORDS.FAMILIES, 'catalog.t27 FAMILIES and the generator disagree')
+assert.deepEqual(providers.catalog.statuses, PROVIDER_WORDS.STATUSES, 'catalog.t27 STATUSES and the generator disagree')
+assert.deepEqual(providers.catalog.witnesses, PROVIDER_WORDS.WITNESSES, 'catalog.t27 WITNESSES and the generator disagree')
+for (const p of providers.providers) {
+  const file = join('public/t27/files', p.specPath)
+  assert.ok(existsSync(file), `${p.id}: ${p.specPath} is not in the vendored corpus`)
+  assert.equal(sha256(readFileSync(file)), p.sha256, `${p.id}: the spec bytes changed under the catalog`)
+  assert.equal(p.typecheckOk, true, `${p.id}: the compiler rejected the spec`)
+  assert.equal(p.discarded, 0, `${p.id}: the parser discarded tokens`)
+  assert.equal(p.specPath, `specs/providers/${p.id}.t27`, `${p.id}: ID is the path under specs/providers`)
+  assert.equal(p.moduleName, `provider_${p.id.replace(/[^a-z0-9]+/g, '_')}`, `${p.id}: module name per catalog.t27 ID_RULE`)
+  assert.equal(specSlug(p.specPath), p.id)
+  assert.equal(p.fields.ID, p.id)
+  assert.equal(p.fields.KIND, 'provider')
+  assert.equal(p.family, p.fields.FAMILY)
+  assert.equal(p.network, p.fields.NETWORK)
+  assert.equal(p.status, p.fields.STATUS)
+  assert.equal(p.witness, p.fields.WITNESS)
+  assert.ok(PROVIDER_WORDS.FAMILIES.includes(p.family), `${p.id}: FAMILY ${p.family}`)
+  assert.ok(providers.catalog.networks.includes(p.network), `${p.id}: NETWORK ${p.network}`)
+  assert.ok(PROVIDER_WORDS.STATUSES.includes(p.status), `${p.id}: STATUS ${p.status}`)
+  assert.ok(PROVIDER_WORDS.WITNESSES.includes(p.witness), `${p.id}: WITNESS ${p.witness}`)
+  assert.ok(p.id.startsWith(`${p.network}/`), `${p.id}: the directory is the network`)
+  for (const f of providers.catalog[PROVIDER_FAMILY_FIELDS[p.family] === 'MODEL_FIELDS' ? 'modelFields' : 'hostFields']) assert.ok(f in p.fields, `${p.id}: ${p.family} card lacks ${f}`)
+  if (p.family === 'model') {
+    assert.equal(p.network, 'gonka', `${p.id}: a model card is a Gonka model`)
+    assert.equal(p.witness, 'chain-read', `${p.id}: a model card is read from the chain`)
+    assert.ok(PROVIDER_WORDS.CALLS.includes(p.fields.CALL), `${p.id}: CALL ${p.fields.CALL}`)
+    assert.equal(p.status, p.fields.HOSTS > 0 ? 'serving' : 'listed', `${p.id}: STATUS follows HOSTS (catalog.t27 STATUS_RULE)`)
+    assert.match(p.fields.HF_COMMIT, /^[0-9a-f]{40}$/, `${p.id}: HF_COMMIT is a full commit`)
+    assert.match(String(p.fields.PRICE_PER_TOKEN), /^\d+$/, `${p.id}: PRICE_PER_TOKEN is an integer in the smallest unit`)
+  } else {
+    assert.equal(p.network, 'trinet', `${p.id}: a host card is our network`)
+    assert.ok(['measured', 'planned'].includes(p.status), `${p.id}: a host class is measured or planned`)
+    assert.equal(p.witness, p.status === 'measured' ? 'bench-measured' : 'design-only', `${p.id}: a design never claims a measurement`)
+    if (p.witness === 'design-only') assert.notEqual(p.health, 'ok', `${p.id}: a design-only card must not read ok`)
+  }
+  assert.ok(HEALTH.has(p.health))
+  assert.equal(p.inSpecCorpus, corpusPaths.has(p.specPath), `${p.id}: inSpecCorpus disagrees with public/t27/manifest.json`)
+  // No host address, seed or validator key reaches a card, whatever field it hides in.
+  assert.doesNotMatch(JSON.stringify(p), /inference_url|validator_key|"seed"|https?:\/\/\d/, `${p.id}: a card carries a participant address or key`)
+  assertSummary(p, localesOf(providers))
+  assert.equal(canonicalSpecEditUrl(p.specPath), `https://github.com/gHashTag/t27/edit/master/${p.specPath}`)
+}
+assert.equal(providers.counts.specs, providers.providers.length)
+assert.equal(providers.counts.typecheckOk, providers.providers.filter((p) => p.typecheckOk).length)
+assert.equal(providers.counts.enabled, providers.providers.filter((p) => p.fields.ENABLED).length)
+for (const [key, words] of [['byFamily', PROVIDER_WORDS.FAMILIES], ['byStatus', PROVIDER_WORDS.STATUSES], ['byWitness', PROVIDER_WORDS.WITNESSES], ['byNetwork', providers.catalog.networks]]) {
+  const prop = { byFamily: 'family', byStatus: 'status', byWitness: 'witness', byNetwork: 'network' }[key]
+  for (const w of words) assert.equal(providers.counts[key][w] ?? 0, providers.providers.filter((p) => p[prop] === w).length, `${key}.${w}`)
+}
+assert.ok(providers.providers.some((p) => p.family === 'model') && providers.providers.some((p) => p.family === 'host-class'), 'both families have at least one card')
+assert.deepEqual(providers.ladder, agents.ladder, 'the providers catalog shows the same ladder as the agents catalog')
+
+// 5. The Queen knows the six explorer views and the PROJECT view, at the keys the modules list promises.
+for (const tab of ['skills', 'crons', 'agents', 'functions', 'tools', 'providers', 'project']) {
   const m = MODULES.find((x) => x.tab === tab)
   assert.ok(m, `queenModules has no ${tab} entry`)
   assert.ok(HUD_VIEWS.includes(tab), `HUD_VIEWS does not include ${tab}`)
@@ -524,12 +590,12 @@ const jetton = JSON.parse(readFileSync('public/tri/jetton.json', 'utf8'))
 const MTRI_PER_TRI = Number(readFileSync('src/lib/triToken.ts', 'utf8').match(/export const MTRI_PER_TRI = (\d+)/)?.[1])
 assert.equal(10 ** Number(jetton.decimals), MTRI_PER_TRI, 'public/tri/jetton.json decimals and MTRI_PER_TRI must agree')
 assert.match(jetton.description, /^TESTNET ONLY\./, 'the jetton metadata leads with TESTNET ONLY')
-assert.equal(HUD_KEYS.slice(0, HUD_VIEWS.length).join(''), '1234567890tprbwmlxk', 'the rail keys are 1-9, 0, t, p, r, b, w, m, l, x, k in that order')
+assert.equal(HUD_KEYS.slice(0, HUD_VIEWS.length).join(''), '1234567890tprbwmlxkg', 'the rail keys are 1-9, 0, t, p, r, b, w, m, l, x, k, g in that order')
 
 // The rail is no longer the whole vocabulary. HUD_VIEWS stays the fourteen
 // addresses -- every ?tab=, every key, every module card -- while the rail draws
-// RAIL_VIEWS, because SKILLS, CRONS, AGENTS, TOOLS and FUNCTIONS are now reached
-// inside SPECS as the six rungs of the ladder, and MISSION MAP and FACTORY
+// RAIL_VIEWS, because SKILLS, CRONS, AGENTS, TOOLS, FUNCTIONS and PROVIDERS are
+// reached inside SPECS as the seven rungs of the ladder, and MISSION MAP and FACTORY
 // inside KANBAN as the other two readings of the one board. The lists have to
 // stay each other's complement: a view on none of them is unreachable, and a
 // member on both its family's list and the rail is drawn twice.
@@ -542,8 +608,8 @@ assert.equal(BOARD_VIEWS[0], 'kanban', 'KANBAN is the board the rail opens and t
 assert.equal(PROJECT_VIEWS[0], 'project', 'PROJECT is the module the rail opens and PASSPORT stands inside (2026-09-21)')
 assert.deepEqual(
   [...SPEC_LAYERS],
-  ['specs', 'skills', 'crons', 'agents', 'tools', 'functions'],
-  'the ladder is specs, skills, crons, agents, tools, functions -- in that order, which is not the order of their keys',
+  ['specs', 'skills', 'crons', 'agents', 'tools', 'functions', 'providers'],
+  'the ladder is specs, skills, crons, agents, tools, functions, providers -- in that order, which is not the order of their keys',
 )
 assert.deepEqual(
   [...BOARD_VIEWS],
@@ -585,9 +651,9 @@ for (const view of HUD_VIEWS) {
 const command = src('components/QueenCommand.tsx')
 assert.match(command, /hotkey: string/, 'a rail item no longer carries its own key, so the key shown is the button position')
 assert.doesNotMatch(command, /HUD_KEYS\[/, 'QueenCommand indexes HUD_KEYS by position again; the rail is shorter than the key list')
-// The ladder is the only place the five folded layers still advertise their keys.
+// The ladder is the only place the six folded layers still advertise their keys.
 const ladder = src('components/QueenLadder.tsx')
-assert.match(ladder, /hudKeyOf\(item\.layer\)/, 'the ladder no longer shows each layer its key, and 7/8/9/0/t are advertised nowhere')
+assert.match(ladder, /hudKeyOf\(item\.layer\)/, 'the ladder no longer shows each layer its key, and 7/8/9/0/t/g are advertised nowhere')
 
 // 6. Translations are connected through .t27 contract specs, never hardcoded.
 //    Every specs/i18n/*.t27 the corpus carries is in both catalogs' i18n lists
@@ -661,6 +727,7 @@ console.log(
   `in vendored corpus manifest: ${skills.skills.filter((s) => s.inSpecCorpus).length + crons.crons.filter((c) => c.inSpecCorpus).length}/${skills.skills.length + crons.crons.length}; ` +
   `agents ${agents.agents.length} (spec+experience ${agents.counts.specPlusExperience}, spec-only ${agents.counts.specOnly}, with skills ${agents.counts.withSkills}, with crons ${agents.counts.withCrons}; episodes attributed ${agents.counts.episodesAttributed}, unattributed ${agents.counts.episodesUnattributed}, unreadable files ${experience.counts.unreadableFiles}; links pinned at ${agents.pin.ref.slice(0, 7)}); ` +
   `functions ${functions.functions.length} (spec+code ${functions.counts.specPlusCode}, spec-only ${functions.counts.specOnly}, code-only ${functions.counts.codeOnly}; deployed ${functions.counts.deployed}, not deployed ${functions.counts.notDeployed}, unknown ${functions.counts.deployUnknown}; differences from the manifest ${functions.counts.withDifferences}; cron cards ${functions.counts.withCronSpec}/${functions.counts.byTrigger.cron}; manifest ${functions.manifest.repo}@${functions.manifest.generatedFrom.commit.slice(0, 7)}); ` +
+  `providers ${providers.providers.length} (models ${providers.counts.byFamily.model ?? 0}, host classes ${providers.counts.byFamily['host-class'] ?? 0}; read from a chain ${providers.counts.byWitness['chain-read'] ?? 0}, from a bench ${providers.counts.byWitness['bench-measured'] ?? 0}, design only ${providers.counts.byWitness['design-only'] ?? 0}; checked ${providers.study.fields.CHECKED}); ` +
   `Queen views ${HUD_VIEWS.length}, modules ${MODULES.length}, keys ${HUD_KEYS.slice(0, HUD_VIEWS.length).join('')}; ` +
   `i18n contracts ${skills.i18n.length} [${coverageLine.join('; ')}]`,
 )
