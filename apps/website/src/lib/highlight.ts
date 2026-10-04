@@ -40,55 +40,83 @@ function classOf(kind: string): Cls {
   return 'op'
 }
 
+// What the lexer skips without emitting a token (bootstrap/src/compiler.rs,
+// the comment loop before `check_keyword`): `//` and `#` to the end of the
+// line, `/* ... */` nested, and `;` in column 1 followed by a space or a tab.
+// A `;` alone on its line is NOT one of them -- it lexes as a Semicolon, which
+// is how a module declaration after it gets swallowed -- so it stays code here.
+interface GapState { depth: number }
+
+function gapSpans(text: string, lineStart: boolean, st: GapState): Span[] {
+  const out: Span[] = []
+  const put = (t: string, cls: Cls) => {
+    if (!t) return
+    const last = out[out.length - 1]
+    if (last && last.cls === cls) last.text += t
+    else out.push({ text: t, cls })
+  }
+  let i = 0
+  while (i < text.length) {
+    if (st.depth > 0) {
+      if (text.startsWith('*/', i)) { put('*/', 'comment'); i += 2; st.depth -= 1; continue }
+      if (text.startsWith('/*', i)) { put('/*', 'comment'); i += 2; st.depth += 1; continue }
+      put(text[i], 'comment'); i += 1; continue
+    }
+    if (text.startsWith('/*', i)) { put('/*', 'comment'); i += 2; st.depth = 1; continue }
+    const semicolonComment = lineStart && i === 0 && text[0] === ';' && (text[1] === ' ' || text[1] === '\t')
+    if (text.startsWith('//', i) || text[i] === '#' || semicolonComment) { put(text.slice(i), 'comment'); break }
+    put(text[i], 'plain'); i += 1
+  }
+  return out
+}
+
 /**
  * Rebuild each source line as coloured spans, driven by the real tokens.
  *
  * The lexer reports 1-based line/col per token but does not emit comments or
  * whitespace, so anything between two tokens is copied through verbatim and
- * comment-only stretches are detected here rather than invented upstream.
+ * comment stretches are found by the lexer's own skip rules (`gapSpans`)
+ * rather than invented upstream.
  */
 export function highlightSource(source: string, tokens: T27Token[]): Span[][] {
   const lines = source.split('\n')
   const byLine = new Map<number, T27Token[]>()
   for (const t of tokens) {
-    if (t.kind === 'Eof' || !t.lexeme) continue
+    // An empty lexeme carries nothing to colour -- except `""`, whose quotes are in the source.
+    if (t.kind === 'Eof' || (!t.lexeme && t.kind !== 'String' && t.kind !== 'CharLiteral')) continue
     const arr = byLine.get(t.line)
     if (arr) arr.push(t)
     else byLine.set(t.line, [t])
   }
 
+  const st: GapState = { depth: 0 }
   return lines.map((text, i) => {
-    const toks = byLine.get(i + 1)
-    if (!toks || toks.length === 0) {
-      // No tokens on this line: it is blank, or entirely a comment.
-      return [{ text, cls: text.trim().startsWith('//') ? 'comment' : 'plain' }]
-    }
-    toks.sort((a, b) => a.col - b.col)
-
+    const toks = (byLine.get(i + 1) ?? []).slice().sort((a, b) => a.col - b.col)
     const out: Span[] = []
     let cursor = 0
     for (const t of toks) {
       // `col` is 1-based; trust the lexeme's own length rather than re-scanning.
       const start = Math.max(0, t.col - 1)
-      if (start > cursor) out.push({ text: text.slice(cursor, start), cls: 'plain' })
-      const slice = text.slice(start, start + t.lexeme.length)
-      // If the reported span does not match the lexeme, the line has something
-      // the token list cannot explain -- emit it plain rather than mis-colour.
-      if (slice !== t.lexeme) continue
-      out.push({ text: slice, cls: classOf(t.kind) })
-      cursor = start + t.lexeme.length
-    }
-    if (cursor < text.length) {
-      const rest = text.slice(cursor)
-      // A trailing `//` after real tokens is a comment, not code.
-      const c = rest.indexOf('//')
-      if (c >= 0) {
-        if (c > 0) out.push({ text: rest.slice(0, c), cls: 'plain' })
-        out.push({ text: rest.slice(c), cls: 'comment' })
-      } else {
-        out.push({ text: rest, cls: 'plain' })
+      if (start < cursor) continue
+      let len = t.lexeme.length
+      // A string token's lexeme is its contents, unescaped: the quotes are in
+      // the source and not in the lexeme (`"\"H\""` lexes as `"H"`, which
+      // starts with a quote of its own), so the span runs to the closing quote.
+      const q = text[start]
+      if ((t.kind === 'String' || t.kind === 'CharLiteral') && (q === '"' || q === "'")) {
+        let j = start + 1
+        while (j < text.length && text[j] !== q) j += text[j] === '\\' ? 2 : 1
+        len = Math.min(text.length, j + 1) - start
+      } else if (text.slice(start, start + len) !== t.lexeme) {
+        // The reported span does not match the lexeme: the line has something
+        // the token list cannot explain -- leave it plain rather than mis-colour.
+        continue
       }
+      if (start > cursor) out.push(...gapSpans(text.slice(cursor, start), cursor === 0, st))
+      out.push({ text: text.slice(start, start + len), cls: classOf(t.kind) })
+      cursor = start + len
     }
+    if (cursor < text.length) out.push(...gapSpans(text.slice(cursor), cursor === 0, st))
     return out.length ? out : [{ text, cls: 'plain' }]
   })
 }
@@ -113,6 +141,11 @@ const KEYWORDS: Record<string, string[]> = {
   rust: ['fn', 'let', 'mut', 'const', 'pub', 'struct', 'enum', 'impl', 'trait', 'use', 'mod', 'return', 'if', 'else', 'while', 'for', 'loop', 'match', 'break', 'continue', 'where', 'type', 'self', 'Self', 'crate', 'unsafe', 'as', 'in', 'ref', 'move'],
   js: JS_KEYWORDS,
   ts: [...JS_KEYWORDS, ...TS_ONLY],
+}
+
+/** The highlighter language for each compiler target; `hir` prints as Verilog. */
+export const TARGET_LANG: Record<string, string> = {
+  zig: 'zig', verilog: 'verilog', verilog_hir: 'verilog', hir: 'verilog', c: 'c', rust: 'rust', js: 'js', ts: 'ts',
 }
 
 /** Cheap regex highlighter for generated output. Presentation only. */

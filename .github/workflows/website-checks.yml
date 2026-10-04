@@ -143,6 +143,12 @@ jobs:
       # rate the ledger did not state; the block reads its figures. Pure.
       - name: TRI mine
         run: npm run check:tri-mine
+      # The PROVIDERS tab re-reads the Gonka chain in the browser. Recorded
+      # responses rebuilt from the model cards must come back with zero
+      # differences, each bent value alone; a host's address, seed or key never
+      # leaves the parser, and the page sends nothing to a model. Pure, no network.
+      - name: Providers (Gonka live read)
+        run: npm run check:providers
       # The Queen's kanban grew a second lane, and it is the first thing on that
       # page that differs per person. Signed in, it asks the hive for the
       # clients this visitor answers for — on the game token, one identity
@@ -238,6 +244,11 @@ jobs:
       # both languages instead of drawing names nobody published.
       - name: The Queen's three tabs
         run: npm run check:queen-chat-tabs
+      # On BROWSER the person's own agent answers, not the Queen server whose
+      # health the chat polls: the chip and the empty sentence say so, and the
+      # first questions offered never ask the agent to pay, send or delete.
+      - name: The Queen on the BROWSER tab
+        run: npm run check:queen-browser-help
       # "it is dim" (the owner, 2026-09-21, with a photograph of the clients
       # strip). The board draws every panel over a live hive, so each colour
       # here has two contrasts and only one of them gets looked at. This does
@@ -299,6 +310,12 @@ jobs:
       # addressed at somebody else's agent.
       - name: Agent onboarding spec
         run: npm run check:onboarding && npm run test:onboarding-spec
+      # The X player card (public/play/) is generated from specs/x/player.t27 through the
+      # compiler: X's limits on the card, the tabs the page must carry, and the site bundle
+      # built from src/lib/highlight.ts. The tests also hold the RTL tab's reading of the
+      # emitted Verilog to what t27c wrote for hello_world.
+      - name: X player spec
+        run: npm run check:play && npm run test:play-spec
       # The world scan's contract (specs/catalog/discovery.t27 through the compiler),
       # its pure decisions, and the manifest merge that must never touch a founding
       # source. The scan itself runs against GitHub in t27-world-scan.yml.

@@ -32,6 +32,9 @@ pub const ARGS : [1]str = ["[--heal]"];
 pub const AGENTS : [0]str = [];
 pub const AGENTS_NOTE : str = "No source binds an agent letter to this command: the trios CLI is not named by docs/agents/AGENTS_ALPHABET.md or .claude/agents/*.md of gHashTag/t27.";
 pub const WHEN_TO_USE : str = "spec tests, generated .rs vs .t27 (content), bitwalk CRC 12/12 + frame ECC 32520/32520 on Vivado refs, FAR walk 32520 frames + 72 empty pads, pin sweep 82/82, segbits sweep 4224/4224, far.t27 part table drift, stale lock (exit 2 = anomalies; --heal regenerates .rs, rebuilds bitwalk, drops stale lock)";
+; public/term/tri-x7-audit/meta.json lists 1 run(s) of `tri x7-audit`; recorded with the live ~/.local/bin/tri,
+; not a build of SOURCE_COMMIT. The site plays it at the end of this card.
+pub const CAST : str = "term/tri-x7-audit/session.cast";
 pub const WITNESS : str = "source-parse";
 pub const WITNESS_SOURCE : str = "gHashTag/BrowserOS:trios/bin/tri at 7366096248dfb09893e9a7d1a0f1c56ced13d16e, read as text (the help heredoc and the top-level case arms); the CLI was not run";
 pub const ENABLED : bool = true;
