@@ -2,7 +2,8 @@
 ; Issue: https://github.com/gHashTag/trinity/issues/1360
 ; Related CI debt: https://github.com/gHashTag/trinity/issues/810
 ; Check tracked Markdown/MDX under docs/ and the four listed root documents,
-; using Markdown syntax rather than code examples. Build/cache files are not inputs.
+; using CommonMark and GitHub-flavored Markdown syntax, including bare URL links,
+; rather than code examples. Build/cache files are not inputs.
 ; Relative paths resolve from their source file; site routes resolve in the actual
 ; built Docusaurus routes, never by rewriting every root URL to GitHub blob/main.
 ; Missing local targets, malformed links and definitive HTTP400/404/410 block CI.
@@ -16,6 +17,7 @@ pub const DOCS_BASE : str = "/docs/";
 pub const DOCS_TREE_ROOT : str = "docs";
 pub const ROOT_DOCUMENTS : str = "README.md,AGENTS.md,CLAUDE.md,CONTRIBUTING.md";
 pub const MARKDOWN_EXTENSIONS : str = ".md,.mdx";
+pub const GFM_AUTOLINKS : u32 = 1;
 pub const DOCS_CONTENT_ROOT : str = "docs/docs";
 pub const DOCS_STATIC_ROOT : str = "docs/static";
 pub const DOCS_BUILD_ROOT : str = "docs/build";
@@ -31,6 +33,7 @@ pub const CONCURRENCY : u32 = 6;
 pub const MAX_REDIRECTS : u32 = 10;
 
 test verified_responses_are_measured {
+    assert GFM_AUTOLINKS == 1;
     assert HTTP_CLASS[0] == 1;
     assert HTTP_CLASS[1] == 1;
     assert HTTP_CLASS[2] == 1;

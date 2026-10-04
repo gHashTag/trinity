@@ -1,12 +1,12 @@
 {
-  "gen_hash_c": "sha256:2ac739368e85162e4bce1582400ee68f2422216799e2cec797a25cf5a93c5f89",
-  "gen_hash_rust": "sha256:404007b7d0afeb454e44f4c7129d8496d65c2e124f79b9370998856571bb3f12",
-  "gen_hash_verilog": "sha256:32d296ba3603e80adcfbeed5135d211cac0cb60e4390b776f7791064b965042b",
-  "gen_hash_zig": "sha256:bb81c046e496785b87e53b194bedd3d22506e68101ba5b5778c0ef47e800c7be",
+  "gen_hash_c": "sha256:612f7c26d728b6aa393933f4354190821d60b6dc80e4a5bb99010057f6b341de",
+  "gen_hash_rust": "sha256:0aa0e22e03c583175ae59f886a6ae7d9858da13347ea8f7d2ad291c372bf2f9a",
+  "gen_hash_verilog": "sha256:90fce96f8cf826970612fa66528234bc60164087b63c9cd4cd82f856137b5128",
+  "gen_hash_zig": "sha256:aa43ac0759a5d77124ea72e9206d228523af122d01f55677bf01a9b2e29d6123",
   "module": "ci_docs_reference_gate",
   "ring": 12,
-  "sealed_at": "2026-10-04T15:00:30Z",
+  "sealed_at": "2026-10-04T15:27:42Z",
   "sealed_by": "t27c-bootstrap@0.4.0",
-  "spec_hash": "sha256:7c47846c08d22a4e8631fff907219844ec507986327b51f7baf4c6c89c0ecd38",
+  "spec_hash": "sha256:0117fc00bc1bf158cdf5be11571c4a65c10e7be51b6283e059500a94d4bc62e4",
   "spec_path": "specs/ci/docs_reference_gate.t27"
 }

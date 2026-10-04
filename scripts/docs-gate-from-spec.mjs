@@ -8,10 +8,10 @@ const source='specs/ci/docs_reference_gate.t27',text=readFileSync(resolve(root,s
 const analyze=await loadCompiler(readFileSync(resolve(root,'apps/website/public/t27/t27_compiler.wasm')));
 const analysis=analyze(text),verdict=verdictOf(analysis),constants=constsOf(analysis);
 if(compilerErrors(analysis).length||!verdict.typecheckOk||!verdict.hirOk||verdict.discarded||analysis.ast?.name!=='ci_docs_reference_gate')throw new Error('Docs reference spec rejected');
-const schema={DOCS_BASE:'str',DOCS_TREE_ROOT:'str',ROOT_DOCUMENTS:'str',MARKDOWN_EXTENSIONS:'str',DOCS_CONTENT_ROOT:'str',DOCS_STATIC_ROOT:'str',DOCS_BUILD_ROOT:'str',BROKEN:'u32',VERIFIED:'u32',UNKNOWN:'u32',HTTP_VERIFIED_MIN:'u32',HTTP_VERIFIED_MAX:'u32',HTTP_STATUS:'arr-u32',HTTP_CLASS:'arr-u8',TIMEOUT_MS:'u32',CONCURRENCY:'u32',MAX_REDIRECTS:'u32'};
+const schema={DOCS_BASE:'str',DOCS_TREE_ROOT:'str',ROOT_DOCUMENTS:'str',MARKDOWN_EXTENSIONS:'str',GFM_AUTOLINKS:'u32',DOCS_CONTENT_ROOT:'str',DOCS_STATIC_ROOT:'str',DOCS_BUILD_ROOT:'str',BROKEN:'u32',VERIFIED:'u32',UNKNOWN:'u32',HTTP_VERIFIED_MIN:'u32',HTTP_VERIFIED_MAX:'u32',HTTP_STATUS:'arr-u32',HTTP_CLASS:'arr-u8',TIMEOUT_MS:'u32',CONCURRENCY:'u32',MAX_REDIRECTS:'u32'};
 const problems=checkSchema(constants,schema,{},source);if(problems.length)throw new Error(problems.join('; '));
 const fields=Object.fromEntries(Object.entries(constants).map(([key,constant])=>[key,constant.value]));
-const result=runSpecTests(analysis,fields);if(result.tests!==3||result.asserts!==16||result.failures.length)throw new Error(JSON.stringify(result));
+const result=runSpecTests(analysis,fields);if(result.tests!==3||result.asserts!==17||result.failures.length)throw new Error(JSON.stringify(result));
 if(fields.HTTP_STATUS.length!==14||fields.HTTP_CLASS.length!==14||new Set(fields.HTTP_STATUS).size!==14)throw new Error('Incomplete HTTP conformance table');
 const hash=sha256(Buffer.from(text));
 const outputs={

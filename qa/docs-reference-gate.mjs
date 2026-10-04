@@ -11,6 +11,7 @@ assert.equal(vectors.spec_hash,policy.spec_hash);assert.equal(vectors.vectors.le
 for(const vector of vectors.vectors)assert.equal(httpClass(vector.status),vector.expected);
 assert.notEqual(httpClass(403),policy.VERIFIED);assert.notEqual(httpClass(429),policy.VERIFIED);assert.equal(httpClass(404),policy.BROKEN);
 assert.deepEqual(markdownReferences('```md\n[example](missing.md)\n```\n[real][ref]\n\n[ref]: /api/vsa\n![icon](image.svg)\n<a href="next.md">next</a>').map(r=>r.url),['/api/vsa','image.svg','next.md']);
+assert.deepEqual(markdownReferences('Visit https://example.org/read and www.example.org/help.\n\n`https://example.org/code`\n```txt\nhttps://example.org/code-block\n```').map(r=>r.url),['https://example.org/read','http://www.example.org/help']);
 const base=mkdtempSync(resolve(tmpdir(),'trinity-docs-gate-'));
 const routes=new Set(['/docs/api/vsa']);
 try{

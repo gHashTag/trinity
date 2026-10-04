@@ -4,7 +4,9 @@ Animated terminal GIFs demonstrating `tri` command functionality.
 
 ## 🎬 Demo Homepage
 
-**Interactive terminal demos:** https://gHashTag.github.io/trinity/demos/
+The former `/trinity/demos/` URL is unavailable. Historical terminal GIFs are
+checked into [examples/recordings](../examples/recordings/); fresh recordings
+are produced by the CI workflow described below.
 
 ## Installation
 

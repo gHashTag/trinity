@@ -1,10 +1,11 @@
 {
   "spec_path": "specs/ci/docs_reference_gate.t27",
-  "spec_hash": "7c47846c08d22a4e8631fff907219844ec507986327b51f7baf4c6c89c0ecd38",
+  "spec_hash": "0117fc00bc1bf158cdf5be11571c4a65c10e7be51b6283e059500a94d4bc62e4",
   "DOCS_BASE": "/docs/",
   "DOCS_TREE_ROOT": "docs",
   "ROOT_DOCUMENTS": "README.md,AGENTS.md,CLAUDE.md,CONTRIBUTING.md",
   "MARKDOWN_EXTENSIONS": ".md,.mdx",
+  "GFM_AUTOLINKS": 1,
   "DOCS_CONTENT_ROOT": "docs/docs",
   "DOCS_STATIC_ROOT": "docs/static",
   "DOCS_BUILD_ROOT": "docs/build",

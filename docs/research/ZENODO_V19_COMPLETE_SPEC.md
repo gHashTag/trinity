@@ -239,7 +239,7 @@ pub const AuthorList = struct {
 
 ```zig
 /// Citation File Format 1.2.0
-/// https://citation-file-format.github.io/1.2.0/
+/// https://github.com/citation-file-format/citation-file-format/blob/1.2.0/schema-guide.md
 pub const CFF = struct {
     /// CFF version
     cff_version: []const u8 = "1.2.0",
@@ -1042,8 +1042,8 @@ test "CFF validation: missing ORCID" {
 
 ## References
 
-1. CFF 1.2.0: https://citation-file-format.github.io/1.2.0/
-2. ORCID API: https://info.orcid.org/documentation/api-v3.0/
+1. CFF 1.2.0: https://github.com/citation-file-format/citation-file-format/blob/1.2.0/schema-guide.md
+2. ORCID API: https://info.orcid.org/documentation/integration-guide/
 3. OpenAlex: https://openalex.org/
 4. COAR Notify: https://notify.coar-repositories.org/
 

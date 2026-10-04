@@ -3,6 +3,8 @@ import {resolve,dirname,relative,extname,posix} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {execFileSync} from 'node:child_process';
 import {fromMarkdown} from '../docs/node_modules/mdast-util-from-markdown/index.js';
+import {gfm} from '../docs/node_modules/micromark-extension-gfm/index.js';
+import {gfmFromMarkdown} from '../docs/node_modules/mdast-util-gfm/index.js';
 
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 export const policy=JSON.parse(readFileSync(resolve(root,'scripts/docs-gate.generated.json')));
@@ -12,7 +14,7 @@ export function httpClass(status){
     return status>=policy.HTTP_VERIFIED_MIN&&status<=policy.HTTP_VERIFIED_MAX?policy.VERIFIED:policy.UNKNOWN;
 }
 export function markdownReferences(text){
-    const ast=fromMarkdown(text),definitions=new Map(),references=[];
+    const ast=fromMarkdown(text,policy.GFM_AUTOLINKS===1?{extensions:[gfm()],mdastExtensions:[gfmFromMarkdown()]}:{}),definitions=new Map(),references=[];
     function walk(node,visitor){visitor(node);for(const child of node.children??[])walk(child,visitor);}
     walk(ast,node=>{if(node.type==='definition')definitions.set(node.identifier.toLowerCase(),node.url);});
     walk(ast,node=>{

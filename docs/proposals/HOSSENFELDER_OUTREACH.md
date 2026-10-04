@@ -85,7 +85,7 @@ Theoretical physicist at Frankfurt Institute for Advanced Studies:
 | **Blog** | https://backreaction.blogspot.com/ (comments section) |
 | **YouTube** | https://www.youtube.com/@SabineHossenfelder |
 | **Bluesky** | @sabinehossenfelder.bsky.social |
-| **Website** | https://www.math Columbia.edu/people/sabine-hossenfelder |
+| **Website** | https://sabinehossenfelder.com/ |
 
 ---
 
