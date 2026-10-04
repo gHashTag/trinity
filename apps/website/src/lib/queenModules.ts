@@ -347,6 +347,23 @@ export const MODULES = [
       play: 'Напишите спеку, которую примет Королева, и её TRI зачислится на ваш аккаунт GitHub; выведите его из профиля своим TON-кошельком.',
     },
   },
+  {
+    tab: 'providers',
+    key: 'g',
+    glyph: '⌬',
+    en: {
+      name: 'PROVIDERS',
+      hint: 'Who sells compute: the Gonka models, and a GPU or FPGA rented out for TRI (key g)',
+      body: 'The Provider Explorer, seventh on the ladder after Functions. One card per model the Gonka chain lists, each stated by a .t27 spec under specs/providers/gonka and copied from the chain: hosts serving it in the epoch, GPU memory per host, context length, price per token, validation threshold. Two more cards are hardware a person could rent out to our own network for TRI: an Artix-7 FPGA, measured on three boards, and a 24 GB gaming GPU, a design with nothing built. The page re-reads the Gonka chain in your browser and prints every difference from the cards; it shows how to call a model and never calls one, and never asks for a key. The study behind it sets the TRI/GNK pair routes against what exists today: TRI is on testnet, Gonka has no DEX pool, its bridge goes to Ethereum. Opens on g.',
+      play: 'Decide whether your own card or board is worth renting out: see what Gonka asks of a host, what TRI-NET would check and pay, and what is still missing before either pays you.',
+    },
+    ru: {
+      name: 'ПРОВАЙДЕРЫ',
+      hint: 'Кто продаёт вычисления: модели Gonka и GPU или FPGA в аренду за TRI (клавиша g)',
+      body: 'Обозреватель провайдеров, седьмая ступень лестницы после функций. По карточке на каждую модель, которую перечисляет цепь Gonka, — каждая заявлена спекой .t27 в specs/providers/gonka и скопирована с цепи: сколько хостов обслуживают её в эпохе, память GPU на хост, длина контекста, цена за токен, порог валидации. Ещё две карточки — железо, которое человек мог бы сдать в аренду нашей собственной сети за TRI: FPGA Artix-7, измеренная на трёх платах, и игровая GPU на 24 ГБ — проект, где ничего не построено. Страница перечитывает цепь Gonka прямо в вашем браузере и печатает каждое расхождение с карточками; показывает, как вызвать модель, но никогда не вызывает её и никогда не просит ключ. Исследование за ней сравнивает пути пары TRI/GNK с тем, что есть сегодня: TRI в testnet, у Gonka нет пула на DEX, её мост ведёт в Ethereum. Открывается клавишей g.',
+      play: 'Решите, стоит ли сдавать в аренду свою видеокарту или плату: посмотрите, что Gonka требует от хоста, что TRI-NET проверила бы и заплатила и чего ещё не хватает, прежде чем кто-то из них вам заплатит.',
+    },
+  },
 ] as const
 
 export type QueenModule = (typeof MODULES)[number];

@@ -65,6 +65,7 @@ const UI = {
     ladderAgents: 'Agents',
     ladderTools: 'Tools',
     ladderFunctions: 'Functions',
+    ladderProviders: 'Providers',
     copyLink: 'Copy link',
     copied: 'Copied',
     notDeployed: 'not deployed',
@@ -171,6 +172,7 @@ const UI = {
     ladderAgents: 'Агенты',
     ladderTools: 'Инструменты',
     ladderFunctions: 'Функции',
+    ladderProviders: 'Провайдеры',
     copyLink: 'Скопировать ссылку',
     copied: 'Скопировано',
     notDeployed: 'не развёрнута',
@@ -642,8 +644,9 @@ export default function FunctionExplorer() {
       { key: 'agents', label: ui.ladderAgents, count: l?.agents ?? null, href: `#/agents${embed}` },
       { key: 'tools', label: ui.ladderTools, count: l?.tools ?? null, href: `#/tools${embed}` },
       { key: 'functions', label: ui.ladderFunctions, count: l?.functions ?? null, href: `#/functions${embed}`, current: true },
+      { key: 'providers', label: ui.ladderProviders, count: l?.providers ?? null, href: `#/providers${embed}` },
     ]
-  }, [catalog, embedded, ui.ladderSpecs, ui.ladderSkills, ui.ladderCrons, ui.ladderAgents, ui.ladderTools, ui.ladderFunctions])
+  }, [catalog, embedded, ui.ladderSpecs, ui.ladderSkills, ui.ladderCrons, ui.ladderAgents, ui.ladderTools, ui.ladderFunctions, ui.ladderProviders])
 
   const triggerSegments: StackSegment[] = useMemo(
     () => [

@@ -32,6 +32,7 @@ import {
   type CronSpecEntry,
   type SkillSpecEntry,
   type ToolSpecEntry,
+  type ProviderSpecEntry,
 } from '../lib/agentSpecs'
 
 const COPY = {
@@ -83,6 +84,7 @@ const COPY = {
     ownedBy: 'owned by agents',
     noOwnedBy: 'no source binds a letter to this tool',
     toolRun: 'a tool is read from its source (clap doc comments, MCP manifests); it is run from a terminal or by an MCP client, not from here',
+    providerRun: 'a provider is read from a public chain or a bench record; this page never calls a paid model, never asks for a key and never rents out hardware — it shows how, and what is missing',
     agentRun: 'an agent is a letter of the alphabet bound by SOUL.md and AGENTS.md; it is not launched from here — it holds skills, and jobs launch those',
     relates: 'related cards',
     noRelates: 'no cron card states this schedule; an event function has none',
@@ -145,6 +147,7 @@ const COPY = {
     ownedBy: 'владеют агенты',
     noOwnedBy: 'ни один источник не привязывает букву к этому инструменту',
     toolRun: 'инструмент прочитан из своего исходника (док-комментарии clap, манифесты MCP); он запускается из терминала или MCP-клиентом, а не отсюда',
+    providerRun: 'провайдер прочитан с публичной цепи или из записи стенда; эта страница не вызывает платную модель, не просит ключ и не сдаёт железо в аренду — она показывает, как это сделать и чего не хватает',
     agentRun: 'агент — буква алфавита, связанная SOUL.md и AGENTS.md; отсюда он не запускается — он держит скиллы, а их запускают задания',
     relates: 'связанные карточки',
     noRelates: 'ни одна крон-карточка не описывает это расписание; у событийной функции её и нет',
@@ -171,10 +174,10 @@ export interface CrossLink {
 
 interface Props {
   lang: 'en' | 'ru'
-  kind: 'skill' | 'cron' | 'agent' | 'function' | 'tool'
+  kind: 'skill' | 'cron' | 'agent' | 'function' | 'tool' | 'provider'
   /** The catalog id of the card, for the code-only case where there is no spec. */
   id: string
-  entry: SkillSpecEntry | CronSpecEntry | AgentSpecEntry | FunctionSpecEntry | ToolSpecEntry | null
+  entry: SkillSpecEntry | CronSpecEntry | AgentSpecEntry | FunctionSpecEntry | ToolSpecEntry | ProviderSpecEntry | null
   links: CrossLink[]
   /** Whether the reader can jump to the Spec Explorer in this frame. */
   embedded: boolean
@@ -202,19 +205,20 @@ function label(kind: Props['kind'], t: Copy): { links: string; empty: string } {
   if (kind === 'agent') return { links: t.holds, empty: t.noHolds }
   if (kind === 'function') return { links: t.relates, empty: t.noRelates }
   if (kind === 'tool') return { links: t.ownedBy, empty: t.noOwnedBy }
+  if (kind === 'provider') return { links: t.relates, empty: t.noRelates }
   return { links: t.runBy, empty: t.noRunBy }
 }
 
-const SPEC_DIR: Record<Props['kind'], string> = { skill: 'specs/skills', cron: 'specs/crons', agent: 'specs/agents', function: 'specs/functions', tool: 'specs/tools' }
-const LINK_GLYPH: Record<Props['kind'], string> = { skill: '◷', cron: '⟲', agent: '◈', function: '⟲', tool: 'Ω' }
+const SPEC_DIR: Record<Props['kind'], string> = { skill: 'specs/skills', cron: 'specs/crons', agent: 'specs/agents', function: 'specs/functions', tool: 'specs/tools', provider: 'specs/providers' }
+const LINK_GLYPH: Record<Props['kind'], string> = { skill: '◷', cron: '⟲', agent: '◈', function: '⟲', tool: 'Ω', provider: '⌬' }
 
 export function AgentSpecPanel({ lang, kind, id, entry, links, embedded, i18n = [], extraControls, flat }: Props) {
   const t: Copy = COPY[lang]
   // An agent is not a job: the control plane's run/enable/disable verbs do not
   // apply to a letter, so the plane is shown for skills and crons only.
   // A function has no control-plane verb here either: it is launched by its event or cron;
-  // a tool is a command or a server, not a run.
-  const planeApplies = kind !== 'agent' && kind !== 'function' && kind !== 'tool'
+  // a tool is a command or a server, not a run; a provider sells compute the site never buys.
+  const planeApplies = kind !== 'agent' && kind !== 'function' && kind !== 'tool' && kind !== 'provider'
   // Everything fetched for one spec travels together, keyed by its path, so a
   // change of card is a change of key rather than a burst of resets.
   interface Loaded { path: string; source: string; lines: Span[][]; err: string | null; sha: 'pending' | 'ok' | 'mismatch' | 'unchecked' }
@@ -267,7 +271,7 @@ export function AgentSpecPanel({ lang, kind, id, entry, links, embedded, i18n = 
 
   const act = useCallback(
     async (action: ControlAction) => {
-      if (!plane || kind === 'agent' || kind === 'function' || kind === 'tool') return
+      if (!plane || kind === 'agent' || kind === 'function' || kind === 'tool' || kind === 'provider') return
       setPlaneNote('…')
       try {
         const r = await requestControl(plane, kind, id, action)
@@ -331,7 +335,7 @@ export function AgentSpecPanel({ lang, kind, id, entry, links, embedded, i18n = 
     )
   }
 
-  const witnessColor = entry.witness === 'spec+code' || entry.witness === 'spec+experience' || entry.witness === 'help-output' || entry.witness === 'registry-export' || entry.witness === 'runtime' ? C.accent : entry.witness === 'source-parse' ? C.golden : C.warn
+  const witnessColor = entry.witness === 'spec+code' || entry.witness === 'spec+experience' || entry.witness === 'help-output' || entry.witness === 'registry-export' || entry.witness === 'runtime' || entry.witness === 'chain-read' || entry.witness === 'bench-measured' ? C.accent : entry.witness === 'source-parse' ? C.golden : C.warn
   const verdictColor = entry.typecheckOk && entry.discarded === 0 ? C.accent : C.bad
 
   return (
@@ -474,6 +478,8 @@ export function AgentSpecPanel({ lang, kind, id, entry, links, embedded, i18n = 
             <span style={{ fontSize: 11, color: C.muted, lineHeight: 1.5 }}>{t.functionRun}</span>
           ) : kind === 'tool' ? (
             <span style={{ fontSize: 11, color: C.muted, lineHeight: 1.5 }}>{t.toolRun}</span>
+          ) : kind === 'provider' ? (
+            <span style={{ fontSize: 11, color: C.muted, lineHeight: 1.5 }}>{t.providerRun}</span>
           ) : kind === 'cron' && runNow ? (
             runNow.kind === 'link' ? (
               <>

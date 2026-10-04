@@ -83,6 +83,7 @@ const EXPLORERS = [
   { name: 'crons', route: '#/crons?cron=github-actions%2Ft27%2Fpr-dashboard', card: 'github-actions/t27/pr-dashboard' },
   { name: 'agents', route: '#/agents?agent=D', card: 't27/D' },
   { name: 'functions', route: '#/functions?function=content-detailed-script-generate', card: 'content-detailed-script-generate' },
+  { name: 'providers', route: '#/providers?provider=gonka%2Fminimax-m2-7', card: 'gonka/minimax-m2-7' },
   // The spec explorer marks no card; its open detail is the code view.
   { name: 'specs', route: '#/specs?spec=specs%2Ftutorial%2F02_functions.t27', card: null, detail: '.spec-x main' },
 ];

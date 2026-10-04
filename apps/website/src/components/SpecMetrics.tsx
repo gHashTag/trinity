@@ -3,8 +3,10 @@
 // The delta is the point. Compiling edited source and showing "3481 tokens" in
 // isolation says nothing; showing "3481 (+42)" next to what the original
 // produced turns the page into an instrument you can actually experiment with.
+//
+// Backend sizes are not repeated here: every backend's tab directly below
+// already carries its size, and a failed backend's tab its cross.
 
-import { TARGET_IDS } from '../lib/t27Compiler'
 import type { T27Analysis } from '../lib/t27Compiler'
 
 const MONO = "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace"
@@ -68,8 +70,6 @@ export function SpecMetrics({
     },
   ]
 
-  const targets = TARGET_IDS
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', fontFamily: MONO, fontSize: 11.5 }}>
@@ -86,47 +86,6 @@ export function SpecMetrics({
           </span>
         ))}
         {ms !== null && <span style={{ color: MUTED, opacity: 0.7 }}>{ms.toFixed(0)}ms</span>}
-      </div>
-
-      {/* What each backend produced, which is the thing an edit is usually
-          aimed at changing. */}
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-        {targets.map((k) => {
-          const t = result.targets[k]
-          const b = baseline?.targets?.[k]
-          const delta = baseline && t?.ok && b?.ok ? (t.bytes ?? 0) - (b.bytes ?? 0) : undefined
-          const broke = baseline && b?.ok && !t?.ok
-          const fixed = baseline && !b?.ok && t?.ok
-          return (
-            <span
-              key={k}
-              title={t?.ok ? `${t.bytes} bytes` : t?.error || 'no output'}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'baseline',
-                gap: 4,
-                padding: '2px 7px',
-                borderRadius: 3,
-                border: `1px solid ${t?.ok ? 'rgba(0,255,136,0.22)' : BAD}`,
-                background: broke ? 'rgba(248,81,73,0.12)' : fixed ? 'rgba(0,255,136,0.10)' : 'transparent',
-                fontFamily: MONO,
-                fontSize: 10.5,
-                color: t?.ok ? MUTED : BAD,
-              }}
-            >
-              <span>{labels[k] ?? k}</span>
-              <span style={{ color: t?.ok ? '#d6dde4' : BAD }}>{t?.ok ? fmt(t.bytes ?? 0) : '✕'}</span>
-              {delta !== undefined && delta !== 0 && (
-                <span style={{ color: MUTED }}>
-                  {delta > 0 ? '+' : ''}
-                  {delta}
-                </span>
-              )}
-              {broke && <span style={{ color: BAD }}>{labels.brokeIt}</span>}
-              {fixed && <span style={{ color: OK }}>{labels.fixedIt}</span>}
-            </span>
-          )
-        })}
       </div>
 
       {result.astError && (

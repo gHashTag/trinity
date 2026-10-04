@@ -143,6 +143,12 @@ jobs:
       # rate the ledger did not state; the block reads its figures. Pure.
       - name: TRI mine
         run: npm run check:tri-mine
+      # The PROVIDERS tab re-reads the Gonka chain in the browser. Recorded
+      # responses rebuilt from the model cards must come back with zero
+      # differences, each bent value alone; a host's address, seed or key never
+      # leaves the parser, and the page sends nothing to a model. Pure, no network.
+      - name: Providers (Gonka live read)
+        run: npm run check:providers
       # The Queen's kanban grew a second lane, and it is the first thing on that
       # page that differs per person. Signed in, it asks the hive for the
       # clients this visitor answers for — on the game token, one identity
@@ -202,6 +208,18 @@ jobs:
       # only our own /live/ is framed. Pure, no browser.
       - name: The BROWSER view
         run: npm run check:queen-browser
+      # Invite to watch: the render's read-only watch links on the live bar.
+      # The session token rides only in a header, a minted address is shown
+      # only if it is https://<host>/watch/<token> and revoked on the spot if
+      # it is not, an id that is not one is never sent, and a sixth link is
+      # never asked for. Pure, no browser.
+      - name: Invite to watch
+        run: npm run check:queen-watch
+      # Tasks side by side: a card is one more lane of the person's agent in a
+      # window of its own; the chat never names a lane, a render that answered
+      # from main is believed, and two lanes' steps never fold. Pure, no browser.
+      - name: Browser tasks side by side
+        run: npm run check:queen-browser-lanes
       # The runner cabinet: the session token rides only in a header with
       # credentials omitted, a runner token is shown once and kept nowhere, and
       # the page has no field for a provider key. Pure, no browser.
@@ -226,6 +244,11 @@ jobs:
       # both languages instead of drawing names nobody published.
       - name: The Queen's three tabs
         run: npm run check:queen-chat-tabs
+      # On BROWSER the person's own agent answers, not the Queen server whose
+      # health the chat polls: the chip and the empty sentence say so, and the
+      # first questions offered never ask the agent to pay, send or delete.
+      - name: The Queen on the BROWSER tab
+        run: npm run check:queen-browser-help
       # "it is dim" (the owner, 2026-09-21, with a photograph of the clients
       # strip). The board draws every panel over a live hive, so each colour
       # here has two contrasts and only one of them gets looked at. This does
@@ -287,6 +310,12 @@ jobs:
       # addressed at somebody else's agent.
       - name: Agent onboarding spec
         run: npm run check:onboarding && npm run test:onboarding-spec
+      # The X player card (public/play/) is generated from specs/x/player.t27 through the
+      # compiler: X's limits on the card, the tabs the page must carry, and the site bundle
+      # built from src/lib/highlight.ts. The tests also hold the RTL tab's reading of the
+      # emitted Verilog to what t27c wrote for hello_world.
+      - name: X player spec
+        run: npm run check:play && npm run test:play-spec
       # The world scan's contract (specs/catalog/discovery.t27 through the compiler),
       # its pure decisions, and the manifest merge that must never touch a founding
       # source. The scan itself runs against GitHub in t27-world-scan.yml.
@@ -321,8 +350,20 @@ jobs:
       - name: Roadmap game rules
         run: npm run check:roadmap-game
 
+      # What a link to t27.ai says in a chat preview: the name, the caption and
+      # the description, from lib/motto.ts -- in the head tags, in the i18n
+      # provider that rewrites them after load, and in og/og-image.svg.
+      - name: Link preview words
+        run: npm run check:og-preview
+
       - name: Build
         run: npx vite build
+
+      # What a crawler reads on the home page before any script runs: the
+      # lib/motto words GameHero renders, and absolute links to every static
+      # section. After the build, so the shell is checked in dist/ as shipped.
+      - name: Home page shell a crawler reads
+        run: npm run check:boot-shell
 
       # Skips itself if no Chrome is found rather than failing: a missing
       # browser is an environment fact, not a defect in the change.

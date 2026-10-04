@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import en from '../../messages/en.json';
+import { MOTTO, SITE_NAME } from '../lib/motto';
 
 const LANGS = ['en', 'ru'] as const;
 type Lang = typeof LANGS[number];
@@ -47,21 +48,23 @@ const store = {
   },
 };
 
-/* Заголовок и описание на каждый язык. Формулировки держатся тех же границ,
-   что и страница: пара форматов, 52 теоремы, железо измерено на
-   открытом потоке на XC7A200T — без «первого» и без обещаний кремния. */
+/* The tab title and the description, per language, are the page's own first
+   screen: the name, the motto's caption, the headline (lib/motto). They were
+   a third copy of the GFTernary/TNF claims, and this effect wrote them over
+   index.html's preview tags on every load (until 2026-10-04). og:title is the
+   caption alone: a preview prints og:site_name on its own line above it. */
 const SEO = {
-  en: {
-    locale: 'en_US',
-    title: 'TRINITY | TNF · GFTernary — a reference format for the ternary datapath',
-    description: 'TNF and GFTernary: a reference format pair for the ternary datapath. 52 theorems, and every hardware number measured on an open flow on XC7A200T.',
-  },
-  ru: {
-    locale: 'ru_RU',
-    title: 'TRINITY | TNF · GFTernary — референсная пара форматов для тернарного датапути',
-    description: 'TNF и GFTernary: референсная пара числовых форматов для тернарного датапути. 52 теоремы, и каждое аппаратное число измерено на открытом потоке на XC7A200T.',
-  },
+  en: { locale: 'en_US', ...seoOf(MOTTO.en) },
+  ru: { locale: 'ru_RU', ...seoOf(MOTTO.ru) },
 } as const
+
+function seoOf(m: { caption: string; headline: string; clause: string }) {
+  return {
+    title: `${SITE_NAME} — ${m.caption}`,
+    caption: m.caption,
+    description: `${m.headline}: ${m.clause}`,
+  }
+}
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
   const [lang, setLangState] = useState<Lang>(() => {
@@ -128,7 +131,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
       if (el) el.setAttribute(attr, val);
     };
     set('meta[name="description"]', 'content', meta.description);
-    set('meta[property="og:title"]', 'content', meta.title);
+    set('meta[property="og:title"]', 'content', meta.caption);
     set('meta[property="og:description"]', 'content', meta.description);
     set('meta[property="og:locale"]', 'content', meta.locale);
   }, [lang, mounted]);
