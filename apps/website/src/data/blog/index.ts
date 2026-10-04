@@ -3,35 +3,6 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
-    slug: 'a-measurement-number-needs-a-passport',
-    title: 'A measurement number needs its passport',
-    summary: '[Measured] An isolated GFTernary decoder is recorded at 66 LUT and 974.66 MHz on an Artix-7 XC7A200T, with its toolchain, seed statistic and same-part baseline. The receipt does not claim tokens per second or system throughput.',
-    date: '2026-09-13',
-    readingMinutes: 6,
-    tags: ['FPGA', 'Measurement', 'Reproducibility', 'GFTernary'],
-    receipts: [
-      { label: 'Canonical source: gHashTag/trinity tnf.ts at commit 453fe953', href: 'https://github.com/gHashTag/trinity/blob/453fe953372db51052e007334b69c9dbed595218/apps/website/src/content/tnf.ts' },
-      { label: 'Source commit: website measurement passport and toolchain receipt', href: 'https://github.com/gHashTag/trinity/commit/453fe953372db51052e007334b69c9dbed595218' },
-    ],
-    openQuestions: [
-      'The post records an isolated decoder, not tokens per second, end-to-end inference, power, memory bandwidth or a full model.',
-      'The result is tied to one FPGA family and one open flow; cross-device and vendor-flow comparisons were not performed here.',
-      'A same-flow takum implementation was not synthesised beside this decoder.',
-      'The non-monotone APoT sweep is a warning about the measurement flow, not a model of all FPGA implementations.'
-    ],
-    published: true,
-    ru: {
-      title: 'Аппаратному числу нужен паспорт замера',
-      summary: '[Измерено] Для изолированного декодера GFTernary зафиксированы 66 LUT и 974,66 МГц на Artix-7 XC7A200T, вместе с тулчейном, статистикой seed и базовой линией на той же части. Квитанция не заявляет токены в секунду или пропускную способность системы.',
-      openQuestions: [
-        'В посте записан изолированный декодер, а не токены в секунду, сквозной инференс, мощность, полоса памяти или целая модель.',
-        'Результат относится к одной семье FPGA и одному открытому потоку; сравнения между устройствами и с вендорским потоком здесь не проводились.',
-        'Реализация takum в том же потоке рядом с декодером не синтезировалась.',
-        'Немонотонная APoT-развёртка предупреждает о свойствах потока замера, а не является моделью всех реализаций на FPGA.'
-      ]
-    }
-  },
-  {
     slug: "a-terminal-for-seven-backends-in-an-x-post",
     title: "A terminal for t27's seven backends, inside an X post",
     summary: "[one spec, hello_world; only JavaScript runs in the browser; the native results are one macOS machine on one day; nothing posted on X] The t27 player now has a terminal: the compiler, as WebAssembly in the page, prints what each of its seven backends emits and runs the spec's tests. Each backend has its own share page. Every word the terminal says lives in the spec. Run natively, hello_world as committed builds in two of the seven languages, and the post says why.",
@@ -669,6 +640,35 @@ export const postsIndex: PostMeta[] = [
         "Проверки согласия ограничивают данный сгенерированный документ, но не являются универсальной защитой от prompt injection.",
         "Сравнение объявленных чисел с поставляемым manifest доказывает согласованность, а не независимую правильность классификации корпуса.",
         "Исходный аудит и отрицательные контроли приведены по смерженному PR; число внешних читателей или вкладов не установлено."
+      ]
+    }
+  },
+  {
+    slug: 'a-measurement-number-needs-a-passport',
+    title: 'A measurement number needs its passport',
+    summary: '[Measured] An isolated GFTernary decoder is recorded at 66 LUT and 974.66 MHz on an Artix-7 XC7A200T, with its toolchain, seed statistic and same-part baseline. The receipt does not claim tokens per second or system throughput.',
+    date: '2026-09-13',
+    readingMinutes: 6,
+    tags: ['FPGA', 'Measurement', 'Reproducibility', 'GFTernary'],
+    receipts: [
+      { label: 'Canonical source: gHashTag/trinity tnf.ts at commit 453fe953', href: 'https://github.com/gHashTag/trinity/blob/453fe953372db51052e007334b69c9dbed595218/apps/website/src/content/tnf.ts' },
+      { label: 'Source commit: website measurement passport and toolchain receipt', href: 'https://github.com/gHashTag/trinity/commit/453fe953372db51052e007334b69c9dbed595218' },
+    ],
+    openQuestions: [
+      'The post records an isolated decoder, not tokens per second, end-to-end inference, power, memory bandwidth or a full model.',
+      'The result is tied to one FPGA family and one open flow; cross-device and vendor-flow comparisons were not performed here.',
+      'A same-flow takum implementation was not synthesised beside this decoder.',
+      'The non-monotone APoT sweep is a warning about the measurement flow, not a model of all FPGA implementations.'
+    ],
+    published: true,
+    ru: {
+      title: 'Аппаратному числу нужен паспорт замера',
+      summary: '[Измерено] Для изолированного декодера GFTernary зафиксированы 66 LUT и 974,66 МГц на Artix-7 XC7A200T, вместе с тулчейном, статистикой seed и базовой линией на той же части. Квитанция не заявляет токены в секунду или пропускную способность системы.',
+      openQuestions: [
+        'В посте записан изолированный декодер, а не токены в секунду, сквозной инференс, мощность, полоса памяти или целая модель.',
+        'Результат относится к одной семье FPGA и одному открытому потоку; сравнения между устройствами и с вендорским потоком здесь не проводились.',
+        'Реализация takum в том же потоке рядом с декодером не синтезировалась.',
+        'Немонотонная APoT-развёртка предупреждает о свойствах потока замера, а не является моделью всех реализаций на FPGA.'
       ]
     }
   },
