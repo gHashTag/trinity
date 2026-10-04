@@ -6,9 +6,8 @@ on:
   pull_request:
     branches: [main, v*]
   workflow_dispatch:
-  schedule:
-    # Weekly stress test (every Sunday at 00:00 UTC)
-    - cron: '0 0 * * 0'
+  # No schedule: block. The Queen (Inngest app t27-queen) dispatches this workflow
+  # on '0 0 * * 0' UTC from the card specs/crons/trinity-brain-ci.t27 in gHashTag/t27.
 
 env:
   BRAIN_HEALTH_THRESHOLD: "80"  # Minimum health score for merge
@@ -536,7 +535,7 @@ jobs:
   brain-trend-report:
     name: 📈 Weekly Brain Trend Report
     runs-on: ubuntu-latest
-    if: github.event_name == 'schedule'
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'  # the Queen dispatches the weekly run
     timeout-minutes: 10
     steps:
       - name: Setup Zig

@@ -140,6 +140,17 @@ test('a timer carries INTERVAL_MS, a schedule carries SCHEDULE, never both', () 
   assert.ok(r.problems.some((p) => p.includes('x1.t27: only a timer has INTERVAL_MS')), r.problems.join('\n'))
 })
 
+test('a launchd job (the owner\'s Mac) carries exactly one of INTERVAL_MS and SCHEDULE, and is not warned for being absent from the code manifest', () => {
+  const ok = build([], files('specs/crons',
+    cronSrc('launchd/mac/a', { module: 'cron_x0', host: 'launchd' }),
+    cronSrc('launchd/mac/b', { module: 'cron_x1', host: 'launchd' }).replace(/pub const SCHEDULE[^\n]*\n/, 'pub const INTERVAL_MS : u32 = 600000;\n'),
+  ))
+  assert.deepEqual(ok.problems, [])
+  assert.ok(ok.crons.crons.every((c) => c.health === 'ok'), JSON.stringify(ok.crons.crons.map((c) => c.messages)))
+  const both = build([], files('specs/crons', cronSrc('launchd/mac/a', { module: 'cron_x0', host: 'launchd', extra: 'pub const INTERVAL_MS : u32 = 1;' })))
+  assert.ok(both.problems.some((p) => p.includes('exactly one of SCHEDULE and INTERVAL_MS')), both.problems.join('\n'))
+})
+
 test('a spec that disagrees with the schedule the code catalog read is shown, as warn', () => {
   const r = build([], files('specs/crons', cronSrc('github-actions/trinity/x', { module: 'cron_x0', schedule: '"5 5 * * *"' })))
   assert.deepEqual(r.problems, [])
@@ -922,19 +933,30 @@ test('function translations come through the same i18n contract once SCOPE names
   assert.deepEqual(r.functions.i18n[0].coverage, { n: 1, total: 1 })
 })
 
-test('the committed function catalog: 28 specs, every one witnessed by the manifest, five cron cards joined, four not deployed, Russian on each', async () => {
+test('the committed function catalog: 33 specs, every one witnessed by the manifest, ten cron cards joined, four not deployed, Russian on each', async () => {
   const { generate, FUNCTIONS_MANIFEST } = await import('./agents-from-specs.mjs')
   const r = await generate({ generatedAt: '2026-01-01T00:00:00.000Z' })
   assert.deepEqual(r.problems, [])
   const fns = r.functions.functions
-  assert.equal(fns.length, 28)
-  assert.equal(r.functions.counts.specPlusCode, 28)
+  assert.equal(fns.length, 33)
+  assert.equal(r.functions.counts.specPlusCode, 33)
   assert.deepEqual(r.functions.codeOnly, [])
-  assert.equal(r.functions.counts.byTrigger.cron, 5)
-  assert.equal(r.functions.counts.withCronSpec, 5)
+  assert.equal(r.functions.counts.byTrigger.cron, 10)
+  assert.equal(r.functions.counts.withCronSpec, 10)
   assert.equal(r.functions.counts.notDeployed, 4)
   const manifest = JSON.parse(readFileSync(join(SITE, FUNCTIONS_MANIFEST), 'utf8'))
-  assert.equal(manifest.functions.length, 28)
+  assert.equal(manifest.functions.length, 33)
+  // The five the site could not draw at all until 2026-09-22: they are what the
+  // live status endpoint answers for, they carry every failed run in the week,
+  // and their deployment is unread rather than false.
+  for (const id of ['client-telemetry-daily', 'club-invoice-abandoned-watch', 'crm-proactive-sweep', 'robokassa-unclaimed-watch', 'ton-pending-watch']) {
+    const f = fns.find((x) => x.id === id)
+    assert.ok(f, `${id}: absent from the catalog, so its card cannot be drawn`)
+    assert.equal(f.witness, 'spec+code')
+    assert.equal(f.code.deployed, null, `${id}: deployment is unread, not false`)
+    assert.ok(f.cronSpec, `${id}: no cron card joined`)
+  }
+  assert.equal(r.functions.counts.deployUnknown, 5)
   for (const f of fns) {
     assert.equal(f.id, f.specPath.replace(/^specs\/functions\//, '').replace(/\.t27$/, ''))
     assert.ok(f.summary.ru && /[\u0400-\u04ff]/.test(f.summary.ru), `${f.id}: no Russian summary`)

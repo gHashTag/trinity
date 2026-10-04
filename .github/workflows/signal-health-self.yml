@@ -13,8 +13,8 @@ name: Signal health (self)
 # stays readable.
 
 on:
-  schedule:
-    - cron: '23 4 * * *'
+  # No schedule: block. The Queen (Inngest app t27-queen) dispatches this workflow
+  # on '23 4 * * *' UTC from the card specs/crons/trinity-signal-health-self.t27 in gHashTag/t27.
   workflow_dispatch:
 
 permissions:
@@ -46,7 +46,11 @@ jobs:
             exit 0
           fi
           git commit -q -m "Signal health: refresh the numbers"
-          git push -q
+          if ! git push -q; then
+            echo "- push rejected (branch protection on main); numbers not published" >> "$GITHUB_STEP_SUMMARY"
+            echo "::warning::push to the default branch was rejected by repository rules (GH013)"
+            exit 0
+          fi
           echo "- committed" >> "$GITHUB_STEP_SUMMARY"
 
   # Deliberately separate, and deliberately allowed to be red: this is the
