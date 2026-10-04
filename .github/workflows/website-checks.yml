@@ -208,6 +208,11 @@ jobs:
       # every pin has a negative control. Reads public/t27/manifest.json.
       - name: The BROWSER guide, signed out
         run: npm run check:queen-browser-guide
+      # The agent on BROWSER is told the address's spec only when it names one
+      # catalog entry -- path, module and card from the catalog, never the
+      # address's own words or the entry's free-text description. Pure, no browser.
+      - name: The BROWSER agent hears which spec the page shows
+        run: npm run check:queen-browser-page
       # The runner cabinet: the session token rides only in a header with
       # credentials omitted, a runner token is shown once and kept nowhere, and
       # the page has no field for a provider key. Pure, no browser.
