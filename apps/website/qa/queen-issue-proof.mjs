@@ -14,8 +14,8 @@ function fixture({source,seal:editSeal,vectors:editVectors}={}) {
   const seal={spec_path:production.SPEC,spec_hash:`sha256:${hash(spec)}`,...Object.fromEntries(['c','rust','verilog','zig'].map(b=>[`gen_hash_${b}`,`sha256:${'b'.repeat(64)}`]))};
   const vectors={spec_path:production.SPEC,spec_hash:seal.spec_hash,vectors:[{expected:false},{expected:true}]};
   editSeal?.(seal);editVectors?.(vectors);
-  const files=new Map([[production.SPEC,spec],[production.SEAL,JSON.stringify(seal)],[production.VECTORS,JSON.stringify(vectors)],[production.VERIFIER,'verifier fixture'],[production.WORKFLOW,'workflow fixture'],[production.MAKEFILE,'make fixture']]);
-  const policy={...production,VECTOR_COUNT:2,...Object.fromEntries(['SPEC','SEAL','VECTORS','VERIFIER','WORKFLOW','MAKEFILE'].map(k=>[`${k}_HASH`,hash(files.get(production[k]))]))};
+  const files=new Map([[production.SPEC,spec],[production.SEAL,JSON.stringify(seal)],[production.VECTORS,JSON.stringify(vectors)],[production.VERIFIER,'verifier fixture'],[production.WORKFLOW,'workflow fixture'],[production.GDS_WORKFLOW,'GDS workflow fixture'],[production.MAKEFILE,'make fixture']]);
+  const policy={...production,VECTOR_COUNT:2,...Object.fromEntries(['SPEC','SEAL','VECTORS','VERIFIER','WORKFLOW','GDS_WORKFLOW','MAKEFILE'].map(k=>[`${k}_HASH`,hash(files.get(production[k]))]))};
   const runs=[production.WORKFLOW,production.GDS_WORKFLOW].map((path,i)=>({id:i+1,head_sha:sha,event:'push',path,status:'completed',conclusion:'success',html_url:`https://github.com/${repo}/actions/runs/${i+1}`,repository:{full_name:repo}}));
   const reads=[];
   const fetcher=async(url,opts)=>{
@@ -40,7 +40,7 @@ async function check(label,mutate,expected='unknown',options){
   cases++;
 }
 await check('complete canonical evidence',null,'t27');
-for(const path of [production.SPEC,production.SEAL,production.VECTORS,production.VERIFIER,production.WORKFLOW,production.MAKEFILE]){
+for(const path of [production.SPEC,production.SEAL,production.VECTORS,production.VERIFIER,production.WORKFLOW,production.GDS_WORKFLOW,production.MAKEFILE]){
   await check(`tampered ${path}`,f=>f.files.set(path,f.files.get(path)+' changed'));
   await check(`missing ${path}`,f=>f.files.delete(path));
 }

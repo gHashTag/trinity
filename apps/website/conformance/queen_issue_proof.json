@@ -1,6 +1,6 @@
 {
   "spec_path": "specs/queen/issue_proof.t27",
-  "spec_hash": "76c068c85d3af34aaa6f4a571742f6ad00de727a37f0ffe419c83bbdb1b84c71",
+  "spec_hash": "aefcb400627c6006d3c9fafb5466ee8722d1d2ca768feba501bdd759eb8f4390",
   "vectors": [
     {
       "mask": 0,

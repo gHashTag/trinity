@@ -7,7 +7,7 @@ const text=readFileSync(join(SITE,source),'utf8');
 const analyze=await loadCompiler(readFileSync(join(SITE,'public/t27/t27_compiler.wasm')));
 const analysis=analyze(text),v=verdictOf(analysis),constants=constsOf(analysis);
 if(compilerErrors(analysis).length||!v.typecheckOk||!v.hirOk||v.discarded||analysis.ast?.name!=='queen_issue_proof')throw new Error('Issue proof spec rejected');
-const schema={REPO:'str',ISSUES:'arr-u32',SPEC:'str',SPEC_HASH:'str',SEAL:'str',SEAL_HASH:'str',VECTORS:'str',VECTORS_HASH:'str',VERIFIER:'str',VERIFIER_HASH:'str',MAKEFILE:'str',MAKEFILE_HASH:'str',WORKFLOW:'str',WORKFLOW_HASH:'str',GDS_WORKFLOW:'str',VECTOR_COUNT:'u32',CACHE_MS:'u32',ACCEPT:'arr-u8'};
+const schema={REPO:'str',ISSUES:'arr-u32',SPEC:'str',SPEC_HASH:'str',SEAL:'str',SEAL_HASH:'str',VECTORS:'str',VECTORS_HASH:'str',VERIFIER:'str',VERIFIER_HASH:'str',MAKEFILE:'str',MAKEFILE_HASH:'str',WORKFLOW:'str',WORKFLOW_HASH:'str',GDS_WORKFLOW:'str',GDS_WORKFLOW_HASH:'str',VECTOR_COUNT:'u32',CACHE_MS:'u32',ACCEPT:'arr-u8'};
 const problems=checkSchema(constants,schema,{},source);
 if(problems.length)throw new Error(problems.join('; '));
 const fields=Object.fromEntries(Object.entries(constants).map(([k,v])=>[k,v.value]));

@@ -1,4 +1,4 @@
-// GENERATED from specs/queen/issue_proof.t27; sha256 76c068c85d3af34aaa6f4a571742f6ad00de727a37f0ffe419c83bbdb1b84c71
+// GENERATED from specs/queen/issue_proof.t27; sha256 aefcb400627c6006d3c9fafb5466ee8722d1d2ca768feba501bdd759eb8f4390
 export const issueProofPolicy = {
   "REPO": "ghashtag/tt-trinity-corona",
   "ISSUES": [
@@ -18,6 +18,7 @@ export const issueProofPolicy = {
   "WORKFLOW": ".github/workflows/ci.yml",
   "WORKFLOW_HASH": "e1193c3add7fd5cf7af94b1447dbca89547c83da4b2e33e4c399ab21baace75c",
   "GDS_WORKFLOW": ".github/workflows/gds.yml",
+  "GDS_WORKFLOW_HASH": "7bc25a8d5cdd18bb189be1f532914e89d70203decd37e2091a368f4a116f1dbe",
   "VECTOR_COUNT": 1920,
   "CACHE_MS": 60000,
   "ACCEPT": [

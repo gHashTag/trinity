@@ -19,10 +19,13 @@ pub const MAKEFILE_HASH : str = "8e7ca522a8f3dfbff6a8e9ec47f329f36b8682a173d08ec
 pub const WORKFLOW : str = ".github/workflows/ci.yml";
 pub const WORKFLOW_HASH : str = "e1193c3add7fd5cf7af94b1447dbca89547c83da4b2e33e4c399ab21baace75c";
 pub const GDS_WORKFLOW : str = ".github/workflows/gds.yml";
+pub const GDS_WORKFLOW_HASH : str = "7bc25a8d5cdd18bb189be1f532914e89d70203decd37e2091a368f4a116f1dbe";
 pub const VECTOR_COUNT : u32 = 1920;
 pub const CACHE_MS : u32 = 60000;
 ; bit 0 = closed; bit 1 = exact source/issue; bit 2 = native seal/vectors;
 ; bit 3 = canonical CI and GDS succeeded at the current default-branch SHA.
+; Both CI and GDS workflow sources must match their hashes at that same SHA.
+; A missing or changed workflow cannot establish proof, even with a green run.
 ; Observed backlog counts may replace snapshot counts only for a complete page.
 ; The inspector links to the spec and both runs at the observed source revision.
 pub const ACCEPT : [16]u8 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1];

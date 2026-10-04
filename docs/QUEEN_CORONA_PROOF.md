@@ -9,7 +9,7 @@ The reader now implements `apps/website/specs/queen/issue_proof.t27` for the
 explicitly supported Corona issues #1 and #12. Other repositories stay unknown.
 
 Acceptance requires a closed issue, exact SHA-256 pins for the spec, native
-seal, vectors, replay tool, Makefile and CI workflow, plus successful canonical
+seal, vectors, replay tool, Makefile and both CI and GDS workflows, plus successful canonical
 push CI and GDS at the current default-branch SHA. PR/fork runs cannot substitute
 for that accepted source. The latest matching failed run overrides an older
 successful run. A failed refresh clears a cached positive result. Public reads
@@ -38,8 +38,10 @@ npm run build:ci
 The checked generator analyzes/types the `.t27` with the vendored compiler,
 executes its two tests (19 assertions), and verifies generated policy and all
 16 conformance vectors. The reader test uses real SHA-256 over isolated HTTP
-fixtures for acceptance, tampering, missing files, reopen, CI identity/failure,
-rate limits and cache invalidation. The `.trinity/seals` receipt is created by
+fixtures (37 cases) for acceptance, tampering, missing files, reopen, CI identity/failure,
+rate limits and cache invalidation. The GDS workflow must match its pinned source
+hash even when its run is green; changing or removing it fails closed.
+The `.trinity/seals` receipt is created by
 native t27c, not assembled by the reader.
 
 To update evidence, first review the upstream accepted source and CI, then edit

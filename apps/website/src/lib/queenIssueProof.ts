@@ -4,7 +4,7 @@ export type IssueProof = {commit:string;specUrl:string;ciUrl:string;gdsUrl:strin
 type Row = {repo:string;number:number;state:string;coverage:'unknown'|'t27';proof?:IssueProof};
 type Fetcher=typeof fetch;
 type Run = {id?:number;head_sha?:string;event?:string;path?:string;status?:string;conclusion?:string;html_url?:string;repository?:{full_name?:string}};
-export type IssueProofPolicy={REPO:string;ISSUES:readonly number[];SPEC:string;SEAL:string;VECTORS:string;VERIFIER:string;MAKEFILE:string;WORKFLOW:string;GDS_WORKFLOW:string;SPEC_HASH:string;SEAL_HASH:string;VECTORS_HASH:string;VERIFIER_HASH:string;MAKEFILE_HASH:string;WORKFLOW_HASH:string;VECTOR_COUNT:number;CACHE_MS:number;ACCEPT:readonly number[]};
+export type IssueProofPolicy={REPO:string;ISSUES:readonly number[];SPEC:string;SEAL:string;VECTORS:string;VERIFIER:string;MAKEFILE:string;WORKFLOW:string;GDS_WORKFLOW:string;SPEC_HASH:string;SEAL_HASH:string;VECTORS_HASH:string;VERIFIER_HASH:string;MAKEFILE_HASH:string;WORKFLOW_HASH:string;GDS_WORKFLOW_HASH:string;VECTOR_COUNT:number;CACHE_MS:number;ACCEPT:readonly number[]};
 const hex=async(bytes:ArrayBuffer)=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),x=>x.toString(16).padStart(2,'0')).join('');
 
 async function read(url:string,signal:AbortSignal,fetcher:Fetcher):Promise<Response>{
@@ -34,8 +34,8 @@ async function repositoryProof(repo:string,signal:AbortSignal,fetcher:Fetcher):P
   const head=await (await read(`${api}/commits/HEAD`,signal,fetcher)).json() as {sha?:string};
   const commit=head.sha;
   if(!commit||!/^[a-f0-9]{40}$/.test(commit))throw new Error('proof commit identity');
-  const paths=[policy.SPEC,policy.SEAL,policy.VECTORS,policy.VERIFIER,policy.WORKFLOW,policy.MAKEFILE];
-  const hashes=[policy.SPEC_HASH,policy.SEAL_HASH,policy.VECTORS_HASH,policy.VERIFIER_HASH,policy.WORKFLOW_HASH,policy.MAKEFILE_HASH];
+  const paths=[policy.SPEC,policy.SEAL,policy.VECTORS,policy.VERIFIER,policy.WORKFLOW,policy.MAKEFILE,policy.GDS_WORKFLOW];
+  const hashes=[policy.SPEC_HASH,policy.SEAL_HASH,policy.VECTORS_HASH,policy.VERIFIER_HASH,policy.WORKFLOW_HASH,policy.MAKEFILE_HASH,policy.GDS_WORKFLOW_HASH];
   const files=await Promise.all(paths.map(async(path,i)=>{
     const bytes=await (await read(`https://raw.githubusercontent.com/${repo}/${commit}/${path}`,signal,fetcher)).arrayBuffer();
     if(await hex(bytes)!==hashes[i])throw new Error(`proof hash mismatch: ${path}`);
