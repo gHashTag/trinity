@@ -279,13 +279,13 @@ const bugRows = (lang: Lang) =>
     ? [
         [`${k('ternary_model.t27')}: функция ${k('dot27')} сдвигает ${k('i32')} на величину до 52 бит, а её тест ожидал неверные значения`, 'корпус t27b: «shift amount out of range at line 40»', 'исправлено: issue #5972 закрыт, PR #5975 влит 4 октября'],
         [`${k('gen-c')} пишет обычный C (${k('x + 1')}, ${k('x >> n')}). Знаковое переполнение и сдвиг шире типа в C — неопределённое поведение, и тесты ${k('inc_max')} и ${k('shr_big')} меняют исход между ${k('clang -O0')} и ${k('-O2')}`, 'пробный модуль, три бэкенда рядом', 'в работе, ещё не PR'],
-        [`${k('t27c gen')} (Zig): знаковый ${k('%')} не компилируется, Zig требует ${k('@rem')} или ${k('@mod')}`, 'тот же пробный модуль', 'в работе, ещё не PR'],
+        [`${k('t27c gen')} (Zig): знаковый ${k('%')} не компилируется, Zig требует ${k('@rem')} или ${k('@mod')}`, 'тот же пробный модуль', 'отправлено, не влито: PR #5993'],
         [`разборщик t27c читает ${k('module a.b;')} и ${k('use std.testing;')} как ${k('a')} плюс отдельное выражение ${k('.b')} без номера строки; так разобраны 12 спек`, 'корпус t27b: отказ на «StmtExpr» в строке 0', 'в работе, ещё не PR'],
       ]
     : [
         [`${k('ternary_model.t27')}: ${k('dot27')} shifts an ${k('i32')} by up to 52 bits, and its test expected wrong values`, 't27b corpus: "shift amount out of range at line 40"', 'fixed: issue #5972 closed, PR #5975 merged on 4 October'],
         [`${k('gen-c')} writes plain C (${k('x + 1')}, ${k('x >> n')}). Signed overflow and an oversized shift are undefined behaviour in C, and the tests ${k('inc_max')} and ${k('shr_big')} change outcome between ${k('clang -O0')} and ${k('-O2')}`, 'a probe module, three backends side by side', 'in progress, not yet a PR'],
-        [`${k('t27c gen')} (Zig): a signed ${k('%')} does not compile; Zig wants ${k('@rem')} or ${k('@mod')}`, 'the same probe module', 'in progress, not yet a PR'],
+        [`${k('t27c gen')} (Zig): a signed ${k('%')} does not compile; Zig wants ${k('@rem')} or ${k('@mod')}`, 'the same probe module', 'submitted, not merged: PR #5993'],
         [`The t27c parser reads ${k('module a.b;')} and ${k('use std.testing;')} as ${k('a')} followed by a stray expression ${k('.b')}, with no line number; 12 specs are parsed this way`, 't27b corpus: a refusal on "StmtExpr" at line 0', 'in progress, not yet a PR'],
       ]
 
@@ -384,7 +384,7 @@ export const body: Block[] = [
   { kind: 'h', text: 't27b: a backend of our own, for part of the language' },
   {
     kind: 'p',
-    text: `t27b is a separate crate, ${k('cli/t27b')}, merged in #5979. It emits AArch64 machine code itself, with no LLVM, zig, clang or rustc. Its front end is t27c's own parser and type checker, used unchanged. After that the code is new: an IR of its own, an A64 encoder, and then either execution in memory (${k('t27b test')}, a JIT) or a Mach-O object file (${k('t27b build')}). Integer overflow is defined: it either traps or wraps (${k('--overflow trap|wrap')}), and a shift by an amount outside ${k('[0, width)')} traps. A reference interpreter of the same IR is the oracle. The JIT runs only on arm64 macOS.`,
+    text: `t27b is a separate crate, ${k('cli/t27b')}, merged in #5979 (a follow-up, #5989, also merged, registers it in the CI ledger of orphan crates). It emits AArch64 machine code itself, with no LLVM, zig, clang or rustc. Its front end is t27c's own parser and type checker, used unchanged. After that the code is new: an IR of its own, an A64 encoder, and then either execution in memory (${k('t27b test')}, a JIT) or a Mach-O object file (${k('t27b build')}). Integer overflow is defined: it either traps or wraps (${k('--overflow trap|wrap')}), and a shift by an amount outside ${k('[0, width)')} traps. A reference interpreter of the same IR is the oracle. The JIT runs only on arm64 macOS.`,
   },
   {
     kind: 'p',
@@ -433,7 +433,11 @@ export const body: Block[] = [
   },
   {
     kind: 'p',
-    text: `${k('t27b corpus')} ran over all ${e(CORPUS.files, 0)} specs in the repository in ${e(CORPUS.seconds)} s. t27b understands ${CORPUS.supported} of them. ${CORPUS.pass} pass, and ${CORPUS.noTests} of those have no tests at all; ${CORPUS.fail} fails, because of a real bug in the spec (below). It refused ${e(CORPUS.rejected, 0)} files, and the shared front end failed on ${CORPUS.frontEnd}. There were no mismatches between the JIT and the interpreter, no timeouts and no crashes. The commonest reasons for refusal, counted as the first refusal per file, are ${REJECTS.map(([c, n]) => `${k(c)} (${n})`).join(', ')}. Structs, strings, enums, invariant blocks and casts are tracked in #5977, which is open.`,
+    text: `${k('t27b corpus')} ran over all ${e(CORPUS.files, 0)} specs in the repository in ${e(CORPUS.seconds)} s. t27b understands ${CORPUS.supported} of them. ${CORPUS.pass} pass, and ${CORPUS.noTests} of those have no tests at all; ${CORPUS.fail} fails, because of a real bug in the spec (below). It refused ${e(CORPUS.rejected, 0)} files, and the shared front end failed on ${CORPUS.frontEnd}. There were no mismatches between the JIT and the interpreter, no timeouts and no crashes. The commonest reasons for refusal, counted as the first refusal per file, are ${REJECTS.map(([c, n]) => `${k(c)} (${n})`).join(', ')}. Structs, strings, enums, invariant blocks and casts are tracked in #5977, which is open. The first coverage PR, #5992, runs invariant blocks like tests and reports them separately; it is submitted, not merged.`,
+  },
+  {
+    kind: 'p',
+    text: `The plan from here, planned and in progress with no numbers yet, is to cover every spec that the reference path itself passes, in two lanes. The memory lane adds structs, arrays and slices, and strings, all on one model of an address plus an offset, with read-only data for constants. The scalar lane adds enums, ${k('f64')} and casts. The order of the work comes from a greedy ranking: next is whichever feature unlocks the most specs that are still refused.`,
   },
   {
     kind: 'p',
@@ -451,7 +455,7 @@ export const body: Block[] = [
   { kind: 'table', head: ['Bug', 'How it was found', 'State on 4 October 2026'], rows: bugRows('en') },
   {
     kind: 'p',
-    text: `The second bug matters most. The same spec means different things depending on the backend and the optimisation level. Zig traps on the overflow, and so does t27b. The C that t27c generates silently does whatever the optimiser decides. The fixes for the last three are on local branches and have not been submitted, so this post records them as in progress.`,
+    text: `The second bug matters most. The same spec means different things depending on the backend and the optimisation level. Zig traps on the overflow, and so does t27b. The C that t27c generates silently does whatever the optimiser decides. The Zig fix is PR #5993, submitted, not merged. The gen-c fix and the parser fix are on local branches and are not PRs, so this post records them as in progress.`,
   },
   { kind: 'h', text: 'What this does not show' },
   {
@@ -461,7 +465,8 @@ export const body: Block[] = [
       'One synthetic program: thousands of copies of one loop over a `u32`. Real Rust and C++ lose most of their time to generics, templates, macros and imports, and this program has almost none.',
       `t27b handles ${CORPUS.supported} of ${e(CORPUS.files, 0)} specs, and its JIT runs only on arm64 macOS. Its code is slower than ${k('clang -O2')}.`,
       `The self-build figures are single runs. The re-run that gave ${e(RERUN_5900)} s instead of ${e(BUILDS[1].wall)} s shows how far one run can move.`,
-      'Three of the four bugs t27b found are not fixed yet, and none of their fixes is a PR.',
+      'Three of the four bugs t27b found are not fixed yet. The Zig fix is #5993, submitted, not merged; the gen-c and parser fixes are not PRs.',
+      'Covering every spec the reference path passes is a plan, in progress in two lanes, with no numbers yet. Only invariant blocks (#5992, submitted, not merged) have a PR so far.',
     ],
   },
 ]
@@ -557,7 +562,7 @@ export const ruBody: Block[] = [
   { kind: 'h', text: 't27b: свой бэкенд для части языка' },
   {
     kind: 'p',
-    text: `t27b — отдельный крейт ${k('cli/t27b')}, влит в #5979. Он сам выдаёт машинный код AArch64, без LLVM, zig, clang и rustc. Фронтенд у него — разборщик и проверка типов самого t27c, подключённые как есть. Дальше код новый: своё промежуточное представление, кодировщик команд A64, а затем либо исполнение в памяти (${k('t27b test')}, JIT), либо объектный файл Mach-O (${k('t27b build')}). Переполнение целых определено: ловушка или перенос (${k('--overflow trap|wrap')}), а сдвиг на величину вне ${k('[0, ширина)')} — ловушка. Эталон для проверки — свой интерпретатор того же представления. JIT работает только на arm64 macOS.`,
+    text: `t27b — отдельный крейт ${k('cli/t27b')}, влит в #5979 (следом влит #5989, который вписал его в CI-реестр крейтов-сирот). Он сам выдаёт машинный код AArch64, без LLVM, zig, clang и rustc. Фронтенд у него — разборщик и проверка типов самого t27c, подключённые как есть. Дальше код новый: своё промежуточное представление, кодировщик команд A64, а затем либо исполнение в памяти (${k('t27b test')}, JIT), либо объектный файл Mach-O (${k('t27b build')}). Переполнение целых определено: ловушка или перенос (${k('--overflow trap|wrap')}), а сдвиг на величину вне ${k('[0, ширина)')} — ловушка. Эталон для проверки — свой интерпретатор того же представления. JIT работает только на arm64 macOS.`,
   },
   {
     kind: 'p',
@@ -606,7 +611,11 @@ export const ruBody: Block[] = [
   },
   {
     kind: 'p',
-    text: `${k('t27b corpus')} прошёл по всем ${r(CORPUS.files, 0)} спекам репозитория за ${r(CORPUS.seconds)} с. Понимает t27b ${CORPUS.supported} из них. ${CORPUS.pass} проходят, причём в ${CORPUS.noTests} из них тестов нет вовсе; ${CORPUS.fail} падает из-за настоящей ошибки в спеке (ниже). Отказ — ${r(CORPUS.rejected, 0)} файлов, общий фронтенд споткнулся на ${CORPUS.frontEnd}. Расхождений JIT с интерпретатором, зависаний и падений не было. Чаще всего t27b отказывает (считается первый отказ в файле) на ${REJECTS.map(([c, n]) => `${k(c)} (${n})`).join(', ')}. Структуры, строки, перечисления, блоки invariant и приведения — задача #5977, она открыта.`,
+    text: `${k('t27b corpus')} прошёл по всем ${r(CORPUS.files, 0)} спекам репозитория за ${r(CORPUS.seconds)} с. Понимает t27b ${CORPUS.supported} из них. ${CORPUS.pass} проходят, причём в ${CORPUS.noTests} из них тестов нет вовсе; ${CORPUS.fail} падает из-за настоящей ошибки в спеке (ниже). Отказ — ${r(CORPUS.rejected, 0)} файлов, общий фронтенд споткнулся на ${CORPUS.frontEnd}. Расхождений JIT с интерпретатором, зависаний и падений не было. Чаще всего t27b отказывает (считается первый отказ в файле) на ${REJECTS.map(([c, n]) => `${k(c)} (${n})`).join(', ')}. Структуры, строки, перечисления, блоки invariant и приведения — задача #5977, она открыта. Первый PR по покрытию, #5992, запускает блоки invariant как тесты и считает их отдельно; он отправлен, но не влит.`,
+  },
+  {
+    kind: 'p',
+    text: `План дальше — запланировано и в работе, цифр пока нет: покрыть каждую спеку, которую проходит сам эталонный путь, двумя дорожками. Дорожка памяти добавляет структуры, массивы и срезы, строки — всё на одной модели «адрес плюс смещение», с данными только для чтения под константы. Скалярная дорожка добавляет перечисления, ${k('f64')} и приведения. Порядок работы задаёт жадный рейтинг: следующей берётся та возможность, которая открывает больше всего ещё отвергнутых спек.`,
   },
   {
     kind: 'p',
@@ -624,7 +633,7 @@ export const ruBody: Block[] = [
   { kind: 'table', head: ['Ошибка', 'Как нашли', 'Состояние на 4 октября 2026'], rows: bugRows('ru') },
   {
     kind: 'p',
-    text: 'Главная из них — вторая. Одна и та же спека значит разное в зависимости от бэкенда и уровня оптимизации. Zig ловит переполнение, t27b тоже, а C, сгенерированный t27c, молча делает то, что решит оптимизатор. Исправления трёх последних лежат в локальных ветках и не отправлены, поэтому здесь они записаны как «в работе».',
+    text: 'Главная из них — вторая. Одна и та же спека значит разное в зависимости от бэкенда и уровня оптимизации. Zig ловит переполнение, t27b тоже, а C, сгенерированный t27c, молча делает то, что решит оптимизатор. Исправление для Zig — PR #5993, отправлен, не влит. Исправления gen-c и разборщика лежат в локальных ветках и PR не стали, поэтому здесь они записаны как «в работе».',
   },
   { kind: 'h', text: 'Чего это не показывает' },
   {
@@ -634,7 +643,8 @@ export const ruBody: Block[] = [
       'Одна синтетическая программа: тысячи копий одного цикла над `u32`. Настоящие Rust и C++ теряют больше всего времени на обобщениях, шаблонах, макросах и импортах, а здесь их почти нет.',
       `t27b понимает ${CORPUS.supported} из ${r(CORPUS.files, 0)} спек, а его JIT работает только на arm64 macOS. Его код медленнее, чем после ${k('clang -O2')}.`,
       `Цифры сборки t27c — по одному прогону. Повторный прогон, давший ${r(RERUN_5900)} с вместо ${r(BUILDS[1].wall)} с, показывает, насколько может сдвинуться один прогон.`,
-      'Три из четырёх ошибок, найденных t27b, ещё не исправлены, и ни одно из исправлений не стало PR.',
+      'Три из четырёх ошибок, найденных t27b, ещё не исправлены. Исправление для Zig — #5993, отправлен, не влит; исправления gen-c и разборщика PR не стали.',
+      'Покрыть каждую спеку, которую проходит эталонный путь, — это план, он в работе двумя дорожками, цифр пока нет. PR пока есть только для блоков invariant (#5992, отправлен, не влит).',
     ],
   },
 ]
