@@ -95,7 +95,7 @@ const RU = {
   finalLede: 'Напишите, с чего начинаете и что хотите построить. Честно скажу, подходит вам этот курс или нет.',
 }
 
-export default function Course() {
+export default function FpgaTraining() {
   const { lang } = useI18n()
   const c = lang === 'ru' ? RU : null
   usePageMeta("FPGA training course", "Eight modules from an empty toolchain to a neural network that trains itself on an FPGA — fully open-source, no Vivado, no vendor licence.")

@@ -196,13 +196,13 @@ const SIGNALS: [string, string][] = [
 const RELATED = [
   { href: '#/proof', title: 'The evidence', body: 'Every measured number on this site, how it was obtained, and what it is not.' },
   { href: '#/ip', title: 'License a core', body: 'The arithmetic that has already been through the open FPGA flow — GF-T, the GF16 matmul, the BPSK modem.' },
-  { href: '#/course', title: 'Learn the method', body: 'Eight modules from an empty toolchain to a network training on the chip itself.' },
+  { href: '#/fpga-training', title: 'Learn the method', body: 'Eight modules from an empty toolchain to a network training on the chip itself.' },
 ]
 
 const RELATED_RU = [
   { href: '#/proof', title: 'Доказательства', body: 'Все измеренные цифры этого сайта, как они получены и чем они не являются.' },
   { href: '#/ip', title: 'Лицензировать ядро', body: 'Арифметика, уже прошедшая открытый FPGA-поток: GF-T, матричный умножитель GF16, BPSK-модем.' },
-  { href: '#/course', title: 'Научиться самому', body: 'Восемь модулей от пустого тулчейна до сети, которая учится на самом кристалле.' },
+  { href: '#/fpga-training', title: 'Научиться самому', body: 'Восемь модулей от пустого тулчейна до сети, которая учится на самом кристалле.' },
 ]
 
 const PAGE_TOC = {
