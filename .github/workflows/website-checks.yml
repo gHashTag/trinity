@@ -373,6 +373,12 @@ jobs:
       - name: Queen WIDGETS gallery
         run: npm run check:widgets && npm run test:widgets-spec
 
+      # The widget tools: each specs/widgets/<id>.t27 writes its own page under
+      # public/widgets/<id>/ (og card, words, the spec copy), runs its own test
+      # blocks, and must declare that it sends the reader's data nowhere.
+      - name: Widget tool pages
+        run: npm run check:widget-pages && npm run test:widget-pages
+
       # The IGLA board on WARS: specs/queen/igla_board.t27 is generated in
       # gHashTag/igla-coder-gpu from committed artifacts. The gate recompiles it,
       # re-derives every McNemar p from its discordants, and proves the public

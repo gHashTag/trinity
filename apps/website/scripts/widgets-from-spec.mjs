@@ -31,6 +31,7 @@ const REQUIRED = {
   KIND: 'str', ID: 'str', NAME: 'str', SCHEMA_VERSION: 'u8', GENERATED: 'arr',
   ORIGIN: 'str', SITE_HANDLE: 'str', HASHTAGS: 'arr', EMBED_WIDTH: 'u16', PLAYER_EMBED_HEIGHT: 'u16', CAST_EMBED_HEIGHT: 'u16',
   TAB_PAGE: 'str', POSTS_NOTHING: 'bool',
+  TOOL_BRAND: 'str', TOOL_GALLERY_LINK: 'str', TOOL_SOURCE_LINK: 'str', TOOL_DATA_LABEL: 'str', TOOL_PRIVACY: 'str', TOOL_PRIVACY_FILES: 'str', TOOL_NOSCRIPT: 'str',
   CATEGORY_COUNT: 'u8', CATEGORY_IDS: 'arr', CATEGORY_NAMES: 'arr', CATEGORY_LINES: 'arr', KINDS: 'arr',
   WIDGET_COUNT: 'u8', WIDGET_IDS: 'arr', WIDGET_KINDS: 'arr', WIDGET_CATEGORIES: 'arr', WIDGET_PAGES: 'arr',
   WIDGET_TITLES: 'arr', WIDGET_LINES: 'arr', WIDGET_HOOKS: 'arr',
@@ -71,16 +72,23 @@ export function semanticProblems(f, file = WIDGETS_SPEC) {
   if (f.ID !== 'widgets/gallery') p.push(`${file}: ID must be "widgets/gallery"`)
   if (f.SCHEMA_VERSION !== 1) p.push(`${file}: SCHEMA_VERSION must be 1`)
   if (!same(f.GENERATED, [TS_OUT, PUBLIC_SPEC_OUT])) p.push(`${file}: GENERATED must be ${JSON.stringify([TS_OUT, PUBLIC_SPEC_OUT])}`)
-  if (!same(f.KINDS, ['cast', 'player', 'tab'])) p.push(`${file}: KINDS must be ["cast","player","tab"]`)
+  if (!same(f.KINDS, ['cast', 'player', 'tab', 'tool'])) p.push(`${file}: KINDS must be ["cast","player","tab","tool"]`)
   if (f.ORIGIN !== 'https://t27.ai/') p.push(`${file}: ORIGIN must be https://t27.ai/`)
   if (f.POSTS_NOTHING !== true) p.push(`${file}: POSTS_NOTHING must be true; the gallery never posts for anyone`)
   for (const [countName, arrays] of Object.entries(PARALLEL)) {
     for (const name of arrays) if (f[name].length !== f[countName]) p.push(`${file}: ${name}.length ${f[name].length} != ${countName} ${f[countName]}`)
   }
   for (const ids of ['CATEGORY_IDS', 'WIDGET_IDS', 'IDEA_IDS']) if (!uniq(f[ids])) p.push(`${file}: ${ids} must be unique`)
-  for (const name of ['CATEGORY_NAMES', 'CATEGORY_LINES', 'WIDGET_HOOKS', 'IDEA_TITLES', 'IDEA_LINES', 'IDEA_SOURCES']) {
+  for (const name of ['CATEGORY_NAMES', 'CATEGORY_LINES', 'IDEA_TITLES', 'IDEA_LINES', 'IDEA_SOURCES']) {
     f[name].forEach((s, i) => { if (!s.trim()) p.push(`${file}: ${name}[${i}] is empty`) })
   }
+  // A tool says its hook in its own spec (HOOK, published as t27:hook on its page); the gallery
+  // keeps it empty so the sentence has one home. Every other kind says its hook here.
+  f.WIDGET_HOOKS.forEach((s, i) => {
+    const tool = f.WIDGET_KINDS[i] === 'tool'
+    if (tool && s.trim()) p.push(`${file}: WIDGET_HOOKS[${i}] must be empty for tool ${f.WIDGET_IDS[i]}; its HOOK lives in specs/widgets/${f.WIDGET_IDS[i]}.t27`)
+    if (!tool && !s.trim()) p.push(`${file}: WIDGET_HOOKS[${i}] is empty`)
+  })
   for (let i = 0; i < f.WIDGET_COUNT; i++) {
     const id = f.WIDGET_IDS[i]
     const kind = f.WIDGET_KINDS[i]
@@ -88,6 +96,7 @@ export function semanticProblems(f, file = WIDGETS_SPEC) {
     if (!f.CATEGORY_IDS.includes(f.WIDGET_CATEGORIES[i])) p.push(`${file}: widget ${id} has unknown category ${f.WIDGET_CATEGORIES[i]}`)
     const page = f.WIDGET_PAGES[i]
     if (kind === 'cast' && page !== `term/${id}/`) p.push(`${file}: cast ${id} must live at term/${id}/, not ${page}`)
+    if (kind === 'tool' && page !== `widgets/${id}/`) p.push(`${file}: tool ${id} must live at widgets/${id}/, not ${page}`)
     if (kind === 'player' && !/^play\/[a-z0-9-]+\/([a-z0-9-]+\/)?$/.test(page)) p.push(`${file}: player ${id} page ${page} is not play/<play>/[<backend>/]`)
     // A page carries its own words; only a tab, which has no page of its own, says them here.
     if (kind === 'tab') {
@@ -150,6 +159,16 @@ export function widgetsOf(f, root = SITE, file = WIDGETS_SPEC) {
         commands: cast.commands ?? [], recorded: cast.recorded ?? null,
         iframe: `<iframe src="${escapeAttr(url)}" width="${f.EMBED_WIDTH}" height="${f.CAST_EMBED_HEIGHT}" loading="lazy" style="border:0" title="${escapeAttr(title)}"></iframe>`,
         markdown: `[![${title}](${gif ?? image})](${url})`,
+      })
+    } else if (kind === 'tool') {
+      // A tool's page is written from its own spec; the embed is the same page without its frame.
+      const hook = meta['t27:hook'] ?? ''
+      if (!hook) problems.push(`${file}: tool ${id}: public/${page}index.html lacks t27:hook`)
+      widgets.push({
+        ...base, hook, title, line, url, view: null, image, gif: null, preview: `${framed(page)}?embed=1`,
+        commands: [], recorded: null,
+        iframe: `<iframe src="${escapeAttr(`${url}?embed=1`)}" width="${f.EMBED_WIDTH}" height="${f.CAST_EMBED_HEIGHT}" loading="lazy" style="border:0" title="${escapeAttr(title)}"></iframe>`,
+        markdown: `[![${title}](${image})](${url})`,
       })
     } else {
       const player = meta['twitter:player'] ?? ''

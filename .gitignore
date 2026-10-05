@@ -238,6 +238,8 @@ build_zig13_old.zig
 !test/**/*.sh
 *.vcd
 *.tvc
+# A widget's demo data ships with its page: the page's ?v= stamp hashes it.
+!apps/website/public/widgets/**/*.vcd
 
 # Core dumps
 core
