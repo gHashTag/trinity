@@ -1,0 +1,102 @@
+{
+   "creator": "Yosys 0.67+post (git sha1 b8e7da6f40ae8f552c116bf6c359b07c6533e159, Release, AppleClang clang++ 21.0.0.21000099)",
+   "invocation": "stat -json ",
+   "modules": {
+      "$paramod\\leaf\\W=s32'00000000000000000000000000000100": {
+         "num_wires":         7,
+         "num_wire_bits":     25,
+         "num_pub_wires":     4,
+         "num_pub_wire_bits": 13,
+         "num_ports":         4,
+         "num_port_bits":     13,
+         "num_memories":      0,
+         "num_memory_bits":   0,
+         "num_processes":     0,
+         "num_cells":         9,
+         "num_submodules":       0,
+         "num_cells_by_type": {
+            "CARRY4": 1,
+            "FDRE": 4,
+            "LUT2": 4
+         }
+      },
+      "$paramod\\leaf\\W=s32'00000000000000000000000000001000": {
+         "num_wires":         7,
+         "num_wire_bits":     49,
+         "num_pub_wires":     4,
+         "num_pub_wire_bits": 25,
+         "num_ports":         4,
+         "num_port_bits":     25,
+         "num_memories":      0,
+         "num_memory_bits":   0,
+         "num_processes":     0,
+         "num_cells":         18,
+         "num_submodules":       0,
+         "num_cells_by_type": {
+            "CARRY4": 2,
+            "FDRE": 8,
+            "LUT2": 8
+         }
+      },
+      "\\mid": {
+         "num_wires":         5,
+         "num_wire_bits":     17,
+         "num_pub_wires":     5,
+         "num_pub_wire_bits": 17,
+         "num_ports":         4,
+         "num_port_bits":     13,
+         "num_memories":      0,
+         "num_memory_bits":   0,
+         "num_processes":     0,
+         "num_cells":         0,
+         "num_submodules":       2,
+         "num_cells_by_type": {
+            "$paramod\\leaf\\W=s32'00000000000000000000000000000100": 2
+         }
+      },
+      "\\pmtop": {
+         "num_wires":         13,
+         "num_wire_bits":     67,
+         "num_pub_wires":     6,
+         "num_pub_wire_bits": 33,
+         "num_ports":         6,
+         "num_port_bits":     33,
+         "num_memories":      0,
+         "num_memory_bits":   0,
+         "num_processes":     0,
+         "num_cells":         34,
+         "num_submodules":       3,
+         "num_cells_by_type": {
+            "BUFG": 1,
+            "IBUF": 17,
+            "OBUF": 16,
+            "$paramod\\leaf\\W=s32'00000000000000000000000000001000": 1,
+            "mid": 2
+         }
+      }
+   },
+      "design": {
+         "num_wires":         58,
+         "num_wire_bits":     250,
+         "num_pub_wires":     36,
+         "num_pub_wire_bits": 144,
+         "num_ports":         34,
+         "num_port_bits":     136,
+         "num_memories":      0,
+         "num_memory_bits":   0,
+         "num_processes":     0,
+         "num_cells":         88,
+         "num_submodules":       3,
+         "num_cells_by_type": {
+            "BUFG": 1,
+            "CARRY4": 6,
+            "FDRE": 24,
+            "IBUF": 17,
+            "LUT2": 24,
+            "OBUF": 16,
+            "$paramod\\leaf\\W=s32'00000000000000000000000000001000": 1,
+            "mid": 2
+         }
+      }
+}
+
