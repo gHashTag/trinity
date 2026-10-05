@@ -10,15 +10,18 @@
 ; ASCII only (L3), English only (LANG-EN). The Russian words live in the bundle.
 
 ; WHAT THE COURSE IS: 27 lessons in 9 modules of 3, for a reader who has never written for a
-; chip. Each lesson is a short text, one working widget from the gallery, and one thing to try
+; chip, then a lab module of 3 lessons on our own research. Each lesson is a short text, one working widget from the gallery, and one thing to try
 ; in it. The widgets are not drawn for the course: they are the same tools a hardware engineer
 ; uses on t27.ai, built from real runs of t27c, yosys, nextpnr and openFPGALoader on our bench.
 
 ; WHAT THE COURSE DOES NOT DO: it says no number of its own. A number a lesson needs is on the
 ; widget, which names where it came from. The one exception is the t27b figure in lesson 12,
-; quoted with its denominator and the run that produced it.
+; quoted with its denominator and the run that produced it. The lab lessons quote only the
+; rule their widget tests (990 thousandths) and counts that are arithmetic (3 x 3 x 3 = 27).
 
-; WHY 27: 3 cubed lessons, the size of a TRI-27 word. Changing the shape changes the tests.
+; WHY 27: the core is 3 cubed lessons, the size of a TRI-27 word. The lab is one more module
+; of 3 that reports our own results; it is counted apart so the core stays 27. Changing the
+; shape changes the tests.
 ; phi^2 + 1/phi^2 = 3 | TRINITY
 
 module course;
@@ -44,10 +47,10 @@ pub const PLAYER_FRAME_HEIGHT : u16 = 480;
 
 ; --- Words on the page ---------------------------------------------------------------------
 pub const TITLE : str = "From zero to a chip: FPGA programming with t27";
-pub const DESCRIPTION : str = "27 lessons, one working widget each: what an FPGA is, how numbers become bits, your own t27 spec, how t27c compiles it, and how it becomes a bitstream on a real board.";
+pub const DESCRIPTION : str = "27 lessons, one working widget each: what an FPGA is, how numbers become bits, your own t27 spec, how t27c compiles it, and how it becomes a bitstream on a real board. Then a lab of 3 on our own research.";
 pub const SAY_KICKER : str = "Course";
 pub const SAY_LEAD : str = "No hardware background needed. Every lesson opens a real tool built from real runs on our bench: read a little, then try it yourself.";
-pub const SAY_SHAPE : str = "9 modules, 3 lessons each: 27 cells, one per lesson. A filled cell is a lesson you marked done.";
+pub const SAY_SHAPE : str = "9 modules of 3 lessons, 27 cells, then a lab of 3. A filled cell is a lesson you marked done.";
 pub const SAY_START : str = "Start lesson 1";
 pub const SAY_CONTINUE : str = "Continue";
 pub const SAY_MODULE : str = "Module {0}";
@@ -73,9 +76,10 @@ pub const SAY_NOT_FOUND : str = "No lesson has this address.";
 
 ; --- Modules -------------------------------------------------------------------------------
 pub const LESSONS_PER_MODULE : u8 = 3;
-pub const MODULE_COUNT : u8 = 9;
-pub const MODULE_IDS : [9]str = ["chip", "numbers", "program", "compiler", "hardware", "synthesis", "timing", "bitstream", "board"];
-pub const MODULE_TITLES : [9]str = [
+; The core course is the first 9 modules, 3 cubed lessons; the lab is the 10th module.
+pub const MODULE_COUNT : u8 = 10;
+pub const MODULE_IDS : [10]str = ["chip", "numbers", "program", "compiler", "hardware", "synthesis", "timing", "bitstream", "board", "lab"];
+pub const MODULE_TITLES : [10]str = [
     "The chip",
     "Numbers in hardware",
     "Your t27 program",
@@ -84,9 +88,10 @@ pub const MODULE_TITLES : [9]str = [
     "Reading synthesis",
     "Place, route, timing",
     "The bitstream",
-    "On the board"
+    "On the board",
+    "Lab: our own research"
 ];
-pub const MODULE_LINES : [9]str = [
+pub const MODULE_LINES : [10]str = [
     "What an FPGA is, which chip we use, and how its pins meet the board.",
     "Bits, trits and number formats, and what arithmetic costs in logic.",
     "Write a spec, test it, and see why compiling is not the same as being right.",
@@ -95,7 +100,8 @@ pub const MODULE_LINES : [9]str = [
     "What yosys reports about your design, and which warnings matter.",
     "Where the cells land on the die, and whether the clock is met.",
     "How a routed design becomes the bits the chip loads, with no Vivado.",
-    "Ask the chip who it is, load the bits, and check them."
+    "Ask the chip who it is, load the bits, and check them.",
+    "A number format of our own, an honest scoreboard, and a model's tables multiplied on the board."
 ];
 
 ; --- Lessons -------------------------------------------------------------------------------
@@ -103,8 +109,8 @@ pub const MODULE_LINES : [9]str = [
 ; lessons open the same one. LESSON_ALSO lists more gallery ids, comma separated, shown as
 ; chips that swap the widget. LESSON_SPECS is a spec under public/t27/files/ to open in the
 ; player, or "" for none.
-pub const LESSON_COUNT : u8 = 27;
-pub const LESSON_IDS : [27]str = [
+pub const LESSON_COUNT : u8 = 30;
+pub const LESSON_IDS : [30]str = [
     "fpga-is-a-grid", "which-chip", "pins-and-package",
     "bits-and-trits", "what-arithmetic-costs", "how-much-fits",
     "hello-t27", "tests-are-the-spec", "compiles-is-not-correct",
@@ -113,9 +119,10 @@ pub const LESSON_IDS : [27]str = [
     "synthesis-warnings", "state-machines", "where-the-luts-go",
     "placement", "logic-depth", "timing-slack",
     "fasm-to-frames", "a-build-receipt", "read-a-bitstream",
-    "jtag-asks-the-chip", "same-bits-on-the-board", "capstone"
+    "jtag-asks-the-chip", "same-bits-on-the-board", "capstone",
+    "t27-number-format", "an-honest-scoreboard", "a-model-on-the-board"
 ];
-pub const LESSON_MODULES : [27]str = [
+pub const LESSON_MODULES : [30]str = [
     "chip", "chip", "chip",
     "numbers", "numbers", "numbers",
     "program", "program", "program",
@@ -124,9 +131,10 @@ pub const LESSON_MODULES : [27]str = [
     "synthesis", "synthesis", "synthesis",
     "timing", "timing", "timing",
     "bitstream", "bitstream", "bitstream",
-    "board", "board", "board"
+    "board", "board", "board",
+    "lab", "lab", "lab"
 ];
-pub const LESSON_WIDGETS : [27]str = [
+pub const LESSON_WIDGETS : [30]str = [
     "fasm-skyline", "idcode", "pin-map",
     "gf16-calc", "cost-curves", "fits-on",
     "play-hello-world", "test-waves", "t27-tri-misread",
@@ -135,9 +143,10 @@ pub const LESSON_WIDGETS : [27]str = [
     "synth-smells", "fsm-sketch", "lut-treemap",
     "placement-map", "lut-depth", "slack-waterfall",
     "tri-x7-fasm", "build-receipt", "bit-autopsy",
-    "tri-fpga-jtag", "x7-board", "gatle"
+    "tri-fpga-jtag", "x7-board", "gatle",
+    "t27-cell", "t27-vs-nvfp4", "uart-bucket"
 ];
-pub const LESSON_ALSO : [27]str = [
+pub const LESSON_ALSO : [30]str = [
     "placement-map", "tri-fpga-jtag", "tri-fpga-pins",
     "", "resource-bars", "",
     "play-js", "vcd-wrapped", "tri-x7-mutate,test-touch",
@@ -146,9 +155,10 @@ pub const LESSON_ALSO : [27]str = [
     "", "", "",
     "resource-bars", "", "tri-fpga-rgmii",
     "", "perf2-loop,devkit-flow", "perf2-knockouts",
-    "idcode", "bit-diff", "race-the-bee,wars,tri-game-tick,tri-game-vault"
+    "idcode", "bit-diff", "race-the-bee,wars,tri-game-tick,tri-game-vault",
+    "gf16-calc", "t27-cell", "x7-board"
 ];
-pub const LESSON_SPECS : [27]str = [
+pub const LESSON_SPECS : [30]str = [
     "", "", "",
     "specs/tutorial/01_values_and_types.t27", "specs/tutorial/05_widths_and_casts.t27", "",
     "specs/tutorial/02_functions.t27", "specs/tutorial/07_tests_invariants_benches.t27", "specs/tutorial/03_operators.t27",
@@ -157,9 +167,10 @@ pub const LESSON_SPECS : [27]str = [
     "", "", "",
     "", "", "",
     "", "", "",
+    "", "", "",
     "", "", ""
 ];
-pub const LESSON_TITLES : [27]str = [
+pub const LESSON_TITLES : [30]str = [
     "An FPGA is a grid you configure",
     "Which chip is this?",
     "Pins, balls and the package",
@@ -186,9 +197,12 @@ pub const LESSON_TITLES : [27]str = [
     "Read a bitstream",
     "JTAG asks the chip",
     "The same bits, on the board",
-    "Capstone: out-guess yosys"
+    "Capstone: out-guess yosys",
+    "T27: a number format of our own",
+    "An honest scoreboard",
+    "A model's tables on the board"
 ];
-pub const LESSON_GOALS : [27]str = [
+pub const LESSON_GOALS : [30]str = [
     "What an FPGA is made of, and why a design uses only part of the chip.",
     "How a chip names itself in 32 bits, and how to read those bits.",
     "How the signals of your design reach the outside world.",
@@ -215,9 +229,12 @@ pub const LESSON_GOALS : [27]str = [
     "What is inside a .bit file, and which chip it was built for.",
     "How a cable finds the chip on a board and reads its IDCODE.",
     "How to show that a bitstream is byte-identical and that it runs.",
-    "Put it together: guess what a real t27 module costs in LUTs."
+    "Put it together: guess what a real t27 module costs in LUTs.",
+    "How three trits give more levels than a 4-bit float, and what that costs in plain bits.",
+    "How T27 was compared with NVFP4, MX+ and MXFP4 on a real language model, and what the result does not show.",
+    "How the host feeds the board over a serial bridge, why the window size matters, and what the board computed."
 ];
-pub const LESSON_TEXTS : [27]str = [
+pub const LESSON_TEXTS : [30]str = [
     "A CPU runs instructions one after another. An FPGA has no program at all: it is a grid of small blocks -- lookup tables (LUTs), flip-flops, carry chains, block RAM and DSP multipliers -- joined by wires you can switch. Configuring the grid builds a circuit. Our bench chip is an AMD Artix-7 XC7A200T. The skyline draws one routed design on that die: every tile it configures stands up as a column, and most of the chip stays dark.",
     "Before you load anything, you ask the board which chip it has. Over JTAG every chip answers with a 32-bit IDCODE: a version, a part number, the manufacturer and a fixed 1 in bit 0. A bitstream built for the wrong part is refused by the chip, so this is the check that saves you an afternoon. The decoder splits the bits into those four fields and looks the part up in openFPGALoader's own table.",
     "A chip sits in a package: the XC7A200T on our board has 676 solder balls under it. Some carry power or configuration and only some are user IO, grouped into banks with their own voltage. A constraints file (XDC) says which ball each signal of your design uses. Put a signal on a ball that is not user IO and the build fails, or worse, the board does not do what you think.",
@@ -244,9 +261,12 @@ pub const LESSON_TEXTS : [27]str = [
     "A .bit file is a header followed by packets: commands to the chip's configuration logic and the frames themselves. One of those commands writes the IDCODE of the chip the file was built for. Drop a .bit into the autopsy and see which chip it asks for. Five bitstreams committed to t27 turn out to target a different part than our bench.",
     "JTAG is the cable protocol for talking to the chip on a board. Before programming, the tool shifts out the IDCODE of every device on the chain. This recording decodes the codes our bench answers with, and shows what an even code means: no IDCODE at all. Compare it with the decoder from lesson 2.",
     "The claim most FPGA people doubt: a bitstream built by an open flow from t27 specs, byte-identical to the reference toolchain, and working on a real board. This recording compares the files, loads the bits into the chip's SRAM and counts the receipts the board sends back. Drop two .bit files into bit-diff to check the byte-identical part yourself.",
-    "Everything from this course in one game. Each day Gatle shows one real t27 module and the Verilog your browser compiles from it; you have six guesses at how many LUTs yosys spent on it. Use what you know: widths, multipliers, hierarchy, state. Then look at the other ways people and agents compete on t27."
+    "Everything from this course in one game. Each day Gatle shows one real t27 module and the Verilog your browser compiles from it; you have six guesses at how many LUTs yosys spent on it. Use what you know: widths, multipliers, hierarchy, state. Then look at the other ways people and agents compete on t27.",
+    "A 4-bit float such as E2M1, the element of NVFP4 and MXFP4, has 16 codes, and two of them are zero. Three balanced trits have 3 x 3 x 3 = 27 states. T27 is our format that uses all of them: 27 levels placed where a trained network's weights actually fall, and one shared scale per block of weights. On ternary storage that is more levels in the same room. Packed into plain binary bits it is larger, not smaller, and the widget shows both counts.",
+    "A format is judged by what it does to a model. We stored the weights of one small language model in each format and measured perplexity on text it had not seen: lower is better. The rule was written before the run: T27 beats a rival when its perplexity is below 990 thousandths of the rival's. It beat NVFP4, MX+ and MXFP4, and it lost to E2M2, a wider format. The panel under the bars lists what this test cannot claim. The one claim that holds: T27 beats NVFP4 on a ternary substrate.",
+    "The board does the arithmetic; the host sends it work over a USB serial bridge. The board's answers wait in the bridge chip's small receive buffer, and when the host keeps more requests in flight than their answers fit, answers are lost. A smaller window removed the loss and did not slow the run. Over that link the board multiplied every ternary weight matrix of a small language model, and every row matched the reference bit for bit. The text itself is generated on the Mac, which does everything except the ternary dot products: the board is the calculator, not the whole model."
 ];
-pub const LESSON_TASKS : [27]str = [
+pub const LESSON_TASKS : [30]str = [
     "Rotate the die and tap the tallest column: which kind of tile sets the most features?",
     "Click the bench preset, then flip one bit of the part number and see which device it would be.",
     "Search for a ball name like E3, then colour by pin type and find a ball that is not user IO.",
@@ -273,14 +293,18 @@ pub const LESSON_TASKS : [27]str = [
     "Open the blink_j26 sample and compare the part in its header with the IDCODE it writes.",
     "Find which IDCODE belongs to an XC7A200T and which to an XC7A100T.",
     "Wait for the receipts count at the end, then try bit-diff under Also try.",
-    "Play today's puzzle. Then read the module's Verilog and say why it cost what it did."
+    "Play today's puzzle. Then read the module's Verilog and say why it cost what it did.",
+    "Move the weight across the range and find where E2M1 rounds worse than T27; then read the storage table in bits.",
+    "Find the NVFP4 ratio and the threshold line; then name the format T27 loses to and what it pays for that.",
+    "Drag the window until the bucket overflows and note the largest window that fits; then compare the two real runs."
 ];
 
 ; --- Claims --------------------------------------------------------------------------------
-test the_course_is_three_cubed {
+test the_core_is_three_cubed {
     assert LESSONS_PER_MODULE == 3;
-    assert MODULE_COUNT == 9;
-    assert LESSON_COUNT == 27;
+    assert MODULE_COUNT == 10;
+    assert LESSON_COUNT == 30;
+    assert LESSON_COUNT - LESSONS_PER_MODULE == 27;
     assert MODULE_COUNT * LESSONS_PER_MODULE == LESSON_COUNT;
 }
 
@@ -290,6 +314,13 @@ test it_starts_at_the_chip_and_ends_on_the_board {
     assert LESSON_MODULES[0] == "chip";
     assert LESSON_MODULES[26] == "board";
     assert LESSON_WIDGETS[26] == "gatle";
+}
+
+test the_lab_comes_after_the_core {
+    assert MODULE_IDS[9] == "lab";
+    assert LESSON_MODULES[27] == "lab";
+    assert LESSON_MODULES[29] == "lab";
+    assert LESSON_WIDGETS[27] == "t27-cell";
 }
 
 test the_compiler_module_opens_the_compiler {

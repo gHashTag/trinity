@@ -20,8 +20,8 @@ test('the committed spec builds clean and the derived files are current', async 
   assert.deepEqual(out.problems, [])
   assert.equal(readFileSync(join(SITE, TS_OUT), 'utf8'), out.ts)
   assert.equal(readFileSync(join(SITE, PUBLIC_SPEC_OUT), 'utf8'), inputs.specText)
-  assert.equal(out.course.lessons.length, 27)
-  assert.equal(out.course.modules.length, 9)
+  assert.equal(out.course.lessons.length, 30)
+  assert.equal(out.course.modules.length, 10)
   assert.equal(out.course.sendsNothing, true)
 })
 
