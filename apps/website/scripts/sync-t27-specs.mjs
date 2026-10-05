@@ -421,7 +421,7 @@ else console.log(`  warning: no tutorial specs found -- page will open on the fi
 entries.length = 0
 entries.push(...tutorial, ...rest)
 
-const { totalLines, categories, tags, health, notSource, backendFailures, totals } = corpusAggregates(entries)
+const { totalLines, categories, tags, health, notSource, fixtures, backendFailures, totals } = corpusAggregates(entries)
 
 // ---------------------------------------------------------------------------
 // Which vendored specs could someone else actually reproduce?
@@ -510,6 +510,7 @@ writeFileSync(join(OUT_DIR, 'manifest.json'), JSON.stringify({
   tags,
   health,
   notSource,
+  fixtures,
   backendFailures,
   featured: FEATURED,
   totals,
@@ -536,6 +537,7 @@ console.log(`  sources: ${sources.map((s) => s.repo).join(', ')}  (${duplicates}
 // fixtures being counted as broken specs -- a number that could not go down.
 console.log(`  health: ${health.ok} ok · ${health.warn} warn · ${health.fail} fail   (of ${health.ok + health.warn + health.fail} modules)`)
 console.log(`  not a module: ${notSource.total}  ${Object.entries(notSource.byKind).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${k} ${n}`).join(' · ')}`)
+console.log(`  compiler fixtures: ${fixtures.total}  (${fixtures.expectedFail} fail, as a negative fixture should; not counted as broken)`)
 if (Object.keys(backendFailures).length) console.log(`  backend failures: ${JSON.stringify(backendFailures)}`)
 console.log(`  t27 @ ${shortSha}${dirty ? ' (DIRTY -- snapshot includes uncommitted spec/compiler changes)' : ''}`)
 console.log(`  wasm ${(wasmBytes / 1024).toFixed(0)} KB -> public/t27/t27_compiler.wasm  (${wasmFrom})`)

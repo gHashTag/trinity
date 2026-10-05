@@ -271,7 +271,15 @@ export function corpusEntry(rel, repo, text, analyze) {
     // that threw before it could, must not move a file out of the spec count:
     // a file leaves only when the classifier positively says it is not a
     // module, never on missing information.
-    sourceKind: a?.sourceKind ?? 'source',
+    //
+    // One override, by path, ahead of the classifier: everything under t27's
+    // `bootstrap/tests/` is an input to the compiler's own test suite. Many of
+    // those files are written to be rejected -- damage classes, the ADR-008
+    // generic negatives, EOF terminators, a closure the compiler refuses on
+    // purpose -- and a negative fixture that compiled would be the bug. 24 of
+    // them read as Broken on 2026-10-05 while each was doing its job. The
+    // classifier reads a file's opening and cannot know this; the path can.
+    sourceKind: isFixturePath(rel, repo) ? 'fixture' : a?.sourceKind ?? 'source',
     repo,
     kinds,
   }
@@ -282,6 +290,21 @@ export function corpusEntry(rel, repo, text, analyze) {
 
 /** Whether an entry is an ordinary compilation unit -- see `sourceKind` above. */
 export const isSourceEntry = (e) => (e.sourceKind ?? 'source') === 'source'
+
+/**
+ * Whether a corpus path is a compiler test input rather than a spec: t27's
+ * `bootstrap/tests/` tree, where `t27c`'s own suite keeps its positive and
+ * negative fixtures. Decided from the path and the repo together, so another
+ * repository's `bootstrap/tests/` is not swept in by name alone.
+ */
+export const isFixturePath = (rel, repo) => repo === 't27' && rel.startsWith('bootstrap/tests/')
+
+/**
+ * Whether an entry is a compiler fixture. Read from the path, not from the
+ * stored `sourceKind`, so a catalog written before the override existed is
+ * classified the same way the next sync will classify it.
+ */
+export const isFixtureEntry = (e) => isFixturePath(e.path, e.repo) || e.sourceKind === 'fixture'
 
 /** The corpus-wide counts the manifest carries, from the entries in their manifest order. */
 export function corpusAggregates(entries) {
@@ -304,15 +327,26 @@ export function corpusAggregates(entries) {
   // to it. Only the denominator changes, and the files that leave are counted
   // in `notSource` rather than dropped -- 31 of them compile cleanly, which is
   // a fact about them worth keeping and not a reason to call them specs.
+  //
+  // Compiler fixtures leave the health states the same way, as their own kind
+  // (`fixture`) inside `notSource`, and `fixtures` restates them with the one
+  // number a reader wants: how many fail, which for a negative fixture is the
+  // expected outcome and not a defect. A fixture is never counted as Broken.
+  const kindOf = (e) => (isFixtureEntry(e) ? 'fixture' : e.sourceKind ?? 'source')
   const health = { ok: 0, warn: 0, fail: 0 }
-  for (const e of entries) if (isSourceEntry(e)) health[e.health]++
+  for (const e of entries) if (kindOf(e) === 'source') health[e.health]++
   const notSource = { total: 0, byKind: {}, byHealth: { ok: 0, warn: 0, fail: 0 } }
+  const fixtures = { total: 0, expectedFail: 0, byHealth: { ok: 0, warn: 0, fail: 0 } }
   for (const e of entries) {
-    if (isSourceEntry(e)) continue
+    const k = kindOf(e)
+    if (k === 'source') continue
     notSource.total++
-    const k = e.sourceKind ?? 'unclassified'
     notSource.byKind[k] = (notSource.byKind[k] || 0) + 1
     notSource.byHealth[e.health]++
+    if (k !== 'fixture') continue
+    fixtures.total++
+    fixtures.byHealth[e.health]++
+    if (e.health === 'fail') fixtures.expectedFail++
   }
   const backendFailures = {}
   for (const e of entries) for (const b of e.failedBackends) backendFailures[b] = (backendFailures[b] || 0) + 1
@@ -331,6 +365,7 @@ export function corpusAggregates(entries) {
     ),
     health,
     notSource,
+    fixtures,
     backendFailures,
     totals: {
       tokens: entries.reduce((a, e) => a + e.tokens, 0),

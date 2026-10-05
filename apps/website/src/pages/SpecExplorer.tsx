@@ -136,6 +136,9 @@ const UI = {
     notSource: 'Not a module',
     notSourceHint:
       'Files under a .t27 extension that are not compilation units: Markdown documents, TRI-27 assembly, fixtures damaged on purpose, and the older spec X { } surface. The three health counts are over modules only.',
+    fixtures: 'Compiler fixtures',
+    fixturesHint:
+      "Inputs to the t27 compiler's own test suite (bootstrap/tests/). Many are written to be rejected -- a negative fixture that compiled would be the bug -- so a failure here is expected and is not counted as Broken.",
     corpusHealth: 'corpus health',
     startHere: 'START HERE',
     noneInGroup: 'Nothing in this group.',
@@ -242,6 +245,9 @@ const UI = {
     notSource: 'Не модуль',
     notSourceHint:
       'Файлы с расширением .t27, которые не являются единицами компиляции: документы Markdown, ассемблер TRI-27, намеренно повреждённые фикстуры и старая форма spec X { }. Три счётчика здоровья считаются только по модулям.',
+    fixtures: 'Фикстуры компилятора',
+    fixturesHint:
+      'Входные файлы собственных тестов компилятора t27 (bootstrap/tests/). Многие написаны так, чтобы компилятор их отверг: негативная фикстура, которая скомпилировалась, и была бы ошибкой. Поэтому отказ здесь ожидаем и не считается поломкой.',
     corpusHealth: 'здоровье корпуса',
     startHere: 'НАЧНИТЕ ЗДЕСЬ',
     noneInGroup: 'В этой группе пусто.',
@@ -292,8 +298,11 @@ function fmtBytes(n: number): string {
   return `${(n / 1024).toFixed(1)}K`
 }
 
-/** The group a chip selects. `not-source` crosses the health axis rather than extending it. */
-type SpecGroup = Health | 'all' | 'course' | 'not-source'
+/**
+ * The group a chip selects. `not-source` and `fixture` cross the health axis
+ * rather than extending it.
+ */
+type SpecGroup = Health | 'all' | 'course' | 'not-source' | 'fixture'
 
 /**
  * Whether a spec belongs in the selected group.
@@ -307,11 +316,17 @@ type SpecGroup = Health | 'all' | 'course' | 'not-source'
  * not a compilation unit is in `not-source` whatever the compiler did with it;
  * `sourceKind` defaults to `source` so a catalog written before the classifier
  * existed behaves exactly as it did.
+ *
+ * A compiler fixture (`sourceKind: 'fixture'`) has a chip of its own and is in
+ * neither `not-source` nor a health group: a negative fixture fails on purpose,
+ * and listing it under Broken reported the test suite working as a defect.
  */
 function inGroup(s: SpecEntry, group: SpecGroup): boolean {
   if (group === 'course') return !!s.tutorial
-  const isSource = (s.sourceKind ?? 'source') === 'source'
-  if (group === 'not-source') return !isSource
+  const kind = s.sourceKind ?? 'source'
+  if (group === 'fixture') return kind === 'fixture'
+  const isSource = kind === 'source'
+  if (group === 'not-source') return !isSource && kind !== 'fixture'
   if (group === 'all') return true
   return isSource && s.health === group
 }
@@ -476,7 +491,7 @@ export default function SpecExplorer() {
   // `not-source` is a fourth group beside the three health states rather than a
   // fourth health state: it answers a different question (what IS this file)
   // and the two axes cross. 31 files here compile cleanly.
-  const [healthFilter, setHealthFilter] = useState<Health | 'all' | 'course' | 'not-source'>('course')
+  const [healthFilter, setHealthFilter] = useState<SpecGroup>('course')
   // Multi-select, AND across selections: picking domain/fpga + has/tests means
   // "FPGA specs that have tests", which is the question people actually ask.
   const [tagSel, setTagSel] = useState<string[]>([])
@@ -1124,17 +1139,22 @@ export default function SpecExplorer() {
                     // so this chip is right on a catalog generated before that
                     // block existed instead of reading 0 over a full list.
                     ['not-source', ui.notSource, manifest.specs.filter((s) => inGroup(s, 'not-source')).length],
+                    ['fixture', ui.fixtures, manifest.specs.filter((s) => inGroup(s, 'fixture')).length],
                     ['all', ui.all, manifest.specCount],
                   ] as [SpecGroup, string, number][]).map(([k, label, n]) => {
                     const on = healthFilter === k
                     const col =
-                      k === 'all' || k === 'not-source' ? C.muted : k === 'course' ? C.golden : HEALTH_COLOR[k]
+                      k === 'all' || k === 'not-source' || k === 'fixture'
+                        ? C.muted
+                        : k === 'course'
+                          ? C.golden
+                          : HEALTH_COLOR[k]
                     return (
                       <button
                         key={k}
                         onClick={() => setHealthFilter(k)}
                         aria-pressed={on}
-                        title={k === 'not-source' ? ui.notSourceHint : undefined}
+                        title={k === 'not-source' ? ui.notSourceHint : k === 'fixture' ? ui.fixturesHint : undefined}
                         style={{
                           display: 'flex',
                           alignItems: 'center',
@@ -1153,6 +1173,8 @@ export default function SpecExplorer() {
                           <span aria-hidden="true">◆</span>
                         ) : k === 'not-source' ? (
                           <span aria-hidden="true">◇</span>
+                        ) : k === 'fixture' ? (
+                          <span aria-hidden="true">⚙</span>
                         ) : k !== 'all' ? (
                           <span aria-hidden="true">{HEALTH_GLYPH[k]}</span>
                         ) : null}

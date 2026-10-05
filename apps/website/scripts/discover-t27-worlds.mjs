@@ -215,6 +215,11 @@ export function mergeWorld(manifest, world, entries, f) {
     ].sort((x, y) => x.path.localeCompare(y.path)),
     tags: aggregates.tags,
     health: aggregates.health,
+    // `health` is over modules only, so the files it leaves out must travel
+    // with it: without `notSource` a reader cannot reconcile the three health
+    // counts with `specCount`, and the onboarding sum check fails.
+    notSource: aggregates.notSource,
+    fixtures: aggregates.fixtures,
     backendFailures: aggregates.backendFailures,
     featured,
     totals: aggregates.totals,

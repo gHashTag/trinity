@@ -122,7 +122,13 @@ export type Health = 'ok' | 'warn' | 'fail'
  * This is not a prediction about compiling. 31 non-`source` files in the corpus
  * compile cleanly; plenty of `source` files do not.
  */
-export type SourceKind = 'source' | 'alt-syntax' | 'not-code' | 'mixed' | 'unclassified'
+/*
+ * `fixture` is set by path, not by the classifier: a file under t27's
+ * `bootstrap/tests/` is an input to the compiler's own test suite, and a
+ * negative fixture is written to be rejected. See `isFixturePath` in
+ * scripts/t27-corpus.mjs.
+ */
+export type SourceKind = 'source' | 'alt-syntax' | 'not-code' | 'mixed' | 'unclassified' | 'fixture'
 
 export interface SpecEntry {
   path: string
@@ -183,6 +189,13 @@ export interface SpecManifest {
    * which case `health` is over everything and sums to `specCount`.
    */
   notSource?: { total: number; byKind: Record<string, number>; byHealth: Record<Health, number> }
+  /**
+   * The compiler's own test fixtures (`sourceKind: 'fixture'`), restated from
+   * `notSource`. `expectedFail` counts the ones that fail -- for a negative
+   * fixture that is the outcome it exists to produce, so none of them is
+   * counted as Broken. Absent on a catalog written before the bucket existed.
+   */
+  fixtures?: { total: number; expectedFail: number; byHealth: Record<Health, number> }
   backendFailures: Record<string, number>
   featured: string
   totals: { tokens: number; nodes: number; lossAffected: number; tcAffected: number }
