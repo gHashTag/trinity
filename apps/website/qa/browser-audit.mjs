@@ -24,6 +24,8 @@ export const ROUTES = [
   // told to shrink, and it pushed 149px of sideways scroll onto a phone while
   // this audit reported PASS across 33 routes — it had never visited either one.
   'passport', 'passport/research',
+  // The course draws two layouts: the 9 x 3 map and a lesson with its widget.
+  'course/hello-t27',
 ]
 
 const CHROME_CANDIDATES = [

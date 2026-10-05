@@ -1,0 +1,336 @@
+// SPDX-License-Identifier: Apache-2.0
+; specs/course/course.t27 -- the t27 course: from zero to a program on a real FPGA
+; Source of truth for apps/website/scripts/course-from-spec.mjs (gHashTag/trinity), which
+; compiles this file with the vendored compiler (public/t27/t27_compiler.wasm), checks the
+; constant schema, evaluates every test block below, checks that every widget a lesson names
+; is in specs/widgets/gallery.t27 and that every gallery widget is used by some lesson,
+; compiles every lesson spec and refuses one that is not clean, checks the Russian bundle
+; named by specs/course/course-ru.t27, and only then writes src/lib/course.generated.ts (the
+; page at #/course) and a byte-identical copy of this file at public/learn/course.t27.
+; ASCII only (L3), English only (LANG-EN). The Russian words live in the bundle.
+
+; WHAT THE COURSE IS: 27 lessons in 9 modules of 3, for a reader who has never written for a
+; chip, then a lab module of 3 lessons on our own research. Each lesson is a short text, one working widget from the gallery, and one thing to try
+; in it. The widgets are not drawn for the course: they are the same tools a hardware engineer
+; uses on t27.ai, built from real runs of t27c, yosys, nextpnr and openFPGALoader on our bench.
+
+; WHAT THE COURSE DOES NOT DO: it says no number of its own. A number a lesson needs is on the
+; widget, which names where it came from. The one exception is the t27b figure in lesson 12,
+; quoted with its denominator and the run that produced it. The lab lessons quote only the
+; rule their widget tests (990 thousandths) and counts that are arithmetic (3 x 3 x 3 = 27).
+
+; WHY 27: the core is 3 cubed lessons, the size of a TRI-27 word. The lab is one more module
+; of 3 that reports our own results; it is counted apart so the core stays 27. Changing the
+; shape changes the tests.
+; phi^2 + 1/phi^2 = 3 | TRINITY
+
+module course;
+
+pub const KIND : str = "course";
+pub const ID : str = "course";
+pub const SCHEMA_VERSION : u8 = 1;
+; The derived files the generator rewrites (relative to apps/website).
+pub const GENERATED : [2]str = ["src/lib/course.generated.ts", "public/learn/course.t27"];
+pub const ROUTE : str = "course";
+pub const GALLERY : str = "specs/widgets/gallery.t27";
+pub const LOCALES : [2]str = ["en", "ru"];
+pub const RU_CONTRACT : str = "specs/course/course-ru.t27";
+; Lesson marks the reader sets are kept in this browser only, under this key.
+pub const PROGRESS_KEY : str = "t27-course-done";
+pub const SENDS_NOTHING : bool = true;
+; The paid FPGA training that used to live at #/course.
+pub const COHORT_ROUTE : str = "fpga-training";
+; A lesson's widget is the page's main stage, so it is drawn taller than a
+; gallery card (specs/widgets/gallery.t27 EMBED_* heights are for embeds in posts).
+pub const TOOL_FRAME_HEIGHT : u16 = 640;
+pub const PLAYER_FRAME_HEIGHT : u16 = 480;
+
+; --- Words on the page ---------------------------------------------------------------------
+pub const TITLE : str = "From zero to a chip: FPGA programming with t27";
+pub const DESCRIPTION : str = "27 lessons, one working widget each: what an FPGA is, how numbers become bits, your own t27 spec, how t27c compiles it, and how it becomes a bitstream on a real board. Then a lab of 3 on our own research.";
+pub const SAY_KICKER : str = "Course";
+pub const SAY_LEAD : str = "No hardware background needed. Every lesson opens a real tool built from real runs on our bench: read a little, then try it yourself.";
+pub const SAY_SHAPE : str = "9 modules of 3 lessons, 27 cells, then a lab of 3. A filled cell is a lesson you marked done.";
+pub const SAY_START : str = "Start lesson 1";
+pub const SAY_CONTINUE : str = "Continue";
+pub const SAY_MODULE : str = "Module {0}";
+pub const SAY_LESSON : str = "Lesson {0} of {1}";
+pub const SAY_GOAL : str = "You will learn";
+pub const SAY_TRY : str = "Try it";
+pub const SAY_ALSO : str = "Also try";
+pub const SAY_ALSO_HINT : str = "Each one swaps the widget above.";
+pub const SAY_BACK_TO_MAIN : str = "Back to this lesson's widget";
+pub const SAY_SPEC : str = "Open the lesson's spec in the player";
+pub const SAY_OPEN_PAGE : str = "Open the widget on its own page";
+pub const SAY_WIDGET_LANG : str = "Widgets keep their own English words: each one lives in its own t27 spec.";
+pub const SAY_PREV : str = "Previous";
+pub const SAY_NEXT : str = "Next";
+pub const SAY_ALL : str = "All lessons";
+pub const SAY_MARK : str = "Mark as done";
+pub const SAY_MARKED : str = "Done";
+pub const SAY_PROGRESS : str = "{0} of {1} done";
+pub const SAY_PRIVATE : str = "Progress stays in this browser; nothing is sent.";
+pub const SAY_SOURCE : str = "This course is itself a t27 spec: read it";
+pub const SAY_COHORT : str = "Looking for the paid FPGA training? It moved to its own page.";
+pub const SAY_NOT_FOUND : str = "No lesson has this address.";
+
+; --- Modules -------------------------------------------------------------------------------
+pub const LESSONS_PER_MODULE : u8 = 3;
+; The core course is the first 9 modules, 3 cubed lessons; the lab is the 10th module.
+pub const MODULE_COUNT : u8 = 10;
+pub const MODULE_IDS : [10]str = ["chip", "numbers", "program", "compiler", "hardware", "synthesis", "timing", "bitstream", "board", "lab"];
+pub const MODULE_TITLES : [10]str = [
+    "The chip",
+    "Numbers in hardware",
+    "Your t27 program",
+    "Inside t27c",
+    "From spec to hardware",
+    "Reading synthesis",
+    "Place, route, timing",
+    "The bitstream",
+    "On the board",
+    "Lab: our own research"
+];
+pub const MODULE_LINES : [10]str = [
+    "What an FPGA is, which chip we use, and how its pins meet the board.",
+    "Bits, trits and number formats, and what arithmetic costs in logic.",
+    "Write a spec, test it, and see why compiling is not the same as being right.",
+    "How the compiler reads a spec and what it writes, including the native t27b.",
+    "The Verilog t27c writes, the cells it becomes, and what one LUT does.",
+    "What yosys reports about your design, and which warnings matter.",
+    "Where the cells land on the die, and whether the clock is met.",
+    "How a routed design becomes the bits the chip loads, with no Vivado.",
+    "Ask the chip who it is, load the bits, and check them.",
+    "A number format of our own, an honest scoreboard, and a model's tables multiplied on the board."
+];
+
+; --- Lessons -------------------------------------------------------------------------------
+; LESSON_WIDGETS names the widget the lesson opens; every one is a gallery id, and no two
+; lessons open the same one. LESSON_ALSO lists more gallery ids, comma separated, shown as
+; chips that swap the widget. LESSON_SPECS is a spec under public/t27/files/ to open in the
+; player, or "" for none.
+pub const LESSON_COUNT : u8 = 30;
+pub const LESSON_IDS : [30]str = [
+    "fpga-is-a-grid", "which-chip", "pins-and-package",
+    "bits-and-trits", "what-arithmetic-costs", "how-much-fits",
+    "hello-t27", "tests-are-the-spec", "compiles-is-not-correct",
+    "compiler-stages", "t27c-on-a-real-machine", "seven-backends-and-t27b",
+    "spec-to-verilog", "count-the-cells", "one-lut-up-close",
+    "synthesis-warnings", "state-machines", "where-the-luts-go",
+    "placement", "logic-depth", "timing-slack",
+    "fasm-to-frames", "a-build-receipt", "read-a-bitstream",
+    "jtag-asks-the-chip", "same-bits-on-the-board", "capstone",
+    "t27-number-format", "an-honest-scoreboard", "a-model-on-the-board"
+];
+pub const LESSON_MODULES : [30]str = [
+    "chip", "chip", "chip",
+    "numbers", "numbers", "numbers",
+    "program", "program", "program",
+    "compiler", "compiler", "compiler",
+    "hardware", "hardware", "hardware",
+    "synthesis", "synthesis", "synthesis",
+    "timing", "timing", "timing",
+    "bitstream", "bitstream", "bitstream",
+    "board", "board", "board",
+    "lab", "lab", "lab"
+];
+pub const LESSON_WIDGETS : [30]str = [
+    "fasm-skyline", "idcode", "pin-map",
+    "gf16-calc", "cost-curves", "fits-on",
+    "play-hello-world", "test-waves", "t27-tri-misread",
+    "t27c-stages", "t27c-hello-world", "play-rust",
+    "play-verilog", "stat-card", "lut-explain",
+    "synth-smells", "fsm-sketch", "lut-treemap",
+    "placement-map", "lut-depth", "slack-waterfall",
+    "tri-x7-fasm", "build-receipt", "bit-autopsy",
+    "tri-fpga-jtag", "x7-board", "gatle",
+    "t27-cell", "t27-vs-nvfp4", "uart-bucket"
+];
+pub const LESSON_ALSO : [30]str = [
+    "placement-map", "tri-fpga-jtag", "tri-fpga-pins",
+    "", "resource-bars", "",
+    "play-js", "vcd-wrapped", "tri-x7-mutate,test-touch",
+    "", "", "play-js",
+    "", "resource-bars", "",
+    "", "", "",
+    "resource-bars", "", "tri-fpga-rgmii",
+    "", "perf2-loop,devkit-flow", "perf2-knockouts",
+    "idcode", "bit-diff", "race-the-bee,wars,tri-game-tick,tri-game-vault",
+    "gf16-calc", "t27-cell", "x7-board"
+];
+pub const LESSON_SPECS : [30]str = [
+    "", "", "",
+    "specs/tutorial/01_values_and_types.t27", "specs/tutorial/05_widths_and_casts.t27", "",
+    "specs/tutorial/02_functions.t27", "specs/tutorial/07_tests_invariants_benches.t27", "specs/tutorial/03_operators.t27",
+    "specs/tutorial/06_structs_enums_switch.t27", "specs/demos/hello_world.t27", "specs/tutorial/08_modules_and_arrays.t27",
+    "specs/ternary/clocked_counter.t27", "specs/tutorial/04_control_flow.t27", "",
+    "", "", "",
+    "", "", "",
+    "", "", "",
+    "", "", "",
+    "", "", ""
+];
+pub const LESSON_TITLES : [30]str = [
+    "An FPGA is a grid you configure",
+    "Which chip is this?",
+    "Pins, balls and the package",
+    "Bits, trits and GF16",
+    "What arithmetic costs",
+    "How much fits on the chip",
+    "Hello, t27",
+    "Tests are part of the spec",
+    "Compiles is not the same as correct",
+    "The stages of t27c",
+    "t27c on a real machine",
+    "Seven backends, and t27b",
+    "From a spec to Verilog",
+    "Count the cells",
+    "One LUT, up close",
+    "Synthesis warnings that matter",
+    "State machines",
+    "Where the LUTs go",
+    "Placement: where the cells land",
+    "Logic depth",
+    "Timing and slack",
+    "From FASM to frames",
+    "A build, itemised",
+    "Read a bitstream",
+    "JTAG asks the chip",
+    "The same bits, on the board",
+    "Capstone: out-guess yosys",
+    "T27: a number format of our own",
+    "An honest scoreboard",
+    "A model's tables on the board"
+];
+pub const LESSON_GOALS : [30]str = [
+    "What an FPGA is made of, and why a design uses only part of the chip.",
+    "How a chip names itself in 32 bits, and how to read those bits.",
+    "How the signals of your design reach the outside world.",
+    "How a number is stored in bits, and how balanced ternary stores it in trits.",
+    "Why a multiplier is expensive and an adder is cheap, measured on a real chip.",
+    "How to read a resource count and find which resource runs out first.",
+    "What a t27 spec looks like, and what the compiler does with it in your browser.",
+    "Why every t27 spec carries its own tests, and what a waveform shows.",
+    "Why green checks are not proof, and how to catch code that compiles and is wrong.",
+    "The path a spec takes inside t27c: tokens, syntax tree, types, HIR, code.",
+    "The same compiler on a real machine, printing what it really prints.",
+    "One spec, many target languages, and a native compiler with no LLVM.",
+    "How a t27 function becomes logic, and how a clocked function becomes registers.",
+    "How to count what a synthesizer built: LUTs, flip-flops, DSPs, block RAM.",
+    "What a 6-input lookup table is, and how 64 bits describe any gate.",
+    "How to read a yosys log, and the warnings that become bugs on silicon.",
+    "How a synthesizer finds a state machine in your design, or refuses to.",
+    "Which part of a design spends the LUTs, and why hierarchy matters.",
+    "What place and route does, and where it put a real design.",
+    "Why the longest chain of logic sets how fast a design can run.",
+    "What slack is, and how to read a timing report path by path.",
+    "What FASM is, and how features become configuration frames.",
+    "Every stage from a spec to a bitstream, with its time, tool and hash.",
+    "What is inside a .bit file, and which chip it was built for.",
+    "How a cable finds the chip on a board and reads its IDCODE.",
+    "How to show that a bitstream is byte-identical and that it runs.",
+    "Put it together: guess what a real t27 module costs in LUTs.",
+    "How three trits give more levels than a 4-bit float, and what that costs in plain bits.",
+    "How T27 was compared with NVFP4, MX+ and MXFP4 on a real language model, and what the result does not show.",
+    "How the host feeds the board over a serial bridge, why the window size matters, and what the board computed."
+];
+pub const LESSON_TEXTS : [30]str = [
+    "A CPU runs instructions one after another. An FPGA has no program at all: it is a grid of small blocks -- lookup tables (LUTs), flip-flops, carry chains, block RAM and DSP multipliers -- joined by wires you can switch. Configuring the grid builds a circuit. Our bench chip is an AMD Artix-7 XC7A200T. The skyline draws one routed design on that die: every tile it configures stands up as a column, and most of the chip stays dark.",
+    "Before you load anything, you ask the board which chip it has. Over JTAG every chip answers with a 32-bit IDCODE: a version, a part number, the manufacturer and a fixed 1 in bit 0. A bitstream built for the wrong part is refused by the chip, so this is the check that saves you an afternoon. The decoder splits the bits into those four fields and looks the part up in openFPGALoader's own table.",
+    "A chip sits in a package: the XC7A200T on our board has 676 solder balls under it. Some carry power or configuration and only some are user IO, grouped into banks with their own voltage. A constraints file (XDC) says which ball each signal of your design uses. Put a signal on a ball that is not user IO and the build fails, or worse, the board does not do what you think.",
+    "Hardware stores numbers as fixed groups of bits, and t27 makes you write the width: u8 is 8 unsigned bits, i16 is 16 signed bits. t27 also speaks balanced ternary, where a trit is -1, 0 or +1. For fractions it has GF16, a 16-bit float with 1 sign bit, 6 exponent bits and 9 mantissa bits. Type a number into the calculator and watch how it is rounded, field by field, and how big the error is.",
+    "In logic, every operation has a price paid in chip resources. An adder is a carry chain, cheap and fast. A multiplier built from LUTs is large; the chip has DSP blocks made for multiplying, and a synthesizer uses them when it may. These curves are real yosys counts from 4 to 64 bits. Switch DSPs off and on, and see why hardware people care so much about the width of every number.",
+    "A synthesis report says how many LUTs, flip-flops, DSPs and block RAMs your design takes. The question that matters is which of them runs out first. A design can use few LUTs and still not fit because it needs more DSPs than the chip has. Type a LUT count, or pick one of our real designs, and see how many copies fit on an XC7A200T.",
+    "A t27 program is a spec: a module with typed constants, functions and tests. Prose lines start with a semicolon at the start of a line. The player below runs the real t27 compiler, built to WebAssembly, inside your browser: it reads hello_world.t27, runs its tests and writes code for seven backends. Nothing is installed and nothing is sent anywhere. Open the tutorial spec under the widget and read it next to the output.",
+    "In t27 a spec is not finished without its claims: test blocks, invariants and benches live in the same file as the code they check, and the compiler refuses a spec with none. A test can also be run as gates in a simulator. The waves below are a real simulation of Verilog generated from a ternary multiply-accumulate spec, driven by that spec's own test vectors.",
+    "A compiler that accepts your code only tells you the code is well formed. It does not tell you the code means what you meant. This recording shows a tool that found specs which compile, pass every gate and are still read wrongly. The lesson for hardware is sharper still: a bug in silicon cannot be patched. Plant a bug yourself in the mutation recording and watch the tests catch it.",
+    "t27c reads a spec in stages. The lexer cuts the text into tokens. The parser builds a syntax tree. The type checker checks every width and every call. The tree is lowered to HIR, a simpler form, and each backend writes code from it. This widget runs those stages on a spec in your browser and shows what each one produced, so an error has a stage you can point at.",
+    "The player in lesson 7 runs the compiler in your browser. This recording is the native t27c, written in Rust, run on a real machine on the same hello_world.t27: it reports the spec's status, the tests and invariants it emits, and the Verilog module with its parameters. Every byte in the recording was printed by the command; only the typing is staged.",
+    "One t27 spec can become Zig, C, Rust, JavaScript, TypeScript or Verilog. The player shows the Rust t27c writes for hello_world. t27b is a second compiler: native AArch64 machine code, no LLVM, a JIT for tests and Mach-O object files. It is not finished, and we say how far it is: in run 26c447ad8 it passed 307 of the 449 specs that the reference compiler passes with tests, 68.4%.",
+    "Verilog is the text a synthesizer reads to build a circuit. t27c writes it from the spec. A function named on_clock becomes an always block on the clock edge, and every module var becomes a register with a reset. Open clocked_counter.t27 in the player: an 8-bit counter in a few lines, and the Verilog it turns into. Its header records what yosys built from it.",
+    "After synthesis, yosys can print what it built as JSON: how many LUTs, flip-flops, DSPs and block RAMs. Those counts are an honest measure of a design before place and route. Paste a stat -json from yosys into the stat card, or open the real sample, and get a card and a README badge that say plainly that they are a synthesis count.",
+    "A LUT6 is a tiny memory with 6 address inputs and 64 one-bit entries. Any logic function of 6 inputs is just its truth table written into those 64 bits, the INIT value. Paste an INIT and the widget reads it back as a truth table and an expression. Then play the guessing game on LUTs taken from a real routed design: XOR, AND, a multiplexer, or something with no short name.",
+    "yosys tells you a lot, and most of it is fine. A few lines are not: a latch you did not mean, a wire nothing drives, two drivers on one net, a memory that became flip-flops. Each of those works in simulation and fails on the chip. Open one of the real logs from t27 specs, then paste a log of your own.",
+    "Many designs are state machines: a register that holds the current state and logic that picks the next one. yosys looks for them and, when it finds one, can re-encode it. When it refuses, it says why. The widget draws the graph yosys extracted from real designs, a UART receiver and a SPI flash master, and shows a case it refused.",
+    "A design is built from modules that contain modules. When yosys keeps the hierarchy, it counts each submodule once, and the instance counts tell you how many copies there are. The treemap multiplies them out and shows which submodule eats the LUTs. One adder used many times can cost more than everything else together.",
+    "Synthesis says which cells you need. Place and route decides where each one sits on the die and which wires connect them. nextpnr-xilinx does both in the open flow. The map draws every placed cell of a real run on the XC7A200T: a small design is a small cluster in a huge chip.",
+    "A signal needs time to pass through each LUT and each wire. The longest chain of logic between two registers sets how fast the clock can tick. yosys can show that chain as a count of cells, before any routing. The staircase draws it for a real GF16 adder, step by step.",
+    "Slack is how much time is left on a path when the clock period ends. Positive slack: the path is fast enough. Negative: the design fails at that clock. Each bar here is a real path from a routed design at 50 MHz, split into logic and routing, worst first. Find where the time goes on the worst path.",
+    "After routing, the design is a list of features to switch on, in a text format called FASM: this LUT has this INIT, this wire connects to that one. Tools from prjxray turn features into configuration frames, blocks of bits the chip loads. This recording does that step with t27's own tool and compares every frame with the reference tool: they are byte-identical.",
+    "A whole build from a t27 spec to an Artix-7 bitstream, written out like a shop receipt: each stage, the tool and its version, the time it took, and the sha256 of what it wrote. No Vivado anywhere. When a number on a receipt can be checked, anyone can rebuild it and compare the hash.",
+    "A .bit file is a header followed by packets: commands to the chip's configuration logic and the frames themselves. One of those commands writes the IDCODE of the chip the file was built for. Drop a .bit into the autopsy and see which chip it asks for. Five bitstreams committed to t27 turn out to target a different part than our bench.",
+    "JTAG is the cable protocol for talking to the chip on a board. Before programming, the tool shifts out the IDCODE of every device on the chain. This recording decodes the codes our bench answers with, and shows what an even code means: no IDCODE at all. Compare it with the decoder from lesson 2.",
+    "The claim most FPGA people doubt: a bitstream built by an open flow from t27 specs, byte-identical to the reference toolchain, and working on a real board. This recording compares the files, loads the bits into the chip's SRAM and counts the receipts the board sends back. Drop two .bit files into bit-diff to check the byte-identical part yourself.",
+    "Everything from this course in one game. Each day Gatle shows one real t27 module and the Verilog your browser compiles from it; you have six guesses at how many LUTs yosys spent on it. Use what you know: widths, multipliers, hierarchy, state. Then look at the other ways people and agents compete on t27.",
+    "A 4-bit float such as E2M1, the element of NVFP4 and MXFP4, has 16 codes, and two of them are zero. Three balanced trits have 3 x 3 x 3 = 27 states. T27 is our format that uses all of them: 27 levels placed where a trained network's weights actually fall, and one shared scale per block of weights. On ternary storage that is more levels in the same room. Packed into plain binary bits it is larger, not smaller, and the widget shows both counts.",
+    "A format is judged by what it does to a model. We stored the weights of one small language model in each format and measured perplexity on text it had not seen: lower is better. The rule was written before the run: T27 beats a rival when its perplexity is below 990 thousandths of the rival's. It beat NVFP4, MX+ and MXFP4, and it lost to E2M2, a wider format. The panel under the bars lists what this test cannot claim. The one claim that holds: T27 beats NVFP4 on a ternary substrate.",
+    "The board does the arithmetic; the host sends it work over a USB serial bridge. The board's answers wait in the bridge chip's small receive buffer, and when the host keeps more requests in flight than their answers fit, answers are lost. A smaller window removed the loss and did not slow the run. Over that link the board multiplied every ternary weight matrix of a small language model, and every row matched the reference bit for bit. The text itself is generated on the Mac, which does everything except the ternary dot products: the board is the calculator, not the whole model."
+];
+pub const LESSON_TASKS : [30]str = [
+    "Rotate the die and tap the tallest column: which kind of tile sets the most features?",
+    "Click the bench preset, then flip one bit of the part number and see which device it would be.",
+    "Search for a ball name like E3, then colour by pin type and find a ball that is not user IO.",
+    "Type 1.618 and read the exponent and mantissa bits; then type 0.1 and look at the error.",
+    "Pick Multiply, switch DSP48E1 to -nodsp, and compare the LUTs at 32 bits with and without DSPs.",
+    "Pick a real design, then raise the DSP count until something other than LUTs runs out first.",
+    "Run the tests in the player, then switch the backend and find the same function in two languages.",
+    "Zoom into one clock cycle and read the values on the buses at a pass mark.",
+    "Open the mutation recording under Also try and count how many planted bugs the tests caught.",
+    "Pick an example and step through the stages; find the stage where a type error would stop.",
+    "Find the line where t27c prints the Verilog module's parameters.",
+    "Switch the player to JavaScript under Also try, generate the module, and run it.",
+    "Open clocked_counter.t27 in the player and find the always block in its Verilog tab.",
+    "Open the real sample, then read the LUT and FF counts on the card.",
+    "Try the XOR6 and majority examples, then play five rounds of Guess the gate.",
+    "Open each real log and find the one that yosys refused, and why.",
+    "Open the uart_rx sample and count its states and transitions.",
+    "Switch between the hierarchical and flattened totals and find the largest tile.",
+    "Fit the design, then tap cells of different types and read their BEL names.",
+    "Open the real sample and count how many steps of the path are LUTs.",
+    "Click the worst path and compare its logic time with its routing time.",
+    "Find where the recording says how many frames matched, out of how many.",
+    "Read the receipt: which stage took the longest, and which tool ran it?",
+    "Open the blink_j26 sample and compare the part in its header with the IDCODE it writes.",
+    "Find which IDCODE belongs to an XC7A200T and which to an XC7A100T.",
+    "Wait for the receipts count at the end, then try bit-diff under Also try.",
+    "Play today's puzzle. Then read the module's Verilog and say why it cost what it did.",
+    "Move the weight across the range and find where E2M1 rounds worse than T27; then read the storage table in bits.",
+    "Find the NVFP4 ratio and the threshold line; then name the format T27 loses to and what it pays for that.",
+    "Drag the window until the bucket overflows and note the largest window that fits; then compare the two real runs."
+];
+
+; --- Claims --------------------------------------------------------------------------------
+test the_core_is_three_cubed {
+    assert LESSONS_PER_MODULE == 3;
+    assert MODULE_COUNT == 10;
+    assert LESSON_COUNT == 30;
+    assert LESSON_COUNT - LESSONS_PER_MODULE == 27;
+    assert MODULE_COUNT * LESSONS_PER_MODULE == LESSON_COUNT;
+}
+
+test it_starts_at_the_chip_and_ends_on_the_board {
+    assert MODULE_IDS[0] == "chip";
+    assert MODULE_IDS[8] == "board";
+    assert LESSON_MODULES[0] == "chip";
+    assert LESSON_MODULES[26] == "board";
+    assert LESSON_WIDGETS[26] == "gatle";
+}
+
+test the_lab_comes_after_the_core {
+    assert MODULE_IDS[9] == "lab";
+    assert LESSON_MODULES[27] == "lab";
+    assert LESSON_MODULES[29] == "lab";
+    assert LESSON_WIDGETS[27] == "t27-cell";
+}
+
+test the_compiler_module_opens_the_compiler {
+    assert LESSON_MODULES[9] == "compiler";
+    assert LESSON_WIDGETS[9] == "t27c-stages";
+    assert LESSON_SPECS[12] == "specs/ternary/clocked_counter.t27";
+}
+
+test the_course_sends_nothing {
+    assert SENDS_NOTHING == true;
+    assert LOCALES[0] == "en";
+    assert LOCALES[1] == "ru";
+}

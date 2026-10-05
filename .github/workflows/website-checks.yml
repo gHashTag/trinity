@@ -379,6 +379,14 @@ jobs:
       - name: Widget tool pages
         run: npm run check:widget-pages && npm run test:widget-pages
 
+      # The course at #/course: specs/course/course.t27 orders 27 lessons over
+      # the gallery's widgets; the generator refuses a lesson whose widget is
+      # gone, a gallery widget no lesson uses, a lesson spec that does not
+      # compile clean, and a Russian field (i18n/course.ru.json, contract
+      # specs/course/course-ru.t27) that is missing or changes a number.
+      - name: Course
+        run: npm run check:course && npm run test:course
+
       # The IGLA board on WARS: specs/queen/igla_board.t27 is generated in
       # gHashTag/igla-coder-gpu from committed artifacts. The gate recompiles it,
       # re-derives every McNemar p from its discordants, and proves the public

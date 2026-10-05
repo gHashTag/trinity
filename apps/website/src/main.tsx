@@ -80,6 +80,7 @@ const TechTreePage = lazy(() => import('./pages/TechTreePage.tsx'))
 const HardwareVerification = lazy(() => import('./pages/HardwareVerification.tsx'))
 const Start = lazy(() => import('./pages/Start.tsx'))
 const Course = lazy(() => import('./pages/Course.tsx'))
+const FpgaTraining = lazy(() => import('./pages/FpgaTraining.tsx'))
 const CaseStudies = lazy(() => import('./pages/CaseStudies.tsx'))
 const GFT = lazy(() => import('./pages/GFT.tsx'))
 const Licensing = lazy(() => import('./pages/Licensing.tsx'))
@@ -139,7 +140,11 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/start" element={<Start />} />
             <Route path="/select" element={<FormatSelection />} />
             <Route path="/verification" element={<HardwareVerification />} />
+            {/* The course is a t27 spec (specs/course/course.t27); the paid
+                training that used to live here moved to /fpga-training. */}
             <Route path="/course" element={<Course />} />
+            <Route path="/course/:lessonId" element={<Course />} />
+            <Route path="/fpga-training" element={<FpgaTraining />} />
             <Route path="/cases" element={<CaseStudies />} />
             <Route path="/gft" element={<GFT />} />
             <Route path="/ip" element={<Licensing />} />

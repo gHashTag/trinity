@@ -23,5 +23,7 @@ const OWN_CANVAS = new Set([
 export default function GlobalStarfield() {
   const { pathname } = useLocation()
   if (OWN_CANVAS.has(pathname)) return null
+  // The course draws on pure black, lesson pages included (owner, 2026-10-05).
+  if (pathname === '/course' || pathname.startsWith('/course/')) return null
   return <PhiStarfield />
 }
