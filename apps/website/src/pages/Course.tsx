@@ -57,6 +57,9 @@ function CourseMap({ lang, say, done, current }: { lang: Lang; say: Say; done: s
       {COURSE.modules.map((m) => (
         <li key={m.id} className="course-map-row">
           <div className="course-map-head">
+            <span className="course-map-big" aria-hidden="true">
+              {String(m.n).padStart(2, '0')}
+            </span>
             <span className="course-map-n">{fmt(say.MODULE, m.n)}</span>
             <span className="course-map-title">{m[lang].title}</span>
             <span className="course-map-line">{m[lang].line}</span>
@@ -86,7 +89,7 @@ function Overview({ lang, say, done }: { lang: Lang; say: Say; done: string[] })
   const started = done.length > 0
   return (
     <div className="course-hero">
-      <p className="course-kicker">{say.KICKER}</p>
+      <p className="course-kicker course-masthead">{say.KICKER}</p>
       <h1 className="course-title">{say.TITLE}</h1>
       <p className="course-lead">{say.LEAD}</p>
       <p className="course-desc">{say.DESCRIPTION}</p>
@@ -158,6 +161,9 @@ function Lesson({ lesson, lang, say, done, toggle }: { lesson: CourseLesson; lan
       </nav>
 
       <header className="course-lesson-head">
+        <span className="course-lesson-n" aria-hidden="true">
+          {String(lesson.n).padStart(2, '0')}
+        </span>
         <h1 className="course-lesson-title">{t.title}</h1>
         <p className="course-goal">
           <span className="course-label">{say.GOAL}</span>
@@ -167,7 +173,7 @@ function Lesson({ lesson, lang, say, done, toggle }: { lesson: CourseLesson; lan
 
       <div className="course-lesson-grid">
         <div className="course-lesson-text">
-          <p>{t.text}</p>
+          <p className="course-dropcap">{t.text}</p>
           <div className="course-task">
             <span className="course-label">{say.TRY}</span>
             <p>{t.task}</p>
