@@ -37,6 +37,23 @@ const sha = (b) => createHash('sha256').update(b).digest('hex')
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 const fmt = (s, ...a) => a.reduce((out, x, i) => out.split(`{${i}}`).join(String(x)), s)
 const pad = (n) => String(n).padStart(2, '0')
+/** A search snippet: Google shows about 155 characters, so cut at a word before that. */
+const snippet = (s, max = 155) => (s.length <= max ? s : `${s.slice(0, max).replace(/\s+\S*$/, '')}…`)
+const unesc = (s) => s.replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')
+
+/** The widget page's own og:description: the gallery's words for the tool, not a second copy here. */
+function aboutOf(widget) {
+  if (!widget.url.startsWith(`${ORIGIN}/`)) return null
+  const p = join(PUBLIC, widget.url.slice(ORIGIN.length + 1), 'index.html')
+  const m = existsSync(p) && readFileSync(p, 'utf8').match(/<meta property="og:description" content="([^"]*)"/)
+  return m ? unesc(m[1]) : null
+}
+
+/** The lesson's tutorial spec, as published: shown on the page, so the page carries real t27. */
+function specSourceOf(spec) {
+  const p = spec && join(PUBLIC, spec.source)
+  return p && existsSync(p) ? readFileSync(p, 'utf8') : null
+}
 
 export function loadCourse(file = join(SITE, 'src/lib/course.generated.ts')) {
   const s = readFileSync(file, 'utf8')
@@ -113,15 +130,24 @@ function pageHtml(C, lang, lesson, cardUrl) {
   const total = C.lessons.length
   const t = lesson?.[lang]
   const mod = lesson ? C.modules.find((m) => m.id === lesson.module) : null
-  const title = lesson ? `${t.title} · ${fmt(say.LESSON, lesson.n, total)} · t27` : `${say.TITLE} · t27`
-  const desc = lesson ? `${t.goal} ${t.text}`.slice(0, 300).replace(/\s+\S*$/, '…') : say.DESCRIPTION
+  const title = lesson ? fmt(say.SEO_TITLE, t.title, lesson.n, total) : `${say.TITLE} · t27`
+  const desc = snippet(lesson ? `${t.goal} ${t.text}` : say.DESCRIPTION)
   const ogTitle = lesson ? t.title : say.TITLE
   const ogDesc = lesson ? t.goal : say.LEAD
   const alt = lesson ? `${say.KICKER}, ${fmt(say.LESSON, lesson.n, total)}: ${t.title}. ${t.goal}` : `${say.TITLE}. ${say.LEAD}`
-  const course = { '@type': 'Course', name: say.TITLE, description: say.DESCRIPTION, url: urlOf(lang), inLanguage: lang, isAccessibleForFree: true, provider: { '@type': 'Organization', name: 'TRINITY S³AI', url: `${ORIGIN}/` } }
-  const ld = lesson
+  const course = { '@type': 'Course', name: say.TITLE, description: say.DESCRIPTION, url: urlOf(lang), inLanguage: lang, isAccessibleForFree: true, educationalLevel: 'Beginner', provider: { '@type': 'Organization', name: 'TRINITY S³AI', url: `${ORIGIN}/` } }
+  const crumbs = { '@type': 'BreadcrumbList', itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 't27.ai', item: `${ORIGIN}/${lang === 'ru' ? 'ru/' : ''}` },
+    { '@type': 'ListItem', position: 2, name: say.TITLE, item: urlOf(lang) },
+    ...(lesson ? [{ '@type': 'ListItem', position: 3, name: t.title, item: urlOf(lang, id) }] : []),
+  ] }
+  const about = lesson ? aboutOf(lesson.widget) : null
+  const code = lesson ? specSourceOf(lesson.spec) : null
+  const main = lesson
     ? { '@context': 'https://schema.org', '@type': 'LearningResource', name: t.title, description: t.goal, url: urlOf(lang, id), inLanguage: lang, learningResourceType: 'lesson', position: lesson.n, isAccessibleForFree: true, isPartOf: course }
     : { '@context': 'https://schema.org', ...course, hasPart: C.lessons.map((l) => ({ '@type': 'LearningResource', name: l[lang].title, url: urlOf(lang, l.id), position: l.n })) }
+  const list = lesson ? null : { '@type': 'ItemList', itemListElement: C.lessons.map((l) => ({ '@type': 'ListItem', position: l.n, url: urlOf(lang, l.id), name: l[lang].title })) }
+  const ld = [main, { '@context': 'https://schema.org', ...crumbs }, ...(list ? [{ '@context': 'https://schema.org', ...list }] : [])]
   const link = (l) => `<a href="/${pathOf(lang, l.id)}">${pad(l.n)} ${esc(l[lang].title)}</a>`
   const outline = C.modules.map((m) => `<li><h3>${esc(fmt(say.MODULE, m.n))} · ${esc(m[lang].title)}</h3><p>${esc(m[lang].line)}</p><ol>${m.lessons
     .map((lid) => C.lessons.find((l) => l.id === lid))
@@ -137,7 +163,8 @@ function pageHtml(C, lang, lesson, cardUrl) {
 <section><h2>${esc(say.TRY)}</h2><p>${esc(t.task)}</p></section>
 <p><a class="cta" href="${appOf(id)}">${esc(say.OPEN_LESSON)} →</a></p>
 <figure><a href="${esc(lesson.widget.url.slice(ORIGIN.length))}">${thumb ? `<img src="${esc(thumb)}" width="600" height="315" alt="${esc(lesson.widget.title)}" loading="lazy">` : ''}<figcaption>${esc(lesson.widget.title)} ↗</figcaption></a></figure>
-${lesson.spec ? `<p><a href="/${esc(lesson.spec.preview)}">${esc(say.SPEC)}: ${esc(lesson.spec.path)}</a></p>` : ''}
+${about ? `<p class="about" lang="en">${esc(about)}</p>` : ''}
+${lesson.spec ? `<section><h2>${esc(lesson.spec.path)}</h2>${code ? `<pre lang="en"><code>${esc(code)}</code></pre>` : ''}<p><a href="/${esc(lesson.spec.preview)}">${esc(say.SPEC)} ↗</a></p></section>` : ''}
 <nav class="pager">${prev ? `<a href="/${pathOf(lang, prev.id)}">← ${esc(prev[lang].title)}</a>` : '<span></span>'}${next ? `<a href="/${pathOf(lang, next.id)}">${esc(next[lang].title)} →</a>` : '<span></span>'}</nav>`
     : `<p class="kicker">${esc(say.KICKER)}</p>
 <h1>${esc(say.TITLE)}</h1>
@@ -173,7 +200,7 @@ ${lesson.spec ? `<p><a href="/${esc(lesson.spec.preview)}">${esc(say.SPEC)}: ${e
 <meta name="twitter:image" content="${cardUrl}">
 <meta name="twitter:image:alt" content="${esc(alt)}">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<script type="application/ld+json">${JSON.stringify(ld).replace(/</g, '\\u003c')}</script>
+${ld.map((x) => `<script type="application/ld+json">${JSON.stringify(x).replace(/</g, '\\u003c')}</script>`).join('\n')}
 <style>
 @font-face { font-family: 'Outfit'; font-weight: 400 800; font-display: swap; src: url(/fonts/outfit-latin.woff2) format('woff2'); }
 :root { color-scheme: dark; }
@@ -192,6 +219,8 @@ figure { margin: 24px 0; } figure img { width: 100%; height: auto; border: 1px s
 figcaption { font-size: 15px; margin-top: 8px; }
 .pager { display: flex; justify-content: space-between; gap: 16px; margin: 32px 0; padding-top: 20px; border-top: 1px solid #1e2624; }
 .outline { list-style: none; padding: 0; } .outline ol { list-style: none; padding-left: 0; margin: 4px 0; } .outline p { margin: 0; color: #8fa19d; font-size: 15px; }
+pre { overflow-x: auto; background: #0b0f0e; border: 1px solid #1e2624; border-radius: 10px; padding: 14px 16px; font: 13px/1.5 'JetBrains Mono', ui-monospace, monospace; color: #cfe3de; max-height: 520px; }
+.about { color: #b9c4c2; font-size: 16px; }
 .outline li.on a { color: #fff; font-weight: 600; } footer { color: #8fa19d; font-size: 15px; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>

@@ -35,11 +35,22 @@ test('every page carries a large card of its own and the lesson words', () => {
   }
 })
 
-test('JSON-LD parses and names the page', () => {
+test('JSON-LD parses, names the page and carries its breadcrumbs', () => {
   for (const p of pages) {
-    const ld = JSON.parse(p.html.match(/<script type="application\/ld\+json">(.*?)<\/script>/s)[1])
-    assert.equal(ld.url, `https://t27.ai/${p.dir}`)
-    assert.equal(ld['@type'], p.lesson ? 'LearningResource' : 'Course')
+    const ld = [...p.html.matchAll(/<script type="application\/ld\+json">(.*?)<\/script>/gs)].map((m) => JSON.parse(m[1]))
+    assert.equal(ld[0].url, `https://t27.ai/${p.dir}`)
+    assert.equal(ld[0]['@type'], p.lesson ? 'LearningResource' : 'Course')
+    const crumbs = ld.find((x) => x['@type'] === 'BreadcrumbList')
+    assert.equal(crumbs.itemListElement.at(-1).item, `https://t27.ai/${p.dir}`)
+    if (!p.lesson) assert.equal(ld.find((x) => x['@type'] === 'ItemList').itemListElement.length, C.lessons.length)
+  }
+})
+
+test('titles and descriptions fit a search result', () => {
+  for (const p of pages) {
+    const d = p.html.match(/<meta name="description" content="([^"]*)">/)[1]
+    assert.ok(d.length <= 160, `${p.dir} description is ${d.length} characters`)
+    assert.match(p.html, p.lang === 'ru' ? /<title>[^<]*FPGA[^<]*<\/title>/ : /<title>[^<]*FPGA[^<]*<\/title>/)
   }
 })
 

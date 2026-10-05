@@ -109,14 +109,20 @@ function Overview({ lang, say, done }: { lang: Lang; say: Say; done: string[] })
       </div>
       <p className="course-shape">{say.SHAPE}</p>
       <CourseMap lang={lang} say={say} done={done} />
-      <CourseNotes say={say} />
+      <CourseNotes lang={lang} say={say} />
     </div>
   )
 }
 
-function CourseNotes({ say }: { say: Say }) {
+/** The static page of the course or a lesson: the address to post, because a crawler drops the '#'. */
+const shareOf = (lang: Lang, id?: string) => `${lang === 'ru' ? '/ru' : ''}/learn/${id ? `${id}/` : ''}`
+
+function CourseNotes({ lang, say, id }: { lang: Lang; say: Say; id?: string }) {
   return (
     <div className="course-notes">
+      <p>
+        <a href={shareOf(lang, id)}>{say.SHARE}: t27.ai{shareOf(lang, id)}</a>
+      </p>
       <p>{say.PRIVATE}</p>
       <p>{say.WIDGET_LANG}</p>
       <p>
@@ -273,7 +279,7 @@ function Lesson({ lesson, lang, say, done, toggle }: { lesson: CourseLesson; lan
 
       <CourseMap lang={lang} say={say} done={done} current={lesson.id} />
       <p className="course-progress is-foot">{fmt(say.PROGRESS, done.length, TOTAL)}</p>
-      <CourseNotes say={say} />
+      <CourseNotes lang={lang} say={say} id={lesson.id} />
     </article>
   )
 }
