@@ -1,0 +1,322 @@
+// Static pages for the course, one per lesson and one for the course, in both
+// languages: public/learn/<id>/index.html and public/ru/learn/<id>/index.html.
+//
+// Why they exist: the course lives at #/course, and a crawler drops everything
+// after the '#'. A link to t27.ai/#/course posted on X previewed as the home
+// page ("AGI game -- play, direct, earn"), and no lesson could be indexed. Each
+// page here is a real page: the lesson's own words in the HTML, its own
+// preview card, canonical, hreflang pair, and a link into the interactive
+// lesson. No redirect: the apex verify-site.sh refuses a landing that
+// auto-redirects, because a search engine files it under the home page.
+//
+// Every word comes from src/lib/course.generated.ts (specs/course/course.t27
+// and i18n/course.ru.json); nothing is written here twice.
+//
+//   node scripts/course-pages.mjs           # write pages + sitemap, render stale cards
+//   node scripts/course-pages.mjs --check   # CI: pages current, every card present and current
+//
+// Cards are PNGs rendered by headless Chromium (as scripts/og-image.mjs does)
+// and committed; public/learn/cards.json records what each was drawn from, so
+// --check can tell a stale card without a browser.
+
+import { spawn } from 'node:child_process'
+import { createHash } from 'node:crypto'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { dirname, join, relative } from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+
+const SITE = join(dirname(fileURLToPath(import.meta.url)), '..')
+const PUBLIC = join(SITE, 'public')
+const ORIGIN = 'https://t27.ai'
+const BASE = 'learn'
+const MANIFEST = join(PUBLIC, BASE, 'cards.json')
+const CARD = { width: 1200, height: 630, maxBytes: 600_000 }
+
+const sha = (b) => createHash('sha256').update(b).digest('hex')
+const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+const fmt = (s, ...a) => a.reduce((out, x, i) => out.split(`{${i}}`).join(String(x)), s)
+const pad = (n) => String(n).padStart(2, '0')
+
+export function loadCourse(file = join(SITE, 'src/lib/course.generated.ts')) {
+  const s = readFileSync(file, 'utf8')
+  const head = 'export const COURSE = '
+  return JSON.parse(s.slice(s.indexOf(head) + head.length, s.indexOf('} as const') + 1))
+}
+
+/** Site path of a page: learn/ or learn/<id>/, under ru/ for Russian. */
+const pathOf = (lang, id) => `${lang === 'ru' ? 'ru/' : ''}${BASE}/${id ? `${id}/` : ''}`
+const urlOf = (lang, id) => `${ORIGIN}/${pathOf(lang, id)}`
+const appOf = (id) => `/#/course${id ? `/${id}` : ''}`
+
+/** The widget's own preview card, if the gallery page has one: its picture goes on the lesson card. */
+function thumbOf(widget) {
+  if (!widget.url.startsWith(`${ORIGIN}/`)) return null
+  const p = join(PUBLIC, widget.url.slice(ORIGIN.length + 1), 'card.png')
+  return existsSync(p) ? p : null
+}
+
+// ---------------------------------------------------------------- the card
+
+function cardHtml(C, lang, lesson) {
+  const say = C.say[lang]
+  const font = lang === 'ru' ? `'Helvetica Neue', Arial, sans-serif` : `'Outfit', 'Helvetica Neue', sans-serif`
+  const fonts = pathToFileURL(join(PUBLIC, 'fonts')).href
+  const mod = lesson ? C.modules.find((m) => m.id === lesson.module) : null
+  const title = lesson ? lesson[lang].title : say.TITLE
+  const sub = lesson ? lesson[lang].goal : say.LEAD
+  const kicker = lesson ? `${fmt(say.MODULE, mod.n)} · ${mod[lang].title}` : ''
+  const thumb = lesson ? thumbOf(lesson.widget) : null
+  const cells = C.lessons
+    .map((l) => `<i class="${lesson && l.id === lesson.id ? 'on' : lesson && l.n < lesson.n ? 'past' : ''}"></i>`)
+    .reduce((out, c, i) => out + (i % 3 === 0 && i ? '<b></b>' : '') + c, '')
+  const big = title.length > 40 ? 52 : title.length > 22 ? 60 : 72
+  return `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><style>
+@font-face { font-family: 'Outfit'; font-weight: 400 800; src: url(${fonts}/outfit-latin.woff2) format('woff2'); }
+@font-face { font-family: 'JetBrains Mono'; font-weight: 400 500; src: url(${fonts}/jetbrains-mono-latin.woff2) format('woff2'), url(${fonts}/jetbrains-mono-cyrillic.woff2) format('woff2'); }
+* { margin: 0; box-sizing: border-box; }
+html, body { width: 1200px; height: 630px; background: #000; overflow: hidden; }
+body { position: relative; font-family: ${font}; color: #fff; padding: 56px 64px; }
+.glow { position: absolute; inset: 0; background: radial-gradient(circle at 18% 30%, rgba(8,250,181,.16), rgba(8,250,181,.03) 45%, transparent 70%); }
+.top { position: relative; display: flex; justify-content: space-between; font: 500 21px 'JetBrains Mono', monospace; letter-spacing: 3px; text-transform: uppercase; }
+.brand { color: #08FAB5; } .where { color: #7c8a87; }
+.main { position: relative; display: flex; gap: 48px; margin-top: 44px; height: 360px; }
+.text { flex: 1; display: flex; flex-direction: column; }
+.n { font: 500 24px 'JetBrains Mono', monospace; color: #08FAB5; letter-spacing: 2px; margin-bottom: 14px; }
+h1 { font-weight: 700; font-size: ${big}px; line-height: 1.06; letter-spacing: -.5px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+p { margin-top: 22px; font-size: 27px; line-height: 1.32; color: #b9c4c2; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.thumb { width: 420px; flex: none; align-self: center; border: 1px solid #2a3532; border-radius: 14px; overflow: hidden; box-shadow: 0 0 60px rgba(8,250,181,.12); }
+.thumb img { display: block; width: 100%; }
+.bottom { position: absolute; left: 64px; right: 64px; bottom: 50px; display: flex; align-items: center; justify-content: space-between; }
+.cells { display: flex; gap: 4px; flex: none; margin-right: 24px; } .cells i { width: 13px; height: 13px; border-radius: 3px; background: #1d2321; }
+.cells i.past { background: #3c4a46; } .cells i.on { background: #08FAB5; box-shadow: 0 0 14px #08FAB5; } .cells b { width: 9px; }
+.url { white-space: nowrap; font: 500 17px 'JetBrains Mono', monospace; color: #5f7a74; letter-spacing: 1px; }
+</style></head><body><div class="glow"></div>
+<div class="top"><span class="brand">t27.ai · ${esc(say.KICKER)}</span><span class="where">${esc(kicker)}</span></div>
+<div class="main"><div class="text">${lesson ? `<div class="n">${esc(fmt(say.LESSON, pad(lesson.n), C.lessons.length))}</div>` : ''}<h1>${esc(title)}</h1><p>${esc(sub)}</p></div>${thumb ? `<div class="thumb"><img src="${pathToFileURL(thumb).href}"></div>` : ''}</div>
+<div class="bottom"><div class="cells">${cells}</div><span class="url">t27.ai/${esc(pathOf(lang, lesson?.id).replace(/\/$/, ''))}</span></div>
+</body></html>`
+}
+
+/** What a card was drawn from: its HTML and the bytes of every file it loads. */
+function cardInput(html) {
+  const files = [...html.matchAll(/url\((file:[^)]+)\)|src="(file:[^"]+)"/g)].map((m) => m[1] || m[2])
+  return sha(html.replace(/file:\/\/[^)"]*\/public\//g, 'public/') + files.map((f) => sha(readFileSync(fileURLToPath(f)))).join(''))
+}
+
+// ---------------------------------------------------------------- the page
+
+function pageHtml(C, lang, lesson, cardUrl) {
+  const say = C.say[lang]
+  const other = lang === 'en' ? 'ru' : 'en'
+  const id = lesson?.id
+  const total = C.lessons.length
+  const t = lesson?.[lang]
+  const mod = lesson ? C.modules.find((m) => m.id === lesson.module) : null
+  const title = lesson ? `${t.title} · ${fmt(say.LESSON, lesson.n, total)} · t27` : `${say.TITLE} · t27`
+  const desc = lesson ? `${t.goal} ${t.text}`.slice(0, 300).replace(/\s+\S*$/, '…') : say.DESCRIPTION
+  const ogTitle = lesson ? t.title : say.TITLE
+  const ogDesc = lesson ? t.goal : say.LEAD
+  const alt = lesson ? `${say.KICKER}, ${fmt(say.LESSON, lesson.n, total)}: ${t.title}. ${t.goal}` : `${say.TITLE}. ${say.LEAD}`
+  const course = { '@type': 'Course', name: say.TITLE, description: say.DESCRIPTION, url: urlOf(lang), inLanguage: lang, isAccessibleForFree: true, provider: { '@type': 'Organization', name: 'TRINITY S³AI', url: `${ORIGIN}/` } }
+  const ld = lesson
+    ? { '@context': 'https://schema.org', '@type': 'LearningResource', name: t.title, description: t.goal, url: urlOf(lang, id), inLanguage: lang, learningResourceType: 'lesson', position: lesson.n, isAccessibleForFree: true, isPartOf: course }
+    : { '@context': 'https://schema.org', ...course, hasPart: C.lessons.map((l) => ({ '@type': 'LearningResource', name: l[lang].title, url: urlOf(lang, l.id), position: l.n })) }
+  const link = (l) => `<a href="/${pathOf(lang, l.id)}">${pad(l.n)} ${esc(l[lang].title)}</a>`
+  const outline = C.modules.map((m) => `<li><h3>${esc(fmt(say.MODULE, m.n))} · ${esc(m[lang].title)}</h3><p>${esc(m[lang].line)}</p><ol>${m.lessons
+    .map((lid) => C.lessons.find((l) => l.id === lid))
+    .map((l) => `<li${l.id === id ? ' class="on" aria-current="page"' : ''}>${link(l)}</li>`).join('')}</ol></li>`).join('')
+  const prev = lesson && lesson.n > 1 ? C.lessons[lesson.n - 2] : null
+  const next = lesson && lesson.n < total ? C.lessons[lesson.n] : null
+  const thumb = lesson && thumbOf(lesson.widget) ? `/${relative(PUBLIC, thumbOf(lesson.widget))}` : null
+  const body = lesson
+    ? `<nav class="crumbs"><a href="/${pathOf(lang)}">${esc(say.ALL)}</a><span>${esc(fmt(say.MODULE, mod.n))} · ${esc(mod[lang].title)}</span><span>${esc(fmt(say.LESSON, lesson.n, total))}</span></nav>
+<h1>${esc(t.title)}</h1>
+<section><h2>${esc(say.GOAL)}</h2><p class="goal">${esc(t.goal)}</p></section>
+<p>${esc(t.text)}</p>
+<section><h2>${esc(say.TRY)}</h2><p>${esc(t.task)}</p></section>
+<p><a class="cta" href="${appOf(id)}">${esc(say.OPEN_LESSON)} →</a></p>
+<figure><a href="${esc(lesson.widget.url.slice(ORIGIN.length))}">${thumb ? `<img src="${esc(thumb)}" width="600" height="315" alt="${esc(lesson.widget.title)}" loading="lazy">` : ''}<figcaption>${esc(lesson.widget.title)} ↗</figcaption></a></figure>
+${lesson.spec ? `<p><a href="/${esc(lesson.spec.preview)}">${esc(say.SPEC)}: ${esc(lesson.spec.path)}</a></p>` : ''}
+<nav class="pager">${prev ? `<a href="/${pathOf(lang, prev.id)}">← ${esc(prev[lang].title)}</a>` : '<span></span>'}${next ? `<a href="/${pathOf(lang, next.id)}">${esc(next[lang].title)} →</a>` : '<span></span>'}</nav>`
+    : `<p class="kicker">${esc(say.KICKER)}</p>
+<h1>${esc(say.TITLE)}</h1>
+<p class="goal">${esc(say.LEAD)}</p>
+<p>${esc(say.DESCRIPTION)}</p>
+<p><a class="cta" href="${appOf()}">${esc(say.OPEN_COURSE)} →</a></p>`
+  return `<!doctype html>
+<html lang="${lang}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- GENERATED by scripts/course-pages.mjs from specs/course/course.t27; do not edit. -->
+<title>${esc(title)}</title>
+<meta name="description" content="${esc(desc)}">
+<link rel="canonical" href="${urlOf(lang, id)}">
+<link rel="alternate" hreflang="${lang}" href="${urlOf(lang, id)}">
+<link rel="alternate" hreflang="${other}" href="${urlOf(other, id)}">
+<link rel="alternate" hreflang="x-default" href="${urlOf('en', id)}">
+<meta property="og:type" content="${lesson ? 'article' : 'website'}">
+<meta property="og:site_name" content="TRINITY S³AI">
+<meta property="og:locale" content="${lang === 'ru' ? 'ru_RU' : 'en_US'}">
+<meta property="og:url" content="${urlOf(lang, id)}">
+<meta property="og:title" content="${esc(ogTitle)}">
+<meta property="og:description" content="${esc(ogDesc)}">
+<meta property="og:image" content="${cardUrl}">
+<meta property="og:image:width" content="${CARD.width}">
+<meta property="og:image:height" content="${CARD.height}">
+<meta property="og:image:alt" content="${esc(alt)}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@t27_dev">
+<meta name="twitter:title" content="${esc(ogTitle)}">
+<meta name="twitter:description" content="${esc(ogDesc)}">
+<meta name="twitter:image" content="${cardUrl}">
+<meta name="twitter:image:alt" content="${esc(alt)}">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<script type="application/ld+json">${JSON.stringify(ld).replace(/</g, '\\u003c')}</script>
+<style>
+@font-face { font-family: 'Outfit'; font-weight: 400 800; font-display: swap; src: url(/fonts/outfit-latin.woff2) format('woff2'); }
+:root { color-scheme: dark; }
+body { margin: 0; background: #000; color: #e8eeec; font: 18px/1.6 'Outfit', system-ui, sans-serif; }
+main { max-width: 760px; margin: 0 auto; padding: 32px 20px 64px; }
+header { display: flex; justify-content: space-between; max-width: 760px; margin: 0 auto; padding: 20px 20px 0; font-size: 15px; }
+a { color: #08FAB5; } a:focus-visible { outline: 2px solid #08FAB5; outline-offset: 2px; }
+h1 { font-size: clamp(32px, 6vw, 48px); line-height: 1.1; margin: 12px 0 20px; color: #fff; }
+h2 { font-size: 14px; letter-spacing: 2px; text-transform: uppercase; color: #8fa19d; margin: 28px 0 4px; }
+h3 { font-size: 17px; margin: 18px 0 2px; color: #fff; }
+.goal { font-size: 21px; color: #fff; }
+.kicker, .crumbs { font-size: 14px; letter-spacing: 1px; color: #8fa19d; display: flex; gap: 14px; flex-wrap: wrap; }
+.cta { display: inline-block; margin: 20px 0; padding: 12px 22px; border: 1px solid #08FAB5; border-radius: 10px; text-decoration: none; font-weight: 600; }
+.cta:hover { background: #08FAB5; color: #000; }
+figure { margin: 24px 0; } figure img { width: 100%; height: auto; border: 1px solid #22302c; border-radius: 12px; display: block; }
+figcaption { font-size: 15px; margin-top: 8px; }
+.pager { display: flex; justify-content: space-between; gap: 16px; margin: 32px 0; padding-top: 20px; border-top: 1px solid #1e2624; }
+.outline { list-style: none; padding: 0; } .outline ol { list-style: none; padding-left: 0; margin: 4px 0; } .outline p { margin: 0; color: #8fa19d; font-size: 15px; }
+.outline li.on a { color: #fff; font-weight: 600; } footer { color: #8fa19d; font-size: 15px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<header><a href="/${lang === 'ru' ? 'ru/' : ''}">t27.ai</a><a href="/${pathOf(other, id)}" hreflang="${other}" lang="${other}">${other === 'ru' ? 'Русский' : 'English'}</a></header>
+<main>
+${body}
+<section><h2>${esc(say.ALL)}</h2><ul class="outline">${outline}</ul></section>
+<footer><p><a href="/${BASE}/course.t27">${esc(say.SOURCE)}</a></p><p>${esc(say.WIDGET_LANG)}</p></footer>
+</main>
+</body>
+</html>
+`
+}
+
+// ---------------------------------------------------------------- the build
+
+/** Every page with its card: [{ lang, lesson, dir, html, card }]. */
+export function buildPages(C, manifest = {}) {
+  const pages = []
+  for (const lang of C.locales) {
+    for (const lesson of [null, ...C.lessons]) {
+      const dir = pathOf(lang, lesson?.id)
+      const card = cardHtml(C, lang, lesson)
+      const png = join(PUBLIC, dir, 'card.png')
+      const v = existsSync(png) ? sha(readFileSync(png)).slice(0, 12) : 'missing'
+      const cardUrl = `${ORIGIN}/${dir}card.png?v=${v}`
+      pages.push({ lang, lesson, dir, card, input: cardInput(card), png, html: pageHtml(C, lang, lesson, cardUrl), drawn: manifest[dir] })
+    }
+  }
+  return pages
+}
+
+export function sitemapOf(pages) {
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<!-- GENERATED by scripts/course-pages.mjs; the course's static pages. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+${pages.map((p) => {
+    const id = p.lesson?.id
+    return `  <url><loc>${urlOf(p.lang, id)}</loc>${['en', 'ru'].map((h) => `<xhtml:link rel="alternate" hreflang="${h}" href="${urlOf(h, id)}"/>`).join('')}</url>`
+  }).join('\n')}
+</urlset>
+`
+}
+
+/** What is wrong with the pages on disk; empty when current. */
+export function problemsOf(pages, sitemap) {
+  const p = []
+  for (const pg of pages) {
+    const f = join(PUBLIC, pg.dir, 'index.html')
+    if (!existsSync(f) || readFileSync(f, 'utf8') !== pg.html) p.push(`public/${pg.dir}index.html is not current; run node scripts/course-pages.mjs`)
+    if (!existsSync(pg.png)) { p.push(`public/${pg.dir}card.png is missing`); continue }
+    const b = readFileSync(pg.png)
+    if (b.readUInt32BE(16) !== CARD.width || b.readUInt32BE(20) !== CARD.height) p.push(`public/${pg.dir}card.png must be ${CARD.width}x${CARD.height}`)
+    if (b.length > CARD.maxBytes) p.push(`public/${pg.dir}card.png is ${b.length} bytes, over ${CARD.maxBytes}`)
+    if (pg.drawn !== pg.input) p.push(`public/${pg.dir}card.png was drawn from other words or pictures; run node scripts/course-pages.mjs`)
+    if (/location\.replace|http-equiv="refresh"/.test(pg.html)) p.push(`public/${pg.dir}index.html redirects; a redirecting page is not indexed`)
+  }
+  const sm = join(PUBLIC, BASE, 'sitemap.xml')
+  if (!existsSync(sm) || readFileSync(sm, 'utf8') !== sitemap) p.push(`public/${BASE}/sitemap.xml is not current`)
+  return p
+}
+
+function findChrome() {
+  return [
+    process.env.CHROME,
+    '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+    '/Applications/Chromium.app/Contents/MacOS/Chromium',
+    '/Applications/BrowserOS.app/Contents/MacOS/BrowserOS',
+    '/usr/bin/chromium', '/usr/bin/chromium-browser', '/usr/bin/google-chrome',
+  ].find((p) => p && existsSync(p))
+}
+
+async function render(chrome, html, png) {
+  const work = mkdtempSync(join(tmpdir(), 'course-card-'))
+  const src = join(work, 'card.html')
+  writeFileSync(src, html)
+  const before = existsSync(png) ? statSync(png).mtimeMs : 0
+  const b = spawn(chrome, ['--headless=new', `--user-data-dir=${join(work, 'profile')}`, '--allow-file-access-from-files', '--hide-scrollbars',
+    '--force-device-scale-factor=1', `--window-size=${CARD.width},${CARD.height}`, '--virtual-time-budget=3000', `--screenshot=${png}`, pathToFileURL(src).href], { stdio: 'ignore', detached: true })
+  const deadline = Date.now() + 60_000
+  while (Date.now() < deadline) {
+    await new Promise((r) => setTimeout(r, 300))
+    if (existsSync(png) && statSync(png).mtimeMs > before && statSync(png).size > 0) break
+  }
+  await new Promise((r) => setTimeout(r, 300))
+  const exited = new Promise((r) => b.once('exit', r))
+  try { process.kill(-b.pid, 'SIGKILL') } catch { b.kill('SIGKILL') } // the whole group: helpers outlive a TERM
+  await Promise.race([exited, new Promise((r) => setTimeout(r, 5000))])
+  try { rmSync(work, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }) } catch { /* a temp dir the OS will clear */ }
+  if (!existsSync(png) || statSync(png).mtimeMs <= before) throw new Error(`course-pages: no card written to ${png}`)
+}
+
+async function main() {
+  const check = process.argv.includes('--check')
+  const C = loadCourse()
+  const manifest = existsSync(MANIFEST) ? JSON.parse(readFileSync(MANIFEST, 'utf8')) : {}
+  let pages = buildPages(C, manifest)
+  if (!check) {
+    const stale = pages.filter((p) => p.drawn !== p.input || !existsSync(p.png))
+    if (stale.length) {
+      const chrome = findChrome()
+      if (!chrome) throw new Error('course-pages: cards are stale and no Chromium was found; set CHROME')
+      for (const p of stale) {
+        mkdirSync(dirname(p.png), { recursive: true })
+        await render(chrome, p.card, p.png)
+        manifest[p.dir] = p.input
+      }
+      writeFileSync(MANIFEST, `${JSON.stringify(Object.fromEntries(Object.entries(manifest).sort()), null, 2)}\n`)
+      console.log(`course-pages: drew ${stale.length} card(s) with ${chrome.split('/').pop()}`)
+    }
+    pages = buildPages(C, manifest) // og:image ?v= follows the new card bytes
+    for (const p of pages) {
+      mkdirSync(join(PUBLIC, p.dir), { recursive: true })
+      writeFileSync(join(PUBLIC, p.dir, 'index.html'), p.html)
+    }
+    writeFileSync(join(PUBLIC, BASE, 'sitemap.xml'), sitemapOf(pages))
+  }
+  const problems = problemsOf(pages, sitemapOf(pages))
+  if (problems.length) {
+    console.error(problems.join('\n'))
+    process.exit(1)
+  }
+  console.log(`course-pages: ${check ? 'up to date' : 'wrote'} ${pages.length} pages (${C.locales.join(', ')}), ${pages.length} cards, ${BASE}/sitemap.xml`)
+}
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) await main()
