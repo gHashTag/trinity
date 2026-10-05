@@ -19,6 +19,7 @@
 // TRINITY right above a wordmark saying it again. It is decorative -- alt="" --
 // because the wordmark under it is the name, and a screen reader read it twice.
 
+import { COURSE } from '../src/lib/course.generated.ts'
 import { MOTTO, SITE_NAME } from '../src/lib/motto.ts'
 
 export const escapeHtml = (s: unknown) =>
@@ -49,6 +50,9 @@ export const STATIC_PAGES = [
   { path: 'gft/', label: 'GF-T, a ternary-native float' },
   { path: 'cases/', label: "Runs on other people's RTL" },
   { path: 'status/', label: 'What has been checked, and when' },
+  // The free course: static lesson pages written by scripts/course-pages.mjs.
+  // Before this link they were reachable from nowhere but learn/sitemap.xml.
+  { path: 'learn/', label: COURSE.say.en.TITLE },
   { path: 'course/', label: 'Train a neural network on an FPGA' },
   { path: 'resources/', label: 'Papers, datasets and patches' },
   { path: 'about/', label: 'About' },

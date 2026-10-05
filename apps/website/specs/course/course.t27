@@ -75,6 +75,8 @@ pub const SAY_COHORT : str = "Looking for the paid FPGA training? It moved to it
 pub const SAY_NOT_FOUND : str = "No lesson has this address.";
 pub const SAY_OPEN_LESSON : str = "Open the interactive lesson";
 pub const SAY_OPEN_COURSE : str = "Open the interactive course";
+pub const SAY_SEO_TITLE : str = "{0}: FPGA course, lesson {1} of {2}";
+pub const SAY_SHARE : str = "Link to share, with a preview card";
 
 ; --- Modules -------------------------------------------------------------------------------
 pub const LESSONS_PER_MODULE : u8 = 3;

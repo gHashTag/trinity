@@ -64,6 +64,7 @@ export const ONBOARDING_REQUIRED = {
   HEALTH_FAIL_NOTE: 'str', HEALTH_NOT_MODULE_NOTE: 'str',
   HEALTH_FAIL_UNPARSED: 'u16', HEALTH_FAIL_JS_ONLY: 'u16', HEALTH_PARTIAL: 'u16',
   REPO_COUNT: 'u8', WORLD_COUNT: 'u8',
+  COURSE: 'str', COURSE_SOURCE: 'str', COURSE_NOTE: 'str',
   GAME: 'str', GAME_DOC: 'str', GAME_BOARD: 'str', WIN_CONDITION: 'str',
   CAMPAIGN: 'str', CAMPAIGN_NOTE: 'str', CYCLE: 'arr', CYCLE_ABOUT: 'arr',
   CLAIM_COLOURS: 'arr', CLAIM_MEANINGS: 'arr', HOVER_COLOUR: 'str', HOVER_NOTE: 'str', HONESTY_LAW: 'str',
@@ -97,6 +98,7 @@ export function semanticProblems(f, file) {
   if (f.DOC_ALIAS !== `${ORIGIN}llms.txt`) p.push(`${file}: DOC_ALIAS must be ${ORIGIN}llms.txt`)
 
   if (f.READ.length !== f.READ_ABOUT.length) p.push(`${file}: READ has ${f.READ.length} addresses and READ_ABOUT ${f.READ_ABOUT.length} descriptions`)
+  for (const k of ['COURSE', 'COURSE_SOURCE']) if (!f[k].startsWith(ORIGIN)) p.push(`${file}: ${k} ${f[k]} is not on ${ORIGIN}`)
   f.READ.forEach((url, i) => {
     if (!url.startsWith(ORIGIN)) p.push(`${file}: READ[${i}] ${url} is not on ${ORIGIN}`)
     if (!(f.READ_ABOUT[i] ?? '').trim()) p.push(`${file}: READ_ABOUT[${i}] is empty; an address nobody can explain does not belong on the list`)
