@@ -78,26 +78,26 @@ pub const TOOL_NOSCRIPT : str = "This widget runs in your browser and needs Java
 ; Parallel arrays, WIDGET_COUNT long. WIDGET_TITLES is empty wherever the page carries an
 ; og:title, which is every kind but tab: the page is the one place the words live. A tool's
 ; WIDGET_HOOKS entry is empty too: its hook is the page's t27:hook, written from its own spec.
-pub const WIDGET_COUNT : u8 = 31;
-pub const WIDGET_IDS : [31]str = ["x7-board", "tri-x7-fasm", "tri-x7-mutate", "perf2-loop", "tri-fpga-rgmii", "tri-fpga-jtag", "tri-fpga-pins", "devkit-flow", "play-verilog", "bit-diff", "build-receipt", "cost-curves", "gf16-calc", "idcode", "lut-explain", "pin-map", "placement-map", "resource-bars", "slack-waterfall", "test-waves", "play-hello-world", "play-rust", "play-js", "t27c-hello-world", "t27-tri-misread", "test-touch", "wars", "tri-game-tick", "tri-game-vault", "perf2-knockouts", "race-the-bee"];
-pub const WIDGET_KINDS : [31]str = ["cast", "cast", "cast", "cast", "cast", "cast", "cast", "cast", "player", "tool", "tool", "tool", "tool", "tool", "tool", "tool", "tool", "tool", "tool", "tool", "player", "player", "player", "cast", "cast", "tool", "tab", "cast", "cast", "cast", "tool"];
-pub const WIDGET_CATEGORIES : [31]str = ["fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "compiler", "compiler", "compiler", "compiler", "compiler", "compiler", "game", "game", "game", "game", "game"];
-pub const WIDGET_PAGES : [31]str = ["term/x7-board/", "term/tri-x7-fasm/", "term/tri-x7-mutate/", "term/perf2-loop/", "term/tri-fpga-rgmii/", "term/tri-fpga-jtag/", "term/tri-fpga-pins/", "term/devkit-flow/", "play/hello-world/verilog/", "widgets/bit-diff/", "widgets/build-receipt/", "widgets/cost-curves/", "widgets/gf16-calc/", "widgets/idcode/", "widgets/lut-explain/", "widgets/pin-map/", "widgets/placement-map/", "widgets/resource-bars/", "widgets/slack-waterfall/", "widgets/test-waves/", "play/hello-world/", "play/hello-world/rust/", "play/hello-world/js/", "term/t27c-hello-world/", "term/t27-tri-misread/", "widgets/test-touch/", "wars", "term/tri-game-tick/", "term/tri-game-vault/", "term/perf2-knockouts/", "widgets/race-the-bee/"];
-pub const WIDGET_TITLES : [31]str = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "WARS: agent configurations compared on real GitHub issues", "", "", "", ""];
-pub const WIDGET_LINES : [31]str = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "One issue, one pinned commit, the same tools and gates; only the decision layer changes, and a missing run stays unknown.", "", "", "", ""];
+pub const WIDGET_COUNT : u8 = 40;
+pub const WIDGET_IDS : [40]str = ["x7-board", "tri-x7-fasm", "tri-x7-mutate", "perf2-loop", "tri-fpga-rgmii", "tri-fpga-jtag", "tri-fpga-pins", "devkit-flow", "play-verilog", "bit-diff", "build-receipt", "cost-curves", "gf16-calc", "idcode", "lut-explain", "pin-map", "placement-map", "resource-bars", "slack-waterfall", "test-waves", "synth-smells", "bit-autopsy", "fasm-skyline", "vcd-wrapped", "fits-on", "stat-card", "lut-depth", "fsm-sketch", "play-hello-world", "play-rust", "play-js", "t27c-hello-world", "t27-tri-misread", "test-touch", "wars", "tri-game-tick", "tri-game-vault", "perf2-knockouts", "race-the-bee", "gatle"];
+pub const WIDGET_KINDS : [40]str = ["cast", "cast", "cast", "cast", "cast", "cast", "cast", "cast", "player", "tool", "tool", "tool", "tool", "tool", "tool", "tool", "tool", "tool", "tool", "tool", "tool", "tool", "tool", "tool", "tool", "tool", "tool", "tool", "player", "player", "player", "cast", "cast", "tool", "tab", "cast", "cast", "cast", "tool", "tool"];
+pub const WIDGET_CATEGORIES : [40]str = ["fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "fpga", "compiler", "compiler", "compiler", "compiler", "compiler", "compiler", "game", "game", "game", "game", "game", "game"];
+pub const WIDGET_PAGES : [40]str = ["term/x7-board/", "term/tri-x7-fasm/", "term/tri-x7-mutate/", "term/perf2-loop/", "term/tri-fpga-rgmii/", "term/tri-fpga-jtag/", "term/tri-fpga-pins/", "term/devkit-flow/", "play/hello-world/verilog/", "widgets/bit-diff/", "widgets/build-receipt/", "widgets/cost-curves/", "widgets/gf16-calc/", "widgets/idcode/", "widgets/lut-explain/", "widgets/pin-map/", "widgets/placement-map/", "widgets/resource-bars/", "widgets/slack-waterfall/", "widgets/test-waves/", "widgets/synth-smells/", "widgets/bit-autopsy/", "widgets/fasm-skyline/", "widgets/vcd-wrapped/", "widgets/fits-on/", "widgets/stat-card/", "widgets/lut-depth/", "widgets/fsm-sketch/", "play/hello-world/", "play/hello-world/rust/", "play/hello-world/js/", "term/t27c-hello-world/", "term/t27-tri-misread/", "widgets/test-touch/", "wars", "term/tri-game-tick/", "term/tri-game-vault/", "term/perf2-knockouts/", "widgets/race-the-bee/", "widgets/gatle/"];
+pub const WIDGET_TITLES : [40]str = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "WARS: agent configurations compared on real GitHub issues", "", "", "", "", ""];
+pub const WIDGET_LINES : [40]str = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "One issue, one pinned commit, the same tools and gates; only the decision layer changes, and a missing run stays unknown.", "", "", "", "", ""];
 ; Why a person would pass this one on: the reason the widget is in the gallery at all.
-pub const WIDGET_HOOKS : [31]str = ["The bitstream is byte-identical to openXC7's and runs on a real board: the claim most FPGA people doubt, shown.", "A Xilinx 7-series bitstream assembled with no Vivado anywhere in the path.", "Plant a bug in the bitstream path and watch the tests catch it: mutation testing for hardware.", "Place and route to a loaded bitstream, with the clock on screen.", "RGMII hold margins read from nextpnr's own SDF, not from a datasheet.", "The cable asks which chip is there and the chip answers with its IDCODE.", "Before an edit to a Verilog file: every spec and generator it would touch.", "The whole FPGA flow, one layer per line, from spec to board.", "A spec turned into Verilog inside a post, with the RTL read the way a hardware engineer reads it.", "", "", "", "", "", "", "", "", "", "", "", "The t27 compiler running as WebAssembly in a post: compile, test, seven backends.", "The same spec as Rust, printed by a terminal in the page.", "The only backend that runs in the browser: generate the module, then run it.", "t27c on hello_world.t27, on a real machine, every byte as printed.", "Code that compiles and is wrong: the tool that finds it.", "", "Pick a lane and see whether the TRI decision layer beats the baseline on the same issue.", "One tick of the Queen's loop: an anomaly scan that reports only what changed.", "The loop's skills checked against snapshots before an agent may use them.", "Three performance bits, and one knockout bitstream per bit to prove each one matters.", ""];
+pub const WIDGET_HOOKS : [40]str = ["The bitstream is byte-identical to openXC7's and runs on a real board: the claim most FPGA people doubt, shown.", "A Xilinx 7-series bitstream assembled with no Vivado anywhere in the path.", "Plant a bug in the bitstream path and watch the tests catch it: mutation testing for hardware.", "Place and route to a loaded bitstream, with the clock on screen.", "RGMII hold margins read from nextpnr's own SDF, not from a datasheet.", "The cable asks which chip is there and the chip answers with its IDCODE.", "Before an edit to a Verilog file: every spec and generator it would touch.", "The whole FPGA flow, one layer per line, from spec to board.", "A spec turned into Verilog inside a post, with the RTL read the way a hardware engineer reads it.", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "The t27 compiler running as WebAssembly in a post: compile, test, seven backends.", "The same spec as Rust, printed by a terminal in the page.", "The only backend that runs in the browser: generate the module, then run it.", "t27c on hello_world.t27, on a real machine, every byte as printed.", "Code that compiles and is wrong: the tool that finds it.", "", "Pick a lane and see whether the TRI decision layer beats the baseline on the same issue.", "One tick of the Queen's loop: an anomaly scan that reports only what changed.", "The loop's skills checked against snapshots before an agent may use them.", "Three performance bits, and one knockout bitstream per bit to prove each one matters.", "", ""];
 
 ; --- Ideas: asked for, not built ---------------------------------------------------------------
 ; From what engineers share today (gh-skyline, Tiny Tapeout renders, Wrapped cards, Gatle-style
 ; daily puzzles, carbon.now.sh) and what none of them does for FPGA output. Each names the data
 ; it would read: a file the reader drops, or a run already in this repository. None is shown
-; as working. The first seven ideas of this list were built and moved up to WIDGET_IDS.
-pub const IDEA_COUNT : u8 = 7;
-pub const IDEA_IDS : [7]str = ["gatle", "bit-autopsy", "synth-smells", "fasm-skyline", "vcd-wrapped", "stat-card", "fits-on"];
-pub const IDEA_TITLES : [7]str = ["Gatle: guess the LUTs", "Bitstream autopsy", "Synthesis smells", "FASM skyline", "Simulation, wrapped", "Synthesis stat card", "How many fit"];
-pub const IDEA_LINES : [7]str = ["A daily puzzle: one real spec, one synthesis run, and six guesses at how many LUTs it took.", "Drop a .bit and see how much of it is configuration: packets, IDCODE, and the frames that are not zero.", "Drop a yosys log: inferred latches, undriven wires and the cells yosys removed, counted by fixed patterns.", "Drop a .fasm and see the design as a skyline: one tower per configured tile, as tall as its feature count.", "Drop a .vcd: toggles counted, the busiest net, the signals stuck at X, as one card.", "Paste yosys stat -json and get a card and a README badge with the LUT, FF and DSP counts.", "Type a LUT count and see how many copies would fit on an XC7A200T, against nextpnr's own device totals."];
-pub const IDEA_SOURCES : [7]str = ["yosys synth_xilinx stat of the bench builds, one per day", "UG470 packet parse in the browser, checked against the five openxc7-synth bitstreams", "the reader's yosys log, read by fixed patterns; yosys version printed on the card", "TILE_XnYm prefixes of the reader's FASM, as nextpnr-xilinx writes it", "the reader's VCD, from iverilog and vvp with $dumpvars", "the reader's yosys stat -json", "nextpnr-xilinx Device utilisation totals of a real xc7a200t run"];
+; as working. Built ideas move up to WIDGET_IDS (tri widget gallery-add); the shelf refills from research.
+pub const IDEA_COUNT : u8 = 6;
+pub const IDEA_IDS : [6]str = ["same-circuit", "lut-golf", "wave-card", "die-guessr", "xdc-check", "open-flow-check"];
+pub const IDEA_TITLES : [6]str = ["Same circuit?", "LUT golf", "Wave card", "Die guessr", "Ports your XDC forgot to constrain", "Can I build this FPGA without Vivado"];
+pub const IDEA_LINES : [6]str = ["Paste two versions of a module: yosys proves them the same circuit in the browser, or prints the input that tells them apart.", "One small function a day and a reference LUT count: write a smaller circuit, prove it equivalent, then compare.", "Drop a .vcd, pick six signals and a window, and get a waveform image of what the simulator printed, with the file hash under it.", "A daily placement picture from a real nextpnr run on an Artix-7 200T: guess which of our specs it is.", "Drop an XDC file and your top-level port list to see ports with no PACKAGE_PIN, no IOSTANDARD, or clocks with no create_clock.", "Type a Xilinx part number and see whether openFPGALoader, prjxray-db and nextpnr-xilinx list it, each with source and date."];
+pub const IDEA_SOURCES : [6]str = ["yosys miter -equiv and sat -prove-asserts, run as WebAssembly in the page; sequential designs bounded to N cycles, said on the card", "yosys synth_xilinx stat after an equivalence check, both in the browser", "the reader VCD converted to WaveJSON and drawn by WaveDrom (MIT)", "Competitor sweep 2026-10-05, idea rank 7 (die-guessr), narrowed to our own runs", "ZipCPU clock and constraint posts; nextpnr-xilinx constraint warnings; Mastodon open-toolchain log screenshots", "Vivado 2026.1 Linux free-tier backlash and AMD reversal (HN 48254574, AMDembedded on X); openFPGALoader v1.1.x; openXC7 prebuilt releases"];
 
 ; --- Tests -----------------------------------------------------------------------------------
 test the_player_embed_is_sixteen_by_nine {
@@ -119,9 +119,9 @@ test the_fpga_shelf_comes_first_and_opens_on_the_board {
 }
 
 test the_arena_is_a_tab_and_says_its_own_words {
-    assert WIDGET_IDS[26] == "wars";
-    assert WIDGET_KINDS[26] == "tab";
-    assert WIDGET_PAGES[26] == "wars";
+    assert WIDGET_IDS[34] == "wars";
+    assert WIDGET_KINDS[34] == "tab";
+    assert WIDGET_PAGES[34] == "wars";
 }
 
 test the_gallery_posts_nothing {
@@ -129,16 +129,16 @@ test the_gallery_posts_nothing {
 }
 
 test ideas_are_counted_apart_from_widgets {
-    assert IDEA_COUNT == 7;
-    assert IDEA_IDS[0] == "gatle";
-    assert WIDGET_COUNT == 31;
+    assert IDEA_COUNT == 6;
+    assert WIDGET_IDS[39] == "gatle";
+    assert WIDGET_COUNT == 40;
 }
 
 test every_tool_lives_under_widgets_and_keeps_its_words_on_its_page {
     assert WIDGET_KINDS[9] == "tool";
     assert WIDGET_PAGES[9] == "widgets/bit-diff/";
     assert WIDGET_HOOKS[9] == "";
-    assert WIDGET_KINDS[30] == "tool";
-    assert WIDGET_CATEGORIES[30] == "game";
-    assert WIDGET_PAGES[30] == "widgets/race-the-bee/";
+    assert WIDGET_KINDS[38] == "tool";
+    assert WIDGET_CATEGORIES[38] == "game";
+    assert WIDGET_PAGES[38] == "widgets/race-the-bee/";
 }

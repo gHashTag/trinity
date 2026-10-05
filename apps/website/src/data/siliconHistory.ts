@@ -187,11 +187,6 @@ export const EXCLUDED: Record<string, string> = {
   'tt-trinity-euler/specs/numeric/gf32.t27': 'format outside the silicon-verified GF4-GF24 ladder',
   'trinity-fpga/t27/specs/numeric/gf32.t27': 'format outside the silicon-verified GF4-GF24 ladder',
 
-  // Named gf16_ by its project (trinity-memory issue #115, gf16-attn-v1), but its
-  // own header says every stage value is a Q16.16 s32 word, NOT a GF16 float:
-  // an attention controller, no GF format, no silicon claim.
-  'dmitrii-f-t27/trinity-memory/t27/rtl/gf16_attn.t27': 'Q16.16 attention controller; the gf16 in its name is a project label, not the format',
-
   // Above the ladder. Surfaced by the coverage guard, which matches the
   // `triformat-gf<N>` module declaration rather than the filename -- these three
   // would have been missed by a path pattern built around the known widths.
