@@ -384,8 +384,11 @@ jobs:
       # gone, a gallery widget no lesson uses, a lesson spec that does not
       # compile clean, and a Russian field (i18n/course.ru.json, contract
       # specs/course/course-ru.t27) that is missing or changes a number.
+      # A crawler drops the '#', so every lesson also has a static page with
+      # its own preview card at /learn/<id>/ and /ru/learn/<id>/; the check
+      # refuses a page, card or learn/sitemap.xml that lags the spec.
       - name: Course
-        run: npm run check:course && npm run test:course
+        run: npm run check:course && npm run test:course && npm run check:course-pages
 
       # The IGLA board on WARS: specs/queen/igla_board.t27 is generated in
       # gHashTag/igla-coder-gpu from committed artifacts. The gate recompiles it,
