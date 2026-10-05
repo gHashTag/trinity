@@ -1,12 +1,14 @@
 /* The course (#/course): pure black, white type, no green fields or glows
    (owner, 2026-10-05). Done cells are white; everything else is grey on black.
-   Set like a glossy magazine (owner, 2026-10-05): oversized Didone headlines,
+   Set like a glossy magazine (owner, 2026-10-05): oversized heavy headlines,
    hairline and heavy rules, a drop cap, outlined numerals, a pull-quote task.
-   The serif is the reader's own (Didot / Bodoni on Apple, Georgia elsewhere,
-   Cyrillic falls through to Georgia); nothing is downloaded for it. */
+   The site's own fonts only (owner: "наши шрифты верни и жирней заголовки"):
+   Outfit 800 for display (Russian falls back to system-ui, as on the rest of
+   the site), JetBrains Mono for numerals and labels. */
 
 .course-page {
-  --course-serif: Didot, 'Bodoni 72', 'Bodoni MT', 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --course-display: var(--font, 'Outfit', system-ui, sans-serif);
+  --course-mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
   background: #000;
   color: #f2f2f2;
   min-height: 100vh;
@@ -42,21 +44,22 @@
 }
 
 .course-title {
-  font-family: var(--course-serif);
+  font-family: var(--course-display);
   font-size: clamp(36px, 10.5vw, 150px);
   line-height: 0.9;
-  font-weight: 400;
-  letter-spacing: -0.035em;
+  font-weight: 800;
+  letter-spacing: -0.045em;
   margin: 0 0 28px;
-  max-width: 1100px;
+  max-width: 1160px;
   text-wrap: balance;
   overflow-wrap: break-word;
+  /* a long Russian word at display size breaks with a hyphen, not mid-air */
   hyphens: auto;
 }
 
 .course-lead {
-  font-family: var(--course-serif);
-  font-style: italic;
+  font-family: var(--course-display);
+  font-weight: 500;
   font-size: clamp(22px, 2.8vw, 34px);
   line-height: 1.2;
   color: #fff;
@@ -178,10 +181,11 @@
 /* the module numeral, outlined like a cover line */
 .course-map-big,
 .course-lesson-n {
-  font-family: var(--course-serif);
+  font-family: var(--course-display);
+  font-weight: 800;
   line-height: 0.8;
   color: transparent;
-  -webkit-text-stroke: 1px #fff;
+  -webkit-text-stroke: 1.5px #fff;
   font-variant-numeric: lining-nums;
 }
 
@@ -198,11 +202,11 @@
 }
 
 .course-map-title {
-  font-family: var(--course-serif);
+  font-family: var(--course-display);
   font-size: clamp(26px, 2.6vw, 36px);
-  line-height: 1.05;
-  font-weight: 400;
-  letter-spacing: -0.01em;
+  line-height: 1.02;
+  font-weight: 800;
+  letter-spacing: -0.03em;
   color: #fff;
 }
 
@@ -238,14 +242,17 @@
 }
 
 .course-cell-n {
-  font-family: var(--course-serif);
-  font-size: 40px;
+  font-family: var(--course-mono);
+  font-size: 34px;
+  font-weight: 500;
+  letter-spacing: -0.04em;
   line-height: 0.9;
   color: #5a5a5a;
 }
 
 .course-cell-title {
-  font-family: var(--course-serif);
+  font-family: var(--course-display);
+  font-weight: 700;
   font-size: 19px;
   line-height: 1.2;
 }
@@ -324,21 +331,22 @@
 }
 
 .course-lesson-title {
-  font-family: var(--course-serif);
+  font-family: var(--course-display);
   font-size: clamp(34px, 8vw, 120px);
   line-height: 0.92;
-  letter-spacing: -0.035em;
-  font-weight: 400;
+  letter-spacing: -0.045em;
+  font-weight: 800;
   margin: 0 0 28px;
-  max-width: 1100px;
+  max-width: 1160px;
   text-wrap: balance;
   overflow-wrap: break-word;
+  /* a long Russian word at display size breaks with a hyphen, not mid-air */
   hyphens: auto;
 }
 
 .course-goal {
-  font-family: var(--course-serif);
-  font-style: italic;
+  font-family: var(--course-display);
+  font-weight: 600;
   font-size: clamp(21px, 2.4vw, 30px);
   line-height: 1.25;
   color: #fff;
@@ -373,7 +381,8 @@
 /* the drop cap of the lesson's first paragraph */
 .course-dropcap::first-letter {
   float: left;
-  font-family: var(--course-serif);
+  font-family: var(--course-display);
+  font-weight: 800;
   font-size: 5.2em;
   line-height: 0.82;
   padding: 0.06em 0.1em 0 0;
@@ -391,8 +400,8 @@
 .course-task p {
   margin: 0;
   color: #fff;
-  font-family: var(--course-serif);
-  font-style: italic;
+  font-family: var(--course-display);
+  font-weight: 700;
   font-size: clamp(22px, 2.2vw, 28px);
   line-height: 1.25;
 }
@@ -436,7 +445,7 @@
 }
 
 .course-chip.is-spec {
-  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-family: var(--course-mono);
 }
 
 .course-hint {
@@ -479,7 +488,7 @@
 
 .course-link-muted {
   color: #6f6f6f;
-  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-family: var(--course-mono);
 }
 
 .course-pager {
@@ -495,7 +504,8 @@
   border-top: 6px solid #fff;
   color: #fff;
   text-decoration: none;
-  font-family: var(--course-serif);
+  font-family: var(--course-display);
+  font-weight: 800;
   font-size: clamp(24px, 3vw, 40px);
   line-height: 1.05;
   letter-spacing: -0.015em;
