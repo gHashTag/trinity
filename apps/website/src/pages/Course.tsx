@@ -29,7 +29,8 @@ function readDone(): string[] {
   try {
     const raw = window.localStorage.getItem(COURSE.progressKey)
     const list = raw ? JSON.parse(raw) : []
-    return Array.isArray(list) ? list.filter((x): x is string => typeof x === 'string') : []
+    // Only ids the course still has: a renamed lesson must not inflate the count.
+    return Array.isArray(list) ? list.filter((x): x is string => typeof x === 'string' && LESSONS.some((l) => l.id === x)) : []
   } catch {
     return []
   }
@@ -85,8 +86,10 @@ function CourseMap({ lang, say, done, current }: { lang: Lang; say: Say; done: s
 }
 
 function Overview({ lang, say, done }: { lang: Lang; say: Say; done: string[] }) {
-  const next = LESSONS.find((l) => !done.includes(l.id)) ?? LESSONS[0]
-  const started = done.length > 0
+  const left = LESSONS.find((l) => !done.includes(l.id))
+  const next = left ?? LESSONS[0]
+  // All done: offer the course again from the start, not "continue" to lesson 1.
+  const started = done.length > 0 && left !== undefined
   return (
     <div className="course-hero">
       <p className="course-kicker course-masthead">{say.KICKER}</p>
@@ -128,15 +131,28 @@ function CourseNotes({ say }: { say: Say }) {
   )
 }
 
+type Also = { id: string; title: string; preview: string | null; height: number; url: string }
+const alsoOf = (l: CourseLesson) => l.also as readonly Also[]
+
+/** Widgets with no framable page (a site tab, not a widget page) open as links, never as an empty frame. */
+function linksOf(l: CourseLesson) {
+  return alsoOf(l)
+    .filter((w) => !w.preview)
+    .map((w) => ({ key: w.id, title: w.title, page: local(w.url) }))
+}
+
 function framesOf(l: CourseLesson): Frame[] {
   const main: Frame = { key: l.widget.id, title: l.widget.title, preview: l.widget.preview, height: l.widget.height, page: local(l.widget.url) }
-  const also: Frame[] = (l.also as readonly { id: string; title: string; preview: string; height: number; url: string }[]).map((w) => ({ key: w.id, title: w.title, preview: w.preview, height: w.height, page: local(w.url) }))
+  const also: Frame[] = alsoOf(l)
+    .filter((w) => w.preview)
+    .map((w) => ({ key: w.id, title: w.title, preview: w.preview!, height: w.height, page: local(w.url) }))
   const spec: Frame[] = l.spec ? [{ key: 'spec', title: l.spec.path, preview: l.spec.preview, height: l.spec.height, spec: true }] : []
   return [main, ...spec, ...also]
 }
 
 function Lesson({ lesson, lang, say, done, toggle }: { lesson: CourseLesson; lang: Lang; say: Say; done: string[]; toggle: (id: string) => void }) {
   const frames = useMemo(() => framesOf(lesson), [lesson])
+  const links = useMemo(() => linksOf(lesson), [lesson])
   const [key, setKey] = useState(frames[0].key)
   useEffect(() => {
     setKey(frames[0].key)
@@ -198,6 +214,15 @@ function Lesson({ lesson, lang, say, done, toggle }: { lesson: CourseLesson; lan
               </button>
             ))}
           </div>
+          {links.length > 0 ? (
+            <div className="course-frame-tabs">
+              {links.map((w) => (
+                <a key={w.key} className="course-chip" href={w.page} target="_blank" rel="noreferrer">
+                  <span data-lang-exempt="widget-title">{w.title}</span> ↗
+                </a>
+              ))}
+            </div>
+          ) : null}
           {lesson.also.length > 0 ? (
             <p className="course-hint">
               {say.ALSO}: {say.ALSO_HINT}

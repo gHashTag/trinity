@@ -379,7 +379,7 @@ jobs:
       - name: Widget tool pages
         run: npm run check:widget-pages && npm run test:widget-pages
 
-      # The course at #/course: specs/course/course.t27 orders 27 lessons over
+      # The course at #/course: specs/course/course.t27 orders 30 lessons (27 and a lab of 3) over
       # the gallery's widgets; the generator refuses a lesson whose widget is
       # gone, a gallery widget no lesson uses, a lesson spec that does not
       # compile clean, and a Russian field (i18n/course.ru.json, contract
