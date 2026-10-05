@@ -99,7 +99,7 @@ function Overview({ lang, say, done }: { lang: Lang; say: Say; done: string[] })
         </Link>
         <span className="course-progress">{fmt(say.PROGRESS, done.length, TOTAL)}</span>
       </div>
-      <div className="course-bar" aria-hidden="true">
+      <div className="course-bar" aria-hidden="true" style={{ gridTemplateColumns: `repeat(${TOTAL}, 1fr)` }}>
         {LESSONS.map((l) => (
           <span key={l.id} className={done.includes(l.id) ? 'is-done' : ''} />
         ))}

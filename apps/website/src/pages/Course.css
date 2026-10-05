@@ -7,7 +7,7 @@
    the site), JetBrains Mono for numerals and labels. */
 
 .course-page {
-  --course-display: var(--font, 'Outfit', system-ui, sans-serif);
+  --course-display: var(--font);
   --course-mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
   background: #000;
   color: #f2f2f2;
@@ -140,7 +140,7 @@
 
 .course-bar {
   display: grid;
-  grid-template-columns: repeat(27, 1fr);
+  /* one segment per lesson; Course.tsx sets the count from the spec */
   gap: 3px;
   max-width: 760px;
 }
@@ -357,7 +357,7 @@
 }
 
 .course-goal .course-label {
-  font-family: var(--font, inherit);
+  font-family: var(--font);
   font-style: normal;
 }
 
@@ -512,7 +512,7 @@
 }
 
 .course-pager-link .course-label {
-  font-family: var(--font, inherit);
+  font-family: var(--font);
   margin-bottom: 12px;
 }
 
