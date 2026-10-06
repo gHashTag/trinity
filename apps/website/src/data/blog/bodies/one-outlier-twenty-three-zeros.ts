@@ -104,7 +104,7 @@ export const body: Block[] = [
   { kind: 'h', text: 'For people who build MX' },
   {
     kind: 'p',
-    text: '`ocp_mx.t27` is one file. It decodes every code of FP4 E2M1 (16), FP6 E2M3 and E3M2 (64 each), INT8, and OFP8 E4M3 and E5M2 (256 each), NaN and Inf included; encodes with round to nearest, ties to even, saturating; and runs the block conversion of section 6.3. Each source is cited next to the code it justifies. Its 49 tests assert exact integers: codes, scales, counts, and errors in units of 2^-24. The named code points and the five block-code tables can be run against a conversion in a kernel or in hardware. If one disagrees with your reading of the specification, we want that report: on t27#6828 while it is open, as an issue in gHashTag/t27 after it merges.',
+    text: '`ocp_mx.t27` is one file. It decodes every code of FP4 E2M1 (16), FP6 E2M3 and E3M2 (64 each), INT8, and OFP8 E4M3 and E5M2 (256 each), NaN and Inf included; encodes with round to nearest, ties to even, saturating; and runs the block conversion of section 6.3. Each source is cited next to the code it justifies. Its 49 tests assert exact integers: codes, scales, counts, and errors in units of 2^-24. The named code points and the five block-code tables can be run against a conversion in a kernel or in hardware. If one disagrees with your reading of the specification, we want that report, as an issue in gHashTag/t27.',
   },
   {
     kind: 'p',
@@ -234,7 +234,7 @@ export const ruBody: Block[] = [
   { kind: 'h', text: 'Тем, кто строит MX' },
   {
     kind: 'p',
-    text: '`ocp_mx.t27` — один файл. Он декодирует каждый код FP4 E2M1 (16), FP6 E2M3 и E3M2 (по 64), INT8, OFP8 E4M3 и E5M2 (по 256), включая NaN и Inf; кодирует с округлением к ближайшему, при равенстве к чётному, с насыщением; и выполняет перевод блока из раздела 6.3. Каждый источник указан рядом с кодом, который он обосновывает. Его 49 тестов проверяют точные целые: коды, масштабы, счёт обнулённых и ошибки в единицах 2^-24. Названные коды и пять таблиц кодов блока можно прогнать против перевода в своём ядре или в железе. Если какой-то из них расходится с вашим прочтением спецификации, мы хотим об этом знать: в t27#6828, пока он открыт, и отдельным issue в gHashTag/t27 после слияния.',
+    text: '`ocp_mx.t27` — один файл. Он декодирует каждый код FP4 E2M1 (16), FP6 E2M3 и E3M2 (по 64), INT8, OFP8 E4M3 и E5M2 (по 256), включая NaN и Inf; кодирует с округлением к ближайшему, при равенстве к чётному, с насыщением; и выполняет перевод блока из раздела 6.3. Каждый источник указан рядом с кодом, который он обосновывает. Его 49 тестов проверяют точные целые: коды, масштабы, счёт обнулённых и ошибки в единицах 2^-24. Названные коды и пять таблиц кодов блока можно прогнать против перевода в своём ядре или в железе. Если какой-то из них расходится с вашим прочтением спецификации, мы хотим об этом знать: откройте issue в gHashTag/t27.',
   },
   {
     kind: 'p',
