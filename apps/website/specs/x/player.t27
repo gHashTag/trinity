@@ -43,7 +43,7 @@ pub const NAME : str = "t27 in a post";
 ; The derived files the generator rewrites (relative to apps/website): this spec's public copy,
 ; then the site modules below as one ES module, then per play, in PLAY_IDS order, its share page
 ; and one share page per backend, in BACKENDS order.
-pub const GENERATED : [10]str = ["public/play/player.t27", "public/play/site.js", "public/play/hello-world/index.html", "public/play/hello-world/zig/index.html", "public/play/hello-world/c/index.html", "public/play/hello-world/rust/index.html", "public/play/hello-world/verilog/index.html", "public/play/hello-world/verilog-hir/index.html", "public/play/hello-world/js/index.html", "public/play/hello-world/ts/index.html"];
+pub const GENERATED : [18]str = ["public/play/player.t27", "public/play/site.js", "public/play/hello-world/index.html", "public/play/hello-world/zig/index.html", "public/play/hello-world/c/index.html", "public/play/hello-world/rust/index.html", "public/play/hello-world/verilog/index.html", "public/play/hello-world/verilog-hir/index.html", "public/play/hello-world/js/index.html", "public/play/hello-world/ts/index.html", "public/play/e8m0/index.html", "public/play/e8m0/zig/index.html", "public/play/e8m0/c/index.html", "public/play/e8m0/rust/index.html", "public/play/e8m0/verilog/index.html", "public/play/e8m0/verilog-hir/index.html", "public/play/e8m0/js/index.html", "public/play/e8m0/ts/index.html"];
 
 ; --- What the player takes from the site -------------------------------------------------------
 ; The spec explorer's highlighter and palette, bundled from the site's own source rather than
@@ -186,13 +186,13 @@ pub const SHELL_GEN_ALIAS : str = "t27c gen-{backend}";
 ; --- Plays ---------------------------------------------------------------------------------------
 ; One entry per play, the same position in every array. SPEC is a path under public/t27/files/;
 ; CAST names a recording published at public/term/<cast>/.
-pub const PLAY_COUNT : u8 = 1;
-pub const PLAY_IDS : [1]str = ["hello-world"];
-pub const PLAY_SPECS : [1]str = ["specs/demos/hello_world.t27"];
-pub const PLAY_CASTS : [1]str = ["t27c-hello-world"];
-pub const PLAY_TITLES : [1]str = ["hello_world.t27, compiled inside the post"];
-pub const PLAY_DESCRIPTIONS : [1]str = ["The t27 compiler, as WebAssembly, running on one spec in your browser: lexer to seven backends, the spec's own tests, the emitted code, its Verilog read for synthesis, and a terminal."];
-pub const PLAY_IMAGE_ALTS : [1]str = ["The t27 player: hello_world.t27 on the left, the compiler's stages on the right with token, node and backend counts, and tabs for tests, code, RTL and a terminal."];
+pub const PLAY_COUNT : u8 = 2;
+pub const PLAY_IDS : [2]str = ["hello-world", "e8m0"];
+pub const PLAY_SPECS : [2]str = ["specs/demos/hello_world.t27", "specs/numeric/e8m0.t27"];
+pub const PLAY_CASTS : [2]str = ["t27c-hello-world", "t27c-e8m0"];
+pub const PLAY_TITLES : [2]str = ["hello_world.t27, compiled inside the post", "e8m0.t27, the OCP MX scale byte, compiled inside the post"];
+pub const PLAY_DESCRIPTIONS : [2]str = ["The t27 compiler, as WebAssembly, running on one spec in your browser: lexer to seven backends, the spec's own tests, the emitted code, its Verilog read for synthesis, and a terminal.", "The OCP MX shared scale as a t27 spec, compiled by t27c as WebAssembly in your browser: one byte, 2^(e-127), code 255 is NaN. Seven backends, the spec's own tests and its Verilog."];
+pub const PLAY_IMAGE_ALTS : [2]str = ["The t27 player: hello_world.t27 on the left, the compiler's stages on the right with token, node and backend counts, and tabs for tests, code, RTL and a terminal.", "The t27 player: e8m0.t27, the shared scale byte of the OCP Microscaling formats, on the left; the compiler's stages on the right with token, node and backend counts, and tabs for tests, code, RTL and a terminal."];
 
 test the_player_is_sixteen_by_nine {
     assert PLAYER_WIDTH * 9 == PLAYER_HEIGHT * 16;
@@ -267,9 +267,15 @@ test the_terminal_is_a_tab_and_gen_is_a_command {
 }
 
 test the_first_play_is_hello_world {
-    assert PLAY_COUNT == 1;
     assert PLAY_IDS[0] == "hello-world";
     assert PLAY_SPECS[0] == "specs/demos/hello_world.t27";
+}
+
+test the_second_play_is_the_mx_scale_byte {
+    assert PLAY_COUNT == 2;
+    assert PLAY_IDS[1] == "e8m0";
+    assert PLAY_SPECS[1] == "specs/numeric/e8m0.t27";
+    assert PLAY_CASTS[1] == "t27c-e8m0";
 }
 
 test the_terminal_reads_the_compile_stages {
