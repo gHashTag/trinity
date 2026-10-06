@@ -2,7 +2,7 @@ import type { Block } from '../types'
 
 // Numbers here come from two recordings made on the t27c lab on 2026-10-06
 // (public/term/t27c-ocp-mx/, public/term/t27c-e8m0/), from the asserts of
-// specs/numeric/ocp_mx.t27 at gHashTag/t27 1a3786657 (open PR t27#6828), from the
+// specs/numeric/ocp_mx.t27 at gHashTag/t27 1a3786657 (t27#6828, merged as 322cc77d7), from the
 // card of public/play/e8m0/, and from specs/course/course.t27 (trinity#1443).
 // The comparison section comes from the pages it links, read on 2026-10-06.
 
@@ -114,7 +114,7 @@ export const body: Block[] = [
   {
     kind: 'ul',
     items: [
-      '`ocp_mx.t27` is on an open pull request, t27#6828, not yet merged into t27. The ocp_mx recording was made on its commit 1a3786657. Until it merges, lesson 33 shows a recording of a branch.',
+      '`ocp_mx.t27` was merged into t27 on 6 October 2026 (t27#6828, squash commit 322cc77d7). The ocp_mx recording was made before that, on the branch commit 1a3786657; the file is byte-identical in both.',
       'Lesson 33 is a recording, not a player: `ocp_mx.t27` is not on the site yet, so the page does not run its tests (the site\'s evaluator passes all 49 when run on the file).',
       'One block, chosen to show the flush. No model, no accuracy number.',
       'Not covered: OFP8\'s non-saturating overflow mode, and the all-zero block, which section 6.3 leaves undefined.',
@@ -244,7 +244,7 @@ export const ruBody: Block[] = [
   {
     kind: 'ul',
     items: [
-      '`ocp_mx.t27` лежит в открытом пул-реквесте t27#6828 и ещё не влит в t27. Запись ocp_mx сделана на его коммите 1a3786657. Пока он не слит, урок 33 показывает запись ветки.',
+      '`ocp_mx.t27` влит в t27 6 октября 2026 года (t27#6828, сквош-коммит 322cc77d7). Запись ocp_mx сделана раньше, на коммите ветки 1a3786657; файл в обоих совпадает байт в байт.',
       'Урок 33 — запись, а не плеер: `ocp_mx.t27` ещё нет на сайте, поэтому страница не запускает его тесты (вычислитель сайта, запущенный на этом файле, проходит все 49).',
       'Один блок, выбранный, чтобы показать обнуление. Ни модели, ни числа точности.',
       'Не покрыто: режим OFP8 без насыщения при переполнении и блок из одних нулей, который раздел 6.3 оставляет неопределённым.',

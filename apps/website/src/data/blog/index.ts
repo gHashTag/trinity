@@ -5,7 +5,7 @@ export const postsIndex: PostMeta[] = [
   {
     slug: "one-outlier-twenty-three-zeros",
     title: "One outlier, 23 zeros: a course module on the OCP MX block",
-    summary: "[one block of 32, chosen to show the flush, no model and no accuracy number; ocp_mx.t27 is on an open pull request, t27#6828; lesson 33 is a recording, not a browser player; software only] The t27 course has three new lessons on the Microscaling (MX) formats of the Open Compute Project, where 32 weights share one scale byte. One weight of 3.3 among 31 small ones sets that scale, and in MXFP4 23 of the 30 non-zero small ones become zero; MXFP6 E2M3 loses 4, MXINT8 2, MXFP6 E3M2 and MXFP8 E4M3 none. The numbers come from a spec with 49 tests, and changing one exponent bias from 15 to 16 fails exactly one of them.",
+    summary: "[one block of 32, chosen to show the flush, no model and no accuracy number; ocp_mx.t27 is merged into t27 but not on the site yet; lesson 33 is a recording, not a browser player; software only] The t27 course has three new lessons on the Microscaling (MX) formats of the Open Compute Project, where 32 weights share one scale byte. One weight of 3.3 among 31 small ones sets that scale, and in MXFP4 23 of the 30 non-zero small ones become zero; MXFP6 E2M3 loses 4, MXINT8 2, MXFP6 E3M2 and MXFP8 E4M3 none. The numbers come from a spec with 49 tests, and changing one exponent bias from 15 to 16 fails exactly one of them.",
     date: "2026-10-06",
     readingMinutes: 8,
     tags: ["t27", "Number formats", "Mutation testing"],
@@ -19,8 +19,8 @@ export const postsIndex: PostMeta[] = [
       { label: "trinity#1445: this post", href: "https://github.com/gHashTag/trinity/pull/1445" },
       { label: "trinity#1444: this post's issue", href: "https://github.com/gHashTag/trinity/issues/1444" },
       { label: "trinity#1441: four Russian lesson cards clip their address · OPEN", href: "https://github.com/gHashTag/trinity/issues/1441" },
-      { label: "t27#6828: ocp_mx.t27, OCP MX v1.0 and OFP8 elements, the E8M0 scale and the block conversion · OPEN, submitted, not merged", href: "https://github.com/gHashTag/t27/pull/6828" },
-      { label: "t27#6827: no spec decoded an MX element or ran the block conversion · OPEN", href: "https://github.com/gHashTag/t27/issues/6827" },
+      { label: "t27#6828: ocp_mx.t27, OCP MX v1.0 and OFP8 elements, the E8M0 scale and the block conversion · MERGED 2026-10-06", href: "https://github.com/gHashTag/t27/pull/6828" },
+      { label: "t27#6827: no spec decoded an MX element or ran the block conversion · CLOSED 2026-10-06", href: "https://github.com/gHashTag/t27/issues/6827" },
       { label: "t27#6867: generated Zig that does not compile, an i64 index and a signed division · OPEN", href: "https://github.com/gHashTag/t27/issues/6867" },
       { label: "OCP Microscaling Formats (MX) Specification v1.0, section 6.3 is the block conversion", href: "https://www.opencompute.org/documents/ocp-microscaling-formats-mx-v1-0-spec-final-pdf" },
       { label: "arXiv:2310.10537, Rouhani et al., Microscaling Data Formats for Deep Learning", href: "https://arxiv.org/abs/2310.10537" },
@@ -40,7 +40,7 @@ export const postsIndex: PostMeta[] = [
     ],
     openQuestions: [
       "One block, chosen to show the flush. There is no model and no accuracy number, and how often real weight blocks look like this one is not measured here.",
-      "ocp_mx.t27 is on an open pull request, t27#6828, and is not merged into t27. Lesson 33 shows a recording of that branch, made at commit 1a3786657.",
+      "ocp_mx.t27 was merged into t27 on 6 October 2026 (t27#6828, 322cc77d7) but has not reached the site: the scan that copies t27 specs to t27.ai has been red since 3 October. Lesson 33 shows a recording made on the branch commit 1a3786657, with the same file.",
       "Lesson 33 is a recording, not a player: ocp_mx.t27 is not on the site yet, so the page does not run its tests (the site's evaluator passes all 49 when run on the file). In lesson 31 the player skips 10 of the 27 checks of e8m0.t27 because its evaluator does not handle the ExprCast conversion yet; the native run in lesson 32 passes all 18 tests and proves all 9 invariants.",
       "The block conversion follows the scale rule of OCP MX v1.0 section 6.3, which also allows other algorithms. A tool that picks the scale differently gives different codes for the same weights, and no reading is checked against hardware here.",
       "Not covered: OFP8's non-saturating overflow mode, and the all-zero block, which section 6.3 leaves undefined.",
@@ -51,10 +51,10 @@ export const postsIndex: PostMeta[] = [
     published: true,
     ru: {
       title: "Один выброс, 23 нуля: модуль курса о блоке OCP MX",
-      summary: "[один блок из 32, выбранный, чтобы показать обнуление, без модели и без числа точности; ocp_mx.t27 лежит в открытом пул-реквесте t27#6828; урок 33 — запись, а не плеер в браузере; только программа] В курсе t27 три новых урока о форматах Microscaling (MX) от Open Compute Project, где 32 веса делят один байт масштаба. Один вес 3,3 среди 31 маленького задаёт этот масштаб, и в MXFP4 23 из 30 ненулевых маленьких становятся нулём; MXFP6 E2M3 теряет 4, MXINT8 2, MXFP6 E3M2 и MXFP8 E4M3 — ни одного. Числа взяты из спеки с 49 тестами, и замена одного смещения экспоненты с 15 на 16 роняет ровно один из них.",
+      summary: "[один блок из 32, выбранный, чтобы показать обнуление, без модели и без числа точности; ocp_mx.t27 влит в t27, но ещё не на сайте; урок 33 — запись, а не плеер в браузере; только программа] В курсе t27 три новых урока о форматах Microscaling (MX) от Open Compute Project, где 32 веса делят один байт масштаба. Один вес 3,3 среди 31 маленького задаёт этот масштаб, и в MXFP4 23 из 30 ненулевых маленьких становятся нулём; MXFP6 E2M3 теряет 4, MXINT8 2, MXFP6 E3M2 и MXFP8 E4M3 — ни одного. Числа взяты из спеки с 49 тестами, и замена одного смещения экспоненты с 15 на 16 роняет ровно один из них.",
       openQuestions: [
         "Один блок, выбранный, чтобы показать обнуление. Ни модели, ни числа точности; как часто настоящие блоки весов похожи на этот, здесь не измерено.",
-        "ocp_mx.t27 лежит в открытом пул-реквесте t27#6828 и не влит в t27. Урок 33 показывает запись этой ветки, сделанную на коммите 1a3786657.",
+        "ocp_mx.t27 влит в t27 6 октября 2026 года (t27#6828, 322cc77d7), но до сайта не дошёл: скан, который копирует спеки t27 на t27.ai, красный с 3 октября. Урок 33 показывает запись, сделанную на коммите ветки 1a3786657, с тем же файлом.",
         "Урок 33 — запись, а не плеер: ocp_mx.t27 ещё нет на сайте, поэтому страница не запускает его тесты (вычислитель сайта, запущенный на этом файле, проходит все 49). В уроке 31 плеер пропускает 10 из 27 проверок e8m0.t27, потому что его вычислитель пока не умеет преобразование ExprCast; нативный прогон в уроке 32 проходит все 18 тестов и доказывает все 9 инвариантов.",
         "Перевод блока следует правилу масштаба из раздела 6.3 OCP MX v1.0, который допускает и другие алгоритмы. Инструмент, выбирающий масштаб иначе, даёт для тех же весов другие коды, и ни одно прочтение здесь не проверено на железе.",
         "Не покрыто: режим OFP8 без насыщения при переполнении и блок из одних нулей, который раздел 6.3 оставляет неопределённым.",
