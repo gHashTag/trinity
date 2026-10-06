@@ -9,7 +9,7 @@ import type { Block } from '../types'
 export const body: Block[] = [
   {
     kind: 'p',
-    text: 'The t27 course now has 33 lessons. Its new eleventh module, "AI numbers: the MX block", is three lessons on the Microscaling (MX) formats of the Open Compute Project: weights stored in 4, 6 or 8 bits, with one shared scale for every 32 of them. Lesson 31 explains the shared scale and compiles its spec in your browser. Lesson 32 runs that spec on a real machine. Lesson 33 shows what one large weight does to the 31 small ones in its block: in MXFP4, 23 of them become zero. Every number in this post is printed by a command in a recording or asserted by a test in a spec.',
+    text: 'The t27 course now has 33 lessons. Its new eleventh module, "AI numbers: the MX block", is three lessons on the Microscaling (MX) formats of the Open Compute Project: weights stored in 4, 6 or 8 bits, with one shared scale for every 32 of them. Lesson 31 explains the shared scale and compiles its spec in your browser. Lesson 32 runs that spec on a real machine. Lesson 33 shows what one large weight does to the other 31 weights in its block, 30 of them non-zero and one exactly zero: in MXFP4, 23 of the 30 non-zero ones become zero. Every number in this post is printed by a command in a recording or asserted by a test in a spec.',
   },
   {
     kind: 'terminal',
@@ -37,11 +37,11 @@ export const body: Block[] = [
   { kind: 'h', text: 'One outlier, format by format' },
   {
     kind: 'p',
-    text: 'Section 6.3 of the MX specification sets the scale from the largest magnitude in the block: its power of two, minus the largest exponent the element can show. One value decides the scale for all 32. Our worked block has 31 weights between -0.17 and 0.17 and one outlier, 3.3. `ocp_mx.t27` converts the block to each element type and counts the non-zero inputs that come back as zero. Every cell below is an assert in the spec; the errors are asserted exactly, in units of 2^-24, and shown here as decimals.',
+    text: 'Section 6.3 of the MX specification sets the scale from the largest magnitude in the block: its power of two, minus the largest exponent the element can show. One value decides the scale for all 32. Our worked block has 31 weights between -0.17 and 0.17, one of them exactly zero, and one outlier, 3.3. `ocp_mx.t27` converts the block to each element type and counts the non-zero inputs that come back as zero. Every count, scale and error below is an assert in the spec; the errors are asserted exactly, in units of 2^-24, and shown here as decimals.',
   },
   {
     kind: 'table',
-    head: ['Element', 'Bits per weight', 'Shared scale', 'Flushed to zero (of 31)', 'Sum of absolute errors'],
+    head: ['Element', 'Bits per weight', 'Shared scale', 'Flushed to zero (of 31 non-zero inputs)', 'Sum of absolute errors'],
     rows: [
       ['MXFP4 E2M1', '4.25', '2^-1', '23', '2.5610'],
       ['MXFP6 E2M3', '6.25', '2^-1', '4', '0.5625'],
@@ -70,7 +70,7 @@ export const body: Block[] = [
   { kind: 'h', text: 'Where else to learn this' },
   {
     kind: 'p',
-    text: 'Before writing this, we read the pages of twelve other resources that teach or implement these formats, on 6 October 2026. The table keeps ten of them. "Counted" means the page states how many small values one outlier turns into zero.',
+    text: 'Before writing this, we read the pages of twelve other resources that teach or implement these formats, on 6 October 2026. The table puts them in ten rows. "Counted" means the page states how many small values one outlier turns into zero.',
   },
   {
     kind: 'table',
@@ -82,11 +82,11 @@ export const body: Block[] = [
       ['Quantization Fundamentals and Quantization in Depth, DeepLearning.AI', 'video courses', 'not named on the course pages', 'no', 'code examples', 'not stated'],
       ['TinyML and Efficient Deep Learning, MIT 6.5940 (Fall 2024)', 'university course', 'not named on the course page; slides not read', 'not on the course page', 'Colab labs', 'not stated'],
       ['OCP MX v1.0 and arXiv:2310.10537', 'standard and paper', 'yes, the normative definition', 'gives the rule, no worked block', 'PDF', 'no test vectors published'],
-      ['microsoft/microxcaling', 'library', 'yes: MXFP8, MXFP4, MXINT8, blocks of 32', 'no', 'PyTorch and CUDA', 'yes, in Python'],
+      ['microsoft/microxcaling', 'library', 'yes: MXFP8, MXFP6, MXFP4, MXINT8 (and INT4, INT2), blocks of 32', 'no', 'PyTorch and CUDA', 'yes, in Python'],
       ['graphcore-research/gfloat', 'library', 'yes: OCP MX element and block formats', 'no', 'Python, notebooks', 'yes, cross-checked against torchao'],
       ['Understanding MXFP4 Quantization, K. Sharma (2025)', 'interactive page', 'MXFP4 only, with its own scale rule', 'says an outlier costs precision, not counted', 'your browser, your numbers', 'none cited'],
       ['Floating Point Conversion Calculator, sw23', 'interactive page', 'E8M0 and every MX element type, one value at a time', 'no block', 'your browser, shareable links', 'yes: test vectors and CI'],
-      ['This module, t27 lessons 31 to 33', 'course module', 'yes: five element types, blocks of 32, E8M0', 'counted: 23, 4, 0, 2 and 0 of 31', 'lesson 31 in your browser; lesson 33 a recording', 'yes: 49 tests in the spec'],
+      ['This module, t27 lessons 31 to 33', 'course module', 'yes: five element types, blocks of 32, E8M0', 'counted: 23, 4, 0, 2 and 0 of 31 non-zero inputs', 'lesson 31 in your browser; lesson 33 a recording', 'yes: 49 tests in the spec'],
     ],
   },
   {
@@ -104,7 +104,7 @@ export const body: Block[] = [
   { kind: 'h', text: 'For people who build MX' },
   {
     kind: 'p',
-    text: '`ocp_mx.t27` is one file. It decodes all 256 codes of FP4 E2M1, FP6 E2M3 and E3M2, INT8, and OFP8 E4M3 and E5M2, NaN and Inf included; encodes with round to nearest, ties to even, saturating; and runs the block conversion of section 6.3. Each source is cited next to the code it justifies. Its 49 tests are exact vectors, so they can be run against a conversion in a kernel or in hardware. If one disagrees with your reading of the specification, we want that report: on t27#6828 while it is open, as an issue in gHashTag/t27 after it merges.',
+    text: '`ocp_mx.t27` is one file. It decodes every code of FP4 E2M1 (16), FP6 E2M3 and E3M2 (64 each), INT8, and OFP8 E4M3 and E5M2 (256 each), NaN and Inf included; encodes with round to nearest, ties to even, saturating; and runs the block conversion of section 6.3. Each source is cited next to the code it justifies. Its 49 tests assert exact integers: codes, scales, counts, and errors in units of 2^-24. The named code points and the five block-code tables can be run against a conversion in a kernel or in hardware. If one disagrees with your reading of the specification, we want that report: on t27#6828 while it is open, as an issue in gHashTag/t27 after it merges.',
   },
   {
     kind: 'p',
@@ -114,8 +114,8 @@ export const body: Block[] = [
   {
     kind: 'ul',
     items: [
-      '`ocp_mx.t27` is on an open pull request, t27#6828, not yet merged into t27. The recordings were made on its commit 1a3786657. Until it merges, lesson 33 shows a recording of a branch.',
-      'Lesson 33 is a recording, not a player: the page cannot yet run `ocp_mx.t27`\'s tests in your browser.',
+      '`ocp_mx.t27` is on an open pull request, t27#6828, not yet merged into t27. The ocp_mx recording was made on its commit 1a3786657. Until it merges, lesson 33 shows a recording of a branch.',
+      'Lesson 33 is a recording, not a player: `ocp_mx.t27` is not on the site yet, so the page does not run its tests (the site\'s evaluator passes all 49 when run on the file).',
       'One block, chosen to show the flush. No model, no accuracy number.',
       'Not covered: OFP8\'s non-saturating overflow mode, and the all-zero block, which section 6.3 leaves undefined.',
       'IEEE P3109, the standards project for these formats, has an approved project request and no published standard. Nothing here claims conformance to it.',
@@ -139,7 +139,7 @@ export const body: Block[] = [
 export const ruBody: Block[] = [
   {
     kind: 'p',
-    text: 'В курсе t27 теперь 33 урока. Новый, одиннадцатый модуль «ИИ-числа: блок MX» — три урока о форматах Microscaling (MX) от Open Compute Project: веса хранятся в 4, 6 или 8 битах, и на каждые 32 веса приходится один общий масштаб. Урок 31 объясняет общий масштаб и компилирует его спеку прямо в браузере. Урок 32 запускает ту же спеку на настоящей машине. Урок 33 показывает, что один большой вес делает с 31 маленьким в своём блоке: в MXFP4 23 из них становятся нулём. Каждое число в этом посте напечатано командой в записи или проверено тестом в спеке.',
+    text: 'В курсе t27 теперь 33 урока. Новый, одиннадцатый модуль «ИИ-числа: блок MX» — три урока о форматах Microscaling (MX) от Open Compute Project: веса хранятся в 4, 6 или 8 битах, и на каждые 32 веса приходится один общий масштаб. Урок 31 объясняет общий масштаб и компилирует его спеку прямо в браузере. Урок 32 запускает ту же спеку на настоящей машине. Урок 33 показывает, что один большой вес делает с остальными весами своего блока: из 31 веса 30 ненулевые и один ровно ноль, и в MXFP4 23 из 30 ненулевых становятся нулём. Каждое число в этом посте напечатано командой в записи или проверено тестом в спеке.',
   },
   {
     kind: 'terminal',
@@ -167,11 +167,11 @@ export const ruBody: Block[] = [
   { kind: 'h', text: 'Один выброс, формат за форматом' },
   {
     kind: 'p',
-    text: 'Раздел 6.3 спецификации MX выводит масштаб из наибольшего по модулю значения в блоке: его степень двойки минус наибольшая экспонента, которую может показать элемент. Одно значение решает масштаб для всех 32. В нашем рабочем блоке 31 вес от -0,17 до 0,17 и один выброс, 3,3. `ocp_mx.t27` переводит блок в каждый тип элемента и считает ненулевые входы, которые вернулись нулём. Каждая ячейка ниже — проверка в спеке; ошибки проверены точно, в единицах 2^-24, и здесь показаны десятичными дробями.',
+    text: 'Раздел 6.3 спецификации MX выводит масштаб из наибольшего по модулю значения в блоке: его степень двойки минус наибольшая экспонента, которую может показать элемент. Одно значение решает масштаб для всех 32. В нашем рабочем блоке 31 вес от -0,17 до 0,17, один из них ровно ноль, и один выброс, 3,3. `ocp_mx.t27` переводит блок в каждый тип элемента и считает ненулевые входы, которые вернулись нулём. Все числа обнулённых, масштабы и ошибки ниже проверяются в спеке; ошибки проверены точно, в единицах 2^-24, и здесь показаны десятичными дробями.',
   },
   {
     kind: 'table',
-    head: ['Элемент', 'Бит на вес', 'Общий масштаб', 'Обнулено (из 31)', 'Сумма абсолютных ошибок'],
+    head: ['Элемент', 'Бит на вес', 'Общий масштаб', 'Обнулено (из 31 ненулевого входа)', 'Сумма абсолютных ошибок'],
     rows: [
       ['MXFP4 E2M1', '4,25', '2^-1', '23', '2,5610'],
       ['MXFP6 E2M3', '6,25', '2^-1', '4', '0,5625'],
@@ -200,7 +200,7 @@ export const ruBody: Block[] = [
   { kind: 'h', text: 'Где ещё этому учат' },
   {
     kind: 'p',
-    text: 'Перед тем как писать этот пост, мы прочитали страницы двенадцати других источников, которые учат этим форматам или реализуют их, 6 октября 2026 года. В таблице оставлены десять. «Посчитано» значит, что страница называет, сколько мелких значений один выброс превращает в ноль.',
+    text: 'Перед тем как писать этот пост, мы прочитали страницы двенадцати других источников, которые учат этим форматам или реализуют их, 6 октября 2026 года. В таблице они сведены в десять строк. «Посчитано» значит, что страница называет, сколько мелких значений один выброс превращает в ноль.',
   },
   {
     kind: 'table',
@@ -212,11 +212,11 @@ export const ruBody: Block[] = [
       ['Quantization Fundamentals и Quantization in Depth, DeepLearning.AI', 'видеокурсы', 'не названы на страницах курсов', 'нет', 'примеры кода', 'не указано'],
       ['TinyML and Efficient Deep Learning, MIT 6.5940 (осень 2024)', 'университетский курс', 'не названы на странице курса; слайды не читали', 'нет на странице курса', 'лабораторные в Colab', 'не указано'],
       ['OCP MX v1.0 и arXiv:2310.10537', 'стандарт и статья', 'да, нормативное определение', 'даёт правило, без разобранного блока', 'PDF', 'тестовые векторы не опубликованы'],
-      ['microsoft/microxcaling', 'библиотека', 'да: MXFP8, MXFP4, MXINT8, блоки по 32', 'нет', 'PyTorch и CUDA', 'да, на Python'],
+      ['microsoft/microxcaling', 'библиотека', 'да: MXFP8, MXFP6, MXFP4, MXINT8 (и INT4, INT2), блоки по 32', 'нет', 'PyTorch и CUDA', 'да, на Python'],
       ['graphcore-research/gfloat', 'библиотека', 'да: форматы элементов и блоков OCP MX', 'нет', 'Python, ноутбуки', 'да, сверено с torchao'],
       ['Understanding MXFP4 Quantization, K. Sharma (2025)', 'интерактивная страница', 'только MXFP4, со своим правилом масштаба', 'пишет, что выброс стоит точности, не посчитано', 'ваш браузер, ваши числа', 'не указаны'],
       ['Floating Point Conversion Calculator, sw23', 'интерактивная страница', 'E8M0 и все типы элементов MX, по одному значению', 'блока нет', 'ваш браузер, ссылки для обмена', 'да: тестовые векторы и CI'],
-      ['Этот модуль, уроки t27 с 31 по 33', 'модуль курса', 'да: пять типов элементов, блоки по 32, E8M0', 'посчитано: 23, 4, 0, 2 и 0 из 31', 'урок 31 — в вашем браузере; урок 33 — запись', 'да: 49 тестов в спеке'],
+      ['Этот модуль, уроки t27 с 31 по 33', 'модуль курса', 'да: пять типов элементов, блоки по 32, E8M0', 'посчитано: 23, 4, 0, 2 и 0 из 31 ненулевого входа', 'урок 31 — в вашем браузере; урок 33 — запись', 'да: 49 тестов в спеке'],
     ],
   },
   {
@@ -234,7 +234,7 @@ export const ruBody: Block[] = [
   { kind: 'h', text: 'Тем, кто строит MX' },
   {
     kind: 'p',
-    text: '`ocp_mx.t27` — один файл. Он декодирует все 256 кодов FP4 E2M1, FP6 E2M3 и E3M2, INT8, OFP8 E4M3 и E5M2, включая NaN и Inf; кодирует с округлением к ближайшему, при равенстве к чётному, с насыщением; и выполняет перевод блока из раздела 6.3. Каждый источник указан рядом с кодом, который он обосновывает. Его 49 тестов — точные векторы, их можно прогнать против перевода в своём ядре или в железе. Если какой-то из них расходится с вашим прочтением спецификации, мы хотим об этом знать: в t27#6828, пока он открыт, и отдельным issue в gHashTag/t27 после слияния.',
+    text: '`ocp_mx.t27` — один файл. Он декодирует каждый код FP4 E2M1 (16), FP6 E2M3 и E3M2 (по 64), INT8, OFP8 E4M3 и E5M2 (по 256), включая NaN и Inf; кодирует с округлением к ближайшему, при равенстве к чётному, с насыщением; и выполняет перевод блока из раздела 6.3. Каждый источник указан рядом с кодом, который он обосновывает. Его 49 тестов проверяют точные целые: коды, масштабы, счёт обнулённых и ошибки в единицах 2^-24. Названные коды и пять таблиц кодов блока можно прогнать против перевода в своём ядре или в железе. Если какой-то из них расходится с вашим прочтением спецификации, мы хотим об этом знать: в t27#6828, пока он открыт, и отдельным issue в gHashTag/t27 после слияния.',
   },
   {
     kind: 'p',
@@ -244,8 +244,8 @@ export const ruBody: Block[] = [
   {
     kind: 'ul',
     items: [
-      '`ocp_mx.t27` лежит в открытом пул-реквесте t27#6828 и ещё не влит в t27. Записи сделаны на его коммите 1a3786657. Пока он не слит, урок 33 показывает запись ветки.',
-      'Урок 33 — запись, а не плеер: страница пока не умеет запускать тесты `ocp_mx.t27` в браузере.',
+      '`ocp_mx.t27` лежит в открытом пул-реквесте t27#6828 и ещё не влит в t27. Запись ocp_mx сделана на его коммите 1a3786657. Пока он не слит, урок 33 показывает запись ветки.',
+      'Урок 33 — запись, а не плеер: `ocp_mx.t27` ещё нет на сайте, поэтому страница не запускает его тесты (вычислитель сайта, запущенный на этом файле, проходит все 49).',
       'Один блок, выбранный, чтобы показать обнуление. Ни модели, ни числа точности.',
       'Не покрыто: режим OFP8 без насыщения при переполнении и блок из одних нулей, который раздел 6.3 оставляет неопределённым.',
       'У IEEE P3109, проекта стандарта для этих форматов, есть одобренный запрос на проект и нет опубликованного стандарта. Здесь ничто не заявляет соответствия ему.',
