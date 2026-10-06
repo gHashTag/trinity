@@ -34,6 +34,7 @@ SEALED = [
     ('formats_prismml', 'specs/formats/prismml.t27', [29, 30, 34]),
 ]
 SHARED = ['tools/check-specs.sh', 'native/compiler.lock']
+EVIDENCE_WORKFLOW = '.github/workflows/evidence.yml'
 ATTENTION_PATHS = [
     'reports/fpga/attn-2026-10-03/evidence-manifest.json', 'reports/fpga/attn-2026-10-03/verify-evidence.py',
     'reports/fpga/attn-2026-10-03/physical-results.json', 'tools/verify_gf16_attn_board.py',
@@ -81,12 +82,12 @@ def main():
     groups = []  # name, spec, seal, vectors, evidence, extras, issues
     groups.append(('attention', 'specs/memory/attention_evidence.t27', seal_of(root, 'specs/memory/attention_evidence.t27'),
                    'conformance/memory_attention_evidence.json', 'reports/fpga/attn-2026-10-03/evidence-manifest.json',
-                   ATTENTION_PATHS, [115, 122]))
+                   ATTENTION_PATHS, [115, 122], ''))
     for name, spec, issues in SEALED:
-        groups.append((name, spec, seal_of(root, spec), spec.replace('specs/memory/', 'conformance/memory_').replace('specs/formats/', 'conformance/formats_').replace('.t27', '.json'), '', [], issues))
+        groups.append((name, spec, seal_of(root, spec), spec.replace('specs/memory/', 'conformance/memory_').replace('specs/formats/', 'conformance/formats_').replace('.t27', '.json'), '', [], issues, ''))
     for c in claims(root):
-        extras = ['tools/evidence-proof.py', f'tools/evidence/{c["name"]}.py', c['manifest']]
-        groups.append((c['name'], c['spec'], seal_of(root, c['spec']), c['vectors'], c['manifest'], extras, c['issues']))
+        extras = ['tools/evidence-proof.py', f'tools/evidence/{c["name"]}.py', c['manifest'], EVIDENCE_WORKFLOW]
+        groups.append((c['name'], c['spec'], seal_of(root, c['spec']), c['vectors'], c['manifest'], extras, c['issues'], EVIDENCE_WORKFLOW))
     out = []
     w = out.append
     w('// SPDX-License-Identifier: Apache-2.0')
@@ -115,6 +116,7 @@ def main():
     w(strs('GROUP_VECTORS_HASH', [sha(root, g[3]) for g in groups]))
     w(nums('GROUP_VECTOR_COUNT', [vector_count(root, g[3]) for g in groups]))
     w(strs('GROUP_EVIDENCE', [g[4] for g in groups]))
+    w(strs('GROUP_WORKFLOW', [g[7] for g in groups]))
     paths, owners = [], []
     for index, g in enumerate(groups):
         for path in g[5]:

@@ -1,6 +1,6 @@
 {
   "spec_path": "specs/queen/memory_issue_proof.t27",
-  "spec_hash": "d265fa300b0477ba4f76172c11c75eb6bde031ef0cfe83569dad576ae62ad046",
+  "spec_hash": "70d1f11cb02632ffb865a8c29e610ec0a2d4e7af5bec1b82f362644bf752dda9",
   "vectors": [
     {
       "mask": 0,

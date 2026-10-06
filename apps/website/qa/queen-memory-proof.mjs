@@ -33,15 +33,17 @@ function fixture(){
     GROUP_VECTORS_HASH:production.GROUP_VECTORS.map(p=>hash(files.get(p))),GROUP_VECTOR_COUNT:production.GROUP_SPEC.map(()=>1),
     GROUP_PATH_HASHES:production.GROUP_PATHS.map(p=>hash(files.get(p)))};
   const run={id:77,head_sha:commit,event:'push',path:production.WORKFLOW,status:'completed',conclusion:'success',html_url:`https://github.com/${repo}/actions/runs/77`,repository:{full_name:repo}};
+  // Groups with their own workflow (the evidence replay) need that run green at the same head.
+  const own=[...new Set(production.GROUP_WORKFLOW.filter(Boolean))].map((path,i)=>({id:80+i,head_sha:commit,event:'push',path,status:'completed',conclusion:'success',html_url:`https://github.com/${repo}/actions/runs/${80+i}`,repository:{full_name:repo}}));
   const fetcher=async(url,options)=>{
     assert.equal(options.credentials,'omit');assert.equal(options.cache,'no-store');
     if(url.endsWith('/commits/HEAD'))return Response.json({sha:commit});
-    if(url.includes('/actions/runs?'))return Response.json({workflow_runs:[run]});
+    if(url.includes('/actions/runs?'))return Response.json({workflow_runs:[run,...own]});
     const prefix=`https://raw.githubusercontent.com/${repo}/${commit}/`;
     assert.ok(url.startsWith(prefix));const body=files.get(url.slice(prefix.length));
     return new Response(body??'missing',{status:body===undefined?404:200});
   };
-  return {files,run,fetcher,reader:createGroupedIssueProofReader(policy),policy};
+  return {files,run,own,fetcher,reader:createGroupedIssueProofReader(policy),policy};
 }
 const row=(number,state='closed')=>({key:`${repo}#${number}`,repo,number,state,kind:'issue',title:`Issue ${number}`,closedAt:'2026-10-04T01:46:13Z',children:[],coverage:'unknown'});
 let cases=0;
@@ -54,6 +56,8 @@ function expectCovered(result,n,label){
   assert.equal(result[n].proof.specUrls?.length??1,need.length,`${label}: one spec link per group #${n}`);
   const evidence=need.map(g=>production.GROUP_EVIDENCE[g]).find(Boolean);
   assert.equal(result[n].proof.evidenceUrl,evidence?`https://github.com/${repo}/blob/${commit}/${evidence}`:undefined);
+  const first=production.GROUP_WORKFLOW[need[0]];
+  assert.equal(result[n].proof.ciUrl,first?`https://github.com/${repo}/actions/runs/${80+[...new Set(production.GROUP_WORKFLOW.filter(Boolean))].indexOf(first)}`:`https://github.com/${repo}/actions/runs/77`,`${label}: CI link #${n}`);
 }
 function expectUnknown(result,n,label){assert.equal(result[n].coverage,'unknown',`${label}: #${n}`);assert.equal(result[n].proof,undefined);assert.notEqual(hiveTaskPaint(result[n]).tone,'honey',`${label}: #${n}`);}
 async function check(label,mutate,affected){
@@ -94,6 +98,10 @@ for(const path of [production.MAKEFILE,production.WORKFLOW,...production.GLOBAL_
   await check(`missing ${path}`,f=>f.files.delete(path),numbers);
 }
 for(const change of [r=>r.head_sha='c'.repeat(40),r=>r.event='pull_request',r=>r.status='in_progress',r=>r.conclusion='failure',r=>r.path='unrelated.yml',r=>r.repository.full_name='another/fork'])await check('wrong canonical run',f=>change(f.run),numbers);
+// The evidence replay is its own workflow: a red or missing run leaves only the claims it replays unknown.
+const replayed=numbers.filter(n=>groupsOf(n).some(g=>production.GROUP_WORKFLOW[g]));
+for(const change of [r=>r.head_sha='c'.repeat(40),r=>r.event='pull_request',r=>r.status='in_progress',r=>r.conclusion='failure',r=>r.path='unrelated.yml',r=>r.repository.full_name='another/fork'])await check('wrong evidence run',f=>f.own.forEach(change),replayed);
+await check('no evidence run at all',f=>f.own.length=0,replayed);
 // A failed refresh cannot keep an old proof, and a superseded check cannot refill the cache (#1392).
 {
   const f=fixture(),accepted=await prove(f,numbers);

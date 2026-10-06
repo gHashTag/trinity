@@ -107,8 +107,8 @@ return {supportsIssueProof,invalidateIssueProof,proveWorldIssues};
  * failing group leaves only its own issues unknown. Shared files (Makefile,
  * workflow, gate script, compiler pin) and the canonical push CI guard them all.
  */
-export type GroupedIssueProofPolicy={REPO:string;WORKFLOW:string;WORKFLOW_HASH:string;MAKEFILE:string;MAKEFILE_HASH:string;GLOBAL_PATHS:readonly string[];GLOBAL_HASHES:readonly string[];GROUP_NAMES:readonly string[];GROUP_SPEC:readonly string[];GROUP_SPEC_HASH:readonly string[];GROUP_SEAL:readonly string[];GROUP_SEAL_HASH:readonly string[];GROUP_VECTORS:readonly string[];GROUP_VECTORS_HASH:readonly string[];GROUP_VECTOR_COUNT:readonly number[];GROUP_EVIDENCE:readonly string[];GROUP_PATHS:readonly string[];GROUP_PATH_HASHES:readonly string[];GROUP_PATH_OWNER:readonly number[];ISSUE_NUMBERS:readonly number[];ISSUE_GROUPS:readonly number[];CACHE_MS:number;ACCEPT:readonly number[]};
-type GroupProof={specUrl:string;evidenceUrl?:string};
+export type GroupedIssueProofPolicy={REPO:string;WORKFLOW:string;WORKFLOW_HASH:string;MAKEFILE:string;MAKEFILE_HASH:string;GLOBAL_PATHS:readonly string[];GLOBAL_HASHES:readonly string[];GROUP_NAMES:readonly string[];GROUP_SPEC:readonly string[];GROUP_SPEC_HASH:readonly string[];GROUP_SEAL:readonly string[];GROUP_SEAL_HASH:readonly string[];GROUP_VECTORS:readonly string[];GROUP_VECTORS_HASH:readonly string[];GROUP_VECTOR_COUNT:readonly number[];GROUP_EVIDENCE:readonly string[];GROUP_WORKFLOW:readonly string[];GROUP_PATHS:readonly string[];GROUP_PATH_HASHES:readonly string[];GROUP_PATH_OWNER:readonly number[];ISSUE_NUMBERS:readonly number[];ISSUE_GROUPS:readonly number[];CACHE_MS:number;ACCEPT:readonly number[]};
+type GroupProof={specUrl:string;evidenceUrl?:string;ciUrl?:string};
 type RepoProof={commit:string;ciUrl:string;observedAt:number;groups:(GroupProof|null)[]};
 export function createGroupedIssueProofReader(policy:GroupedIssueProofPolicy){
 const cache=new Map<string,RepoProof>();
@@ -122,8 +122,11 @@ const exact=async(repo:string,commit:string,path:string,expected:string,signal:A
   if(await hex(bytes)!==expected)throw new Error(`proof hash mismatch: ${path}`);
   return new TextDecoder().decode(bytes);
 };
-async function verifyGroup(g:number,repo:string,commit:string,signal:AbortSignal,fetcher:Fetcher):Promise<GroupProof|null>{
+async function verifyGroup(g:number,repo:string,commit:string,runs:unknown,signal:AbortSignal,fetcher:Fetcher):Promise<GroupProof|null>{
   try{
+    // A group with its own workflow (the evidence replay) also needs that workflow green at this head.
+    const own=policy.GROUP_WORKFLOW[g]?acceptedRun(runs,repo,commit,policy.GROUP_WORKFLOW[g]):null;
+    if(policy.GROUP_WORKFLOW[g]&&!own)return null;
     const spec=policy.GROUP_SPEC[g],extras=policy.GROUP_PATHS.map((path,i)=>({path,hash:policy.GROUP_PATH_HASHES[i],owner:policy.GROUP_PATH_OWNER[i]})).filter(e=>e.owner===g);
     const [text,seal,vectors]=await Promise.all([
       exact(repo,commit,spec,policy.GROUP_SPEC_HASH[g],signal,fetcher),
@@ -136,7 +139,7 @@ async function verifyGroup(g:number,repo:string,commit:string,signal:AbortSignal
        !['zig','rust','c','verilog'].every(b=>/^sha256:[a-f0-9]{64}$/.test(seal[`gen_hash_${b}`]??'')))return null;
     for(let i=0;i<policy.ISSUE_NUMBERS.length;i++)if(policy.ISSUE_GROUPS[i]===g&&!new RegExp(`https://github.com/${repo}/issues/${policy.ISSUE_NUMBERS[i]}(?![0-9])`,'i').test(text))return null;
     const evidence=policy.GROUP_EVIDENCE[g];
-    return {specUrl:`https://github.com/${repo}/blob/${commit}/${spec}`,...(evidence?{evidenceUrl:`https://github.com/${repo}/blob/${commit}/${evidence}`}:{})};
+    return {specUrl:`https://github.com/${repo}/blob/${commit}/${spec}`,...(evidence?{evidenceUrl:`https://github.com/${repo}/blob/${commit}/${evidence}`}:{}),...(own?{ciUrl:own.html_url!}:{})};
   }catch{return null;}
 }
 async function verify(repo:string,signal:AbortSignal,fetcher:Fetcher):Promise<RepoProof>{
@@ -145,12 +148,12 @@ async function verify(repo:string,signal:AbortSignal,fetcher:Fetcher):Promise<Re
   const commit=head.sha;
   if(!commit||!/^[a-f0-9]{40}$/.test(commit))throw new Error('proof commit identity');
   const shared=[[policy.MAKEFILE,policy.MAKEFILE_HASH],[policy.WORKFLOW,policy.WORKFLOW_HASH],...policy.GLOBAL_PATHS.map((p,i)=>[p,policy.GLOBAL_HASHES[i]])];
-  if(policy.GLOBAL_PATHS.length!==policy.GLOBAL_HASHES.length||policy.GROUP_PATHS.length!==policy.GROUP_PATH_HASHES.length||policy.GROUP_PATHS.length!==policy.GROUP_PATH_OWNER.length||policy.ISSUE_NUMBERS.length!==policy.ISSUE_GROUPS.length)throw new Error('incomplete proof policy');
+  if(policy.GLOBAL_PATHS.length!==policy.GLOBAL_HASHES.length||policy.GROUP_PATHS.length!==policy.GROUP_PATH_HASHES.length||policy.GROUP_PATHS.length!==policy.GROUP_PATH_OWNER.length||policy.ISSUE_NUMBERS.length!==policy.ISSUE_GROUPS.length||policy.GROUP_WORKFLOW.length!==policy.GROUP_SPEC.length)throw new Error('incomplete proof policy');
   await Promise.all(shared.map(([path,hash])=>exact(repo,commit,path,hash,signal,fetcher)));
   const runs=await (await read(`${api}/actions/runs?head_sha=${commit}&event=push&per_page=100`,signal,fetcher)).json();
   const ci=acceptedRun(runs,repo,commit,policy.WORKFLOW);
   if(!ci)throw new Error('canonical required CI is not successful at current HEAD');
-  const groups=await Promise.all(policy.GROUP_SPEC.map((_,g)=>verifyGroup(g,repo,commit,signal,fetcher)));
+  const groups=await Promise.all(policy.GROUP_SPEC.map((_,g)=>verifyGroup(g,repo,commit,runs,signal,fetcher)));
   return {commit,ciUrl:ci.html_url!,observedAt:Date.now(),groups};
 }
 async function repositoryProof(repo:string,signal:AbortSignal,fetcher:Fetcher):Promise<RepoProof|null>{
@@ -185,7 +188,7 @@ async function proveWorldIssues<T extends Row>(rows:T[],repo:string,signal:Abort
     const mask=Number(row.state==='closed')+2+4+8;
     if(policy.ACCEPT[mask]!==1)return row;
     const found=needed as GroupProof[],evidenceUrl=found.find(g=>g.evidenceUrl)?.evidenceUrl;
-    return {...row,coverage:'t27' as const,proof:{commit:proof!.commit,specUrl:found[0].specUrl,...(found.length>1?{specUrls:found.map(g=>g.specUrl)}:{}),ciUrl:proof!.ciUrl,...(evidenceUrl?{evidenceUrl}:{}),observedAt:proof!.observedAt}};
+    return {...row,coverage:'t27' as const,proof:{commit:proof!.commit,specUrl:found[0].specUrl,...(found.length>1?{specUrls:found.map(g=>g.specUrl)}:{}),ciUrl:found[0].ciUrl??proof!.ciUrl,...(evidenceUrl?{evidenceUrl}:{}),observedAt:proof!.observedAt}};
   });
 }
 return {supportsIssueProof,invalidateIssueProof,proveWorldIssues};
