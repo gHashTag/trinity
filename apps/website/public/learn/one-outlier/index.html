@@ -60,7 +60,7 @@ pre { overflow-x: auto; background: #0b0f0e; border: 1px solid #1e2624; border-r
 <h1>One outlier, many zeros</h1>
 <section><h2>You will learn</h2><p class="goal">What a shared scale costs: how one large weight pushes the small weights of its block to zero, format by format.</p></section>
 <p>A shared scale is set by the largest value in its block, so one outlier sets it for all 32 weights. Weights much smaller than the outlier then fall below the smallest step the element can show and are stored as zero. This recording runs ocp_mx.t27, our spec of OCP MX v1.0, natively on a block of 31 small weights and one outlier, and counts how many each element format flushes to zero. Then it plants a bug, one changed exponent bias, and exactly one test fails: a spec that carries its tests catches its own mistakes.</p>
-<section><h2>Try it</h2><p>Read which element format flushes the most small weights to zero and which flushes none; then find the test the planted bug breaks.</p></section>
+<section><h2>Try it</h2><p>Read which element format flushes the most small weights to zero and which two flush none; then find the test the planted bug breaks.</p></section>
 <p><a class="cta" href="/#/course/one-outlier">Open the interactive lesson →</a></p>
 <figure><a href="/term/t27c-ocp-mx/"><img src="/term/t27c-ocp-mx/card.png" width="600" height="315" alt="t27c on ocp_mx.t27 -- OCP MX v1.0, native" loading="lazy"><figcaption>t27c on ocp_mx.t27 -- OCP MX v1.0, native ↗</figcaption></a></figure>
 <p class="about" lang="en">t27c 0.4.0 and zig 0.16.0 on the t27c lab (Railway), spec at t27 1a3786657: 49 tests pass natively; one changed bias makes exactly one test fail; git restores the spec.</p>

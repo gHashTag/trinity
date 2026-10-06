@@ -325,7 +325,7 @@ pub const LESSON_TASKS : [33]str = [
     "Drag the window until the bucket overflows and note the largest window that fits; then compare the two real runs.",
     "Run the tests and count the skips; then open the Verilog and find the function that checks for code 255.",
     "Find how many invariants the test report proved at compile time, and compare its pass count with the player's.",
-    "Read which element format flushes the most small weights to zero and which flushes none; then find the test the planted bug breaks."
+    "Read which element format flushes the most small weights to zero and which two flush none; then find the test the planted bug breaks."
 ];
 
 ; --- Claims --------------------------------------------------------------------------------
