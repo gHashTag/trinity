@@ -8,6 +8,19 @@
 
 const std = @import("std");
 
+// The field table (which opcodes carry an immediate, which a src2, where
+// BUNDLE3 keeps its third register) is not written here. It is the T736 table
+// of gHashTag/t27 specs/isa/ternary_encoding.t27 (t27a_imm_form,
+// t27a_src2_form, t27a_src1, t27a_src2, t27a_imm, t27a_encode), and
+// tri27_encoding.zig is that spec's `t27c gen` output, byte for byte, never
+// hand-edited. Recorded at the vendoring (gHashTag/t27#6507, gHashTag/t27#6789):
+//   spec sha256        5e2c265a0972189ccf887d523abb86c13f9fa7ae6a1f35a59c20f1a1fc4796cd
+//   generated sha256   da08bb8d44888dd747b11de4476d75395921f3fbc11754acb9532a218ffa3fad
+//   (= gen_hash_zig of t27 .trinity/seals/isa_Tri27Encoding.json)
+// To move it, regenerate from t27 (`t27c gen specs/isa/ternary_encoding.t27`)
+// and replace the file; do not edit a field position in this one.
+const fields = @import("tri27_encoding.zig");
+
 /// ═══════════════════════════════════════════════════════════════════════════════
 // TRI-27 OPCODE ENUM
 // ═══════════════════════════════════════════════════════════════════════════════════
@@ -114,62 +127,32 @@ pub const Instruction = struct {
 // DECODER FUNCTIONS
 // ═══════════════════════════════════════════════════════════════════════════════════
 /// Decode 32-bit instruction word into Instruction struct
-/// Word format (hybrid):
+/// Word format (the T736 table, see `fields` above):
 ///   [7:0]   = opcode (8 bits)
 ///   [12:8]  = dst (5 bits)
-///   For immediate instructions:
+///   Immediate form (t27a_imm_form, SACR included):
 ///     [16:13] = src1 (4 bits)
-///     [31:17] = immediate (15 bits)
-///   For 3-operand instructions:
+///     [31:17] = immediate (15 bits, two's complement)
+///   Three-operand form (t27a_src2_form: ADD..XOR, DOT, BIND, BUNDLE2, BUNDLE3):
 ///     [17:13] = src1 (5 bits)
 ///     [22:18] = src2 (5 bits)
+///     [27:23] = third register of BUNDLE3, carried in `cond`
+///   Every other opcode: [17:13] = src1 (5 bits)
+/// An undefined opcode byte still decodes as NOP, as before.
 pub fn decode(word: u32) Instruction {
     const opcode_val = @as(u8, @truncate(word & 0xFF));
     const opcode = std.meta.intToEnum(Opcode, opcode_val) catch Opcode.NOP;
-
-    const dst = @as(u8, @truncate((word >> 8) & 0x1F));
-
-    // Determine if instruction has immediate or src2
-    const has_imm = switch (opcode) {
-        .LD, .ST, .LDI, .STI, .LD_IMM, .PHI_CONST, .PI_CONST, .E_CONST, .JMP, .JZ, .JNZ, .JGT, .JLT, .CALL, .RET, .SHL, .SHR, .SACR, .STR_LOAD, .STR_CONCAT, .STR_PRINT, .FILE_READ, .FILE_WRITE, .FILE_EXISTS => true,
-        else => false,
-    };
-
-    const has_src2 = switch (opcode) {
-        .ADD, .SUB, .MUL, .DIV, .AND, .OR, .XOR => true,
-        else => false,
-    };
-
-    // Decode src1 based on instruction type
-    const src1: u8 = if (has_imm)
-        @as(u8, @truncate((word >> 13) & 0x0F)) // 4 bits for immediate instructions
-    else
-        @as(u8, @truncate((word >> 13) & 0x1F)); // 5 bits for other instructions
-
-    const src2: u8 = if (has_src2) @as(u8, @truncate((word >> 18) & 0x1F)) else 0;
-
-    const immediate: i16 = blk: {
-        if (!has_imm) break :blk 0;
-        // Decode 15-bit immediate (bits 31-17)
-        const imm_raw = @as(u16, @truncate((word >> 17) & 0x7FFF));
-        if (imm_raw & 0x4000 != 0)
-            break :blk @as(i16, @bitCast(imm_raw | 0x8000))
-        else
-            break :blk @as(i16, @intCast(imm_raw));
-    };
-
-    // For BUNDLE3: extract src2 (lower 5 bits) and v3_reg (upper 9 bits) from bits 18-31
-    const src2_or_v3 = @as(u16, @truncate((word >> 18) & 0x3FFF));
-    const v3_reg = @as(u8, @truncate((src2_or_v3 >> 5) & 0x1F));
+    const op: u32 = @intFromEnum(opcode);
 
     return Instruction{
         .opcode = opcode,
-        .dst = dst,
-        .src1 = src1,
-        .src2 = if (opcode == .BUNDLE3) @as(u8, @truncate(src2_or_v3 & 0x1F)) else src2,
-        .immediate = immediate,
-        .has_imm = has_imm,
-        .cond = if (opcode == .BUNDLE3) v3_reg else 0,
+        .dst = @truncate((word >> @intCast(fields.DST_SHIFT)) & fields.REG_MASK),
+        .src1 = @truncate(fields.t27a_src1(word, op)),
+        .src2 = @truncate(fields.t27a_src2(word, op)),
+        // 15-bit two's complement, so always within i16.
+        .immediate = @intCast(fields.t27a_imm(word, op)),
+        .has_imm = fields.t27a_imm_form(op),
+        .cond = if (opcode == .BUNDLE3) @truncate((word >> @intCast(fields.V3_SHIFT)) & fields.REG_MASK) else 0,
     };
 }
 
@@ -178,40 +161,18 @@ pub fn decodeInstruction(word: u32) Instruction {
     return decode(word);
 }
 
-/// Encode Instruction to 32-bit word
+/// Encode Instruction to 32-bit word: `t27a_encode` of the T736 table. The
+/// immediate is clamped to [-16384, 16383]; the third register of BUNDLE3 is
+/// `cond`, as `decode` returns it.
 pub fn encode(inst: Instruction) u32 {
-    var word: u32 = @intFromEnum(inst.opcode);
-    word |= @as(u32, inst.dst) << 8;
-
-    // Determine if this instruction uses immediate or src2
-    const has_src2 = switch (inst.opcode) {
-        .ADD, .SUB, .MUL, .DIV, .AND, .OR, .XOR => true,
-        else => false,
-    };
-
-    const has_imm = switch (inst.opcode) {
-        .LD, .ST, .LDI, .STI, .LD_IMM, .PHI_CONST, .PI_CONST, .E_CONST, .JMP, .JZ, .JNZ, .JGT, .JLT, .CALL, .RET, .SHL, .SHR, .SACR, .STR_LOAD, .STR_CONCAT, .STR_PRINT, .FILE_READ, .FILE_WRITE, .FILE_EXISTS => true,
-        else => false,
-    };
-
-    // For instructions with immediate, src1 is encoded in lower bits of immediate field (bits 13-16)
-    // For 3-operand instructions, src1 is at bits 13-17 and src2 at bits 18-22
-    if (has_imm) {
-        // Encode src1 in bits 13-16 (4 bits), immediate in bits 17-31 (15 bits)
-        word |= @as(u32, inst.src1 & 0x0F) << 13;
-        const imm_clamped = std.math.clamp(inst.immediate, -16384, 16383);
-        const imm_u15: u16 = @bitCast(@as(i16, imm_clamped));
-        word |= @as(u32, imm_u15 & 0x7FFF) << 17;
-    } else if (has_src2) {
-        // 3-operand instruction: src1 at bits 13-17, src2 at bits 18-22
-        word |= @as(u32, inst.src1) << 13;
-        word |= @as(u32, inst.src2) << 18;
-    } else {
-        // 2-operand instruction (like MOV, NOT): src1 at bits 13-17
-        word |= @as(u32, inst.src1) << 13;
-    }
-
-    return word;
+    return fields.t27a_encode(
+        @intFromEnum(inst.opcode),
+        inst.dst,
+        inst.src1,
+        inst.src2,
+        inst.cond,
+        inst.immediate,
+    );
 }
 
 /// Get opcode name for debugging
@@ -378,4 +339,43 @@ test "decoder: getOpcodeName" {
     try std.testing.expectEqualStrings("NOP", getOpcodeName(Opcode.NOP));
     try std.testing.expectEqualStrings("ADD", getOpcodeName(Opcode.ADD));
     try std.testing.expectEqualStrings("HALT", getOpcodeName(Opcode.HALT));
+}
+
+test "decoder: DOT, BIND and BUNDLE2 keep src2 (T736)" {
+    // Before the T736 table these three read src2 as 0 and wrote none, while
+    // the executor reads inst.src2 for all of them.
+    for ([_]Opcode{ .DOT, .BIND, .BUNDLE2 }) |op| {
+        const inst = Instruction{ .opcode = op, .dst = 3, .src1 = 17, .src2 = 29 };
+        const decoded = decode(encode(inst));
+        try std.testing.expectEqual(op, decoded.opcode);
+        try std.testing.expectEqual(@as(u8, 3), decoded.dst);
+        try std.testing.expectEqual(@as(u8, 17), decoded.src1);
+        try std.testing.expectEqual(@as(u8, 29), decoded.src2);
+        try std.testing.expect(!decoded.has_imm);
+    }
+}
+
+test "decoder: BUNDLE3 keeps its third register (T736)" {
+    const inst = Instruction{ .opcode = .BUNDLE3, .dst = 3, .src1 = 1, .src2 = 2, .cond = 31 };
+    const decoded = decode(encode(inst));
+    try std.testing.expectEqual(@as(u8, 1), decoded.src1);
+    try std.testing.expectEqual(@as(u8, 2), decoded.src2);
+    try std.testing.expectEqual(@as(u8, 31), decoded.cond);
+}
+
+test "decoder: the words gHashTag/t27 specs/isa/t27a.t27 pins" {
+    // Same words `t27c asm` writes for the same text (gHashTag/t27#6507).
+    const Pin = struct { word: u32, inst: Instruction };
+    const pins = [_]Pin{
+        .{ .word = 533264, .inst = .{ .opcode = .ADD, .dst = 3, .src1 = 1, .src2 = 2 } },
+        .{ .word = 4294312708, .inst = .{ .opcode = .LDI, .dst = 3, .src1 = 0, .immediate = -5, .has_imm = true } },
+        .{ .word = 8975, .inst = .{ .opcode = .MOV, .dst = 3, .src1 = 1 } },
+        .{ .word = 926276, .inst = .{ .opcode = .JGT, .dst = 2, .src1 = 1, .immediate = 7, .has_imm = true } },
+        .{ .word = 34087779, .inst = .{ .opcode = .BUNDLE3, .dst = 3, .src1 = 1, .src2 = 2, .cond = 4 } },
+        .{ .word = 0, .inst = .{ .opcode = .NOP } },
+    };
+    for (pins) |p| {
+        try std.testing.expectEqual(p.word, encode(p.inst));
+        try std.testing.expectEqual(p.inst, decode(p.word));
+    }
 }
