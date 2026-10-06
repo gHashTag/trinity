@@ -11,9 +11,11 @@ const analyze=await loadCompiler(readFileSync(join(SITE,'public/t27/t27_compiler
 const analysis=analyze(text),v=verdictOf(analysis),constants=constsOf(analysis);
 if(compilerErrors(analysis).length||!v.typecheckOk||!v.hirOk||v.discarded||analysis.ast?.name!==moduleName)throw new Error('Issue proof spec rejected');
 const schema={REPO:'str',ISSUES:'arr-u32',SPEC:'str',SPEC_HASH:'str',SEAL:'str',SEAL_HASH:'str',VECTORS:'str',VECTORS_HASH:'str',VERIFIER:'str',VERIFIER_HASH:'str',MAKEFILE:'str',MAKEFILE_HASH:'str',WORKFLOW:'str',WORKFLOW_HASH:'str',VECTOR_COUNT:'u32',CACHE_MS:'u32',ACCEPT:'arr-u8'};
+// The Memory policy lists several sealed specs ("groups") and which of them each closed issue needs.
+const memorySchema={REPO:'str',WORKFLOW:'str',WORKFLOW_HASH:'str',MAKEFILE:'str',MAKEFILE_HASH:'str',GLOBAL_PATHS:'arr',GLOBAL_HASHES:'arr',GROUP_NAMES:'arr',GROUP_SPEC:'arr',GROUP_SPEC_HASH:'arr',GROUP_SEAL:'arr',GROUP_SEAL_HASH:'arr',GROUP_VECTORS:'arr',GROUP_VECTORS_HASH:'arr',GROUP_VECTOR_COUNT:'arr-u32',GROUP_EVIDENCE:'arr',GROUP_WORKFLOW:'arr',GROUP_PATHS:'arr',GROUP_PATH_HASHES:'arr',GROUP_PATH_OWNER:'arr-u32',ISSUE_NUMBERS:'arr-u32',ISSUE_GROUPS:'arr-u32',CACHE_MS:'u32',ACCEPT:'arr-u8'};
 const profileSchema=moduleName==='queen_issue_proof'
   ? {...schema,GDS_WORKFLOW:'str',GDS_WORKFLOW_HASH:'str'}
-  : {...schema,EXTRA_PATHS:'arr',EXTRA_HASHES:'arr',EVIDENCE_PATH:'str'};
+  : memorySchema;
 const problems=checkSchema(constants,profileSchema,{},source);
 if(problems.length)throw new Error(problems.join('; '));
 const fields=Object.fromEntries(Object.entries(constants).map(([k,v])=>[k,v.value]));
@@ -24,11 +26,20 @@ if(process.argv.includes('--check')){
   const seal=JSON.parse(readFileSync(join(SITE,`.trinity/seals/queen_${moduleName}.json`),'utf8'));
   if(seal.spec_path!==source||seal.spec_hash!==`sha256:${sha256(Buffer.from(text))}`||seal.tests?.blocked)throw new Error('Missing or stale native issue proof seal');
 }
-for(const [k,v] of Object.entries(fields))if(k.endsWith('_HASH')&&!/^[a-f0-9]{64}$/.test(v))throw new Error(`Invalid ${k}`);
+for(const [k,v] of Object.entries(fields))if(k.endsWith('_HASH')||k.endsWith('_HASHES'))for(const h of [].concat(v))if(!/^[a-f0-9]{64}$/.test(h))throw new Error(`Invalid ${k}`);
 if(Boolean(fields.GDS_WORKFLOW)!==Boolean(fields.GDS_WORKFLOW_HASH))throw new Error('Incomplete GDS binding');
-if((fields.EXTRA_PATHS?.length??0)!==(fields.EXTRA_HASHES?.length??0))throw new Error('Incomplete extra evidence binding');
-for(const h of fields.EXTRA_HASHES??[])if(!/^[a-f0-9]{64}$/.test(h))throw new Error('Invalid extra evidence hash');
-if(fields.EVIDENCE_PATH&&!fields.EXTRA_PATHS?.includes(fields.EVIDENCE_PATH))throw new Error('Evidence link must be hash bound');
+if(moduleName==='queen_memory_issue_proof'){
+  const G=fields.GROUP_SPEC.length,same=(a,b,what)=>{if(fields[a].length!==fields[b].length)throw new Error(`Incomplete ${what}`);};
+  for(const k of ['GROUP_NAMES','GROUP_SPEC_HASH','GROUP_SEAL','GROUP_SEAL_HASH','GROUP_VECTORS','GROUP_VECTORS_HASH','GROUP_VECTOR_COUNT','GROUP_EVIDENCE','GROUP_WORKFLOW'])same('GROUP_SPEC',k,`group table ${k}`);
+  same('GLOBAL_PATHS','GLOBAL_HASHES','shared file binding');same('GROUP_PATHS','GROUP_PATH_HASHES','group file binding');same('GROUP_PATHS','GROUP_PATH_OWNER','group file owner');same('ISSUE_NUMBERS','ISSUE_GROUPS','issue to group table');
+  if(fields.GROUP_VECTOR_COUNT.some(n=>n<1)||new Set(fields.GROUP_SPEC).size!==G||new Set(fields.GROUP_NAMES).size!==G)throw new Error('Invalid group table');
+  if(fields.GROUP_PATH_OWNER.some(o=>o>=G)||fields.ISSUE_GROUPS.some(o=>o>=G))throw new Error('Group index out of range');
+  const pairs=fields.ISSUE_NUMBERS.map((n,i)=>`${n}:${fields.ISSUE_GROUPS[i]}`);
+  if(new Set(pairs).size!==pairs.length)throw new Error('Duplicate issue to group pair');
+  for(let g=0;g<G;g++)if(!fields.ISSUE_GROUPS.includes(g))throw new Error(`Group ${g} names no issue`);
+  for(const e of fields.GROUP_EVIDENCE)if(e&&!fields.GROUP_PATHS.includes(e))throw new Error('Evidence link must be hash bound');
+  fields.GROUP_WORKFLOW.forEach((w,g)=>{if(w&&!fields.GROUP_PATHS.some((p,i)=>p===w&&fields.GROUP_PATH_OWNER[i]===g))throw new Error('Group workflow must be hash bound by its group');});
+}
 const outputs={
   [`src/lib/${target}.generated.ts`]:`// GENERATED from ${source}; sha256 ${sha256(Buffer.from(text))}\nexport const ${exportName} = ${JSON.stringify(fields,null,2)} as const;\n`,
   [`conformance/${moduleName}.json`]:JSON.stringify({spec_path:source,spec_hash:sha256(Buffer.from(text)),vectors:fields.ACCEPT.map((expected,mask)=>({mask,expected}))},null,2)+'\n',
