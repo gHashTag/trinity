@@ -306,7 +306,7 @@ export default function QueenCellStage({
           <h4>{t.description}</h4>
           {issue?.proof && <div className="queen-cell-note" data-issue-proof={issue.proof.commit}>
             <strong>{t.proof}</strong>{' · '}
-            <a href={issue.proof.specUrl}>.t27</a>{' · '}
+            {(issue.proof.specUrls??[issue.proof.specUrl]).map((url,i)=><a key={url} href={url} style={i?{marginLeft:'0.35em'}:undefined}>{i?`.t27 ·${i+1}`:'.t27'}</a>)}{' · '}
             <a href={issue.proof.ciUrl}>CI</a>
             {issue.proof.gdsUrl && <> · <a href={issue.proof.gdsUrl}>GDS</a></>}
             {issue.proof.evidenceUrl && <> · <a href={issue.proof.evidenceUrl}>Evidence</a></>}
