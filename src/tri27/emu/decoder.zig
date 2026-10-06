@@ -13,9 +13,9 @@ const std = @import("std");
 // of gHashTag/t27 specs/isa/ternary_encoding.t27 (t27a_imm_form,
 // t27a_src2_form, t27a_src1, t27a_src2, t27a_imm, t27a_encode), and
 // tri27_encoding.zig is that spec's `t27c gen` output, byte for byte, never
-// hand-edited. Recorded at the vendoring (gHashTag/t27#6507, gHashTag/t27#6789):
-//   spec sha256        5e2c265a0972189ccf887d523abb86c13f9fa7ae6a1f35a59c20f1a1fc4796cd
-//   generated sha256   da08bb8d44888dd747b11de4476d75395921f3fbc11754acb9532a218ffa3fad
+// hand-edited. Recorded at the last vendoring (gHashTag/t27#6507, gHashTag/t27#6895):
+//   spec sha256        563b6ca610274d48010c05fca146634edcde13c391fcea3f44cc2790171530d6
+//   generated sha256   0979161dbda5a2cf5077f3dcb45321382949b9a811ae1d4e7e4d2ced85afa695
 //   (= gen_hash_zig of t27 .trinity/seals/isa_Tri27Encoding.json)
 // To move it, regenerate from t27 (`t27c gen specs/isa/ternary_encoding.t27`)
 // and replace the file; do not edit a field position in this one.
