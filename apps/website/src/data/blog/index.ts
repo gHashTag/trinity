@@ -16,6 +16,7 @@ export const postsIndex: PostMeta[] = [
       { label: "Lesson 33, one outlier, many zeros", href: "https://t27.ai/learn/one-outlier/" },
       { label: "trinity#1443: course module 11, AI numbers, the MX block (lessons 31 to 33) · OPEN", href: "https://github.com/gHashTag/trinity/pull/1443" },
       { label: "trinity#1440: the module's issue · OPEN", href: "https://github.com/gHashTag/trinity/issues/1440" },
+      { label: "trinity#1445: this post · OPEN", href: "https://github.com/gHashTag/trinity/pull/1445" },
       { label: "trinity#1444: this post's issue · OPEN", href: "https://github.com/gHashTag/trinity/issues/1444" },
       { label: "trinity#1441: four Russian lesson cards clip their address · OPEN", href: "https://github.com/gHashTag/trinity/issues/1441" },
       { label: "t27#6828: ocp_mx.t27, OCP MX v1.0 and OFP8 elements, the E8M0 scale and the block conversion · OPEN, submitted, not merged", href: "https://github.com/gHashTag/t27/pull/6828" },
