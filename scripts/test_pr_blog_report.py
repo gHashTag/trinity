@@ -460,5 +460,117 @@ class DependencyBumpTests(unittest.TestCase):
             self.assertIn("stale", result.stderr)
 
 
+COURSE = "apps/website/specs/course/ai-numbers.t27"
+POST = "apps/website/src/data/blog/bodies/two-courses.ts"
+
+
+class CoursePostTests(unittest.TestCase):
+    def refusal(self, files, changed=None):
+        event = valid_event()
+        event["pull_request"]["changed_files"] = len(files) if changed is None else changed
+        return report.course_post_refusal(event, files, report.course_post_policy())
+
+    def test_the_real_policy_spec_is_read(self):
+        policy = report.course_post_policy()
+        self.assertEqual(policy["course_dir"], "apps/website/specs/course/")
+        self.assertEqual(policy["post_dir"], "apps/website/src/data/blog/bodies/")
+        self.assertEqual(policy["statuses"], frozenset({"added", "modified"}))
+        self.assertIn("in the same PR", policy["rule"])
+
+    def test_a_course_change_without_a_post_is_refused(self):
+        refusal, notice = self.refusal([{"filename": COURSE, "status": "modified"},
+                                        {"filename": "apps/website/specs/course/courses.t27", "status": "modified"}])
+        self.assertIn("carries its blog post", refusal)
+        self.assertIn(COURSE, refusal)
+        self.assertIn("1 more course file", refusal)
+        self.assertIn("(rule in apps/website/specs/policy/course_post.t27)", refusal)
+        self.assertTrue((Path(report.__file__).resolve().parent.parent / report.COURSE_POST_REL).is_file())
+        self.assertIsNone(notice)
+
+    def test_a_lesson_renamed_out_of_the_course_is_a_course_change(self):
+        moved = {"filename": "apps/website/specs/archive/ai-numbers.t27", "status": "renamed",
+                 "previous_filename": COURSE}
+        refusal, _ = self.refusal([moved])
+        self.assertIn("carries its blog post", refusal)
+        self.assertEqual(self.refusal([moved, {"filename": POST, "status": "added", "previous_filename": None}]),
+                         (None, None))
+
+    def test_a_previous_filename_that_is_not_a_path_is_refused(self):
+        refusal, _ = self.refusal([{"filename": COURSE, "status": "renamed", "previous_filename": 7}])
+        self.assertIn("without a filename or status", refusal)
+
+    def test_an_incomplete_list_with_a_course_file_and_no_post_is_not_decided(self):
+        refusal, notice = self.refusal([{"filename": COURSE, "status": "modified"}], changed=3001)
+        self.assertIsNone(refusal)
+        self.assertIn("not decided", notice)
+        self.assertIn(COURSE, notice)
+        self.assertEqual(self.refusal([{"filename": COURSE, "status": "modified"},
+                                       {"filename": POST, "status": "modified"}], changed=3001), (None, None))
+
+    def test_an_added_or_modified_post_satisfies_it(self):
+        for status in ("added", "modified"):
+            self.assertEqual(self.refusal([{"filename": COURSE, "status": "modified"},
+                                           {"filename": POST, "status": status}]), (None, None))
+
+    def test_a_removed_or_renamed_post_does_not_count(self):
+        for status in ("removed", "renamed"):
+            refusal, _ = self.refusal([{"filename": COURSE, "status": "modified"},
+                                       {"filename": POST, "status": status}])
+            self.assertIn("carries its blog post", refusal)
+
+    def test_other_prs_and_the_policy_itself_are_not_course_changes(self):
+        for name in ("apps/website/src/App.tsx", "apps/website/specs/policy/course_post.t27",
+                     "apps/website/specs/coursework.t27", "specs/course/x.t27"):
+            self.assertEqual(self.refusal([{"filename": name, "status": "modified"}]), (None, None))
+
+    def test_an_incomplete_list_without_a_course_file_is_said_not_passed_silently(self):
+        refusal, notice = self.refusal([{"filename": "README.md", "status": "modified"}], changed=3001)
+        self.assertIsNone(refusal)
+        self.assertIn("not decided", notice)
+
+    def test_malformed_file_entries_are_refused(self):
+        refusal, _ = self.refusal([{"filename": COURSE}])
+        self.assertIn("without a filename or status", refusal)
+
+    def test_a_policy_spec_that_lost_its_rule_fails_closed(self):
+        source = report.COURSE_POST_SPEC.read_text(encoding="utf-8")
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "course_post.t27"
+            for broken, reason in (
+                (source.replace("pub const RULE :", "pub const RULES :"), "no str constant RULE"),
+                (source.replace('= ["added", "modified"]', '= ["added"]'), "declared length"),
+                (source.replace('"apps/website/specs/course/"', '"apps/website/specs/course"', 1), "must end with /"),
+            ):
+                path.write_text(broken, encoding="utf-8")
+                with self.assertRaisesRegex(report.ReportError, reason):
+                    report.course_post_policy(path)
+            with self.assertRaisesRegex(report.ReportError, "unreadable"):
+                report.course_post_policy(Path(directory) / "missing.t27")
+
+    def run_cli(self, files, directory):
+        root = Path(directory)
+        event = valid_event()
+        event["pull_request"]["changed_files"] = len(files)
+        (root / "event.json").write_text(json.dumps(event))
+        (root / "files.jsonl").write_text("\n".join(json.dumps(item) for item in files) + "\n")
+        command = [sys.executable, str(Path(report.__file__)), "validate", "--event", str(root / "event.json"),
+                   "--output", str(root / "out"), "--files", str(root / "files.jsonl")]
+        return subprocess.run(command, capture_output=True, text=True)
+
+    def test_cli_refuses_a_course_pr_without_its_post_and_writes_nothing(self):
+        with tempfile.TemporaryDirectory() as directory:
+            result = self.run_cli([{"filename": COURSE, "status": "modified"}], directory)
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("carries its blog post", result.stderr)
+            self.assertFalse((Path(directory) / "out").exists())
+
+    def test_cli_accepts_a_course_pr_with_its_post(self):
+        with tempfile.TemporaryDirectory() as directory:
+            result = self.run_cli([{"filename": COURSE, "status": "modified"},
+                                   {"filename": POST, "status": "added"}], directory)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertTrue((Path(directory) / "out" / "report.json").exists())
+
+
 if __name__ == "__main__":
     unittest.main()
