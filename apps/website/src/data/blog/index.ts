@@ -3,6 +3,36 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: "a-widget-card-drawn-from-its-spec",
+    title: "A widget's share card, drawn from its spec",
+    summary: "[run on one machine; none of the 27 hand-drawn cards replaced; Latin fonts only, no kerning; widget tools only] Every widget tool on t27.ai had a share card drawn by hand, and nothing checked that it still matched its spec. npm run cards:widgets now draws the card in black and white from the spec's TITLE and DESCRIPTION, with node alone: its own WOFF2 decoder, rasterizer and deflate, so the same spec gives the same bytes. check:widget-cards fails on a missing card and on a drawn card that lags its spec.",
+    date: "2026-10-07",
+    readingMinutes: 4,
+    tags: ["t27", "Widgets", "Generated assets"],
+    receipts: [
+      { label: "The script: apps/website/scripts/widget-cards-from-spec.mjs", href: "https://github.com/gHashTag/trinity/blob/feat/widget-cards-from-spec/apps/website/scripts/widget-cards-from-spec.mjs" },
+      { label: "The gallery the cards are drawn for: specs/widgets/gallery.t27", href: "https://github.com/gHashTag/trinity/blob/main/apps/website/specs/widgets/gallery.t27" },
+      { label: "Gatle, the widget used in the proof", href: "https://t27.ai/widgets/gatle/" },
+      { label: "W3C WOFF File Format 2.0, the font container the script decodes", href: "https://www.w3.org/TR/WOFF2/" },
+      { label: "RFC 1951, DEFLATE, the fixed Huffman block the PNG is written with", href: "https://www.rfc-editor.org/rfc/rfc1951" },
+    ],
+    openQuestions: [
+      "It was run on one Mac with node 22; that the bytes match on another machine is argued from the arithmetic, not yet measured. The CI run of the check is the first test.",
+      "None of the 27 cards on main was replaced: they are hand-drawn and the check holds them to being present only, so a stale hand-drawn card still passes.",
+      "The fonts are the Latin subsets, so a title in Russian would come out as question marks; there is no kerning and no hinting.",
+    ],
+    published: true,
+    ru: {
+      title: "Карточка виджета, нарисованная по его спеке",
+      summary: "[запуск на одной машине; ни одна из 27 нарисованных вручную карточек не заменена; только латинские шрифты, без кернинга; только инструменты-виджеты] У каждого инструмента-виджета на t27.ai была карточка для ссылки, нарисованная вручную, и никто не проверял, совпадает ли она со спекой. Теперь npm run cards:widgets рисует её чёрным по белому из TITLE и DESCRIPTION спеки, одним node: свой декодер WOFF2, своя растеризация и свой deflate, поэтому одна и та же спека даёт одни и те же байты. check:widget-cards падает, если карточки нет или нарисованная карточка разошлась со спекой.",
+      openQuestions: [
+        "Запуск был на одном Mac с node 22. Что на другой машине байты совпадут, следует из арифметики, но ещё не измерено. Первой проверкой станет запуск в CI.",
+        "Ни одна из 27 карточек в main не заменена: они нарисованы вручную, и проверка требует от них только наличия, поэтому устаревшая ручная карточка всё ещё проходит.",
+        "Шрифты — латинские подмножества, поэтому русский заголовок вышел бы вопросительными знаками; кернинга и хинтинга нет.",
+      ],
+    },
+  },
+  {
     slug: "one-outlier-twenty-three-zeros",
     title: "One outlier, 23 zeros: a course module on the OCP MX block",
     summary: "[one block of 32, chosen to show the flush, no model and no accuracy number; ocp_mx.t27 is merged into t27 but not on the site yet; lesson 33 is a recording, not a browser player; software only] The t27 course has three new lessons on the Microscaling (MX) formats of the Open Compute Project, where 32 weights share one scale byte. One weight of 3.3 among 31 small ones sets that scale, and in MXFP4 23 of the 30 non-zero small ones become zero; MXFP6 E2M3 loses 4, MXINT8 2, MXFP6 E3M2 and MXFP8 E4M3 none. The numbers come from a spec with 49 tests, and changing one exponent bias from 15 to 16 fails exactly one of them.",

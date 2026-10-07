@@ -379,6 +379,13 @@ jobs:
       - name: Widget tool pages
         run: npm run check:widget-pages && npm run test:widget-pages
 
+      # The widget cards: npm run cards:widgets draws public/widgets/<id>/card.png in black and
+      # white from the spec's own TITLE and DESCRIPTION, in node alone (own WOFF2 and deflate),
+      # so the same spec gives the same bytes. The check refuses a gallery tool with no card and
+      # a drawn card that lags its spec; hand-drawn cards are held to being present.
+      - name: Widget cards
+        run: npm run check:widget-cards
+
       # The course at #/course: specs/course/course.t27 orders 30 lessons (27 and a lab of 3) over
       # the gallery's widgets; the generator refuses a lesson whose widget is
       # gone, a gallery widget no lesson uses, a lesson spec that does not

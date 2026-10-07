@@ -20,6 +20,10 @@ Read the blog skill before writing content. Preserve the user's img2img
 triptych, mandatory hashtags, truthful limitations and relevant service offer.
 Never omit the work report for a small, documentation-only or automation PR.
 
+## New course to open a topic (Queen and every bee)
+
+- A lesson's widget card is generated, never drawn by hand: `npm run cards:widgets` in `apps/website` draws `public/widgets/<id>/card.png` in black and white from the widget spec's TITLE and DESCRIPTION (`--id <id>` redraws one), and `check:widget-cards` fails on a missing or stale card.
+
 **Version**: 2.0
 **Date**: 2026-04-04
 **Status**: Active
