@@ -3,6 +3,34 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: "course-three-verifying-hardware",
+    title: "Course 3: verifying hardware with t27, in 27 lessons",
+    summary: "[the browser runner cannot execute testbench test blocks yet (trinity#1477); three lesson specs were swapped for clean siblings; specs/fpga/coverage.t27 lands in gHashTag/t27 separately] The fourth t27 course answers the question the other three left open: how do you know the design works? 27 lessons in 9 modules of 3 -- testbenches, waveforms, vectors, cosimulation, coverage, formal, mutation, sign-off -- each opening one working widget and one t27 spec, with every number on the page measured by the widget it sits beside.",
+    date: "2026-10-07",
+    readingMinutes: 4,
+    tags: ["t27", "Course", "FPGA"],
+    receipts: [
+      { label: "Course 3, Verifying hardware with t27", href: "https://t27.ai/learn/verify-hardware/" },
+      { label: "The course spec, specs/course/verify-hardware.t27", href: "https://t27.ai/learn/verify-hardware.t27" },
+      { label: "trinity#1483: the issue this course answers", href: "https://github.com/gHashTag/trinity/issues/1483" },
+    ],
+    openQuestions: [
+      "The in-browser runner compiles lesson specs but cannot execute testbench test blocks yet (trinity#1477); lessons show recorded t27c output.",
+      "specs/fpga/coverage.t27 is written in gHashTag/t27 and lands there in its own PR; the site serves the vendored copy until then.",
+      "The vendored-manifest check does not yet list the new coverage.t27 copy.",
+    ],
+    published: true,
+    ru: {
+      title: "Курс 3: проверка железа с t27 за 27 уроков",
+      summary: "[исполнитель в браузере пока не исполняет тест-блоки тестбенчей (trinity#1477); три spec урока заменены чистыми соседями; specs/fpga/coverage.t27 попадает в gHashTag/t27 отдельным PR] Четвёртый курс t27 отвечает на вопрос, который три предыдущих оставили открытым: откуда вы знаете, что дизайн работает? 27 уроков в 9 модулях по 3 -- тестбенчи, временные диаграммы, векторы, косимуляция, покрытие, формальные методы, мутации, приёмка -- в каждом открывается один работающий виджет и один spec t27, а каждое число на странице измерено виджетом, рядом с которым оно стоит.",
+      openQuestions: [
+        "Исполнитель в браузере компилирует спеки уроков, но пока не исполняет тест-блоки тестбенчей (trinity#1477); уроки показывают записанный вывод t27c.",
+        "specs/fpga/coverage.t27 написан в gHashTag/t27 и попадает туда отдельным PR; до тех пор сайт отдаёт вендоренную копию.",
+        "Проверка вендоренного манифеста о новой копии coverage.t27 ещё не знает.",
+      ],
+    },
+  },
+    {
     slug: "course-three-goldenfloat",
     title: "Course 3: GoldenFloat, one rule for seventeen float widths",
     summary: "[the browser compiler runs a spec's constant asserts, not its function tests; 7 lesson-spec fixes wait on gHashTag/t27 PR 7496; no lesson claims a speed or a hardware result] A new course on the GoldenFloat family: one rule, E = round((N - 1) / phi^2), splits every width from GF4 to GF1024. 27 lessons in 9 modules of 3, each opening a table drawn from one spec and the spec itself.",
