@@ -812,10 +812,10 @@ export const QUEEN_WIDGETS = {
       "view": null,
       "image": "https://t27.ai/play/gfternary/card.png?v=e394a4e370f1",
       "gif": null,
-      "preview": "play/embed.html?spec=specs%2Fnumeric%2Fgfternary.t27&cast=t27c-gfternary&v=ded547ceeb2f",
+      "preview": "play/embed.html?spec=specs%2Fnumeric%2Fgfternary.t27&cast=t27c-gfternary&v=7cbe9ab0c960",
       "commands": [],
       "recorded": null,
-      "iframe": "<iframe src=\"https://t27.ai/play/embed.html?spec=specs%2Fnumeric%2Fgfternary.t27&amp;cast=t27c-gfternary&amp;v=ded547ceeb2f\" width=\"640\" height=\"360\" loading=\"lazy\" style=\"border:0\" allow=\"clipboard-write\" title=\"gfternary.t27, phi-scaled ternary weights, compiled inside the post\"></iframe>",
+      "iframe": "<iframe src=\"https://t27.ai/play/embed.html?spec=specs%2Fnumeric%2Fgfternary.t27&amp;cast=t27c-gfternary&amp;v=7cbe9ab0c960\" width=\"640\" height=\"360\" loading=\"lazy\" style=\"border:0\" allow=\"clipboard-write\" title=\"gfternary.t27, phi-scaled ternary weights, compiled inside the post\"></iframe>",
       "markdown": "[![gfternary.t27, phi-scaled ternary weights, compiled inside the post](https://t27.ai/play/gfternary/card.png?v=e394a4e370f1)](https://t27.ai/play/gfternary/)"
     },
     {
@@ -855,10 +855,10 @@ export const QUEEN_WIDGETS = {
       "view": null,
       "image": "https://t27.ai/play/golden-sieve/card.png?v=6d05c91c19fe",
       "gif": null,
-      "preview": "play/embed.html?spec=specs%2Fnumeric%2Fgolden_sieve.t27&cast=t27c-golden-sieve&v=ded547ceeb2f",
+      "preview": "play/embed.html?spec=specs%2Fnumeric%2Fgolden_sieve.t27&cast=t27c-golden-sieve&v=7cbe9ab0c960",
       "commands": [],
       "recorded": null,
-      "iframe": "<iframe src=\"https://t27.ai/play/embed.html?spec=specs%2Fnumeric%2Fgolden_sieve.t27&amp;cast=t27c-golden-sieve&amp;v=ded547ceeb2f\" width=\"640\" height=\"360\" loading=\"lazy\" style=\"border:0\" allow=\"clipboard-write\" title=\"golden_sieve.t27, the ternary sieve, compiled inside the post\"></iframe>",
+      "iframe": "<iframe src=\"https://t27.ai/play/embed.html?spec=specs%2Fnumeric%2Fgolden_sieve.t27&amp;cast=t27c-golden-sieve&amp;v=7cbe9ab0c960\" width=\"640\" height=\"360\" loading=\"lazy\" style=\"border:0\" allow=\"clipboard-write\" title=\"golden_sieve.t27, the ternary sieve, compiled inside the post\"></iframe>",
       "markdown": "[![golden_sieve.t27, the ternary sieve, compiled inside the post](https://t27.ai/play/golden-sieve/card.png?v=6d05c91c19fe)](https://t27.ai/play/golden-sieve/)"
     },
     {
@@ -899,10 +899,10 @@ export const QUEEN_WIDGETS = {
       "view": null,
       "image": "https://t27.ai/play/tnf17/card.png?v=ece1a2ee4936",
       "gif": null,
-      "preview": "play/embed.html?spec=specs%2Fnumeric%2Ftnf17.t27&cast=t27c-tnf17&v=ded547ceeb2f",
+      "preview": "play/embed.html?spec=specs%2Fnumeric%2Ftnf17.t27&cast=t27c-tnf17&v=7cbe9ab0c960",
       "commands": [],
       "recorded": null,
-      "iframe": "<iframe src=\"https://t27.ai/play/embed.html?spec=specs%2Fnumeric%2Ftnf17.t27&amp;cast=t27c-tnf17&amp;v=ded547ceeb2f\" width=\"640\" height=\"360\" loading=\"lazy\" style=\"border:0\" allow=\"clipboard-write\" title=\"tnf17.t27, a 17-bit ternary-exponent float, compiled inside the post\"></iframe>",
+      "iframe": "<iframe src=\"https://t27.ai/play/embed.html?spec=specs%2Fnumeric%2Ftnf17.t27&amp;cast=t27c-tnf17&amp;v=7cbe9ab0c960\" width=\"640\" height=\"360\" loading=\"lazy\" style=\"border:0\" allow=\"clipboard-write\" title=\"tnf17.t27, a 17-bit ternary-exponent float, compiled inside the post\"></iframe>",
       "markdown": "[![tnf17.t27, a 17-bit ternary-exponent float, compiled inside the post](https://t27.ai/play/tnf17/card.png?v=ece1a2ee4936)](https://t27.ai/play/tnf17/)"
     },
     {
