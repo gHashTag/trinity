@@ -6,7 +6,7 @@
 // through the real compiler (`t27_compiler.wasm`): the constant schema is checked and every
 // `test` block evaluated against the declared constants. Then what the specs point at:
 //
-//   - every course has the catalog's shape (27 modules of one lesson each) and the same page
+//   - every course has the catalog's shape (27 lessons in 9 modules of 3) and the same page
 //     strings, so one page draws any of them;
 //   - lesson ids are unique across the courses (each has one static page under learn/) and no
 //     lesson id is a course's share directory;
