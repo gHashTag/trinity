@@ -13,7 +13,8 @@ const SVG = 'http://www.w3.org/2000/svg'
 
 const css = document.createElement('link')
 css.rel = 'stylesheet'
-css.href = new URL('./infographic.css', import.meta.url).href
+// The page stamps this module through its import map (?v=); the stylesheet carries the same stamp.
+css.href = new URL('./infographic.css' + new URL(import.meta.url).search, import.meta.url).href
 document.head.appendChild(css)
 
 const el = (tag, text, cls) => {

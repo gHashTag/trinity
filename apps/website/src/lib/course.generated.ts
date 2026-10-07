@@ -3753,7 +3753,7 @@ export const COURSES = [
           "kind": "player",
           "title": "gfternary.t27, phi-scaled ternary weights, compiled inside the post",
           "url": "https://t27.ai/play/gfternary/",
-          "preview": "play/embed.html?spec=specs%2Fnumeric%2Fgfternary.t27&cast=t27c-gfternary&v=ded547ceeb2f",
+          "preview": "play/embed.html?spec=specs%2Fnumeric%2Fgfternary.t27&cast=t27c-gfternary&v=7cbe9ab0c960",
           "height": 480
         },
         "also": [
@@ -3835,7 +3835,7 @@ export const COURSES = [
           "kind": "player",
           "title": "golden_sieve.t27, the ternary sieve, compiled inside the post",
           "url": "https://t27.ai/play/golden-sieve/",
-          "preview": "play/embed.html?spec=specs%2Fnumeric%2Fgolden_sieve.t27&cast=t27c-golden-sieve&v=ded547ceeb2f",
+          "preview": "play/embed.html?spec=specs%2Fnumeric%2Fgolden_sieve.t27&cast=t27c-golden-sieve&v=7cbe9ab0c960",
           "height": 480
         },
         "also": [
@@ -3908,7 +3908,7 @@ export const COURSES = [
           "kind": "player",
           "title": "tnf17.t27, a 17-bit ternary-exponent float, compiled inside the post",
           "url": "https://t27.ai/play/tnf17/",
-          "preview": "play/embed.html?spec=specs%2Fnumeric%2Ftnf17.t27&cast=t27c-tnf17&v=ded547ceeb2f",
+          "preview": "play/embed.html?spec=specs%2Fnumeric%2Ftnf17.t27&cast=t27c-tnf17&v=7cbe9ab0c960",
           "height": 480
         },
         "also": [

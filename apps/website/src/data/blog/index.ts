@@ -5,7 +5,7 @@ export const postsIndex: PostMeta[] = [
   {
     slug: "course-zero-t27-basics",
     title: "Course 0: t27 basics in 27 lessons, each with an infographic",
-    summary: "[infographics are English-only; the browser runner skips invariant and bench blocks; the lesson specs are not yet in gHashTag/t27] A new course comes before the FPGA and AI numbers courses: 27 lessons on the t27 language, each with a black-and-white table or diagram drawn from its own spec and a lesson spec that compiles on all 7 backends.",
+    summary: "[the browser runner skips invariant and bench blocks; the lesson specs are not yet in gHashTag/t27] A new course comes before the FPGA and AI numbers courses: 27 lessons on the t27 language, each with a black-and-white table or diagram drawn from its own spec and a lesson spec that compiles on all 7 backends.",
     date: "2026-10-07",
     readingMinutes: 5,
     tags: ["t27", "Course"],
@@ -15,16 +15,14 @@ export const postsIndex: PostMeta[] = [
       { label: "trinity#1456: the split into two courses, which this course stacks on", href: "https://github.com/gHashTag/trinity/pull/1456" },
     ],
     openQuestions: [
-      "The infographics keep their English words on the Russian pages.",
       "The browser runner skips invariant and bench blocks, so lessons that show them do not run them.",
       "The lesson specs live in the site copy of the spec tree and are not yet in gHashTag/t27.",
     ],
     published: true,
     ru: {
       title: "Курс 0: основы t27 за 27 уроков, в каждом инфографика",
-      summary: "[инфографика только на английском; исполнитель в браузере пропускает блоки invariant и bench; спек уроков пока нет в gHashTag/t27] Перед курсами по FPGA и ИИ-числам появился новый курс: 27 уроков о языке t27, в каждом чёрно-белая таблица или схема из своей спеки и спека урока, которая собирается всеми 7 бэкендами.",
+      summary: "[исполнитель в браузере пропускает блоки invariant и bench; спек уроков пока нет в gHashTag/t27] Перед курсами по FPGA и ИИ-числам появился новый курс: 27 уроков о языке t27, в каждом чёрно-белая таблица или схема из своей спеки и спека урока, которая собирается всеми 7 бэкендами.",
       openQuestions: [
-        "Инфографика остаётся на английском и на русских страницах.",
         "Исполнитель в браузере пропускает блоки invariant и bench, поэтому уроки, где они есть, их не запускают.",
         "Спеки уроков лежат в копии дерева спек на сайте, в gHashTag/t27 их пока нет.",
       ],

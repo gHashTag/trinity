@@ -177,7 +177,6 @@ export const body: Block[] = [
   {
     "kind": "ul",
     "items": [
-      "The infographics keep their English words in both languages; the lesson texts are translated.",
       "The browser runner skips invariant and bench blocks, so the lessons that show them describe them and do not run them.",
       "A use line is checked by the compiler, but the browser does not load the module it names.",
       "The lesson specs live in the site copy of the t27 spec tree; they are not yet in gHashTag/t27 itself."
@@ -371,7 +370,6 @@ export const ruBody: Block[] = [
   {
     "kind": "ul",
     "items": [
-      "Инфографика остаётся на английском в обоих языках; тексты уроков переведены.",
       "Исполнитель в браузере пропускает блоки invariant и bench, поэтому уроки, где они есть, описывают их, а не запускают.",
       "Строку use компилятор проверяет, но браузер не загружает модуль, который она называет.",
       "Спеки уроков лежат в копии дерева спек t27 на сайте; в самом gHashTag/t27 их пока нет."
