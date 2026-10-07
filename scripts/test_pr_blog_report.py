@@ -483,8 +483,29 @@ class CoursePostTests(unittest.TestCase):
         self.assertIn("carries its blog post", refusal)
         self.assertIn(COURSE, refusal)
         self.assertIn("1 more course file", refusal)
-        self.assertIn("specs/policy/course_post.t27", refusal)
+        self.assertIn("(rule in apps/website/specs/policy/course_post.t27)", refusal)
+        self.assertTrue((Path(report.__file__).resolve().parent.parent / report.COURSE_POST_REL).is_file())
         self.assertIsNone(notice)
+
+    def test_a_lesson_renamed_out_of_the_course_is_a_course_change(self):
+        moved = {"filename": "apps/website/specs/archive/ai-numbers.t27", "status": "renamed",
+                 "previous_filename": COURSE}
+        refusal, _ = self.refusal([moved])
+        self.assertIn("carries its blog post", refusal)
+        self.assertEqual(self.refusal([moved, {"filename": POST, "status": "added", "previous_filename": None}]),
+                         (None, None))
+
+    def test_a_previous_filename_that_is_not_a_path_is_refused(self):
+        refusal, _ = self.refusal([{"filename": COURSE, "status": "renamed", "previous_filename": 7}])
+        self.assertIn("without a filename or status", refusal)
+
+    def test_an_incomplete_list_with_a_course_file_and_no_post_is_not_decided(self):
+        refusal, notice = self.refusal([{"filename": COURSE, "status": "modified"}], changed=3001)
+        self.assertIsNone(refusal)
+        self.assertIn("not decided", notice)
+        self.assertIn(COURSE, notice)
+        self.assertEqual(self.refusal([{"filename": COURSE, "status": "modified"},
+                                       {"filename": POST, "status": "modified"}], changed=3001), (None, None))
 
     def test_an_added_or_modified_post_satisfies_it(self):
         for status in ("added", "modified"):

@@ -53,7 +53,8 @@ DEPENDENCY_FILE_STATUS = {"modified", "added", "changed"}
 
 # A PR that changes a course carries its blog post. The rule's words and paths live in a
 # t27 spec; this program reads only its str constants and fails closed when they are absent.
-COURSE_POST_SPEC = Path(__file__).resolve().parent.parent / "apps/website/specs/policy/course_post.t27"
+COURSE_POST_REL = "apps/website/specs/policy/course_post.t27"
+COURSE_POST_SPEC = Path(__file__).resolve().parent.parent / COURSE_POST_REL
 STR_CONST = re.compile(r'^pub const ([A-Z][A-Z0-9_]*) : str = "([^"\\]*)";$', re.MULTILINE)
 STR_LIST_CONST = re.compile(r'^pub const ([A-Z][A-Z0-9_]*) : \[([0-9]+)\]str = \[([^\]]*)\];$', re.MULTILINE)
 STR_ITEM = re.compile(r'"([^"\\]*)"')
@@ -357,21 +358,29 @@ def course_post_policy(path: Path = COURSE_POST_SPEC) -> dict[str, Any]:
 def course_post_refusal(event: dict[str, Any], files: list[dict[str, Any]],
                         policy: dict[str, Any]) -> tuple[str | None, str | None]:
     """Return (refusal, notice): why a course PR lacks its post, and what could not be decided."""
-    changes = [(item.get("filename"), item.get("status")) for item in files]
-    if any(not isinstance(name, str) or not isinstance(status, str) for name, status in changes):
+    changes = [(item.get("filename"), item.get("status"), item.get("previous_filename")) for item in files]
+    if any(not isinstance(name, str) or not isinstance(status, str) or not isinstance(old, (str, type(None)))
+           for name, status, old in changes):
         return "changed-file list has an entry without a filename or status", None
-    course = [name for name, _ in changes if name.startswith(policy["course_dir"])]
+    # A file renamed out of the course directory is still a course change.
+    course = [name for name, _, old in changes
+              if name.startswith(policy["course_dir"]) or (old or "").startswith(policy["course_dir"])]
+    changed = event["pull_request"].get("changed_files")
+    incomplete = type(changed) is int and len(files) < changed
     if not course:
-        changed = event["pull_request"].get("changed_files")
-        if type(changed) is int and len(files) < changed:
+        if incomplete:
             return None, (f"course-post rule not decided: the files API listed {len(files)} of "
                           f"{changed} changed files and none of them is under {policy['course_dir']}")
         return None, None
-    if any(name.startswith(policy["post_dir"]) and status in policy["statuses"] for name, status in changes):
+    if any(name.startswith(policy["post_dir"]) and status in policy["statuses"] for name, status, _ in changes):
         return None, None
+    if incomplete:
+        return None, (f"course-post rule not decided: the files API listed {len(files)} of {changed} "
+                      f"changed files, {course[0]} among them, and no post under {policy['post_dir']} "
+                      "was seen in the listed part")
     more = f" and {len(course) - 1} more course file(s)" if len(course) > 1 else ""
     return (f"{policy['rule']} This PR changes {course[0]}{more} but adds or modifies no post "
-            f"under {policy['post_dir']} (rule in {COURSE_POST_SPEC.relative_to(COURSE_POST_SPEC.parents[3])})"), None
+            f"under {policy['post_dir']} (rule in {COURSE_POST_REL})"), None
 
 
 def lifecycle(report: dict[str, Any]) -> str:

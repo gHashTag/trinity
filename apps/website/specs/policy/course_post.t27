@@ -13,13 +13,17 @@
 ; says what changed, what the recordings show and what they do not.
 
 ; WHAT COUNTS: paths are repository paths as the GitHub pull request files API returns them.
-; A post body is a file under POST_DIR (English body and Russian ruBody in one module); a
-; removed or only renamed body does not count. A changed policy file is not a course change,
-; which is why this file lives under specs/policy/ and not under specs/course/.
+; A file whose new or previous path is under COURSE_DIR is a course change, so moving a lesson
+; out of the course counts too. A post body is a file under POST_DIR (English body and Russian
+; ruBody in one module) whose status is one of POST_STATUSES. A removed body does not count,
+; and neither does a renamed one: the API reports a rename as "renamed" even when the file was
+; also edited, so a moved post is not taken as a written one. A changed policy file is not a
+; course change, which is why this file lives under specs/policy/ and not under specs/course/.
 
 ; LIMIT: the files API lists at most 3000 files. When the list is shorter than the PR's
-; changed_files and no listed file is under COURSE_DIR, the rule cannot be decided and the
-; validator says so instead of passing or failing silently.
+; changed_files and the listed part does not settle the rule (no course file, or a course file
+; with no post), the validator says the rule is not decided instead of passing or failing
+; silently.
 ; phi^2 + 1/phi^2 = 3 | TRINITY
 
 module course_post_policy;
