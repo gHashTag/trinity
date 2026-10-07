@@ -15,6 +15,8 @@
 // Integers are BigInt and exact. A value that leaves its declared width (a typed let,
 // a parameter, a return, `@as`) skips the block: the backends do not agree on whether
 // narrowing traps or keeps the low bits, and this page does not pick one for them.
+// An explicit `x as T` cast is different and is evaluated: the corpus' own specs
+// define it as keeping the low bits and reinterpreting them in T (see ExprCast).
 
 export class Unsupported extends Error {}
 class Raise extends Error {}
@@ -163,6 +165,17 @@ export function makeProgram(ast) {
         const [a, b] = args.map((x) => evalE(x, scope))
         return check(same(a, b), n, `expected ${show(a)}, got ${show(b)}`)
       }
+      // assert_eq / assert_ne: the comparison form the corpus' hardware specs
+      // spell (ternary/gft_smul.t27, ternary/comb_ternary_dot.t27). An optional
+      // trailing string is the spec author's message; the check is the values.
+      case 'assert_eq': {
+        const [a, b] = args.slice(0, 2).map((x) => evalE(x, scope))
+        return check(same(a, b), n, `expected ${show(b)}, got ${show(a)}`)
+      }
+      case 'assert_ne': {
+        const [a, b] = args.slice(0, 2).map((x) => evalE(x, scope))
+        return check(!same(a, b), n, `${show(a)} equals ${show(b)}`)
+      }
       case 'cast': case '@intCast': case '@floatCast': case '@as': {
         if (name === '@as') {
           const t = args[0]?.kind === 'ExprIdentifier' ? args[0].name : null
@@ -200,14 +213,68 @@ export function makeProgram(ast) {
     return 'is false'
   }
 
+  // `[value; count]` -- the parser keeps a fill only as the node's `size` text
+  // (it cannot read the syntax), so the text has to be decoded here. It is read
+  // against the struct declaration the element names: each field's declared type
+  // says how its text is read, which is what makes `""` (stripped to nothing by
+  // the minifier) unambiguous. Anything the declarations cannot pin down -- a
+  // string carrying a comma, a field of a type this page does not model -- stays
+  // a named gap rather than a guessed value. Each slot gets its own copy: the
+  // corpus assigns into `lines[i]` and no slot may alias another.
+  function fillFromText(n, scope) {
+    const cut = n.size.lastIndexOf(';')
+    if (cut < 1) throw gap(`an array literal the compiler kept as text [${n.size}]`)
+    const countText = n.size.slice(cut + 1).trim()
+    let count
+    if (/^\d+$/.test(countText)) count = Number(countText)
+    else if (/^[A-Za-z_]\w*$/.test(countText)) count = Number(evalE({ kind: 'ExprIdentifier', name: countText }, scope))
+    else throw gap(`a fill count this page cannot read (${countText})`)
+    if (!Number.isInteger(count) || count < 0 || count > 100000) throw gap(`a fill count of ${countText}`)
+    const one = fillElement(n.size.slice(0, cut).trim())
+    return Array.from({ length: count }, () => clone(one))
+  }
+  function fillElement(text) {
+    const m = /^([A-Za-z_]\w*)\{(.*)\}$/.exec(text)
+    if (m && structs.has(m[1])) {
+      const types = Object.fromEntries((structs.get(m[1]).children ?? []).map((f) => [f.name, f.type]))
+      const parts = m[2].split(',')
+      if (parts.length !== Object.keys(types).length) throw gap(`a struct fill this page cannot split [${text}]`)
+      const o = { __struct__: m[1] }
+      for (const p of parts) {
+        const f = /^\.([A-Za-z_]\w*)=(.*)$/.exec(p.trim())
+        if (!f || !(f[1] in types)) throw gap(`a struct fill field this page cannot read [${p}]`)
+        o[f[1]] = fit(fillValue(f[2], types[f[1]]), types[f[1]], `${m[1]}.${f[1]}`)
+      }
+      return o
+    }
+    if (/^-?(0x[0-9a-fA-F]+|0b[01]+|\d+)$/.test(text)) return BigInt(text)
+    throw gap(`a fill element this page cannot read [${text}]`)
+  }
+  function fillValue(text, type) {
+    const t = (type ?? '').replace(/^&/, '')
+    if (t === 'str') return text
+    if (t === 'bool') {
+      if (text === 'true' || text === 'false') return text === 'true'
+      throw gap(`a bool fill field read as [${text}]`)
+    }
+    if (INT.test(t) || t === 'usize' || t === 'isize') {
+      if (/^-?(0x[0-9a-fA-F]+|0b[01]+|\d+)$/.test(text)) return BigInt(text)
+      throw gap(`an integer fill field read as [${text}]`)
+    }
+    throw gap(`a fill field of type ${type}`)
+  }
+  const clone = (v) => (Array.isArray(v) ? v.map(clone) : v && typeof v === 'object' ? { ...v } : v)
+
   function evalE(n, scope) {
     tick()
     switch (n.kind) {
       case 'ExprLiteral': return literal(n)
       case 'ExprArrayLiteral': case 'ExprTuple':
-        // `[1]` in a `given` clause can come back with its elements only as the `size` text
-        // and no children; reading that as an empty array would invent a result.
-        if (n.size && !(n.children ?? []).length) throw gap(`an array literal the compiler kept as text [${n.size}]`)
+        // A fill (`[value; count]`, pins/emitter_xdc.t27) or an element list can
+        // come back with its contents only as the `size` text and no children;
+        // reading that as an empty array would invent a result. A fill whose
+        // every part is unambiguous is decoded; the rest stays a named gap.
+        if (n.size && !(n.children ?? []).length) return fillFromText(n, scope)
         return (n.children ?? []).map((c) => evalE(c, scope))
       case 'ExprIdentifier': return lookup(n.name, scope)
       case 'ExprUnary': {
@@ -238,6 +305,10 @@ export function makeProgram(ast) {
             if (Array.isArray(l) && Array.isArray(r)) return [...l, ...r]
             throw gap(`${show(l)} ++ ${show(r)}`)
         }
+        // `+` is addition for numbers and concatenation for two strings
+        // (pins/emitter_xdc.t27 builds its XDC lines with it); `num` below
+        // refuses strings, so the pair is checked first.
+        if (op === '+' && typeof l === 'string' && typeof r === 'string') return l + r
         const [a, b] = num(l, r)
         switch (op) {
           case '+': return a + b
@@ -270,6 +341,22 @@ export function makeProgram(ast) {
         const types = Object.fromEntries((structs.get(n.name).children ?? []).map((f) => [f.name, f.type]))
         for (const f of n.children ?? []) o[f.name] = fit(evalE(f.children[0], scope), types[f.name], `${n.name}.${f.name}`)
         return o
+      }
+      case 'ExprCast': {
+        // `x as T` (fpga/timing.t27 `constraint_ps as i64`). The corpus' own
+        // specs pin the rule: isa/tri27_machine.t27 asserts
+        // `(word as i32) as i64 == -1` for word = 4294967295, so the cast keeps
+        // the low bits and reinterprets them in T -- the rule Rust and Zig give
+        // their `as`. `@as` stays a checked fit and still refuses to narrow.
+        const v = evalE(n.children[0], scope)
+        const m = INT.exec(n.type ?? '')
+        const bits = n.type === 'usize' || n.type === 'isize' ? 64n : m ? BigInt(m[2]) : null
+        if (bits === null) throw gap(`a cast to ${n.type}`)
+        if (typeof v !== 'bigint') throw gap(`a cast of ${show(v)} to ${n.type}`)
+        const span = 1n << bits
+        let w = ((v % span) + span) % span
+        if ((n.type ?? '')[0] === 'i' && w >= span >> 1n) w -= span
+        return w
       }
       case 'ExprIndex': {
         const arr = evalE(n.children[0], scope)
@@ -403,7 +490,20 @@ export function makeProgram(ast) {
     let status, reason = ''
     try {
       if (b.field === 'partial') throw gap('the compiler parsed this block only in part')
-      execBlock(b.children ?? [], { vars: new Map(), up: null })
+      // `invariant NAME { expr }` (isa/tri27_machine.t27) has no assert call:
+      // the compiler lowers the expression to a bare StmtExpr, and that
+      // expression IS the check. Wrapping it in a synthetic assert runs it
+      // through the same recording as every other assertion, so a false
+      // invariant fails instead of passing silently. A `given` binding or an
+      // explicit assert is left exactly as it arrived.
+      const toCheck = (c) => {
+        const inner = c.kind === 'StmtExpr' && c.children?.[0]?.kind !== 'ExprCall' ? c.children[0] : (!c.kind.startsWith('Stmt') && c.kind !== 'ExprCall' ? c : null)
+        return inner
+          ? { kind: 'StmtExpr', line: c.line, children: [{ kind: 'ExprCall', name: 'assert', line: c.line, children: [inner] }] }
+          : c
+      }
+      const body = b.kind === 'InvariantBlock' ? (b.children ?? []).map(toCheck) : b.children
+      execBlock(body ?? [], { vars: new Map(), up: null })
       status = asserts.length === 0 ? 'skip' : asserts.every((a) => a.ok) ? 'pass' : 'fail'
       if (status === 'skip') reason = 'no assert to check'
     } catch (e) {

@@ -19,7 +19,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { SITE, checkSchema, compilerErrors, constsOf, literalValue, loadCompiler, sha256, verdictOf } from './agents-from-specs.mjs'
+import { SITE, checkSchema, compilerErrors, constsOf, loadCompiler, sha256, verdictOf } from './agents-from-specs.mjs'
 
 const WASM = 'public/t27/t27_compiler.wasm'
 export const VIEWPORT_SPEC = 'public/t27/files/specs/ui/viewport.t27'
@@ -40,78 +40,42 @@ export const VIEWPORT_REQUIRED = {
 export const TIER_NAMES = ['phone', 'tablet', 'desktop', 'wide']
 
 // ---------------------------------------------------------------------------
-// Test blocks. A tiny evaluator over the AST the compiler returns: identifiers are the
-// spec's own constants, literals are integers / booleans / strings, `a[i]` indexes an
-// array constant, and the binary operators are the integer and comparison operators the
-// spec uses. Anything else is a failure, never a silent pass.
+// Test blocks. The evaluator is the one the player ships -- public/play/t27run.js,
+// the interpreter over the compiler's AST -- imported here so the build and the
+// browser run the SAME code and cannot disagree about what a spec's tests mean.
+// Until #1477 this file carried a second, weaker reader (literals, constant
+// identifiers, indexing, integer operators) that read "statement is not an
+// assert" for every local, call, struct or branch a spec's test used, which is
+// why hardware specs could not be gated at build time.
 // ---------------------------------------------------------------------------
-export function evalExpr(node, env) {
-  switch (node.kind) {
-    // The same decoder the constants go through, not a second copy of it: a
-    // string is a string because the node says so, and `assert X == "8080"`
-    // must mean what `pub const X : str = "8080"` means.
-    case 'ExprLiteral':
-    case 'ExprArrayLiteral':
-      return literalValue(node)
-    case 'ExprIdentifier': {
-      if (!(node.name in env)) throw new Error(`unknown identifier ${node.name}`)
-      return env[node.name]
-    }
-    case 'ExprIndex': {
-      const [target, index] = node.children ?? []
-      const arr = evalExpr(target, env)
-      const i = evalExpr(index, env)
-      if (!Array.isArray(arr)) throw new Error(`indexing a non-array (${target.name ?? target.kind})`)
-      if (!Number.isInteger(i) || i < 0 || i >= arr.length) throw new Error(`index ${i} out of range for ${target.name ?? 'array'}[${arr.length}]`)
-      return arr[i]
-    }
-    case 'ExprBinary': {
-      const [l, r] = (node.children ?? []).map((c) => evalExpr(c, env))
-      switch (node.op) {
-        case '+': return int(l) + int(r)
-        case '-': return int(l) - int(r)
-        case '*': return int(l) * int(r)
-        case '/': if (int(r) === 0) throw new Error('division by zero'); return Math.trunc(int(l) / int(r))
-        case '%': if (int(r) === 0) throw new Error('modulo by zero'); return int(l) % int(r)
-        case '<': return int(l) < int(r)
-        case '<=': return int(l) <= int(r)
-        case '>': return int(l) > int(r)
-        case '>=': return int(l) >= int(r)
-        case '==': return same(l, r)
-        case '!=': return !same(l, r)
-        default: throw new Error(`unsupported operator ${node.op}`)
-      }
-    }
-    default:
-      throw new Error(`unsupported expression ${node.kind}`)
-  }
-}
-const int = (v) => { if (!Number.isInteger(v)) throw new Error(`arithmetic on a non-integer (${JSON.stringify(v)})`); return v }
-const same = (a, b) => (typeof a === typeof b ? a === b : (() => { throw new Error(`comparing ${typeof a} with ${typeof b}`) })())
+import { runSpec } from '../public/play/t27run.js'
 
-/** Every assert of every test block, evaluated. Returns { tests, asserts, failures[] }. */
+/**
+ * Every assert of every test block, evaluated by the player's evaluator.
+ * Returns { tests, asserts, failures[] }: the count of blocks, the count of
+ * assertions checked, and one line per block that did not pass. A block the
+ * evaluator cannot run is a failure here too -- a skip is never a green build.
+ *
+ * `env` is no longer read: t27run resolves the module's own constants from the
+ * AST (and computes them, which the old reader could not). The parameter stays
+ * because five importers pass it.
+ */
 export function runSpecTests(analysis, env) {
-  const blocks = (analysis.ast?.children ?? []).filter((n) => n.kind === 'TestBlock')
-  let asserts = 0
+  void env
+  const blocks = (analysis.ast?.children ?? []).filter((n) => n.kind === 'TestBlock' || n.kind === 'InvariantBlock')
+  if (!analysis.ast) return { tests: 0, asserts: 0, failures: [] }
+  const r = runSpec(analysis.ast)
   const failures = []
-  for (const b of blocks) {
-    for (const stmt of b.children ?? []) {
-      const call = stmt.kind === 'StmtExpr' ? stmt.children?.[0] : stmt
-      if (!call || call.kind !== 'ExprCall' || call.name !== 'assert') {
-        failures.push(`${b.name}: statement is not an assert (${call?.kind ?? stmt.kind}${call?.name ? ' ' + call.name : ''}); a \`;\` comment inside a block is parsed as code`)
-        continue
-      }
-      if ((call.children ?? []).length !== 1) { failures.push(`${b.name}: assert takes one expression`); continue }
-      asserts++
-      try {
-        const v = evalExpr(call.children[0], env)
-        if (v !== true) failures.push(`${b.name}: assert #${asserts} is ${JSON.stringify(v)}`)
-      } catch (e) {
-        failures.push(`${b.name}: ${e.message}`)
-      }
+  let k = 0
+  for (const b of r.results) {
+    for (const a of b.asserts) {
+      k++
+      if (!a.ok) failures.push(`${b.name}: assert #${k} is false${a.detail && a.detail !== 'is false' ? ` (${a.detail})` : ''}`)
     }
+    if (b.asserts.length === 0) failures.push(`${b.name}: ${b.reason || 'no assert to check'}`)
+    else if (b.status !== 'pass') failures.push(`${b.name}: ${b.reason || 'assertion failed'}`)
   }
-  return { tests: blocks.length, asserts, failures }
+  return { tests: blocks.length, asserts: r.results.reduce((n, b) => n + b.asserts.length, 0), failures }
 }
 
 // ---------------------------------------------------------------------------
