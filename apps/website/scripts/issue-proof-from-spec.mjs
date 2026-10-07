@@ -5,6 +5,7 @@ import {runSpecTests} from './viewport-from-spec.mjs';
 for (const [source,moduleName,exportName,target] of [
   ['specs/queen/issue_proof.t27','queen_issue_proof','issueProofPolicy','queenIssueProof'],
   ['specs/queen/memory_issue_proof.t27','queen_memory_issue_proof','memoryIssueProofPolicy','queenMemoryIssueProof'],
+  ['specs/queen/t27_issue_proof.t27','queen_t27_issue_proof','t27IssueProofPolicy','queenT27IssueProof'],
 ]) {
 const text=readFileSync(join(SITE,source),'utf8');
 const analyze=await loadCompiler(readFileSync(join(SITE,'public/t27/t27_compiler.wasm')));
@@ -13,9 +14,11 @@ if(compilerErrors(analysis).length||!v.typecheckOk||!v.hirOk||v.discarded||analy
 const schema={REPO:'str',ISSUES:'arr-u32',SPEC:'str',SPEC_HASH:'str',SEAL:'str',SEAL_HASH:'str',VECTORS:'str',VECTORS_HASH:'str',VERIFIER:'str',VERIFIER_HASH:'str',MAKEFILE:'str',MAKEFILE_HASH:'str',WORKFLOW:'str',WORKFLOW_HASH:'str',VECTOR_COUNT:'u32',CACHE_MS:'u32',ACCEPT:'arr-u8'};
 // The Memory policy lists several sealed specs ("groups") and which of them each closed issue needs.
 const memorySchema={REPO:'str',WORKFLOW:'str',WORKFLOW_HASH:'str',MAKEFILE:'str',MAKEFILE_HASH:'str',GLOBAL_PATHS:'arr',GLOBAL_HASHES:'arr',GROUP_NAMES:'arr',GROUP_SPEC:'arr',GROUP_SPEC_HASH:'arr',GROUP_SEAL:'arr',GROUP_SEAL_HASH:'arr',GROUP_VECTORS:'arr',GROUP_VECTORS_HASH:'arr',GROUP_VECTOR_COUNT:'arr-u32',GROUP_EVIDENCE:'arr',GROUP_WORKFLOW:'arr',GROUP_PATHS:'arr',GROUP_PATH_HASHES:'arr',GROUP_PATH_OWNER:'arr-u32',ISSUE_NUMBERS:'arr-u32',ISSUE_GROUPS:'arr-u32',CACHE_MS:'u32',ACCEPT:'arr-u8'};
+// The t27 policy is dynamic: no file hashes, only names, limits and the acceptance table.
+const t27Schema={REPO:'str',INDEX_REPO:'str',INDEX_REF:'str',INDEX_PATH:'str',REQUIRED_CHECKS:'arr',REQUIRED_CHECK_COUNT:'u32',MAX_PR_LOOKUPS:'u32',CACHE_MS:'u32',ACCEPT:'arr-u8'};
 const profileSchema=moduleName==='queen_issue_proof'
   ? {...schema,GDS_WORKFLOW:'str',GDS_WORKFLOW_HASH:'str'}
-  : memorySchema;
+  : moduleName==='queen_t27_issue_proof' ? t27Schema : memorySchema;
 const problems=checkSchema(constants,profileSchema,{},source);
 if(problems.length)throw new Error(problems.join('; '));
 const fields=Object.fromEntries(Object.entries(constants).map(([k,v])=>[k,v.value]));
@@ -28,6 +31,7 @@ if(process.argv.includes('--check')){
 }
 for(const [k,v] of Object.entries(fields))if(k.endsWith('_HASH')||k.endsWith('_HASHES'))for(const h of [].concat(v))if(!/^[a-f0-9]{64}$/.test(h))throw new Error(`Invalid ${k}`);
 if(Boolean(fields.GDS_WORKFLOW)!==Boolean(fields.GDS_WORKFLOW_HASH))throw new Error('Incomplete GDS binding');
+if(moduleName==='queen_t27_issue_proof'&&fields.REQUIRED_CHECKS.length!==fields.REQUIRED_CHECK_COUNT)throw new Error('Required check count mismatch');
 if(moduleName==='queen_memory_issue_proof'){
   const G=fields.GROUP_SPEC.length,same=(a,b,what)=>{if(fields[a].length!==fields[b].length)throw new Error(`Incomplete ${what}`);};
   for(const k of ['GROUP_NAMES','GROUP_SPEC_HASH','GROUP_SEAL','GROUP_SEAL_HASH','GROUP_VECTORS','GROUP_VECTORS_HASH','GROUP_VECTOR_COUNT','GROUP_EVIDENCE','GROUP_WORKFLOW'])same('GROUP_SPEC',k,`group table ${k}`);
