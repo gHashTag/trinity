@@ -51,6 +51,14 @@ DEPENDENCY_FILE = re.compile(
     r"|composer\.(?:json|lock)|build\.zig\.zon)\Z")
 DEPENDENCY_FILE_STATUS = {"modified", "added", "changed"}
 
+# A PR that changes a course carries its blog post. The rule's words and paths live in a
+# t27 spec; this program reads only its str constants and fails closed when they are absent.
+COURSE_POST_REL = "apps/website/specs/policy/course_post.t27"
+COURSE_POST_SPEC = Path(__file__).resolve().parent.parent / COURSE_POST_REL
+STR_CONST = re.compile(r'^pub const ([A-Z][A-Z0-9_]*) : str = "([^"\\]*)";$', re.MULTILINE)
+STR_LIST_CONST = re.compile(r'^pub const ([A-Z][A-Z0-9_]*) : \[([0-9]+)\]str = \[([^\]]*)\];$', re.MULTILINE)
+STR_ITEM = re.compile(r'"([^"\\]*)"')
+
 
 class ReportError(ValueError):
     """A report or event failed the enforced contract."""
@@ -326,6 +334,55 @@ def dependency_bump_report(event: dict[str, Any], files: list[dict[str, Any]],
     }
 
 
+def course_post_policy(path: Path = COURSE_POST_SPEC) -> dict[str, Any]:
+    """Read the course-post rule from its t27 spec. A missing or malformed spec fails closed."""
+    try:
+        source = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        fail(f"course-post policy {path.name} is unreadable: {exc}")
+    strings = dict(STR_CONST.findall(source))
+    lists = {name: (int(size), STR_ITEM.findall(items)) for name, size, items in STR_LIST_CONST.findall(source)}
+    for name in ("RULE", "COURSE_DIR", "POST_DIR"):
+        if not strings.get(name):
+            fail(f"course-post policy {path.name} has no str constant {name}")
+    if not strings["COURSE_DIR"].endswith("/") or not strings["POST_DIR"].endswith("/"):
+        fail(f"course-post policy {path.name}: COURSE_DIR and POST_DIR must end with /")
+    size, statuses = lists.get("POST_STATUSES", (0, []))
+    # t27 does not check a declared array length (gHashTag/t27#7395), so this reader does.
+    if not statuses or len(statuses) != size:
+        fail(f"course-post policy {path.name}: POST_STATUSES must list exactly its declared length")
+    return {"rule": strings["RULE"], "course_dir": strings["COURSE_DIR"],
+            "post_dir": strings["POST_DIR"], "statuses": frozenset(statuses)}
+
+
+def course_post_refusal(event: dict[str, Any], files: list[dict[str, Any]],
+                        policy: dict[str, Any]) -> tuple[str | None, str | None]:
+    """Return (refusal, notice): why a course PR lacks its post, and what could not be decided."""
+    changes = [(item.get("filename"), item.get("status"), item.get("previous_filename")) for item in files]
+    if any(not isinstance(name, str) or not isinstance(status, str) or not isinstance(old, (str, type(None)))
+           for name, status, old in changes):
+        return "changed-file list has an entry without a filename or status", None
+    # A file renamed out of the course directory is still a course change.
+    course = [name for name, _, old in changes
+              if name.startswith(policy["course_dir"]) or (old or "").startswith(policy["course_dir"])]
+    changed = event["pull_request"].get("changed_files")
+    incomplete = type(changed) is int and len(files) < changed
+    if not course:
+        if incomplete:
+            return None, (f"course-post rule not decided: the files API listed {len(files)} of "
+                          f"{changed} changed files and none of them is under {policy['course_dir']}")
+        return None, None
+    if any(name.startswith(policy["post_dir"]) and status in policy["statuses"] for name, status, _ in changes):
+        return None, None
+    if incomplete:
+        return None, (f"course-post rule not decided: the files API listed {len(files)} of {changed} "
+                      f"changed files, {course[0]} among them, and no post under {policy['post_dir']} "
+                      "was seen in the listed part")
+    more = f" and {len(course) - 1} more course file(s)" if len(course) > 1 else ""
+    return (f"{policy['rule']} This PR changes {course[0]}{more} but adds or modifies no post "
+            f"under {policy['post_dir']} (rule in {COURSE_POST_REL})"), None
+
+
 def lifecycle(report: dict[str, Any]) -> str:
     if report["merged"]:
         return "Merged PR; unpublished blog draft"
@@ -525,8 +582,8 @@ def main(argv: list[str] | None = None) -> int:
         event = decode_json(raw.decode("utf-8"), "event")
         pr = event.get("pull_request") if isinstance(event, dict) else None
         body = pr.get("body") if isinstance(pr, dict) else None
-        if args.files and args.commits and not (isinstance(body, str) and START in body):
-            files = json_lines(args.files.read_text(encoding="utf-8"), "files")
+        files = json_lines(args.files.read_text(encoding="utf-8"), "files") if args.files else None
+        if files is not None and args.commits and not (isinstance(body, str) and START in body):
             commits = json_lines(args.commits.read_text(encoding="utf-8"), "commits")
             refusal = dependency_bump_refusal(event, files, commits)
             if refusal is None:
@@ -540,6 +597,12 @@ def main(argv: list[str] | None = None) -> int:
             if isinstance(pr, dict) and isinstance(pr.get("user"), dict) and pr["user"].get("login") == DEPENDABOT:
                 print(f"Dependency-bump exemption does not apply: {refusal}", file=sys.stderr)
         report = validate_event(event)
+        if files is not None:
+            refusal, notice = course_post_refusal(event, files, course_post_policy())
+            if notice:
+                print(notice, file=sys.stderr)
+            if refusal:
+                fail(refusal)
         write_artifacts(report, args.output)
         print(f"Validated {report['repository']}#{report['number']} at {report['head_sha']}: "
               f"{lifecycle(report)}; artifacts written to {args.output}")
