@@ -3,6 +3,38 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: "a-course-pr-carries-its-post",
+    title: "A course PR now carries its blog post",
+    summary: "[open PR, not merged; binds only PRs opened or pushed after the merge; checks that a post file changed, not what it says] The T27 work report check now refuses a trinity PR that changes a course without adding or modifying a blog post body in the same PR. The rule's words live only in a t27 spec, specs/policy/course_post.t27, which the checker reads and fails closed on. Renamed lessons count by old and new path, renamed posts do not count, and an incomplete file list is reported as not decided. Seven planted mutants each failed their own test.",
+    date: "2026-10-07",
+    readingMinutes: 4,
+    tags: ["CI", "Courses", "Blog", "Mutation testing"],
+    receipts: [
+      { label: "trinity#1461: a course PR carries its blog post (this post's PR)", href: "https://github.com/gHashTag/trinity/pull/1461" },
+      { label: "trinity#1460: the issue", href: "https://github.com/gHashTag/trinity/issues/1460" },
+      { label: "The rule: apps/website/specs/policy/course_post.t27", href: "https://github.com/gHashTag/trinity/blob/f57e6308c1d747ba2c686470bf15cbc173e18654/apps/website/specs/policy/course_post.t27" },
+      { label: "The checker: scripts/pr_blog_report.py", href: "https://github.com/gHashTag/trinity/blob/f57e6308c1d747ba2c686470bf15cbc173e18654/scripts/pr_blog_report.py" },
+      { label: "t27#7395: t27 does not check a declared array length", href: "https://github.com/gHashTag/t27/issues/7395" },
+    ],
+    openQuestions: [
+      "trinity#1461 is open; until it merges, the rule binds no PR, because the workflow runs the checker from main.",
+      "The check sees that a post body file was added or modified, not that the post is about the course change; that is still left to review.",
+      "Above the files API limit of 3000 files the rule can come out as not decided rather than judged.",
+      "A manual re-run of the report for an older course PR that shipped without a post will now turn red.",
+    ],
+    published: true,
+    ru: {
+      title: "PR курса теперь несёт свой пост",
+      summary: "[PR открыт и не влит; действует только на PR, открытые или обновлённые после слияния; проверяет, что файл поста изменился, а не что в нём написано] Проверка T27 work report теперь отклоняет PR в trinity, который меняет курс и не добавляет и не правит тело поста в блоге в том же PR. Слова правила живут только в спеке t27, specs/policy/course_post.t27, которую проверка читает и при сбое закрывается. Переименованные уроки считаются по старому и новому пути, переименованные посты не считаются, а неполный список файлов даёт «не решено». Семь посаженных мутантов уронили каждый свой тест.",
+      openQuestions: [
+        "trinity#1461 открыт; пока он не влит, правило не действует ни на один PR, потому что workflow запускает проверку из main.",
+        "Проверка видит, что файл тела поста добавлен или изменён, но не то, что пост — об изменении курса; это по-прежнему дело ревью.",
+        "Выше предела API в 3000 файлов правило может выйти «не решено», а не вынесенным.",
+        "Ручной перезапуск отчёта для старого PR курса, ушедшего без поста, теперь станет красным.",
+      ],
+    },
+  },
+  {
     slug: "one-outlier-twenty-three-zeros",
     title: "One outlier, 23 zeros: a course module on the OCP MX block",
     summary: "[one block of 32, chosen to show the flush, no model and no accuracy number; ocp_mx.t27 is merged into t27 but not on the site yet; lesson 33 is a recording, not a browser player; software only] The t27 course has three new lessons on the Microscaling (MX) formats of the Open Compute Project, where 32 weights share one scale byte. One weight of 3.3 among 31 small ones sets that scale, and in MXFP4 23 of the 30 non-zero small ones become zero; MXFP6 E2M3 loses 4, MXINT8 2, MXFP6 E3M2 and MXFP8 E4M3 none. The numbers come from a spec with 49 tests, and changing one exponent bias from 15 to 16 fails exactly one of them.",
