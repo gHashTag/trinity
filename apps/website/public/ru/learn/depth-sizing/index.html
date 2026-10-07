@@ -16,7 +16,7 @@
 <meta property="og:url" content="https://t27.ai/ru/learn/depth-sizing/">
 <meta property="og:title" content="Выбор глубины">
 <meta property="og:description" content="Как глубина следует из скорости записи, скорости чтения и худшей пачки и что измеряет настоящий хронометрированный цикл.">
-<meta property="og:image" content="https://t27.ai/ru/learn/depth-sizing/card.png?v=430f36a37560">
+<meta property="og:image" content="https://t27.ai/ru/learn/depth-sizing/card.png?v=389c3f102130">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Курс, Урок 20 из 27: Выбор глубины. Как глубина следует из скорости записи, скорости чтения и худшей пачки и что измеряет настоящий хронометрированный цикл.">
@@ -24,7 +24,7 @@
 <meta name="twitter:site" content="@t27_dev">
 <meta name="twitter:title" content="Выбор глубины">
 <meta name="twitter:description" content="Как глубина следует из скорости записи, скорости чтения и худшей пачки и что измеряет настоящий хронометрированный цикл.">
-<meta name="twitter:image" content="https://t27.ai/ru/learn/depth-sizing/card.png?v=430f36a37560">
+<meta name="twitter:image" content="https://t27.ai/ru/learn/depth-sizing/card.png?v=389c3f102130">
 <meta name="twitter:image:alt" content="Курс, Урок 20 из 27: Выбор глубины. Как глубина следует из скорости записи, скорости чтения и худшей пачки и что измеряет настоящий хронометрированный цикл.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","name":"Выбор глубины","description":"Как глубина следует из скорости записи, скорости чтения и худшей пачки и что измеряет настоящий хронометрированный цикл.","url":"https://t27.ai/ru/learn/depth-sizing/","inLanguage":"ru","learningResourceType":"lesson","position":20,"isAccessibleForFree":true,"isPartOf":{"@type":"Course","name":"Тактирование, сброс и пересечения тактовых доменов на t27","description":"Курс 3, 27 уроков, в каждом виджет и спека t27: что такое тактовый сигнал и где он входит в плату, дерево тактового сигнала, MMCM, три вида сброса, метастабильность и MTBF, пересечение многих бит, асинхронный FIFO, файл ограничений и чтение пересечений на реальном железе. Каждое число взято из спеки или из записанного запуска.","url":"https://t27.ai/ru/learn/clocks-and-cdc/","inLanguage":"ru","isAccessibleForFree":true,"educationalLevel":"Beginner","provider":{"@type":"Organization","name":"TRINITY S³AI","url":"https://t27.ai/"}}}</script>
@@ -63,8 +63,8 @@ pre { overflow-x: auto; background: #0b0f0e; border: 1px solid #1e2624; border-r
 <p>Глубина — не чувство: запись идёт со скоростью W, чтение со скоростью R, и буфер должен вместить худшую пачку, умноженную на (W - R), за время её длительности. Переразмеренный — тратит BRAM, который можно было потратить иначе; недоразмеренный — переполняется молча, потому что полный FIFO теряет или блокирует, и ни то, ни другое не видно на волновой диаграмме. Виджет — настоящий цикл с измеренным временем: 19,06 с на router1, bitwalk, xc7frames2bit и загрузку SRAM на ноутбуке при load average около 110 — та же арифметика скорости и времени, которая выбирает размер буфера, измеренная на запуске, который был на самом деле. Окно спеки открывает fifo.t27, чей fill_count — то самое число.</p>
 <section><h2>Попробуйте</h2><p>В виджете найдите измеренное время цикла и load average, при котором он шёл; затем в окне спеки найдите fill_count и напишите формулу глубины для своей худшей пачки.</p></section>
 <p><a class="cta" href="/#/clocks-and-cdc/depth-sizing">Открыть интерактивный урок →</a></p>
-<figure><a href="/term/perf2-loop/"><img src="/term/perf2-loop/card.png" width="600" height="315" alt="Place and route to a loaded bitstream, timed" loading="lazy"><figcaption>Place and route to a loaded bitstream, timed ↗</figcaption></a></figure>
-<p class="about" lang="en">router1, bitwalk, xc7frames2bit, SRAM load: 19.06 s here, on a laptop at load average ~110.</p>
+<figure><a href="/term/t27-tri-competitors/"><img src="/term/t27-tri-competitors/card.png" width="600" height="315" alt="tri competitors audit: the table, audited" loading="lazy"><figcaption>tri competitors audit: the table, audited ↗</figcaption></a></figure>
+<p class="about" lang="en">168 records: 14 papers entered twice, 141 cite no score, 144 state zero at pass@1.</p>
 <section><h2>specs/fpga/fifo.t27</h2><pre lang="en"><code>// SPDX-License-Identifier: Apache-2.0
 // t27/specs/fpga/fifo.t27
 // Synchronous and Asynchronous FIFO Stdlib for Trinity T27 FPGA HIR

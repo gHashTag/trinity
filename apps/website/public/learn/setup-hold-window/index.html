@@ -16,7 +16,7 @@
 <meta property="og:url" content="https://t27.ai/learn/setup-hold-window/">
 <meta property="og:title" content="The setup-hold window">
 <meta property="og:description" content="What setup and hold mean, what a flop does when the window is missed, and what a VCD shows of it.">
-<meta property="og:image" content="https://t27.ai/learn/setup-hold-window/card.png?v=c51d906cad43">
+<meta property="og:image" content="https://t27.ai/learn/setup-hold-window/card.png?v=04f9f71aaeca">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Course, Lesson 13 of 27: The setup-hold window. What setup and hold mean, what a flop does when the window is missed, and what a VCD shows of it.">
@@ -24,7 +24,7 @@
 <meta name="twitter:site" content="@t27_dev">
 <meta name="twitter:title" content="The setup-hold window">
 <meta name="twitter:description" content="What setup and hold mean, what a flop does when the window is missed, and what a VCD shows of it.">
-<meta name="twitter:image" content="https://t27.ai/learn/setup-hold-window/card.png?v=c51d906cad43">
+<meta name="twitter:image" content="https://t27.ai/learn/setup-hold-window/card.png?v=04f9f71aaeca">
 <meta name="twitter:image:alt" content="Course, Lesson 13 of 27: The setup-hold window. What setup and hold mean, what a flop does when the window is missed, and what a VCD shows of it.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","name":"The setup-hold window","description":"What setup and hold mean, what a flop does when the window is missed, and what a VCD shows of it.","url":"https://t27.ai/learn/setup-hold-window/","inLanguage":"en","learningResourceType":"lesson","position":13,"isAccessibleForFree":true,"isPartOf":{"@type":"Course","name":"Clocking, resets and clock-domain crossings with t27","description":"Course 3, 27 lessons, one widget and one t27 spec each: what a clock is and where it enters the board, the clock tree, the MMCM, the three reset kinds, metastability and MTBF, crossing many bits, the asynchronous FIFO, the constraints file, and the crossings read back on real hardware. Every number comes from a spec or a recorded run.","url":"https://t27.ai/learn/clocks-and-cdc/","inLanguage":"en","isAccessibleForFree":true,"educationalLevel":"Beginner","provider":{"@type":"Organization","name":"TRINITY S³AI","url":"https://t27.ai/"}}}</script>
@@ -63,8 +63,8 @@ pre { overflow-x: auto; background: #0b0f0e; border: 1px solid #1e2624; border-r
 <p>Every flop has a window around its sampling edge -- setup before it, hold after it. Land a transition inside the window and the flop does not cleanly pick a level: its output can hang between 0 and 1, a metastable state that resolves at a time the datasheet does not promise. The widget reads a .vcd from any simulator and reports value changes, the busiest net, and signals stuck at X or Z: X in a simulation is the testbench's way of showing the window was missed. The spec frame opens clock_domain.t27, whose crossing model is what module 5 turns into arithmetic.</p>
 <section><h2>Try it</h2><p>In the widget, drop a .vcd if you have one and find the busiest net; then in the spec frame find the crossing model the window belongs to.</p></section>
 <p><a class="cta" href="/#/clocks-and-cdc/setup-hold-window">Open the interactive lesson →</a></p>
-<figure><a href="/widgets/vcd-wrapped/"><img src="/widgets/vcd-wrapped/card.png" width="600" height="315" alt="VCD wrapped: your simulation, summed up on one card" loading="lazy"><figcaption>VCD wrapped: your simulation, summed up on one card ↗</figcaption></a></figure>
-<p class="about" lang="en">Drop a .vcd from any simulator and get a Wrapped-style card: value changes, the busiest net, signals stuck at X or Z, the quietest ones and the time span, read in your browser.</p>
+<figure><a href="/term/tri-fpga-rxer/"><img src="/term/tri-fpga-rxer/card.png" width="600" height="315" alt="tri fpga-rxer" loading="lazy"><figcaption>tri fpga-rxer ↗</figcaption></a></figure>
+<p class="about" lang="en">RX_ER pulses injected at exact nibble positions of a ping -- preamble, mid-frame, IP header -- and the frame state each pulse leaves behind, RTL vs model.</p>
 <section><h2>specs/fpga/clock_domain.t27</h2><pre lang="en"><code>// SPDX-License-Identifier: Apache-2.0
 // t27/specs/fpga/clock_domain.t27
 // Clock Domain Abstraction for Trinity T27 FPGA HIR

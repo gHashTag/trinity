@@ -16,7 +16,7 @@
 <meta property="og:url" content="https://t27.ai/learn/depth-sizing/">
 <meta property="og:title" content="Sizing the depth">
 <meta property="og:description" content="How depth follows from the write rate, the read rate and the worst burst, and what a real timed loop measures.">
-<meta property="og:image" content="https://t27.ai/learn/depth-sizing/card.png?v=ff9dbf84f585">
+<meta property="og:image" content="https://t27.ai/learn/depth-sizing/card.png?v=09415340887a">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Course, Lesson 20 of 27: Sizing the depth. How depth follows from the write rate, the read rate and the worst burst, and what a real timed loop measures.">
@@ -24,7 +24,7 @@
 <meta name="twitter:site" content="@t27_dev">
 <meta name="twitter:title" content="Sizing the depth">
 <meta name="twitter:description" content="How depth follows from the write rate, the read rate and the worst burst, and what a real timed loop measures.">
-<meta name="twitter:image" content="https://t27.ai/learn/depth-sizing/card.png?v=ff9dbf84f585">
+<meta name="twitter:image" content="https://t27.ai/learn/depth-sizing/card.png?v=09415340887a">
 <meta name="twitter:image:alt" content="Course, Lesson 20 of 27: Sizing the depth. How depth follows from the write rate, the read rate and the worst burst, and what a real timed loop measures.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","name":"Sizing the depth","description":"How depth follows from the write rate, the read rate and the worst burst, and what a real timed loop measures.","url":"https://t27.ai/learn/depth-sizing/","inLanguage":"en","learningResourceType":"lesson","position":20,"isAccessibleForFree":true,"isPartOf":{"@type":"Course","name":"Clocking, resets and clock-domain crossings with t27","description":"Course 3, 27 lessons, one widget and one t27 spec each: what a clock is and where it enters the board, the clock tree, the MMCM, the three reset kinds, metastability and MTBF, crossing many bits, the asynchronous FIFO, the constraints file, and the crossings read back on real hardware. Every number comes from a spec or a recorded run.","url":"https://t27.ai/learn/clocks-and-cdc/","inLanguage":"en","isAccessibleForFree":true,"educationalLevel":"Beginner","provider":{"@type":"Organization","name":"TRINITY S³AI","url":"https://t27.ai/"}}}</script>
@@ -63,8 +63,8 @@ pre { overflow-x: auto; background: #0b0f0e; border: 1px solid #1e2624; border-r
 <p>Depth is not a feeling: writes at rate W, reads at rate R, and the buffer must hold the worst burst times (W - R) over the time it lasts. Oversize it and it costs BRAM you could have spent; undersize it and it overflows silently, because a full FIFO drops or blocks and neither shows up in a waveform. The widget is a real loop with a measured time -- 19.06 s for router1, bitwalk, xc7frames2bit and the SRAM load, on a laptop at load average about 110 -- the same arithmetic of rate and time that sizes a buffer, measured on a run that really happened. The spec frame opens fifo.t27, whose fill_count is the number this lesson is about.</p>
 <section><h2>Try it</h2><p>In the widget, find the loop's measured time and the load average it ran at; then in the spec frame find fill_count and write the depth formula for your own worst burst.</p></section>
 <p><a class="cta" href="/#/clocks-and-cdc/depth-sizing">Open the interactive lesson →</a></p>
-<figure><a href="/term/perf2-loop/"><img src="/term/perf2-loop/card.png" width="600" height="315" alt="Place and route to a loaded bitstream, timed" loading="lazy"><figcaption>Place and route to a loaded bitstream, timed ↗</figcaption></a></figure>
-<p class="about" lang="en">router1, bitwalk, xc7frames2bit, SRAM load: 19.06 s here, on a laptop at load average ~110.</p>
+<figure><a href="/term/t27-tri-competitors/"><img src="/term/t27-tri-competitors/card.png" width="600" height="315" alt="tri competitors audit: the table, audited" loading="lazy"><figcaption>tri competitors audit: the table, audited ↗</figcaption></a></figure>
+<p class="about" lang="en">168 records: 14 papers entered twice, 141 cite no score, 144 state zero at pass@1.</p>
 <section><h2>specs/fpga/fifo.t27</h2><pre lang="en"><code>// SPDX-License-Identifier: Apache-2.0
 // t27/specs/fpga/fifo.t27
 // Synchronous and Asynchronous FIFO Stdlib for Trinity T27 FPGA HIR

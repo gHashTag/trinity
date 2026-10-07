@@ -16,7 +16,7 @@
 <meta property="og:url" content="https://t27.ai/ru/learn/global-buffers/">
 <meta property="og:title" content="Глобальный буфер">
 <meta property="og:description" content="Что такое глобальный буфер, почему он живёт в собственной сети и как выглядела одна настоящая сборка всего потока.">
-<meta property="og:image" content="https://t27.ai/ru/learn/global-buffers/card.png?v=58d1aad9c585">
+<meta property="og:image" content="https://t27.ai/ru/learn/global-buffers/card.png?v=35ee9a8a7a02">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Курс, Урок 5 из 27: Глобальный буфер. Что такое глобальный буфер, почему он живёт в собственной сети и как выглядела одна настоящая сборка всего потока.">
@@ -24,7 +24,7 @@
 <meta name="twitter:site" content="@t27_dev">
 <meta name="twitter:title" content="Глобальный буфер">
 <meta name="twitter:description" content="Что такое глобальный буфер, почему он живёт в собственной сети и как выглядела одна настоящая сборка всего потока.">
-<meta name="twitter:image" content="https://t27.ai/ru/learn/global-buffers/card.png?v=58d1aad9c585">
+<meta name="twitter:image" content="https://t27.ai/ru/learn/global-buffers/card.png?v=35ee9a8a7a02">
 <meta name="twitter:image:alt" content="Курс, Урок 5 из 27: Глобальный буфер. Что такое глобальный буфер, почему он живёт в собственной сети и как выглядела одна настоящая сборка всего потока.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","name":"Глобальный буфер","description":"Что такое глобальный буфер, почему он живёт в собственной сети и как выглядела одна настоящая сборка всего потока.","url":"https://t27.ai/ru/learn/global-buffers/","inLanguage":"ru","learningResourceType":"lesson","position":5,"isAccessibleForFree":true,"isPartOf":{"@type":"Course","name":"Тактирование, сброс и пересечения тактовых доменов на t27","description":"Курс 3, 27 уроков, в каждом виджет и спека t27: что такое тактовый сигнал и где он входит в плату, дерево тактового сигнала, MMCM, три вида сброса, метастабильность и MTBF, пересечение многих бит, асинхронный FIFO, файл ограничений и чтение пересечений на реальном железе. Каждое число взято из спеки или из записанного запуска.","url":"https://t27.ai/ru/learn/clocks-and-cdc/","inLanguage":"ru","isAccessibleForFree":true,"educationalLevel":"Beginner","provider":{"@type":"Organization","name":"TRINITY S³AI","url":"https://t27.ai/"}}}</script>
@@ -63,8 +63,8 @@ pre { overflow-x: auto; background: #0b0f0e; border: 1px solid #1e2624; border-r
 <p>Глобальный буфер, BUFG на кристалле 7-й серии, ведёт тактовый сигнал по выделенной малоперекосной сети, чтобы у дерева из прошлого урока был чистый корень. Виджет показывает поток, внутри которого стоит BUFG: одна настоящая сборка XC7A200T — 116,9 с с openXC7 и 83,5 с через путь t27 L3+L4, побайтово одинаковые битстримы, а разводка занимает 60 процентов времени. Буфер — один слой этой картины, а окно спеки снова открывает cts.t27, где строятся bufg() и тестируется bufg_has_higher_fanout().</p>
 <section><h2>Попробуйте</h2><p>В виджете найдите два времени сборки и долю разводки в процентах; затем в окне спеки найдите bufg() и тест, дающий ей больший фан-аут.</p></section>
 <p><a class="cta" href="/#/clocks-and-cdc/global-buffers">Открыть интерактивный урок →</a></p>
-<figure><a href="/term/devkit-flow/"><img src="/term/devkit-flow/card.png" width="600" height="315" alt="tri devkit · the FPGA flow, layer by layer" loading="lazy"><figcaption>tri devkit · the FPGA flow, layer by layer ↗</figcaption></a></figure>
-<p class="about" lang="en">One real XC7A200T build: 116.9 s with openXC7, 83.5 s with t27 L3+L4, byte-identical. Place &amp; route is 60%.</p>
+<figure><a href="/term/tri-game-selftest/"><img src="/term/tri-game-selftest/card.png" width="600" height="315" alt="tri game-selftest: the queen loop checks its own tools" loading="lazy"><figcaption>tri game-selftest: the queen loop checks its own tools ↗</figcaption></a></figure>
+<p class="about" lang="en">6 of 6 self-tests hold: anomalies, blog_drift, lessons, site_gate, tick, vault.</p>
 <section><h2>specs/fpga/cts.t27</h2><pre lang="en"><code>// SPDX-License-Identifier: Apache-2.0
 // t27/specs/fpga/cts.t27
 // T27 Clock Tree Synthesis Specification

@@ -16,7 +16,7 @@
 <meta property="og:url" content="https://t27.ai/ru/learn/gated-clock-trap/">
 <meta property="og:title" content="Ловушка стробированного клока">
 <meta property="og:description" content="Почему стробирование клока логикой создаёт новый домен и зачем нужен clock enable.">
-<meta property="og:image" content="https://t27.ai/ru/learn/gated-clock-trap/card.png?v=c8435c99af8c">
+<meta property="og:image" content="https://t27.ai/ru/learn/gated-clock-trap/card.png?v=44115989db8a">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Курс, Урок 6 из 27: Ловушка стробированного клока. Почему стробирование клока логикой создаёт новый домен и зачем нужен clock enable.">
@@ -24,7 +24,7 @@
 <meta name="twitter:site" content="@t27_dev">
 <meta name="twitter:title" content="Ловушка стробированного клока">
 <meta name="twitter:description" content="Почему стробирование клока логикой создаёт новый домен и зачем нужен clock enable.">
-<meta name="twitter:image" content="https://t27.ai/ru/learn/gated-clock-trap/card.png?v=c8435c99af8c">
+<meta name="twitter:image" content="https://t27.ai/ru/learn/gated-clock-trap/card.png?v=44115989db8a">
 <meta name="twitter:image:alt" content="Курс, Урок 6 из 27: Ловушка стробированного клока. Почему стробирование клока логикой создаёт новый домен и зачем нужен clock enable.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","name":"Ловушка стробированного клока","description":"Почему стробирование клока логикой создаёт новый домен и зачем нужен clock enable.","url":"https://t27.ai/ru/learn/gated-clock-trap/","inLanguage":"ru","learningResourceType":"lesson","position":6,"isAccessibleForFree":true,"isPartOf":{"@type":"Course","name":"Тактирование, сброс и пересечения тактовых доменов на t27","description":"Курс 3, 27 уроков, в каждом виджет и спека t27: что такое тактовый сигнал и где он входит в плату, дерево тактового сигнала, MMCM, три вида сброса, метастабильность и MTBF, пересечение многих бит, асинхронный FIFO, файл ограничений и чтение пересечений на реальном железе. Каждое число взято из спеки или из записанного запуска.","url":"https://t27.ai/ru/learn/clocks-and-cdc/","inLanguage":"ru","isAccessibleForFree":true,"educationalLevel":"Beginner","provider":{"@type":"Organization","name":"TRINITY S³AI","url":"https://t27.ai/"}}}</script>
@@ -63,8 +63,8 @@ pre { overflow-x: auto; background: #0b0f0e; border: 1px solid #1e2624; border-r
 <p>Стробировать клок логикой — элемент AND на линии тактового сигнала ради экономии — значит резать клок сигналом, который меняется со скоростью данных: получаются глитчи, и тихо возникает новый тактовый домен из всего, что ниже по потоку. Правило: не стробируйте клок; используйте clock enable — его сэмплирует триггер на фронте, а не фронт сэмплирует его. Виджет показывает дисциплину доказательства таких утверждений: два битстрима, различающихся в трёх битах, и выбивающая сборка на каждый бит, каждая снимает один — ни один бит не может приписать себе незаслуженную заслугу. Окно спеки открывает clock_domain.t27, чей тип источника gated_clk — модель этой ловушки.</p>
 <section><h2>Попробуйте</h2><p>В виджете найдите, на сколько бит различаются битстримы и как снимали каждый; затем в окне спеки найдите тип источника gated-clock и значение перечисления стратегий, которое вынуждает стробированный клок.</p></section>
 <p><a class="cta" href="/#/clocks-and-cdc/gated-clock-trap">Открыть интерактивный урок →</a></p>
-<figure><a href="/term/perf2-knockouts/"><img src="/term/perf2-knockouts/card.png" width="600" height="315" alt="Three PERF2 bits, and one knockout bitstream per bit" loading="lazy"><figcaption>Three PERF2 bits, and one knockout bitstream per bit ↗</figcaption></a></figure>
-<p class="about" lang="en">The A/B bitstreams differ in three bits. Each knockout clears one: 3 bytes from the working .bit.</p>
+<figure><a href="/widgets/race-the-bee/"><img src="/widgets/race-the-bee/card.png" width="600" height="315" alt="Race the bee: who lands patches on t27, a person or a bee" loading="lazy"><figcaption>Race the bee: who lands patches on t27, a person or a bee ↗</figcaption></a></figure>
+<p class="about" lang="en">A dated snapshot of gHashTag/t27: merged pull requests by the Queen's bees and by people, the issues both lanes went for, and the open ones nobody has taken.</p>
 <section><h2>specs/fpga/clock_domain.t27</h2><pre lang="en"><code>// SPDX-License-Identifier: Apache-2.0
 // t27/specs/fpga/clock_domain.t27
 // Clock Domain Abstraction for Trinity T27 FPGA HIR

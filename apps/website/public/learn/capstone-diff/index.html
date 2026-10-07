@@ -16,7 +16,7 @@
 <meta property="og:url" content="https://t27.ai/learn/capstone-diff/">
 <meta property="og:title" content="Capstone: change it and diff it">
 <meta property="og:description" content="How the pieces of this course meet in one build, and what a bitstream diff says about a change.">
-<meta property="og:image" content="https://t27.ai/learn/capstone-diff/card.png?v=4c662987c331">
+<meta property="og:image" content="https://t27.ai/learn/capstone-diff/card.png?v=50a24a45c0af">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Course, Lesson 27 of 27: Capstone: change it and diff it. How the pieces of this course meet in one build, and what a bitstream diff says about a change.">
@@ -24,7 +24,7 @@
 <meta name="twitter:site" content="@t27_dev">
 <meta name="twitter:title" content="Capstone: change it and diff it">
 <meta name="twitter:description" content="How the pieces of this course meet in one build, and what a bitstream diff says about a change.">
-<meta name="twitter:image" content="https://t27.ai/learn/capstone-diff/card.png?v=4c662987c331">
+<meta name="twitter:image" content="https://t27.ai/learn/capstone-diff/card.png?v=50a24a45c0af">
 <meta name="twitter:image:alt" content="Course, Lesson 27 of 27: Capstone: change it and diff it. How the pieces of this course meet in one build, and what a bitstream diff says about a change.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","name":"Capstone: change it and diff it","description":"How the pieces of this course meet in one build, and what a bitstream diff says about a change.","url":"https://t27.ai/learn/capstone-diff/","inLanguage":"en","learningResourceType":"lesson","position":27,"isAccessibleForFree":true,"isPartOf":{"@type":"Course","name":"Clocking, resets and clock-domain crossings with t27","description":"Course 3, 27 lessons, one widget and one t27 spec each: what a clock is and where it enters the board, the clock tree, the MMCM, the three reset kinds, metastability and MTBF, crossing many bits, the asynchronous FIFO, the constraints file, and the crossings read back on real hardware. Every number comes from a spec or a recorded run.","url":"https://t27.ai/learn/clocks-and-cdc/","inLanguage":"en","isAccessibleForFree":true,"educationalLevel":"Beginner","provider":{"@type":"Organization","name":"TRINITY S³AI","url":"https://t27.ai/"}}}</script>
@@ -63,8 +63,8 @@ pre { overflow-x: auto; background: #0b0f0e; border: 1px solid #1e2624; border-r
 <p>Close the loop: change one thing about a crossing -- a synchronizer stage, a Gray pointer, a constraint -- rebuild, and ask the bitstream what moved. The widget compares two Xilinx 7-series bitstreams in your browser: header, packets, and every 101-word frame, with the differing frame address decoded; nothing is uploaded. A CDC change that claims to change nothing should diff to nothing, and one that means something shows exactly which frames it touched. The spec frame opens fifo.t27, the buffer this course built crossing by crossing, and its 18 passing tests are the receipt.</p>
 <section><h2>Try it</h2><p>In the widget, drop two bitstreams if you have them and find the differing frame; then in the spec frame pick one test of the FIFO and say what change would break it.</p></section>
 <p><a class="cta" href="/#/clocks-and-cdc/capstone-diff">Open the interactive lesson →</a></p>
-<figure><a href="/widgets/bit-diff/"><img src="/widgets/bit-diff/card.png" width="600" height="315" alt="Bitstream diff: two 7-series .bit files, frame by frame" loading="lazy"><figcaption>Bitstream diff: two 7-series .bit files, frame by frame ↗</figcaption></a></figure>
-<p class="about" lang="en">Drop two Xilinx 7-series bitstreams: header, packets and every 101-word frame compared in your browser, the first differing frame address decoded. Nothing is uploaded.</p>
+<figure><a href="/term/tri-blog-list/"><img src="/term/tri-blog-list/card.png" width="600" height="315" alt="tri blog list: every t27.ai post and its receipt state" loading="lazy"><figcaption>tri blog list: every t27.ai post and its receipt state ↗</figcaption></a></figure>
+<p class="about" lang="en">73 published posts with date, language and revision, newest first.</p>
 <section><h2>specs/fpga/fifo.t27</h2><pre lang="en"><code>// SPDX-License-Identifier: Apache-2.0
 // t27/specs/fpga/fifo.t27
 // Synchronous and Asynchronous FIFO Stdlib for Trinity T27 FPGA HIR

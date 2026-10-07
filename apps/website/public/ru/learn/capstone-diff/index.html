@@ -16,7 +16,7 @@
 <meta property="og:url" content="https://t27.ai/ru/learn/capstone-diff/">
 <meta property="og:title" content="Капстоун: поменяй и сравни">
 <meta property="og:description" content="Как куски курса сходятся в одной сборке и что говорит дифф битстрима об изменении.">
-<meta property="og:image" content="https://t27.ai/ru/learn/capstone-diff/card.png?v=67d2171b34a8">
+<meta property="og:image" content="https://t27.ai/ru/learn/capstone-diff/card.png?v=56453fc85c07">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Курс, Урок 27 из 27: Капстоун: поменяй и сравни. Как куски курса сходятся в одной сборке и что говорит дифф битстрима об изменении.">
@@ -24,7 +24,7 @@
 <meta name="twitter:site" content="@t27_dev">
 <meta name="twitter:title" content="Капстоун: поменяй и сравни">
 <meta name="twitter:description" content="Как куски курса сходятся в одной сборке и что говорит дифф битстрима об изменении.">
-<meta name="twitter:image" content="https://t27.ai/ru/learn/capstone-diff/card.png?v=67d2171b34a8">
+<meta name="twitter:image" content="https://t27.ai/ru/learn/capstone-diff/card.png?v=56453fc85c07">
 <meta name="twitter:image:alt" content="Курс, Урок 27 из 27: Капстоун: поменяй и сравни. Как куски курса сходятся в одной сборке и что говорит дифф битстрима об изменении.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","name":"Капстоун: поменяй и сравни","description":"Как куски курса сходятся в одной сборке и что говорит дифф битстрима об изменении.","url":"https://t27.ai/ru/learn/capstone-diff/","inLanguage":"ru","learningResourceType":"lesson","position":27,"isAccessibleForFree":true,"isPartOf":{"@type":"Course","name":"Тактирование, сброс и пересечения тактовых доменов на t27","description":"Курс 3, 27 уроков, в каждом виджет и спека t27: что такое тактовый сигнал и где он входит в плату, дерево тактового сигнала, MMCM, три вида сброса, метастабильность и MTBF, пересечение многих бит, асинхронный FIFO, файл ограничений и чтение пересечений на реальном железе. Каждое число взято из спеки или из записанного запуска.","url":"https://t27.ai/ru/learn/clocks-and-cdc/","inLanguage":"ru","isAccessibleForFree":true,"educationalLevel":"Beginner","provider":{"@type":"Organization","name":"TRINITY S³AI","url":"https://t27.ai/"}}}</script>
@@ -63,8 +63,8 @@ pre { overflow-x: auto; background: #0b0f0e; border: 1px solid #1e2624; border-r
 <p>Замкните круг: поменяйте в пересечении одну вещь — ступень синхронизатора, указатель Грея, ограничение — пересоберите и спросите битстрим, что сдвинулось. Виджет сравнивает два битстрима Xilinx 7-й серии в браузере: заголовок, пакеты и каждый кадр из 101 слова, с декодированным адресом отличающегося кадра; ничего не загружается наружу. Изменение CDC, утверждающее, что оно ничего не меняет, должно давать пустой дифф, а осмысленное — показывает, какие кадры оно задело. Окно спеки открывает fifo.t27, буфер, который этот курс построил пересечение за пересечением, и его 18 прошедших тестов — квитанция.</p>
 <section><h2>Попробуйте</h2><p>В виджете бросьте два битстрима, если они есть, и найдите отличающийся кадр; затем в окне спеки выберите один тест FIFO и скажите, какое изменение его сломало бы.</p></section>
 <p><a class="cta" href="/#/clocks-and-cdc/capstone-diff">Открыть интерактивный урок →</a></p>
-<figure><a href="/widgets/bit-diff/"><img src="/widgets/bit-diff/card.png" width="600" height="315" alt="Bitstream diff: two 7-series .bit files, frame by frame" loading="lazy"><figcaption>Bitstream diff: two 7-series .bit files, frame by frame ↗</figcaption></a></figure>
-<p class="about" lang="en">Drop two Xilinx 7-series bitstreams: header, packets and every 101-word frame compared in your browser, the first differing frame address decoded. Nothing is uploaded.</p>
+<figure><a href="/term/tri-blog-list/"><img src="/term/tri-blog-list/card.png" width="600" height="315" alt="tri blog list: every t27.ai post and its receipt state" loading="lazy"><figcaption>tri blog list: every t27.ai post and its receipt state ↗</figcaption></a></figure>
+<p class="about" lang="en">73 published posts with date, language and revision, newest first.</p>
 <section><h2>specs/fpga/fifo.t27</h2><pre lang="en"><code>// SPDX-License-Identifier: Apache-2.0
 // t27/specs/fpga/fifo.t27
 // Synchronous and Asynchronous FIFO Stdlib for Trinity T27 FPGA HIR

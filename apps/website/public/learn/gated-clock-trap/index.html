@@ -16,7 +16,7 @@
 <meta property="og:url" content="https://t27.ai/learn/gated-clock-trap/">
 <meta property="og:title" content="The gated-clock trap">
 <meta property="og:description" content="Why gating a clock with logic makes a new domain, and what a clock enable is for.">
-<meta property="og:image" content="https://t27.ai/learn/gated-clock-trap/card.png?v=a364bd70883e">
+<meta property="og:image" content="https://t27.ai/learn/gated-clock-trap/card.png?v=116eb5e9ea8b">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Course, Lesson 6 of 27: The gated-clock trap. Why gating a clock with logic makes a new domain, and what a clock enable is for.">
@@ -24,7 +24,7 @@
 <meta name="twitter:site" content="@t27_dev">
 <meta name="twitter:title" content="The gated-clock trap">
 <meta name="twitter:description" content="Why gating a clock with logic makes a new domain, and what a clock enable is for.">
-<meta name="twitter:image" content="https://t27.ai/learn/gated-clock-trap/card.png?v=a364bd70883e">
+<meta name="twitter:image" content="https://t27.ai/learn/gated-clock-trap/card.png?v=116eb5e9ea8b">
 <meta name="twitter:image:alt" content="Course, Lesson 6 of 27: The gated-clock trap. Why gating a clock with logic makes a new domain, and what a clock enable is for.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","name":"The gated-clock trap","description":"Why gating a clock with logic makes a new domain, and what a clock enable is for.","url":"https://t27.ai/learn/gated-clock-trap/","inLanguage":"en","learningResourceType":"lesson","position":6,"isAccessibleForFree":true,"isPartOf":{"@type":"Course","name":"Clocking, resets and clock-domain crossings with t27","description":"Course 3, 27 lessons, one widget and one t27 spec each: what a clock is and where it enters the board, the clock tree, the MMCM, the three reset kinds, metastability and MTBF, crossing many bits, the asynchronous FIFO, the constraints file, and the crossings read back on real hardware. Every number comes from a spec or a recorded run.","url":"https://t27.ai/learn/clocks-and-cdc/","inLanguage":"en","isAccessibleForFree":true,"educationalLevel":"Beginner","provider":{"@type":"Organization","name":"TRINITY S³AI","url":"https://t27.ai/"}}}</script>
@@ -63,8 +63,8 @@ pre { overflow-x: auto; background: #0b0f0e; border: 1px solid #1e2624; border-r
 <p>Gating a clock with logic -- an AND gate on the clock line to save power -- cuts the clock with a signal that changes at data speed, makes glitches, and quietly creates a new clock domain of everything downstream. The rule: never gate a clock; use a clock enable, which the flop samples at the edge instead of the edge sampling it. The widget shows the discipline of proving such claims: two bitstreams that differ in three bits, and a knockout build per bit, each clearing one, so no bit can claim credit it does not earn. The spec frame opens clock_domain.t27, whose gated_clk source kind is the model of this trap.</p>
 <section><h2>Try it</h2><p>In the widget, find how many bits the A/B bitstreams differ by and how each was cleared; then in the spec frame find the gated-clock source kind and the strategy enum value a gated clock forces.</p></section>
 <p><a class="cta" href="/#/clocks-and-cdc/gated-clock-trap">Open the interactive lesson →</a></p>
-<figure><a href="/term/perf2-knockouts/"><img src="/term/perf2-knockouts/card.png" width="600" height="315" alt="Three PERF2 bits, and one knockout bitstream per bit" loading="lazy"><figcaption>Three PERF2 bits, and one knockout bitstream per bit ↗</figcaption></a></figure>
-<p class="about" lang="en">The A/B bitstreams differ in three bits. Each knockout clears one: 3 bytes from the working .bit.</p>
+<figure><a href="/widgets/race-the-bee/"><img src="/widgets/race-the-bee/card.png" width="600" height="315" alt="Race the bee: who lands patches on t27, a person or a bee" loading="lazy"><figcaption>Race the bee: who lands patches on t27, a person or a bee ↗</figcaption></a></figure>
+<p class="about" lang="en">A dated snapshot of gHashTag/t27: merged pull requests by the Queen's bees and by people, the issues both lanes went for, and the open ones nobody has taken.</p>
 <section><h2>specs/fpga/clock_domain.t27</h2><pre lang="en"><code>// SPDX-License-Identifier: Apache-2.0
 // t27/specs/fpga/clock_domain.t27
 // Clock Domain Abstraction for Trinity T27 FPGA HIR

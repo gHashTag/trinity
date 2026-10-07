@@ -16,7 +16,7 @@
 <meta property="og:url" content="https://t27.ai/ru/learn/reset-fanout/">
 <meta property="og:title" content="Разветвление сброса">
 <meta property="og:description" content="Почему сброс растит дерево, как тактовое, и где его цена видна в настоящем подсчёте ресурсов.">
-<meta property="og:image" content="https://t27.ai/ru/learn/reset-fanout/card.png?v=b19dd3bba8b3">
+<meta property="og:image" content="https://t27.ai/ru/learn/reset-fanout/card.png?v=ea9ed605e62f">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Курс, Урок 12 из 27: Разветвление сброса. Почему сброс растит дерево, как тактовое, и где его цена видна в настоящем подсчёте ресурсов.">
@@ -24,7 +24,7 @@
 <meta name="twitter:site" content="@t27_dev">
 <meta name="twitter:title" content="Разветвление сброса">
 <meta name="twitter:description" content="Почему сброс растит дерево, как тактовое, и где его цена видна в настоящем подсчёте ресурсов.">
-<meta name="twitter:image" content="https://t27.ai/ru/learn/reset-fanout/card.png?v=b19dd3bba8b3">
+<meta name="twitter:image" content="https://t27.ai/ru/learn/reset-fanout/card.png?v=ea9ed605e62f">
 <meta name="twitter:image:alt" content="Курс, Урок 12 из 27: Разветвление сброса. Почему сброс растит дерево, как тактовое, и где его цена видна в настоящем подсчёте ресурсов.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","name":"Разветвление сброса","description":"Почему сброс растит дерево, как тактовое, и где его цена видна в настоящем подсчёте ресурсов.","url":"https://t27.ai/ru/learn/reset-fanout/","inLanguage":"ru","learningResourceType":"lesson","position":12,"isAccessibleForFree":true,"isPartOf":{"@type":"Course","name":"Тактирование, сброс и пересечения тактовых доменов на t27","description":"Курс 3, 27 уроков, в каждом виджет и спека t27: что такое тактовый сигнал и где он входит в плату, дерево тактового сигнала, MMCM, три вида сброса, метастабильность и MTBF, пересечение многих бит, асинхронный FIFO, файл ограничений и чтение пересечений на реальном железе. Каждое число взято из спеки или из записанного запуска.","url":"https://t27.ai/ru/learn/clocks-and-cdc/","inLanguage":"ru","isAccessibleForFree":true,"educationalLevel":"Beginner","provider":{"@type":"Organization","name":"TRINITY S³AI","url":"https://t27.ai/"}}}</script>
@@ -63,8 +63,8 @@ pre { overflow-x: auto; background: #0b0f0e; border: 1px solid #1e2624; border-r
 <p>Сброс доходит до каждого триггера дизайна, поэтому он растит дерево, как тактовое, и балансируется по той же причине: неровное снятие — это перекос, который вы построили сами. Виджет считает настоящую разведённую схему против собственных итогов XC7A200T, прочитанных из chipdb и prjxray-db, и посчитает вашу, если бросить её разведённый JSON. Дерево сброса живёт в том же бюджете: трассировка и давление control set, видимые ровно в этих столбиках. Окно спеки снова открывает cts.t27 — арифметику дерева, общую для обоих деревьев.</p>
 <section><h2>Попробуйте</h2><p>В виджете прочитайте итоги, против которых считаются столбики; затем в окне спеки найдите целевой перекос, под который балансируется и дерево сброса.</p></section>
 <p><a class="cta" href="/#/clocks-and-cdc/reset-fanout">Открыть интерактивный урок →</a></p>
-<figure><a href="/widgets/resource-bars/"><img src="/widgets/resource-bars/card.png" width="600" height="315" alt="Resource bars: LUT, FF, BRAM and DSP used on the XC7A200T" loading="lazy"><figcaption>Resource bars: LUT, FF, BRAM and DSP used on the XC7A200T ↗</figcaption></a></figure>
-<p class="about" lang="en">A real nextpnr-xilinx run counted against the XC7A200T's own totals, read from the chipdb and prjxray-db. Drop your routed JSON and it counts yours.</p>
+<figure><a href="/term/tri-fpga-rxcap/"><img src="/term/tri-fpga-rxcap/card.png" width="600" height="315" alt="tri fpga-rxcap" loading="lazy"><figcaption>tri fpga-rxcap ↗</figcaption></a></figure>
+<p class="about" lang="en">Per-bit setup and hold of an asynchronous RX nibble sampled by RXC, from the routed SDF: the four rxd bits of one nibble change 2387 to 2486 ps apart, so a binary counter tears where a gray one cannot.</p>
 <section><h2>specs/fpga/cts.t27</h2><pre lang="en"><code>// SPDX-License-Identifier: Apache-2.0
 // t27/specs/fpga/cts.t27
 // T27 Clock Tree Synthesis Specification

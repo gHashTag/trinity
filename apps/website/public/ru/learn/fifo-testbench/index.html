@@ -16,7 +16,7 @@
 <meta property="og:url" content="https://t27.ai/ru/learn/fifo-testbench/">
 <meta property="og:title" content="Тестбенч FIFO">
 <meta property="og:description" content="Как выглядит настоящая дисциплина тестбенча и почему этот урок открывает спеку FIFO и запись мутаций.">
-<meta property="og:image" content="https://t27.ai/ru/learn/fifo-testbench/card.png?v=ef5d53001ca2">
+<meta property="og:image" content="https://t27.ai/ru/learn/fifo-testbench/card.png?v=6200be8976f3">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Курс, Урок 21 из 27: Тестбенч FIFO. Как выглядит настоящая дисциплина тестбенча и почему этот урок открывает спеку FIFO и запись мутаций.">
@@ -24,7 +24,7 @@
 <meta name="twitter:site" content="@t27_dev">
 <meta name="twitter:title" content="Тестбенч FIFO">
 <meta name="twitter:description" content="Как выглядит настоящая дисциплина тестбенча и почему этот урок открывает спеку FIFO и запись мутаций.">
-<meta name="twitter:image" content="https://t27.ai/ru/learn/fifo-testbench/card.png?v=ef5d53001ca2">
+<meta name="twitter:image" content="https://t27.ai/ru/learn/fifo-testbench/card.png?v=6200be8976f3">
 <meta name="twitter:image:alt" content="Курс, Урок 21 из 27: Тестбенч FIFO. Как выглядит настоящая дисциплина тестбенча и почему этот урок открывает спеку FIFO и запись мутаций.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","name":"Тестбенч FIFO","description":"Как выглядит настоящая дисциплина тестбенча и почему этот урок открывает спеку FIFO и запись мутаций.","url":"https://t27.ai/ru/learn/fifo-testbench/","inLanguage":"ru","learningResourceType":"lesson","position":21,"isAccessibleForFree":true,"isPartOf":{"@type":"Course","name":"Тактирование, сброс и пересечения тактовых доменов на t27","description":"Курс 3, 27 уроков, в каждом виджет и спека t27: что такое тактовый сигнал и где он входит в плату, дерево тактового сигнала, MMCM, три вида сброса, метастабильность и MTBF, пересечение многих бит, асинхронный FIFO, файл ограничений и чтение пересечений на реальном железе. Каждое число взято из спеки или из записанного запуска.","url":"https://t27.ai/ru/learn/clocks-and-cdc/","inLanguage":"ru","isAccessibleForFree":true,"educationalLevel":"Beginner","provider":{"@type":"Organization","name":"TRINITY S³AI","url":"https://t27.ai/"}}}</script>
@@ -63,8 +63,8 @@ pre { overflow-x: auto; background: #0b0f0e; border: 1px solid #1e2624; border-r
 <p>Тестбенч асинхронного FIFO гнал бы оба клока, рвал бы указатели нарочно и проверял бы, что флаги не врут. Спека тестбенча в этом дереве — пока не то: она не компилируется браузерным компилятором, а нативные запуски на ней заблокированы, поэтому урок открывает сам fifo.t27, а вместо тестбенча FIFO — запись дисциплины, которой он следовал бы: 5 подложенных багов в packets.t27 — бит полинома CRC, ширина адреса CRC, пустые операции LFRM, бит COR0 и длина слова type-2 — каждая мутация пересобирается и перепрогоняется, и каждая поймана. Когда появится настоящая спека тестбенча, урок возьмёт её.</p>
 <section><h2>Попробуйте</h2><p>В записи перечислите 5 подложенных багов и посчитайте, сколько поймано; затем в окне спеки найдите флаги, которые настоящему тестбенчу пришлось бы рвать нарочно.</p></section>
 <p><a class="cta" href="/#/clocks-and-cdc/fifo-testbench">Открыть интерактивный урок →</a></p>
-<figure><a href="/term/tri-x7-mutate/"><img src="/term/tri-x7-mutate/card.png" width="600" height="315" alt="tri x7-mutate · plant a bug, the tests must catch it" loading="lazy"><figcaption>tri x7-mutate · plant a bug, the tests must catch it ↗</figcaption></a></figure>
-<p class="about" lang="en">Five planted bugs in packets.t27 (CRC polynomial bit, CRC address width, LFRM no-ops, COR0 bit 0, type-2 word count). Each mutant is rebuilt and re-swept; every one is CAUGHT by its tests and by the sweeps. mutate: all 5 caught.</p>
+<figure><a href="/term/t27-tri-discard/"><img src="/term/t27-tri-discard/card.png" width="600" height="315" alt="tri discard top: what the parser throws away" loading="lazy"><figcaption>tri discard top: what the parser throws away ↗</figcaption></a></figure>
+<p class="about" lang="en">67 specs lose 23,578 tokens to parser recovery, each held at its pinned bound.</p>
 <section><h2>specs/fpga/fifo.t27</h2><pre lang="en"><code>// SPDX-License-Identifier: Apache-2.0
 // t27/specs/fpga/fifo.t27
 // Synchronous and Asynchronous FIFO Stdlib for Trinity T27 FPGA HIR

@@ -16,7 +16,7 @@
 <meta property="og:url" content="https://t27.ai/learn/global-buffers/">
 <meta property="og:title" content="The global buffer">
 <meta property="og:description" content="What a global buffer is, why it sits on its own network, and what one real build of the whole flow looked like.">
-<meta property="og:image" content="https://t27.ai/learn/global-buffers/card.png?v=a76f1c9d66d8">
+<meta property="og:image" content="https://t27.ai/learn/global-buffers/card.png?v=1512ee634595">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Course, Lesson 5 of 27: The global buffer. What a global buffer is, why it sits on its own network, and what one real build of the whole flow looked like.">
@@ -24,7 +24,7 @@
 <meta name="twitter:site" content="@t27_dev">
 <meta name="twitter:title" content="The global buffer">
 <meta name="twitter:description" content="What a global buffer is, why it sits on its own network, and what one real build of the whole flow looked like.">
-<meta name="twitter:image" content="https://t27.ai/learn/global-buffers/card.png?v=a76f1c9d66d8">
+<meta name="twitter:image" content="https://t27.ai/learn/global-buffers/card.png?v=1512ee634595">
 <meta name="twitter:image:alt" content="Course, Lesson 5 of 27: The global buffer. What a global buffer is, why it sits on its own network, and what one real build of the whole flow looked like.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","name":"The global buffer","description":"What a global buffer is, why it sits on its own network, and what one real build of the whole flow looked like.","url":"https://t27.ai/learn/global-buffers/","inLanguage":"en","learningResourceType":"lesson","position":5,"isAccessibleForFree":true,"isPartOf":{"@type":"Course","name":"Clocking, resets and clock-domain crossings with t27","description":"Course 3, 27 lessons, one widget and one t27 spec each: what a clock is and where it enters the board, the clock tree, the MMCM, the three reset kinds, metastability and MTBF, crossing many bits, the asynchronous FIFO, the constraints file, and the crossings read back on real hardware. Every number comes from a spec or a recorded run.","url":"https://t27.ai/learn/clocks-and-cdc/","inLanguage":"en","isAccessibleForFree":true,"educationalLevel":"Beginner","provider":{"@type":"Organization","name":"TRINITY S³AI","url":"https://t27.ai/"}}}</script>
@@ -63,8 +63,8 @@ pre { overflow-x: auto; background: #0b0f0e; border: 1px solid #1e2624; border-r
 <p>A global buffer, BUFG on a 7-series chip, drives the clock on a dedicated low-skew network so the tree of the last lesson has a clean root. The widget shows the flow a BUFG sits inside: one real XC7A200T build, 116.9 s with openXC7 and 83.5 s through the t27 L3+L4 path, byte-identical bitstreams, and place and route taking 60 percent of it. The buffer is one layer of that picture, and the spec frame opens cts.t27 again, where bufg() is built and bufg_has_higher_fanout() is tested.</p>
 <section><h2>Try it</h2><p>In the widget, find the two build times and what percentage place and route took; then in the spec frame find bufg() and the test that gives it the higher fanout.</p></section>
 <p><a class="cta" href="/#/clocks-and-cdc/global-buffers">Open the interactive lesson →</a></p>
-<figure><a href="/term/devkit-flow/"><img src="/term/devkit-flow/card.png" width="600" height="315" alt="tri devkit · the FPGA flow, layer by layer" loading="lazy"><figcaption>tri devkit · the FPGA flow, layer by layer ↗</figcaption></a></figure>
-<p class="about" lang="en">One real XC7A200T build: 116.9 s with openXC7, 83.5 s with t27 L3+L4, byte-identical. Place &amp; route is 60%.</p>
+<figure><a href="/term/tri-game-selftest/"><img src="/term/tri-game-selftest/card.png" width="600" height="315" alt="tri game-selftest: the queen loop checks its own tools" loading="lazy"><figcaption>tri game-selftest: the queen loop checks its own tools ↗</figcaption></a></figure>
+<p class="about" lang="en">6 of 6 self-tests hold: anomalies, blog_drift, lessons, site_gate, tick, vault.</p>
 <section><h2>specs/fpga/cts.t27</h2><pre lang="en"><code>// SPDX-License-Identifier: Apache-2.0
 // t27/specs/fpga/cts.t27
 // T27 Clock Tree Synthesis Specification

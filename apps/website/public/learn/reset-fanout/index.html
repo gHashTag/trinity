@@ -16,7 +16,7 @@
 <meta property="og:url" content="https://t27.ai/learn/reset-fanout/">
 <meta property="og:title" content="Reset fanout">
 <meta property="og:description" content="Why a reset grows a tree like a clock, and where its cost shows up in a real resource count.">
-<meta property="og:image" content="https://t27.ai/learn/reset-fanout/card.png?v=a5989c12e543">
+<meta property="og:image" content="https://t27.ai/learn/reset-fanout/card.png?v=bd480b79e58f">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Course, Lesson 12 of 27: Reset fanout. Why a reset grows a tree like a clock, and where its cost shows up in a real resource count.">
@@ -24,7 +24,7 @@
 <meta name="twitter:site" content="@t27_dev">
 <meta name="twitter:title" content="Reset fanout">
 <meta name="twitter:description" content="Why a reset grows a tree like a clock, and where its cost shows up in a real resource count.">
-<meta name="twitter:image" content="https://t27.ai/learn/reset-fanout/card.png?v=a5989c12e543">
+<meta name="twitter:image" content="https://t27.ai/learn/reset-fanout/card.png?v=bd480b79e58f">
 <meta name="twitter:image:alt" content="Course, Lesson 12 of 27: Reset fanout. Why a reset grows a tree like a clock, and where its cost shows up in a real resource count.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","name":"Reset fanout","description":"Why a reset grows a tree like a clock, and where its cost shows up in a real resource count.","url":"https://t27.ai/learn/reset-fanout/","inLanguage":"en","learningResourceType":"lesson","position":12,"isAccessibleForFree":true,"isPartOf":{"@type":"Course","name":"Clocking, resets and clock-domain crossings with t27","description":"Course 3, 27 lessons, one widget and one t27 spec each: what a clock is and where it enters the board, the clock tree, the MMCM, the three reset kinds, metastability and MTBF, crossing many bits, the asynchronous FIFO, the constraints file, and the crossings read back on real hardware. Every number comes from a spec or a recorded run.","url":"https://t27.ai/learn/clocks-and-cdc/","inLanguage":"en","isAccessibleForFree":true,"educationalLevel":"Beginner","provider":{"@type":"Organization","name":"TRINITY S³AI","url":"https://t27.ai/"}}}</script>
@@ -63,8 +63,8 @@ pre { overflow-x: auto; background: #0b0f0e; border: 1px solid #1e2624; border-r
 <p>A reset reaches every flop in the design, so it grows a tree like a clock tree and is balanced for the same reason: an uneven release is a skew you built yourself. The widget counts a real routed design against the XC7A200T's own totals, read from the chipdb and prjxray-db, and counts yours if you drop your routed JSON on it. A reset tree lives in the same budget: routing and control-set pressure, visible in exactly those bars. The spec frame opens cts.t27 once more, the tree arithmetic that both trees share.</p>
 <section><h2>Try it</h2><p>In the widget, read the totals the bars are counted against; then in the spec frame find the skew target a reset tree is balanced to meet.</p></section>
 <p><a class="cta" href="/#/clocks-and-cdc/reset-fanout">Open the interactive lesson →</a></p>
-<figure><a href="/widgets/resource-bars/"><img src="/widgets/resource-bars/card.png" width="600" height="315" alt="Resource bars: LUT, FF, BRAM and DSP used on the XC7A200T" loading="lazy"><figcaption>Resource bars: LUT, FF, BRAM and DSP used on the XC7A200T ↗</figcaption></a></figure>
-<p class="about" lang="en">A real nextpnr-xilinx run counted against the XC7A200T's own totals, read from the chipdb and prjxray-db. Drop your routed JSON and it counts yours.</p>
+<figure><a href="/term/tri-fpga-rxcap/"><img src="/term/tri-fpga-rxcap/card.png" width="600" height="315" alt="tri fpga-rxcap" loading="lazy"><figcaption>tri fpga-rxcap ↗</figcaption></a></figure>
+<p class="about" lang="en">Per-bit setup and hold of an asynchronous RX nibble sampled by RXC, from the routed SDF: the four rxd bits of one nibble change 2387 to 2486 ps apart, so a binary counter tears where a gray one cannot.</p>
 <section><h2>specs/fpga/cts.t27</h2><pre lang="en"><code>// SPDX-License-Identifier: Apache-2.0
 // t27/specs/fpga/cts.t27
 // T27 Clock Tree Synthesis Specification

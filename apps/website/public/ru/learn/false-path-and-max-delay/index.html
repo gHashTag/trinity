@@ -16,7 +16,7 @@
 <meta property="og:url" content="https://t27.ai/ru/learn/false-path-and-max-delay/">
 <meta property="og:title" content="False path и max delay">
 <meta property="og:description" content="Что объявляет false path, что вместо этого ограничивает max delay и как выглядит удаление проверки в репозитории.">
-<meta property="og:image" content="https://t27.ai/ru/learn/false-path-and-max-delay/card.png?v=e58b91e547bc">
+<meta property="og:image" content="https://t27.ai/ru/learn/false-path-and-max-delay/card.png?v=70c00beded83">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Курс, Урок 23 из 27: False path и max delay. Что объявляет false path, что вместо этого ограничивает max delay и как выглядит удаление проверки в репозитории.">
@@ -24,7 +24,7 @@
 <meta name="twitter:site" content="@t27_dev">
 <meta name="twitter:title" content="False path и max delay">
 <meta name="twitter:description" content="Что объявляет false path, что вместо этого ограничивает max delay и как выглядит удаление проверки в репозитории.">
-<meta name="twitter:image" content="https://t27.ai/ru/learn/false-path-and-max-delay/card.png?v=e58b91e547bc">
+<meta name="twitter:image" content="https://t27.ai/ru/learn/false-path-and-max-delay/card.png?v=70c00beded83">
 <meta name="twitter:image:alt" content="Курс, Урок 23 из 27: False path и max delay. Что объявляет false path, что вместо этого ограничивает max delay и как выглядит удаление проверки в репозитории.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","name":"False path и max delay","description":"Что объявляет false path, что вместо этого ограничивает max delay и как выглядит удаление проверки в репозитории.","url":"https://t27.ai/ru/learn/false-path-and-max-delay/","inLanguage":"ru","learningResourceType":"lesson","position":23,"isAccessibleForFree":true,"isPartOf":{"@type":"Course","name":"Тактирование, сброс и пересечения тактовых доменов на t27","description":"Курс 3, 27 уроков, в каждом виджет и спека t27: что такое тактовый сигнал и где он входит в плату, дерево тактового сигнала, MMCM, три вида сброса, метастабильность и MTBF, пересечение многих бит, асинхронный FIFO, файл ограничений и чтение пересечений на реальном железе. Каждое число взято из спеки или из записанного запуска.","url":"https://t27.ai/ru/learn/clocks-and-cdc/","inLanguage":"ru","isAccessibleForFree":true,"educationalLevel":"Beginner","provider":{"@type":"Organization","name":"TRINITY S³AI","url":"https://t27.ai/"}}}</script>
@@ -63,8 +63,8 @@ pre { overflow-x: auto; background: #0b0f0e; border: 1px solid #1e2624; border-r
 <p>set_false_path сообщает анализатору, что переход асинхронный: не докладывай о нём, им владеет синхронизатор. За пределами этого он глушит настоящие отказы, поэтому поток CDC ставит рядом set_max_delay, который ограничивает путь синхронизатора вместо игнорирования — те два-три триггера всё равно должны быть близки по времени. False path — это проверка, убранная нарочно, и виджет показывает, как выглядит удаление проверок в репозитории: 14 дней слитых пул-реквестов, кто добавил тесты, кто поменял, кто снял ассерты, с точными строками из git. Окно спеки открывает timing.t27 — анализ, в котором исключения вырезают дыры.</p>
 <section><h2>Попробуйте</h2><p>В виджете найдите пул-реквест, снявший ассерты, и строки, которые он забрал; затем в окне спеки найдите арифметику запаса, которую глушит false path.</p></section>
 <p><a class="cta" href="/#/clocks-and-cdc/false-path-and-max-delay">Открыть интерактивный урок →</a></p>
-<figure><a href="/widgets/test-touch/"><img src="/widgets/test-touch/card.png" width="600" height="315" alt="Did the agent touch its own tests? Every PR merged on t27, checked" loading="lazy"><figcaption>Did the agent touch its own tests? Every PR merged on t27, checked ↗</figcaption></a></figure>
-<p class="about" lang="en">Every pull request merged on gHashTag/t27 in 14 days, bee lane and human lane: which added tests, changed them or removed asserts, with the exact test lines from git.</p>
+<figure><a href="/term/tri-fpga-txhold/"><img src="/term/tri-fpga-txhold/card.png" width="600" height="315" alt="tri fpga-txhold: setup and hold from the routed SDF" loading="lazy"><figcaption>tri fpga-txhold: setup and hold from the routed SDF ↗</figcaption></a></figure>
+<p class="about" lang="en">Smallest hold 3445 ps on TXD1 against a 1000 ps bench; each TX pin's setup and hold from nextpnr's own SDF of the routed node.</p>
 <section><h2>specs/fpga/timing.t27</h2><pre lang="en"><code>// SPDX-License-Identifier: Apache-2.0
 // t27/specs/fpga/timing.t27
 // T27 Static Timing Analysis Specification
