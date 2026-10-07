@@ -146,7 +146,7 @@ pub const LESSON_WIDGETS : [27]str = [
     "vcd-wrapped", "t27c-mtbf", "t27c-clock-domain-gen",
     "t27c-fifo", "t27c-fifo-mutate", "tri-game-tick",
     "t27c-fifo-flags", "t27-tri-competitors", "t27-tri-discard",
-    "t27c-emitter-xdc", "wars", "tri-fpga-rgmii",
+    "t27c-emitter-xdc", "tri-fpga-txhold", "tri-fpga-rgmii",
     "tri-game-vault", "t27c-fpga-rxcap", "tri-blog-list"
 ];
 pub const LESSON_ALSO : [27]str = [
