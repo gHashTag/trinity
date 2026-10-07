@@ -12,9 +12,9 @@
 <meta property="og:title" content="Recordings · Trinity S³AI">
 <meta property="og:description" content="Terminal sessions recorded from real commands: the output is what the commands printed.">
 <meta property="og:url" content="https://t27.ai/term/">
-<meta property="og:image" content="https://t27.ai/term/t27c-bitnet-mlp/card.png">
+<meta property="og:image" content="https://t27.ai/term/tri-fpga-rxer/card.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://t27.ai/term/t27c-bitnet-mlp/card.png">
+<meta name="twitter:image" content="https://t27.ai/term/tri-fpga-rxer/card.png">
 <style>@font-face{font-family:Outfit;src:url(../fonts/outfit-latin.woff2) format('woff2');font-weight:100 900;font-display:swap}
 *{box-sizing:border-box}html,body{margin:0;background:#000;color:#ebebeb}
 body{font:16px/1.6 Outfit,system-ui,sans-serif;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:40px 40px}
@@ -44,8 +44,27 @@ h1{font-size:clamp(26px,4.4vw,42px);line-height:1.15;margin:0 0 10px;color:#fff}
 <main>
 <div class="top"><a class="brand" href="../"><img src="../favicon.svg" alt="">Trinity S³AI</a></div>
 <h1>Recordings</h1>
-<p class="lede">Terminal sessions recorded from real commands: the output is what the commands printed. 45 so far.</p>
+<p class="lede">Terminal sessions recorded from real commands: the output is what the commands printed. 73 so far.</p>
 <div class="grid">
+<a href="tri-fpga-rxer/"><img src="tri-fpga-rxer/card.png" alt="" loading="lazy"><div><b>tri fpga-rxer</b><small>2026-10-07 20:12 UTC · 20.1 s real</small></div></a>
+<a href="tri-fpga-rxcap/"><img src="tri-fpga-rxcap/card.png" alt="" loading="lazy"><div><b>tri fpga-rxcap</b><small>2026-10-07 20:12 UTC · 2.4 s real</small></div></a>
+<a href="tri-fpga-txhold/"><img src="tri-fpga-txhold/card.png" alt="" loading="lazy"><div><b>tri fpga-txhold: setup and hold from the routed SDF</b><small>2026-10-07 19:59 UTC · 2.4 s real</small></div></a>
+<a href="t27c-fpga-rxcap/"><img src="t27c-fpga-rxcap/card.png" alt="" loading="lazy"><div><b>t27c on fpga-rxcap.t27 -- the RX capture card, native</b><small>2026-10-07 17:37 UTC · 13.4 s real</small></div></a>
+<a href="t27c-fifo-flags/"><img src="t27c-fifo-flags/card.png" alt="" loading="lazy"><div><b>t27c on fifo.t27 -- break a flag, one test objects</b><small>2026-10-07 17:37 UTC · 19.9 s real</small></div></a>
+<a href="t27c-emitter-xdc/"><img src="t27c-emitter-xdc/card.png" alt="" loading="lazy"><div><b>t27c on emitter_xdc.t27 -- the XDC emitter, parsed</b><small>2026-10-07 17:37 UTC · 10.6 s real</small></div></a>
+<a href="t27c-fifo-mutate/"><img src="t27c-fifo-mutate/card.png" alt="" loading="lazy"><div><b>t27c on fifo.t27 -- a pointer mutation the tests cannot see</b><small>2026-10-07 17:36 UTC · 27.0 s real</small></div></a>
+<a href="t27c-fifo/"><img src="t27c-fifo/card.png" alt="" loading="lazy"><div><b>t27c on fifo.t27 -- the FIFO stdlib, native</b><small>2026-10-07 17:36 UTC · 8.7 s real</small></div></a>
+<a href="t27c-clock-domain-gen/"><img src="t27c-clock-domain-gen/card.png" alt="" loading="lazy"><div><b>t27c gen on clock_domain.t27 -- the CDC model as Zig</b><small>2026-10-07 17:36 UTC · 7.9 s real</small></div></a>
+<a href="t27c-timing/"><img src="t27c-timing/card.png" alt="" loading="lazy"><div><b>t27c on timing.t27 -- static timing, native</b><small>2026-10-07 17:35 UTC · 8.7 s real</small></div></a>
+<a href="t27c-reset-sync-gen/"><img src="t27c-reset-sync-gen/card.png" alt="" loading="lazy"><div><b>t27c gen on reset_sync.t27 -- the release pipe as Zig</b><small>2026-10-07 17:35 UTC · 7.7 s real</small></div></a>
+<a href="t27c-reset-sync/"><img src="t27c-reset-sync/card.png" alt="" loading="lazy"><div><b>t27c on reset_sync.t27 -- the reset kinds, native</b><small>2026-10-07 17:35 UTC · 8.8 s real</small></div></a>
+<a href="t27c-mtbf/"><img src="t27c-mtbf/card.png" alt="" loading="lazy"><div><b>t27c on mtbf.t27 -- MTBF in integer log2, native</b><small>2026-10-07 17:35 UTC · 12.7 s real</small></div></a>
+<a href="t27c-mmcm-mutate/"><img src="t27c-mmcm-mutate/card.png" alt="" loading="lazy"><div><b>t27c on mmcm.t27 -- widen the VCO window, one test objects</b><small>2026-10-07 17:35 UTC · 26.6 s real</small></div></a>
+<a href="t27c-wukong-v1/"><img src="t27c-wukong-v1/card.png" alt="" loading="lazy"><div><b>t27c on wukong_v1.t27 -- the board spec, native</b><small>2026-10-07 17:34 UTC · 13.0 s real</small></div></a>
+<a href="t27c-mmcm/"><img src="t27c-mmcm/card.png" alt="" loading="lazy"><div><b>t27c on mmcm.t27 -- the MMCM model, native</b><small>2026-10-07 17:34 UTC · 8.7 s real</small></div></a>
+<a href="t27c-cts/"><img src="t27c-cts/card.png" alt="" loading="lazy"><div><b>t27c on cts.t27 -- clock-tree synthesis, native</b><small>2026-10-07 17:34 UTC · 11.8 s real</small></div></a>
+<a href="t27c-clocks/"><img src="t27c-clocks/card.png" alt="" loading="lazy"><div><b>t27c on clocks.t27 -- the tri clocks card, native</b><small>2026-10-07 17:34 UTC · 15.1 s real</small></div></a>
+<a href="t27c-clock-domain/"><img src="t27c-clock-domain/card.png" alt="" loading="lazy"><div><b>t27c on clock_domain.t27 -- the CDC spec, native</b><small>2026-10-07 17:29 UTC · 12.9 s real</small></div></a>
 <a href="t27c-bitnet-mlp/"><img src="t27c-bitnet-mlp/card.png" alt="" loading="lazy"><div><b>t27c on bitnet_mlp.t27 -- A whole ternary network, native</b><small>2026-10-07 07:41 UTC · 32.0 s real</small></div></a>
 <a href="t27c-stream-ternary-mac/"><img src="t27c-stream-ternary-mac/card.png" alt="" loading="lazy"><div><b>t27c on stream_ternary_mac.t27 -- Accumulate on the clock, native</b><small>2026-10-07 07:40 UTC · 35.0 s real</small></div></a>
 <a href="t27c-comb-ternary-dot/"><img src="t27c-comb-ternary-dot/card.png" alt="" loading="lazy"><div><b>t27c on comb_ternary_dot.t27 -- The dot product as wires, native</b><small>2026-10-07 07:40 UTC · 34.3 s real</small></div></a>
@@ -91,6 +110,15 @@ h1{font-size:clamp(26px,4.4vw,42px);line-height:1.15;margin:0 0 10px;color:#fff}
 <a href="tri-blog-list/"><img src="tri-blog-list/card.png" alt="" loading="lazy"><div><b>tri blog list: every t27.ai post and its receipt state</b><small>2026-10-03 12:59 UTC · 2.4 s real</small></div></a>
 <a href="devkit-flow/"><img src="devkit-flow/card.png" alt="" loading="lazy"><div><b>tri devkit · the FPGA flow, layer by layer</b><small>2026-10-03 04:31 UTC · 127.4 s real</small></div></a>
 <a href="x7-board/"><img src="x7-board/card.png" alt="" loading="lazy"><div><b>A bitstream from t27 specs, run on the AX7203</b><small>2026-10-02 20:34 UTC · 73.7 s real</small></div></a>
+<a href="t27c-gft-xornet/"><img src="t27c-gft-xornet/card.png" alt="" loading="lazy"><div><b>gft_xornet.t27: recording pending</b><small>recording pending · 0 s real</small></div></a>
+<a href="t27c-gft-smul/"><img src="t27c-gft-smul/card.png" alt="" loading="lazy"><div><b>gft_smul.t27: recording pending</b><small>recording pending · 0 s real</small></div></a>
+<a href="t27c-gft-signed-mac/"><img src="t27c-gft-signed-mac/card.png" alt="" loading="lazy"><div><b>gft_signed_mac.t27: recording pending</b><small>recording pending · 0 s real</small></div></a>
+<a href="t27c-gft-sgd-step/"><img src="t27c-gft-sgd-step/card.png" alt="" loading="lazy"><div><b>gft_sgd_step.t27: recording pending</b><small>recording pending · 0 s real</small></div></a>
+<a href="t27c-gft-sadd/"><img src="t27c-gft-sadd/card.png" alt="" loading="lazy"><div><b>gft_sadd.t27: recording pending</b><small>recording pending · 0 s real</small></div></a>
+<a href="t27c-gft-relu/"><img src="t27c-gft-relu/card.png" alt="" loading="lazy"><div><b>gft_relu.t27: recording pending</b><small>recording pending · 0 s real</small></div></a>
+<a href="t27c-gft-nll/"><img src="t27c-gft-nll/card.png" alt="" loading="lazy"><div><b>gft_nll.t27: recording pending</b><small>recording pending · 0 s real</small></div></a>
+<a href="t27c-gft-exp2/"><img src="t27c-gft-exp2/card.png" alt="" loading="lazy"><div><b>gft_exp2.t27: recording pending</b><small>recording pending · 0 s real</small></div></a>
+<a href="t27c-gft-argmax4/"><img src="t27c-gft-argmax4/card.png" alt="" loading="lazy"><div><b>gft_argmax4.t27: recording pending</b><small>recording pending · 0 s real</small></div></a>
 </div>
 </main>
 </body>

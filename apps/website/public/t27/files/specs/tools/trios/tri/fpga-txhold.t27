@@ -32,9 +32,9 @@ pub const ARGS : [1]str = ["[--self-test]"];
 pub const AGENTS : [0]str = [];
 pub const AGENTS_NOTE : str = "No source binds an agent letter to this command: the trios CLI is not named by docs/agents/AGENTS_ALPHABET.md or .claude/agents/*.md of gHashTag/t27.";
 pub const WHEN_TO_USE : str = "E3 TX hold and setup at the TX output buffers in nextpnr-xilinx's own SDF of the routed e3z (conformance/e3_tx_hold_model.py; spec specs/trinet/e3_tx_hold_model_ax7203.t27): with no argument prints the one recorded run (conformance/model_runs/e3_tx_hold_model.log) if it exists, else runs it once (about 2.5 min, needs /tmp/trinet-node-build/e3z); exit 0 PASS, 1 FAIL, 2 NO VERDICT. PASS 23:23Z 2026-09-27: smallest hold 3445 ps on TXD1, bench 3000; the model has no clock skew. Another build or RTL needs its own spec";
-; public/term/tri-fpga-rgmii/meta.json lists 1 run(s) of `tri fpga-txhold`; recorded with the live ~/.local/bin/tri,
+; public/term/tri-fpga-txhold/meta.json lists 1 run(s) of `tri fpga-txhold`; recorded with the live ~/.local/bin/tri,
 ; not a build of SOURCE_COMMIT. The site plays it at the end of this card.
-pub const CAST : str = "term/tri-fpga-rgmii/session.cast";
+pub const CAST : str = "term/tri-fpga-txhold/session.cast";
 pub const WITNESS : str = "source-parse";
 pub const WITNESS_SOURCE : str = "gHashTag/BrowserOS:trios/bin/tri at 7366096248dfb09893e9a7d1a0f1c56ced13d16e, read as text (the help heredoc and the top-level case arms); the CLI was not run";
 pub const ENABLED : bool = true;

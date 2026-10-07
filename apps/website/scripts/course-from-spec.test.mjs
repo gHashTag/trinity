@@ -80,7 +80,7 @@ test('a lesson that opens a widget the gallery lacks fails the build', async () 
 })
 
 test('a gallery widget left out of every lesson fails the build', async () => {
-  await fails(spec(1, '"race-the-bee,wars,tri-game-tick,tri-game-vault"', '"wars,tri-game-tick,tri-game-vault"'), 'race-the-bee is in no lesson')
+  await fails(spec(1, '"race-the-bee,wars,tri-game-tick,tri-game-vault"', '"race-the-bee,tri-game-tick,tri-game-vault"'), 'wars is in no lesson')
 })
 
 test('two lessons opening the same widget fail the build, inside a course or across two', async () => {
@@ -118,7 +118,7 @@ test('a lesson in two courses fails the build: its page can show one', async () 
 })
 
 test('a course left out of the catalog fails the build', async () => {
-  await fails({ catalogText: replaced(inputs.catalogText, 'pub const COURSE_COUNT : u8 = 5;', 'pub const COURSE_COUNT : u8 = 6;') }, 'the_basics_come_first')
+  await fails({ catalogText: replaced(inputs.catalogText, 'pub const COURSE_COUNT : u8 = 6;', 'pub const COURSE_COUNT : u8 = 7;') }, 'the_basics_come_first')
 })
 
 test('a broken claim in a spec fails its own test block', async () => {
