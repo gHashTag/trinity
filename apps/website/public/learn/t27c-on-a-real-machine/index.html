@@ -27,8 +27,8 @@
 <meta name="twitter:image" content="https://t27.ai/learn/t27c-on-a-real-machine/card.png?v=735692286785">
 <meta name="twitter:image:alt" content="Course, Lesson 11 of 27: t27c on a real machine. The same compiler on a real machine, printing what it really prints.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","name":"t27c on a real machine","description":"The same compiler on a real machine, printing what it really prints.","url":"https://t27.ai/learn/t27c-on-a-real-machine/","inLanguage":"en","learningResourceType":"lesson","position":11,"isAccessibleForFree":true,"isPartOf":{"@type":"Course","name":"From zero to a chip: FPGA programming with t27","description":"27 lessons, one working widget and one t27 spec each: what an FPGA is, how numbers become bits, your own t27 spec, how t27c compiles it, and how it becomes a bitstream on a real board.","url":"https://t27.ai/learn/","inLanguage":"en","isAccessibleForFree":true,"educationalLevel":"Beginner","provider":{"@type":"Organization","name":"TRINITY S³AI","url":"https://t27.ai/"}}}</script>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"t27.ai","item":"https://t27.ai/"},{"@type":"ListItem","position":2,"name":"From zero to a chip: FPGA programming with t27","item":"https://t27.ai/learn/"},{"@type":"ListItem","position":3,"name":"t27c on a real machine","item":"https://t27.ai/learn/t27c-on-a-real-machine/"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","name":"t27c on a real machine","description":"The same compiler on a real machine, printing what it really prints.","url":"https://t27.ai/learn/t27c-on-a-real-machine/","inLanguage":"en","learningResourceType":"lesson","position":11,"isAccessibleForFree":true,"isPartOf":{"@type":"Course","name":"From zero to a chip: FPGA programming with t27","description":"27 lessons, one working widget and one t27 spec each: what an FPGA is, how numbers become bits, your own t27 spec, how t27c compiles it, and how it becomes a bitstream on a real board.","url":"https://t27.ai/learn/course/","inLanguage":"en","isAccessibleForFree":true,"educationalLevel":"Beginner","provider":{"@type":"Organization","name":"TRINITY S³AI","url":"https://t27.ai/"}}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"t27.ai","item":"https://t27.ai/"},{"@type":"ListItem","position":2,"name":"From zero to a chip: FPGA programming with t27","item":"https://t27.ai/learn/course/"},{"@type":"ListItem","position":3,"name":"t27c on a real machine","item":"https://t27.ai/learn/t27c-on-a-real-machine/"}]}</script>
 <style>
 @font-face { font-family: 'Outfit'; font-weight: 400 800; font-display: swap; src: url(/fonts/outfit-latin.woff2) format('woff2'); }
 :root { color-scheme: dark; }
@@ -45,6 +45,7 @@ h3 { font-size: 17px; margin: 18px 0 2px; color: #fff; }
 .cta:hover { background: #08FAB5; color: #000; }
 figure { margin: 24px 0; } figure img { width: 100%; height: auto; border: 1px solid #22302c; border-radius: 12px; display: block; }
 figcaption { font-size: 15px; margin-top: 8px; }
+.courses { margin: 24px 0; padding-left: 1.4em; } .courses li { margin: 6px 0; } .courses [aria-current] a { font-weight: 600; }
 .pager { display: flex; justify-content: space-between; gap: 16px; margin: 32px 0; padding-top: 20px; border-top: 1px solid #1e2624; } .pager .chain { font-weight: 600; }
 .outline { list-style: none; padding: 0; } .outline ol { list-style: none; padding-left: 0; margin: 4px 0; } .outline p { margin: 0; color: #8fa19d; font-size: 15px; }
 pre { overflow-x: auto; background: #0b0f0e; border: 1px solid #1e2624; border-radius: 10px; padding: 14px 16px; font: 13px/1.5 'JetBrains Mono', ui-monospace, monospace; color: #cfe3de; max-height: 520px; }
@@ -56,7 +57,7 @@ pre { overflow-x: auto; background: #0b0f0e; border: 1px solid #1e2624; border-r
 <body>
 <header><a href="/">t27.ai</a><a href="/ru/learn/t27c-on-a-real-machine/" hreflang="ru" lang="ru">Русский</a></header>
 <main>
-<nav class="crumbs"><a href="/learn/">All lessons</a><span>Module 11 · t27c on a real machine</span><span>Lesson 11 of 27</span></nav>
+<nav class="crumbs"><a href="/learn/course/">All lessons</a><span>Module 11 · t27c on a real machine</span><span>Lesson 11 of 27</span></nav>
 <h1>t27c on a real machine</h1>
 <section><h2>You will learn</h2><p class="goal">The same compiler on a real machine, printing what it really prints.</p></section>
 <p>The player in lesson 7 runs the compiler in your browser. This recording is the native t27c, written in Rust, run on a real machine on the same hello_world.t27: it reports the spec's status, the tests and invariants it emits, and the Verilog module with its parameters. Every byte in the recording was printed by the command; only the typing is staged.</p>

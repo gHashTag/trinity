@@ -27,8 +27,8 @@
 <meta name="twitter:image" content="https://t27.ai/ru/learn/placement/card.png?v=7b8532715cb8">
 <meta name="twitter:image:alt" content="Курс, Урок 19 из 27: Размещение: где оказываются ячейки. Что делают размещение и трассировка и куда они поставили настоящий дизайн.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","name":"Размещение: где оказываются ячейки","description":"Что делают размещение и трассировка и куда они поставили настоящий дизайн.","url":"https://t27.ai/ru/learn/placement/","inLanguage":"ru","learningResourceType":"lesson","position":19,"isAccessibleForFree":true,"isPartOf":{"@type":"Course","name":"С нуля до чипа: программирование FPGA на t27","description":"27 уроков, в каждом рабочий виджет и спека t27: что такое FPGA, как числа становятся битами, ваша спека на t27, как её компилирует t27c и как она превращается в битстрим на настоящей плате.","url":"https://t27.ai/ru/learn/","inLanguage":"ru","isAccessibleForFree":true,"educationalLevel":"Beginner","provider":{"@type":"Organization","name":"TRINITY S³AI","url":"https://t27.ai/"}}}</script>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"t27.ai","item":"https://t27.ai/ru/"},{"@type":"ListItem","position":2,"name":"С нуля до чипа: программирование FPGA на t27","item":"https://t27.ai/ru/learn/"},{"@type":"ListItem","position":3,"name":"Размещение: где оказываются ячейки","item":"https://t27.ai/ru/learn/placement/"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","name":"Размещение: где оказываются ячейки","description":"Что делают размещение и трассировка и куда они поставили настоящий дизайн.","url":"https://t27.ai/ru/learn/placement/","inLanguage":"ru","learningResourceType":"lesson","position":19,"isAccessibleForFree":true,"isPartOf":{"@type":"Course","name":"С нуля до чипа: программирование FPGA на t27","description":"27 уроков, в каждом рабочий виджет и спека t27: что такое FPGA, как числа становятся битами, ваша спека на t27, как её компилирует t27c и как она превращается в битстрим на настоящей плате.","url":"https://t27.ai/ru/learn/course/","inLanguage":"ru","isAccessibleForFree":true,"educationalLevel":"Beginner","provider":{"@type":"Organization","name":"TRINITY S³AI","url":"https://t27.ai/"}}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"t27.ai","item":"https://t27.ai/ru/"},{"@type":"ListItem","position":2,"name":"С нуля до чипа: программирование FPGA на t27","item":"https://t27.ai/ru/learn/course/"},{"@type":"ListItem","position":3,"name":"Размещение: где оказываются ячейки","item":"https://t27.ai/ru/learn/placement/"}]}</script>
 <style>
 @font-face { font-family: 'Outfit'; font-weight: 400 800; font-display: swap; src: url(/fonts/outfit-latin.woff2) format('woff2'); }
 :root { color-scheme: dark; }
@@ -45,6 +45,7 @@ h3 { font-size: 17px; margin: 18px 0 2px; color: #fff; }
 .cta:hover { background: #08FAB5; color: #000; }
 figure { margin: 24px 0; } figure img { width: 100%; height: auto; border: 1px solid #22302c; border-radius: 12px; display: block; }
 figcaption { font-size: 15px; margin-top: 8px; }
+.courses { margin: 24px 0; padding-left: 1.4em; } .courses li { margin: 6px 0; } .courses [aria-current] a { font-weight: 600; }
 .pager { display: flex; justify-content: space-between; gap: 16px; margin: 32px 0; padding-top: 20px; border-top: 1px solid #1e2624; } .pager .chain { font-weight: 600; }
 .outline { list-style: none; padding: 0; } .outline ol { list-style: none; padding-left: 0; margin: 4px 0; } .outline p { margin: 0; color: #8fa19d; font-size: 15px; }
 pre { overflow-x: auto; background: #0b0f0e; border: 1px solid #1e2624; border-radius: 10px; padding: 14px 16px; font: 13px/1.5 'JetBrains Mono', ui-monospace, monospace; color: #cfe3de; max-height: 520px; }
@@ -56,7 +57,7 @@ pre { overflow-x: auto; background: #0b0f0e; border: 1px solid #1e2624; border-r
 <body>
 <header><a href="/ru/">t27.ai</a><a href="/learn/placement/" hreflang="en" lang="en">English</a></header>
 <main>
-<nav class="crumbs"><a href="/ru/learn/">Все уроки</a><span>Модуль 19 · Размещение: где оказываются ячейки</span><span>Урок 19 из 27</span></nav>
+<nav class="crumbs"><a href="/ru/learn/course/">Все уроки</a><span>Модуль 19 · Размещение: где оказываются ячейки</span><span>Урок 19 из 27</span></nav>
 <h1>Размещение: где оказываются ячейки</h1>
 <section><h2>Вы узнаете</h2><p class="goal">Что делают размещение и трассировка и куда они поставили настоящий дизайн.</p></section>
 <p>Синтез говорит, какие ячейки нужны. Размещение и трассировка решают, где каждая сидит на кристалле и какие провода их соединяют. В открытом маршруте обе задачи решает nextpnr-xilinx. Карта рисует каждую размещённую ячейку настоящего запуска на XC7A200T: маленький дизайн — маленькое скопление на огромном чипе.</p>

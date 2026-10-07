@@ -142,6 +142,8 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/verification" element={<HardwareVerification />} />
             {/* Each course is a t27 spec (specs/course/courses.t27 names them);
                 the paid training that used to live here moved to /fpga-training. */}
+            <Route path="/t27-basics" element={<Course />} />
+            <Route path="/t27-basics/:lessonId" element={<Course />} />
             <Route path="/course" element={<Course />} />
             <Route path="/course/:lessonId" element={<Course />} />
             <Route path="/ai-numbers" element={<Course />} />

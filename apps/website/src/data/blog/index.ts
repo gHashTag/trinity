@@ -3,6 +3,34 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: "course-zero-t27-basics",
+    title: "Course 0: t27 basics in 27 lessons, each with an infographic",
+    summary: "[infographics are English-only; the browser runner skips invariant and bench blocks; the lesson specs are not yet in gHashTag/t27] A new course comes before the FPGA and AI numbers courses: 27 lessons on the t27 language, each with a black-and-white table or diagram drawn from its own spec and a lesson spec that compiles on all 7 backends.",
+    date: "2026-10-07",
+    readingMinutes: 5,
+    tags: ["t27", "Course"],
+    receipts: [
+      { label: "Course 0, t27 basics", href: "https://t27.ai/learn/" },
+      { label: "The course spec, specs/course/t27-basics.t27", href: "https://t27.ai/learn/t27-basics.t27" },
+      { label: "trinity#1456: the split into two courses, which this course stacks on", href: "https://github.com/gHashTag/trinity/pull/1456" },
+    ],
+    openQuestions: [
+      "The infographics keep their English words on the Russian pages.",
+      "The browser runner skips invariant and bench blocks, so lessons that show them do not run them.",
+      "The lesson specs live in the site copy of the spec tree and are not yet in gHashTag/t27.",
+    ],
+    published: true,
+    ru: {
+      title: "Курс 0: основы t27 за 27 уроков, в каждом инфографика",
+      summary: "[инфографика только на английском; исполнитель в браузере пропускает блоки invariant и bench; спек уроков пока нет в gHashTag/t27] Перед курсами по FPGA и ИИ-числам появился новый курс: 27 уроков о языке t27, в каждом чёрно-белая таблица или схема из своей спеки и спека урока, которая собирается всеми 7 бэкендами.",
+      openQuestions: [
+        "Инфографика остаётся на английском и на русских страницах.",
+        "Исполнитель в браузере пропускает блоки invariant и bench, поэтому уроки, где они есть, их не запускают.",
+        "Спеки уроков лежат в копии дерева спек на сайте, в gHashTag/t27 их пока нет.",
+      ],
+    },
+  },
+  {
     slug: "two-courses-twenty-seven-lessons-each",
     title: "Two t27 courses of 27 lessons each: FPGA, then AI numbers",
     summary: "[no lesson trains a network; the tests of the 15 new lessons run in recordings of native t27c, not in the browser; 35 of 127 mutants survive and are not sorted; software only, no board] The t27 course is now two courses of 27 lessons, 27 modules of one lesson each (recordings for lessons 13 to 21 are pending t27#7400): From zero to a chip, on programming an FPGA, and AI numbers with t27, which starts with the 6 lessons that moved and adds 21 more, ending at a small ternary network. Each of the last 15 lessons plants a one-line bug in its spec and shows the one named test that fails. Over 14 of their functions, tri mutate spec made 127 mutants and the tests killed 92.",
@@ -10,7 +38,7 @@ export const postsIndex: PostMeta[] = [
     readingMinutes: 9,
     tags: ["t27", "Ternary", "Mutation testing"],
     receipts: [
-      { label: "Course 1, From zero to a chip", href: "https://t27.ai/learn/" },
+      { label: "Course 1, From zero to a chip", href: "https://t27.ai/learn/course/" },
       { label: "Course 2, AI numbers with t27", href: "https://t27.ai/learn/ai-numbers/" },
       { label: "Course 2, lesson 16: a bend at zero", href: "https://t27.ai/learn/a-bend-at-zero/" },
       { label: "Course 2, lesson 27: a whole network", href: "https://t27.ai/learn/a-whole-network/" },

@@ -145,7 +145,7 @@ export const body: Block[] = [
   {
     kind: 'ul',
     items: [
-      'Course 1, From zero to a chip: t27.ai/learn/',
+      'Course 1, From zero to a chip: t27.ai/learn/course/',
       'Course 2, AI numbers with t27: t27.ai/learn/ai-numbers/',
       'Course 2, lesson 16, a bend at zero: t27.ai/learn/a-bend-at-zero/',
       'Course 2, lesson 27, a whole network: t27.ai/learn/a-whole-network/',
@@ -294,7 +294,7 @@ export const ruBody: Block[] = [
   {
     kind: 'ul',
     items: [
-      'Курс 1, «С нуля до чипа»: t27.ai/ru/learn/',
+      'Курс 1, «С нуля до чипа»: t27.ai/ru/learn/course/',
       'Курс 2, «ИИ-числа на t27»: t27.ai/ru/learn/ai-numbers/',
       'Курс 2, урок 16, излом в нуле: t27.ai/ru/learn/a-bend-at-zero/',
       'Курс 2, урок 27, целая сеть: t27.ai/ru/learn/a-whole-network/',

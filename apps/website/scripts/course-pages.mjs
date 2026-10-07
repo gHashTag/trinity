@@ -130,7 +130,7 @@ function cardInput(html) {
 
 // ---------------------------------------------------------------- the page
 
-function pageHtml(C, lang, lesson, cardUrl) {
+function pageHtml(C, lang, lesson, cardUrl, all = []) {
   const say = C.say[lang]
   const other = lang === 'en' ? 'ru' : 'en'
   const id = lesson?.id
@@ -166,6 +166,8 @@ function pageHtml(C, lang, lesson, cardUrl) {
   const back = prev ? `<a href="/${pathOf(C, lang, prev.id)}">← ${esc(prev[lang].title)}</a>` : lesson && C.prev ? chain(C.prev, C.prev.last, false) : '<span></span>'
   const fwd = next ? `<a href="/${pathOf(C, lang, next.id)}">${esc(next[lang].title)} →</a>` : lesson && C.next ? chain(C.next, C.next.first, true) : '<span></span>'
   const courses = C.prev || C.next ? `<nav class="pager">${C.prev ? chain(C.prev, null, false) : '<span></span>'}${C.next ? chain(C.next, null, true) : '<span></span>'}</nav>` : ''
+  // The learn/ landing (the first course's index) lists every course, in catalog order.
+  const catalog = !lesson && all.length > 1 && C === all[0] ? `<ol class="courses">${all.map((c) => `<li${c === C ? ' aria-current="page"' : ''}><a href="/${lang === 'ru' ? 'ru/' : ''}${c.share}">${esc(c.say[lang].TITLE)}</a></li>`).join('')}</ol>` : ''
   const thumb = lesson && thumbOf(lesson.widget) ? `/${relative(PUBLIC, thumbOf(lesson.widget))}` : null
   const body = lesson
     ? `<nav class="crumbs"><a href="/${pathOf(C, lang)}">${esc(say.ALL)}</a><span>${esc(fmt(say.MODULE, mod.n))} · ${esc(mod[lang].title)}</span><span>${esc(fmt(say.LESSON, lesson.n, total))}</span></nav>
@@ -183,7 +185,7 @@ ${lesson.spec ? `<section><h2>${esc(lesson.spec.path)}</h2>${code ? `<pre lang="
 <p class="goal">${esc(say.LEAD)}</p>
 <p>${esc(say.DESCRIPTION)}</p>
 <p><a class="cta" href="${appOf(C)}">${esc(say.OPEN_COURSE)} →</a></p>
-${courses}`
+${catalog}${courses}`
   return `<!doctype html>
 <html lang="${lang}">
 <head>
@@ -230,6 +232,7 @@ h3 { font-size: 17px; margin: 18px 0 2px; color: #fff; }
 .cta:hover { background: #08FAB5; color: #000; }
 figure { margin: 24px 0; } figure img { width: 100%; height: auto; border: 1px solid #22302c; border-radius: 12px; display: block; }
 figcaption { font-size: 15px; margin-top: 8px; }
+.courses { margin: 24px 0; padding-left: 1.4em; } .courses li { margin: 6px 0; } .courses [aria-current] a { font-weight: 600; }
 .pager { display: flex; justify-content: space-between; gap: 16px; margin: 32px 0; padding-top: 20px; border-top: 1px solid #1e2624; } .pager .chain { font-weight: 600; }
 .outline { list-style: none; padding: 0; } .outline ol { list-style: none; padding-left: 0; margin: 4px 0; } .outline p { margin: 0; color: #8fa19d; font-size: 15px; }
 pre { overflow-x: auto; background: #0b0f0e; border: 1px solid #1e2624; border-radius: 10px; padding: 14px 16px; font: 13px/1.5 'JetBrains Mono', ui-monospace, monospace; color: #cfe3de; max-height: 520px; }
@@ -263,7 +266,7 @@ export function buildPages(courses, manifest = {}) {
         const png = join(PUBLIC, dir, 'card.png')
         const v = existsSync(png) ? sha(readFileSync(png)).slice(0, 12) : 'missing'
         const cardUrl = `${ORIGIN}/${dir}card.png?v=${v}`
-        pages.push({ course: C, lang, lesson, dir, card, input: cardInput(card), png, html: pageHtml(C, lang, lesson, cardUrl), drawn: manifest[dir] })
+        pages.push({ course: C, lang, lesson, dir, card, input: cardInput(card), png, html: pageHtml(C, lang, lesson, cardUrl, courses), drawn: manifest[dir] })
       }
     }
   }

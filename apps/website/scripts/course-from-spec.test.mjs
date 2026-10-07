@@ -75,24 +75,24 @@ test('every lesson opens its own widget and a spec, and the gallery is covered',
 })
 
 test('a lesson that opens a widget the gallery lacks fails the build', async () => {
-  await fails(spec(0, '"fasm-skyline", "idcode"', '"no-such-widget", "idcode"'), 'no-such-widget')
+  await fails(spec(1, '"fasm-skyline", "idcode"', '"no-such-widget", "idcode"'), 'no-such-widget')
 })
 
 test('a gallery widget left out of every lesson fails the build', async () => {
-  await fails(spec(0, '"race-the-bee,wars,tri-game-tick,tri-game-vault"', '"wars,tri-game-tick,tri-game-vault"'), 'race-the-bee is in no lesson')
+  await fails(spec(1, '"race-the-bee,wars,tri-game-tick,tri-game-vault"', '"wars,tri-game-tick,tri-game-vault"'), 'race-the-bee is in no lesson')
 })
 
 test('two lessons opening the same widget fail the build, inside a course or across two', async () => {
-  await fails(spec(0, '"fasm-skyline", "idcode"', '"idcode", "idcode"'), 'LESSON_WIDGETS must be unique')
-  await fails(spec(1, '"t27-vs-nvfp4", "uart-bucket"', '"idcode", "uart-bucket"'), 'LESSON_WIDGETS must be unique')
+  await fails(spec(1, '"fasm-skyline", "idcode"', '"idcode", "idcode"'), 'LESSON_WIDGETS must be unique')
+  await fails(spec(2, '"t27-vs-nvfp4", "uart-bucket"', '"idcode", "uart-bucket"'), 'LESSON_WIDGETS must be unique')
 })
 
 test('a lesson with no spec fails the build', async () => {
-  await fails(spec(0, '"specs/tutorial/04_control_flow.t27"', '""'), 'names no spec')
+  await fails(spec(1, '"specs/tutorial/04_control_flow.t27"', '""'), 'names no spec')
 })
 
 test('a lesson spec that does not compile clean fails the build', async () => {
-  await fails(spec(0, '"specs/tutorial/04_control_flow.t27"', '"specs/no/such.t27"'), 'specs/no/such.t27')
+  await fails(spec(1, '"specs/tutorial/04_control_flow.t27"', '"specs/no/such.t27"'), 'specs/no/such.t27')
 })
 
 test('a course that is not 27 lessons fails the build', async () => {
@@ -101,7 +101,7 @@ test('a course that is not 27 lessons fails the build', async () => {
 })
 
 test('a course whose share path breaks the rule fails the build', async () => {
-  await fails(spec(1, 'pub const SHARE_PATH : str = "learn/ai-numbers/";', 'pub const SHARE_PATH : str = "learn/";'), 'SHARE_PATH must be learn/ai-numbers/')
+  await fails(spec(2, 'pub const SHARE_PATH : str = "learn/ai-numbers/";', 'pub const SHARE_PATH : str = "learn/";'), 'SHARE_PATH must be learn/ai-numbers/')
 })
 
 test('a lesson in two courses fails the build: its page can show one', async () => {
@@ -119,7 +119,7 @@ test('a lesson in two courses fails the build: its page can show one', async () 
 })
 
 test('a course left out of the catalog fails the build', async () => {
-  await fails({ catalogText: replaced(inputs.catalogText, 'pub const COURSE_COUNT : u8 = 2;', 'pub const COURSE_COUNT : u8 = 3;') }, 'the_fpga_course_comes_first')
+  await fails({ catalogText: replaced(inputs.catalogText, 'pub const COURSE_COUNT : u8 = 3;', 'pub const COURSE_COUNT : u8 = 4;') }, 'the_basics_come_first')
 })
 
 test('a broken claim in a spec fails its own test block', async () => {
@@ -127,17 +127,17 @@ test('a broken claim in a spec fails its own test block', async () => {
 })
 
 test('a superlative in English fails the build', async () => {
-  await fails(spec(0, 'An FPGA is a grid you configure', 'The best FPGA is a grid you configure'), 'superlative')
+  await fails(spec(1, 'An FPGA is a grid you configure', 'The best FPGA is a grid you configure'), 'superlative')
 })
 
 test('Cyrillic in a spec fails the build; Russian lives in the bundle', async () => {
-  await fails(spec(1, 'pub const SAY_KICKER : str = "Course";', 'pub const SAY_KICKER : str = "Курс";'), 'Cyrillic')
+  await fails(spec(2, 'pub const SAY_KICKER : str = "Course";', 'pub const SAY_KICKER : str = "Курс";'), 'Cyrillic')
 })
 
 test('a Russian field that changes a number fails the build', async () => {
-  const b = bundle(0)
+  const b = bundle(1)
   b.lessons['seven-backends-and-t27b'].TEXT = replaced(b.lessons['seven-backends-and-t27b'].TEXT, '307', '308')
-  await fails(withBundle(0, b), 'lessons.seven-backends-and-t27b.TEXT numbers')
+  await fails(withBundle(1, b), 'lessons.seven-backends-and-t27b.TEXT numbers')
 })
 
 test('a Russian field that drops a placeholder fails the build', async () => {

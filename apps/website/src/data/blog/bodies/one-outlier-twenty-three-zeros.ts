@@ -132,7 +132,7 @@ export const body: Block[] = [
       'AI numbers course, lesson 6, one outlier, many zeros: t27.ai/learn/one-outlier/',
       'The player on e8m0.t27, seven backends and the tests: t27.ai/play/e8m0/',
       'The AI numbers course, where these three lessons now live: t27.ai/learn/ai-numbers/',
-      'The FPGA course it follows: t27.ai/learn/',
+      'The FPGA course it follows: t27.ai/learn/course/',
     ],
   },
 ]
@@ -263,7 +263,7 @@ export const ruBody: Block[] = [
       'Курс «ИИ-числа», урок 6, один выброс, много нулей: t27.ai/ru/learn/one-outlier/',
       'Плеер на e8m0.t27, семь бэкендов и тесты: t27.ai/play/e8m0/',
       'Курс «ИИ-числа», где теперь живут эти три урока: t27.ai/ru/learn/ai-numbers/',
-      'Курс по FPGA, за которым он идёт: t27.ai/ru/learn/',
+      'Курс по FPGA, за которым он идёт: t27.ai/ru/learn/course/',
     ],
   },
 ]

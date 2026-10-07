@@ -42,6 +42,7 @@ const PAGES: PageLink[] = [
   // number that the game exists to build has a page of its own.
   { href: '#/trinity', en: 'The number', ru: 'Число', note: 'r² = r + 1, the format claim, and the evidence under it', noteRu: 'r² = r + 1, заявление о формате и свидетельства под ним' },
   { href: '#/cases', en: 'Case studies', ru: 'Работы', note: 'Verification runs on other people’s RTL', noteRu: 'Прогоны чужого RTL' },
+  { href: '#/t27-basics', en: 'Course: t27 basics', ru: 'Курс: основы t27', note: 'The language itself, 27 lessons', noteRu: 'Сам язык, 27 уроков' },
   { href: '#/course', en: 'Course: FPGA', ru: 'Курс: FPGA', note: 'From zero to a chip, 27 lessons', noteRu: 'С нуля до чипа, 27 уроков' },
   { href: '#/ai-numbers', en: 'Course: AI numbers', ru: 'Курс: ИИ-числа', note: 'How AI chips store numbers, 27 lessons', noteRu: 'Как ИИ-чипы хранят числа, 27 уроков' },
   { href: '#/foundry', en: 'Golden Foundry', ru: 'Золотая Литейная', note: 'A club for people who build on silicon', noteRu: 'Клуб разработчиков на кремнии', color: '#C9A24B' },

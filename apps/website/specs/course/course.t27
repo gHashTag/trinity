@@ -33,8 +33,8 @@ pub const SCHEMA_VERSION : u8 = 1;
 ; The derived files the generator rewrites (relative to apps/website).
 pub const GENERATED : [2]str = ["src/lib/course.generated.ts", "public/learn/course.t27"];
 pub const ROUTE : str = "course";
-; Share pages: learn/ for course 1, learn/<id>/ for the next (specs/course/courses.t27).
-pub const SHARE_PATH : str = "learn/";
+; Share pages: learn/ for the first course of specs/course/courses.t27, learn/<id>/ for the next.
+pub const SHARE_PATH : str = "learn/course/";
 pub const GALLERY : str = "specs/widgets/gallery.t27";
 pub const LOCALES : [2]str = ["en", "ru"];
 pub const RU_CONTRACT : str = "specs/course/course-ru.t27";

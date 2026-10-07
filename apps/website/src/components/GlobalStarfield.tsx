@@ -21,7 +21,7 @@ const OWN_CANVAS = new Set([
 ])
 
 // The course routes of specs/course/courses.t27, kept here so the starfield does not load the courses.
-const COURSE_ROOTS = ['/course', '/ai-numbers']
+const COURSE_ROOTS = ['/t27-basics', '/course', '/ai-numbers']
 
 export default function GlobalStarfield() {
   const { pathname } = useLocation()

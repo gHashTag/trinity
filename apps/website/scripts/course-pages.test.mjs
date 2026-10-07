@@ -84,3 +84,13 @@ test('the sitemap lists every page once', () => {
   const sm = sitemapOf(pages)
   for (const p of pages) assert.equal(sm.split(`<loc>https://t27.ai/${p.dir}</loc>`).length, 2)
 })
+
+test('the learn/ landing lists every course, in catalog order', () => {
+  for (const lang of COURSES[0].locales) {
+    const landing = pages.find((p) => p.course.id === COURSES[0].id && p.lang === lang && !p.lesson)
+    const list = landing.html.match(/<ol class="courses">(.*?)<\/ol>/s)?.[1] ?? ''
+    const hrefs = [...list.matchAll(/href="\/([^"]*)"/g)].map((m) => m[1])
+    assert.deepEqual(hrefs, COURSES.map((C) => `${lang === 'ru' ? 'ru/' : ''}${C.share}`))
+  }
+  for (const p of pages.filter((p) => p.course.id !== COURSES[0].id)) assert.doesNotMatch(p.html, /class="courses"/)
+})
