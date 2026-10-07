@@ -49,7 +49,9 @@ function literal(n) {
   if (raw === undefined) throw new Unsupported('a literal with no value')
   if (raw === 'true') return true
   if (raw === 'false') return false
-  const s = raw.replace(/_/g, '')
+  // a trailing integer type suffix (`0u8` in `[0u8, 1u8]`, fpga/mac.t27) is
+  // the literal's type; the digits in front of it are the value
+  const s = raw.replace(/_/g, '').replace(/([iu](8|16|32|64)|usize|isize)$/, '')
   if (/^-?(0x[0-9a-fA-F]+|0b[01]+|0o[0-7]+|\d+)$/.test(s)) {
     const neg = s.startsWith('-')
     const v = BigInt(neg ? s.slice(1) : s)
@@ -111,6 +113,13 @@ export function makeProgram(ast) {
       enums.set(d.name, vals)
     }
   }
+  // `Trit` is a language builtin, not a declaration the spec carries: fpga/mac.t27
+  // returns `Trit.neg` with no enum in the file. The values are the ternary
+  // digits they name; the corpus only compares them or passes them along, never
+  // arithmetic on the discriminant, so any consistent triple would do -- this
+  // one is the digits'.
+  if (!enums.has('Trit')) enums.set('Trit', { neg: -1n, zero: 0n, pos: 1n })
+
   let steps = 0
   let asserts = null
 
@@ -186,6 +195,17 @@ export function makeProgram(ast) {
       case '@intFromBool': return evalE(args[0], scope) ? 1n : 0n
       case '@abs': { const v = evalE(args[0], scope); return v < 0 ? -v : v }
     }
+    // `x.len()` -- the parser flattens a method call to a dotted name, so the
+    // call path must answer it, not only the field-access path in evalE
+    // (`x.len` without parens). The corpus' own specs spell length with the
+    // parens: fpga/mac.t27 asserts `MAC_LUT.len() == 9`.
+    if (name.includes('.')) {
+      const cut = name.lastIndexOf('.')
+      const base = evalE({ kind: 'ExprIdentifier', name: name.slice(0, cut) }, scope)
+      const method = name.slice(cut + 1)
+      if (method === 'len' && (Array.isArray(base) || typeof base === 'string')) return BigInt(base.length)
+      throw gap(`a call to .${method} on ${show(base)}`)
+    }
     const fn = fns.get(name)
     if (!fn) throw new Unsupported(`call to ${name}`)
     const params = fn.params ?? []
@@ -247,7 +267,11 @@ export function makeProgram(ast) {
       }
       return o
     }
-    if (/^-?(0x[0-9a-fA-F]+|0b[01]+|\d+)$/.test(text)) return BigInt(text)
+    if (/^-?(0x[0-9a-fA-F]+|0b[01]+|0o[0-7]+|\d+)([iu](8|16|32|64)|usize|isize)?$/.test(text)) {
+      // a trailing integer type suffix (`[0i32; 2]`, fpga/mac.t27) names the
+      // element's type; the digits in front of it are the value.
+      return BigInt(text.replace(/([iu](8|16|32|64)|usize|isize)$/, ''))
+    }
     throw gap(`a fill element this page cannot read [${text}]`)
   }
   function fillValue(text, type) {
