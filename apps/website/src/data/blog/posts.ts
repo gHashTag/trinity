@@ -1,4 +1,5 @@
 import { body as body_course_zero_t27_basics, ruBody as ruBody_course_zero_t27_basics } from './bodies/course-zero-t27-basics'
+import { body as body_tri_test_now_runs_the_tests, ruBody as ruBody_tri_test_now_runs_the_tests } from './bodies/tri-test-now-runs-the-tests'
 import { body as body_two_courses_twenty_seven_lessons_each, ruBody as ruBody_two_courses_twenty_seven_lessons_each } from './bodies/two-courses-twenty-seven-lessons-each'
 import { body as body_one_outlier_twenty_three_zeros, ruBody as ruBody_one_outlier_twenty_three_zeros } from './bodies/one-outlier-twenty-three-zeros'
 import { body as body_a_terminal_for_seven_backends_in_an_x_post, ruBody as ruBody_a_terminal_for_seven_backends_in_an_x_post } from './bodies/a-terminal-for-seven-backends-in-an-x-post'
@@ -96,6 +97,7 @@ import { body as body_one_commit_nine_workflow_outcomes, ruBody as ruBody_one_co
 
 const bodies: Record<string, PostBody> = {
   'course-zero-t27-basics': { body: body_course_zero_t27_basics, ruBody: ruBody_course_zero_t27_basics },
+  'tri-test-now-runs-the-tests': { body: body_tri_test_now_runs_the_tests, ruBody: ruBody_tri_test_now_runs_the_tests },
   'two-courses-twenty-seven-lessons-each': { body: body_two_courses_twenty_seven_lessons_each, ruBody: ruBody_two_courses_twenty_seven_lessons_each },
   'one-outlier-twenty-three-zeros': { body: body_one_outlier_twenty_three_zeros, ruBody: ruBody_one_outlier_twenty_three_zeros },
   'a-terminal-for-seven-backends-in-an-x-post': { body: body_a_terminal_for_seven_backends_in_an_x_post, ruBody: ruBody_a_terminal_for_seven_backends_in_an_x_post },
