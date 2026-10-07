@@ -8,12 +8,12 @@ import type { Block } from '../types'
 export const body: Block[] = [
   {
     kind: 'p',
-    text: 'The t27 course had grown to 33 lessons in 11 modules: 27 on programming an FPGA, then 6 on number formats for AI. That is two topics in one course, and a link to it could not share either topic on its own. It is now two courses of 27 lessons each, and each course is 27 modules of one lesson. Course 1, From zero to a chip, keeps the FPGA lessons and its address. Course 2, AI numbers with t27, starts with the 6 lessons that moved and adds 21 more, ending at a small ternary network. Every lesson opens its own widget and one t27 spec, and each of the last 15 lessons plants one bug in its spec and shows the one test that catches it.',
+    text: 'The t27 course had grown to 33 lessons in 11 modules: 27 on programming an FPGA, then 6 on number formats for AI. That is two topics in one course, and a link to it could not share either topic on its own. It is now two courses of 27 lessons each, and each course is 9 modules of 3 lessons. Course 1, From zero to a chip, keeps the FPGA lessons and its address. Course 2, AI numbers with t27, starts with the 6 lessons that moved and adds 21 more, ending at a small ternary network. Every lesson opens its own widget and one t27 spec, and each of the last 15 lessons plants one bug in its spec and shows the one test that catches it.',
   },
   { kind: 'h', text: 'Why 27, and why two courses' },
   {
     kind: 'p',
-    text: '27 is 3 x 3 x 3, the shape of a TRI-27 word, and since 7 October 2026 every lesson is a module of its own: 27 modules of one lesson, not 9 modules of 3. When a topic needs more than 27 lessons it becomes a second course, chained to the one before it: the last lesson of course 1 ends with a link to lesson 1 of course 2, and lesson 1 of course 2 links back. Each course has its own address in the app, its own page under t27.ai/learn/, its own preview card and its own line in the sitemap, so either one can be shared alone.',
+    text: '27 is 3 x 3 x 3, the shape of a TRI-27 word, and every course is 9 modules of 3 lessons, 27 lessons in all. When a topic needs more than 27 lessons it becomes a second course, chained to the one before it: the last lesson of course 1 ends with a link to lesson 1 of course 2, and lesson 1 of course 2 links back. Each course has its own address in the app, its own page under t27.ai/learn/, its own preview card and its own line in the sitemap, so either one can be shared alone.',
   },
   {
     kind: 'p',
@@ -37,7 +37,7 @@ export const body: Block[] = [
   },
   {
     kind: 'p',
-    text: 'Course 1 keeps its 27 lessons, now 27 modules, in nine parts: the chip, numbers in hardware, your t27 program, inside t27c, from spec to hardware, reading synthesis, place, route and timing, the bitstream, and on the board.',
+    text: 'Course 1 keeps its 27 lessons in its 9 modules of 3: the chip, numbers in hardware, your t27 program, inside t27c, from spec to hardware, reading synthesis, place, route and timing, the bitstream, and on the board.',
   },
   { kind: 'h', text: 'Every new lesson plants one bug' },
   {
@@ -157,12 +157,12 @@ export const body: Block[] = [
 export const ruBody: Block[] = [
   {
     kind: 'p',
-    text: 'Курс t27 разросся до 33 уроков в 11 модулях: 27 о программировании FPGA, потом 6 о форматах чисел для ИИ. Это две темы в одном курсе, и ссылкой на него нельзя было поделиться ни одной темой отдельно. Теперь это два курса по 27 уроков, и в каждом курсе 27 модулей по одному уроку. Курс 1, «С нуля до чипа», оставляет себе уроки FPGA и свой адрес. Курс 2, «ИИ-числа на t27», начинается с 6 переехавших уроков и добавляет ещё 21, до маленькой тернарной сети. Каждый урок открывает свой виджет и одну спеку t27, а каждый из последних 15 уроков подкладывает в спеку одну ошибку и показывает тот единственный тест, который её ловит.',
+    text: 'Курс t27 разросся до 33 уроков в 11 модулях: 27 о программировании FPGA, потом 6 о форматах чисел для ИИ. Это две темы в одном курсе, и ссылкой на него нельзя было поделиться ни одной темой отдельно. Теперь это два курса по 27 уроков, и в каждом курсе 9 модулей по 3 урока. Курс 1, «С нуля до чипа», оставляет себе уроки FPGA и свой адрес. Курс 2, «ИИ-числа на t27», начинается с 6 переехавших уроков и добавляет ещё 21, до маленькой тернарной сети. Каждый урок открывает свой виджет и одну спеку t27, а каждый из последних 15 уроков подкладывает в спеку одну ошибку и показывает тот единственный тест, который её ловит.',
   },
   { kind: 'h', text: 'Почему 27 и почему два курса' },
   {
     kind: 'p',
-    text: '27 — это 3 x 3 x 3, форма слова TRI-27, и с 7 октября 2026 года каждый урок — отдельный модуль: 27 модулей по одному уроку, а не 9 модулей по 3. Когда теме нужно больше 27 уроков, она становится вторым курсом, связанным с предыдущим: последний урок курса 1 заканчивается ссылкой на урок 1 курса 2, а урок 1 курса 2 ссылается обратно. У каждого курса свой адрес в приложении, своя страница под t27.ai/learn/, своя карточка для превью и своя строка в карте сайта, поэтому каждым можно поделиться отдельно.',
+    text: '27 — это 3 x 3 x 3, форма слова TRI-27, и каждый курс — это 9 модулей по 3 урока, всего 27 уроков. Когда теме нужно больше 27 уроков, она становится вторым курсом, связанным с предыдущим: последний урок курса 1 заканчивается ссылкой на урок 1 курса 2, а урок 1 курса 2 ссылается обратно. У каждого курса свой адрес в приложении, своя страница под t27.ai/learn/, своя карточка для превью и своя строка в карте сайта, поэтому каждым можно поделиться отдельно.',
   },
   {
     kind: 'p',
@@ -186,7 +186,7 @@ export const ruBody: Block[] = [
   },
   {
     kind: 'p',
-    text: 'Курс 1 сохраняет свои 27 уроков, теперь 27 модулей, в девяти частях: чип, числа в железе, ваша программа на t27, внутри t27c, от спеки к железу, читаем синтез, размещение, трассировка и тайминг, битстрим и на плате.',
+    text: 'Курс 1 сохраняет свои 27 уроков в 9 модулях по 3: чип, числа в железе, ваша программа на t27, внутри t27c, от спеки к железу, читаем синтез, размещение, трассировка и тайминг, битстрим и на плате.',
   },
   { kind: 'h', text: 'Каждый новый урок подкладывает одну ошибку' },
   {

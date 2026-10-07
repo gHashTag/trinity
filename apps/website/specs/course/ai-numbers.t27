@@ -7,13 +7,12 @@
 ; page at #/ai-numbers) and a byte-identical copy of this file at public/learn/ai-numbers.t27.
 ; ASCII only (L3), English only (LANG-EN). The Russian words live in the bundle.
 
-; WHAT THE COURSE IS: course 2 of specs/course/courses.t27, 27 modules of one lesson each. It
-; starts where the FPGA course ends. Modules 1 to 12 store numbers: a format of our own and an
-; honest scoreboard, the OCP Microscaling v1.0 block formats AI chips use, ternary weights and
-; the Ternary Network Float. Modules 13 to 27 make them compute: signed arithmetic, the parts
-; of a neuron, a training step, BitNet ternary neurons, and the ternary multiply-accumulate as
-; a circuit. Owner's decision 2026-10-07: 27 modules, not 9 modules of 3.
-; Every lesson opens one widget and one spec.
+; WHAT THE COURSE IS: course 2 of specs/course/courses.t27, 27 lessons in 9 modules of 3. It
+; starts where the FPGA course ends. Modules 1 to 4 store numbers: a format of our own and an
+; honest scoreboard (lab), the OCP Microscaling v1.0 block formats AI chips use (mx), ternary
+; weights (ternary) and the Ternary Network Float (tnf). Modules 5 to 9 make them compute:
+; signed arithmetic, the parts of a neuron, a training step, BitNet ternary neurons, and the
+; ternary multiply-accumulate as a circuit. Every lesson opens one widget and one spec.
 
 ; WHAT THE COURSE DOES NOT DO: it says no number of its own. The lab lessons quote only the rule
 ; their widget tests (990 thousandths) and counts that are arithmetic (3 x 3 x 3 = 27). The MX
@@ -55,7 +54,7 @@ pub const TITLE : str = "AI numbers with t27: from number formats to a ternary n
 pub const DESCRIPTION : str = "Course 2, 27 lessons, one widget and one t27 spec each: a number format of our own, the OCP MX block formats AI chips use, ternary weights and the Ternary Network Float, then signed arithmetic, the parts of a neuron, a training step, BitNet ternary neurons and the ternary MAC as logic. Every new lesson plants one bug and shows the test that catches it.";
 pub const SAY_KICKER : str = "Course";
 pub const SAY_LEAD : str = "It picks up where the FPGA course ends. Every lesson opens a real tool or a recording of t27c and Zig on a real machine, next to a spec you can run in your browser.";
-pub const SAY_SHAPE : str = "27 modules, one lesson each, 27 cells. A filled cell is a lesson you marked done.";
+pub const SAY_SHAPE : str = "9 modules of 3 lessons, 27 cells. A filled cell is a lesson you marked done.";
 pub const SAY_START : str = "Start lesson 1";
 pub const SAY_CONTINUE : str = "Continue";
 pub const SAY_MODULE : str = "Module {0}";
@@ -86,76 +85,30 @@ pub const SAY_NEXT_COURSE : str = "Next course";
 pub const SAY_PREV_COURSE : str = "Previous course";
 
 ; --- Modules -------------------------------------------------------------------------------
-pub const LESSONS_PER_MODULE : u8 = 1;
-pub const MODULE_COUNT : u8 = 27;
-pub const MODULE_IDS : [27]str = [
-    "t27-number-format", "an-honest-scoreboard", "a-model-on-the-board",
-    "one-scale-per-block", "scale-byte-native", "one-outlier",
-    "phi-scaled-ternary", "a-pass-that-checked-nothing", "five-rules-for-weights",
-    "blocked-is-not-failed", "four-trit-exponent", "negate-twice",
-    "a-sign-is-one-bit", "opposite-signs-subtract", "multiply-then-add",
-    "a-bend-at-zero", "two-to-the-x", "pick-the-largest",
-    "a-loss-in-bits", "one-step-downhill", "xor-needs-a-bend",
-    "back-to-three-values", "same-neuron-new-weights", "a-neuron-in-chunks",
-    "a-dot-product-in-wires", "add-it-up-every-clock", "a-whole-network"
+pub const LESSONS_PER_MODULE : u8 = 3;
+pub const MODULE_COUNT : u8 = 9;
+pub const MODULE_IDS : [9]str = ["lab", "mx", "ternary", "tnf", "arith", "neuron", "training", "bitnet", "mac"];
+pub const MODULE_TITLES : [9]str = [
+    "Lab: our own research",
+    "AI numbers: the MX block",
+    "Ternary weights",
+    "The Ternary Network Float",
+    "Arithmetic on signed numbers",
+    "Parts of a neuron",
+    "Learning from a mistake",
+    "BitNet: ternary networks",
+    "The ternary MAC as a chip"
 ];
-pub const MODULE_TITLES : [27]str = [
-    "T27: a number format of our own",
-    "An honest scoreboard",
-    "A model's tables on the board",
-    "One scale for a block of weights",
-    "The scale byte on a real machine",
-    "One outlier, many zeros",
-    "Weights of minus phi, zero and plus phi",
-    "A pass that checked nothing",
-    "Five rules for a weight alphabet",
-    "Blocked is not failed",
-    "A float whose exponent is four trits",
-    "Negate twice, get the number back",
-    "A sign is one bit",
-    "Opposite signs subtract",
-    "Multiply, then add",
-    "A bend at zero",
-    "Two to the x",
-    "Pick the largest",
-    "A loss in bits",
-    "One step downhill",
-    "XOR needs a bend",
-    "Back to three values",
-    "Same neuron, new weights",
-    "A neuron in chunks",
-    "A dot product made of wires",
-    "Add it up on every clock",
-    "A whole network"
-];
-pub const MODULE_LINES : [27]str = [
-    "How three trits give more levels than a 4-bit float, and what that costs in plain bits.",
-    "How T27 was compared with NVFP4, MX+ and MXFP4 on a real language model, and what the result does not show.",
-    "How the host feeds the board over a serial bridge, why the window size matters, and what the board computed.",
-    "Why AI formats share one scale across a block of weights, and how the scale byte of OCP MX is read.",
-    "What the native compiler checks in the same spec, including what the browser skipped.",
-    "What a shared scale costs: how one large weight pushes the small weights of its block to zero, format by format.",
-    "How a ternary weight is stored in 2 bits, what the fourth code is for, and what the spec does not claim about phi.",
-    "What a vacuous pass is, why a green report can hide one, and how a planted bug tells real checks from empty ones.",
-    "What values a ternary weight may take, how five measured rules leave one formula, and what a sixth rule removes from it.",
-    "Why a rule checked while compiling stops a spec before any test runs, and how that differs from a failing test.",
-    "How TNF17e packs a sign, a ternary exponent and a mantissa into 17 bits, and why 17 and not 16.",
-    "How a test of a property catches a one-character bug that a single example misses.",
-    "How a signed multiply sets the sign of its product, and which test notices when it never does.",
-    "How a signed add turns into a subtraction when the signs differ, and what its 3 tests leave unchecked.",
-    "What a multiply-accumulate does with two signed products, and how the swap from lesson 12 breaks it.",
-    "Why a ReLU needs a test with a negative input before anyone can say it bends.",
-    "How exp2 splits x into a whole part and a fraction, and why its tests only reach the whole part.",
-    "How argmax names a class by comparing bits alone, and which rule settles a tie.",
-    "How the loss -log2(p) prices a guess in bits, and why a perfect guess must cost exactly 0.",
-    "How one SGD step moves a weight against its gradient, and why a test with two equal inputs cannot tell them apart.",
-    "Why a network needs a hidden ReLU layer to compute XOR, and what one missing bend does.",
-    "How a threshold turns a neuron's sum back into a trit, and why each edge of the dead band needs its own test.",
-    "How one ternary neuron computes a majority vote with one set of weights and a different function with another.",
-    "How a neuron with more than 27 inputs adds up its dot products chunk by chunk, and why a test with zero chunks matters.",
-    "What on_comb turns a spec into, and how one wrong sign in tmul shows up in exactly one test.",
-    "What on_clock adds to the dot product, and why this spec's tests never reach the register.",
-    "How the pieces of this course fit into one small network, and what its tests and its Verilog still leave open."
+pub const MODULE_LINES : [9]str = [
+    "A number format of our own, an honest scoreboard, and a model's tables multiplied on the board.",
+    "How AI chips keep weights in a few bits: one shared scale per block, the scale byte itself, and what one outlier does to its neighbours.",
+    "Weights that are only minus, zero or plus a scale, the five rules a ternary alphabet must pass, and a test pass that checked nothing.",
+    "A rule the compiler enforces before any test runs, and a 17-bit float whose exponent is four balanced trits.",
+    "Multiply two signed numbers, add them when their signs differ, and do both at once in a multiply-accumulate.",
+    "A ReLU that bends at zero, a power of two for softmax, and an argmax that names the answer.",
+    "A loss that prices a wrong guess in bits, one step that moves a weight against its gradient, and the hidden layer that XOR needs.",
+    "A threshold that squeezes a sum back to three values, one neuron that becomes a different function when its weights change, and a neuron that reads its inputs 27 trits at a time.",
+    "The 27-trit dot product as wires with no register, the same sum added into a register on every clock, and a small whole network to close the course."
 ];
 
 ; --- Lessons -------------------------------------------------------------------------------
@@ -176,15 +129,15 @@ pub const LESSON_IDS : [27]str = [
     "a-dot-product-in-wires", "add-it-up-every-clock", "a-whole-network"
 ];
 pub const LESSON_MODULES : [27]str = [
-    "t27-number-format", "an-honest-scoreboard", "a-model-on-the-board",
-    "one-scale-per-block", "scale-byte-native", "one-outlier",
-    "phi-scaled-ternary", "a-pass-that-checked-nothing", "five-rules-for-weights",
-    "blocked-is-not-failed", "four-trit-exponent", "negate-twice",
-    "a-sign-is-one-bit", "opposite-signs-subtract", "multiply-then-add",
-    "a-bend-at-zero", "two-to-the-x", "pick-the-largest",
-    "a-loss-in-bits", "one-step-downhill", "xor-needs-a-bend",
-    "back-to-three-values", "same-neuron-new-weights", "a-neuron-in-chunks",
-    "a-dot-product-in-wires", "add-it-up-every-clock", "a-whole-network"
+    "lab", "lab", "lab",
+    "mx", "mx", "mx",
+    "ternary", "ternary", "ternary",
+    "tnf", "tnf", "tnf",
+    "arith", "arith", "arith",
+    "neuron", "neuron", "neuron",
+    "training", "training", "training",
+    "bitnet", "bitnet", "bitnet",
+    "mac", "mac", "mac"
 ];
 pub const LESSON_WIDGETS : [27]str = [
     "t27-cell", "t27-vs-nvfp4", "uart-bucket",
@@ -338,27 +291,27 @@ pub const LESSON_TASKS : [27]str = [
 
 ; --- Claims --------------------------------------------------------------------------------
 test the_course_is_three_cubed {
-    assert LESSONS_PER_MODULE == 1;
-    assert MODULE_COUNT == 27;
+    assert LESSONS_PER_MODULE == 3;
+    assert MODULE_COUNT == 9;
     assert LESSON_COUNT == 27;
     assert MODULE_COUNT * LESSONS_PER_MODULE == LESSON_COUNT;
     assert LESSON_COUNT == 3 * 3 * 3;
 }
 
 test it_starts_in_the_lab_and_ends_with_a_network {
-    assert MODULE_IDS[0] == "t27-number-format";
-    assert LESSON_MODULES[0] == "t27-number-format";
+    assert MODULE_IDS[0] == "lab";
+    assert LESSON_MODULES[0] == "lab";
     assert LESSON_WIDGETS[0] == "t27-cell";
-    assert MODULE_IDS[24] == "a-dot-product-in-wires";
-    assert LESSON_MODULES[26] == "a-whole-network";
+    assert MODULE_IDS[8] == "mac";
+    assert LESSON_MODULES[26] == "mac";
     assert LESSON_WIDGETS[26] == "t27c-bitnet-mlp";
     assert LESSON_SPECS[26] == "specs/ternary/bitnet_mlp.t27";
 }
 
 test the_mx_module_follows_the_lab {
-    assert MODULE_IDS[3] == "one-scale-per-block";
-    assert LESSON_MODULES[3] == "one-scale-per-block";
-    assert LESSON_MODULES[5] == "one-outlier";
+    assert MODULE_IDS[1] == "mx";
+    assert LESSON_MODULES[3] == "mx";
+    assert LESSON_MODULES[5] == "mx";
     assert LESSON_WIDGETS[3] == "play-e8m0";
     assert LESSON_WIDGETS[4] == "t27c-e8m0";
     assert LESSON_WIDGETS[5] == "t27c-ocp-mx";
@@ -366,8 +319,8 @@ test the_mx_module_follows_the_lab {
 }
 
 test the_ternary_modules_follow_mx {
-    assert MODULE_IDS[6] == "phi-scaled-ternary";
-    assert MODULE_IDS[9] == "blocked-is-not-failed";
+    assert MODULE_IDS[2] == "ternary";
+    assert MODULE_IDS[3] == "tnf";
     assert LESSON_WIDGETS[6] == "play-gfternary";
     assert LESSON_WIDGETS[7] == "t27c-gfternary";
     assert LESSON_WIDGETS[9] == "t27c-golden-sieve";
@@ -378,11 +331,11 @@ test the_ternary_modules_follow_mx {
 }
 
 test the_formats_come_before_they_compute {
-    assert MODULE_IDS[12] == "a-sign-is-one-bit";
-    assert MODULE_IDS[15] == "a-bend-at-zero";
-    assert MODULE_IDS[18] == "a-loss-in-bits";
-    assert MODULE_IDS[21] == "back-to-three-values";
-    assert LESSON_MODULES[12] == "a-sign-is-one-bit";
+    assert MODULE_IDS[4] == "arith";
+    assert MODULE_IDS[5] == "neuron";
+    assert MODULE_IDS[6] == "training";
+    assert MODULE_IDS[7] == "bitnet";
+    assert LESSON_MODULES[12] == "arith";
     assert LESSON_SPECS[12] == "specs/ternary/gft_smul.t27";
     assert LESSON_SPECS[21] == "specs/ternary/activation_quantizer.t27";
 }
@@ -391,11 +344,4 @@ test the_course_sends_nothing {
     assert SENDS_NOTHING == true;
     assert LOCALES[0] == "en";
     assert LOCALES[1] == "ru";
-}
-
-test every_lesson_is_its_own_module {
-    assert MODULE_IDS[0] == LESSON_IDS[0];
-    assert MODULE_IDS[26] == LESSON_IDS[26];
-    assert LESSON_MODULES[26] == LESSON_IDS[26];
-    assert MODULE_TITLES[26] == LESSON_TITLES[26];
 }

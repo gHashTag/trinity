@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-; specs/course/t27-basics.t27 -- course 0: the basics of t27, in 27 modules of one lesson each
+; specs/course/t27-basics.t27 -- course 0: the basics of t27, in 9 modules of 3 lessons
 ; Source of truth for apps/website/scripts/course-from-spec.mjs (gHashTag/trinity), read the
 ; way it reads specs/course/course.t27: the constant schema, every test block below, every
 ; widget in specs/widgets/gallery.t27, every lesson spec compiled clean, the Russian bundle named
@@ -43,7 +43,7 @@ pub const TITLE : str = "t27 basics: the language in 27 lessons";
 pub const DESCRIPTION : str = "Course 0, 27 lessons, one infographic and one t27 spec each: a module, constants and types, functions and tests, then the compiler's stages and the 7 languages it writes. It comes before the FPGA course.";
 pub const SAY_KICKER : str = "Course";
 pub const SAY_LEAD : str = "Before the FPGA course: what a t27 spec is, how the compiler reads it, and what it gives back. Every lesson opens one table or diagram drawn from its own spec and one spec you can run in your browser.";
-pub const SAY_SHAPE : str = "27 modules, one lesson each, 27 cells. A filled cell is a lesson you marked done.";
+pub const SAY_SHAPE : str = "9 modules of 3 lessons, 27 cells. A filled cell is a lesson you marked done.";
 pub const SAY_START : str = "Start lesson 1";
 pub const SAY_CONTINUE : str = "Continue";
 pub const SAY_MODULE : str = "Module {0}";
@@ -74,94 +74,40 @@ pub const SAY_NEXT_COURSE : str = "Next course";
 pub const SAY_PREV_COURSE : str = "Previous course";
 
 ; --- Modules -------------------------------------------------------------------------------
-pub const LESSONS_PER_MODULE : u8 = 1;
-pub const MODULE_COUNT : u8 = 27;
-pub const MODULE_IDS : [27]str = [
-    "what-a-spec-is",
-    "the-module-line",
-    "comments-and-prose",
-    "constants",
-    "whole-numbers",
-    "true-false-and-text",
-    "arrays",
-    "trits",
-    "expressions",
-    "a-test-block",
-    "many-tests",
-    "functions",
-    "local-names",
-    "if-and-else",
-    "loops",
-    "pub-or-private",
-    "structs",
-    "enums",
-    "use-other-modules",
-    "invariants",
-    "gen-ts",
-    "seven-backends",
-    "stages-of-t27c",
-    "tri-commands",
-    "reading-errors",
-    "a-small-program",
-    "where-next"
+pub const LESSONS_PER_MODULE : u8 = 3;
+pub const MODULE_COUNT : u8 = 9;
+pub const MODULE_IDS : [9]str = [
+    "a-spec-file",
+    "values-and-types",
+    "arrays-trits-expressions",
+    "tests-and-functions",
+    "inside-a-function",
+    "your-own-types",
+    "modules-rules-gen-ts",
+    "the-compiler-and-tri",
+    "errors-a-program-what-next"
 ];
-pub const MODULE_TITLES : [27]str = [
-    "What a spec is",
-    "The module line",
-    "Comments and prose lines",
-    "Constants",
-    "Whole numbers and their widths",
-    "True, false and text",
-    "Arrays",
-    "Trits: minus one, zero, one",
-    "Expressions",
-    "A test block",
-    "Many tests in one spec",
-    "Functions",
-    "Local names: let and var",
-    "Choices: if, else and switch",
-    "Loops: while and for",
-    "pub or private",
-    "Structs",
-    "Enums",
-    "Using other modules",
-    "Invariants and benches",
-    "gen-ts: a spec becomes TypeScript",
-    "Seven backends",
-    "The stages of t27c",
-    "tri: the command line",
-    "Reading compiler errors",
-    "A small complete program",
-    "Where to go next"
+pub const MODULE_TITLES : [9]str = [
+    "A spec file",
+    "Values and types",
+    "Arrays, trits and expressions",
+    "Tests and functions",
+    "Inside a function",
+    "Visibility and your own types",
+    "Modules, rules and gen-ts",
+    "The compiler and tri",
+    "Errors, a program, what next"
 ];
-pub const MODULE_LINES : [27]str = [
-    "A spec is one .t27 file: a module line, named values, and tests that check them.",
-    "Every spec names its module once, with module, a name and a semicolon.",
-    "Two kinds of notes: a semicolon line of prose, and a comment after two slashes.",
-    "A constant gives a name, a type and a value, and the name never changes its value.",
-    "u8, u16, u32 and i32: how many bits a number has decides which values it can hold.",
-    "bool holds true or false; str holds text between double quotes.",
-    "An array has a length and a type, [5]u8, and its items are read by index from 0.",
-    "A trit has three values, and three trits give 27 combinations.",
-    "Arithmetic and comparison operators, and what a test can compute with them.",
-    "A test is a name and a list of asserts; each assert must be true.",
-    "Split checks into small named tests, so a failure points at one idea.",
-    "A function takes typed inputs and returns a typed result.",
-    "Inside a function, let names a value once and var names one that changes.",
-    "if picks one of two paths; switch picks one of many by value.",
-    "while repeats while a condition holds; for walks a range of numbers.",
-    "pub marks a name for other modules; without it the name is the module's own.",
-    "A struct groups named fields, each with its own type.",
-    "An enum names a fixed set of cases, and switch picks one of them.",
-    "use names another module whose pub names this one may read.",
-    "An invariant states a rule that must always hold; a bench names a measurement.",
-    "gen-ts writes the constants of a spec as TypeScript, and leaves function bodies out.",
-    "One spec, seven languages: what each backend of t27c writes.",
-    "Bytes, tokens, a tree, a type check, HIR and code: how t27c reads a spec.",
-    "tri is the command the t27 repository uses to test, generate and check specs.",
-    "An error names a stage, a line and a column, and what the compiler expected.",
-    "An 8-bit adder in t27, its tests, and the Verilog ports t27c writes for it.",
-    "Course 1 takes these specs onto an FPGA; course 2 builds AI numbers with them."
+pub const MODULE_LINES : [9]str = [
+    "What a .t27 file holds: a module line, prose lines and comments.",
+    "Constants, the width of a whole number, and true, false and text.",
+    "Lists of values, the three values of a trit, and what operators compute.",
+    "A test block, several small tests in one spec, and a function with typed inputs.",
+    "Names with let and var, choices with if and switch, and loops.",
+    "What pub shares with other modules, and the structs and enums you declare.",
+    "Reading another module, stating a rule that always holds, and a spec turned into TypeScript.",
+    "The backends t27c writes, the stages it reads a spec in, and the tri command.",
+    "Reading a compiler error, one small complete program, and the course to take next."
 ];
 
 ; --- Lessons -------------------------------------------------------------------------------
@@ -196,33 +142,33 @@ pub const LESSON_IDS : [27]str = [
     "where-next"
 ];
 pub const LESSON_MODULES : [27]str = [
-    "what-a-spec-is",
-    "the-module-line",
-    "comments-and-prose",
-    "constants",
-    "whole-numbers",
-    "true-false-and-text",
-    "arrays",
-    "trits",
-    "expressions",
-    "a-test-block",
-    "many-tests",
-    "functions",
-    "local-names",
-    "if-and-else",
-    "loops",
-    "pub-or-private",
-    "structs",
-    "enums",
-    "use-other-modules",
-    "invariants",
-    "gen-ts",
-    "seven-backends",
-    "stages-of-t27c",
-    "tri-commands",
-    "reading-errors",
-    "a-small-program",
-    "where-next"
+    "a-spec-file",
+    "a-spec-file",
+    "a-spec-file",
+    "values-and-types",
+    "values-and-types",
+    "values-and-types",
+    "arrays-trits-expressions",
+    "arrays-trits-expressions",
+    "arrays-trits-expressions",
+    "tests-and-functions",
+    "tests-and-functions",
+    "tests-and-functions",
+    "inside-a-function",
+    "inside-a-function",
+    "inside-a-function",
+    "your-own-types",
+    "your-own-types",
+    "your-own-types",
+    "modules-rules-gen-ts",
+    "modules-rules-gen-ts",
+    "modules-rules-gen-ts",
+    "the-compiler-and-tri",
+    "the-compiler-and-tri",
+    "the-compiler-and-tri",
+    "errors-a-program-what-next",
+    "errors-a-program-what-next",
+    "errors-a-program-what-next"
 ];
 pub const LESSON_WIDGETS : [27]str = [
     "basics-what-a-spec-is",
@@ -377,7 +323,7 @@ pub const LESSON_TEXTS : [27]str = [
     "A u in the type name means unsigned, an i means signed, and the digits are the number of bits. u8 holds 0 to 255, u16 holds 0 to 65535, i32 holds negative numbers too. The compiler checks a constant against its type: give a u8 the value 300 and it stops with an error that says no u8 can hold 3 digits. The browser's checker is lenient elsewhere, so do not read its silence as proof.",
     "A bool is true or false. A str is text in double quotes, and the text may hold characters that mean something elsewhere in t27, such as a semicolon or two slashes: inside quotes they are just text. A test compares a bool or a str with == and !=. One honest limit: the checker in this browser does not stop a str given to a u8 constant, so keep types and values matched yourself.",
     "An array type is the length in square brackets followed by the item type: [5]u8 is five unsigned bytes. The value lists the items in square brackets. Index 0 holds the item at the start, so in an array of 5 the last index is 4. A test reads an item with PRIMES[4]. Keep the declared length and the list in step: the checker in this browser does not catch a length that disagrees with the list.",
-    "A bit has two values; a trit has three: minus one, zero and one. The lesson spec writes them as i8 constants NEG, ZERO and POS, the way the tutorial specs of t27 do. Adding POS and NEG gives ZERO. Three trits have 3 times 3 times 3 combinations, which is 27: the number of modules in this course and the cells of a TRI-27 word.",
+    "A bit has two values; a trit has three: minus one, zero and one. The lesson spec writes them as i8 constants NEG, ZERO and POS, the way the tutorial specs of t27 do. Adding POS and NEG gives ZERO. Three trits have 3 times 3 times 3 combinations, which is 27: the number of lessons in this course and the cells of a TRI-27 word.",
     "An expression combines names and numbers with operators. With A = 17 and B = 5, A + B is 22, A - B is 12, A * B is 85, A / B is 3 because whole numbers divide without a fraction, and A % B is 2, the remainder. Comparisons give true or false. One limit of the test runner on this site: it does not read a minus sign in front of a number, so write negative values as constants.",
     "A test block starts with the keyword test and a name, and holds assert lines in braces. Each assert takes an expression that must be true. When one is false, the report names the test and the number of the assert, for example assert #1 is false. A spec's tests are its claims about itself, which is why every course spec on this site carries some.",
     "A spec may hold any number of test blocks. Each one checks one idea and has a name that says which. The report counts tests and asserts separately: the lesson spec has 3 tests and 5 asserts. When one fails, its name tells you which idea broke, and the other tests still report on their own ideas.",
@@ -429,17 +375,19 @@ pub const LESSON_TASKS : [27]str = [
 ];
 
 test the_course_is_three_cubed {
-    assert LESSONS_PER_MODULE == 1;
-    assert MODULE_COUNT == 27;
+    assert LESSONS_PER_MODULE == 3;
+    assert MODULE_COUNT == 9;
     assert LESSON_COUNT == 27;
     assert MODULE_COUNT * LESSONS_PER_MODULE == LESSON_COUNT;
     assert LESSON_COUNT == 3 * 3 * 3;
 }
 
 test it_starts_with_a_spec_and_ends_with_a_program {
-    assert MODULE_IDS[0] == "what-a-spec-is";
+    assert MODULE_IDS[0] == "a-spec-file";
+    assert LESSON_MODULES[0] == "a-spec-file";
     assert LESSON_WIDGETS[0] == "basics-what-a-spec-is";
-    assert MODULE_IDS[26] == "where-next";
+    assert MODULE_IDS[8] == "errors-a-program-what-next";
+    assert LESSON_MODULES[26] == "errors-a-program-what-next";
     assert LESSON_WIDGETS[26] == "basics-where-next";
 }
 
@@ -449,9 +397,10 @@ test the_course_sends_nothing {
     assert LOCALES[1] == "ru";
 }
 
-test every_lesson_is_its_own_module {
-    assert MODULE_IDS[0] == LESSON_IDS[0];
-    assert MODULE_IDS[26] == LESSON_IDS[26];
-    assert LESSON_MODULES[26] == LESSON_IDS[26];
-    assert MODULE_TITLES[26] == LESSON_TITLES[26];
+test every_module_holds_three_lessons_in_order {
+    assert LESSON_MODULES[0] == MODULE_IDS[0];
+    assert LESSON_MODULES[2] == MODULE_IDS[0];
+    assert LESSON_MODULES[3] == MODULE_IDS[1];
+    assert LESSON_MODULES[24] == MODULE_IDS[8];
+    assert LESSON_IDS[24] == "reading-errors";
 }
