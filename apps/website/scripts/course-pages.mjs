@@ -80,6 +80,8 @@ function thumbOf(widget) {
 }
 
 // ---------------------------------------------------------------- the card
+// Black and white like the course page (owner, 2026-10-05: no green fields or
+// glows): white type and rules on black, a widget's picture in greyscale.
 
 function cardHtml(C, lang, lesson) {
   const say = C.say[lang]
@@ -100,21 +102,20 @@ function cardHtml(C, lang, lesson) {
 * { margin: 0; box-sizing: border-box; }
 html, body { width: 1200px; height: 630px; background: #000; overflow: hidden; }
 body { position: relative; font-family: ${font}; color: #fff; padding: 56px 64px; }
-.glow { position: absolute; inset: 0; background: radial-gradient(circle at 18% 30%, rgba(8,250,181,.16), rgba(8,250,181,.03) 45%, transparent 70%); }
-.top { position: relative; display: flex; justify-content: space-between; font: 500 21px 'JetBrains Mono', monospace; letter-spacing: 3px; text-transform: uppercase; }
-.brand { color: #08FAB5; } .where { color: #7c8a87; }
+.top { position: relative; display: flex; justify-content: space-between; font: 500 21px 'JetBrains Mono', monospace; letter-spacing: 3px; text-transform: uppercase; border-top: 6px solid #fff; border-bottom: 1px solid #fff; padding: 10px 0; }
+.brand { color: #fff; } .where { color: #8a8a8a; }
 .main { position: relative; display: flex; gap: 48px; margin-top: 44px; height: 360px; }
 .text { flex: 1; display: flex; flex-direction: column; }
-.n { font: 500 24px 'JetBrains Mono', monospace; color: #08FAB5; letter-spacing: 2px; margin-bottom: 14px; }
-h1 { font-weight: 700; font-size: ${big}px; line-height: 1.06; letter-spacing: -.5px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-p { margin-top: 22px; font-size: 27px; line-height: 1.32; color: #b9c4c2; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-.thumb { width: 420px; flex: none; align-self: center; border: 1px solid #2a3532; border-radius: 14px; overflow: hidden; box-shadow: 0 0 60px rgba(8,250,181,.12); }
-.thumb img { display: block; width: 100%; }
+.n { font: 500 24px 'JetBrains Mono', monospace; color: #fff; letter-spacing: 2px; margin-bottom: 14px; }
+h1 { font-weight: 800; font-size: ${big}px; line-height: 1.06; letter-spacing: -.5px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+p { margin-top: 22px; font-size: 27px; line-height: 1.32; color: #a6a6a6; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.thumb { width: 420px; flex: none; align-self: center; border: 1px solid #fff; overflow: hidden; }
+.thumb img { display: block; width: 100%; filter: grayscale(1); }
 .bottom { position: absolute; left: 64px; right: 64px; bottom: 50px; display: flex; align-items: center; justify-content: space-between; }
-.cells { display: flex; gap: 4px; flex: none; margin-right: 24px; } .cells i { width: 13px; height: 13px; border-radius: 3px; background: #1d2321; }
-.cells i.past { background: #3c4a46; } .cells i.on { background: #08FAB5; box-shadow: 0 0 14px #08FAB5; } .cells b { width: 9px; }
-.url { white-space: nowrap; font: 500 17px 'JetBrains Mono', monospace; color: #5f7a74; letter-spacing: 1px; }
-</style></head><body><div class="glow"></div>
+.cells { display: flex; gap: 4px; flex: none; margin-right: 24px; } .cells i { width: 13px; height: 13px; background: #1c1c1c; }
+.cells i.past { background: #5a5a5a; } .cells i.on { background: #fff; } .cells b { width: 9px; }
+.url { white-space: nowrap; font: 500 17px 'JetBrains Mono', monospace; color: #8a8a8a; letter-spacing: 1px; }
+</style></head><body>
 <div class="top"><span class="brand">t27.ai · ${esc(say.KICKER)}</span><span class="where">${esc(kicker)}</span></div>
 <div class="main"><div class="text">${lesson ? `<div class="n">${esc(fmt(say.LESSON, pad(lesson.n), C.lessons.length))}</div>` : ''}<h1>${esc(title)}</h1><p>${esc(sub)}</p></div>${thumb ? `<div class="thumb"><img src="${pathToFileURL(thumb).href}"></div>` : ''}</div>
 <div class="bottom"><div class="cells">${cells}</div><span class="url">t27.ai/${esc(pathOf(C, lang, lesson?.id).replace(/\/$/, ''))}</span></div>
