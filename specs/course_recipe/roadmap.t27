@@ -59,12 +59,11 @@ pub const PLANNED_SPEC_DIRS : [4]str = [
     "ml/activation,ml/layers,ml/loss,ml/optimizer,ml/recurrent,ml/transformer,ml/rl,nn"
 ];
 
-; Owner's decision 2026-10-07: a course is 27 modules of one lesson each, so a module id is
-; its lesson id, chosen when the course is built. What a plan fixes now is 9 topic parts per
-; course, course after course (course k owns [9k .. 9k+8]), 3 lessons each, for ordering
-; only: a part is not a module and has no page of its own.
-pub const MODULES_PER_COURSE : u8 = 27;
-pub const LESSONS_PER_MODULE : u8 = 1;
+; Owner's decision 2026-10-07: a course is 9 modules of 3 lessons each. What a plan fixes now
+; is the 9 modules of every planned course, course after course (course k owns [9k .. 9k+8]);
+; the 3 lessons of each module are chosen when the course is built.
+pub const MODULES_PER_COURSE : u8 = 9;
+pub const LESSONS_PER_MODULE : u8 = 3;
 pub const PARTS_PER_COURSE : u8 = 9;
 pub const PLANNED_PART_COUNT : u8 = 36;
 pub const PLANNED_PARTS : [36]str = [
@@ -96,9 +95,11 @@ test four_courses_are_planned_and_none_is_live {
     assert PLANNED_IDS[3] != LIVE_IDS[2];
 }
 
-test every_plan_is_nine_parts_of_27_modules {
-    assert MODULES_PER_COURSE == 27;
-    assert LESSONS_PER_MODULE == 1;
+test every_plan_is_nine_modules_of_three_lessons {
+    assert MODULES_PER_COURSE == 9;
+    assert LESSONS_PER_MODULE == 3;
+    assert PARTS_PER_COURSE == MODULES_PER_COURSE;
+    assert PLANNED_PARTS[35] == "transformer";
     assert PLANNED_PART_COUNT == PLANNED_COUNT * PARTS_PER_COURSE;
     assert PLANNED_PARTS[0] == "phi";
     assert PLANNED_PARTS[9] == "catalog";

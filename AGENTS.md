@@ -22,8 +22,8 @@ Never omit the work report for a small, documentation-only or automation PR.
 
 ## New course to open a topic (Queen and every bee)
 
-When a topic needs explaining, the answer is a course: **27 modules of one
-lesson each** (owner, 2026-10-07). One topic is one course; two topics are two
+When a topic needs explaining, the answer is a course: **9 modules of 3
+lessons each, 27 lessons** (owner, 2026-10-07). One topic is one course; two topics are two
 courses, chained (the last lesson opens lesson 1 of the next). Live chain:
 0 t27 basics -> 1 FPGA -> 2 AI numbers.
 
