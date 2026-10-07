@@ -31,13 +31,13 @@ test('the committed specs build clean and the derived files are current', async 
   for (const c of out.courses) assert.equal(c.sendsNothing, true)
 })
 
-test('every course is 27 lessons in 9 modules of 3, with its own address and share path', async () => {
+test('every course is 27 modules of one lesson each, with its own address and share path', async () => {
   const out = await build()
   assert.ok(out.courses.length >= 2)
   for (const c of out.courses) {
     assert.equal(c.lessons.length, 27, c.id)
-    assert.equal(c.modules.length, 9, c.id)
-    for (const m of c.modules) assert.equal(m.lessons.length, 3, `${c.id} ${m.id}`)
+    assert.equal(c.modules.length, 27, c.id)
+    for (const m of c.modules) assert.deepEqual(m.lessons, [m.id], `${c.id} ${m.id}`)
   }
   assert.equal(out.courses[0].share, 'learn/')
   for (const c of out.courses.slice(1)) assert.equal(c.share, `learn/${c.id}/`)
@@ -84,7 +84,7 @@ test('a gallery widget left out of every lesson fails the build', async () => {
 
 test('two lessons opening the same widget fail the build, inside a course or across two', async () => {
   await fails(spec(0, '"fasm-skyline", "idcode"', '"idcode", "idcode"'), 'LESSON_WIDGETS must be unique')
-  await fails(spec(1, '"t27-cell",', '"idcode",'), 'LESSON_WIDGETS must be unique')
+  await fails(spec(1, '"t27-vs-nvfp4", "uart-bucket"', '"idcode", "uart-bucket"'), 'LESSON_WIDGETS must be unique')
 })
 
 test('a lesson with no spec fails the build', async () => {
@@ -96,8 +96,8 @@ test('a lesson spec that does not compile clean fails the build', async () => {
 })
 
 test('a course that is not 27 lessons fails the build', async () => {
-  await fails({ catalogText: replaced(inputs.catalogText, 'pub const LESSONS_PER_MODULE : u8 = 3;', 'pub const LESSONS_PER_MODULE : u8 = 4;') }, 'test')
-  await fails(spec(1, 'pub const LESSON_COUNT : u8 = 27;', 'pub const LESSON_COUNT : u8 = 26;'), 'LESSON_COUNT')
+  await fails({ catalogText: replaced(inputs.catalogText, 'pub const LESSONS_PER_MODULE : u8 = 1;', 'pub const LESSONS_PER_MODULE : u8 = 3;') }, 'test')
+  await fails(spec(1, 'pub const LESSON_COUNT : u8 = 27;', 'pub const LESSON_COUNT : u8 = 26;'), 'the_course_is_three_cubed')
 })
 
 test('a course whose share path breaks the rule fails the build', async () => {
@@ -105,17 +105,25 @@ test('a course whose share path breaks the rule fails the build', async () => {
 })
 
 test('a lesson in two courses fails the build: its page can show one', async () => {
-  const first = JSON.parse(inputs.courses[0].specText.match(/pub const LESSON_IDS : \[\d+\]str = (\[[^\]]*\]);/)[1])[0]
-  const second = JSON.parse(inputs.courses[1].specText.match(/pub const LESSON_IDS : \[\d+\]str = (\[[^\]]*\]);/)[1])[0]
-  await fails(spec(1, `"${second}"`, `"${first}"`), `lesson ${first} is in two courses`)
+  // Lesson 2 of each course: no spec test names it. Each lesson is its own module, so its id
+  // appears in MODULE_IDS, LESSON_MODULES and LESSON_IDS; every copy moves together.
+  const first = JSON.parse(inputs.courses[0].specText.match(/pub const LESSON_IDS : \[\d+\]str = (\[[^\]]*\]);/)[1])[1]
+  const second = JSON.parse(inputs.courses[1].specText.match(/pub const LESSON_IDS : \[\d+\]str = (\[[^\]]*\]);/)[1])[1]
+  const b = bundle(1)
+  for (const part of ['modules', 'lessons']) {
+    b[part][first] = b[part][second]
+    delete b[part][second]
+  }
+  const moved = withCourse(1, (c) => ({ specText: c.specText.split(`"${second}"`).join(`"${first}"`), bundleText: JSON.stringify(b) }))
+  await fails(moved, `lesson ${first} is in two courses`)
 })
 
 test('a course left out of the catalog fails the build', async () => {
-  await fails({ catalogText: replaced(inputs.catalogText, 'pub const COURSE_COUNT : u8 = 2;', 'pub const COURSE_COUNT : u8 = 3;') }, 'COURSE_COUNT')
+  await fails({ catalogText: replaced(inputs.catalogText, 'pub const COURSE_COUNT : u8 = 2;', 'pub const COURSE_COUNT : u8 = 3;') }, 'the_fpga_course_comes_first')
 })
 
 test('a broken claim in a spec fails its own test block', async () => {
-  await fails(spec(0, 'pub const LESSONS_PER_MODULE : u8 = 3;', 'pub const LESSONS_PER_MODULE : u8 = 4;'), 'test')
+  await fails(spec(0, 'pub const LESSONS_PER_MODULE : u8 = 1;', 'pub const LESSONS_PER_MODULE : u8 = 3;'), 'test')
 })
 
 test('a superlative in English fails the build', async () => {
@@ -153,7 +161,7 @@ test('a Russian key the course does not have fails the build (ORPHANS_ALLOWED fa
 
 test('a Russian superlative fails the build', async () => {
   const b = bundle(0)
-  b.modules.chip.TITLE = 'Лучший чип'
+  b.modules[Object.keys(b.modules)[1]].TITLE = 'Лучший чип'
   await fails(withBundle(0, b), 'superlative')
 })
 

@@ -8,21 +8,21 @@ import type { Block } from '../types'
 export const body: Block[] = [
   {
     kind: 'p',
-    text: 'The t27 course had grown to 33 lessons in 11 modules: 27 on programming an FPGA, then 6 on number formats for AI. That is two topics in one course, and a link to it could not share either topic on its own. It is now two courses of 27 lessons each, 9 modules of 3. Course 1, From zero to a chip, keeps the FPGA lessons and its address. Course 2, AI numbers with t27, starts with the 6 lessons that moved and adds 21 more, ending at a small ternary network. Every lesson opens its own widget and one t27 spec, and each of the last 15 lessons plants one bug in its spec and shows the one test that catches it.',
+    text: 'The t27 course had grown to 33 lessons in 11 modules: 27 on programming an FPGA, then 6 on number formats for AI. That is two topics in one course, and a link to it could not share either topic on its own. It is now two courses of 27 lessons each, and each course is 27 modules of one lesson. Course 1, From zero to a chip, keeps the FPGA lessons and its address. Course 2, AI numbers with t27, starts with the 6 lessons that moved and adds 21 more, ending at a small ternary network. Every lesson opens its own widget and one t27 spec, and each of the last 15 lessons plants one bug in its spec and shows the one test that catches it.',
   },
   { kind: 'h', text: 'Why 27, and why two courses' },
   {
     kind: 'p',
-    text: '27 is 3 x 3 x 3: 9 modules of 3 lessons, the shape of a TRI-27 word. When a topic needs more than 27 lessons it becomes a second course, chained to the one before it: the last lesson of course 1 ends with a link to lesson 1 of course 2, and lesson 1 of course 2 links back. Each course has its own address in the app, its own page under t27.ai/learn/, its own preview card and its own line in the sitemap, so either one can be shared alone.',
+    text: '27 is 3 x 3 x 3, the shape of a TRI-27 word, and since 7 October 2026 every lesson is a module of its own: 27 modules of one lesson, not 9 modules of 3. When a topic needs more than 27 lessons it becomes a second course, chained to the one before it: the last lesson of course 1 ends with a link to lesson 1 of course 2, and lesson 1 of course 2 links back. Each course has its own address in the app, its own page under t27.ai/learn/, its own preview card and its own line in the sitemap, so either one can be shared alone.',
   },
   {
     kind: 'p',
     text: 'No link that worked before the split stops working. A lesson page stays at t27.ai/learn/<lesson>/ whichever course the lesson is in. In the app, the old address of a moved lesson, #/course/<lesson>, now opens it at #/ai-numbers/<lesson>. Progress is one list in your browser for both courses, so a lesson you marked done before the split is still done after it.',
   },
-  { kind: 'h', text: 'Course 2, module by module' },
+  { kind: 'h', text: 'Course 2, part by part' },
   {
     kind: 'table',
-    head: ['Lessons', 'Module', 'What it teaches'],
+    head: ['Lessons', 'Part', 'What it teaches'],
     rows: [
       ['1-3', 'Lab: our own research', "A number format of our own, an honest scoreboard, and a model's tables multiplied on the board."],
       ['4-6', 'AI numbers: the MX block', 'How AI chips keep weights in a few bits: one shared scale per block, the scale byte itself, and what one outlier does to its neighbours.'],
@@ -37,12 +37,16 @@ export const body: Block[] = [
   },
   {
     kind: 'p',
-    text: 'Course 1 keeps its 9 modules: the chip, numbers in hardware, your t27 program, inside t27c, from spec to hardware, reading synthesis, place, route and timing, the bitstream, and on the board.',
+    text: 'Course 1 keeps its 27 lessons, now 27 modules, in nine parts: the chip, numbers in hardware, your t27 program, inside t27c, from spec to hardware, reading synthesis, place, route and timing, the bitstream, and on the board.',
   },
   { kind: 'h', text: 'Every new lesson plants one bug' },
   {
     kind: 'p',
     text: "Lessons 13 to 27 each teach one spec from the ternary directory of t27. The widget of each is a recording of a terminal on our lab machine, where the native t27c compiler and Zig run the tests the browser cannot run yet. The recording shows the lines that matter and runs the spec's tests. Then `tri mutate plant` changes one line, runs the tests again and passes only if exactly the named test fails, and `git diff` shows the file back as it was. In all 15, exactly one named test fails.",
+  },
+  {
+    kind: 'p',
+    text: 'Recordings pending for lessons 13 to 21. Their nine specs (gft_smul, gft_sadd, gft_signed_mac, gft_relu, gft_exp2, gft_argmax4, gft_nll, gft_sgd_step and gft_xornet) need the t27c gft commands of t27#7400, which is not merged yet. Until it is, each of those lessons opens a placeholder page that says the recording is pending and shows no run; the lesson text says so too. Lessons 22 to 27 open their recordings now.',
   },
   {
     kind: 'table',
@@ -153,21 +157,21 @@ export const body: Block[] = [
 export const ruBody: Block[] = [
   {
     kind: 'p',
-    text: 'Курс t27 разросся до 33 уроков в 11 модулях: 27 о программировании FPGA, потом 6 о форматах чисел для ИИ. Это две темы в одном курсе, и ссылкой на него нельзя было поделиться ни одной темой отдельно. Теперь это два курса по 27 уроков, 9 модулей по 3. Курс 1, «С нуля до чипа», оставляет себе уроки FPGA и свой адрес. Курс 2, «ИИ-числа на t27», начинается с 6 переехавших уроков и добавляет ещё 21, до маленькой тернарной сети. Каждый урок открывает свой виджет и одну спеку t27, а каждый из последних 15 уроков подкладывает в спеку одну ошибку и показывает тот единственный тест, который её ловит.',
+    text: 'Курс t27 разросся до 33 уроков в 11 модулях: 27 о программировании FPGA, потом 6 о форматах чисел для ИИ. Это две темы в одном курсе, и ссылкой на него нельзя было поделиться ни одной темой отдельно. Теперь это два курса по 27 уроков, и в каждом курсе 27 модулей по одному уроку. Курс 1, «С нуля до чипа», оставляет себе уроки FPGA и свой адрес. Курс 2, «ИИ-числа на t27», начинается с 6 переехавших уроков и добавляет ещё 21, до маленькой тернарной сети. Каждый урок открывает свой виджет и одну спеку t27, а каждый из последних 15 уроков подкладывает в спеку одну ошибку и показывает тот единственный тест, который её ловит.',
   },
   { kind: 'h', text: 'Почему 27 и почему два курса' },
   {
     kind: 'p',
-    text: '27 — это 3 x 3 x 3: 9 модулей по 3 урока, форма слова TRI-27. Когда теме нужно больше 27 уроков, она становится вторым курсом, связанным с предыдущим: последний урок курса 1 заканчивается ссылкой на урок 1 курса 2, а урок 1 курса 2 ссылается обратно. У каждого курса свой адрес в приложении, своя страница под t27.ai/learn/, своя карточка для превью и своя строка в карте сайта, поэтому каждым можно поделиться отдельно.',
+    text: '27 — это 3 x 3 x 3, форма слова TRI-27, и с 7 октября 2026 года каждый урок — отдельный модуль: 27 модулей по одному уроку, а не 9 модулей по 3. Когда теме нужно больше 27 уроков, она становится вторым курсом, связанным с предыдущим: последний урок курса 1 заканчивается ссылкой на урок 1 курса 2, а урок 1 курса 2 ссылается обратно. У каждого курса свой адрес в приложении, своя страница под t27.ai/learn/, своя карточка для превью и своя строка в карте сайта, поэтому каждым можно поделиться отдельно.',
   },
   {
     kind: 'p',
     text: 'Ни одна ссылка, работавшая до разделения, не сломалась. Страница урока остаётся по адресу t27.ai/learn/<урок>/, в каком бы курсе урок ни был. В приложении старый адрес переехавшего урока, #/course/<урок>, теперь открывает его по адресу #/ai-numbers/<урок>. Прогресс — один список в вашем браузере для обоих курсов, поэтому урок, отмеченный пройденным до разделения, остаётся пройденным и после.',
   },
-  { kind: 'h', text: 'Курс 2, модуль за модулем' },
+  { kind: 'h', text: 'Курс 2, часть за частью' },
   {
     kind: 'table',
-    head: ['Уроки', 'Модуль', 'Чему учит'],
+    head: ['Уроки', 'Часть', 'Чему учит'],
     rows: [
       ['1-3', 'Лаборатория: наши исследования', 'Свой формат чисел, честная таблица результатов и таблицы модели, перемноженные на плате.'],
       ['4-6', 'ИИ-числа: блок MX', 'Как ИИ-чипы хранят веса в нескольких битах: один общий масштаб на блок, сам байт масштаба и что один выброс делает с соседями.'],
@@ -182,12 +186,16 @@ export const ruBody: Block[] = [
   },
   {
     kind: 'p',
-    text: 'Курс 1 сохраняет свои 9 модулей: чип, числа в железе, ваша программа на t27, внутри t27c, от спеки к железу, читаем синтез, размещение, трассировка и тайминг, битстрим и на плате.',
+    text: 'Курс 1 сохраняет свои 27 уроков, теперь 27 модулей, в девяти частях: чип, числа в железе, ваша программа на t27, внутри t27c, от спеки к железу, читаем синтез, размещение, трассировка и тайминг, битстрим и на плате.',
   },
   { kind: 'h', text: 'Каждый новый урок подкладывает одну ошибку' },
   {
     kind: 'p',
     text: 'Уроки с 13 по 27 разбирают каждый одну спеку из тернарного каталога t27. Виджет каждого — запись терминала на нашей лабораторной машине, где нативный компилятор t27c и Zig гоняют тесты, которые браузер пока не умеет запускать. Запись показывает важные строки и гоняет тесты спеки. Потом `tri mutate plant` меняет одну строку, снова гоняет тесты и проходит, только если упал ровно названный тест, а `git diff` показывает, что файл вернулся к прежнему виду. Во всех 15 падает ровно один названный тест.',
+  },
+  {
+    kind: 'p',
+    text: 'Записи уроков с 13 по 21 ещё не готовы. Их девяти спекам (gft_smul, gft_sadd, gft_signed_mac, gft_relu, gft_exp2, gft_argmax4, gft_nll, gft_sgd_step и gft_xornet) нужны команды t27c gft из t27#7400, который ещё не смержен. До тех пор каждый из этих уроков открывает страницу-заглушку, где сказано, что запись ещё не готова, и нет никакого запуска; текст урока говорит то же. Уроки с 22 по 27 открывают свои записи уже сейчас.',
   },
   {
     kind: 'table',

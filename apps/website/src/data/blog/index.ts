@@ -5,7 +5,7 @@ export const postsIndex: PostMeta[] = [
   {
     slug: "two-courses-twenty-seven-lessons-each",
     title: "Two t27 courses of 27 lessons each: FPGA, then AI numbers",
-    summary: "[no lesson trains a network; the tests of the 15 new lessons run in recordings of native t27c, not in the browser; 35 of 127 mutants survive and are not sorted; software only, no board] The t27 course is now two courses of 27 lessons, 9 modules of 3: From zero to a chip, on programming an FPGA, and AI numbers with t27, which starts with the 6 lessons that moved and adds 21 more, ending at a small ternary network. Each of the last 15 lessons plants a one-line bug in its spec and shows the one named test that fails. Over 14 of their functions, tri mutate spec made 127 mutants and the tests killed 92.",
+    summary: "[no lesson trains a network; the tests of the 15 new lessons run in recordings of native t27c, not in the browser; 35 of 127 mutants survive and are not sorted; software only, no board] The t27 course is now two courses of 27 lessons, 27 modules of one lesson each (recordings for lessons 13 to 21 are pending t27#7400): From zero to a chip, on programming an FPGA, and AI numbers with t27, which starts with the 6 lessons that moved and adds 21 more, ending at a small ternary network. Each of the last 15 lessons plants a one-line bug in its spec and shows the one named test that fails. Over 14 of their functions, tri mutate spec made 127 mutants and the tests killed 92.",
     date: "2026-10-07",
     readingMinutes: 9,
     tags: ["t27", "Ternary", "Mutation testing"],
@@ -46,7 +46,7 @@ export const postsIndex: PostMeta[] = [
     published: true,
     ru: {
       title: "Два курса t27 по 27 уроков: сначала FPGA, потом ИИ-числа",
-      summary: "[ни один урок не обучает сеть; тесты 15 новых уроков идут в записях нативного t27c, а не в браузере; 35 из 127 мутантов выживают и не разобраны; только программа, без платы] Курс t27 теперь — два курса по 27 уроков, 9 модулей по 3: «С нуля до чипа» о программировании FPGA и «ИИ-числа на t27», который начинается с 6 переехавших уроков и добавляет ещё 21, до маленькой тернарной сети. Каждый из последних 15 уроков подкладывает в спеку ошибку в одну строку и показывает единственный названный тест, который падает. По 14 их функциям tri mutate spec сделала 127 мутантов, и тесты убили 92.",
+      summary: "[ни один урок не обучает сеть; тесты 15 новых уроков идут в записях нативного t27c, а не в браузере; 35 из 127 мутантов выживают и не разобраны; только программа, без платы] Курс t27 теперь — два курса по 27 уроков, 27 модулей по одному уроку (записи уроков с 13 по 21 ждут t27#7400): «С нуля до чипа» о программировании FPGA и «ИИ-числа на t27», который начинается с 6 переехавших уроков и добавляет ещё 21, до маленькой тернарной сети. Каждый из последних 15 уроков подкладывает в спеку ошибку в одну строку и показывает единственный названный тест, который падает. По 14 их функциям tri mutate spec сделала 127 мутантов, и тесты убили 92.",
       openQuestions: [
         "Ни один урок не обучает сеть. Тесты подают веса, заданные руками, а урок 20 делает один шаг.",
         "Урок 27 — ещё не чип: в сгенерированном Verilog цикл по кускам в neuronN помечен NOT UNROLLED, и урок говорит, что yosys его отвергает.",

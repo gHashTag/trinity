@@ -9,7 +9,7 @@
 ; (the page at #/course) and a byte-identical copy of this file at public/learn/course.t27.
 ; ASCII only (L3), English only (LANG-EN). The Russian words live in the bundle.
 
-; WHAT THE COURSE IS: course 1 of specs/course/courses.t27, 27 lessons in 9 modules of 3, for a
+; WHAT THE COURSE IS: course 1 of specs/course/courses.t27, 27 modules of one lesson each, for a
 ; reader who has never written for a chip: what an FPGA is, how numbers become bits, a t27 spec
 ; of your own, how t27c compiles it, and how it becomes a bitstream on a real board. Each lesson
 ; is a short text, one working widget from the gallery, one t27 spec the reader runs in the
@@ -54,7 +54,7 @@ pub const TITLE : str = "From zero to a chip: FPGA programming with t27";
 pub const DESCRIPTION : str = "27 lessons, one working widget and one t27 spec each: what an FPGA is, how numbers become bits, your own t27 spec, how t27c compiles it, and how it becomes a bitstream on a real board.";
 pub const SAY_KICKER : str = "Course";
 pub const SAY_LEAD : str = "No hardware background needed. Every lesson opens a real tool built from real runs on our bench: read a little, then try it yourself.";
-pub const SAY_SHAPE : str = "9 modules of 3 lessons, 27 cells. A filled cell is a lesson you marked done.";
+pub const SAY_SHAPE : str = "27 modules, one lesson each, 27 cells. A filled cell is a lesson you marked done.";
 pub const SAY_START : str = "Start lesson 1";
 pub const SAY_CONTINUE : str = "Continue";
 pub const SAY_MODULE : str = "Module {0}";
@@ -85,30 +85,76 @@ pub const SAY_NEXT_COURSE : str = "Next course";
 pub const SAY_PREV_COURSE : str = "Previous course";
 
 ; --- Modules -------------------------------------------------------------------------------
-pub const LESSONS_PER_MODULE : u8 = 3;
-pub const MODULE_COUNT : u8 = 9;
-pub const MODULE_IDS : [9]str = ["chip", "numbers", "program", "compiler", "hardware", "synthesis", "timing", "bitstream", "board"];
-pub const MODULE_TITLES : [9]str = [
-    "The chip",
-    "Numbers in hardware",
-    "Your t27 program",
-    "Inside t27c",
-    "From spec to hardware",
-    "Reading synthesis",
-    "Place, route, timing",
-    "The bitstream",
-    "On the board"
+pub const LESSONS_PER_MODULE : u8 = 1;
+pub const MODULE_COUNT : u8 = 27;
+pub const MODULE_IDS : [27]str = [
+    "fpga-is-a-grid", "which-chip", "pins-and-package",
+    "bits-and-trits", "what-arithmetic-costs", "how-much-fits",
+    "hello-t27", "tests-are-the-spec", "compiles-is-not-correct",
+    "compiler-stages", "t27c-on-a-real-machine", "seven-backends-and-t27b",
+    "spec-to-verilog", "count-the-cells", "one-lut-up-close",
+    "synthesis-warnings", "state-machines", "where-the-luts-go",
+    "placement", "logic-depth", "timing-slack",
+    "fasm-to-frames", "a-build-receipt", "read-a-bitstream",
+    "jtag-asks-the-chip", "same-bits-on-the-board", "capstone"
 ];
-pub const MODULE_LINES : [9]str = [
-    "What an FPGA is, which chip we use, and how its pins meet the board.",
-    "Bits, trits and number formats, and what arithmetic costs in logic.",
-    "Write a spec, test it, and see why compiling is not the same as being right.",
-    "How the compiler reads a spec and what it writes, including the native t27b.",
-    "The Verilog t27c writes, the cells it becomes, and what one LUT does.",
-    "What yosys reports about your design, and which warnings matter.",
-    "Where the cells land on the die, and whether the clock is met.",
-    "How a routed design becomes the bits the chip loads, with no Vivado.",
-    "Ask the chip who it is, load the bits, and check them."
+pub const MODULE_TITLES : [27]str = [
+    "An FPGA is a grid you configure",
+    "Which chip is this?",
+    "Pins, balls and the package",
+    "Bits, trits and GF16",
+    "What arithmetic costs",
+    "How much fits on the chip",
+    "Hello, t27",
+    "Tests are part of the spec",
+    "Compiles is not the same as correct",
+    "The stages of t27c",
+    "t27c on a real machine",
+    "Seven backends, and t27b",
+    "From a spec to Verilog",
+    "Count the cells",
+    "One LUT, up close",
+    "Synthesis warnings that matter",
+    "State machines",
+    "Where the LUTs go",
+    "Placement: where the cells land",
+    "Logic depth",
+    "Timing and slack",
+    "From FASM to frames",
+    "A build, itemised",
+    "Read a bitstream",
+    "JTAG asks the chip",
+    "The same bits, on the board",
+    "Capstone: out-guess yosys"
+];
+pub const MODULE_LINES : [27]str = [
+    "What an FPGA is made of, and why a design uses only part of the chip.",
+    "How a chip names itself in 32 bits, and how to read those bits.",
+    "How the signals of your design reach the outside world.",
+    "How a number is stored in bits, and how balanced ternary stores it in trits.",
+    "Why a multiplier is expensive and an adder is cheap, measured on a real chip.",
+    "How to read a resource count and find which resource runs out first.",
+    "What a t27 spec looks like, and what the compiler does with it in your browser.",
+    "Why every t27 spec carries its own tests, and what a waveform shows.",
+    "Why green checks are not proof, and how to catch code that compiles and is wrong.",
+    "The path a spec takes inside t27c: tokens, syntax tree, types, HIR, code.",
+    "The same compiler on a real machine, printing what it really prints.",
+    "One spec, many target languages, and a native compiler with no LLVM.",
+    "How a t27 function becomes logic, and how a clocked function becomes registers.",
+    "How to count what a synthesizer built: LUTs, flip-flops, DSPs, block RAM.",
+    "What a 6-input lookup table is, and how 64 bits describe any gate.",
+    "How to read a yosys log, and the warnings that become bugs on silicon.",
+    "How a synthesizer finds a state machine in your design, or refuses to.",
+    "Which part of a design spends the LUTs, and why hierarchy matters.",
+    "What place and route does, and where it put a real design.",
+    "Why the longest chain of logic sets how fast a design can run.",
+    "What slack is, and how to read a timing report path by path.",
+    "What FASM is, and how features become configuration frames.",
+    "Every stage from a spec to a bitstream, with its time, tool and hash.",
+    "What is inside a .bit file, and which chip it was built for.",
+    "How a cable finds the chip on a board and reads its IDCODE.",
+    "How to show that a bitstream is byte-identical and that it runs.",
+    "Put it together: guess what a real t27 module costs in LUTs."
 ];
 
 ; --- Lessons -------------------------------------------------------------------------------
@@ -129,15 +175,15 @@ pub const LESSON_IDS : [27]str = [
     "jtag-asks-the-chip", "same-bits-on-the-board", "capstone"
 ];
 pub const LESSON_MODULES : [27]str = [
-    "chip", "chip", "chip",
-    "numbers", "numbers", "numbers",
-    "program", "program", "program",
-    "compiler", "compiler", "compiler",
-    "hardware", "hardware", "hardware",
-    "synthesis", "synthesis", "synthesis",
-    "timing", "timing", "timing",
-    "bitstream", "bitstream", "bitstream",
-    "board", "board", "board"
+    "fpga-is-a-grid", "which-chip", "pins-and-package",
+    "bits-and-trits", "what-arithmetic-costs", "how-much-fits",
+    "hello-t27", "tests-are-the-spec", "compiles-is-not-correct",
+    "compiler-stages", "t27c-on-a-real-machine", "seven-backends-and-t27b",
+    "spec-to-verilog", "count-the-cells", "one-lut-up-close",
+    "synthesis-warnings", "state-machines", "where-the-luts-go",
+    "placement", "logic-depth", "timing-slack",
+    "fasm-to-frames", "a-build-receipt", "read-a-bitstream",
+    "jtag-asks-the-chip", "same-bits-on-the-board", "capstone"
 ];
 pub const LESSON_WIDGETS : [27]str = [
     "fasm-skyline", "idcode", "pin-map",
@@ -291,23 +337,23 @@ pub const LESSON_TASKS : [27]str = [
 
 ; --- Claims --------------------------------------------------------------------------------
 test the_course_is_three_cubed {
-    assert LESSONS_PER_MODULE == 3;
-    assert MODULE_COUNT == 9;
+    assert LESSONS_PER_MODULE == 1;
+    assert MODULE_COUNT == 27;
     assert LESSON_COUNT == 27;
     assert MODULE_COUNT * LESSONS_PER_MODULE == LESSON_COUNT;
     assert LESSON_COUNT == 3 * 3 * 3;
 }
 
 test it_starts_at_the_chip_and_ends_on_the_board {
-    assert MODULE_IDS[0] == "chip";
-    assert MODULE_IDS[8] == "board";
-    assert LESSON_MODULES[0] == "chip";
-    assert LESSON_MODULES[26] == "board";
+    assert MODULE_IDS[0] == "fpga-is-a-grid";
+    assert MODULE_IDS[24] == "jtag-asks-the-chip";
+    assert LESSON_MODULES[0] == "fpga-is-a-grid";
+    assert LESSON_MODULES[26] == "capstone";
     assert LESSON_WIDGETS[26] == "gatle";
 }
 
 test the_compiler_module_opens_the_compiler {
-    assert LESSON_MODULES[9] == "compiler";
+    assert LESSON_MODULES[9] == "compiler-stages";
     assert LESSON_WIDGETS[9] == "t27c-stages";
     assert LESSON_SPECS[12] == "specs/ternary/clocked_counter.t27";
 }
@@ -316,4 +362,11 @@ test the_course_sends_nothing {
     assert SENDS_NOTHING == true;
     assert LOCALES[0] == "en";
     assert LOCALES[1] == "ru";
+}
+
+test every_lesson_is_its_own_module {
+    assert MODULE_IDS[0] == LESSON_IDS[0];
+    assert MODULE_IDS[26] == LESSON_IDS[26];
+    assert LESSON_MODULES[26] == LESSON_IDS[26];
+    assert MODULE_TITLES[26] == LESSON_TITLES[26];
 }
