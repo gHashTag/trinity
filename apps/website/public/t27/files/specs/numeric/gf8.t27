@@ -8,10 +8,6 @@ module GF8 {
     use numeric::goldenfloat_family;
     use numeric::phi_ratio;
 
-    // Import test/invariant/bench framework
-    use base::testing;
-    use base::benchmarking;
-
     // ═════════════════════════════════════════════════════════════════
     // 1. Format Definition
     // ═════════════════════════════════════════════════════════════════════════
@@ -162,7 +158,7 @@ module GF8 {
 
     fn floor_log2(x: f32) -> i8 {
         if (x <= 0.0) { return -128; }
-        let exp : i8 = 0;
+        let mut exp : i8 = 0;
         while (x >= 2.0) {
             x = x / 2.0;
             exp = exp + 1;
@@ -208,9 +204,9 @@ module GF8 {
         if (is_integer) {
             // Binary exponentiation for integer exponents
             let exp_int = exp as i32;
-            let result = 1.0;
-            let base_acc = base;
-            let e = exp_int;
+            let mut result = 1.0;
+            let mut base_acc = base;
+            let mut e = exp_int;
 
             if (e < 0) {
                 e = -e;
@@ -259,9 +255,9 @@ module GF8 {
         }
 
         // Taylor series: e^x = 1 + x + x^2/2! + x^3/3! + ...
-        let result = 1.0;
-        let term = 1.0;
-        let exp_x = x;
+        let mut result = 1.0;
+        let mut term = 1.0;
+        let mut exp_x = x;
 
         // Scale down for large inputs to maintain accuracy
         if (exp_x > 5.0 || exp_x < -5.0) {
@@ -453,10 +449,18 @@ module GF8 {
         then abs(result - 5.0) < 1e-6
 
     invariant gf8_pow_zero_exponent_identity
-        assert pow(x, 0.0) == 1.0 for all positive x
+        // For every positive x; checked at three points, one on each side of 1.
+        given x1 = 0.5
+        and x2 = 2.5
+        and x3 = 7.0
+        assert abs(pow(x1, 0.0) - 1.0) < 1e-6 and abs(pow(x2, 0.0) - 1.0) < 1e-6 and abs(pow(x3, 0.0) - 1.0) < 1e-6
 
     invariant gf8_pow_one_exponent_identity
-        assert pow(x, 1.0) == x for all valid x
+        // For every valid x; checked at three points.
+        given x1 = 0.5
+        and x2 = 2.5
+        and x3 = 7.0
+        assert abs(pow(x1, 1.0) - x1) < 1e-5 and abs(pow(x2, 1.0) - x2) < 1e-5 and abs(pow(x3, 1.0) - x3) < 1e-5
 
     invariant gf8_pow_multiply_exponents
         given a = 2.0
@@ -474,7 +478,10 @@ module GF8 {
         then abs(ln_approx(y) - x) < 0.01
 
     invariant gf8_floor_returns_integer
-        assert floor(x) == i32 for all f32 x
+        // floor returns a whole number, and the floor of a whole number is itself.
+        given r1 = floor(3.7)
+        and r2 = floor(-3.2)
+        assert abs(floor(r1) - r1) < 1e-6 and abs(floor(r2) - r2) < 1e-6
 
     invariant gf8_floor_monotonic
         given x1 = 2.5
@@ -516,6 +523,6 @@ module GF8 {
 
     // Invariant: GF8 phi_distance
     invariant gf8_phi_distance
-        assert PHI_DISTANCE == 0.132 within 0.001
+        assert abs(PHI_DISTANCE - 0.132) < 0.001
         // Rationale: exp/mant = 3/4 = 0.75, phi_distance = |0.75 - 0.618| = 0.132
 }
