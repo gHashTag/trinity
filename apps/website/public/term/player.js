@@ -206,10 +206,9 @@ function telegram() {
   return tg
 }
 
-// Where to find us: the same four addresses as the site footer
+// Where to find us: the same addresses as the site footer
 // (src/components/Footer.tsx, "Contact"). Change them there and here together.
 const FOLLOW = [
-  ['r/t27ai', 'https://www.reddit.com/r/t27ai/'],
   ['Telegram', 'https://t.me/t27_lang'],
   ['X', 'https://x.com/t27_lang'],
   ['GitHub', 'https://github.com/gHashTag/trinity'],

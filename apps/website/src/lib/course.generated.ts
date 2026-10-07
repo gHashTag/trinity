@@ -436,7 +436,7 @@ export const COURSE = {
       "spec": {
         "path": "specs/tutorial/01_values_and_types.t27",
         "source": "t27/files/specs/tutorial/01_values_and_types.t27",
-        "preview": "play/embed.html?spec=specs%2Ftutorial%2F01_values_and_types.t27&tab=term&v=ded547ceeb2f",
+        "preview": "play/embed.html?spec=specs%2Ftutorial%2F01_values_and_types.t27&tab=term&v=7cbe9ab0c960",
         "height": 480
       },
       "en": {
@@ -477,7 +477,7 @@ export const COURSE = {
       "spec": {
         "path": "specs/tutorial/05_widths_and_casts.t27",
         "source": "t27/files/specs/tutorial/05_widths_and_casts.t27",
-        "preview": "play/embed.html?spec=specs%2Ftutorial%2F05_widths_and_casts.t27&tab=term&v=ded547ceeb2f",
+        "preview": "play/embed.html?spec=specs%2Ftutorial%2F05_widths_and_casts.t27&tab=term&v=7cbe9ab0c960",
         "height": 480
       },
       "en": {
@@ -529,7 +529,7 @@ export const COURSE = {
         "kind": "player",
         "title": "hello_world.t27, compiled inside the post",
         "url": "https://t27.ai/play/hello-world/",
-        "preview": "play/embed.html?spec=specs%2Fdemos%2Fhello_world.t27&cast=t27c-hello-world&v=ded547ceeb2f",
+        "preview": "play/embed.html?spec=specs%2Fdemos%2Fhello_world.t27&cast=t27c-hello-world&v=7cbe9ab0c960",
         "height": 480
       },
       "also": [
@@ -538,14 +538,14 @@ export const COURSE = {
           "kind": "player",
           "title": "hello_world.t27 to JavaScript, in a terminal inside the post",
           "url": "https://t27.ai/play/hello-world/js/",
-          "preview": "play/embed.html?spec=specs%2Fdemos%2Fhello_world.t27&cast=t27c-hello-world&tab=term&backend=js&v=ded547ceeb2f",
+          "preview": "play/embed.html?spec=specs%2Fdemos%2Fhello_world.t27&cast=t27c-hello-world&tab=term&backend=js&v=7cbe9ab0c960",
           "height": 480
         }
       ],
       "spec": {
         "path": "specs/tutorial/02_functions.t27",
         "source": "t27/files/specs/tutorial/02_functions.t27",
-        "preview": "play/embed.html?spec=specs%2Ftutorial%2F02_functions.t27&tab=term&v=ded547ceeb2f",
+        "preview": "play/embed.html?spec=specs%2Ftutorial%2F02_functions.t27&tab=term&v=7cbe9ab0c960",
         "height": 480
       },
       "en": {
@@ -586,7 +586,7 @@ export const COURSE = {
       "spec": {
         "path": "specs/tutorial/07_tests_invariants_benches.t27",
         "source": "t27/files/specs/tutorial/07_tests_invariants_benches.t27",
-        "preview": "play/embed.html?spec=specs%2Ftutorial%2F07_tests_invariants_benches.t27&tab=term&v=ded547ceeb2f",
+        "preview": "play/embed.html?spec=specs%2Ftutorial%2F07_tests_invariants_benches.t27&tab=term&v=7cbe9ab0c960",
         "height": 480
       },
       "en": {
@@ -635,7 +635,7 @@ export const COURSE = {
       "spec": {
         "path": "specs/tutorial/03_operators.t27",
         "source": "t27/files/specs/tutorial/03_operators.t27",
-        "preview": "play/embed.html?spec=specs%2Ftutorial%2F03_operators.t27&tab=term&v=ded547ceeb2f",
+        "preview": "play/embed.html?spec=specs%2Ftutorial%2F03_operators.t27&tab=term&v=7cbe9ab0c960",
         "height": 480
       },
       "en": {
@@ -667,7 +667,7 @@ export const COURSE = {
       "spec": {
         "path": "specs/tutorial/06_structs_enums_switch.t27",
         "source": "t27/files/specs/tutorial/06_structs_enums_switch.t27",
-        "preview": "play/embed.html?spec=specs%2Ftutorial%2F06_structs_enums_switch.t27&tab=term&v=ded547ceeb2f",
+        "preview": "play/embed.html?spec=specs%2Ftutorial%2F06_structs_enums_switch.t27&tab=term&v=7cbe9ab0c960",
         "height": 480
       },
       "en": {
@@ -699,7 +699,7 @@ export const COURSE = {
       "spec": {
         "path": "specs/demos/hello_world.t27",
         "source": "t27/files/specs/demos/hello_world.t27",
-        "preview": "play/embed.html?spec=specs%2Fdemos%2Fhello_world.t27&tab=term&v=ded547ceeb2f",
+        "preview": "play/embed.html?spec=specs%2Fdemos%2Fhello_world.t27&tab=term&v=7cbe9ab0c960",
         "height": 480
       },
       "en": {
@@ -724,7 +724,7 @@ export const COURSE = {
         "kind": "player",
         "title": "hello_world.t27 to Rust, in a terminal inside the post",
         "url": "https://t27.ai/play/hello-world/rust/",
-        "preview": "play/embed.html?spec=specs%2Fdemos%2Fhello_world.t27&cast=t27c-hello-world&tab=term&backend=rust&v=ded547ceeb2f",
+        "preview": "play/embed.html?spec=specs%2Fdemos%2Fhello_world.t27&cast=t27c-hello-world&tab=term&backend=rust&v=7cbe9ab0c960",
         "height": 480
       },
       "also": [
@@ -733,14 +733,14 @@ export const COURSE = {
           "kind": "player",
           "title": "hello_world.t27 to JavaScript, in a terminal inside the post",
           "url": "https://t27.ai/play/hello-world/js/",
-          "preview": "play/embed.html?spec=specs%2Fdemos%2Fhello_world.t27&cast=t27c-hello-world&tab=term&backend=js&v=ded547ceeb2f",
+          "preview": "play/embed.html?spec=specs%2Fdemos%2Fhello_world.t27&cast=t27c-hello-world&tab=term&backend=js&v=7cbe9ab0c960",
           "height": 480
         }
       ],
       "spec": {
         "path": "specs/tutorial/08_modules_and_arrays.t27",
         "source": "t27/files/specs/tutorial/08_modules_and_arrays.t27",
-        "preview": "play/embed.html?spec=specs%2Ftutorial%2F08_modules_and_arrays.t27&tab=term&v=ded547ceeb2f",
+        "preview": "play/embed.html?spec=specs%2Ftutorial%2F08_modules_and_arrays.t27&tab=term&v=7cbe9ab0c960",
         "height": 480
       },
       "en": {
@@ -765,14 +765,14 @@ export const COURSE = {
         "kind": "player",
         "title": "hello_world.t27 to Verilog, in a terminal inside the post",
         "url": "https://t27.ai/play/hello-world/verilog/",
-        "preview": "play/embed.html?spec=specs%2Fdemos%2Fhello_world.t27&cast=t27c-hello-world&tab=term&backend=verilog&v=ded547ceeb2f",
+        "preview": "play/embed.html?spec=specs%2Fdemos%2Fhello_world.t27&cast=t27c-hello-world&tab=term&backend=verilog&v=7cbe9ab0c960",
         "height": 480
       },
       "also": [],
       "spec": {
         "path": "specs/ternary/clocked_counter.t27",
         "source": "t27/files/specs/ternary/clocked_counter.t27",
-        "preview": "play/embed.html?spec=specs%2Fternary%2Fclocked_counter.t27&tab=term&v=ded547ceeb2f",
+        "preview": "play/embed.html?spec=specs%2Fternary%2Fclocked_counter.t27&tab=term&v=7cbe9ab0c960",
         "height": 480
       },
       "en": {
@@ -813,7 +813,7 @@ export const COURSE = {
       "spec": {
         "path": "specs/tutorial/04_control_flow.t27",
         "source": "t27/files/specs/tutorial/04_control_flow.t27",
-        "preview": "play/embed.html?spec=specs%2Ftutorial%2F04_control_flow.t27&tab=term&v=ded547ceeb2f",
+        "preview": "play/embed.html?spec=specs%2Ftutorial%2F04_control_flow.t27&tab=term&v=7cbe9ab0c960",
         "height": 480
       },
       "en": {
@@ -1392,7 +1392,7 @@ export const COURSE = {
         "kind": "player",
         "title": "e8m0.t27, the OCP MX scale byte, compiled inside the post",
         "url": "https://t27.ai/play/e8m0/",
-        "preview": "play/embed.html?spec=specs%2Fnumeric%2Fe8m0.t27&cast=t27c-e8m0&v=ded547ceeb2f",
+        "preview": "play/embed.html?spec=specs%2Fnumeric%2Fe8m0.t27&cast=t27c-e8m0&v=7cbe9ab0c960",
         "height": 480
       },
       "also": [],
@@ -1426,7 +1426,7 @@ export const COURSE = {
       "spec": {
         "path": "specs/numeric/e8m0.t27",
         "source": "t27/files/specs/numeric/e8m0.t27",
-        "preview": "play/embed.html?spec=specs%2Fnumeric%2Fe8m0.t27&tab=term&v=ded547ceeb2f",
+        "preview": "play/embed.html?spec=specs%2Fnumeric%2Fe8m0.t27&tab=term&v=7cbe9ab0c960",
         "height": 480
       },
       "en": {
