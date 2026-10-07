@@ -1,3 +1,4 @@
+import { body as body_course_three_verifying_hardware, ruBody as ruBody_course_three_verifying_hardware } from './bodies/course-three-verifying-hardware'
 import { body as body_nine_modules_of_three_again, ruBody as ruBody_nine_modules_of_three_again } from './bodies/nine-modules-of-three-again'
 import { body as body_course_zero_t27_basics, ruBody as ruBody_course_zero_t27_basics } from './bodies/course-zero-t27-basics'
 import { body as body_tri_test_now_runs_the_tests, ruBody as ruBody_tri_test_now_runs_the_tests } from './bodies/tri-test-now-runs-the-tests'
@@ -98,6 +99,7 @@ import { body as body_features_that_change_no_bits, ruBody as ruBody_features_th
 import { body as body_one_commit_nine_workflow_outcomes, ruBody as ruBody_one_commit_nine_workflow_outcomes } from './bodies/one-commit-nine-workflow-outcomes'
 
 const bodies: Record<string, PostBody> = {
+  'course-three-verifying-hardware': { body: body_course_three_verifying_hardware, ruBody: ruBody_course_three_verifying_hardware },
   'nine-modules-of-three-again': { body: body_nine_modules_of_three_again, ruBody: ruBody_nine_modules_of_three_again },
   'course-zero-t27-basics': { body: body_course_zero_t27_basics, ruBody: ruBody_course_zero_t27_basics },
   'tri-test-now-runs-the-tests': { body: body_tri_test_now_runs_the_tests, ruBody: ruBody_tri_test_now_runs_the_tests },
