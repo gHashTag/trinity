@@ -16,7 +16,7 @@
 // Run:      node scripts/viewport-from-spec.mjs            (write)
 //           node scripts/viewport-from-spec.mjs --check    (fail if the committed files are stale)
 //           node scripts/viewport-from-spec.mjs --json     (print the constants as JSON for the QA contracts)
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { SITE, checkSchema, compilerErrors, constsOf, loadCompiler, sha256, verdictOf } from './agents-from-specs.mjs'
@@ -76,6 +76,187 @@ export function runSpecTests(analysis, env) {
     else if (b.status !== 'pass') failures.push(`${b.name}: ${b.reason || 'assertion failed'}`)
   }
   return { tests: blocks.length, asserts: r.results.reduce((n, b) => n + b.asserts.length, 0), failures }
+}
+
+// ---------------------------------------------------------------------------
+// The corpus runnability report (#1477): which specs' tests the player's
+// evaluator runs, per spec, over the five hardware trees.
+//
+// The CONTRACT lives in specs/player/spec-runnable.t27 -- the trees, the gates,
+// the outcome vocabulary, the columns, the ratchet rule -- and that spec is
+// compiled and its own test blocks run (by this file's runSpecTests, i.e. by
+// the very evaluator being reported on) before the walk starts. This side is
+// I/O glue only: walk, compile, run, compare, print. There is deliberately no
+// new script file for it: the owner's only-t27 rule forbids new hand-written
+// non-t27 code, so the report is a mode of the file that already owns the
+// build-time spec tests.
+//
+//   node scripts/viewport-from-spec.mjs --spec-runnable          print + ratchet-check
+//   node scripts/viewport-from-spec.mjs --spec-runnable --write  rewrite the baseline
+// ---------------------------------------------------------------------------
+export const RUNNABLE_SPEC = 'specs/player/spec-runnable.t27'
+export const RUNNABLE_BASELINE = 'spec-runnable-baseline.json'
+export const RUNNABLE_MODULE = 'player_spec_runnable'
+export const RUNNABLE_REQUIRED = {
+  KIND: 'str', ID: 'str', NAME: 'str', GENERATED: 'arr',
+  TREES: 'arr', OUTCOMES: 'arr', SKIP_IS_NEVER_PASS: 'bool', GATES: 'arr', COLUMNS: 'arr',
+  FIRST_GAP_UNKNOWN: 'str', LEGACY_BRACE_FORM_SPECS: 'arr',
+  RATCHET_MODE: 'str', RATCHET_PER: 'str', MAY_NEWLY_APPEAR: 'bool',
+}
+export const CORPUS_FILES = 'public/t27/files'
+
+/** Gate the contract the way every generator gates its spec: ASCII, clean verdict, module, schema, own tests. */
+export function loadRunnableSpec(analyze, specText, file = RUNNABLE_SPEC) {
+  const problems = []
+  if (/[^\x00-\x7f]/.test(specText)) problems.push(`${file}: non-ASCII byte in the spec (L3)`)
+  const analysis = analyze(specText)
+  problems.push(...compilerErrors(analysis).map((m) => `${file}: ${m}`))
+  if (analysis.ast?.name !== RUNNABLE_MODULE) problems.push(`${file}: module must be ${RUNNABLE_MODULE}, is ${analysis.ast?.name}`)
+  let consts = {}
+  try { consts = constsOf(analysis) } catch (e) { problems.push(`${file}: ${e.message}`) }
+  problems.push(...checkSchema(consts, RUNNABLE_REQUIRED, {}, file))
+  const f = Object.fromEntries(Object.entries(consts).map(([k, v]) => [k, v.value]))
+  if (problems.length === 0) {
+    const tests = runSpecTests(analysis, f)
+    if (tests.tests === 0) problems.push(`${file}: no test block; the contract must test its own rules`)
+    problems.push(...tests.failures.map((m) => `${file}: test ${m}`))
+  }
+  return { problems, fields: f, analysis }
+}
+
+/** One row per spec: the gates, the three outcome counts, and the first thing that blocked the run. */
+export function runnableRow(analyze, text, path, tree, fields) {
+  const a = analyze(text)
+  const errs = compilerErrors(a)
+  const typecheck = a.typecheck?.ok === true && !a.astError
+  const hir = a.hir?.ok !== false && !!a.ast
+  const row = {
+    path, tree,
+    typecheck, hir, blocks: 0, pass: 0, fail: 0, skip: 0,
+    gap: fields.FIRST_GAP_UNKNOWN,
+  }
+  if (!typecheck || !hir) {
+    const gate = !typecheck ? 'typecheck' : 'hir'
+    row.gap = `${gate}: ${errs[0] ?? 'no error text'}`.slice(0, 160)
+    return row
+  }
+  const r = runSpec(a.ast)
+  row.blocks = r.results.length
+  row.pass = r.pass
+  row.fail = r.fail
+  row.skip = r.skip
+  const blocked = r.results.find((b) => b.status === 'skip')
+  if (blocked) row.gap = blocked.reason
+  return row
+}
+
+/** Walk the contract's trees and measure every spec. Refuses to return nothing: an empty walk is a lie. */
+export function runnableRows(analyze, fields, { readFileSync: rd = readFileSync, readdir: rr = readdirSync } = {}) {
+  const rows = []
+  for (const tree of fields.TREES) {
+    const dir = join(SITE, CORPUS_FILES, tree)
+    const files = rr(dir, { recursive: true }).map(String).filter((p) => p.endsWith('.t27')).sort()
+    for (const rel of files) {
+      const path = `${tree}/${rel}`
+      rows.push(runnableRow(analyze, rd(join(dir, rel), 'utf8'), path, tree, fields))
+    }
+  }
+  if (rows.length === 0) throw new Error(`no specs found under ${fields.TREES.join(', ')} -- the report refuses to call an empty walk a measurement`)
+  return rows
+}
+
+export const runnableTotals = (rows) => ({
+  specs: rows.length,
+  typecheckOk: rows.filter((r) => r.typecheck).length,
+  hirOk: rows.filter((r) => r.hir).length,
+  blocks: rows.reduce((n, r) => n + r.blocks, 0),
+  pass: rows.reduce((n, r) => n + r.pass, 0),
+  fail: rows.reduce((n, r) => n + r.fail, 0),
+  skip: rows.reduce((n, r) => n + r.skip, 0),
+  clean: rows.filter((r) => r.typecheck && r.hir && r.blocks > 0 && r.fail === 0 && r.skip === 0).length,
+})
+
+/** The baseline's per-spec entry: short keys, the file is diffed by people. */
+export const runnableEntry = (r) => ({ t: r.typecheck ? 1 : 0, h: r.hir ? 1 : 0, b: r.blocks, p: r.pass, f: r.fail, s: r.skip, g: r.gap })
+
+/**
+ * The ratchet, per spec (RATCHET_PER), only-improves (RATCHET_MODE): pass may
+ * rise, fail and skip may fall, a gate once ok stays ok. A newly vendored spec
+ * is not a regression (MAY_NEWLY_APPEAR); a spec gone from disk is noted, never
+ * counted. Everything else that moved is listed for a human.
+ */
+export function runnableRegressions(base, rows) {
+  const now = new Map(rows.map((r) => [r.path, r]))
+  const out = []
+  for (const r of rows) {
+    const b = base[r.path]
+    if (!b) continue
+    if (b.t === 1 && !r.typecheck) out.push(`${r.path}: typecheck was ok, is not (${r.gap})`)
+    if (b.h === 1 && !r.hir) out.push(`${r.path}: hir was ok, is not (${r.gap})`)
+    if (r.pass < b.p) out.push(`${r.path}: pass ${b.p} -> ${r.pass}`)
+    if (r.fail > b.f) out.push(`${r.path}: fail ${b.f} -> ${r.fail} (a spec's own assertion now failing; read it before --write)`)
+    if (r.skip > b.s) out.push(`${r.path}: skip ${b.s} -> ${r.skip}`)
+  }
+  const gone = Object.keys(base).filter((p) => !now.has(p))
+  return { regressions: out, gone }
+}
+
+export function renderRunnableReport(rows, fields, totals) {
+  const line = (r) => `${r.path.padEnd(52)} tc ${r.typecheck ? 'ok' : 'NO'}  hir ${r.hir ? 'ok' : 'NO'}  b ${String(r.blocks).padStart(4)}  p ${String(r.pass).padStart(4)}  f ${String(r.fail).padStart(3)}  s ${String(r.skip).padStart(3)}  ${r.gap}`
+  const out = []
+  for (const tree of fields.TREES) {
+    const inTree = rows.filter((r) => r.tree === tree)
+    const t = runnableTotals(inTree)
+    out.push(`tree ${tree}: ${inTree.length} specs, ${t.typecheckOk} typecheck ok, ${t.hirOk} hir ok; ${t.blocks} blocks: ${t.pass} pass, ${t.fail} fail, ${t.skip} skip`)
+    for (const r of inTree) out.push('  ' + line(r))
+  }
+  out.push(`total: ${totals.specs} specs in ${fields.TREES.length} trees; typecheck ${totals.typecheckOk}, hir ${totals.hirOk}; ${totals.blocks} blocks: ${totals.pass} pass, ${totals.fail} fail, ${totals.skip} skip; ${totals.clean} specs fully clean (0 fail, 0 skip)`)
+  const blocked = rows.filter((r) => r.gap !== fields.FIRST_GAP_UNKNOWN)
+  out.push(`not runnable as measured: ${blocked.length} spec(s) with a refused gate or a skipped block`)
+  for (const r of blocked) out.push(`  ${r.path.padEnd(52)} ${r.gap}`)
+  if (fields.LEGACY_BRACE_FORM_SPECS.length === 0) {
+    out.push('legacy `module X { }` brace form: none in the five trees -- the compiler normalises it away (measured 2026-10-07, zero parse refusals); a file that ever fails a gate lists above with the gate reason')
+  } else {
+    for (const p of fields.LEGACY_BRACE_FORM_SPECS) out.push(`legacy brace form: ${p}`)
+  }
+  return out.join('\n')
+}
+
+async function specRunnableMain() {
+  const write = process.argv.includes('--write')
+  const specPath = join(SITE, RUNNABLE_SPEC)
+  if (!existsSync(specPath)) { console.error(`spec-runnable: ${RUNNABLE_SPEC} is missing`); process.exit(1) }
+  const analyze = await loadCompiler(readFileSync(join(SITE, WASM)))
+  const contract = loadRunnableSpec(analyze, readFileSync(specPath, 'utf8'))
+  if (contract.problems.length) {
+    console.error(`spec-runnable: the contract itself does not hold (${contract.problems.length} problem(s))`)
+    for (const p of contract.problems) console.error('  ' + p)
+    process.exit(1)
+  }
+  const fields = contract.fields
+  const rows = runnableRows(analyze, fields)
+  const totals = runnableTotals(rows)
+  console.log(renderRunnableReport(rows, fields, totals))
+  const baselinePath = join(SITE, RUNNABLE_BASELINE)
+  const generated = fields.GENERATED
+  if (write) {
+    if (generated.length !== 1 || generated[0] !== RUNNABLE_BASELINE) { console.error(`spec-runnable: the contract's GENERATED must name ${RUNNABLE_BASELINE} alone`); process.exit(1) }
+    const doc = { kind: fields.KIND, ratchet: `${fields.RATCHET_MODE} per ${fields.RATCHET_PER}`, trees: fields.TREES, totals, specs: Object.fromEntries(rows.map((r) => [r.path, runnableEntry(r)])) }
+    writeFileSync(baselinePath, JSON.stringify(doc, null, 2) + '\n')
+    console.log(`spec-runnable: wrote ${RUNNABLE_BASELINE} (${totals.specs} specs)`)
+    return
+  }
+  if (!existsSync(baselinePath)) { console.error(`spec-runnable: no baseline at ${RUNNABLE_BASELINE}; run with --write first`); process.exit(1) }
+  const doc = JSON.parse(readFileSync(baselinePath, 'utf8'))
+  if (doc.kind !== fields.KIND) { console.error(`spec-runnable: baseline kind ${doc.kind} is not ${fields.KIND}`); process.exit(1) }
+  const { regressions, gone } = runnableRegressions(doc.specs ?? {}, rows)
+  for (const g of gone) console.log(`spec-runnable: note: ${g} is no longer on disk (not a regression)`)
+  if (regressions.length) {
+    console.error(`spec-runnable: ${regressions.length} regression(s) against ${RUNNABLE_BASELINE} (${fields.RATCHET_MODE} per ${fields.RATCHET_PER})`)
+    for (const m of regressions) console.error('  ' + m)
+    process.exit(1)
+  }
+  console.log(`spec-runnable: ratchet holds against ${RUNNABLE_BASELINE}; improvements may be locked in with --write`)
 }
 
 // ---------------------------------------------------------------------------
@@ -237,6 +418,7 @@ export async function buildViewport({ specText, analyze }) {
 }
 
 async function main() {
+  if (process.argv.includes('--spec-runnable')) return specRunnableMain()
   const check = process.argv.includes('--check')
   const json = process.argv.includes('--json')
   const specPath = join(SITE, VIEWPORT_SPEC)

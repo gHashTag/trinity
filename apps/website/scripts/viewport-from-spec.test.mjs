@@ -14,7 +14,10 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { SITE, loadCompiler, sha256 } from './agents-from-specs.mjs'
-import { CSS_OUT, TS_OUT, VIEWPORT_SPEC, buildViewport, tierOf } from './viewport-from-spec.mjs'
+import {
+  CSS_OUT, TS_OUT, VIEWPORT_SPEC, buildViewport, tierOf,
+  RUNNABLE_SPEC, RUNNABLE_BASELINE, loadRunnableSpec, runnableRows, runnableRegressions, runnableTotals, renderRunnableReport,
+} from './viewport-from-spec.mjs'
 
 const analyze = await loadCompiler(readFileSync(join(SITE, 'public/t27/t27_compiler.wasm')))
 const vendored = readFileSync(join(SITE, VIEWPORT_SPEC), 'utf8')
@@ -106,4 +109,62 @@ test('tierOf follows the inclusive bounds', () => {
   assert.equal(tierOf(1025, f), 'desktop')
   assert.equal(tierOf(1600, f), 'desktop')
   assert.equal(tierOf(1601, f), 'wide')
+})
+
+// ---------------------------------------------------------------------------
+// The corpus runnability report (#1477). Its contract is a .t27 spec compiled
+// and tested through the same evaluator it measures; the ratchet is per spec
+// and only-improves, like the typecheck one.
+// ---------------------------------------------------------------------------
+test('the runnability contract holds, tested by the evaluator it reports on', async () => {
+  const contract = loadRunnableSpec(analyze, readFileSync(join(SITE, RUNNABLE_SPEC), 'utf8'))
+  assert.deepEqual(contract.problems, [])
+  assert.equal(contract.fields.KIND, 'spec-runnable')
+  assert.deepEqual(contract.fields.TREES, ['specs/fpga', 'specs/isa', 'specs/ternary', 'specs/pins', 'specs/boards'])
+  assert.deepEqual(contract.fields.GENERATED, [RUNNABLE_BASELINE])
+  assert.equal(contract.fields.RATCHET_MODE, 'only-improves')
+})
+
+test('the ratchet flags regressions and allows improvements, appearances and departures', () => {
+  const base = {
+    'specs/fpga/fell.t27': { t: 1, h: 1, b: 2, p: 2, f: 0, s: 0, g: '-' },
+    'specs/fpga/rose.t27': { t: 1, h: 1, b: 2, p: 1, f: 1, s: 0, g: '-' },
+    'specs/isa/gate.t27': { t: 1, h: 1, b: 1, p: 1, f: 0, s: 0, g: '-' },
+    'specs/isa/left.t27': { t: 1, h: 1, b: 1, p: 1, f: 0, s: 0, g: '-' },
+  }
+  const row = (path, tree, over) => ({ path, tree, typecheck: true, hir: true, blocks: 2, pass: 2, fail: 0, skip: 0, gap: '-', ...over })
+  const rows = [
+    row('specs/fpga/fell.t27', 'specs/fpga', { pass: 1 }),                       // pass fell: regression
+    row('specs/fpga/rose.t27', 'specs/fpga', { fail: 0 }),                       // fail fell: improvement
+    row('specs/isa/gate.t27', 'specs/isa', { typecheck: false, gap: 'typecheck: boom' }), // gate lost: regression
+    row('specs/isa/new.t27', 'specs/isa', {}),                                   // newly vendored: allowed
+  ]
+  const { regressions, gone } = runnableRegressions(base, rows)
+  assert.equal(regressions.length, 2, regressions.join('\n'))
+  assert.ok(regressions.some((m) => m.startsWith('specs/fpga/fell.t27: pass 2 -> 1')))
+  assert.ok(regressions.some((m) => m.startsWith('specs/isa/gate.t27: typecheck was ok')))
+  assert.deepEqual(gone, ['specs/isa/left.t27'])
+})
+
+test('the report refuses to call an empty walk a measurement', () => {
+  const fields = { TREES: ['specs/fpga'], FIRST_GAP_UNKNOWN: '-' }
+  const empty = { readdir: () => [], readFileSync: () => '' }
+  assert.throws(() => runnableRows(analyze, fields, empty), /no specs found/)
+})
+
+test('the committed baseline is the walk the corpus gives today', async () => {
+  const contract = loadRunnableSpec(analyze, readFileSync(join(SITE, RUNNABLE_SPEC), 'utf8'))
+  assert.deepEqual(contract.problems, [])
+  const rows = runnableRows(analyze, contract.fields)
+  const doc = JSON.parse(readFileSync(join(SITE, RUNNABLE_BASELINE), 'utf8'))
+  assert.equal(doc.kind, 'spec-runnable')
+  const { regressions } = runnableRegressions(doc.specs, rows)
+  assert.deepEqual(regressions, [])
+  for (const r of rows) assert.ok(r.path in doc.specs, `${r.path} missing from the baseline`)
+  const totals = runnableTotals(rows)
+  assert.equal(totals.specs, doc.totals.specs)
+  assert.equal(totals.pass, doc.totals.pass)
+  const text = renderRunnableReport(rows, contract.fields, totals)
+  assert.match(text, /legacy `module X \{ \}` brace form: none/)
+  assert.match(text, new RegExp(`total: ${doc.totals.specs} specs in 5 trees`))
 })
