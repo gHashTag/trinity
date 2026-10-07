@@ -276,7 +276,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/basics/01_what_a_spec_is.t27",
           "source": "t27/files/specs/basics/01_what_a_spec_is.t27",
-          "preview": "play/embed.html?spec=specs%2Fbasics%2F01_what_a_spec_is.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fbasics%2F01_what_a_spec_is.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -308,7 +308,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/basics/02_the_module_line.t27",
           "source": "t27/files/specs/basics/02_the_module_line.t27",
-          "preview": "play/embed.html?spec=specs%2Fbasics%2F02_the_module_line.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fbasics%2F02_the_module_line.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -340,7 +340,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/basics/03_comments_and_prose.t27",
           "source": "t27/files/specs/basics/03_comments_and_prose.t27",
-          "preview": "play/embed.html?spec=specs%2Fbasics%2F03_comments_and_prose.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fbasics%2F03_comments_and_prose.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -372,7 +372,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/basics/04_constants.t27",
           "source": "t27/files/specs/basics/04_constants.t27",
-          "preview": "play/embed.html?spec=specs%2Fbasics%2F04_constants.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fbasics%2F04_constants.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -404,7 +404,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/basics/05_whole_numbers.t27",
           "source": "t27/files/specs/basics/05_whole_numbers.t27",
-          "preview": "play/embed.html?spec=specs%2Fbasics%2F05_whole_numbers.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fbasics%2F05_whole_numbers.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -436,7 +436,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/basics/06_true_false_and_text.t27",
           "source": "t27/files/specs/basics/06_true_false_and_text.t27",
-          "preview": "play/embed.html?spec=specs%2Fbasics%2F06_true_false_and_text.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fbasics%2F06_true_false_and_text.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -468,7 +468,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/basics/07_arrays.t27",
           "source": "t27/files/specs/basics/07_arrays.t27",
-          "preview": "play/embed.html?spec=specs%2Fbasics%2F07_arrays.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fbasics%2F07_arrays.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -500,7 +500,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/basics/08_trits.t27",
           "source": "t27/files/specs/basics/08_trits.t27",
-          "preview": "play/embed.html?spec=specs%2Fbasics%2F08_trits.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fbasics%2F08_trits.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -532,7 +532,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/basics/09_expressions.t27",
           "source": "t27/files/specs/basics/09_expressions.t27",
-          "preview": "play/embed.html?spec=specs%2Fbasics%2F09_expressions.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fbasics%2F09_expressions.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -564,7 +564,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/basics/10_a_test_block.t27",
           "source": "t27/files/specs/basics/10_a_test_block.t27",
-          "preview": "play/embed.html?spec=specs%2Fbasics%2F10_a_test_block.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fbasics%2F10_a_test_block.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -596,7 +596,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/basics/11_many_tests.t27",
           "source": "t27/files/specs/basics/11_many_tests.t27",
-          "preview": "play/embed.html?spec=specs%2Fbasics%2F11_many_tests.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fbasics%2F11_many_tests.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -628,7 +628,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/basics/12_functions.t27",
           "source": "t27/files/specs/basics/12_functions.t27",
-          "preview": "play/embed.html?spec=specs%2Fbasics%2F12_functions.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fbasics%2F12_functions.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -660,7 +660,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/basics/13_local_names.t27",
           "source": "t27/files/specs/basics/13_local_names.t27",
-          "preview": "play/embed.html?spec=specs%2Fbasics%2F13_local_names.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fbasics%2F13_local_names.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -692,7 +692,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/basics/14_if_and_else.t27",
           "source": "t27/files/specs/basics/14_if_and_else.t27",
-          "preview": "play/embed.html?spec=specs%2Fbasics%2F14_if_and_else.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fbasics%2F14_if_and_else.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -724,7 +724,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/basics/15_loops.t27",
           "source": "t27/files/specs/basics/15_loops.t27",
-          "preview": "play/embed.html?spec=specs%2Fbasics%2F15_loops.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fbasics%2F15_loops.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -756,7 +756,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/basics/16_pub_or_private.t27",
           "source": "t27/files/specs/basics/16_pub_or_private.t27",
-          "preview": "play/embed.html?spec=specs%2Fbasics%2F16_pub_or_private.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fbasics%2F16_pub_or_private.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -788,7 +788,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/basics/17_structs.t27",
           "source": "t27/files/specs/basics/17_structs.t27",
-          "preview": "play/embed.html?spec=specs%2Fbasics%2F17_structs.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fbasics%2F17_structs.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -820,7 +820,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/basics/18_enums.t27",
           "source": "t27/files/specs/basics/18_enums.t27",
-          "preview": "play/embed.html?spec=specs%2Fbasics%2F18_enums.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fbasics%2F18_enums.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -852,7 +852,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/basics/19_use_other_modules.t27",
           "source": "t27/files/specs/basics/19_use_other_modules.t27",
-          "preview": "play/embed.html?spec=specs%2Fbasics%2F19_use_other_modules.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fbasics%2F19_use_other_modules.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -884,7 +884,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/basics/20_invariants.t27",
           "source": "t27/files/specs/basics/20_invariants.t27",
-          "preview": "play/embed.html?spec=specs%2Fbasics%2F20_invariants.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fbasics%2F20_invariants.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -918,14 +918,14 @@ export const COURSES = [
             "kind": "player",
             "title": "hello_world.t27 to JavaScript, in a terminal inside the post",
             "url": "https://t27.ai/play/hello-world/js/",
-            "preview": "play/embed.html?spec=specs%2Fdemos%2Fhello_world.t27&cast=t27c-hello-world&tab=term&backend=js&v=7cbe9ab0c960",
+            "preview": "play/embed.html?spec=specs%2Fdemos%2Fhello_world.t27&cast=t27c-hello-world&tab=term&backend=js&v=be54898a7e0c",
             "height": 480
           }
         ],
         "spec": {
           "path": "specs/basics/21_gen_ts.t27",
           "source": "t27/files/specs/basics/21_gen_ts.t27",
-          "preview": "play/embed.html?spec=specs%2Fbasics%2F21_gen_ts.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fbasics%2F21_gen_ts.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -959,14 +959,14 @@ export const COURSES = [
             "kind": "player",
             "title": "hello_world.t27 to Rust, in a terminal inside the post",
             "url": "https://t27.ai/play/hello-world/rust/",
-            "preview": "play/embed.html?spec=specs%2Fdemos%2Fhello_world.t27&cast=t27c-hello-world&tab=term&backend=rust&v=7cbe9ab0c960",
+            "preview": "play/embed.html?spec=specs%2Fdemos%2Fhello_world.t27&cast=t27c-hello-world&tab=term&backend=rust&v=be54898a7e0c",
             "height": 480
           }
         ],
         "spec": {
           "path": "specs/basics/22_seven_backends.t27",
           "source": "t27/files/specs/basics/22_seven_backends.t27",
-          "preview": "play/embed.html?spec=specs%2Fbasics%2F22_seven_backends.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fbasics%2F22_seven_backends.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -1007,7 +1007,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/basics/23_stages_of_t27c.t27",
           "source": "t27/files/specs/basics/23_stages_of_t27c.t27",
-          "preview": "play/embed.html?spec=specs%2Fbasics%2F23_stages_of_t27c.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fbasics%2F23_stages_of_t27c.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -1039,7 +1039,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/basics/24_tri_commands.t27",
           "source": "t27/files/specs/basics/24_tri_commands.t27",
-          "preview": "play/embed.html?spec=specs%2Fbasics%2F24_tri_commands.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fbasics%2F24_tri_commands.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -1080,7 +1080,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/basics/25_reading_errors.t27",
           "source": "t27/files/specs/basics/25_reading_errors.t27",
-          "preview": "play/embed.html?spec=specs%2Fbasics%2F25_reading_errors.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fbasics%2F25_reading_errors.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -1114,14 +1114,14 @@ export const COURSES = [
             "kind": "player",
             "title": "hello_world.t27 to Verilog, in a terminal inside the post",
             "url": "https://t27.ai/play/hello-world/verilog/",
-            "preview": "play/embed.html?spec=specs%2Fdemos%2Fhello_world.t27&cast=t27c-hello-world&tab=term&backend=verilog&v=7cbe9ab0c960",
+            "preview": "play/embed.html?spec=specs%2Fdemos%2Fhello_world.t27&cast=t27c-hello-world&tab=term&backend=verilog&v=be54898a7e0c",
             "height": 480
           }
         ],
         "spec": {
           "path": "specs/basics/26_a_small_program.t27",
           "source": "t27/files/specs/basics/26_a_small_program.t27",
-          "preview": "play/embed.html?spec=specs%2Fbasics%2F26_a_small_program.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fbasics%2F26_a_small_program.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -1155,14 +1155,14 @@ export const COURSES = [
             "kind": "player",
             "title": "hello_world.t27, compiled inside the post",
             "url": "https://t27.ai/play/hello-world/",
-            "preview": "play/embed.html?spec=specs%2Fdemos%2Fhello_world.t27&cast=t27c-hello-world&v=7cbe9ab0c960",
+            "preview": "play/embed.html?spec=specs%2Fdemos%2Fhello_world.t27&cast=t27c-hello-world&v=be54898a7e0c",
             "height": 480
           }
         ],
         "spec": {
           "path": "specs/basics/27_where_next.t27",
           "source": "t27/files/specs/basics/27_where_next.t27",
-          "preview": "play/embed.html?spec=specs%2Fbasics%2F27_where_next.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fbasics%2F27_where_next.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -1465,7 +1465,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/boards/wukong_v1.t27",
           "source": "t27/files/specs/boards/wukong_v1.t27",
-          "preview": "play/embed.html?spec=specs%2Fboards%2Fwukong_v1.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fboards%2Fwukong_v1.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -1506,7 +1506,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/tools/tri/fpga.t27",
           "source": "t27/files/specs/tools/tri/fpga.t27",
-          "preview": "play/embed.html?spec=specs%2Ftools%2Ftri%2Ffpga.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ftools%2Ftri%2Ffpga.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -1547,7 +1547,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/boards/xc7a100t_minimal.t27",
           "source": "t27/files/specs/boards/xc7a100t_minimal.t27",
-          "preview": "play/embed.html?spec=specs%2Fboards%2Fxc7a100t_minimal.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fboards%2Fxc7a100t_minimal.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -1579,7 +1579,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/tutorial/01_values_and_types.t27",
           "source": "t27/files/specs/tutorial/01_values_and_types.t27",
-          "preview": "play/embed.html?spec=specs%2Ftutorial%2F01_values_and_types.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ftutorial%2F01_values_and_types.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -1620,7 +1620,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/tutorial/05_widths_and_casts.t27",
           "source": "t27/files/specs/tutorial/05_widths_and_casts.t27",
-          "preview": "play/embed.html?spec=specs%2Ftutorial%2F05_widths_and_casts.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ftutorial%2F05_widths_and_casts.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -1652,7 +1652,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/fpga/stdlib.t27",
           "source": "t27/files/specs/fpga/stdlib.t27",
-          "preview": "play/embed.html?spec=specs%2Ffpga%2Fstdlib.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ffpga%2Fstdlib.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -1677,7 +1677,7 @@ export const COURSES = [
           "kind": "player",
           "title": "hello_world.t27, compiled inside the post",
           "url": "https://t27.ai/play/hello-world/",
-          "preview": "play/embed.html?spec=specs%2Fdemos%2Fhello_world.t27&cast=t27c-hello-world&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fdemos%2Fhello_world.t27&cast=t27c-hello-world&v=be54898a7e0c",
           "height": 480
         },
         "also": [
@@ -1686,14 +1686,14 @@ export const COURSES = [
             "kind": "player",
             "title": "hello_world.t27 to JavaScript, in a terminal inside the post",
             "url": "https://t27.ai/play/hello-world/js/",
-            "preview": "play/embed.html?spec=specs%2Fdemos%2Fhello_world.t27&cast=t27c-hello-world&tab=term&backend=js&v=7cbe9ab0c960",
+            "preview": "play/embed.html?spec=specs%2Fdemos%2Fhello_world.t27&cast=t27c-hello-world&tab=term&backend=js&v=be54898a7e0c",
             "height": 480
           }
         ],
         "spec": {
           "path": "specs/tutorial/02_functions.t27",
           "source": "t27/files/specs/tutorial/02_functions.t27",
-          "preview": "play/embed.html?spec=specs%2Ftutorial%2F02_functions.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ftutorial%2F02_functions.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -1734,7 +1734,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/tutorial/07_tests_invariants_benches.t27",
           "source": "t27/files/specs/tutorial/07_tests_invariants_benches.t27",
-          "preview": "play/embed.html?spec=specs%2Ftutorial%2F07_tests_invariants_benches.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ftutorial%2F07_tests_invariants_benches.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -1783,7 +1783,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/tutorial/03_operators.t27",
           "source": "t27/files/specs/tutorial/03_operators.t27",
-          "preview": "play/embed.html?spec=specs%2Ftutorial%2F03_operators.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ftutorial%2F03_operators.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -1815,7 +1815,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/tutorial/06_structs_enums_switch.t27",
           "source": "t27/files/specs/tutorial/06_structs_enums_switch.t27",
-          "preview": "play/embed.html?spec=specs%2Ftutorial%2F06_structs_enums_switch.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ftutorial%2F06_structs_enums_switch.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -1847,7 +1847,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/demos/hello_world.t27",
           "source": "t27/files/specs/demos/hello_world.t27",
-          "preview": "play/embed.html?spec=specs%2Fdemos%2Fhello_world.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fdemos%2Fhello_world.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -1872,7 +1872,7 @@ export const COURSES = [
           "kind": "player",
           "title": "hello_world.t27 to Rust, in a terminal inside the post",
           "url": "https://t27.ai/play/hello-world/rust/",
-          "preview": "play/embed.html?spec=specs%2Fdemos%2Fhello_world.t27&cast=t27c-hello-world&tab=term&backend=rust&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fdemos%2Fhello_world.t27&cast=t27c-hello-world&tab=term&backend=rust&v=be54898a7e0c",
           "height": 480
         },
         "also": [
@@ -1881,14 +1881,14 @@ export const COURSES = [
             "kind": "player",
             "title": "hello_world.t27 to JavaScript, in a terminal inside the post",
             "url": "https://t27.ai/play/hello-world/js/",
-            "preview": "play/embed.html?spec=specs%2Fdemos%2Fhello_world.t27&cast=t27c-hello-world&tab=term&backend=js&v=7cbe9ab0c960",
+            "preview": "play/embed.html?spec=specs%2Fdemos%2Fhello_world.t27&cast=t27c-hello-world&tab=term&backend=js&v=be54898a7e0c",
             "height": 480
           }
         ],
         "spec": {
           "path": "specs/tutorial/08_modules_and_arrays.t27",
           "source": "t27/files/specs/tutorial/08_modules_and_arrays.t27",
-          "preview": "play/embed.html?spec=specs%2Ftutorial%2F08_modules_and_arrays.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ftutorial%2F08_modules_and_arrays.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -1913,14 +1913,14 @@ export const COURSES = [
           "kind": "player",
           "title": "hello_world.t27 to Verilog, in a terminal inside the post",
           "url": "https://t27.ai/play/hello-world/verilog/",
-          "preview": "play/embed.html?spec=specs%2Fdemos%2Fhello_world.t27&cast=t27c-hello-world&tab=term&backend=verilog&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fdemos%2Fhello_world.t27&cast=t27c-hello-world&tab=term&backend=verilog&v=be54898a7e0c",
           "height": 480
         },
         "also": [],
         "spec": {
           "path": "specs/ternary/clocked_counter.t27",
           "source": "t27/files/specs/ternary/clocked_counter.t27",
-          "preview": "play/embed.html?spec=specs%2Fternary%2Fclocked_counter.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fternary%2Fclocked_counter.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -1961,7 +1961,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/tutorial/04_control_flow.t27",
           "source": "t27/files/specs/tutorial/04_control_flow.t27",
-          "preview": "play/embed.html?spec=specs%2Ftutorial%2F04_control_flow.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ftutorial%2F04_control_flow.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -1993,7 +1993,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/ternary/ternary_full_adder.t27",
           "source": "t27/files/specs/ternary/ternary_full_adder.t27",
-          "preview": "play/embed.html?spec=specs%2Fternary%2Fternary_full_adder.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fternary%2Fternary_full_adder.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -2025,7 +2025,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/fpga/crossopt.t27",
           "source": "t27/files/specs/fpga/crossopt.t27",
-          "preview": "play/embed.html?spec=specs%2Ffpga%2Fcrossopt.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ffpga%2Fcrossopt.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -2057,7 +2057,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/fpga/dft.t27",
           "source": "t27/files/specs/fpga/dft.t27",
-          "preview": "play/embed.html?spec=specs%2Ffpga%2Fdft.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ffpga%2Fdft.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -2089,7 +2089,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/fpga/partition.t27",
           "source": "t27/files/specs/fpga/partition.t27",
-          "preview": "play/embed.html?spec=specs%2Ffpga%2Fpartition.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ffpga%2Fpartition.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -2130,7 +2130,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/fpga/placement.t27",
           "source": "t27/files/specs/fpga/placement.t27",
-          "preview": "play/embed.html?spec=specs%2Ffpga%2Fplacement.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ffpga%2Fplacement.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -2162,7 +2162,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/fpga/timing.t27",
           "source": "t27/files/specs/fpga/timing.t27",
-          "preview": "play/embed.html?spec=specs%2Ffpga%2Ftiming.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ffpga%2Ftiming.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -2203,7 +2203,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/fpga/cts.t27",
           "source": "t27/files/specs/fpga/cts.t27",
-          "preview": "play/embed.html?spec=specs%2Ffpga%2Fcts.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ffpga%2Fcts.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -2235,7 +2235,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/tools/trios/tri/x7-fasm.t27",
           "source": "t27/files/specs/tools/trios/tri/x7-fasm.t27",
-          "preview": "play/embed.html?spec=specs%2Ftools%2Ftrios%2Ftri%2Fx7-fasm.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ftools%2Ftrios%2Ftri%2Fx7-fasm.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -2284,7 +2284,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/fpga/adapter.t27",
           "source": "t27/files/specs/fpga/adapter.t27",
-          "preview": "play/embed.html?spec=specs%2Ffpga%2Fadapter.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ffpga%2Fadapter.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -2325,7 +2325,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/tools/trios/tri/x7-writer.t27",
           "source": "t27/files/specs/tools/trios/tri/x7-writer.t27",
-          "preview": "play/embed.html?spec=specs%2Ftools%2Ftrios%2Ftri%2Fx7-writer.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ftools%2Ftrios%2Ftri%2Fx7-writer.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -2366,7 +2366,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/tools/trios/tri/fpga-jtag.t27",
           "source": "t27/files/specs/tools/trios/tri/fpga-jtag.t27",
-          "preview": "play/embed.html?spec=specs%2Ftools%2Ftrios%2Ftri%2Ffpga-jtag.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ftools%2Ftrios%2Ftri%2Ffpga-jtag.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -2407,7 +2407,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/tools/trios/tri/x7-board.t27",
           "source": "t27/files/specs/tools/trios/tri/x7-board.t27",
-          "preview": "play/embed.html?spec=specs%2Ftools%2Ftrios%2Ftri%2Fx7-board.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ftools%2Ftrios%2Ftri%2Fx7-board.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -2472,7 +2472,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/fpga/e2e_demo.t27",
           "source": "t27/files/specs/fpga/e2e_demo.t27",
-          "preview": "play/embed.html?spec=specs%2Ffpga%2Fe2e_demo.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ffpga%2Fe2e_demo.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -2785,7 +2785,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/numeric/tnf8.t27",
           "source": "t27/files/specs/numeric/tnf8.t27",
-          "preview": "play/embed.html?spec=specs%2Fnumeric%2Ftnf8.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fnumeric%2Ftnf8.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -2826,7 +2826,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/numeric/posit_ladder_control.t27",
           "source": "t27/files/specs/numeric/posit_ladder_control.t27",
-          "preview": "play/embed.html?spec=specs%2Fnumeric%2Fposit_ladder_control.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fnumeric%2Fposit_ladder_control.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -2867,7 +2867,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/igla/race/unit_weights_node.t27",
           "source": "t27/files/specs/igla/race/unit_weights_node.t27",
-          "preview": "play/embed.html?spec=specs%2Figla%2Frace%2Funit_weights_node.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Figla%2Frace%2Funit_weights_node.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -2892,14 +2892,14 @@ export const COURSES = [
           "kind": "player",
           "title": "e8m0.t27, the OCP MX scale byte, compiled inside the post",
           "url": "https://t27.ai/play/e8m0/",
-          "preview": "play/embed.html?spec=specs%2Fnumeric%2Fe8m0.t27&cast=t27c-e8m0&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fnumeric%2Fe8m0.t27&cast=t27c-e8m0&v=be54898a7e0c",
           "height": 480
         },
         "also": [],
         "spec": {
           "path": "specs/numeric/formats_catalog.t27",
           "source": "t27/files/specs/numeric/formats_catalog.t27",
-          "preview": "play/embed.html?spec=specs%2Fnumeric%2Fformats_catalog.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fnumeric%2Fformats_catalog.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -2931,7 +2931,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/numeric/e8m0.t27",
           "source": "t27/files/specs/numeric/e8m0.t27",
-          "preview": "play/embed.html?spec=specs%2Fnumeric%2Fe8m0.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fnumeric%2Fe8m0.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -2972,7 +2972,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/numeric/gf4.t27",
           "source": "t27/files/specs/numeric/gf4.t27",
-          "preview": "play/embed.html?spec=specs%2Fnumeric%2Fgf4.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fnumeric%2Fgf4.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -2997,7 +2997,7 @@ export const COURSES = [
           "kind": "player",
           "title": "gfternary.t27, phi-scaled ternary weights, compiled inside the post",
           "url": "https://t27.ai/play/gfternary/",
-          "preview": "play/embed.html?spec=specs%2Fnumeric%2Fgfternary.t27&cast=t27c-gfternary&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fnumeric%2Fgfternary.t27&cast=t27c-gfternary&v=be54898a7e0c",
           "height": 480
         },
         "also": [
@@ -3013,7 +3013,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/numeric/gft4.t27",
           "source": "t27/files/specs/numeric/gft4.t27",
-          "preview": "play/embed.html?spec=specs%2Fnumeric%2Fgft4.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fnumeric%2Fgft4.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -3054,7 +3054,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/numeric/gfternary.t27",
           "source": "t27/files/specs/numeric/gfternary.t27",
-          "preview": "play/embed.html?spec=specs%2Fnumeric%2Fgfternary.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fnumeric%2Fgfternary.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -3079,7 +3079,7 @@ export const COURSES = [
           "kind": "player",
           "title": "golden_sieve.t27, the ternary sieve, compiled inside the post",
           "url": "https://t27.ai/play/golden-sieve/",
-          "preview": "play/embed.html?spec=specs%2Fnumeric%2Fgolden_sieve.t27&cast=t27c-golden-sieve&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fnumeric%2Fgolden_sieve.t27&cast=t27c-golden-sieve&v=be54898a7e0c",
           "height": 480
         },
         "also": [
@@ -3095,7 +3095,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/numeric/tnf4.t27",
           "source": "t27/files/specs/numeric/tnf4.t27",
-          "preview": "play/embed.html?spec=specs%2Fnumeric%2Ftnf4.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fnumeric%2Ftnf4.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -3127,7 +3127,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/numeric/golden_sieve.t27",
           "source": "t27/files/specs/numeric/golden_sieve.t27",
-          "preview": "play/embed.html?spec=specs%2Fnumeric%2Fgolden_sieve.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fnumeric%2Fgolden_sieve.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -3152,7 +3152,7 @@ export const COURSES = [
           "kind": "player",
           "title": "tnf17.t27, a 17-bit ternary-exponent float, compiled inside the post",
           "url": "https://t27.ai/play/tnf17/",
-          "preview": "play/embed.html?spec=specs%2Fnumeric%2Ftnf17.t27&cast=t27c-tnf17&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fnumeric%2Ftnf17.t27&cast=t27c-tnf17&v=be54898a7e0c",
           "height": 480
         },
         "also": [
@@ -3168,7 +3168,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/numeric/tnf16.t27",
           "source": "t27/files/specs/numeric/tnf16.t27",
-          "preview": "play/embed.html?spec=specs%2Fnumeric%2Ftnf16.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fnumeric%2Ftnf16.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -3209,7 +3209,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/numeric/tnf17.t27",
           "source": "t27/files/specs/numeric/tnf17.t27",
-          "preview": "play/embed.html?spec=specs%2Fnumeric%2Ftnf17.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fnumeric%2Ftnf17.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -3241,7 +3241,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/ternary/gft_smul.t27",
           "source": "t27/files/specs/ternary/gft_smul.t27",
-          "preview": "play/embed.html?spec=specs%2Fternary%2Fgft_smul.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fternary%2Fgft_smul.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -3273,7 +3273,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/ternary/gft_sadd.t27",
           "source": "t27/files/specs/ternary/gft_sadd.t27",
-          "preview": "play/embed.html?spec=specs%2Fternary%2Fgft_sadd.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fternary%2Fgft_sadd.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -3305,7 +3305,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/ternary/gft_signed_mac.t27",
           "source": "t27/files/specs/ternary/gft_signed_mac.t27",
-          "preview": "play/embed.html?spec=specs%2Fternary%2Fgft_signed_mac.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fternary%2Fgft_signed_mac.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -3337,7 +3337,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/ternary/gft_relu.t27",
           "source": "t27/files/specs/ternary/gft_relu.t27",
-          "preview": "play/embed.html?spec=specs%2Fternary%2Fgft_relu.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fternary%2Fgft_relu.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -3369,7 +3369,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/ternary/gft_exp2.t27",
           "source": "t27/files/specs/ternary/gft_exp2.t27",
-          "preview": "play/embed.html?spec=specs%2Fternary%2Fgft_exp2.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fternary%2Fgft_exp2.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -3401,7 +3401,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/ternary/gft_argmax4.t27",
           "source": "t27/files/specs/ternary/gft_argmax4.t27",
-          "preview": "play/embed.html?spec=specs%2Fternary%2Fgft_argmax4.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fternary%2Fgft_argmax4.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -3433,7 +3433,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/ternary/gft_nll.t27",
           "source": "t27/files/specs/ternary/gft_nll.t27",
-          "preview": "play/embed.html?spec=specs%2Fternary%2Fgft_nll.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fternary%2Fgft_nll.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -3465,7 +3465,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/ternary/gft_sgd_step.t27",
           "source": "t27/files/specs/ternary/gft_sgd_step.t27",
-          "preview": "play/embed.html?spec=specs%2Fternary%2Fgft_sgd_step.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fternary%2Fgft_sgd_step.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -3497,7 +3497,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/ternary/gft_xornet.t27",
           "source": "t27/files/specs/ternary/gft_xornet.t27",
-          "preview": "play/embed.html?spec=specs%2Fternary%2Fgft_xornet.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fternary%2Fgft_xornet.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -3529,7 +3529,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/ternary/activation_quantizer.t27",
           "source": "t27/files/specs/ternary/activation_quantizer.t27",
-          "preview": "play/embed.html?spec=specs%2Fternary%2Factivation_quantizer.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fternary%2Factivation_quantizer.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -3561,7 +3561,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/ternary/bitnet_majority.t27",
           "source": "t27/files/specs/ternary/bitnet_majority.t27",
-          "preview": "play/embed.html?spec=specs%2Fternary%2Fbitnet_majority.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fternary%2Fbitnet_majority.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -3593,7 +3593,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/ternary/bitnet_neuron_nchunk.t27",
           "source": "t27/files/specs/ternary/bitnet_neuron_nchunk.t27",
-          "preview": "play/embed.html?spec=specs%2Fternary%2Fbitnet_neuron_nchunk.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fternary%2Fbitnet_neuron_nchunk.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -3634,7 +3634,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/ternary/comb_ternary_dot.t27",
           "source": "t27/files/specs/ternary/comb_ternary_dot.t27",
-          "preview": "play/embed.html?spec=specs%2Fternary%2Fcomb_ternary_dot.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fternary%2Fcomb_ternary_dot.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -3675,7 +3675,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/ternary/stream_ternary_mac.t27",
           "source": "t27/files/specs/ternary/stream_ternary_mac.t27",
-          "preview": "play/embed.html?spec=specs%2Fternary%2Fstream_ternary_mac.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fternary%2Fstream_ternary_mac.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
@@ -3707,7 +3707,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/ternary/bitnet_mlp.t27",
           "source": "t27/files/specs/ternary/bitnet_mlp.t27",
-          "preview": "play/embed.html?spec=specs%2Fternary%2Fbitnet_mlp.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Fternary%2Fbitnet_mlp.t27&tab=term&v=be54898a7e0c",
           "height": 480
         },
         "en": {
