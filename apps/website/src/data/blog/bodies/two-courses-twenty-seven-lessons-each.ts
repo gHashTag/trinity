@@ -46,7 +46,7 @@ export const body: Block[] = [
   },
   {
     kind: 'p',
-    text: 'Recordings pending for lessons 13 to 21. Their nine specs (gft_smul, gft_sadd, gft_signed_mac, gft_relu, gft_exp2, gft_argmax4, gft_nll, gft_sgd_step and gft_xornet) need the t27c gft commands of t27#7400, which is not merged yet. Until it is, each of those lessons opens a placeholder page that says the recording is pending and shows no run; the lesson text says so too. Lessons 22 to 27 open their recordings now.',
+    text: 'Recordings pending for lessons 13 to 21. Their nine specs (gft_smul, gft_sadd, gft_signed_mac, gft_relu, gft_exp2, gft_argmax4, gft_nll, gft_sgd_step and gft_xornet) are recorded with tri test and tri mutate plant from t27#7400, which is not merged yet. Until it is, each of those lessons opens a placeholder page that says the recording is pending and shows no run; the lesson text says so too. Lessons 22 to 27 open their recordings now.',
   },
   {
     kind: 'table',
@@ -195,7 +195,7 @@ export const ruBody: Block[] = [
   },
   {
     kind: 'p',
-    text: 'Записи уроков с 13 по 21 ещё не готовы. Их девяти спекам (gft_smul, gft_sadd, gft_signed_mac, gft_relu, gft_exp2, gft_argmax4, gft_nll, gft_sgd_step и gft_xornet) нужны команды t27c gft из t27#7400, который ещё не смержен. До тех пор каждый из этих уроков открывает страницу-заглушку, где сказано, что запись ещё не готова, и нет никакого запуска; текст урока говорит то же. Уроки с 22 по 27 открывают свои записи уже сейчас.',
+    text: 'Записи уроков с 13 по 21 ещё не готовы. Их девяти спекам (gft_smul, gft_sadd, gft_signed_mac, gft_relu, gft_exp2, gft_argmax4, gft_nll, gft_sgd_step и gft_xornet) нужны команды tri test и tri mutate plant из t27#7400, который ещё не смержен. До тех пор каждый из этих уроков открывает страницу-заглушку, где сказано, что запись ещё не готова, и нет никакого запуска; текст урока говорит то же. Уроки с 22 по 27 открывают свои записи уже сейчас.',
   },
   {
     kind: 'table',

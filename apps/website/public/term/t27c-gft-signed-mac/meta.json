@@ -1,7 +1,7 @@
 {
   "id": "t27c-gft-signed-mac",
   "title": "gft_signed_mac.t27: recording pending",
-  "desc": "Recording pending: lands with the t27c gft commands of gHashTag/t27#7400. Until then this page is a placeholder and shows no run.",
+  "desc": "Recording pending: waits on tri test and tri mutate plant from gHashTag/t27#7400. Until then this page is a placeholder and shows no run.",
   "url": "https://t27.ai/term/t27c-gft-signed-mac/",
   "gif": null,
   "post": null,
