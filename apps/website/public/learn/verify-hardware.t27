@@ -149,7 +149,7 @@ pub const LESSON_WIDGETS : [27]str = [
 ];
 pub const LESSON_ALSO : [27]str = [
     "tri-x7-mutate", "t27-tri-census", "tri-fpga-status",
-    "vcd-wrapped", "test-waves", "race-the-bee",
+    "vcd-wrapped", "test-waves", "",
     "test-waves", "vcd-wrapped", "bit-autopsy",
     "tri-fpga-specs", "t27-tri-vectors", "perf2-loop",
     "x7-board", "play-js", "tri-fpga-rgmii",
