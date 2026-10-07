@@ -3,6 +3,37 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: "tri-test-now-runs-the-tests",
+    title: "tri test now runs the tests",
+    summary: "[t27#7400 is open, not merged; the demo is one spec on the t27c lab; t27c test-report still exits 0 on a failing test (t27#7370); the MCP tool tri.test is still vacuous] Until now tri test only listed a spec's tests and printed that they passed, so a planted bug stayed green. t27#7400 makes it run them, read the report and exit non-zero on a failure, a BLOCKED spec or zero tests. It also adds tri mutate plant: one recorded mutant on a copy, a clean baseline first, the failing tests named, the original's hash checked. Nine lessons of the AI numbers course wait on these two commands for their recordings.",
+    date: "2026-10-07",
+    readingMinutes: 4,
+    tags: ["t27", "tri", "Mutation testing", "Courses"],
+    receipts: [
+      { label: "t27#7400: tri test runs the tests; tri mutate plant · OPEN", href: "https://github.com/gHashTag/t27/pull/7400" },
+      { label: "t27#7369: the issue #7400 closes", href: "https://github.com/gHashTag/t27/issues/7369" },
+      { label: "t27#7370: t27c test-report exits 0 when tests FAIL or the report is BLOCKED · OPEN", href: "https://github.com/gHashTag/t27/issues/7370" },
+      { label: "trinity#1456: the AI numbers course, with lessons 13 to 21 waiting on #7400 (this post's PR)", href: "https://github.com/gHashTag/trinity/pull/1456" },
+    ],
+    openQuestions: [
+      "t27#7400 is open. Until it merges, tri test on master still only lists tests, and lessons 13 to 21 stay placeholders.",
+      "The acceptance demo covers one spec, gft_relu.t27, on the t27c lab; the nine course recordings have not been made yet.",
+      "t27c test-report still exits 0 when tests fail (t27#7370), so any caller that reads only its exit code is still vacuous.",
+      "The MCP tool tri.test in cli/tri-mcp still calls t27c test and is not changed by #7400.",
+    ],
+    published: true,
+    ru: {
+      title: "tri test теперь запускает тесты",
+      summary: "[t27#7400 открыт и не влит; демонстрация — одна спека на лаборатории t27c; t27c test-report всё ещё возвращает 0 при упавшем тесте (t27#7370); инструмент MCP tri.test по-прежнему пустой] До сих пор tri test только перечислял тесты спеки и печатал, что они прошли, поэтому посаженная ошибка оставалась зелёной. t27#7400 заставляет его запускать их, читать отчёт и возвращать ненулевой код при падении, при спеке BLOCKED или когда не прошёл ни один тест. Ещё он добавляет tri mutate plant: один записанный мутант на копии, сначала чистый прогон, названные упавшие тесты, проверка хеша оригинала. Девять уроков курса AI numbers ждут этих двух команд для своих записей.",
+      openQuestions: [
+        "t27#7400 открыт. Пока он не влит, tri test в master по-прежнему только перечисляет тесты, а уроки 13–21 остаются заглушками.",
+        "Демонстрация приёмки — одна спека, gft_relu.t27, на лаборатории t27c; девять записей курса ещё не сделаны.",
+        "t27c test-report по-прежнему возвращает 0, когда тесты падают (t27#7370), так что любой вызывающий, который смотрит только на код возврата, всё ещё ничего не проверяет.",
+        "Инструмент MCP tri.test в cli/tri-mcp по-прежнему вызывает t27c test, и #7400 его не меняет.",
+      ],
+    },
+  },
+  {
     slug: "two-courses-twenty-seven-lessons-each",
     title: "Two t27 courses of 27 lessons each: FPGA, then AI numbers",
     summary: "[no lesson trains a network; the tests of the 15 new lessons run in recordings of native t27c, not in the browser; 35 of 127 mutants survive and are not sorted; software only, no board] The t27 course is now two courses of 27 lessons, 27 modules of one lesson each (recordings for lessons 13 to 21 are pending t27#7400): From zero to a chip, on programming an FPGA, and AI numbers with t27, which starts with the 6 lessons that moved and adds 21 more, ending at a small ternary network. Each of the last 15 lessons plants a one-line bug in its spec and shows the one named test that fails. Over 14 of their functions, tri mutate spec made 127 mutants and the tests killed 92.",
