@@ -57,9 +57,9 @@ function useProgress(C: CourseT) {
 
 /** The course one hands its reader to, or the one it follows. */
 function ChainLink({ lang, say, to, next, lesson }: { lang: Lang; say: Say; to: Chain; next: boolean; lesson?: string }) {
-  const href = `/${to.route}${lesson ? `/${lesson}` : ''}`
+  const route = `/${to.route}${lesson ? `/${lesson}` : ''}`
   return (
-    <Link className={`course-pager-link course-chain${next ? ' is-next' : ''}`} to={href}>
+    <Link className={`course-pager-link course-chain${next ? ' is-next' : ''}`} to={route}>
       <span className="course-label">{next ? `${say.NEXT_COURSE} →` : `← ${say.PREV_COURSE}`}</span>
       {to.title[lang]}
     </Link>
