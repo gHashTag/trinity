@@ -51,6 +51,26 @@ In short, so the Queen can assign it:
    A merged trinity PR is not live: ship through the
    `release(board): ship trinity <sha>` PR in gHashTag/999-multibots-telegraf.
 
+Traps found by the first course built from this section alone (trinity#1470,
+full list in its "Recipe gaps"):
+
+- Rename **ID, ROUTE, SHARE_PATH, RU_CONTRACT and GENERATED** in the copied spec.
+- Code edits the recipe needs: route, starfield root and nav entry in `src/`;
+  blog post registered in `src/data/blog/index.ts` and `posts.ts`.
+- `gallery.t27` keeps each category as one unbroken block: insert the new
+  widgets inside their category, then fix the index asserts in the gallery
+  tests; `course-from-spec.test.mjs` asserts the course count, bump it.
+- Full gate list: `check:widgets`, `test:widgets-spec`, `check:widget-pages`
+  (run widget-pages before widgets), `check:course`, `test:course`,
+  `check:course-pages`, `check:course-recipe`, `check:onboarding`,
+  `check:play`, `tsc --noEmit`.
+- A pending lesson still needs a gallery entry; ship it as a
+  `public/term/<id>/` placeholder with `pending`, never a fake widget.
+- Russian widget words go in `i18n/widgets.ru.json` under the contract
+  `specs/widgets/i18n/widgets-ru.t27` (no Cyrillic in specs); the Russian text
+  must keep the same digits as the English.
+- Work-report format: copy the `<!-- t27-work-report -->` block of trinity#1463.
+
 **Version**: 2.0
 **Date**: 2026-04-04
 **Status**: Active
