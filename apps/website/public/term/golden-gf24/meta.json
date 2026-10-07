@@ -1,0 +1,12 @@
+{
+  "id": "golden-gf24",
+  "title": "gf24.t27: lesson pending",
+  "desc": "Lesson pending: gf24.t27 does not compile clean in the browser compiler yet. Until then this page is a placeholder and shows no run.",
+  "url": "https://t27.ai/term/golden-gf24/",
+  "gif": null,
+  "post": null,
+  "recorded": null,
+  "commands": [],
+  "exit_codes": [],
+  "pending": "specs/numeric/gf24.t27 not clean in the browser compiler"
+}

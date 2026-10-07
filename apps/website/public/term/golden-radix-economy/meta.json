@@ -1,0 +1,12 @@
+{
+  "id": "golden-radix-economy",
+  "title": "radix_economy.t27: lesson pending",
+  "desc": "Lesson pending: radix_economy.t27 does not compile clean in the browser compiler yet. Until then this page is a placeholder and shows no run.",
+  "url": "https://t27.ai/term/golden-radix-economy/",
+  "gif": null,
+  "post": null,
+  "recorded": null,
+  "commands": [],
+  "exit_codes": [],
+  "pending": "specs/math/radix_economy.t27 not clean in the browser compiler"
+}
