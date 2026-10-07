@@ -140,10 +140,14 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/start" element={<Start />} />
             <Route path="/select" element={<FormatSelection />} />
             <Route path="/verification" element={<HardwareVerification />} />
-            {/* The course is a t27 spec (specs/course/course.t27); the paid
-                training that used to live here moved to /fpga-training. */}
+            {/* Each course is a t27 spec (specs/course/courses.t27 names them);
+                the paid training that used to live here moved to /fpga-training. */}
+            <Route path="/t27-basics" element={<Course />} />
+            <Route path="/t27-basics/:lessonId" element={<Course />} />
             <Route path="/course" element={<Course />} />
             <Route path="/course/:lessonId" element={<Course />} />
+            <Route path="/ai-numbers" element={<Course />} />
+            <Route path="/ai-numbers/:lessonId" element={<Course />} />
             <Route path="/fpga-training" element={<FpgaTraining />} />
             <Route path="/cases" element={<CaseStudies />} />
             <Route path="/gft" element={<GFT />} />

@@ -40,6 +40,9 @@ export const TOOL_REQUIRED = {
 // The page's own words, from the gallery spec.
 export const PAGE_WORDS = ['TOOL_BRAND', 'TOOL_GALLERY_LINK', 'TOOL_SOURCE_LINK', 'TOOL_DATA_LABEL', 'TOOL_PRIVACY', 'TOOL_PRIVACY_FILES', 'TOOL_NOSCRIPT']
 
+// The Russian words of the pages: a contract spec (no Cyrillic) names the bundle that holds them.
+export const RU_SPEC = 'specs/widgets/i18n/widgets-ru.t27'
+
 export const pageOut = (id) => `public/widgets/${id}/index.html`
 export const specOut = (id) => `public/widgets/${id}/${id}.t27`
 export const moduleOf = (id) => `widget_${id.replaceAll('-', '_')}`
@@ -70,6 +73,61 @@ function toolFiles(root, id) {
   }
   if (existsSync(dir)) walk('')
   return out
+}
+
+// Relative files a script or stylesheet loads: import '...', from '...', new URL('...', import.meta.url), url(...).
+const REF_RE = /(?:\bimport\s*\(?\s*|\bfrom\s*|new URL\(\s*)['"](\.{1,2}\/[^'"]+)['"]|url\(\s*['"]?(\.{1,2}\/[^'")]+)/g
+
+/**
+ * Every file the page loads, as paths under public/widgets: the widget's own files, the shared
+ * widget.css, and every shared file its scripts and stylesheets reach (../infographic.js, which
+ * loads ./infographic.css). An edit to any of them changes the page's ?v= stamp.
+ */
+export function pageFiles(root, id) {
+  const base = join(root, 'public/widgets')
+  const seen = new Set([...toolFiles(root, id).map((r) => `${id}/${r}`), 'widget.css'])
+  const queue = [...seen]
+  while (queue.length) {
+    const rel = queue.shift()
+    if (!/\.(m?js|css)$/.test(rel) || !existsSync(join(base, rel))) continue
+    for (const m of readFileSync(join(base, rel), 'utf8').matchAll(REF_RE)) {
+      const target = join(dirname(rel), m[1] ?? m[2]).replace(/[?#].*$/, '')
+      if (target.startsWith('..') || seen.has(target) || !existsSync(join(base, target))) continue
+      seen.add(target)
+      queue.push(target)
+    }
+  }
+  return [...seen].sort()
+}
+
+/** The Russian bundle's words for every widget, checked against the specs; { words, problems }. */
+export function ruWords(analyze, tools, root = SITE) {
+  const file = join(root, RU_SPEC)
+  if (!existsSync(file)) return { words: {}, problems: [] }
+  const problems = []
+  const r = Object.fromEntries(Object.entries(constsOf(analyze(readFileSync(file, 'utf8')))).map(([k, v]) => [k, v.value]))
+  if (r.KIND !== 'i18n' || r.LOCALE !== 'ru') problems.push(`${RU_SPEC}: KIND must be i18n and LOCALE ru`)
+  const bundleRel = String(r.BUNDLE_PATH ?? '').replace(/^apps\/website\//, '')
+  let bundle = null
+  try { bundle = JSON.parse(readFileSync(join(root, bundleRel), 'utf8')) } catch (e) { problems.push(`${r.BUNDLE_PATH}: ${e.message}`) }
+  const words = bundle?.widgets ?? {}
+  const byId = Object.fromEntries(tools.map((t) => [t.fields.ID, t.fields]))
+  for (const [id, entry] of Object.entries(words)) {
+    const f = byId[id]
+    if (!f) { if (!r.ORPHANS_ALLOWED) problems.push(`${r.BUNDLE_PATH}: widget ${id} has no spec`); continue }
+    for (const [k, v] of Object.entries(entry)) {
+      if (!k.startsWith(r.FIELD_PREFIX) || !(k in f)) problems.push(`${r.BUNDLE_PATH}: ${id}.${k} is not a ${r.FIELD_PREFIX} field of its spec`)
+      else if (Array.isArray(f[k]) !== Array.isArray(v) || (Array.isArray(v) && v.length !== f[k].length)) problems.push(`${r.BUNDLE_PATH}: ${id}.${k} must keep the spec's shape (${Array.isArray(f[k]) ? `${f[k].length} items` : 'one string'})`)
+      else if ([].concat(v).some((s) => typeof s !== 'string' || !s.trim())) problems.push(`${r.BUNDLE_PATH}: ${id}.${k} has an empty word`)
+    }
+  }
+  for (const f of tools.map((t) => t.fields)) {
+    if (!(r.COVERAGE_PREFIXES ?? []).some((pre) => f.ID.startsWith(pre))) continue
+    for (const k of Object.keys(f).filter((k) => k.startsWith(r.FIELD_PREFIX))) {
+      if (!(k in (words[f.ID] ?? {}))) problems.push(`${r.BUNDLE_PATH}: ${f.ID}.${k} has no Russian`)
+    }
+  }
+  return { words, problems }
 }
 
 export function toolProblems(f, file, root = SITE) {
@@ -103,7 +161,7 @@ export function toolProblems(f, file, root = SITE) {
   return p
 }
 
-export function renderPage(f, g, { specSha, toolSha, cardSha }) {
+export function renderPage(f, g, { specSha, toolSha, cardSha, shared = [], ru = null }) {
   const url = `${g.ORIGIN}widgets/${f.ID}/`
   const image = `${url}card.png?v=${cardSha.slice(0, 12)}`
   const words = Object.fromEntries(Object.entries(f).filter(([k]) => k !== 'GENERATED'))
@@ -134,7 +192,8 @@ export function renderPage(f, g, { specSha, toolSha, cardSha }) {
 <meta name="twitter:description" content="${esc(f.DESCRIPTION)}">
 <meta name="twitter:image" content="${esc(image)}">
 <meta name="twitter:image:alt" content="${esc(f.IMAGE_ALT)}">
-<link rel="stylesheet" href="../widget.css?v=${toolSha.slice(0, 12)}">
+<link rel="stylesheet" href="../widget.css?v=${toolSha.slice(0, 12)}">${shared.length ? `
+<script type="importmap">${inlineJson({ imports: Object.fromEntries(shared.map((r) => [`../${r}`, `../${r}?v=${toolSha.slice(0, 12)}`])) })}</script>` : ''}
 <script>if(/[?&]embed=1\\b/.test(location.search))document.documentElement.classList.add('embed')</script>
 </head>
 <body class="t27-widget-page t27-widget-${esc(f.CATEGORY)}">
@@ -150,7 +209,8 @@ export function renderPage(f, g, { specSha, toolSha, cardSha }) {
 <details><summary>${esc(g.TOOL_DATA_LABEL)}</summary><ul>${sources}</ul></details>
 <p><a href="./${esc(f.ID)}.t27" target="_blank" rel="noopener">${esc(g.TOOL_SOURCE_LINK)}</a> &middot; <a href="../../#/queen?tab=widgets" target="_top">${esc(g.TOOL_GALLERY_LINK)}</a></p>
 </footer>
-<script>window.T27_WIDGET=${inlineJson(words)}</script>
+<script>window.T27_WIDGET=${inlineJson(words)}</script>${ru ? `
+<script>window.T27_WIDGET_RU=${inlineJson(ru)};if(/[?&]lang=ru\\b/.test(location.search)){Object.assign(window.T27_WIDGET,window.T27_WIDGET_RU);document.documentElement.lang='ru'}</script>` : ''}
 <script type="module" src="./tool.js?v=${toolSha.slice(0, 12)}"></script>
 </body>
 </html>
@@ -182,11 +242,13 @@ export function buildTool({ file, specText, analyze, gallery, root = SITE }) {
     problems.push(...tests.failures.map((m) => `${file}: test ${m}`))
   }
   if (problems.length) return { problems, fields, tests, page: null, publicSpec: null }
-  const files = toolFiles(root, fields.ID)
-  const toolSha = sha256(Buffer.concat(files.map((r) => readFileSync(join(root, 'public/widgets', fields.ID, r)))))
+  const files = pageFiles(root, fields.ID)
+  const toolSha = sha256(Buffer.concat(files.map((r) => readFileSync(join(root, 'public/widgets', r)))))
+  // Shared modules are imported without a query; an import map gives them the page's stamp.
+  const shared = files.filter((r) => !r.includes('/') && /\.m?js$/.test(r))
   const cardSha = sha256(readFileSync(join(root, 'public/widgets', fields.ID, 'card.png')))
   const specSha = sha256(Buffer.from(specText, 'utf8'))
-  return { problems, fields, tests, page: renderPage(fields, gallery, { specSha, toolSha, cardSha }), publicSpec: specText }
+  return { problems, fields, tests, page: renderPage(fields, gallery, { specSha, toolSha, cardSha, shared }), publicSpec: specText, stamps: { specSha, toolSha, cardSha, shared } }
 }
 
 /** The tool specs under specs/widgets: every .t27 there but the gallery. */
@@ -209,6 +271,10 @@ export async function buildAll({ analyze, root = SITE }) {
     problems.push(...out.problems)
     tools.push({ file, ...out })
   }
+  if (problems.length) return { problems, tools }
+  const ru = ruWords(analyze, tools, root)
+  problems.push(...ru.problems)
+  for (const t of tools) if (ru.words[t.fields.ID]) t.page = renderPage(t.fields, g, { ...t.stamps, ru: ru.words[t.fields.ID] })
   return { problems, tools }
 }
 

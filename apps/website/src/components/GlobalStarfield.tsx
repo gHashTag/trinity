@@ -20,10 +20,13 @@ const OWN_CANVAS = new Set([
   '/tree',
 ])
 
+// The course routes of specs/course/courses.t27, kept here so the starfield does not load the courses.
+const COURSE_ROOTS = ['/t27-basics', '/course', '/ai-numbers']
+
 export default function GlobalStarfield() {
   const { pathname } = useLocation()
   if (OWN_CANVAS.has(pathname)) return null
-  // The course draws on pure black, lesson pages included (owner, 2026-10-05).
-  if (pathname === '/course' || pathname.startsWith('/course/')) return null
+  // The courses draw on pure black, lesson pages included (owner, 2026-10-05).
+  if (COURSE_ROOTS.some((r) => pathname === r || pathname.startsWith(`${r}/`))) return null
   return <PhiStarfield />
 }
