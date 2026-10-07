@@ -171,11 +171,6 @@ export default function Footer() {
             <nav aria-label="Contact links">
               <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <li>
-                  <a href="https://www.reddit.com/r/t27ai/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7 }} aria-label="Visit Reddit community (opens in new tab)">
-                    Reddit
-                  </a>
-                </li>
-                <li>
                   <a href="https://github.com/gHashTag/trinity" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7 }} aria-label="Visit GitHub repository (opens in new tab)">
                     GitHub
                   </a>
