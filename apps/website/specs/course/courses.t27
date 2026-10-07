@@ -26,6 +26,9 @@ pub const GENERATED : [1]str = ["src/lib/course.generated.ts"];
 
 pub const COURSE_COUNT : u8 = 6;
 
+pub const COURSE_IDS : [6]str = ["t27-basics", "course", "ai-numbers", "goldenfloat", "verify-hardware", "clocks-and-cdc"];
+pub const COURSE_SPECS : [6]str = ["specs/course/t27-basics.t27", "specs/course/course.t27", "specs/course/ai-numbers.t27", "specs/course/goldenfloat.t27", "specs/course/verify-hardware.t27", "specs/course/clocks-and-cdc.t27"];
+
 pub const LESSONS_PER_COURSE : u8 = 27;
 pub const MODULES_PER_COURSE : u8 = 9;
 pub const LESSONS_PER_MODULE : u8 = 3;

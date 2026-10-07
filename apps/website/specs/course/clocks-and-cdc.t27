@@ -140,25 +140,43 @@ pub const LESSON_MODULES : [27]str = [
 ];
 pub const LESSON_WIDGETS : [27]str = [
     "t27c-clock-domain", "t27c-clocks", "t27c-wukong-v1",
-    "t27c-cts", "devkit-flow", "perf2-knockouts",
+    "t27c-cts", "tri-game-selftest", "race-the-bee",
     "t27c-mmcm", "t27c-mmcm-mutate", "t27c-timing",
     "t27c-reset-sync", "t27c-reset-sync-gen", "resource-bars",
     "vcd-wrapped", "t27c-mtbf", "t27c-clock-domain-gen",
     "t27c-fifo", "t27c-fifo-mutate", "tri-game-tick",
-    "t27c-fifo-flags", "perf2-loop", "tri-x7-mutate",
-    "t27c-emitter-xdc", "test-touch", "tri-fpga-rgmii",
-    "tri-game-vault", "t27c-fpga-rxcap", "bit-diff"
+    "t27c-fifo-flags", "t27-tri-competitors", "t27-tri-discard",
+    "t27c-emitter-xdc", "wars", "tri-fpga-rgmii",
+    "tri-game-vault", "t27c-fpga-rxcap", "tri-blog-list"
 ];
 pub const LESSON_ALSO : [27]str = [
-    "x7-board", "", "idcode",
-    "slack-waterfall", "", "",
-    "", "", "placement-map",
-    "", "", "",
-    "test-waves", "", "t27c-stages",
-    "", "", "",
-    "stat-card", "", "",
-    "pin-map", "", "",
-    "", "", "fasm-skyline"
+    "x7-board",
+    "",
+    "idcode",
+    "slack-waterfall",
+    "",
+    "",
+    "",
+    "",
+    "placement-map",
+    "",
+    "",
+    "",
+    "test-waves",
+    "",
+    "t27c-stages",
+    "",
+    "",
+    "",
+    "stat-card",
+    "",
+    "",
+    "pin-map",
+    "",
+    "",
+    "",
+    "",
+    "fasm-skyline"
 ];
 pub const LESSON_SPECS : [27]str = [
     "specs/fpga/clock_domain.t27", "specs/tools/trios/tri/clocks.t27", "specs/boards/wukong_v1.t27",
@@ -304,7 +322,7 @@ test it_starts_with_one_edge_and_ends_with_a_diff {
     assert LESSON_SPECS[0] == "specs/fpga/clock_domain.t27";
     assert MODULE_IDS[8] == "on-the-board";
     assert LESSON_MODULES[26] == "on-the-board";
-    assert LESSON_WIDGETS[26] == "bit-diff";
+    assert LESSON_WIDGETS[26] == "tri-blog-list";
     assert LESSON_SPECS[26] == "specs/fpga/fifo.t27";
 }
 
@@ -330,7 +348,7 @@ test metastability_comes_before_the_fifo {
     assert LESSON_WIDGETS[13] == "t27c-mtbf";
     assert MODULE_IDS[6] == "async-fifo";
     assert LESSON_WIDGETS[16] == "t27c-fifo-mutate";
-    assert LESSON_WIDGETS[19] == "perf2-loop";
+    assert LESSON_WIDGETS[19] == "t27-tri-competitors";
 }
 
 test the_constraints_module_names_the_emitter_twice {
@@ -345,7 +363,7 @@ test the_board_module_reads_real_runs {
     assert MODULE_IDS[8] == "on-the-board";
     assert LESSON_WIDGETS[24] == "tri-game-vault";
     assert LESSON_WIDGETS[25] == "t27c-fpga-rxcap";
-    assert LESSON_WIDGETS[26] == "bit-diff";
+    assert LESSON_WIDGETS[26] == "tri-blog-list";
     assert LESSON_SPECS[25] == "specs/tools/trios/tri/fpga-rxcap.t27";
 }
 
