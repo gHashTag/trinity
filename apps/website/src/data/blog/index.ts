@@ -13,7 +13,7 @@ export const postsIndex: PostMeta[] = [
       { label: "The recording in the post: ocp_mx.t27 on native t27c, 49 of 49 tests, then one planted bias change fails one test", href: "https://t27.ai/term/t27c-ocp-mx/" },
       { label: "The recording of lesson 32: e8m0.t27 on native t27c, 18 of 18 tests and 9 invariants", href: "https://t27.ai/term/t27c-e8m0/" },
       { label: "The player on e8m0.t27, seven backends and the spec's checks in your browser", href: "https://t27.ai/play/e8m0/" },
-      { label: "Lesson 33, one outlier, many zeros", href: "https://t27.ai/learn/one-outlier/" },
+      { label: "AI numbers course, lesson 6 (lesson 33 when this was posted): one outlier, many zeros", href: "https://t27.ai/learn/one-outlier/" },
       { label: "trinity#1443: course module 11, AI numbers, the MX block (lessons 31 to 33)", href: "https://github.com/gHashTag/trinity/pull/1443" },
       { label: "trinity#1440: the module's issue", href: "https://github.com/gHashTag/trinity/issues/1440" },
       { label: "trinity#1445: this post", href: "https://github.com/gHashTag/trinity/pull/1445" },

@@ -1,5 +1,7 @@
-// Static pages for the course, one per lesson and one for the course, in both
-// languages: public/learn/<id>/index.html and public/ru/learn/<id>/index.html.
+// Static pages for the courses, one per lesson and one per course, in both
+// languages: public/learn/<id>/index.html and public/ru/learn/<id>/index.html
+// for lessons, the course's own share path (learn/ for the first course,
+// learn/<course>/ for the next) for each course.
 //
 // Why they exist: the course lives at #/course, and a crawler drops everything
 // after the '#'. A link to t27.ai/#/course posted on X previewed as the home
@@ -8,9 +10,11 @@
 // preview card, canonical, hreflang pair, and a link into the interactive
 // lesson. No redirect: the apex verify-site.sh refuses a landing that
 // auto-redirects, because a search engine files it under the home page.
+// Each course has its own pages and cards, so each can be shared on its own;
+// the last lesson of one course links to lesson 1 of the next.
 //
-// Every word comes from src/lib/course.generated.ts (specs/course/course.t27
-// and i18n/course.ru.json); nothing is written here twice.
+// Every word comes from src/lib/course.generated.ts (specs/course/courses.t27,
+// each course spec and its Russian bundle); nothing is written here twice.
 //
 //   node scripts/course-pages.mjs           # write pages + sitemap, render stale cards
 //   node scripts/course-pages.mjs --check   # CI: pages current, every card present and current
@@ -55,16 +59,18 @@ function specSourceOf(spec) {
   return p && existsSync(p) ? readFileSync(p, 'utf8') : null
 }
 
-export function loadCourse(file = join(SITE, 'src/lib/course.generated.ts')) {
+export function loadCourses(file = join(SITE, 'src/lib/course.generated.ts')) {
   const s = readFileSync(file, 'utf8')
-  const head = 'export const COURSE = '
-  return JSON.parse(s.slice(s.indexOf(head) + head.length, s.indexOf('} as const') + 1))
+  const head = 'export const COURSES = '
+  return JSON.parse(s.slice(s.indexOf(head) + head.length, s.indexOf('\n] as const') + 2))
 }
 
-/** Site path of a page: learn/ or learn/<id>/, under ru/ for Russian. */
-const pathOf = (lang, id) => `${lang === 'ru' ? 'ru/' : ''}${BASE}/${id ? `${id}/` : ''}`
-const urlOf = (lang, id) => `${ORIGIN}/${pathOf(lang, id)}`
-const appOf = (id) => `/#/course${id ? `/${id}` : ''}`
+/** Site path of a page: the course's share path, or learn/<lesson>/; under ru/ for Russian. */
+export const pathOf = (C, lang, id) => `${lang === 'ru' ? 'ru/' : ''}${id ? `${BASE}/${id}/` : C.share}`
+const urlOf = (C, lang, id) => `${ORIGIN}/${pathOf(C, lang, id)}`
+export const appOf = (C, id) => `/#/${C.route}${id ? `/${id}` : ''}`
+/** A neighbouring course's lesson page: lesson pages live under learn/ whatever the course. */
+const lessonPath = (lang, id) => `${lang === 'ru' ? 'ru/' : ''}${BASE}/${id}/`
 
 /** The widget's own preview card, if the gallery page has one: its picture goes on the lesson card. */
 function thumbOf(widget) {
@@ -111,7 +117,7 @@ p { margin-top: 22px; font-size: 27px; line-height: 1.32; color: #b9c4c2; displa
 </style></head><body><div class="glow"></div>
 <div class="top"><span class="brand">t27.ai · ${esc(say.KICKER)}</span><span class="where">${esc(kicker)}</span></div>
 <div class="main"><div class="text">${lesson ? `<div class="n">${esc(fmt(say.LESSON, pad(lesson.n), C.lessons.length))}</div>` : ''}<h1>${esc(title)}</h1><p>${esc(sub)}</p></div>${thumb ? `<div class="thumb"><img src="${pathToFileURL(thumb).href}"></div>` : ''}</div>
-<div class="bottom"><div class="cells">${cells}</div><span class="url">t27.ai/${esc(pathOf(lang, lesson?.id).replace(/\/$/, ''))}</span></div>
+<div class="bottom"><div class="cells">${cells}</div><span class="url">t27.ai/${esc(pathOf(C, lang, lesson?.id).replace(/\/$/, ''))}</span></div>
 </body></html>`
 }
 
@@ -135,58 +141,64 @@ function pageHtml(C, lang, lesson, cardUrl) {
   const ogTitle = lesson ? t.title : say.TITLE
   const ogDesc = lesson ? t.goal : say.LEAD
   const alt = lesson ? `${say.KICKER}, ${fmt(say.LESSON, lesson.n, total)}: ${t.title}. ${t.goal}` : `${say.TITLE}. ${say.LEAD}`
-  const course = { '@type': 'Course', name: say.TITLE, description: say.DESCRIPTION, url: urlOf(lang), inLanguage: lang, isAccessibleForFree: true, educationalLevel: 'Beginner', provider: { '@type': 'Organization', name: 'TRINITY S³AI', url: `${ORIGIN}/` } }
+  const course = { '@type': 'Course', name: say.TITLE, description: say.DESCRIPTION, url: urlOf(C, lang), inLanguage: lang, isAccessibleForFree: true, educationalLevel: 'Beginner', provider: { '@type': 'Organization', name: 'TRINITY S³AI', url: `${ORIGIN}/` } }
   const crumbs = { '@type': 'BreadcrumbList', itemListElement: [
     { '@type': 'ListItem', position: 1, name: 't27.ai', item: `${ORIGIN}/${lang === 'ru' ? 'ru/' : ''}` },
-    { '@type': 'ListItem', position: 2, name: say.TITLE, item: urlOf(lang) },
-    ...(lesson ? [{ '@type': 'ListItem', position: 3, name: t.title, item: urlOf(lang, id) }] : []),
+    { '@type': 'ListItem', position: 2, name: say.TITLE, item: urlOf(C, lang) },
+    ...(lesson ? [{ '@type': 'ListItem', position: 3, name: t.title, item: urlOf(C, lang, id) }] : []),
   ] }
   const about = lesson ? aboutOf(lesson.widget) : null
   const code = lesson ? specSourceOf(lesson.spec) : null
   const main = lesson
-    ? { '@context': 'https://schema.org', '@type': 'LearningResource', name: t.title, description: t.goal, url: urlOf(lang, id), inLanguage: lang, learningResourceType: 'lesson', position: lesson.n, isAccessibleForFree: true, isPartOf: course }
-    : { '@context': 'https://schema.org', ...course, hasPart: C.lessons.map((l) => ({ '@type': 'LearningResource', name: l[lang].title, url: urlOf(lang, l.id), position: l.n })) }
-  const list = lesson ? null : { '@type': 'ItemList', itemListElement: C.lessons.map((l) => ({ '@type': 'ListItem', position: l.n, url: urlOf(lang, l.id), name: l[lang].title })) }
+    ? { '@context': 'https://schema.org', '@type': 'LearningResource', name: t.title, description: t.goal, url: urlOf(C, lang, id), inLanguage: lang, learningResourceType: 'lesson', position: lesson.n, isAccessibleForFree: true, isPartOf: course }
+    : { '@context': 'https://schema.org', ...course, hasPart: C.lessons.map((l) => ({ '@type': 'LearningResource', name: l[lang].title, url: urlOf(C, lang, l.id), position: l.n })) }
+  const list = lesson ? null : { '@type': 'ItemList', itemListElement: C.lessons.map((l) => ({ '@type': 'ListItem', position: l.n, url: urlOf(C, lang, l.id), name: l[lang].title })) }
   const ld = [main, { '@context': 'https://schema.org', ...crumbs }, ...(list ? [{ '@context': 'https://schema.org', ...list }] : [])]
-  const link = (l) => `<a href="/${pathOf(lang, l.id)}">${pad(l.n)} ${esc(l[lang].title)}</a>`
+  const link = (l) => `<a href="/${pathOf(C, lang, l.id)}">${pad(l.n)} ${esc(l[lang].title)}</a>`
   const outline = C.modules.map((m) => `<li><h3>${esc(fmt(say.MODULE, m.n))} · ${esc(m[lang].title)}</h3><p>${esc(m[lang].line)}</p><ol>${m.lessons
     .map((lid) => C.lessons.find((l) => l.id === lid))
     .map((l) => `<li${l.id === id ? ' class="on" aria-current="page"' : ''}>${link(l)}</li>`).join('')}</ol></li>`).join('')
   const prev = lesson && lesson.n > 1 ? C.lessons[lesson.n - 2] : null
   const next = lesson && lesson.n < total ? C.lessons[lesson.n] : null
+  // At a course's edge the pager hands the reader to the neighbouring course.
+  const chain = (to, lid, isNext) => `<a class="chain" href="/${lid ? lessonPath(lang, lid) : `${lang === 'ru' ? 'ru/' : ''}${to.share}`}">${isNext ? `${esc(say.NEXT_COURSE)}: ${esc(to.title[lang])} →` : `← ${esc(say.PREV_COURSE)}: ${esc(to.title[lang])}`}</a>`
+  const back = prev ? `<a href="/${pathOf(C, lang, prev.id)}">← ${esc(prev[lang].title)}</a>` : lesson && C.prev ? chain(C.prev, C.prev.last, false) : '<span></span>'
+  const fwd = next ? `<a href="/${pathOf(C, lang, next.id)}">${esc(next[lang].title)} →</a>` : lesson && C.next ? chain(C.next, C.next.first, true) : '<span></span>'
+  const courses = C.prev || C.next ? `<nav class="pager">${C.prev ? chain(C.prev, null, false) : '<span></span>'}${C.next ? chain(C.next, null, true) : '<span></span>'}</nav>` : ''
   const thumb = lesson && thumbOf(lesson.widget) ? `/${relative(PUBLIC, thumbOf(lesson.widget))}` : null
   const body = lesson
-    ? `<nav class="crumbs"><a href="/${pathOf(lang)}">${esc(say.ALL)}</a><span>${esc(fmt(say.MODULE, mod.n))} · ${esc(mod[lang].title)}</span><span>${esc(fmt(say.LESSON, lesson.n, total))}</span></nav>
+    ? `<nav class="crumbs"><a href="/${pathOf(C, lang)}">${esc(say.ALL)}</a><span>${esc(fmt(say.MODULE, mod.n))} · ${esc(mod[lang].title)}</span><span>${esc(fmt(say.LESSON, lesson.n, total))}</span></nav>
 <h1>${esc(t.title)}</h1>
 <section><h2>${esc(say.GOAL)}</h2><p class="goal">${esc(t.goal)}</p></section>
 <p>${esc(t.text)}</p>
 <section><h2>${esc(say.TRY)}</h2><p>${esc(t.task)}</p></section>
-<p><a class="cta" href="${appOf(id)}">${esc(say.OPEN_LESSON)} →</a></p>
+<p><a class="cta" href="${appOf(C, id)}">${esc(say.OPEN_LESSON)} →</a></p>
 <figure><a href="${esc(lesson.widget.url.slice(ORIGIN.length))}">${thumb ? `<img src="${esc(thumb)}" width="600" height="315" alt="${esc(lesson.widget.title)}" loading="lazy">` : ''}<figcaption>${esc(lesson.widget.title)} ↗</figcaption></a></figure>
 ${about ? `<p class="about" lang="en">${esc(about)}</p>` : ''}
 ${lesson.spec ? `<section><h2>${esc(lesson.spec.path)}</h2>${code ? `<pre lang="en"><code>${esc(code)}</code></pre>` : ''}<p><a href="/${esc(lesson.spec.preview)}">${esc(say.SPEC)} ↗</a></p></section>` : ''}
-<nav class="pager">${prev ? `<a href="/${pathOf(lang, prev.id)}">← ${esc(prev[lang].title)}</a>` : '<span></span>'}${next ? `<a href="/${pathOf(lang, next.id)}">${esc(next[lang].title)} →</a>` : '<span></span>'}</nav>`
+<nav class="pager">${back}${fwd}</nav>`
     : `<p class="kicker">${esc(say.KICKER)}</p>
 <h1>${esc(say.TITLE)}</h1>
 <p class="goal">${esc(say.LEAD)}</p>
 <p>${esc(say.DESCRIPTION)}</p>
-<p><a class="cta" href="${appOf()}">${esc(say.OPEN_COURSE)} →</a></p>`
+<p><a class="cta" href="${appOf(C)}">${esc(say.OPEN_COURSE)} →</a></p>
+${courses}`
   return `<!doctype html>
 <html lang="${lang}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- GENERATED by scripts/course-pages.mjs from specs/course/course.t27; do not edit. -->
+<!-- GENERATED by scripts/course-pages.mjs from ${C.source.spec}; do not edit. -->
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(desc)}">
-<link rel="canonical" href="${urlOf(lang, id)}">
-<link rel="alternate" hreflang="${lang}" href="${urlOf(lang, id)}">
-<link rel="alternate" hreflang="${other}" href="${urlOf(other, id)}">
-<link rel="alternate" hreflang="x-default" href="${urlOf('en', id)}">
+<link rel="canonical" href="${urlOf(C, lang, id)}">
+<link rel="alternate" hreflang="${lang}" href="${urlOf(C, lang, id)}">
+<link rel="alternate" hreflang="${other}" href="${urlOf(C, other, id)}">
+<link rel="alternate" hreflang="x-default" href="${urlOf(C, 'en', id)}">
 <meta property="og:type" content="${lesson ? 'article' : 'website'}">
 <meta property="og:site_name" content="TRINITY S³AI">
 <meta property="og:locale" content="${lang === 'ru' ? 'ru_RU' : 'en_US'}">
-<meta property="og:url" content="${urlOf(lang, id)}">
+<meta property="og:url" content="${urlOf(C, lang, id)}">
 <meta property="og:title" content="${esc(ogTitle)}">
 <meta property="og:description" content="${esc(ogDesc)}">
 <meta property="og:image" content="${cardUrl}">
@@ -217,7 +229,7 @@ h3 { font-size: 17px; margin: 18px 0 2px; color: #fff; }
 .cta:hover { background: #08FAB5; color: #000; }
 figure { margin: 24px 0; } figure img { width: 100%; height: auto; border: 1px solid #22302c; border-radius: 12px; display: block; }
 figcaption { font-size: 15px; margin-top: 8px; }
-.pager { display: flex; justify-content: space-between; gap: 16px; margin: 32px 0; padding-top: 20px; border-top: 1px solid #1e2624; }
+.pager { display: flex; justify-content: space-between; gap: 16px; margin: 32px 0; padding-top: 20px; border-top: 1px solid #1e2624; } .pager .chain { font-weight: 600; }
 .outline { list-style: none; padding: 0; } .outline ol { list-style: none; padding-left: 0; margin: 4px 0; } .outline p { margin: 0; color: #8fa19d; font-size: 15px; }
 pre { overflow-x: auto; background: #0b0f0e; border: 1px solid #1e2624; border-radius: 10px; padding: 14px 16px; font: 13px/1.5 'JetBrains Mono', ui-monospace, monospace; color: #cfe3de; max-height: 520px; }
 .about { color: #b9c4c2; font-size: 16px; }
@@ -226,11 +238,11 @@ pre { overflow-x: auto; background: #0b0f0e; border: 1px solid #1e2624; border-r
 </style>
 </head>
 <body>
-<header><a href="/${lang === 'ru' ? 'ru/' : ''}">t27.ai</a><a href="/${pathOf(other, id)}" hreflang="${other}" lang="${other}">${other === 'ru' ? 'Русский' : 'English'}</a></header>
+<header><a href="/${lang === 'ru' ? 'ru/' : ''}">t27.ai</a><a href="/${pathOf(C, other, id)}" hreflang="${other}" lang="${other}">${other === 'ru' ? 'Русский' : 'English'}</a></header>
 <main>
 ${body}
 <section><h2>${esc(say.ALL)}</h2><ul class="outline">${outline}</ul></section>
-<footer><p><a href="/${BASE}/course.t27">${esc(say.SOURCE)}</a></p><p>${esc(say.WIDGET_LANG)}</p></footer>
+<footer><p><a href="/${C.source.publicSpec.replace(/^public\//, '')}">${esc(say.SOURCE)}</a></p><p>${esc(say.WIDGET_LANG)}</p></footer>
 </main>
 </body>
 </html>
@@ -239,29 +251,34 @@ ${body}
 
 // ---------------------------------------------------------------- the build
 
-/** Every page with its card: [{ lang, lesson, dir, html, card }]. */
-export function buildPages(C, manifest = {}) {
+/** Every page of every course with its card: [{ course, lang, lesson, dir, html, card }]. */
+export function buildPages(courses, manifest = {}) {
   const pages = []
-  for (const lang of C.locales) {
-    for (const lesson of [null, ...C.lessons]) {
-      const dir = pathOf(lang, lesson?.id)
-      const card = cardHtml(C, lang, lesson)
-      const png = join(PUBLIC, dir, 'card.png')
-      const v = existsSync(png) ? sha(readFileSync(png)).slice(0, 12) : 'missing'
-      const cardUrl = `${ORIGIN}/${dir}card.png?v=${v}`
-      pages.push({ lang, lesson, dir, card, input: cardInput(card), png, html: pageHtml(C, lang, lesson, cardUrl), drawn: manifest[dir] })
+  for (const C of courses) {
+    for (const lang of C.locales) {
+      for (const lesson of [null, ...C.lessons]) {
+        const dir = pathOf(C, lang, lesson?.id)
+        const card = cardHtml(C, lang, lesson)
+        const png = join(PUBLIC, dir, 'card.png')
+        const v = existsSync(png) ? sha(readFileSync(png)).slice(0, 12) : 'missing'
+        const cardUrl = `${ORIGIN}/${dir}card.png?v=${v}`
+        pages.push({ course: C, lang, lesson, dir, card, input: cardInput(card), png, html: pageHtml(C, lang, lesson, cardUrl), drawn: manifest[dir] })
+      }
     }
   }
+  const dirs = pages.map((p) => p.dir)
+  const twice = dirs.filter((d, i) => dirs.indexOf(d) !== i)
+  if (twice.length) throw new Error(`course-pages: two pages share ${twice.join(', ')}`)
   return pages
 }
 
 export function sitemapOf(pages) {
   return `<?xml version="1.0" encoding="UTF-8"?>
-<!-- GENERATED by scripts/course-pages.mjs; the course's static pages. -->
+<!-- GENERATED by scripts/course-pages.mjs; the courses' static pages. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ${pages.map((p) => {
     const id = p.lesson?.id
-    return `  <url><loc>${urlOf(p.lang, id)}</loc>${['en', 'ru'].map((h) => `<xhtml:link rel="alternate" hreflang="${h}" href="${urlOf(h, id)}"/>`).join('')}</url>`
+    return `  <url><loc>${urlOf(p.course, p.lang, id)}</loc>${['en', 'ru'].map((h) => `<xhtml:link rel="alternate" hreflang="${h}" href="${urlOf(p.course, h, id)}"/>`).join('')}</url>`
   }).join('\n')}
 </urlset>
 `
@@ -317,9 +334,9 @@ async function render(chrome, html, png) {
 
 async function main() {
   const check = process.argv.includes('--check')
-  const C = loadCourse()
+  const courses = loadCourses()
   const manifest = existsSync(MANIFEST) ? JSON.parse(readFileSync(MANIFEST, 'utf8')) : {}
-  let pages = buildPages(C, manifest)
+  let pages = buildPages(courses, manifest)
   if (!check) {
     const stale = pages.filter((p) => p.drawn !== p.input || !existsSync(p.png))
     if (stale.length) {
@@ -333,7 +350,7 @@ async function main() {
       writeFileSync(MANIFEST, `${JSON.stringify(Object.fromEntries(Object.entries(manifest).sort()), null, 2)}\n`)
       console.log(`course-pages: drew ${stale.length} card(s) with ${chrome.split('/').pop()}`)
     }
-    pages = buildPages(C, manifest) // og:image ?v= follows the new card bytes
+    pages = buildPages(courses, manifest) // og:image ?v= follows the new card bytes
     for (const p of pages) {
       mkdirSync(join(PUBLIC, p.dir), { recursive: true })
       writeFileSync(join(PUBLIC, p.dir, 'index.html'), p.html)
@@ -345,7 +362,7 @@ async function main() {
     console.error(problems.join('\n'))
     process.exit(1)
   }
-  console.log(`course-pages: ${check ? 'up to date' : 'wrote'} ${pages.length} pages (${C.locales.join(', ')}), ${pages.length} cards, ${BASE}/sitemap.xml`)
+  console.log(`course-pages: ${check ? 'up to date' : 'wrote'} ${pages.length} pages for ${courses.length} courses (${courses.map((c) => c.id).join(', ')}), ${pages.length} cards, ${BASE}/sitemap.xml`)
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) await main()
