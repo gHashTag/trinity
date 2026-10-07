@@ -1,6 +1,6 @@
 import type { Block } from '../types'
 
-// Lesson titles, specs and pending marks come from specs/course/goldenfloat.t27;
+// Lesson titles and specs come from specs/course/goldenfloat.t27;
 // the format numbers are constants of the specs each lesson opens.
 
 export const body: Block[] = [
@@ -14,11 +14,11 @@ export const body: Block[] = [
   },
   {
     "kind": "p",
-    "text": "20 of the 27 lessons open a black-and-white table drawn from one spec: the fields of one format, its bias and its distance from 1 / phi, or the values a test checks. Every number in a table is a constant or a test value of the spec the lesson opens, or arithmetic of them. Where a test writes its value in rather than computing it, as in gf_competitive.t27, the lesson says so."
+    "text": "Each of the 27 lessons opens a black-and-white table drawn from one spec: the fields of one format, its bias and its distance from 1 / phi, or the values a test checks. Every number in a table is a constant or a test value of the spec the lesson opens, or arithmetic of them. Where a test writes its value in rather than computing it, as in gf_competitive.t27, the lesson says so. Where a comment and the code of a spec disagree, the lesson says which is which: in gf8.t27 a comment gives 15.5 as the largest value and the code computes 31."
   },
   {
     "kind": "p",
-    "text": "7 lessons are pending. Their own specs (phi_ratio, phi_split_optimality, radix_economy, gf8, gf12, gf24, gf32) are in the repository but do not compile clean in the browser compiler yet. Each of those lessons opens a placeholder that shows no run, and opens the family spec meanwhile."
+    "text": "The 27 lessons sit in 9 modules of 3: the rule and its numbers; why phi, why three; GF4 to GF8; ten to fourteen bits; GF16 at work; GF32 to GF64; GF96 to GF256; the widest rungs, then trits; more trits, then the decode. 7 lesson specs (phi_ratio, phi_split_optimality, radix_economy, gf8, gf12, gf24, gf32) did not compile clean in the browser compiler; each got the smallest change that makes it compile, and the same change is proposed upstream as gHashTag/t27 PR 7496."
   },
   {
     "kind": "h",
@@ -42,8 +42,8 @@ export const body: Block[] = [
       [
         "2",
         "Phi as a ratio",
-        "numeric/goldenfloat_family.t27",
-        "pending"
+        "numeric/phi_ratio.t27",
+        "table"
       ],
       [
         "3",
@@ -54,14 +54,14 @@ export const body: Block[] = [
       [
         "4",
         "Why the split is phi",
-        "numeric/goldenfloat_family.t27",
-        "pending"
+        "math/phi_split_optimality.t27",
+        "table"
       ],
       [
         "5",
         "Why base three",
-        "numeric/goldenfloat_family.t27",
-        "pending"
+        "math/radix_economy.t27",
+        "table"
       ],
       [
         "6",
@@ -84,8 +84,8 @@ export const body: Block[] = [
       [
         "9",
         "GF8: one byte",
-        "numeric/goldenfloat_family.t27",
-        "pending"
+        "numeric/gf8.t27",
+        "table"
       ],
       [
         "10",
@@ -96,8 +96,8 @@ export const body: Block[] = [
       [
         "11",
         "GF12: twelve bits",
-        "numeric/goldenfloat_family.t27",
-        "pending"
+        "numeric/gf12.t27",
+        "table"
       ],
       [
         "12",
@@ -120,14 +120,14 @@ export const body: Block[] = [
       [
         "15",
         "GF20 and GF24",
-        "numeric/goldenfloat_family.t27",
-        "pending"
+        "numeric/gf24.t27",
+        "table"
       ],
       [
         "16",
         "GF32: a single",
-        "numeric/goldenfloat_family.t27",
-        "pending"
+        "numeric/gf32.t27",
+        "table"
       ],
       [
         "17",
@@ -218,11 +218,11 @@ export const ruBody: Block[] = [
   },
   {
     "kind": "p",
-    "text": "20 из 27 уроков открывают чёрно-белую таблицу из одной спеки: поля одного формата, его смещение и расстояние до 1 / phi или значения, которые проверяет тест. Каждое число в таблице — константа или тестовое значение спеки урока либо арифметика над ними. Где тест вписывает значение, а не вычисляет его, как в gf_competitive.t27, урок так и говорит."
+    "text": "Каждый из 27 уроков открывает чёрно-белую таблицу из одной спеки: поля одного формата, его смещение и расстояние до 1 / phi или значения, которые проверяет тест. Каждое число в таблице — константа или тестовое значение спеки урока либо арифметика над ними. Где тест вписывает значение, а не вычисляет его, как в gf_competitive.t27, урок так и говорит. Где комментарий и код спеки расходятся, урок говорит, что есть что: в gf8.t27 комментарий называет наибольшим значением 15.5, а код вычисляет 31."
   },
   {
     "kind": "p",
-    "text": "7 уроков ждут. Их собственные спеки (phi_ratio, phi_split_optimality, radix_economy, gf8, gf12, gf24, gf32) есть в репозитории, но пока не компилируются чисто в браузерном компиляторе. Каждый такой урок открывает заглушку, которая не показывает прогона, и пока открывает спеку семейства."
+    "text": "27 уроков собраны в 9 модулей по 3: правило и его числа; почему phi, почему три; от GF4 до GF8; от десяти до четырнадцати битов; GF16 в работе; от GF32 до GF64; от GF96 до GF256; самые широкие ступени, затем триты; ещё триты, затем раскодирование. 7 спек уроков (phi_ratio, phi_split_optimality, radix_economy, gf8, gf12, gf24, gf32) не компилировались чисто в браузерном компиляторе; каждая получила наименьшую правку, с которой компилируется, и та же правка предложена в gHashTag/t27 как PR 7496."
   },
   {
     "kind": "h",
@@ -246,8 +246,8 @@ export const ruBody: Block[] = [
       [
         "2",
         "Phi как отношение",
-        "numeric/goldenfloat_family.t27",
-        "ждёт"
+        "numeric/phi_ratio.t27",
+        "таблица"
       ],
       [
         "3",
@@ -258,14 +258,14 @@ export const ruBody: Block[] = [
       [
         "4",
         "Почему деление по phi",
-        "numeric/goldenfloat_family.t27",
-        "ждёт"
+        "math/phi_split_optimality.t27",
+        "таблица"
       ],
       [
         "5",
         "Почему основание три",
-        "numeric/goldenfloat_family.t27",
-        "ждёт"
+        "math/radix_economy.t27",
+        "таблица"
       ],
       [
         "6",
@@ -288,8 +288,8 @@ export const ruBody: Block[] = [
       [
         "9",
         "GF8: один байт",
-        "numeric/goldenfloat_family.t27",
-        "ждёт"
+        "numeric/gf8.t27",
+        "таблица"
       ],
       [
         "10",
@@ -300,8 +300,8 @@ export const ruBody: Block[] = [
       [
         "11",
         "GF12: двенадцать битов",
-        "numeric/goldenfloat_family.t27",
-        "ждёт"
+        "numeric/gf12.t27",
+        "таблица"
       ],
       [
         "12",
@@ -324,14 +324,14 @@ export const ruBody: Block[] = [
       [
         "15",
         "GF20 и GF24",
-        "numeric/goldenfloat_family.t27",
-        "ждёт"
+        "numeric/gf24.t27",
+        "таблица"
       ],
       [
         "16",
         "GF32: одинарная точность",
-        "numeric/goldenfloat_family.t27",
-        "ждёт"
+        "numeric/gf32.t27",
+        "таблица"
       ],
       [
         "17",

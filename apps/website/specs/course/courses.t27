@@ -6,8 +6,8 @@
 ; contract specs/course/<id>-ru.t27) and holds each one to the shape this file declares.
 ; ASCII only (L3), English only (LANG-EN).
 
-; WHAT A COURSE IS: 27 modules of one lesson each, the size of a TRI-27
-; word (owner's decision 2026-10-07: 27 modules, not 9 modules of 3). Every lesson
+; WHAT A COURSE IS: 27 lessons in 9 modules of 3, the size of a TRI-27 word (owner's
+; decision 2026-10-07: 9 modules of 3 lessons, not 27 modules of one). Every lesson
 ; opens one working widget and one t27 spec the reader can run in the player. Each course has
 ; its own address in the app (#/<route>) and its own share pages (learn/ for the first,
 ; learn/<id>/ for the next), so each can be shared on its own; the last lesson of one course
@@ -32,8 +32,8 @@ pub const COURSE_IDS : [4]str = ["t27-basics", "course", "ai-numbers", "goldenfl
 pub const COURSE_SPECS : [4]str = ["specs/course/t27-basics.t27", "specs/course/course.t27", "specs/course/ai-numbers.t27", "specs/course/goldenfloat.t27"];
 
 pub const LESSONS_PER_COURSE : u8 = 27;
-pub const MODULES_PER_COURSE : u8 = 27;
-pub const LESSONS_PER_MODULE : u8 = 1;
+pub const MODULES_PER_COURSE : u8 = 9;
+pub const LESSONS_PER_MODULE : u8 = 3;
 
 ; One key for every course: progress stays in the reader's browser.
 pub const PROGRESS_KEY : str = "t27-course-done";
@@ -41,8 +41,8 @@ pub const PROGRESS_KEY : str = "t27-course-done";
 pub const SHARE_BASE : str = "learn";
 
 test every_course_is_three_cubed {
-    assert LESSONS_PER_MODULE == 1;
-    assert MODULES_PER_COURSE == 27;
+    assert LESSONS_PER_MODULE == 3;
+    assert MODULES_PER_COURSE == 9;
     assert MODULES_PER_COURSE * LESSONS_PER_MODULE == LESSONS_PER_COURSE;
     assert LESSONS_PER_COURSE == 3 * 3 * 3;
 }

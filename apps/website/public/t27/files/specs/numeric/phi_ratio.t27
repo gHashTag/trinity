@@ -94,7 +94,7 @@ module PhiRatio {
                 matches_phi_split = true,
                 tradeoff_note = "Perfect φ-split match",
             },
-            // GF8: φ-split gives exp=2, mant=5 → actual is 3/4
+            // GF8: φ-split gives exp=3, mant=4 → MATCH
             FormatComparison{
                 name = "GF8",
                 bits = 8,
@@ -105,7 +105,7 @@ module PhiRatio {
                 matches_phi_split = true,
                 tradeoff_note = "Exact match: round(7/φ²)=3",
             },
-            // GF12: φ-split gives exp=3, mant=8 → actual is 4/7
+            // GF12: φ-split gives exp=4, mant=7 → MATCH
             FormatComparison{
                 name = "GF12",
                 bits = 12,
@@ -116,7 +116,7 @@ module PhiRatio {
                 matches_phi_split = true,
                 tradeoff_note = "Exact match: round(11/φ²)=4",
             },
-            // GF16: φ-split gives exp=4, mant=11 → actual is 6/9
+            // GF16: φ-split gives exp=6, mant=9 → MATCH
             FormatComparison{
                 name = "GF16",
                 bits = 16,
@@ -127,7 +127,7 @@ module PhiRatio {
                 matches_phi_split = true,
                 tradeoff_note = "PRIMARY FORMAT: exact match: round(15/φ²)=6",
             },
-            // GF20: φ-split gives exp=5, mant=14 → actual is 7/12
+            // GF20: φ-split gives exp=7, mant=12 → MATCH
             FormatComparison{
                 name = "GF20",
                 bits = 20,
@@ -138,27 +138,30 @@ module PhiRatio {
                 matches_phi_split = true,
                 tradeoff_note = "Exact match: round(19/φ²)=7",
             },
-            // GF24: φ-split gives exp=6, mant=17 → actual is 9/14
+            // GF24: φ-split gives exp=9, mant=14 → MATCH
+            // (This row said 6/17 and "no match"; phi_split(24) is 9/14, see
+            // invariant phi_split_gf24_matches_round below.)
             FormatComparison{
                 name = "GF24",
                 bits = 24,
                 actual_exp = 9,
                 actual_mant = 14,
-                phi_split_exp = 6,
-                phi_split_mant = 17,
-                matches_phi_split = false,
-                tradeoff_note = "Closer to φ-split than GF16",
+                phi_split_exp = 9,
+                phi_split_mant = 14,
+                matches_phi_split = true,
+                tradeoff_note = "Exact match: round(23/φ²)=9",
             },
-            // GF32: φ-split gives exp=8, mant=23 → actual is 12/19
+            // GF32: φ-split gives exp=12, mant=19 → MATCH
+            // (This row said 8/23 and "no match"; phi_split(32) is 12/19.)
             FormatComparison{
                 name = "GF32",
                 bits = 32,
                 actual_exp = 12,
                 actual_mant = 19,
-                phi_split_exp = 8,
-                phi_split_mant = 23,
-                matches_phi_split = false,
-                tradeoff_note = "Near φ-split with good precision",
+                phi_split_exp = 12,
+                phi_split_mant = 19,
+                matches_phi_split = true,
+                tradeoff_note = "Exact match: round(31/φ²)=12",
             },
         ];
     }
@@ -192,15 +195,13 @@ module PhiRatio {
 
     fn optimal_rounding_proof() -> string {
         // For integer bit allocation, we must choose between floor and ceil.
-        // The φ-proportion gives exp_ideal = (N-1)/φ² (real number).
+        // The φ-proportion gives exp_ideal = (N-1)/φ² (real number), and
+        // round() picks the integer nearest to it.
         //
-        // Taking derivative and setting to zero:
-        //   d/dr [r * (N/(1+r))^2] = 0
-        //   r = 1/(1+r)  →  r^2 + r - 1 = 0
-        //   r = (sqrt(5) - 1) / 2 = 1/φ
-        //
-        // Therefore: exp/mant = 1/φ is optimal
-        return "exp/mant = 1/φ maximizes (dynamic_range * precision) for fixed bit budget";
+        // (This used to claim that 1/φ MAXIMIZES dynamic_range * precision.
+        // It does not: maximizing e*m gives r = 1 by AM-GM, as the proof
+        // above says. 1/φ is a self-similarity constraint, not an optimum.)
+        return "exp = round((N-1)/φ²) is the integer nearest the φ-proportion exp/mant = 1/φ";
     }
 
     // ═════════════════════════════════════════════════════════════════
@@ -215,7 +216,9 @@ module PhiRatio {
     // GoldenFloat formats inherit this sacred proportion.
 
     fn sacred_connection() -> string {
-        return "GoldenFloat exp/mant = 1/φ = consciousness threshold = sacred_physics::C_THRESHOLD";
+        // Shared VALUE only: sacred_physics::C_THRESHOLD is defined as PHI_INV.
+        // No physical link is claimed here [Open conjecture].
+        return "GoldenFloat exp/mant target = sacred_physics::PHI_INV, the same value as sacred_physics::C_THRESHOLD";
     }
 
     // ═════════════════════════════════════════════════════════════════
@@ -334,13 +337,19 @@ module PhiRatio {
         }
 
         // Use series: ln(x) = 2 * ((x-1)/(x+1) + 1/3*((x-1)/(x+1))^3 + ...)
+        // Sixty terms, not four: four left ln(4) off by about 3e-3, so
+        // pow(4.0, 0.5) missed 2.0 by far more than the 1e-6 its test asks.
         let t = (x - 1.0) / (x + 1.0);
         let t2 = t * t;
-        let t3 = t2 * t;
-        let t5 = t3 * t2;
-        let t7 = t5 * t2;
-
-        return 2.0 * (t + t3 / 3.0 + t5 / 5.0 + t7 / 7.0);
+        let mut power = t;
+        let mut sum = 0.0;
+        let mut k = 0;
+        while k < 60 {
+            sum = sum + power / ((2 * k + 1) as f64);
+            power = power * t2;
+            k = k + 1;
+        }
+        return 2.0 * sum;
     }
 
     // Exponential approximation
@@ -389,7 +398,9 @@ module PhiRatio {
     test phi_split_for_gf4_perfect_match
         given bits = 4
         when result = phi_split(bits)
-        then result.exp_bits == 1 and result.mant_bits == 2 and result.phi_dist < 0.01
+        // 1/2 against 1/φ: phi_dist = 0.118034 (GF8, 3/4, is wider: 0.131966).
+        // (This asserted phi_dist < 0.01, which no 4-bit split can meet.)
+        then result.exp_bits == 1 and result.mant_bits == 2 and result.phi_dist < 0.12
 
     test phi_split_for_gf16_primary_format
         given bits = 16
@@ -418,19 +429,24 @@ module PhiRatio {
         then abs(ratio - PHI_RATIO_TARGET) < 0.05
 
     test phi_optimality_proof_derivative
-        given proof = phi_optimality_proof()
-        when contains_optimal = proof.contains("exp/mant = 1/φ")
+        // phi_optimality_proof() never existed; the proof is this function.
+        given proof = golden_self_similarity_proof()
+        when contains_optimal = proof.contains("r = 1/φ")
         then contains_optimal == true
 
     test compute_phi_distance_for_gf16
         given exp = 6
         and   mant = 9
+        // 6/9 = 0.6667 against 0.6180: distance 0.0486.
+        // (This said > 0.1 behind a `;` the parser dropped with the clause.)
         when distance = compute_phi_distance(exp, mant)
-        then distance > 0.1  ; GF16 intentionally deviates for ML range
+        then distance > 0.04 and distance < 0.05
 
     test is_phi_optimal_tolerance_check
-        given exp = 4
-        and   mant = 11
+        // GF16's real split. (It was 4/11, distance 0.254, which is NOT
+        // within 0.05; the test asserted the opposite.)
+        given exp = 6
+        and   mant = 9
         and   tolerance = 0.05
         when optimal = is_phi_optimal(exp, mant, tolerance)
         then optimal == true
@@ -495,8 +511,8 @@ module PhiRatio {
         then abs(result - expected) < 1e-6
 
     test phi_ratio_pow_phi_squared
-        given result = pow(PHI, 2.0)
-        and expected = PHI * PHI
+        given result = pow(sacred_physics::PHI, 2.0)
+        and expected = sacred_physics::PHI * sacred_physics::PHI
         then abs(result - expected) < 1e-10
 
     test phi_ratio_pow_zero_base_positive_exponent
@@ -552,19 +568,33 @@ module PhiRatio {
         then result == 0.0
 
     invariant phi_round_returns_integer
-        assert round(x) == i64 for all f64 x
+        // For every x; checked at three, each lands on a whole number.
+        assert round(3.7) == floor(round(3.7)) and round(-3.7) == floor(round(-3.7))
+        and    round(0.2) == floor(round(0.2))
 
     invariant phi_round_half_away_from_zero
         assert round(2.5) == 3.0 and round(-2.5) == -3.0
 
     invariant phi_round_symmetric
-        assert round(-x) == -round(x) for all x >= 0.0
+        // For every x >= 0; checked at three, including a half.
+        assert round(-0.4) == -round(0.4) and round(-2.5) == -round(2.5)
+        and    round(-7.6) == -round(7.6)
 
     invariant phi_pow_zero_exponent_identity
-        assert pow(x, 0.0) == 1.0 for all positive x
+        // For every positive x; checked at three points, one on each side of 1.
+        given x1 = 0.5
+        and x2 = 2.5
+        and x3 = 7.0
+        assert abs(pow(x1, 0.0) - 1.0) < 1e-15 and abs(pow(x2, 0.0) - 1.0) < 1e-15
+        and    abs(pow(x3, 0.0) - 1.0) < 1e-15
 
     invariant phi_pow_one_exponent_identity
-        assert pow(x, 1.0) == x for all valid x
+        // For every valid x; checked at three points.
+        given x1 = 0.5
+        and x2 = 2.5
+        and x3 = 7.0
+        assert abs(pow(x1, 1.0) - x1) < 1e-15 and abs(pow(x2, 1.0) - x2) < 1e-15
+        and    abs(pow(x3, 1.0) - x3) < 1e-15
 
     invariant phi_pow_multiply_exponents
         given a = 2.0
@@ -582,7 +612,8 @@ module PhiRatio {
         then abs(ln_approx(y) - x) < 0.01
 
     invariant phi_floor_returns_integer
-        assert floor(x) == i64 for all f64 x
+        // For every x; checked at three, each lands on a whole number.
+        assert floor(3.7) == 3.0 and floor(-3.2) == -4.0 and floor(0.0) == 0.0
 
     invariant phi_floor_monotonic
         given x1 = 2.5
@@ -590,28 +621,38 @@ module PhiRatio {
         assert floor(x1) <= floor(x2)
 
     invariant phi_floor_zero_or_less
-        assert floor(x) <= x for all f64 x
+        // For every x; checked at three, on both sides of zero.
+        assert floor(3.7) <= 3.7 and floor(-3.2) <= -3.2 and floor(5.0) <= 5.0
 
     invariant phi_split_sum_equals_available_bits
-        assert forall bits: u8, phi_split(bits).exp_bits + phi_split(bits).mant_bits == bits - 1
+        // For every width; checked at three.
+        assert phi_split(8).exp_bits + phi_split(8).mant_bits == 7
+        and    phi_split(16).exp_bits + phi_split(16).mant_bits == 15
+        and    phi_split(32).exp_bits + phi_split(32).mant_bits == 31
 
     invariant phi_ratio_target_is_phi_inverse
         assert PHI_RATIO_TARGET == sacred_physics::PHI_INV
 
     invariant phi_distance_non_negative
-        assert forall exp, mant: u8, compute_phi_distance(exp, mant) >= 0.0
+        // For every split; checked below, at and above the target.
+        assert compute_phi_distance(1, 2) >= 0.0 and compute_phi_distance(6, 9) >= 0.0
+        and    compute_phi_distance(9, 1) >= 0.0
 
     invariant phi_optimal_proof_valid
-        assert phi_optimality_proof().contains("1/φ")
+        assert golden_self_similarity_proof().contains("1/φ")
 
     invariant gf4_format_is_phi_optimal
-        assert phi_split(4).phi_dist < 0.01
+        // GF4 is the coarsest rung: 1/2 against 1/φ, distance 0.118034.
+        // (This asserted < 0.01; four bits cannot get closer than 0.118.)
+        assert phi_split(4).phi_dist < 0.12
 
     invariant exp_bits_less_than_total
-        assert forall bits: u8, phi_split(bits).exp_bits < bits
+        // For every width; checked at three.
+        assert phi_split(8).exp_bits < 8 and phi_split(16).exp_bits < 16 and phi_split(32).exp_bits < 32
 
     invariant mant_bits_less_than_total
-        assert forall bits: u8, phi_split(bits).mant_bits < bits
+        // For every width; checked at three.
+        assert phi_split(8).mant_bits < 8 and phi_split(16).mant_bits < 16 and phi_split(32).mant_bits < 32
 
     invariant phi_split_round_matches_all_formats
         // CRITICAL: Verify that round((N-1)/φ²) matches ALL GF formats exactly

@@ -5,7 +5,7 @@ export const postsIndex: PostMeta[] = [
   {
     slug: "course-three-goldenfloat",
     title: "Course 3: GoldenFloat, one rule for seventeen float widths",
-    summary: "[7 of 27 lessons are pending: their own specs do not compile clean in the browser compiler yet; no lesson claims a speed or a hardware result] A new course on the GoldenFloat family: one rule, E = round((N - 1) / phi^2), splits every width from GF4 to GF1024. 20 lessons each open a table drawn from one spec and the spec itself.",
+    summary: "[the browser compiler runs a spec's constant asserts, not its function tests; 7 lesson-spec fixes wait on gHashTag/t27 PR 7496; no lesson claims a speed or a hardware result] A new course on the GoldenFloat family: one rule, E = round((N - 1) / phi^2), splits every width from GF4 to GF1024. 27 lessons in 9 modules of 3, each opening a table drawn from one spec and the spec itself.",
     date: "2026-10-07",
     readingMinutes: 4,
     tags: ["t27", "Course", "GoldenFloat"],
@@ -15,16 +15,16 @@ export const postsIndex: PostMeta[] = [
       { label: "arXiv:2606.05017, the GoldenFloat source", href: "https://arxiv.org/abs/2606.05017" },
     ],
     openQuestions: [
-      "7 lessons wait on their own specs compiling clean in the browser compiler; until then they open the family spec.",
+      "7 lesson specs compile clean here after the smallest fix; the same fix waits for review upstream in gHashTag/t27 PR 7496.",
       "Every format spec says its bias is open: chosen per format, not derived from the closed form.",
       "The values in gf_competitive.t27 are written into its tests, not produced by an encoder.",
     ],
     published: true,
     ru: {
       title: "Курс 3: GoldenFloat, одно правило для семнадцати ширин",
-      summary: "[7 из 27 уроков ждут: их собственные спеки пока не компилируются чисто в браузерном компиляторе; ни один урок не заявляет скорости или результата на железе] Новый курс о семействе GoldenFloat: одно правило, E = round((N - 1) / phi^2), делит каждую ширину от GF4 до GF1024. 20 уроков открывают таблицу из одной спеки и саму спеку.",
+      summary: "[браузерный компилятор выполняет постоянные проверки спеки, а не тесты её функций; правки 7 спек уроков ждут gHashTag/t27 PR 7496; ни один урок не заявляет скорости или результата на железе] Новый курс о семействе GoldenFloat: одно правило, E = round((N - 1) / phi^2), делит каждую ширину от GF4 до GF1024. 27 уроков в 9 модулях по 3, каждый открывает таблицу из одной спеки и саму спеку.",
       openQuestions: [
-        "7 уроков ждут, когда их собственные спеки скомпилируются чисто в браузерном компиляторе; до тех пор они открывают спеку семейства.",
+        "7 спек уроков компилируются здесь чисто после наименьшей правки; та же правка ждёт ревью в gHashTag/t27 PR 7496.",
         "Каждая спека формата говорит, что её смещение открыто: оно выбирается для каждого формата, а не выводится из замкнутой формулы.",
         "Значения в gf_competitive.t27 вписаны в его тесты, а не получены кодировщиком.",
       ],
