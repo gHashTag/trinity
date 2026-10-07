@@ -3,6 +3,29 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: "a-recipe-step-cannot-be-dropped-silently",
+    title: "A recipe step cannot be dropped silently",
+    summary: "[a CI gate, not new lessons] The website checks now compile and run the tests of the t27 course recipe, and fail on a compile error, a failing assert or a module with no tests.",
+    date: "2026-10-07",
+    readingMinutes: 1,
+    tags: ["t27", "Course", "CI"],
+    receipts: [
+      { label: "The gate, apps/website/scripts/check-course-recipe.mjs", href: "https://github.com/gHashTag/trinity/blob/main/apps/website/scripts/check-course-recipe.mjs" },
+      { label: "The recipe, specs/course_recipe/course-27.t27", href: "https://github.com/gHashTag/trinity/blob/main/specs/course_recipe/course-27.t27" },
+    ],
+    openQuestions: [
+      "Whether the recipe's tests cover every step is not checked.",
+    ],
+    published: true,
+    ru: {
+      title: "Шаг рецепта больше не пропадёт незаметно",
+      summary: "[проверка CI, а не новые уроки] Проверки сайта теперь собирают и запускают тесты рецепта курса t27 и падают на ошибке сборки, проваленном assert или модуле без тестов.",
+      openQuestions: [
+        "Покрывают ли тесты рецепта каждый шаг, не проверяется.",
+      ],
+    },
+  },
+  {
     slug: "the-queen-knows-how-to-build-a-course",
     title: "The Queen now knows how to build a course",
     summary: "[a recipe, not a course; the recipe modules compile but no CI job runs their tests yet] The t27 course recipe moved from one agent's private folder into the repository as two t27 modules, and AGENTS.md points at them, so the Queen can assign a new 27-lesson course for any topic.",
