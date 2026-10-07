@@ -1,0 +1,142 @@
+// SPDX-License-Identifier: Apache-2.0
+; specs/player/spec-runnable.t27 -- the contract of the corpus runnability report
+; Source of truth for `node scripts/viewport-from-spec.mjs --spec-runnable`
+; (gHashTag/trinity, issue #1477): which vendored specs' tests the player can
+; actually run, per spec, over the five hardware trees. The report itself is I/O
+; glue -- walk, compile, run, compare, print; every rule about WHAT the report
+; means lives here, in t27, and is compiled and tested by the very evaluator the
+; report measures, before the walk starts. No semantics are typed twice.
+; ASCII only (L3), English only (LANG-EN).
+
+; THE QUESTION: issue #1476 asks the course to run hardware specs' tests in the
+; browser. Before promising that, the site must know, per spec, whether the
+; player's evaluator (public/play/t27run.js, the same interpreter the build gate
+; imports since #1477) can follow every block. A spec whose blocks all pass is
+; runnable; one that fails an assertion is runnable TOO -- the tests ran and the
+; spec is wrong, which is the answer the course needs. A block the evaluator
+; cannot follow is a skip and names why; it is never counted as a pass and never
+; hidden inside a total.
+
+; THE GATES: a spec the compiler cannot clear is not offered to the evaluator at
+; all. The analyzer's typecheck.ok is necessary, not sufficient -- it stays true
+; for `assert 1 > 2` -- so the gates are typecheck AND hir, and a refused spec is
+; reported with the gate that refused it and the compiler's own first error, not
+; as a skip of the evaluator.
+
+; THE RATCHET: the report's numbers may improve, never regress, per spec -- the
+; same per-file rule scripts/typecheck-ratchet.mjs taught this repo: a scalar
+; total passes when one file is fixed and another breaks by the same amount,
+; which is exactly the shape of a change that trades one bug for another. Pass
+; may rise; fail and skip may fall; typecheck and hir, once ok, stay ok. A spec
+; newly vendored is not a regression. A spec gone from disk is noted, never
+; counted. `--write` rewrites the baseline after a genuine improvement.
+
+; THE LEGACY BRACE FORM: `module X { ... }` with a brace body. Measured
+; 2026-10-07 over all 158 files of the five trees: the compiler normalises the
+; form away -- zero parse refusals, zero Module nodes -- so nothing is listed
+; here. Should a brace-form file ever fail a gate it appears as its own row with
+; the gate's reason, not as a special case; the list below stays the measured
+; truth and is allowed to grow only with a compiler measurement behind it.
+; phi^2 + 1/phi^2 = 3 | TRINITY
+
+module player_spec_runnable;
+
+pub const KIND : str = "spec-runnable";
+pub const ID : str = "player/spec-runnable";
+pub const NAME : str = "Which specs' tests the player runs";
+; The one file the report writes (relative to apps/website): the ratchet
+; baseline, rewritten only by --write. The report itself is printed, not saved.
+pub const GENERATED : [1]str = ["spec-runnable-baseline.json"];
+
+; --- What is walked -----------------------------------------------------------------
+; The five hardware trees, under public/t27/files/. Order is the report's order.
+pub const TREES : [5]str = ["specs/fpga", "specs/isa", "specs/ternary", "specs/pins", "specs/boards"];
+
+; --- What a block may come out as ---------------------------------------------------
+pub const OUTCOMES : [3]str = ["pass", "fail", "skip"];
+pub const SKIP_IS_NEVER_PASS : bool = true;
+
+; --- What must clear before the evaluator is invited --------------------------------
+pub const GATES : [2]str = ["typecheck", "hir"];
+
+; --- What the report prints, per spec -----------------------------------------------
+pub const COLUMNS : [8]str = ["spec", "typecheck", "hir", "blocks", "pass", "fail", "skip", "first_gap"];
+; first_gap when nothing blocked the run: no skip, no refused gate.
+pub const FIRST_GAP_UNKNOWN : str = "-";
+
+; --- The legacy brace form, measured -------------------------------------------------
+pub const LEGACY_BRACE_FORM_SPECS : [0]str = [];
+
+; --- The ratchet ---------------------------------------------------------------------
+pub const RATCHET_MODE : str = "only-improves";
+pub const RATCHET_PER : str = "spec";
+pub const MAY_NEWLY_APPEAR : bool = true;
+
+test the_five_trees_are_named_and_distinct {
+    assert TREES.len() == 5;
+    assert TREES[0] == "specs/fpga";
+    assert TREES[1] == "specs/isa";
+    assert TREES[2] == "specs/ternary";
+    assert TREES[3] == "specs/pins";
+    assert TREES[4] == "specs/boards";
+    assert TREES[0] != TREES[1];
+    assert TREES[0] != TREES[2];
+    assert TREES[0] != TREES[3];
+    assert TREES[0] != TREES[4];
+    assert TREES[1] != TREES[2];
+    assert TREES[1] != TREES[3];
+    assert TREES[1] != TREES[4];
+    assert TREES[2] != TREES[3];
+    assert TREES[2] != TREES[4];
+    assert TREES[3] != TREES[4];
+}
+
+test outcomes_are_pass_fail_skip_in_that_order {
+    assert OUTCOMES.len() == 3;
+    assert OUTCOMES[0] == "pass";
+    assert OUTCOMES[1] == "fail";
+    assert OUTCOMES[2] == "skip";
+}
+
+test a_skip_is_never_a_pass {
+    assert SKIP_IS_NEVER_PASS == true;
+    assert OUTCOMES[2] == "skip";
+}
+
+test gates_precede_the_evaluator {
+    assert GATES.len() == 2;
+    assert GATES[0] == "typecheck";
+    assert GATES[1] == "hir";
+}
+
+test the_row_a_reader_scans_first_and_last {
+    assert COLUMNS.len() == 8;
+    assert COLUMNS[0] == "spec";
+    assert COLUMNS[7] == "first_gap";
+}
+
+test counts_sit_between_the_gates_and_the_gap {
+    assert COLUMNS[3] == "blocks";
+    assert COLUMNS[4] == "pass";
+    assert COLUMNS[5] == "fail";
+    assert COLUMNS[6] == "skip";
+}
+
+test the_ratchet_only_improves_per_spec {
+    assert RATCHET_MODE == "only-improves";
+    assert RATCHET_PER == "spec";
+    assert MAY_NEWLY_APPEAR == true;
+}
+
+test the_report_writes_exactly_one_file {
+    assert GENERATED.len() == 1;
+    assert GENERATED[0] == "spec-runnable-baseline.json";
+}
+
+test a_row_with_no_gap_says_so {
+    assert FIRST_GAP_UNKNOWN == "-";
+}
+
+test the_legacy_brace_form_blocks_nothing_measured {
+    assert LEGACY_BRACE_FORM_SPECS.len() == 0;
+}

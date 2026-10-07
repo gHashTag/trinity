@@ -29,6 +29,8 @@
     "preview": "vite preview",
     "typecheck": "tsc -b --pretty false",
     "typecheck:ratchet": "node scripts/typecheck-ratchet.mjs",
+    "check:spec-runnable": "node scripts/viewport-from-spec.mjs --spec-runnable",
+    "spec-runnable:write": "node scripts/viewport-from-spec.mjs --spec-runnable --write",
     "check:api": "node scripts/api-contract-check.mjs",
     "check:silicon": "node scripts/check-silicon-coverage.mjs --self-test",
     "check:render": "node scripts/render-check.mjs",
