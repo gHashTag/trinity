@@ -45,6 +45,7 @@ const PAGES: PageLink[] = [
   { href: '#/t27-basics', en: 'Course: t27 basics', ru: 'Курс: основы t27', note: 'The language itself, 27 lessons', noteRu: 'Сам язык, 27 уроков' },
   { href: '#/course', en: 'Course: FPGA', ru: 'Курс: FPGA', note: 'From zero to a chip, 27 lessons', noteRu: 'С нуля до чипа, 27 уроков' },
   { href: '#/ai-numbers', en: 'Course: AI numbers', ru: 'Курс: ИИ-числа', note: 'How AI chips store numbers, 27 lessons', noteRu: 'Как ИИ-чипы хранят числа, 27 уроков' },
+  { href: '#/goldenfloat', en: 'Course: GoldenFloat', ru: 'Курс: GoldenFloat', note: 'A float family split by phi, 27 lessons', noteRu: 'Семейство чисел, разрезанных по phi, 27 уроков' },
   { href: '#/foundry', en: 'Golden Foundry', ru: 'Золотая Литейная', note: 'A club for people who build on silicon', noteRu: 'Клуб разработчиков на кремнии', color: '#C9A24B' },
   { href: '#/about', en: 'About', ru: 'Об авторе', note: 'Background, papers, contact', noteRu: 'Биография, статьи, контакты' },
   { href: '#/resources', en: 'Resources', ru: 'Материалы', note: 'Papers and datasets, each with a DOI', noteRu: 'Статьи и датасеты, у каждого DOI' },

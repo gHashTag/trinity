@@ -3,6 +3,7 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+<<<<<<< HEAD
     slug: "course-3-clocks-resets-and-cdc",
     title: "Course 3: clocking, resets and CDC in 27 lessons",
     summary: "[the browser player still skips test blocks, so every recorded verdict runs natively (trinity#1477); the E3 timing numbers are a model over nextpnr's SDF of a routed design, not board measurements; the VCO window, lock window, tau and W are labelled assumptions in the spec headers; the three new specs are in the vendored tree, not yet in gHashTag/t27] A third t27 course, chained after the AI numbers course: 9 modules of 3 lessons from what a clock domain is to a bitstream diff. Three specs written for it (mmcm 16 tests, reset_sync 16, mtbf 15), 16 new cast widgets recorded with native t27c, and every board number from a named real run: CFGMCLK measured at 70770/68490/67200 kHz over JTAG on three Wukong dice, and E3 I/O timing read from the routed design for the AX7203 board.",
@@ -39,6 +40,32 @@ export const postsIndex: PostMeta[] = [
         "Окно VCO, окно захвата, tau и W помечены в шапках спек как учебные допущения; точные числа по степеням скорости, которые читал бы настоящий дизайн, лежат в UG472 и DS181.",
         "Урок тестбенча FIFO открывает fifo.t27 с записью мутаций, потому что fifo_tb.t27 ещё нет; текст урока говорит именно это.",
         "Три новые спеки живут в вендоренном дереве файлов сайта и ещё не перенесены в gHashTag/t27.",
+=======
+    slug: "course-three-goldenfloat",
+    title: "Course 3: GoldenFloat, one rule for seventeen float widths",
+    summary: "[the browser compiler runs a spec's constant asserts, not its function tests; 7 lesson-spec fixes wait on gHashTag/t27 PR 7496; no lesson claims a speed or a hardware result] A new course on the GoldenFloat family: one rule, E = round((N - 1) / phi^2), splits every width from GF4 to GF1024. 27 lessons in 9 modules of 3, each opening a table drawn from one spec and the spec itself.",
+    date: "2026-10-07",
+    readingMinutes: 4,
+    tags: ["t27", "Course", "GoldenFloat"],
+    receipts: [
+      { label: "Course 3, GoldenFloat", href: "https://t27.ai/learn/goldenfloat/" },
+      { label: "The course spec, specs/course/goldenfloat.t27", href: "https://t27.ai/learn/goldenfloat.t27" },
+      { label: "arXiv:2606.05017, the GoldenFloat source", href: "https://arxiv.org/abs/2606.05017" },
+    ],
+    openQuestions: [
+      "7 lesson specs compile clean here after the smallest fix; the same fix waits for review upstream in gHashTag/t27 PR 7496.",
+      "Every format spec says its bias is open: chosen per format, not derived from the closed form.",
+      "The values in gf_competitive.t27 are written into its tests, not produced by an encoder.",
+    ],
+    published: true,
+    ru: {
+      title: "Курс 3: GoldenFloat, одно правило для семнадцати ширин",
+      summary: "[браузерный компилятор выполняет постоянные проверки спеки, а не тесты её функций; правки 7 спек уроков ждут gHashTag/t27 PR 7496; ни один урок не заявляет скорости или результата на железе] Новый курс о семействе GoldenFloat: одно правило, E = round((N - 1) / phi^2), делит каждую ширину от GF4 до GF1024. 27 уроков в 9 модулях по 3, каждый открывает таблицу из одной спеки и саму спеку.",
+      openQuestions: [
+        "7 спек уроков компилируются здесь чисто после наименьшей правки; та же правка ждёт ревью в gHashTag/t27 PR 7496.",
+        "Каждая спека формата говорит, что её смещение открыто: оно выбирается для каждого формата, а не выводится из замкнутой формулы.",
+        "Значения в gf_competitive.t27 вписаны в его тесты, а не получены кодировщиком.",
+>>>>>>> origin/fix/restore-merged-courses
       ],
     },
   },

@@ -148,6 +148,8 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/course/:lessonId" element={<Course />} />
             <Route path="/ai-numbers" element={<Course />} />
             <Route path="/ai-numbers/:lessonId" element={<Course />} />
+            <Route path="/goldenfloat" element={<Course />} />
+            <Route path="/goldenfloat/:lessonId" element={<Course />} />
             <Route path="/fpga-training" element={<FpgaTraining />} />
             <Route path="/cases" element={<CaseStudies />} />
             <Route path="/gft" element={<GFT />} />

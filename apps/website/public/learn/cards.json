@@ -3,6 +3,7 @@
   "learn/a-bend-at-zero/": "eb98e73ff0f2b18072c4f296a986c738f3aaa0c31f4e4d6d07cae7d8b138826a",
   "learn/a-build-receipt/": "a9f6033644a5c80be2d2502b7dd787b44179c68d6a8782d2f072b778a619b3d3",
   "learn/a-dot-product-in-wires/": "b8c1bed3ff617584cb030d8d6aa8d07b05e283a9c73593e004cbec1279ec328b",
+  "learn/a-float-cut-by-phi/": "9b6abd1d9c6730834e421ab2f561895d32fd8ff4bf0639230475658158ab5e0b",
   "learn/a-loss-in-bits/": "edeadb44a1c720c96fb3e2d8609d8b070eeb679d240958bf27500f5176985a13",
   "learn/a-model-on-the-board/": "b9365e72b52c80e6aa910619129ab8c27e852be816b72502e6601176e62a6b83",
   "learn/a-neuron-in-chunks/": "a80bbd72c568fc1e67ec83194c971d0f826431931e6d5921f19856db016c43c9",
@@ -29,8 +30,12 @@
   "learn/constants/": "ce955fb760476ccae55b837ba00d08e4616dc49a520022a5961b55013e253c84",
   "learn/count-the-cells/": "e9306cc9129ad1bae2c63b3a01b5f6b2aea04cd59972ff87b48acb781d822caf",
   "learn/course/": "114756b262a60e717b24bfce2fc4bf2b95fad9475ec67128f0f78154aec6972d",
+<<<<<<< HEAD
   "learn/create-clock/": "e719aaf80757a0091edfd4f6bc04fe90ac3d2fa2b031210b651d5c130c6ef981",
   "learn/depth-sizing/": "888615fffdaf13c481e12dad83272b40214497b52eb373547cba15a5ca1f87b9",
+=======
+  "learn/decode-in-one-step/": "6fa09311e4c180b2b0e223319ac0861f634125f77d306f8db70bc1a1fb7eb6bb",
+>>>>>>> origin/fix/restore-merged-courses
   "learn/enums/": "b24db7fe9adc1c0a984b07382e2ed7d98d876a46aa8306f48319f3e78c522462",
   "learn/expressions/": "00ff8a5285eb3299566b450d2a944fda2e8b14853cb348e3b68cdef95824699f",
   "learn/false-path-and-max-delay/": "fabb9204ee018079bd083d722b6bd62d16e2772478b3a61079e1d4156aba0d41",
@@ -42,9 +47,32 @@
   "learn/functions/": "de7d459a95a7f96889c4a62a6bf8d95f1f32d48e8f70aeb68738733827e48431",
   "learn/gated-clock-trap/": "11ab6cad600e9bf57e70404fb5f6bdb75427090650996d9c1ad642cce63add6f",
   "learn/gen-ts/": "f9de4047d5ae8e0fafb1d932ba5e314dcbd77e3e75c2e199c40fc3bdae130310",
+<<<<<<< HEAD
   "learn/global-buffers/": "5ca6ba0ae587b2a3967a90f3a3a10e59872f8c4fea43448a373ff425901aea8e",
   "learn/gray-code/": "5cdd822d021d6cfa9cd4d11bb260c8246f1282d3dc2516c3c0b39bcd81ef7d06",
   "learn/handshakes-and-pulses/": "1e1dd3711bfc2b5ff9ee7892b8ff80fe664f31b182b2415a27554632947390f0",
+=======
+  "learn/gf10-ten-bits/": "9d38423643b0042f2c0c57e2d11701997a9c03f18f52d45ff455aae39627edab",
+  "learn/gf1024-one-kilobit/": "6499e4424d0765e6d6b4fd97675eea334adb571071fb495e5961c4c0b1a7aa76",
+  "learn/gf12-twelve-bits/": "db2f925aee7151f5d0ddbc7e6d242e666c610d684d446c925d6068f959cac63a",
+  "learn/gf128-a-quad/": "c3ad62eb2e402fcc00de39581b702996833ccb099836238a4e943f416b0f4b45",
+  "learn/gf14-fourteen-bits/": "61cbb5e23b7c332c8a770a0264a44046ab3f9cabba42d7a6a0f2b4118b5a3106",
+  "learn/gf16-the-primary/": "418511c6069628dde9b54ac4a791a131237658afe9ca8b2973a2a126eac9c83f",
+  "learn/gf24-twenty-four-bits/": "9ae7e658f929b979fe6969ea31dbfb79e930c191af08f283efe0a59490a985a2",
+  "learn/gf256-two-five-six/": "b2f2fa04d1b127fa5db7ee997e69283253ca7906f4efda5a470e4c7af61fadfb",
+  "learn/gf32-a-single/": "89b57ff032fe85aa1a686aa713fec2865c8f81e5793d4af1403615013e86f08f",
+  "learn/gf4-four-bits/": "7e8382f00953e7272ffc6b1c7f972d8308aaaa312d6ba0e4e43ffbed6aad12c5",
+  "learn/gf48-forty-eight-bits/": "3d5d71e67c9a15e3ced32af8852c6690ce359fae53f717c5bd36197803589369",
+  "learn/gf512-five-twelve/": "2aa868a3652b37cfec8dbd030ff1d364b29b50dbc950c45fbfcd4652416d2274",
+  "learn/gf6-six-bits/": "306012a98846b572ea1579e454750a77648a1a7c724c94d12777bfd31d876ece",
+  "learn/gf64-a-double/": "e123e79b5aef50e4c4692f5bb91e92c0b87fb632bc457672e832b33303b02980",
+  "learn/gf8-one-byte/": "a967e50bbe54d90dd4262966a834e31eb857e550a04a3cb487c939d833a25311",
+  "learn/gf96-ninety-six-bits/": "a9471cef40d55cdac3a330e60ad5e770a8855fafd687a506e2a355a4656cdc5f",
+  "learn/gft16-six-trits/": "1b974b6a9814c54b6158a1f7d6593d2542d009d0f3acbf4ef2d4cf8f839c7e2b",
+  "learn/gft32-twelve-trits/": "3621af795fd2a53caccbdf5bae880e89ce00c95b1160ee6f61b8e741768cf407",
+  "learn/gft8-exponent-in-trits/": "25806995593f64efab8b242180f4397eeaa25112dbc3980a08c44f5332f31953",
+  "learn/goldenfloat/": "ff6f9269c2bc7a545b01210ef87c245ddb91494ea4467d7bcf8c7b214a1a230b",
+>>>>>>> origin/fix/restore-merged-courses
   "learn/hello-t27/": "3e2e4803b0d9b1f1f688a821bbd14a9574c3dfce9ae37e160b2d92fd0aa4bc64",
   "learn/how-much-fits/": "304e2785f886071ace463926a0402b10fc08d1fb5154e60b72263adfa769a0bf",
   "learn/if-and-else/": "1b1321a98895aa452db0a613a085f8c518467076ca15ee9835e69cb3cd55fe8f",
@@ -54,6 +82,7 @@
   "learn/local-names/": "a333213c360c685a4d8b8f1199c8b115082c4193f177eb46a5f85541195972cc",
   "learn/logic-depth/": "a45b75e82b3b68b455165bd41ae8cf232f17e477994f3ebef46e5ca4b81e6262",
   "learn/loops/": "5e55e28ed11694ed56b056b2457893cecc84e83691345062675260cd1597b732",
+  "learn/lucas-numbers-stay-whole/": "a373643dd0f541fe352e0e33c8df7775b890fe3813ff479c76010375b9ccd255",
   "learn/many-tests/": "bb32b58c98bb9b53936e667ae4fd8100ba603a24254b082adbbefaf46b8dd44f",
   "learn/mtbf/": "4c378b8ae7169558433f861d673fa25eb5697f5668651159202958ad6b1ebfce",
   "learn/multiply-and-divide/": "04f563d0b073aa75285382837ffaa8bdccce23df956d9d61002e2691224f302c",
@@ -65,8 +94,13 @@
   "learn/one-scale-per-block/": "6f19f66e43e7e7bfefe1a05b99032ae1a4877ff74b3ee78c56fb3ad61eb6c327",
   "learn/one-step-downhill/": "c394f83b3228ef8ad59c32b1016b3aaf0c8722bb723290bda62e008dd7119788",
   "learn/opposite-signs-subtract/": "b8117891c96918764fd41ba48f2c39d0032c2e395032600d1baab4a69b7b6f86",
+<<<<<<< HEAD
   "learn/period-and-jitter/": "4417739c2a8be60099196d5d8f21fe087d3f4db4a343d57b244a299494219179",
   "learn/phase-and-lock/": "b50b9c08c4a92c2ca46cbed1fa61ac9b517c45473a33c096e17133dd77801d9e",
+=======
+  "learn/phi-as-a-ratio/": "68c557efb1a4c013635cad8a456cce50b90b906499bbf88f59039ee69d295038",
+  "learn/phi-in-sixteen-bits/": "31fbbaef3eb5aaac576d993deafc778d20e97ed4f91e5130911bcc9c8bccca70",
+>>>>>>> origin/fix/restore-merged-courses
   "learn/phi-scaled-ternary/": "a3bf7f88ac1c6355c89235335a2f8ff612ea5cdcfb6730916e850d34208e5fd6",
   "learn/pick-the-largest/": "50638ab5fba8fecc83eef2ab4292f8ffd37c13f6f292d00ce2b158d24bbe0cc3",
   "learn/pins-and-package/": "bfeb94d1228d99c22404d480d73f94b9cfb713a1f26a516d796a5dea0722ed15",
@@ -99,7 +133,11 @@
   "learn/tri-commands/": "2bfa52f1cf2bec6d70f90dce796b7ec83ca0edd72a2acdc489ca77e8001c71eb",
   "learn/trits/": "14170e1a24e80d17658d8b6a1fb758602ae86a858c42793c87b53d31892f3d18",
   "learn/true-false-and-text/": "a8302d71500c7264aa2cfab2823eb764d736c49726f7299c30bc9b5111f8785f",
+<<<<<<< HEAD
   "learn/two-flop-sync/": "c3959e859f480b7370878aff377418e9722b32ea22965529830aeb6ad0a4f08d",
+=======
+  "learn/two-products-one-sum/": "d389ecc3cde02d8a6887bf66ad877de2d2b5633ad3bc8a247c24c40d3a54beb5",
+>>>>>>> origin/fix/restore-merged-courses
   "learn/two-to-the-x/": "21739447e84d7a1d7e0f570a086890a2f9a1ba634bd0a9b61fce17105db85830",
   "learn/use-other-modules/": "f000786d3f6d44427693951e07545fb95ba3c7c7a0875f85cabd38e03f15112f",
   "learn/what-a-spec-is/": "72def96becff86c609bcdbc629b17057e62a4739020e4be8f644d0e7bf8e9c81",
@@ -109,12 +147,18 @@
   "learn/where-the-luts-go/": "8b235e1936c19d9d4235006d1dfa27a4bb56a2b1a969fb2d91dcf390c1ddd6f2",
   "learn/which-chip/": "2b5d5bdae258a5a588616770b0d860d479e76afe782028ad904c6c9964854863",
   "learn/whole-numbers/": "90ddc9a9b10c8bc1980a1b2a183b473d9fb950b28aa3f983248fde085d42ca3e",
+<<<<<<< HEAD
   "learn/why-binary-fails/": "f7e9bbb3d5f7acb4c45e57e4bfa9b5c421b9f0e0b142ef75159e2c29dd653400",
+=======
+  "learn/why-base-three/": "5e7f3aeb9b8299e9fe71d1cd38f3a9d684b3a662d9a07d1c1a8a9ddec932df25",
+  "learn/why-the-split-is-phi/": "4d6b42f4ced79749e9f9f3ba64ee4e45d2c02339c3ab8fbc09a60640ce26afc9",
+>>>>>>> origin/fix/restore-merged-courses
   "learn/xor-needs-a-bend/": "0be69f7a7ec16c326fc28f311ad8f69b734d2595f6069d46212594af295d0100",
   "ru/learn/": "a9995b9648745b8be6063618ec0103bea67dafbb850ce40d7ac87fab1f9f1d91",
   "ru/learn/a-bend-at-zero/": "a926c3947964ffa944998b51c438722a2d9b5f5092e420b357a6e91981864399",
   "ru/learn/a-build-receipt/": "5fd31459c1a61efbb7e893de7ed3826d0baeb3e2a2ca83bf0e07acb912e3939d",
   "ru/learn/a-dot-product-in-wires/": "e623d894b5e9d556b714ea7067c6a322de2d8f70d5cfcba9b135fe7e2e9254b8",
+  "ru/learn/a-float-cut-by-phi/": "be7a9f649e648df28ab9a6c98f86ecccff7f66cecd2b2776d20853fd7f89629f",
   "ru/learn/a-loss-in-bits/": "d008609de3024e826343f60b63051b46ed5c453a335a59949bbd7d0745a21c6b",
   "ru/learn/a-model-on-the-board/": "2285956627292be6c86d370ebee1ad16a5b07f62c8ebead82f96f490bd6b5bf9",
   "ru/learn/a-neuron-in-chunks/": "57e4dcdd5f09686a9cc7e2c19abbedc295dd5298e18073757e50a26abbbda461",
@@ -141,8 +185,12 @@
   "ru/learn/constants/": "b09b0ae7902958ec4a88de61535624e06b2332e680ef43213e86fa609a8d4899",
   "ru/learn/count-the-cells/": "eb61fea92b7914ec0933501f74d23842bbeeb028531fb268828759f8ace049a8",
   "ru/learn/course/": "b25e966436bc58071a5cfcc0bb4ecac778e9034151696377f2c0927c0b360a6d",
+<<<<<<< HEAD
   "ru/learn/create-clock/": "f463c64778670c5998d3aff6c0b9c35767c949d992f247636187f0d980469223",
   "ru/learn/depth-sizing/": "6023034e8f6c0f5e3378882e435906d03cb27ea0bc97b2462db2f856b3b8be49",
+=======
+  "ru/learn/decode-in-one-step/": "5892f17c8ad6d36a5a80f09925a4d985aa4612e21d43edb7d3d12cf0820e51f6",
+>>>>>>> origin/fix/restore-merged-courses
   "ru/learn/enums/": "5587fcadd6a785468dd51151e352a68826c5e5d090e6da47b0a87a776ebd8c47",
   "ru/learn/expressions/": "beacff97524bb5317b17e64c38da09710ef5571b1078bfcd3b6ec27e4eee7329",
   "ru/learn/false-path-and-max-delay/": "b60179daa69dd36e9c40a355862858374b938297b45afd863ad9b07e195f8d8f",
@@ -154,9 +202,32 @@
   "ru/learn/functions/": "22c6502f7477353cd08c8ab8a1377d232d97b3348323ed363a782ebc32f73411",
   "ru/learn/gated-clock-trap/": "7ed53be5a553cb62d3718347983f4d897a3460e3ba3ba14440bfbef485798ed6",
   "ru/learn/gen-ts/": "d11ef995c9198a17e83571f4c9ab7663ca9669121b96c252c8fc4541e42f79aa",
+<<<<<<< HEAD
   "ru/learn/global-buffers/": "d1e4209ab48a4f369990c119c015485e0bf5b91f232b8cadab9b14e91f00fc21",
   "ru/learn/gray-code/": "d99dc71f49be203e39bd5c3a798b7de890617598d1731c6df4b679cb20cd7e09",
   "ru/learn/handshakes-and-pulses/": "5489a0897b4b9d4bb3ff682c4b000548eedd453f57749bdf25909661766b34c4",
+=======
+  "ru/learn/gf10-ten-bits/": "8501cd00ab20882514e3769658e0f259f5350fe6a1a3145ddeb0ffebf84ed6bf",
+  "ru/learn/gf1024-one-kilobit/": "f010bcdaa57b3d2ba464efdf3a9ba089b2cabf1147e8ef699146d15554238d5c",
+  "ru/learn/gf12-twelve-bits/": "8ea02503b8ab543ca97a2add2a9b200bfa31a7f6f84fc01c773589ab6756a8ff",
+  "ru/learn/gf128-a-quad/": "1446d502f000163872172402404c787504093db5c0ecc108ab5830e4463a59d3",
+  "ru/learn/gf14-fourteen-bits/": "7bf083c39c47260f1ebcc3d1f6f62e477276f0b4e652ca15775746507124f060",
+  "ru/learn/gf16-the-primary/": "c8384691e9b76d303f31e36653100a14744142bc4a7cfb076b1c1260bf221bd8",
+  "ru/learn/gf24-twenty-four-bits/": "a13cb447bfe091682cc6d07a0e4759648d3a7e2d876de926071c8097a6243713",
+  "ru/learn/gf256-two-five-six/": "cc8d8fdc8d02326f6f6ee16328ad4b3ec958096326ffc31d978c823b693802a9",
+  "ru/learn/gf32-a-single/": "af70f769f89f85f6e80d9c6ba340bd2488cb3a38e6094e7eb31281914caed791",
+  "ru/learn/gf4-four-bits/": "bfff432a3c948a26a8443427e5387fbda136e272e3326c904091be618af6faf6",
+  "ru/learn/gf48-forty-eight-bits/": "1b360e1177b7b827f617bd2a3416dd614b397c28471fd24dab938c06e3d1dd21",
+  "ru/learn/gf512-five-twelve/": "baab1be32c2cbdc6710b68b80bddc9759d3101f3ed9e2d782d74591eb43443d9",
+  "ru/learn/gf6-six-bits/": "178142ec1a400ec33d5e78ad0e598284755603970655c7dad91c99b9f30b7b32",
+  "ru/learn/gf64-a-double/": "4118d7246ad9d490bb21bcc968a3f39730ff219a6b605eefd959494c4ee4a5b5",
+  "ru/learn/gf8-one-byte/": "8b4712c2158a4a72f4e2205a73537a934e8cc48045e45200b9025adf5a656d0e",
+  "ru/learn/gf96-ninety-six-bits/": "5b8565086a6d83872da98035d26ffd479f87391bc49036011a6c82e57e9fec83",
+  "ru/learn/gft16-six-trits/": "a6a0256d679ffa6c4a7cbe2f8d700da595181c20cbc28c6d423e72d5bb92ef35",
+  "ru/learn/gft32-twelve-trits/": "b3f4de2b68a690a0992ff4ce699393d3c050f177c9917d91b5d57abc92deb8a8",
+  "ru/learn/gft8-exponent-in-trits/": "1a303f92d5395574c25d0e20ff600770d1bcb73d33362f8f5b0f4e09ce837e3f",
+  "ru/learn/goldenfloat/": "6bfff0e6ba61da77ed4445759b0939021607e02c33f2c760d758f0eed227a8d9",
+>>>>>>> origin/fix/restore-merged-courses
   "ru/learn/hello-t27/": "1500ace7880a9e115aee68da4f939a4b91cd5dad89411708895900e3e0f634a1",
   "ru/learn/how-much-fits/": "f1651caa027f908485ae8b73ee470c082470c50ef18354b2d90981771bba2ee1",
   "ru/learn/if-and-else/": "e96c564b228831749334fe884cb942ac2c3e13e05a4b68efed9e061a5f3a95bb",
@@ -166,6 +237,7 @@
   "ru/learn/local-names/": "ff79cc563e9f53dd044e4e5c7feba5b3e671a764c91a14acfcca28d431fe0272",
   "ru/learn/logic-depth/": "f011a2e30ed1d40b6e5b015b8a6c4577d1d06a448f448641d91c01bd173daba9",
   "ru/learn/loops/": "00b91bc482aa24844ebb234a1b538f99814a6bc3ac01dcde951d5fba63a0cae0",
+  "ru/learn/lucas-numbers-stay-whole/": "c5ef14808a72c376f6d623e70fbed43c3e728209c41fb6f12c953b371cca9d53",
   "ru/learn/many-tests/": "e3e15e5ed2ae09c1ae4bfbef2c936752029e6d3d230ecfe15bab2d8e66e10598",
   "ru/learn/mtbf/": "fa0c7a2797083eb6f7b44dcd1ea89b3ae560c111201ddb0376f899c235e3d2a6",
   "ru/learn/multiply-and-divide/": "9e5f639a87b6c2a3ffddc453c984a95292ac30ce64bdc9f5b55d5952629c15eb",
@@ -177,8 +249,13 @@
   "ru/learn/one-scale-per-block/": "3996dff8150a65875d22620cba95a70a8e5e29a4c2714cfaf5f370723018bdd5",
   "ru/learn/one-step-downhill/": "64b9dd62605f3e72f1f6c72fc703b3b36f9238e93df451648b472c0fe9903e01",
   "ru/learn/opposite-signs-subtract/": "724e6dfd05271f44b32686b191b7d8824862c021a3a98a91e10d079b23ddcd28",
+<<<<<<< HEAD
   "ru/learn/period-and-jitter/": "c8024fbd2b6eab7df162567b25b854639105d6fd3b23e3212238d7cb19d524cd",
   "ru/learn/phase-and-lock/": "7220b431dc84c1b629636b5bc75c28741fcab3ce516061899b15133ec07cbfa7",
+=======
+  "ru/learn/phi-as-a-ratio/": "b4c3927b1141b34bda4f5adc58dfdf8ab1705bca1426c266af2536bdfdcc7bb0",
+  "ru/learn/phi-in-sixteen-bits/": "4bdc58cca5e2fa256bec375f95252ae1aecf49387cde4cdeb65c680f8a21d4ff",
+>>>>>>> origin/fix/restore-merged-courses
   "ru/learn/phi-scaled-ternary/": "5e657743e5e2441b0444f0015584607e16ffcd74db3d3782c6bde6c2f041c152",
   "ru/learn/pick-the-largest/": "a6ac78270829b8898c801a56853ee765751cf856323eb1b72fd7a992d2f24fb8",
   "ru/learn/pins-and-package/": "8d21987accdd7b73e6191ad0fc79f1e0be360c52cbb87643bf16e7ce1fcdf0ec",
@@ -211,7 +288,11 @@
   "ru/learn/tri-commands/": "fe7eb672f8a9d85aa161e60f7da56ea03b6c9db7457e60b85905ee1981c4833c",
   "ru/learn/trits/": "4c50162d2abd2b855194a30626d5f42e8dbff2c484e95bba39977c5bba7a5349",
   "ru/learn/true-false-and-text/": "1db693d3f318c2ae7568a64dc6ac764df5293b889f5122e5dd95990feb462dbf",
+<<<<<<< HEAD
   "ru/learn/two-flop-sync/": "3214814cce95801bd40f6f68fe332b3a845c84380e7bcfbdf4181d406590b3db",
+=======
+  "ru/learn/two-products-one-sum/": "5465012f589e86d9dfc6cb60643d9a8e3a89fc46c82115a498c4c6c8bbe712fb",
+>>>>>>> origin/fix/restore-merged-courses
   "ru/learn/two-to-the-x/": "feda4ba3bf8a0fc5aaa8e6f862142419dea95fa4459e0dd3cc8604823ac2eff4",
   "ru/learn/use-other-modules/": "7b7f6702b3597d4db99470a5eb972211a3c0bf9b83f119ba4d5353c9ae5a4e24",
   "ru/learn/what-a-spec-is/": "da4885fd5f5b052cbd06aa01addfc65081f39786ece5dc7551d6b9a2364f6dec",
@@ -221,6 +302,11 @@
   "ru/learn/where-the-luts-go/": "6e266040a131ced97691730967ca3196117bde914b0797e603239de604bdba92",
   "ru/learn/which-chip/": "f4d99ed56b68b100bace89f983367c60046201d156741427d951ec707d1824f1",
   "ru/learn/whole-numbers/": "d2018dad26722dedb12d950254909cd809f78f715bcffdca32513169503da3fa",
+<<<<<<< HEAD
   "ru/learn/why-binary-fails/": "8a11993f7d149f15d30238bbc73caa2ff7d93a62f237ae104d221577518cd16c",
+=======
+  "ru/learn/why-base-three/": "8fefbde4906af976f882c83074afec1368a7d471df39bde82ef2986b8d8f3e68",
+  "ru/learn/why-the-split-is-phi/": "4b89cf7b7bc60e2762b6868b3970e7e7f11fd3f9e920ee32a49ecbdacf8e3ed1",
+>>>>>>> origin/fix/restore-merged-courses
   "ru/learn/xor-needs-a-bend/": "017e687787c78180e91adc53c519ed96ef082eb5266df07a882bdfb2ebfbc97f"
 }
