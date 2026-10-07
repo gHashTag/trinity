@@ -1,5 +1,6 @@
 import {issueProofPolicy as policy} from './queenIssueProof.generated.ts';
 import {memoryIssueProofPolicy} from './queenMemoryIssueProof.generated.ts';
+import {t27IssueProofPolicy} from './queenT27IssueProof.generated.ts';
 import {issueProofRefreshPolicy as refresh} from './queenIssueProofRefresh.generated.ts';
 
 export type IssueProof = {commit:string;specUrl:string;specUrls?:string[];ciUrl:string;gdsUrl?:string;evidenceUrl?:string;observedAt:number};
@@ -193,7 +194,138 @@ async function proveWorldIssues<T extends Row>(rows:T[],repo:string,signal:Abort
 }
 return {supportsIssueProof,invalidateIssueProof,proveWorldIssues};
 }
-const readers=[createIssueProofReader(policy),createGroupedIssueProofReader(memoryIssueProofPolicy)];
+/**
+ * t27 policy: a repository whose closed issues are delivered by merged PRs with
+ * sealed specs. Nothing is pinned by hash: the rule is read against the live head
+ * (see specs/queen/t27_issue_proof.t27). The issue to PR to spec index is a hint on
+ * its own branch; every claim in it is re-read from GitHub. Anything unreadable,
+ * rate limited or stale leaves the issue unknown, never green.
+ */
+export type MergedPrPolicy={REPO:string;INDEX_REPO:string;INDEX_REF:string;INDEX_PATH:string;REQUIRED_CHECKS:readonly string[];REQUIRED_CHECK_COUNT:number;MAX_PR_LOOKUPS:number;CACHE_MS:number;ACCEPT:readonly number[]};
+type IndexSpec={path:string;seal:string};
+type IndexPr={pr:number;sha:string;specs:IndexSpec[]};
+type PrFacts={merged:boolean;mergeSha:string;headSha:string;body:string;checks:boolean};
+type Snapshot={commit:string;index:Record<string,IndexPr[]>;observedAt:number;files:Map<string,Promise<ArrayBuffer|null>>;budget:{left:number}};
+const closingLine=(body:string,n:number)=>new RegExp(`\\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\\s+#${n}(?![0-9])`,'i').test(body);
+export function createMergedPrSpecReader(policy:MergedPrPolicy){
+const cache=new Map<string,Snapshot>();
+const generation=new Map<string,number>();
+const flights=new Map<string,{ticket:number;controller:AbortController;snapshot:Promise<Snapshot|null>}>();
+// A merged PR never changes: its facts are kept for the session, keyed by the merge commit the index names.
+const prFacts=new Map<string,PrFacts>();
+const advance=(repo:string)=>{const next=(generation.get(repo)??0)+1;generation.set(repo,next);return next;};
+const supportsIssueProof=(repo:string)=>repo===policy.REPO;
+function invalidateIssueProof(repo:string):void{advance(repo);cache.delete(repo);flights.get(repo)?.controller.abort();flights.delete(repo);}
+const sha40=(v:unknown):v is string=>typeof v==='string'&&/^[a-f0-9]{40}$/.test(v);
+async function snapshotOf(repo:string,signal:AbortSignal,fetcher:Fetcher):Promise<Snapshot>{
+  const api=`https://api.github.com/repos/${repo}`;
+  const head=await (await read(`${api}/commits/HEAD`,signal,fetcher)).json() as {sha?:string};
+  if(!sha40(head.sha))throw new Error('proof commit identity');
+  const raw=await (await read(`https://raw.githubusercontent.com/${policy.INDEX_REPO}/${policy.INDEX_REF}/${policy.INDEX_PATH}`,signal,fetcher)).json() as {repo?:string;issues?:Record<string,unknown>};
+  if(raw.repo!==repo||typeof raw.issues!=='object'||!raw.issues)throw new Error('proof index identity');
+  const index:Record<string,IndexPr[]>={};
+  for(const [n,list] of Object.entries(raw.issues)){
+    if(!/^[1-9][0-9]*$/.test(n)||!Array.isArray(list))continue;
+    const entries:IndexPr[]=[];
+    for(const e of list as Record<string,unknown>[]){
+      const specs=Array.isArray(e?.specs)?(e.specs as Record<string,unknown>[]).filter(s=>typeof s?.path==='string'&&typeof s?.seal==='string').map(s=>({path:s.path as string,seal:s.seal as string})):[];
+      if(Number.isSafeInteger(e?.pr)&&sha40(e?.sha))entries.push({pr:e.pr as number,sha:e.sha as string,specs});
+    }
+    if(entries.length)index[n]=entries;
+  }
+  return {commit:head.sha,index,observedAt:Date.now(),files:new Map(),budget:{left:policy.MAX_PR_LOOKUPS}};
+}
+async function snapshot(repo:string,signal:AbortSignal,fetcher:Fetcher):Promise<Snapshot|null>{
+  const held=cache.get(repo);
+  if(held&&Date.now()-held.observedAt<policy.CACHE_MS)return held;
+  cache.delete(repo); // A failed refresh must not reuse an old positive verdict.
+  let flight=flights.get(repo);
+  if(!flight||flight.ticket!==generation.get(repo)){
+    const ticket=advance(repo),controller=new AbortController();
+    const found=snapshotOf(repo,controller.signal,fetcher).then(s=>{
+      if(!publishesProof(true,generation.get(repo)===ticket,!controller.signal.aborted))return null;
+      cache.set(repo,s);
+      return s;
+    }).finally(()=>{if(flights.get(repo)?.ticket===ticket)flights.delete(repo);});
+    flight={ticket,controller,snapshot:found};
+    flights.set(repo,flight);
+  }
+  const s=await flight.snapshot;
+  return publishesProof(s!==null,generation.get(repo)===flight.ticket,!signal.aborted)?s:null;
+}
+const file=(s:Snapshot,repo:string,path:string,signal:AbortSignal,fetcher:Fetcher):Promise<ArrayBuffer|null>=>{
+  let held=s.files.get(path);
+  if(!held){held=read(`https://raw.githubusercontent.com/${repo}/${s.commit}/${path}`,signal,fetcher).then(r=>r.arrayBuffer()).catch(()=>null);s.files.set(path,held);}
+  return held;
+};
+async function specSealed(s:Snapshot,repo:string,spec:IndexSpec,signal:AbortSignal,fetcher:Fetcher):Promise<boolean>{
+  if(!/^specs\/.+\.t27$/.test(spec.path)||!/^\.trinity\/seals\/[^/]+\.json$/.test(spec.seal))return false;
+  const [text,sealBytes]=await Promise.all([file(s,repo,spec.path,signal,fetcher),file(s,repo,spec.seal,signal,fetcher)]);
+  if(!text||!sealBytes)return false;
+  try{
+    const seal=JSON.parse(new TextDecoder().decode(sealBytes)),t=seal.tests;
+    return seal.spec_path===spec.path&&seal.spec_hash===`sha256:${await hex(text)}`&&!!t&&!t.blocked&&!t.failed&&Number.isSafeInteger(t.total)&&t.total>0&&t.passed===t.total;
+  }catch{return false;}
+}
+async function facts(s:Snapshot,repo:string,entry:IndexPr,signal:AbortSignal,fetcher:Fetcher):Promise<PrFacts|null>{
+  const key=`${entry.pr}:${entry.sha}`,held=prFacts.get(key);
+  if(held)return held;
+  if(s.budget.left<2)return null; // The anonymous API allowance is small; stay unknown rather than guess.
+  s.budget.left-=2;
+  const api=`https://api.github.com/repos/${repo}`;
+  const pull=await (await read(`${api}/pulls/${entry.pr}`,signal,fetcher)).json() as {merged?:boolean;merge_commit_sha?:string;head?:{sha?:string};body?:string|null};
+  if(pull.merged!==true||pull.merge_commit_sha!==entry.sha||!sha40(pull.head?.sha))return null;
+  const runs=await (await read(`${api}/commits/${pull.head!.sha}/check-runs?per_page=100`,signal,fetcher)).json() as {check_runs?:{id?:number;name?:string;status?:string;conclusion?:string}[]};
+  const all=Array.isArray(runs.check_runs)?runs.check_runs:[];
+  const green=policy.REQUIRED_CHECKS.every(name=>{
+    const latest=all.filter(r=>r?.name===name&&Number.isSafeInteger(r.id)).sort((a,b)=>b.id!-a.id!)[0];
+    return latest?.status==='completed'&&latest.conclusion==='success';
+  });
+  const result={merged:true,mergeSha:entry.sha,headSha:pull.head!.sha!,body:typeof pull.body==='string'?pull.body:'',checks:green};
+  prFacts.set(key,result); // Only a read that completed is kept; a failed read is retried on the next view.
+  return result;
+}
+async function proveIssue(s:Snapshot,repo:string,n:number,signal:AbortSignal,fetcher:Fetcher):Promise<{mask:number;specUrls:string[];prUrl:string}|null>{
+  const entries=s.index[String(n)];
+  if(!entries)return null;
+  let sealed=true,closed=true,green=true;
+  const specUrls:string[]=[];
+  for(const e of entries){
+    if(!e.specs.length)sealed=false; // A PR without a spec proves nothing for this rule.
+    for(const sp of e.specs){
+      if(!await specSealed(s,repo,sp,signal,fetcher))sealed=false;
+      else specUrls.push(`https://github.com/${repo}/blob/${s.commit}/${sp.path}`);
+    }
+  }
+  if(!sealed)return {mask:0,specUrls:[],prUrl:''};
+  for(const e of entries){
+    let f:PrFacts|null=null;
+    try{f=await facts(s,repo,e,signal,fetcher);}catch{f=null;}
+    if(!f||!closingLine(f.body,n))closed=false;
+    else if(!f.checks)green=false;
+  }
+  return {mask:2*Number(closed)+4*Number(sealed)+8*Number(green),specUrls:[...new Set(specUrls)],prUrl:`https://github.com/${repo}/pull/${entries[0].pr}`};
+}
+async function proveWorldIssues<T extends Row>(rows:T[],repo:string,signal:AbortSignal,fetcher:Fetcher=fetch):Promise<T[]>{
+  rows=rows.map(row=>({...row,coverage:'unknown' as const,proof:undefined}));
+  if(!supportsIssueProof(repo)||!rows.some(r=>r.repo===repo&&r.state==='closed'))return rows;
+  let snap:Snapshot|null;
+  try{snap=await snapshot(repo,signal,fetcher);}catch{return rows;}
+  if(!snap||signal.aborted)return rows;
+  const out:T[]=[];
+  for(const row of rows){
+    if(row.repo!==repo||row.state!=='closed'||!snap.index[String(row.number)]){out.push(row);continue;}
+    let verdict:Awaited<ReturnType<typeof proveIssue>>=null;
+    try{verdict=await proveIssue(snap,repo,row.number,signal,fetcher);}catch{verdict=null;}
+    if(signal.aborted){return rows;}
+    if(!verdict||policy.ACCEPT[1+verdict.mask]!==1){out.push(row);continue;}
+    out.push({...row,coverage:'t27' as const,proof:{commit:snap.commit,specUrl:verdict.specUrls[0],...(verdict.specUrls.length>1?{specUrls:verdict.specUrls}:{}),ciUrl:`${verdict.prUrl}/checks`,observedAt:snap.observedAt}});
+  }
+  return out;
+}
+return {supportsIssueProof,invalidateIssueProof,proveWorldIssues};
+}
+const readers=[createIssueProofReader(policy),createGroupedIssueProofReader(memoryIssueProofPolicy),createMergedPrSpecReader(t27IssueProofPolicy as unknown as MergedPrPolicy)];
 export function supportsIssueProof(repo:string){return readers.some(r=>r.supportsIssueProof(repo));}
 export function invalidateIssueProof(repo:string){for(const reader of readers)reader.invalidateIssueProof(repo);}
 export async function proveWorldIssues<T extends Row>(rows:T[],repo:string,signal:AbortSignal,fetcher:Fetcher=fetch):Promise<T[]>{
