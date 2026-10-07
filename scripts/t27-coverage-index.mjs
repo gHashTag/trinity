@@ -51,11 +51,18 @@ for(let page=1;page<=100;page++){
     const specs=files.filter(f=>f.filename.endsWith('.t27')&&f.status!=='removed').map(f=>({path:f.filename,seal:sealOf.get(f.filename)})).filter(s=>s.seal);
     // A spec of this PR without a seal is simply not listed: the PR then lists fewer specs than it touched
     // and the reader cannot prove it, so the issue stays unknown until the spec is sealed.
-    const touched=files.filter(f=>f.filename.endsWith('.t27')&&f.status!=='removed').length;
-    for(const n of issues)(index.issues[n]??=[]).push({pr:pr.number,sha:pr.merge_commit_sha,specs:touched===specs.length?specs:[]});
+    const touchedPaths=files.filter(f=>f.filename.endsWith('.t27')&&f.status!=='removed').map(f=>f.filename);
+    for(const n of issues)(index.issues[n]??=[]).push({pr:pr.number,sha:pr.merge_commit_sha,touched:touchedPaths,specs:touchedPaths.length===specs.length?specs:[]});
     seen++;
   }
   if(older)break;
+}
+// A spec sealed after its PR merged must count from the next run, so every entry's specs are
+// derived again from the seals at the head, not only for the PRs read in this run.
+for(const list of Object.values(index.issues))for(const e of list){
+  if(!Array.isArray(e.touched))continue;
+  const found=e.touched.map(path=>({path,seal:sealOf.get(path)}));
+  e.specs=found.every(x=>x.seal)?found:[];
 }
 index.watermark=newest;index.generated_at=new Date().toISOString();
 index.issues=Object.fromEntries(Object.entries(index.issues).sort((a,b)=>Number(a[0])-Number(b[0])));
