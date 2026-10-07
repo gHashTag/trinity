@@ -11,8 +11,9 @@
 
 ; WHAT THE COURSE IS: 27 lessons in 9 modules of 3, for a reader who has never written for a
 ; chip, then a lab module of 3 lessons on our own research, then a module of 3 on the MX number
-; formats AI chips use (OCP Microscaling v1.0). Each lesson is a short text, one working widget from the gallery, and one thing to try
-; in it. The widgets are not drawn for the course: they are the same tools a hardware engineer
+; formats AI chips use (OCP Microscaling v1.0), then two modules of 3 on ternary weights and
+; the Ternary Network Float (TNF). Each lesson is a short text, one working widget from the
+; gallery, and one thing to try in it. The widgets are not drawn for the course: they are the same tools a hardware engineer
 ; uses on t27.ai, built from real runs of t27c, yosys, nextpnr and openFPGALoader on our bench.
 
 ; WHAT THE COURSE DOES NOT DO: it says no number of its own. A number a lesson needs is on the
@@ -21,12 +22,14 @@
 ; rule their widget tests (990 thousandths) and counts that are arithmetic (3 x 3 x 3 = 27).
 ; The MX lessons quote the constants of the OCP MX v1.0 standard that their widgets compile
 ; (a block of 32, element widths of 4, 6 and 8 bits, scale code 255 for NaN, bias 127) and
-; counts their recording prints.
+; counts their recording prints. The ternary lessons quote only the constants of the specs
+; their widgets compile (2-bit codes, 3^4 = 81 exponent values, a 17-bit layout) and counts
+; their players and recordings print.
 
 ; WHY 27: the core is 3 cubed lessons, the size of a TRI-27 word. The lab is one more module
-; of 3 that reports our own results, and the MX module one more of 3 on the formats the lab
-; compares against; both are counted apart so the core stays 27. Changing the
-; shape changes the tests.
+; of 3 that reports our own results, the MX module one more of 3 on the formats the lab
+; compares against, and the ternary and TNF modules two more of 3 on our own formats; all
+; four are counted apart so the core stays 27. Changing the shape changes the tests.
 ; phi^2 + 1/phi^2 = 3 | TRINITY
 
 module course;
@@ -52,10 +55,10 @@ pub const PLAYER_FRAME_HEIGHT : u16 = 480;
 
 ; --- Words on the page ---------------------------------------------------------------------
 pub const TITLE : str = "From zero to a chip: FPGA programming with t27";
-pub const DESCRIPTION : str = "27 lessons, one working widget each: what an FPGA is, how numbers become bits, your own t27 spec, how t27c compiles it, and how it becomes a bitstream on a real board. Then a lab of 3 on our own research, and 3 lessons on the MX number formats AI chips use.";
+pub const DESCRIPTION : str = "27 lessons, one working widget each: what an FPGA is, how numbers become bits, your own t27 spec, how t27c compiles it, and how it becomes a bitstream on a real board. Then a lab of 3 on our own research, 3 lessons on the MX number formats AI chips use, and 6 on ternary weights and the Ternary Network Float.";
 pub const SAY_KICKER : str = "Course";
 pub const SAY_LEAD : str = "No hardware background needed. Every lesson opens a real tool built from real runs on our bench: read a little, then try it yourself.";
-pub const SAY_SHAPE : str = "9 modules of 3 lessons, 27 cells, then a lab of 3 and an AI numbers module of 3. A filled cell is a lesson you marked done.";
+pub const SAY_SHAPE : str = "9 modules of 3 lessons, 27 cells, then a lab of 3, an AI numbers module of 3 and two ternary modules of 3. A filled cell is a lesson you marked done.";
 pub const SAY_START : str = "Start lesson 1";
 pub const SAY_CONTINUE : str = "Continue";
 pub const SAY_MODULE : str = "Module {0}";
@@ -85,11 +88,11 @@ pub const SAY_SHARE : str = "Link to share, with a preview card";
 
 ; --- Modules -------------------------------------------------------------------------------
 pub const LESSONS_PER_MODULE : u8 = 3;
-; The core course is the first 9 modules, 3 cubed lessons; the lab is the 10th module and the
-; MX number formats the 11th.
-pub const MODULE_COUNT : u8 = 11;
-pub const MODULE_IDS : [11]str = ["chip", "numbers", "program", "compiler", "hardware", "synthesis", "timing", "bitstream", "board", "lab", "mx"];
-pub const MODULE_TITLES : [11]str = [
+; The core course is the first 9 modules, 3 cubed lessons; the lab is the 10th module, the
+; MX number formats the 11th, ternary weights the 12th and the Ternary Network Float the 13th.
+pub const MODULE_COUNT : u8 = 13;
+pub const MODULE_IDS : [13]str = ["chip", "numbers", "program", "compiler", "hardware", "synthesis", "timing", "bitstream", "board", "lab", "mx", "ternary", "tnf"];
+pub const MODULE_TITLES : [13]str = [
     "The chip",
     "Numbers in hardware",
     "Your t27 program",
@@ -100,9 +103,11 @@ pub const MODULE_TITLES : [11]str = [
     "The bitstream",
     "On the board",
     "Lab: our own research",
-    "AI numbers: the MX block"
+    "AI numbers: the MX block",
+    "Ternary weights",
+    "The Ternary Network Float"
 ];
-pub const MODULE_LINES : [11]str = [
+pub const MODULE_LINES : [13]str = [
     "What an FPGA is, which chip we use, and how its pins meet the board.",
     "Bits, trits and number formats, and what arithmetic costs in logic.",
     "Write a spec, test it, and see why compiling is not the same as being right.",
@@ -113,7 +118,9 @@ pub const MODULE_LINES : [11]str = [
     "How a routed design becomes the bits the chip loads, with no Vivado.",
     "Ask the chip who it is, load the bits, and check them.",
     "A number format of our own, an honest scoreboard, and a model's tables multiplied on the board.",
-    "How AI chips keep weights in a few bits: one shared scale per block, the scale byte itself, and what one outlier does to its neighbours."
+    "How AI chips keep weights in a few bits: one shared scale per block, the scale byte itself, and what one outlier does to its neighbours.",
+    "Weights that are only minus, zero or plus a scale, the five rules a ternary alphabet must pass, and a test pass that checked nothing.",
+    "A rule the compiler enforces before any test runs, and a 17-bit float whose exponent is four balanced trits."
 ];
 
 ; --- Lessons -------------------------------------------------------------------------------
@@ -121,8 +128,8 @@ pub const MODULE_LINES : [11]str = [
 ; lessons open the same one. LESSON_ALSO lists more gallery ids, comma separated, shown as
 ; chips that swap the widget. LESSON_SPECS is a spec under public/t27/files/ to open in the
 ; player, or "" for none.
-pub const LESSON_COUNT : u8 = 33;
-pub const LESSON_IDS : [33]str = [
+pub const LESSON_COUNT : u8 = 39;
+pub const LESSON_IDS : [39]str = [
     "fpga-is-a-grid", "which-chip", "pins-and-package",
     "bits-and-trits", "what-arithmetic-costs", "how-much-fits",
     "hello-t27", "tests-are-the-spec", "compiles-is-not-correct",
@@ -133,9 +140,11 @@ pub const LESSON_IDS : [33]str = [
     "fasm-to-frames", "a-build-receipt", "read-a-bitstream",
     "jtag-asks-the-chip", "same-bits-on-the-board", "capstone",
     "t27-number-format", "an-honest-scoreboard", "a-model-on-the-board",
-    "one-scale-per-block", "scale-byte-native", "one-outlier"
+    "one-scale-per-block", "scale-byte-native", "one-outlier",
+    "phi-scaled-ternary", "a-pass-that-checked-nothing", "five-rules-for-weights",
+    "blocked-is-not-failed", "four-trit-exponent", "negate-twice"
 ];
-pub const LESSON_MODULES : [33]str = [
+pub const LESSON_MODULES : [39]str = [
     "chip", "chip", "chip",
     "numbers", "numbers", "numbers",
     "program", "program", "program",
@@ -146,9 +155,11 @@ pub const LESSON_MODULES : [33]str = [
     "bitstream", "bitstream", "bitstream",
     "board", "board", "board",
     "lab", "lab", "lab",
-    "mx", "mx", "mx"
+    "mx", "mx", "mx",
+    "ternary", "ternary", "ternary",
+    "tnf", "tnf", "tnf"
 ];
-pub const LESSON_WIDGETS : [33]str = [
+pub const LESSON_WIDGETS : [39]str = [
     "fasm-skyline", "idcode", "pin-map",
     "gf16-calc", "cost-curves", "fits-on",
     "play-hello-world", "test-waves", "t27-tri-misread",
@@ -159,9 +170,11 @@ pub const LESSON_WIDGETS : [33]str = [
     "tri-x7-fasm", "build-receipt", "bit-autopsy",
     "tri-fpga-jtag", "x7-board", "gatle",
     "t27-cell", "t27-vs-nvfp4", "uart-bucket",
-    "play-e8m0", "t27c-e8m0", "t27c-ocp-mx"
+    "play-e8m0", "t27c-e8m0", "t27c-ocp-mx",
+    "play-gfternary", "t27c-gfternary", "play-golden-sieve",
+    "t27c-golden-sieve", "play-tnf17", "t27c-tnf17"
 ];
-pub const LESSON_ALSO : [33]str = [
+pub const LESSON_ALSO : [39]str = [
     "placement-map", "tri-fpga-jtag", "tri-fpga-pins",
     "", "resource-bars", "",
     "play-js", "vcd-wrapped", "tri-x7-mutate,test-touch",
@@ -172,9 +185,11 @@ pub const LESSON_ALSO : [33]str = [
     "", "perf2-loop,devkit-flow", "perf2-knockouts",
     "idcode", "bit-diff", "race-the-bee,wars,tri-game-tick,tri-game-vault",
     "gf16-calc", "t27-cell", "x7-board",
-    "", "", "t27-vs-nvfp4"
+    "", "", "t27-vs-nvfp4",
+    "t27-cell", "tri-x7-mutate", "lut-explain",
+    "", "gf16-calc", "t27c-ocp-mx"
 ];
-pub const LESSON_SPECS : [33]str = [
+pub const LESSON_SPECS : [39]str = [
     "", "", "",
     "specs/tutorial/01_values_and_types.t27", "specs/tutorial/05_widths_and_casts.t27", "",
     "specs/tutorial/02_functions.t27", "specs/tutorial/07_tests_invariants_benches.t27", "specs/tutorial/03_operators.t27",
@@ -185,9 +200,11 @@ pub const LESSON_SPECS : [33]str = [
     "", "", "",
     "", "", "",
     "", "", "",
-    "", "specs/numeric/e8m0.t27", ""
+    "", "specs/numeric/e8m0.t27", "",
+    "", "specs/numeric/gfternary.t27", "",
+    "specs/numeric/golden_sieve.t27", "", "specs/numeric/tnf17.t27"
 ];
-pub const LESSON_TITLES : [33]str = [
+pub const LESSON_TITLES : [39]str = [
     "An FPGA is a grid you configure",
     "Which chip is this?",
     "Pins, balls and the package",
@@ -220,9 +237,15 @@ pub const LESSON_TITLES : [33]str = [
     "A model's tables on the board",
     "One scale for a block of weights",
     "The scale byte on a real machine",
-    "One outlier, many zeros"
+    "One outlier, many zeros",
+    "Weights of minus phi, zero and plus phi",
+    "A pass that checked nothing",
+    "Five rules for a weight alphabet",
+    "Blocked is not failed",
+    "A float whose exponent is four trits",
+    "Negate twice, get the number back"
 ];
-pub const LESSON_GOALS : [33]str = [
+pub const LESSON_GOALS : [39]str = [
     "What an FPGA is made of, and why a design uses only part of the chip.",
     "How a chip names itself in 32 bits, and how to read those bits.",
     "How the signals of your design reach the outside world.",
@@ -255,9 +278,15 @@ pub const LESSON_GOALS : [33]str = [
     "How the host feeds the board over a serial bridge, why the window size matters, and what the board computed.",
     "Why AI formats share one scale across a block of weights, and how the scale byte of OCP MX is read.",
     "What the native compiler checks in the same spec, including what the browser skipped.",
-    "What a shared scale costs: how one large weight pushes the small weights of its block to zero, format by format."
+    "What a shared scale costs: how one large weight pushes the small weights of its block to zero, format by format.",
+    "How a ternary weight is stored in 2 bits, what the fourth code is for, and what the spec does not claim about phi.",
+    "What a vacuous pass is, why a green report can hide one, and how a planted bug tells real checks from empty ones.",
+    "Which values a ternary weight may take, and how five measured rules leave a single formula.",
+    "Why a rule checked while compiling stops a spec before any test runs, and how that differs from a failing test.",
+    "How TNF17e packs a sign, a ternary exponent and a mantissa into 17 bits, and why 17 and not 16.",
+    "How a test of a property catches a one-character bug that a single example misses."
 ];
-pub const LESSON_TEXTS : [33]str = [
+pub const LESSON_TEXTS : [39]str = [
     "A CPU runs instructions one after another. An FPGA has no program at all: it is a grid of small blocks -- lookup tables (LUTs), flip-flops, carry chains, block RAM and DSP multipliers -- joined by wires you can switch. Configuring the grid builds a circuit. Our bench chip is an AMD Artix-7 XC7A200T. The skyline draws one routed design on that die: every tile it configures stands up as a column, and most of the chip stays dark.",
     "Before you load anything, you ask the board which chip it has. Over JTAG every chip answers with a 32-bit IDCODE: a version, a part number, the manufacturer and a fixed 1 in bit 0. A bitstream built for the wrong part is refused by the chip, so this is the check that saves you an afternoon. The decoder splits the bits into those four fields and looks the part up in openFPGALoader's own table.",
     "A chip sits in a package: the XC7A200T on our board has 676 solder balls under it. Some carry power or configuration and only some are user IO, grouped into banks with their own voltage. A constraints file (XDC) says which ball each signal of your design uses. Put a signal on a ball that is not user IO and the build fails, or worse, the board does not do what you think.",
@@ -290,9 +319,15 @@ pub const LESSON_TEXTS : [33]str = [
     "The board does the arithmetic; the host sends it work over a USB serial bridge. The board's answers wait in the bridge chip's small receive buffer, and when the host keeps more requests in flight than their answers fit, answers are lost. A smaller window removed the loss and did not slow the run. Over that link the board multiplied every ternary weight matrix of a small language model, and every row matched the reference bit for bit. The text itself is generated on the Mac, which does everything except the ternary dot products: the board is the calculator, not the whole model.",
     "A language model has millions of weights, and a full float for each is expensive to store and to move. The Microscaling (MX) formats of the Open Compute Project keep each weight in 4, 6 or 8 bits and give every block of 32 weights one shared scale. That scale is a single byte called E8M0: no sign and no mantissa, only an exponent, so code e means 2 to the power e minus 127, and code 255 means NaN. The player compiles e8m0.t27, the spec of that byte, in your browser and runs its tests. Where the browser cannot run a check, it skips it and says why.",
     "The player in the last lesson could not run every check in e8m0.t27, and it said so. This recording runs the native t27c and Zig on a real machine on the same spec: its constants, the test report, the Zig tests, and the Verilog for the NaN check. Some checks are invariants the compiler proves while it compiles, so compiling is the check. Every byte in the recording was printed by the command; only the typing is staged.",
-    "A shared scale is set by the largest value in its block, so one outlier sets it for all 32 weights. Weights much smaller than the outlier then fall below the smallest step the element can show and are stored as zero. This recording runs ocp_mx.t27, our spec of OCP MX v1.0, natively on a block of 31 small weights and one outlier, and counts how many each element format flushes to zero. Then it plants a bug, one changed exponent bias, and exactly one test fails: a spec that carries its tests catches its own mistakes."
+    "A shared scale is set by the largest value in its block, so one outlier sets it for all 32 weights. Weights much smaller than the outlier then fall below the smallest step the element can show and are stored as zero. This recording runs ocp_mx.t27, our spec of OCP MX v1.0, natively on a block of 31 small weights and one outlier, and counts how many each element format flushes to zero. Then it plants a bug, one changed exponent bias, and exactly one test fails: a spec that carries its tests catches its own mistakes.",
+    "Ternary networks such as BitNet keep each weight as minus one, zero or plus one times a scale, so a multiply becomes an add, a subtract or nothing. gfternary.t27 fixes that scale at phi, about 1.618, and stores the three values in 2 bits: 00 is zero, 01 is plus phi, 10 is minus phi. Two bits have a fourth code, 11, and the spec folds it to zero instead of leaving it undefined. The spec also says what it does not claim: that a phi scale beats plain integer ternary weights is an open conjecture, and it names the measured gap that would falsify it. The player compiles it in your browser; most checks it cannot run here, and each skip says why.",
+    "The native t27c runs all 13 tests of gfternary.t27, and all 13 pass. The same report prints a line most tools never do: 8 of the 13 passed with no runtime assert executed. A vacuous pass is not a lie, but it is not evidence either. The 5 invariants are proved while the spec compiles, and one of them asserts only true, a placeholder. So the recording plants a bug: the reserved code 11 is no longer folded to zero. Exactly one test fails, the one written for that rule. Every byte in the recording was printed by the command; only the typing is staged.",
+    "Which values may a ternary weight take? golden_sieve.t27 answers with five rules, each citing the measurement behind it. The number of values must be a power of three, so no trit is wasted. At most two trits, because a third measured no significant gain. Integers only. Few enough input bits per neuron to fit one 6-input LUT, which the spec calls a trade, not a law. And no DSP or shift-register cells, for which the openXC7 flow wrote a wrong bitstream while every tool said OK. What passes all five is one formula: 3 levels with one trit, or 9 with two. The browser runs all 3 tests and all 8 invariants.",
+    "In the browser, setting MAX_TRITS to 3 made two checks fail. The native t27c is stricter: the 8 invariants of golden_sieve.t27 are proved while it compiles, so with a third trit the spec does not compile at all. The report says BLOCKED, and explains that a blocked spec never produced a binary, so it has no test results to count. A rule checked while compiling cannot ship broken. Then the recording plants a different bug: the rule against shift-register cells now always says yes, and exactly one test fails, the one that checks the formula. Every byte in the recording was printed by the command; only the typing is staged.",
+    "The formula the sieve leaves has a name: TNF, the Ternary Network Float, the subject of our paper under review at Microprocessors and Microsystems. tnf17.t27 implements it: a sign bit, a 7-bit offset and a 9-bit mantissa, worth (-1)^s x (1 + m/512) x 2^(offset - 40). The offset takes 81 values, exactly 3^4, so the exponent is four balanced trits, from -40 to +40. Four trits cost 7 bits on a binary chip, which is why the rung is 17 bits, not 16; the spec records where its source said otherwise. The browser runs 20 of its 44 checks, all 10 invariants among them, and names the cast behind each skip.",
+    "The browser skipped 24 checks of tnf17.t27; the native t27c runs all 34 tests, all pass, and none is vacuous. Negation flips the sign bit with XOR. The recording swaps XOR for OR, a one-character bug. Negating a positive number still looks right, so the test that negates one still passes. But negating a negative number now leaves it negative, so negating twice no longer gives the number back. Exactly one test fails, negate_is_an_involution, the one that states that property. Every byte in the recording was printed by the command; only the typing is staged."
 ];
-pub const LESSON_TASKS : [33]str = [
+pub const LESSON_TASKS : [39]str = [
     "Rotate the die and tap the tallest column: which kind of tile sets the most features?",
     "Click the bench preset, then flip one bit of the part number and see which device it would be.",
     "Search for a ball name like E3, then colour by pin type and find a ball that is not user IO.",
@@ -325,15 +360,21 @@ pub const LESSON_TASKS : [33]str = [
     "Drag the window until the bucket overflows and note the largest window that fits; then compare the two real runs.",
     "Run the tests and count the skips; then open the Verilog and find the function that checks for code 255.",
     "Find how many invariants the test report proved at compile time, and compare its pass count with the player's.",
-    "Read which element format flushes the most small weights to zero and which two flush none; then find the test the planted bug breaks."
+    "Read which element format flushes the most small weights to zero and which two flush none; then find the test the planted bug breaks.",
+    "Run the tests and read why the skips were skipped; then find the code that folds to zero and the line that folds it.",
+    "Find the vacuous-pass line and the test the planted bug breaks; then open the spec and find the invariant that asserts only true.",
+    "Run the tests; then change MAX_TRITS to 3 in the source and see which two checks fail.",
+    "Find the line that says why a blocked spec has no test results, and the test the second bug breaks.",
+    "Read the reason on one skipped test; then find the invariant that says four trits span 81 values.",
+    "Find how many passes were vacuous; then go back to the player of the previous lesson, change the XOR to OR yourself, and see whether the browser catches it too."
 ];
 
 ; --- Claims --------------------------------------------------------------------------------
 test the_core_is_three_cubed {
     assert LESSONS_PER_MODULE == 3;
-    assert MODULE_COUNT == 11;
-    assert LESSON_COUNT == 33;
-    assert LESSON_COUNT - 2 * LESSONS_PER_MODULE == 27;
+    assert MODULE_COUNT == 13;
+    assert LESSON_COUNT == 39;
+    assert LESSON_COUNT - 4 * LESSONS_PER_MODULE == 27;
     assert MODULE_COUNT * LESSONS_PER_MODULE == LESSON_COUNT;
 }
 
@@ -360,6 +401,24 @@ test the_mx_module_comes_after_the_lab {
     assert LESSON_WIDGETS[31] == "t27c-e8m0";
     assert LESSON_WIDGETS[32] == "t27c-ocp-mx";
     assert LESSON_SPECS[31] == "specs/numeric/e8m0.t27";
+}
+
+test the_ternary_modules_come_after_mx {
+    assert MODULE_IDS[11] == "ternary";
+    assert MODULE_IDS[12] == "tnf";
+    assert LESSON_MODULES[33] == "ternary";
+    assert LESSON_MODULES[35] == "ternary";
+    assert LESSON_MODULES[36] == "tnf";
+    assert LESSON_MODULES[38] == "tnf";
+    assert LESSON_WIDGETS[33] == "play-gfternary";
+    assert LESSON_WIDGETS[34] == "t27c-gfternary";
+    assert LESSON_WIDGETS[35] == "play-golden-sieve";
+    assert LESSON_WIDGETS[36] == "t27c-golden-sieve";
+    assert LESSON_WIDGETS[37] == "play-tnf17";
+    assert LESSON_WIDGETS[38] == "t27c-tnf17";
+    assert LESSON_SPECS[34] == "specs/numeric/gfternary.t27";
+    assert LESSON_SPECS[36] == "specs/numeric/golden_sieve.t27";
+    assert LESSON_SPECS[38] == "specs/numeric/tnf17.t27";
 }
 
 test the_compiler_module_opens_the_compiler {
