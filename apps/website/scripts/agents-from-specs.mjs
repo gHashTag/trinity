@@ -314,15 +314,84 @@ export function decodeBytes(text) {
 }
 
 /**
- * One literal of a `const` initialiser, as the compiler describes it.
+ * The integer and float forms a `const` initialiser can spell: decimal with `_`
+ * separators, hex, binary, octal, and decimal floats. One check, applied after
+ * the separators are stripped, so `100_000_000` and `0x1FFF` are read by the
+ * same rule every time. The browser evaluator (public/play/t27run.js) decodes
+ * the same spellings into BigInt for `fit()`; the two differ in value model,
+ * not in which texts are integers.
+ */
+const INT_FORM = /^-?(0x[0-9a-fA-F]+|0b[01]+|0o[0-7]+|\d+)$/
+function numberValue(raw, name) {
+  const s = raw.replace(/_/g, '')
+  if (INT_FORM.test(s)) return Number(s)
+  if (/^-?\d+\.\d+([eE][-+]?\d+)?$/.test(s)) return Number(s)
+  throw new Error(`${name}: unsupported literal ${JSON.stringify(raw)}`)
+}
+
+/**
+ * One constant expression of a `const` initialiser, as the compiler describes it.
  *
  * A string is identified by its node — `nodeKind: "string"` — and never by what
  * its text looks like, so `pub const PORT : str = "8080"` is the string `8080`
  * and not the number. Its `value` arrives already unquoted and unescaped.
+ *
+ * Beyond literals this reads the constant expressions the corpus' hardware
+ * specs spell (issue #1477): unary `-`, the binary integer operators, array and
+ * struct literals, and identifiers resolved through `env` -- the module's own
+ * constants, supplied by constsOf. Anything else is still refused, loudly:
+ * calls, casts and fills are evaluation, not declaration.
  */
-export function literalValue(expr, name = 'literal') {
-  if (expr.kind === 'ExprArrayLiteral') return (expr.children ?? []).map((el) => literalValue(el, name))
-  if (expr.kind !== 'ExprLiteral') throw new Error(`${name}: unsupported expression kind ${expr.kind}`)
+export function literalValue(expr, name = 'literal', env = null) {
+  switch (expr.kind) {
+    case 'ExprArrayLiteral': {
+      // An array kept only as its `size` text (a `[value; count]` fill, which the
+      // parser cannot read) has no elements to return; an empty array is `[]`.
+      if ((expr.size ?? '') !== '' && !(expr.children ?? []).length) {
+        throw new Error(`${name}: array literal kept as text [${expr.size}]`)
+      }
+      return (expr.children ?? []).map((el) => literalValue(el, name, env))
+    }
+    case 'ExprUnary': {
+      const op = (expr.op ?? '').trim()
+      const v = literalValue(expr.children?.[0] ?? {}, name, env)
+      if (op === '-') return -v
+      if (op === '!' || op === 'not') return !v
+      throw new Error(`${name}: unsupported unary ${JSON.stringify(op)}`)
+    }
+    case 'ExprBinary': {
+      const [l, r] = (expr.children ?? []).map((c) => literalValue(c, name, env))
+      switch (expr.op) {
+        case '+': return l + r
+        case '-': return l - r
+        case '*': return l * r
+        // Integer division truncates toward zero when both operands are
+        // integers; a float operand keeps float division. Zero is refused.
+        case '/': if (r === 0) throw new Error(`${name}: division by zero`); return Number.isInteger(l) && Number.isInteger(r) ? Math.trunc(l / r) : l / r
+        case '%': if (r === 0) throw new Error(`${name}: modulo by zero`); return l % r
+        default: throw new Error(`${name}: unsupported operator ${JSON.stringify(expr.op)}`)
+      }
+    }
+    case 'ExprIdentifier': {
+      if (env && expr.name in env) {
+        const slot = env[expr.name]
+        // A constant still being evaluated refers to itself.
+        if (slot.state === 'open') throw new Error(`${name}: constant ${expr.name} refers to itself`)
+        return slot.value
+      }
+      throw new Error(`${name}: unresolved identifier ${expr.name}`)
+    }
+    case 'ExprStructLit': {
+      const o = {}
+      for (const f of expr.children ?? []) {
+        if (f.kind !== 'ExprFieldAccess' || !f.children?.[0]) throw new Error(`${name}: unreadable field in a struct literal`)
+        o[f.name] = literalValue(f.children[0], `${name}.${f.name}`, env)
+      }
+      return o
+    }
+    case 'ExprLiteral': break
+    default: throw new Error(`${name}: unsupported expression kind ${expr.kind}`)
+  }
   const raw = decodeBytes(expr.value ?? '')
   // `pub const ENTRY : str = "";` arrives with no `value` key at all -- the
   // field is omitted when the text is empty. `nodeKind` is what carries the
@@ -332,11 +401,22 @@ export function literalValue(expr, name = 'literal') {
   if (expr.value === undefined) throw new Error(`${name}: literal carries no value`)
   if (raw === 'true') return true
   if (raw === 'false') return false
-  // Integers and decimal floats. Hex, binary expressions, struct literals and
-  // calls appear elsewhere in the corpus and are deliberately still refused:
-  // this function reads declarations, it does not evaluate them.
-  if (/^-?\d+(\.\d+)?$/.test(raw)) return Number(raw)
-  throw new Error(`${name}: unsupported literal ${JSON.stringify(raw)}`)
+  return numberValue(raw, name)
+}
+
+/**
+ * `pub const Word = []Trit;` declares a TYPE, not a value: no type annotation,
+ * and the initialiser is a type expression rather than a constant. Such a
+ * declaration is left out of the constants -- returning it would hand every
+ * checkSchema consumer an unknown constant -- while a name that is neither a
+ * constant nor a type shape stays an error rather than a silent omission.
+ */
+const TYPE_NAME = /^(&?str|bool|f\d+|gf\d+|tf\d+|[iu](8|16|32|64|size)|\[\]|&)/
+function isTypeAlias(d, expr, env) {
+  if (d.type !== undefined) return false
+  if (!expr || expr.kind !== 'ExprIdentifier') return false
+  if (expr.name in env) return false
+  return TYPE_NAME.test(expr.name)
 }
 
 /**
@@ -351,15 +431,36 @@ export function literalValue(expr, name = 'literal') {
  * accepted here: that binary was built from no committed source, and it is gone
  * from the tree as of this change. A spec that does not match what the compiler
  * emits should fail loudly rather than be guessed at.
+ *
+ * Constants may refer to one another (`ARG0 = R1`); every declaration is
+ * collected first and evaluated on demand, so order does not matter and a cycle
+ * is named, not spun in.
+ *
+ * A module-level `var` arrives from the parser as the same ConstDecl node with
+ * `mutable: true` (isa/registers.t27 `var register_file : [27]TernaryWord`).
+ * That is module state, not a constant, and its `[value; count]` fills are kept
+ * only as text the parser could not read -- both reasons to leave it out rather
+ * than throw on a declaration no schema ever asked for.
  */
 export function constsOf(analysis) {
   const out = {}
-  const decls = (analysis.ast?.children ?? []).filter((n) => n.kind === 'ConstDecl')
+  const decls = (analysis.ast?.children ?? []).filter((n) => n.kind === 'ConstDecl' && n.mutable !== true)
+  const env = Object.fromEntries(decls.map((d) => [d.name, { state: 'new', value: undefined }]))
+  const evaluate = (d) => {
+    const slot = env[d.name]
+    if (slot.state === 'done') return slot.value
+    if (slot.state === 'open') throw new Error(`constant ${d.name} refers to itself`)
+    slot.state = 'open'
+    slot.value = literalValue(d.children?.[0] ?? {}, d.name, env)
+    slot.state = 'done'
+    return slot.value
+  }
   for (const d of decls) {
     const expr = d.children?.[0]
     if (!expr) continue
     if (d.name in out) throw new Error(`duplicate constant ${d.name}`)
-    out[d.name] = { type: d.type, value: literalValue(expr, d.name), pub: d.pub === true }
+    if (isTypeAlias(d, expr, env)) continue
+    out[d.name] = { type: d.type, value: evaluate(d), pub: d.pub === true }
   }
   return out
 }

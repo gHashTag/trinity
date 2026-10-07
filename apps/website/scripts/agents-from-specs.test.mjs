@@ -15,7 +15,7 @@ import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
-  I18N_SPEC_DIR, SITE, analyzeSpecFiles, castCommandRuns, castCommands, castProblems, readCasts, checkI18n, buildSpecCatalogs, constsOf, decodeBytes, loadCompiler, runNowTarget, sortKeys, verdictOf,
+  I18N_SPEC_DIR, SITE, analyzeSpecFiles, castCommandRuns, castCommands, castProblems, readCasts, checkI18n, buildSpecCatalogs, constsOf, decodeBytes, literalValue, loadCompiler, runNowTarget, sortKeys, verdictOf,
 } from './agents-from-specs.mjs'
 
 const analyze = await loadCompiler(readFileSync(join(SITE, 'public/t27/t27_compiler.wasm')))
@@ -89,6 +89,54 @@ test('array literals arrive as array nodes and UTF-8 arrives as bytes; both are 
   assert.equal(c.SUMMARY_EN.value, 'Issue → Spec ✓ ⟲ ◷ φ')
   assert.equal(decodeBytes('plain ascii'), 'plain ascii')
   assert.equal(decodeBytes('уже верно'), 'уже верно', 'text that is already decoded is left alone')
+})
+
+test('the literal forms the hardware specs spell are read from the vendored files, not synthesised (issue #1477)', () => {
+  // Every form named in the issue, against the real vendored spec that spells
+  // it, through the real compiler: `_` separators, hex, binary, unary minus,
+  // a const that divides two other consts, and a const that names another
+  // const. The numbers are the spec's own declared values.
+  const vendored = (p) => analyze(readFileSync(join(SITE, `public/t27/files/specs/${p}`), 'utf8'))
+  const at = (p, name) => constsOf(vendored(p))[name].value
+
+  assert.equal(at('fpga/uart.t27', 'UART_CLOCK_HZ'), 100000000, '`100_000_000`')
+  assert.equal(at('fpga/spi.t27', 'CLK_FREQ'), 50000000, '`50_000_000`')
+  assert.equal(at('fpga/bpsk.t27', 'BARKER13_BITS'), 0b1010110011111, '`0b1010110011111`')
+  assert.equal(at('fpga/bpsk.t27', 'WINDOW_MASK'), 0x1fff, '`0x1FFF`')
+  assert.equal(at('isa/registers.t27', 'COPTIC_ALPHABET')[0], 0x03b1, 'array of hex literals, first element')
+  assert.equal(at('isa/registers.t27', 'COPTIC_ALPHABET').length, 27)
+  assert.equal(at('fpga/mac.t27', 'MAC_LUT').length, 9)
+  assert.deepEqual(at('fpga/mac.t27', 'MAC_LUT').slice(0, 3), [1, 0, -1], 'unary minus inside an array')
+  assert.equal(at('isa/registers.t27', 'ARG0'), at('isa/registers.t27', 'R1'), '`ARG0 = R1` names another const')
+  assert.equal(at('fpga/uart.t27', 'UART_BIT_PERIOD'), 868, '`UART_CLOCK_HZ / UART_BAUD_RATE` in constant position')
+  assert.equal(at('isa/ternary_memory.t27', 'TRIT_NEG'), -1)
+})
+
+test('a type alias is not a constant: `pub const Hypervector = []Trit;` is omitted, not returned', () => {
+  // vsa/vsa_core.t27 declares a type through the const syntax. checkSchema
+  // flags unknown constants, so handing it back would break every consumer
+  // whose schema does not name it; a type declaration has no value to read.
+  const c = constsOf(analyze(readFileSync(join(SITE, 'public/t27/files/specs/vsa/vsa_core.t27'), 'utf8')))
+  assert.equal('Hypervector' in c, false)
+  assert.equal(c.DEFAULT_DIM.value, 1024, 'the real constants of the same module still come back')
+})
+
+test('a constant that refers to itself is named, not spun in', () => {
+  const a = analyze('module skill_x0 { pub const ID : str = "x"; pub const A : u32 = A; }')
+  assert.throws(() => constsOf(a), /A refers to itself|refers to itself/)
+})
+
+test('a const initialiser the reader cannot follow still refuses loudly', () => {
+  // `[]` is an empty array; a fill (`[0; 3]`) is kept by the parser only as the
+  // node's `size` text with no children -- reading that as empty would invent a
+  // value, so the node is refused. A module-level `var` carrying one is module
+  // state and is left out of the constants entirely.
+  const a = analyze('module skill_x0 { pub const E : [0]u32 = []; }')
+  const c = constsOf(a)
+  assert.deepEqual(c.E.value, [])
+  assert.throws(() => literalValue({ kind: 'ExprArrayLiteral', size: '0;3', children: [] }, 'F'), /kept as text/)
+  const varFill = analyze('module skill_x0 { pub const E : [0]u32 = []; var F : [3]u32 = [0; 3]; }')
+  assert.deepEqual(constsOf(varFill).E.value, [], 'the mutable fill beside it does not fail the read')
 })
 
 test('a clean pair is spec+code, healthy, with the reverse link filled in', () => {
