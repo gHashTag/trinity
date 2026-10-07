@@ -13,6 +13,7 @@ export const postsIndex: PostMeta[] = [
       { label: "The script: apps/website/scripts/widget-cards-from-spec.mjs", href: "https://github.com/gHashTag/trinity/blob/feat/widget-cards-from-spec/apps/website/scripts/widget-cards-from-spec.mjs" },
       { label: "The gallery the cards are drawn for: specs/widgets/gallery.t27", href: "https://github.com/gHashTag/trinity/blob/main/apps/website/specs/widgets/gallery.t27" },
       { label: "Gatle, the widget used in the proof", href: "https://t27.ai/widgets/gatle/" },
+      { label: "trinity#1471: the generator, the check and this post", href: "https://github.com/gHashTag/trinity/pull/1471" },
       { label: "W3C WOFF File Format 2.0, the font container the script decodes", href: "https://www.w3.org/TR/WOFF2/" },
       { label: "RFC 1951, DEFLATE, the fixed Huffman block the PNG is written with", href: "https://www.rfc-editor.org/rfc/rfc1951" },
     ],
