@@ -7,7 +7,7 @@ import type { Block } from '../types'
 export const body: Block[] = [
   {
     "kind": "p",
-    "text": "The t27 courses started at the chip: course 1 teaches an FPGA and course 2 the numbers AI chips store. Both expect the reader to read a .t27 spec already. Course 0 comes before them and teaches that: 27 lessons on the language itself, each a module of its own, ending where course 1 starts."
+    "text": "The t27 courses started at the chip: course 1 teaches an FPGA and course 2 the numbers AI chips store. Both expect the reader to read a .t27 spec already. Course 0 comes before them and teaches that: 27 lessons on the language itself, in 9 modules of 3 lessons, ending where course 1 starts."
   },
   {
     "kind": "h",
@@ -177,7 +177,6 @@ export const body: Block[] = [
   {
     "kind": "ul",
     "items": [
-      "The infographics keep their English words in both languages; the lesson texts are translated.",
       "The browser runner skips invariant and bench blocks, so the lessons that show them describe them and do not run them.",
       "A use line is checked by the compiler, but the browser does not load the module it names.",
       "The lesson specs live in the site copy of the t27 spec tree; they are not yet in gHashTag/t27 itself."
@@ -201,7 +200,7 @@ export const body: Block[] = [
 export const ruBody: Block[] = [
   {
     "kind": "p",
-    "text": "Курсы t27 начинались с чипа: курс 1 учит FPGA, курс 2 — числам, которые хранят ИИ-чипы. Оба ждут, что читатель уже умеет читать спеку .t27. Курс 0 идёт перед ними и учит именно этому: 27 уроков о самом языке, каждый — отдельный модуль; заканчивается он там, где начинается курс 1."
+    "text": "Курсы t27 начинались с чипа: курс 1 учит FPGA, курс 2 — числам, которые хранят ИИ-чипы. Оба ждут, что читатель уже умеет читать спеку .t27. Курс 0 идёт перед ними и учит именно этому: 27 уроков о самом языке, в 9 модулях по 3 урока; заканчивается он там, где начинается курс 1."
   },
   {
     "kind": "h",
@@ -371,7 +370,6 @@ export const ruBody: Block[] = [
   {
     "kind": "ul",
     "items": [
-      "Инфографика остаётся на английском в обоих языках; тексты уроков переведены.",
       "Исполнитель в браузере пропускает блоки invariant и bench, поэтому уроки, где они есть, описывают их, а не запускают.",
       "Строку use компилятор проверяет, но браузер не загружает модуль, который она называет.",
       "Спеки уроков лежат в копии дерева спек t27 на сайте; в самом gHashTag/t27 их пока нет."

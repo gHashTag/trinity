@@ -57,9 +57,9 @@ function useProgress(C: CourseT) {
 
 /** The course one hands its reader to, or the one it follows. */
 function ChainLink({ lang, say, to, next, lesson }: { lang: Lang; say: Say; to: Chain; next: boolean; lesson?: string }) {
-  const href = `/${to.route}${lesson ? `/${lesson}` : ''}`
+  const route = `/${to.route}${lesson ? `/${lesson}` : ''}`
   return (
-    <Link className={`course-pager-link course-chain${next ? ' is-next' : ''}`} to={href}>
+    <Link className={`course-pager-link course-chain${next ? ' is-next' : ''}`} to={route}>
       <span className="course-label">{next ? `${say.NEXT_COURSE} →` : `← ${say.PREV_COURSE}`}</span>
       {to.title[lang]}
     </Link>
@@ -162,6 +162,10 @@ function CourseNotes({ C, lang, say, id }: { C: CourseT; lang: Lang; say: Say; i
 type Also = { id: string; title: string; preview: string | null; height: number; url: string }
 const alsoOf = (l: CourseLesson) => l.also as readonly Also[]
 
+/** A widget page carries its Russian words and swaps them in on ?lang=ru (scripts/widget-pages-from-spec.mjs). */
+const inLang = (page: string, lang: Lang) =>
+  lang === 'ru' && page.startsWith('widgets/') ? `${page}${page.includes('?') ? '&' : '?'}lang=ru` : page
+
 /** Widgets with no framable page (a site tab, not a widget page) open as links, never as an empty frame. */
 function linksOf(l: CourseLesson) {
   return alsoOf(l)
@@ -259,7 +263,7 @@ function Lesson({ C, lesson, lang, say, done, toggle }: { C: CourseT; lesson: Co
             </p>
           ) : null}
           <div className="course-frame" style={{ height: frame.height }}>
-            <iframe key={frame.preview} src={frame.preview} title={frame.title} loading="lazy" allow="clipboard-write" />
+            <iframe key={`${frame.preview}${lang}`} src={inLang(frame.preview, lang)} title={frame.title} loading="lazy" allow="clipboard-write" />
           </div>
           <div className="course-frame-foot">
             {frame.key !== frames[0].key ? (
