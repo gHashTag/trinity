@@ -151,6 +151,11 @@ for (const c of crons.crons) {
     assert.ok(Number.isInteger(c.fields.INTERVAL_MS) && c.fields.INTERVAL_MS > 0)
     assert.equal(c.fields.SCHEDULE, undefined)
     assert.equal(c.control, 'code-only', `${c.id}: a timer cannot be controlled from outside its process`)
+  } else if (c.fields.HOST === 'launchd') {
+    // The owner's Mac: StartInterval -> INTERVAL_MS, StartCalendarInterval or crontab -> SCHEDULE; exactly one (agents-from-specs).
+    assert.notEqual('SCHEDULE' in c.fields, 'INTERVAL_MS' in c.fields, `${c.id}: a launchd job has exactly one of SCHEDULE and INTERVAL_MS`)
+    if ('INTERVAL_MS' in c.fields) assert.ok(Number.isInteger(c.fields.INTERVAL_MS) && c.fields.INTERVAL_MS > 0, `${c.id}: INTERVAL_MS must be a positive integer`)
+    else assert.equal(typeof c.fields.SCHEDULE, 'string')
   } else {
     assert.equal(typeof c.fields.SCHEDULE, 'string')
     if (c.fields.SCHEDULE === '') assert.ok(c.fields.SCHEDULE_NOTE, `${c.id}: an empty SCHEDULE needs a note`)
