@@ -20,6 +20,37 @@ Read the blog skill before writing content. Preserve the user's img2img
 triptych, mandatory hashtags, truthful limitations and relevant service offer.
 Never omit the work report for a small, documentation-only or automation PR.
 
+## New course to open a topic (Queen and every bee)
+
+When a topic needs explaining, the answer is a course: **27 modules of one
+lesson each** (owner, 2026-10-07). One topic is one course; two topics are two
+courses, chained (the last lesson opens lesson 1 of the next). Live chain:
+0 t27 basics -> 1 FPGA -> 2 AI numbers.
+
+The recipe is a t27 module, not this prose:
+[specs/course_recipe/course-27.t27](specs/course_recipe/course-27.t27) (steps,
+rules, gates, cast commands; its tests hold the order). Planned courses:
+[specs/course_recipe/roadmap.t27](specs/course_recipe/roadmap.t27). Read both
+first; this section only points at them.
+
+In short, so the Queen can assign it:
+
+1. Copy the newest course spec in `apps/website/specs/course/` with its `-ru`
+   twin, rename ID / ROUTE / SHARE_PATH, register it in `courses.t27`.
+2. Every lesson: one widget unique across all courses, one t27 spec that
+   compiles in the browser, black-and-white infographic or card.
+3. Run the generators from `apps/website` (all-or-nothing):
+   `widgets-from-spec.mjs`, `widget-pages-from-spec.mjs`,
+   `course-from-spec.mjs`, `course-pages.mjs`; then the `check:course*`,
+   `check:widgets`, `check:onboarding` gates.
+4. Casts are recorded only through `tri` commands; a lesson without a recording
+   says "pending", never fakes one.
+5. The same PR carries its blog post (`body` English + `ruBody` Russian) and the
+   work report above.
+6. Main moved under the PR: merge `origin/main` in, never rebase/force push.
+   A merged trinity PR is not live: ship through the
+   `release(board): ship trinity <sha>` PR in gHashTag/999-multibots-telegraf.
+
 **Version**: 2.0
 **Date**: 2026-04-04
 **Status**: Active

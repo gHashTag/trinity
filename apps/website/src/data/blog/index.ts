@@ -3,6 +3,29 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: "the-queen-knows-how-to-build-a-course",
+    title: "The Queen now knows how to build a course",
+    summary: "[a recipe, not a course; the recipe modules compile but no CI job runs their tests yet] The t27 course recipe moved from one agent's private folder into the repository as two t27 modules, and AGENTS.md points at them, so the Queen can assign a new 27-lesson course for any topic.",
+    date: "2026-10-07",
+    readingMinutes: 2,
+    tags: ["t27", "Course", "Agents"],
+    receipts: [
+      { label: "The recipe, specs/course_recipe/course-27.t27", href: "https://github.com/gHashTag/trinity/blob/main/specs/course_recipe/course-27.t27" },
+      { label: "The plan, specs/course_recipe/roadmap.t27", href: "https://github.com/gHashTag/trinity/blob/main/specs/course_recipe/roadmap.t27" },
+    ],
+    openQuestions: [
+      "No CI job runs the recipe's tests yet.",
+    ],
+    published: true,
+    ru: {
+      title: "Королева теперь знает, как собрать курс",
+      summary: "[рецепт, а не курс; модули рецепта собираются, но их тесты пока не запускает CI] Рецепт курса t27 переехал из личной папки одного агента в репозиторий двумя модулями t27, а AGENTS.md ссылается на них, так что Королева может поручить новый курс из 27 уроков на любую тему.",
+      openQuestions: [
+        "Тесты рецепта пока не запускает ни одно задание CI.",
+      ],
+    },
+  },
+  {
     slug: "one-outlier-twenty-three-zeros",
     title: "One outlier, 23 zeros: a course module on the OCP MX block",
     summary: "[one block of 32, chosen to show the flush, no model and no accuracy number; ocp_mx.t27 is merged into t27 but not on the site yet; lesson 33 is a recording, not a browser player; software only] The t27 course has three new lessons on the Microscaling (MX) formats of the Open Compute Project, where 32 weights share one scale byte. One weight of 3.3 among 31 small ones sets that scale, and in MXFP4 23 of the 30 non-zero small ones become zero; MXFP6 E2M3 loses 4, MXINT8 2, MXFP6 E3M2 and MXFP8 E4M3 none. The numbers come from a spec with 49 tests, and changing one exponent bias from 15 to 16 fails exactly one of them.",
