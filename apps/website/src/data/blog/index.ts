@@ -3,6 +3,46 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: "course-3-clocks-resets-and-cdc",
+    title: "Course 3: clocking, resets and CDC in 27 lessons",
+    summary: "[the browser player still skips test blocks, so every recorded verdict runs natively (trinity#1477); the E3 timing numbers are a model over nextpnr's SDF of a routed design, not board measurements; the VCO window, lock window, tau and W are labelled assumptions in the spec headers; the three new specs are in the vendored tree, not yet in gHashTag/t27] A third t27 course, chained after the AI numbers course: 9 modules of 3 lessons from what a clock domain is to a bitstream diff. Three specs written for it (mmcm 16 tests, reset_sync 16, mtbf 15), 16 new cast widgets recorded with native t27c, and every board number from a named real run: CFGMCLK measured at 70770/68490/67200 kHz over JTAG on three Wukong dice, and E3 I/O timing read from the routed design for the AX7203 board.",
+    date: "2026-10-08",
+    readingMinutes: 6,
+    tags: ["t27", "Course", "FPGA"],
+    receipts: [
+      { label: "Course 3, Clocking, resets and CDC", href: "https://t27.ai/learn/clocks-and-cdc/" },
+      { label: "The course spec, specs/course/clocks-and-cdc.t27", href: "https://t27.ai/learn/clocks-and-cdc.t27" },
+      { label: "Lesson 14, mean time between failures", href: "https://t27.ai/learn/mtbf/" },
+      { label: "Lesson 27, change one thing and diff", href: "https://t27.ai/learn/capstone-diff/" },
+      { label: "trinity#1482: this course and this post", href: "https://github.com/gHashTag/trinity/issues/1482" },
+      { label: "trinity#1476: the course epic", href: "https://github.com/gHashTag/trinity/issues/1476" },
+      { label: "trinity#1477: the browser runner that would run these tests in-page", href: "https://github.com/gHashTag/trinity/issues/1477" },
+      { label: "t27#7370: t27c test-report exits 0 when tests fail", href: "https://github.com/gHashTag/t27/issues/7370" },
+      { label: "AMD/Xilinx UG472, 7 Series FPGAs Clocking Resources (MMCM ranges, 1/56 phase step)", href: "https://docs.amd.com/r/en-US/ug472_7Series_Clocking" },
+      { label: "AMD/Xilinx WP323, Understanding Metastability in FPGAs (the MTBF form)", href: "https://docs.amd.com/v/u/en-US/wp323" },
+      { label: "AMD/Xilinx UG470, 7 Series FPGAs Configuration (the CFGMCLK 50-80 MHz envelope)", href: "https://docs.amd.com/r/en-US/ug470_7Series_Config" },
+    ],
+    openQuestions: [
+      "The browser player skips test and invariant blocks (trinity#1477); every recorded verdict runs natively, and lessons that the runner cannot serve say so.",
+      "The E3 I/O timing numbers are a model over nextpnr's SDF of the routed design for the AX7203 board, not board measurements.",
+      "The VCO window, the lock window, tau and W are labelled teaching assumptions in the spec headers; UG472 and DS181 hold the per-speed-grade numbers a real design would read.",
+      "The FIFO testbench lesson opens fifo.t27 with a mutation recording because no fifo_tb.t27 exists yet; the lesson text says exactly that.",
+      "The three new specs live in the website vendored files tree and are not yet ported to gHashTag/t27.",
+    ],
+    published: true,
+    ru: {
+      title: "Курс 3: тактирование, сброс и CDC в 27 уроках",
+      summary: "[браузерный плеер по-прежнему пропускает блоки тестов, поэтому каждый записанный вердикт идёт нативно (trinity#1477); числа тайминга E3 — модель по SDF nextpnr о разведённом дизайне, а не измерения на плате; окно VCO, окно захвата, tau и W помечены как допущения в шапках спек; три новые спеки в вендоренном дереве, их ещё нет в gHashTag/t27] Третий курс t27, сцепленный с курсом по ИИ-числам: 9 модулей по 3 урока, от того, что такое тактовый домен, до диффа битстрима. Три спеки, написанные для него (mmcm 16 тестов, reset_sync 16, mtbf 15), шестнадцать новых карточек-кастов с нативным t27c, и каждое число о плате из названного настоящего запуска: CFGMCLK измерен на 70770/68490/67200 кГц через JTAG на трёх кристаллах Wukong, а тайминг выводов E3 прочитан из разведённого дизайна для платы AX7203.",
+      openQuestions: [
+        "Браузерный плеер пропускает блоки test и invariant (trinity#1477); каждый записанный вердикт идёт нативно, и уроки, которые раннер не может обслужить, говорят об этом прямо.",
+        "Числа тайминга выводов E3 — модель по SDF nextpnr о разведённом дизайне для платы AX7203, а не измерения на плате.",
+        "Окно VCO, окно захвата, tau и W помечены в шапках спек как учебные допущения; точные числа по степеням скорости, которые читал бы настоящий дизайн, лежат в UG472 и DS181.",
+        "Урок тестбенча FIFO открывает fifo.t27 с записью мутаций, потому что fifo_tb.t27 ещё нет; текст урока говорит именно это.",
+        "Три новые спеки живут в вендоренном дереве файлов сайта и ещё не перенесены в gHashTag/t27.",
+      ],
+    },
+  },
+  {
     slug: "nine-modules-of-three-again",
     title: "Every t27 course is 9 modules of 3 lessons again",
     summary: "On 7 October 2026 the t27 courses were wrongly flattened to 27 modules of one lesson. They are 9 modules of 3 lessons again: courses 1 and 2 get their old modules back word for word, course 0 gets 9 new ones, and the catalog's test holds the shape.",
