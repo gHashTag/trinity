@@ -74,6 +74,14 @@ human push to the branch ends the exemption. The bump writes a
 publication task. A body that carries a report block is validated normally,
 Dependabot or not. Humans and agents have no exemption.
 
+## A course PR carries its post
+
+A PR that changes a course also carries its blog post in the same PR, not after the
+merge. The rule, the course directory and the post directory live in one place,
+`apps/website/specs/policy/course_post.t27`; `scripts/pr_blog_report.py validate --files`
+reads that spec and turns `T27 work report` red when a course file changed and no post
+body was added or modified. This note points at the spec and does not restate it.
+
 ## Automation and safety
 
 `pr-blog-report.yml` uses `pull_request_target` and checks out only trusted

@@ -1,5 +1,6 @@
 import { body as body_a_recipe_step_cannot_be_dropped_silently, ruBody as ruBody_a_recipe_step_cannot_be_dropped_silently } from './bodies/a-recipe-step-cannot-be-dropped-silently'
 import { body as body_the_queen_knows_how_to_build_a_course, ruBody as ruBody_the_queen_knows_how_to_build_a_course } from './bodies/the-queen-knows-how-to-build-a-course'
+import { body as body_a_course_pr_carries_its_post, ruBody as ruBody_a_course_pr_carries_its_post } from './bodies/a-course-pr-carries-its-post'
 import { body as body_one_outlier_twenty_three_zeros, ruBody as ruBody_one_outlier_twenty_three_zeros } from './bodies/one-outlier-twenty-three-zeros'
 import { body as body_a_terminal_for_seven_backends_in_an_x_post, ruBody as ruBody_a_terminal_for_seven_backends_in_an_x_post } from './bodies/a-terminal-for-seven-backends-in-an-x-post'
 import { body as body_t27c_compile_time_and_a_backend_without_llvm, ruBody as ruBody_t27c_compile_time_and_a_backend_without_llvm } from './bodies/t27c-compile-time-and-a-backend-without-llvm'
@@ -97,6 +98,7 @@ import { body as body_one_commit_nine_workflow_outcomes, ruBody as ruBody_one_co
 const bodies: Record<string, PostBody> = {
   'a-recipe-step-cannot-be-dropped-silently': { body: body_a_recipe_step_cannot_be_dropped_silently, ruBody: ruBody_a_recipe_step_cannot_be_dropped_silently },
   'the-queen-knows-how-to-build-a-course': { body: body_the_queen_knows_how_to_build_a_course, ruBody: ruBody_the_queen_knows_how_to_build_a_course },
+  'a-course-pr-carries-its-post': { body: body_a_course_pr_carries_its_post, ruBody: ruBody_a_course_pr_carries_its_post },
   'one-outlier-twenty-three-zeros': { body: body_one_outlier_twenty_three_zeros, ruBody: ruBody_one_outlier_twenty_three_zeros },
   'a-terminal-for-seven-backends-in-an-x-post': { body: body_a_terminal_for_seven_backends_in_an_x_post, ruBody: ruBody_a_terminal_for_seven_backends_in_an_x_post },
   't27c-compile-time-and-a-backend-without-llvm': { body: body_t27c_compile_time_and_a_backend_without_llvm, ruBody: ruBody_t27c_compile_time_and_a_backend_without_llvm },

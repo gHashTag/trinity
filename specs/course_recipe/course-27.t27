@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-; course-27.t27 -- turn any topic into a t27 course: 27 modules of one lesson each
+; course-27.t27 -- turn any topic into a t27 course: 9 modules of 3 lessons each
 ; This file IS the skill. SKILL.md next to it only points here. Every step, rule and gate
 ; below is a constant, and the test blocks hold the order and the shape, so a step cannot
 ; be dropped or moved without a red test. Compile and test it with the site's own compiler:
@@ -14,8 +14,9 @@
 ; the words. A template kept here would drift from the generator; that is the recorded
 ; defect of this codebase family (one rule in three files, two of them right).
 
-; WHAT A COURSE IS: 27 modules of one lesson each (a TRI-27 word;
-; owner's decision 2026-10-07: 27 modules, not 9 modules of 3). One course per topic.
+; WHAT A COURSE IS: 9 modules of 3 lessons each, 27 lessons (a TRI-27 word;
+; owner's decision 2026-10-07: 9 modules of 3; a flattening to 27 modules of 1 was a
+; misreading and was reverted). One course per topic.
 ; Two topics are two courses, chained: the last lesson of one opens lesson 1 of the next,
 ; and each has its own address, share pages and cards, so each can be shared on its own.
 ; Every lesson opens ONE main widget (unique across all courses) and ONE t27 spec that
@@ -27,8 +28,8 @@ module course_27;
 pub const KIND : str = "skill";
 pub const SCHEMA_VERSION : u8 = 1;
 pub const LESSONS : u8 = 27;
-pub const MODULES : u8 = 27;
-pub const LESSONS_PER_MODULE : u8 = 1;
+pub const MODULES : u8 = 9;
+pub const LESSONS_PER_MODULE : u8 = 3;
 
 ; Where the course lives (gHashTag/trinity, relative to apps/website).
 pub const CATALOG : str = "specs/course/courses.t27";
@@ -61,7 +62,7 @@ pub const STEP_IDS : [14]str = [
 pub const STEP_SAYS : [14]str = [
     "Pick the topic from the roadmap and a lower-case id; the app route is #/<id>, the share path learn/<id>/.",
     "Find 27 lesson specs that compile clean in the browser player; a missing spec is written in gHashTag/t27 first (skill t27-spec-first) and reaches the site by the world scan, never hand-copied into the site.",
-    "Order 27 modules of one lesson each so each module uses only what earlier modules taught; a topic that needs more than 27 lessons is two courses.",
+    "Order 9 modules of 3 lessons each so each lesson uses only what earlier lessons taught; a topic that needs more than 27 lessons is two courses.",
     "Copy the newest course spec, keep every SAY_ key the other courses have, and write the words: no superlatives, every number from a spec constant, a player run or a recording.",
     "Write i18n/<id>.ru.json and specs/course/<id>-ru.t27: every field translated, the same digits and the same {N} placeholders as the English.",
     "Give every lesson its own main widget; a new widget is a recording made with tri commands only, in black and white, with one planted one-line bug that fails exactly one named test and is put back in the same recording.",
@@ -90,7 +91,7 @@ pub const RULE_IDS : [10]str = [
     "owner-says-yes"
 ];
 pub const RULE_SAYS : [10]str = [
-    "Every course is exactly 27 modules of one lesson each; two topics are two courses, never one course of 54.",
+    "Every course is exactly 9 modules of 3 lessons each, 27 lessons; two topics are two courses, never one course of 54.",
     "Every lesson opens one main widget and one t27 spec; the main widget is used by no other lesson of any course.",
     "Every recording types tri commands only (sed -n to show lines, tri test, tri mutate plant, tri mutate spec, git diff); what the commands lack is added to tri first.",
     "Cards, recordings and post images are white on black like the course page: no colour fields, no glows, widget pictures in greyscale.",
@@ -127,8 +128,8 @@ pub const CAST_STEPS : [5]str = [
 ];
 
 test a_course_is_three_cubed {
-    assert LESSONS_PER_MODULE == 1;
-    assert MODULES == 27;
+    assert LESSONS_PER_MODULE == 3;
+    assert MODULES == 9;
     assert MODULES * LESSONS_PER_MODULE == LESSONS;
     assert LESSONS == 3 * 3 * 3;
 }
