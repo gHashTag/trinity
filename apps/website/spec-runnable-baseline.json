@@ -1,0 +1,1499 @@
+{
+  "kind": "spec-runnable",
+  "ratchet": "only-improves per spec",
+  "trees": [
+    "specs/fpga",
+    "specs/isa",
+    "specs/ternary",
+    "specs/pins",
+    "specs/boards"
+  ],
+  "totals": {
+    "specs": 164,
+    "typecheckOk": 162,
+    "hirOk": 164,
+    "blocks": 2051,
+    "pass": 1520,
+    "fail": 23,
+    "skip": 508,
+    "clean": 97
+  },
+  "specs": {
+    "specs/fpga/adapter.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 3,
+      "p": 3,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/fpga/apb_bridge.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 23,
+      "p": 23,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/fpga/assembler.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 23,
+      "p": 23,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/fpga/axi4.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 23,
+      "p": 23,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/fpga/boards/arty_a7_integration.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 13,
+      "p": 13,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/fpga/boards/qmtech_a100t_integration.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 11,
+      "p": 11,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/fpga/bootrom.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 13,
+      "p": 11,
+      "f": 0,
+      "s": 2,
+      "g": "not run: an array literal the compiler kept as text [s1]"
+    },
+    "specs/fpga/bpsk.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 17,
+      "p": 15,
+      "f": 0,
+      "s": 2,
+      "g": "not run: assignment to tx_cur_byte, which is not a local"
+    },
+    "specs/fpga/bridge.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 31,
+      "p": 24,
+      "f": 2,
+      "s": 5,
+      "g": "not run: a call to .handle_config on Bridge_Unit{ state: 0, rx_head: 0, rx_tail: 0, tx_head: 0, tx_tail: 0, tx_bytes: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], packet_len: 0, packet_type: 0, timeout_cnt: 0, spi_enabled: true, mac_enabled: true }"
+    },
+    "specs/fpga/clock_domain.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 17,
+      "p": 17,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/fpga/coverage.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 30,
+      "p": 26,
+      "f": 1,
+      "s": 3,
+      "g": "not run: an array literal the compiler kept as text [x]"
+    },
+    "specs/fpga/crossopt.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 7,
+      "p": 7,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/fpga/cts.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 17,
+      "p": 17,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/fpga/dft.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 19,
+      "p": 19,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/fpga/e2e_demo.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 19,
+      "p": 19,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/fpga/eth_crc.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 9,
+      "p": 9,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/fpga/fifo.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 24,
+      "p": 24,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/fpga/formal.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 22,
+      "p": 22,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/fpga/gf16_accel.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 35,
+      "p": 35,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/fpga/hir.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 34,
+      "p": 5,
+      "f": 0,
+      "s": 29,
+      "g": "not run: a fill element this page cannot read [empty_port()]"
+    },
+    "specs/fpga/hw_types.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 33,
+      "p": 33,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/fpga/linker.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 20,
+      "p": 20,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/fpga/mac.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 41,
+      "p": 39,
+      "f": 2,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/fpga/memory.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 21,
+      "p": 0,
+      "f": 0,
+      "s": 21,
+      "g": "not run: a fill element this page cannot read [empty_mem_port()]"
+    },
+    "specs/fpga/mmcm.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 20,
+      "p": 20,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/fpga/mtbf.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 19,
+      "p": 19,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/fpga/partition.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 15,
+      "p": 15,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/fpga/placement.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 16,
+      "p": 16,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/fpga/power.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 17,
+      "p": 17,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/fpga/power_analysis.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 38,
+      "p": 34,
+      "f": 2,
+      "s": 2,
+      "g": "no assert to check"
+    },
+    "specs/fpga/reset_sync.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 19,
+      "p": 19,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/fpga/rgmii.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 8,
+      "p": 8,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/fpga/router.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 24,
+      "p": 24,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/fpga/simulator.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 22,
+      "p": 22,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/fpga/spi.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 29,
+      "p": 24,
+      "f": 5,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/fpga/stdlib.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 21,
+      "p": 21,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/fpga/ternary_isa.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 37,
+      "p": 37,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/fpga/ternary_link.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 67,
+      "p": 67,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/fpga/testbench.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 24,
+      "p": 23,
+      "f": 0,
+      "s": 1,
+      "g": "not run: an array literal the compiler kept as text [TbStimulus]"
+    },
+    "specs/fpga/testbench/apb_bridge_tb.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 10,
+      "p": 2,
+      "f": 0,
+      "s": 8,
+      "g": "not run: assignment to rst_n, which is not a local"
+    },
+    "specs/fpga/testbench/assembler_tb.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 9,
+      "p": 7,
+      "f": 0,
+      "s": 2,
+      "g": "not run: assignment to rst_n, which is not a local"
+    },
+    "specs/fpga/testbench/axi4_tb.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 10,
+      "p": 3,
+      "f": 0,
+      "s": 7,
+      "g": "not run: assignment to rst_n, which is not a local"
+    },
+    "specs/fpga/testbench/bootrom_tb.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 5,
+      "p": 3,
+      "f": 0,
+      "s": 2,
+      "g": "not run: assignment to rst_n, which is not a local"
+    },
+    "specs/fpga/testbench/bridge_tb.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 9,
+      "p": 2,
+      "f": 0,
+      "s": 7,
+      "g": "not run: assignment to rst_n, which is not a local"
+    },
+    "specs/fpga/testbench/clock_domain_tb.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 6,
+      "p": 1,
+      "f": 0,
+      "s": 5,
+      "g": "not run: assignment to rst_n, which is not a local"
+    },
+    "specs/fpga/testbench/cts_tb.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 12,
+      "p": 10,
+      "f": 0,
+      "s": 2,
+      "g": "not run: assignment to rst_n, which is not a local"
+    },
+    "specs/fpga/testbench/dft_tb.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 10,
+      "p": 4,
+      "f": 0,
+      "s": 6,
+      "g": "not run: assignment to rst_n, which is not a local"
+    },
+    "specs/fpga/testbench/fifo_tb.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 12,
+      "p": 0,
+      "f": 0,
+      "s": 12,
+      "g": "not run: assignment to wr_en, which is not a local"
+    },
+    "specs/fpga/testbench/formal_tb.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 12,
+      "p": 5,
+      "f": 0,
+      "s": 7,
+      "g": "not run: assignment to rst_n, which is not a local"
+    },
+    "specs/fpga/testbench/gf16_accel_tb.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 11,
+      "p": 1,
+      "f": 0,
+      "s": 10,
+      "g": "not run: assignment to rst_n, which is not a local"
+    },
+    "specs/fpga/testbench/hir_tb.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 10,
+      "p": 8,
+      "f": 0,
+      "s": 2,
+      "g": "not run: assignment to rst_n, which is not a local"
+    },
+    "specs/fpga/testbench/integration_tb.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 8,
+      "p": 2,
+      "f": 0,
+      "s": 6,
+      "g": "not run: assignment to rst_n, which is not a local"
+    },
+    "specs/fpga/testbench/linker_tb.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 8,
+      "p": 3,
+      "f": 0,
+      "s": 5,
+      "g": "not run: assignment to rst_n, which is not a local"
+    },
+    "specs/fpga/testbench/mac_tb.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 20,
+      "p": 6,
+      "f": 0,
+      "s": 14,
+      "g": "not run: unknown name MAC_WIDTH"
+    },
+    "specs/fpga/testbench/memory_tb.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 10,
+      "p": 1,
+      "f": 0,
+      "s": 9,
+      "g": "not run: assignment to rst_n, which is not a local"
+    },
+    "specs/fpga/testbench/partition_tb.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 10,
+      "p": 8,
+      "f": 0,
+      "s": 2,
+      "g": "not run: assignment to rst_n, which is not a local"
+    },
+    "specs/fpga/testbench/placement_tb.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 11,
+      "p": 9,
+      "f": 0,
+      "s": 2,
+      "g": "not run: assignment to rst_n, which is not a local"
+    },
+    "specs/fpga/testbench/power_analysis_tb.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 17,
+      "p": 1,
+      "f": 0,
+      "s": 16,
+      "g": "not run: assignment to rst_n, which is not a local"
+    },
+    "specs/fpga/testbench/power_tb.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 10,
+      "p": 6,
+      "f": 0,
+      "s": 4,
+      "g": "not run: assignment to rst_n, which is not a local"
+    },
+    "specs/fpga/testbench/router_tb.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 11,
+      "p": 9,
+      "f": 0,
+      "s": 2,
+      "g": "not run: assignment to rst_n, which is not a local"
+    },
+    "specs/fpga/testbench/simulator_tb.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 7,
+      "p": 5,
+      "f": 0,
+      "s": 2,
+      "g": "not run: assignment to rst_n, which is not a local"
+    },
+    "specs/fpga/testbench/spi_tb.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 9,
+      "p": 2,
+      "f": 0,
+      "s": 7,
+      "g": "not run: assignment to rst_n, which is not a local"
+    },
+    "specs/fpga/testbench/stdlib_tb.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 10,
+      "p": 7,
+      "f": 0,
+      "s": 3,
+      "g": "not run: assignment to rst_n, which is not a local"
+    },
+    "specs/fpga/testbench/ternary_isa_tb.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 12,
+      "p": 5,
+      "f": 0,
+      "s": 7,
+      "g": "not run: assignment to rst_n, which is not a local"
+    },
+    "specs/fpga/testbench/timing_tb.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 12,
+      "p": 7,
+      "f": 1,
+      "s": 4,
+      "g": "not run: assignment to rst_n, which is not a local"
+    },
+    "specs/fpga/testbench/top_tb.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 11,
+      "p": 7,
+      "f": 0,
+      "s": 4,
+      "g": "not run: assignment to clk, which is not a local"
+    },
+    "specs/fpga/testbench/uart_tb.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 18,
+      "p": 14,
+      "f": 0,
+      "s": 4,
+      "g": "not run: unknown name BAUD_DIVISOR"
+    },
+    "specs/fpga/testbench/vcd_conformance_compare_tb.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 9,
+      "p": 7,
+      "f": 0,
+      "s": 2,
+      "g": "not run: assignment to rst_n, which is not a local"
+    },
+    "specs/fpga/testbench/vcd_trace_tb.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 8,
+      "p": 5,
+      "f": 0,
+      "s": 3,
+      "g": "not run: assignment to rst_n, which is not a local"
+    },
+    "specs/fpga/timing.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 27,
+      "p": 27,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/fpga/top_level.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 22,
+      "p": 14,
+      "f": 0,
+      "s": 8,
+      "g": "not run: assignment to mac_result, which is not a local"
+    },
+    "specs/fpga/uart.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 18,
+      "p": 17,
+      "f": 1,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/fpga/vcd_conformance_compare.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 42,
+      "p": 24,
+      "f": 0,
+      "s": 18,
+      "g": "not run: unary &"
+    },
+    "specs/fpga/vcd_trace.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 20,
+      "p": 19,
+      "f": 0,
+      "s": 1,
+      "g": "not run: an array literal the compiler kept as text [c1]"
+    },
+    "specs/fpga/verification/build_verify.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 14,
+      "p": 13,
+      "f": 1,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/isa/registers.t27": {
+      "t": 0,
+      "h": 1,
+      "b": 0,
+      "p": 0,
+      "f": 0,
+      "s": 0,
+      "g": "typecheck: warning: unknown type `TernaryWord` in return type of `reg_read`"
+    },
+    "specs/isa/ternary_arithmetic.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 13,
+      "p": 9,
+      "f": 0,
+      "s": 4,
+      "g": "not run: unary &"
+    },
+    "specs/isa/ternary_bitwise.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 14,
+      "p": 0,
+      "f": 0,
+      "s": 14,
+      "g": "not run: unknown name undefined"
+    },
+    "specs/isa/ternary_control_flow.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 30,
+      "p": 28,
+      "f": 1,
+      "s": 1,
+      "g": "not run: call to pc_set_to"
+    },
+    "specs/isa/ternary_deque.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 13,
+      "p": 0,
+      "f": 0,
+      "s": 13,
+      "g": "not run: unknown name undefined"
+    },
+    "specs/isa/ternary_encoding.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 13,
+      "p": 13,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/isa/ternary_gates.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 19,
+      "p": 19,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/isa/ternary_graph.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 5,
+      "p": 2,
+      "f": 0,
+      "s": 3,
+      "g": "no assert to check"
+    },
+    "specs/isa/ternary_hash.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 6,
+      "p": 1,
+      "f": 0,
+      "s": 5,
+      "g": "not run: indexing undefined"
+    },
+    "specs/isa/ternary_memory.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 31,
+      "p": 8,
+      "f": 1,
+      "s": 22,
+      "g": "not run: struct TernaryWord is not declared in this spec"
+    },
+    "specs/isa/ternary_pattern_matching.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 8,
+      "p": 0,
+      "f": 0,
+      "s": 8,
+      "g": "not run: call to eq"
+    },
+    "specs/isa/ternary_search.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 7,
+      "p": 0,
+      "f": 0,
+      "s": 7,
+      "g": "not run: call to eq"
+    },
+    "specs/isa/ternary_set.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 6,
+      "p": 2,
+      "f": 0,
+      "s": 4,
+      "g": "not run: indexing undefined"
+    },
+    "specs/isa/ternary_shift.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 14,
+      "p": 0,
+      "f": 0,
+      "s": 14,
+      "g": "not run: unary &"
+    },
+    "specs/isa/ternary_sorting.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 7,
+      "p": 1,
+      "f": 0,
+      "s": 6,
+      "g": "not run: index form slice_open"
+    },
+    "specs/isa/ternary_tree.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 4,
+      "p": 2,
+      "f": 0,
+      "s": 2,
+      "g": "no assert to check"
+    },
+    "specs/isa/tri27_bytecode.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 10,
+      "p": 10,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/isa/tri27_machine.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 14,
+      "p": 14,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/activation_quantizer.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 7,
+      "p": 7,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/bigint.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 51,
+      "p": 0,
+      "f": 0,
+      "s": 51,
+      "g": "not run: unknown name BigInt"
+    },
+    "specs/ternary/bitnet_layer.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 4,
+      "p": 4,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/bitnet_majority.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 12,
+      "p": 12,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/bitnet_mlp.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 4,
+      "p": 4,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/bitnet_mlp3.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 4,
+      "p": 4,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/bitnet_neuron.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 5,
+      "p": 5,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/bitnet_neuron_nchunk.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 11,
+      "p": 11,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/clocked_counter.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 1,
+      "p": 0,
+      "f": 0,
+      "s": 1,
+      "g": "not run: assignment to count, which is not a local"
+    },
+    "specs/ternary/comb_bitnet_layer.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 3,
+      "p": 3,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/comb_bitnet_neuron.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 4,
+      "p": 4,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/comb_ternary_dot.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 4,
+      "p": 4,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_add_rne.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 1,
+      "p": 1,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_argmax4.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 4,
+      "p": 4,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_axpy.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 2,
+      "p": 2,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_bitnet_neuron.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 2,
+      "p": 2,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_classifier4.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 2,
+      "p": 2,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_classify.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 2,
+      "p": 2,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_classify3.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 3,
+      "p": 3,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_dot2.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 2,
+      "p": 2,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_dot2_rne.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 1,
+      "p": 1,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_dot4.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 1,
+      "p": 1,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_dot4_rne.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 1,
+      "p": 1,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_dot8.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 1,
+      "p": 1,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_exp2.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 4,
+      "p": 4,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_hidden2.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 2,
+      "p": 2,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_layer2.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 1,
+      "p": 1,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_layer3.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 2,
+      "p": 2,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_layer4.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 2,
+      "p": 2,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_log2.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 5,
+      "p": 5,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_logistic.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 2,
+      "p": 2,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_madd.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 2,
+      "p": 2,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_mlp2.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 2,
+      "p": 2,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_mlp3.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 2,
+      "p": 2,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_mul_rne.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 1,
+      "p": 1,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_neuron_full.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 3,
+      "p": 3,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_nll.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 3,
+      "p": 3,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_recip.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 5,
+      "p": 5,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_relu.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 4,
+      "p": 4,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_sadd.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 3,
+      "p": 3,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_sgd_step.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 3,
+      "p": 3,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_signed_dot4.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 1,
+      "p": 1,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_signed_mac.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 2,
+      "p": 2,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_smul.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 3,
+      "p": 3,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_softmax4.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 2,
+      "p": 2,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_softmax_grad4.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 2,
+      "p": 2,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_train1.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 3,
+      "p": 3,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_train2.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 1,
+      "p": 1,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_train2relu.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 2,
+      "p": 2,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_xorbp.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 1,
+      "p": 1,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_xorbp2.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 1,
+      "p": 1,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_xornet.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 4,
+      "p": 4,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_xorpercep.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 1,
+      "p": 1,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_xorpercep3.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 1,
+      "p": 1,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_xorpercep4.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 1,
+      "p": 1,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/gft_xortrain.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 1,
+      "p": 1,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/hybrid_arithmetic.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 39,
+      "p": 12,
+      "f": 0,
+      "s": 27,
+      "g": "not run: zero ended without a return this page could follow"
+    },
+    "specs/ternary/hybrid_bigint.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 39,
+      "p": 0,
+      "f": 0,
+      "s": 39,
+      "g": "not run: unknown name null"
+    },
+    "specs/ternary/packed_trit.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 31,
+      "p": 14,
+      "f": 0,
+      "s": 17,
+      "g": "not run: an array literal the compiler kept as text [TRIT_POS]"
+    },
+    "specs/ternary/stream_ternary_mac.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 4,
+      "p": 4,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/ternary_full_adder.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 6,
+      "p": 6,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/ternary_mac.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 4,
+      "p": 4,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/ternary_ripple_adder.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 5,
+      "p": 5,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/ternary/ternary_xor.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 4,
+      "p": 4,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/pins/emitter_xdc.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 24,
+      "p": 18,
+      "f": 6,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/pins/ir.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 24,
+      "p": 12,
+      "f": 0,
+      "s": 12,
+      "g": "not run: a struct fill this page cannot split [Binding{.location=PinLocation{.package_pin=,.port_name=,.bank=0},.standard=LVCMOS33,.signal=SignalReference{.port_name=,.direction=,.width=0,.index=-1},.is_clock=false,.pullup=false,.pulldown=false,}]"
+    },
+    "specs/pins/parser.t27": {
+      "t": 0,
+      "h": 1,
+      "b": 0,
+      "p": 0,
+      "f": 0,
+      "s": 0,
+      "g": "typecheck: type mismatch at line 330: cannot assign U32 to Custom(\"?u32\")"
+    },
+    "specs/boards/arty_a7.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 28,
+      "p": 28,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/boards/wukong_v1.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 26,
+      "p": 26,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/boards/xc7a100t_full.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 20,
+      "p": 20,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/boards/xc7a100t_minimal.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 38,
+      "p": 38,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    }
+  }
+}
