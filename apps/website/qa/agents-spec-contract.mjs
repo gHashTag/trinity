@@ -151,6 +151,11 @@ for (const c of crons.crons) {
     assert.ok(Number.isInteger(c.fields.INTERVAL_MS) && c.fields.INTERVAL_MS > 0)
     assert.equal(c.fields.SCHEDULE, undefined)
     assert.equal(c.control, 'code-only', `${c.id}: a timer cannot be controlled from outside its process`)
+  } else if (c.fields.HOST === 'launchd') {
+    // The owner's Mac: StartInterval -> INTERVAL_MS, StartCalendarInterval or crontab -> SCHEDULE; exactly one (agents-from-specs).
+    assert.notEqual('SCHEDULE' in c.fields, 'INTERVAL_MS' in c.fields, `${c.id}: a launchd job has exactly one of SCHEDULE and INTERVAL_MS`)
+    if ('INTERVAL_MS' in c.fields) assert.ok(Number.isInteger(c.fields.INTERVAL_MS) && c.fields.INTERVAL_MS > 0, `${c.id}: INTERVAL_MS must be a positive integer`)
+    else assert.equal(typeof c.fields.SCHEDULE, 'string')
   } else {
     assert.equal(typeof c.fields.SCHEDULE, 'string')
     if (c.fields.SCHEDULE === '') assert.ok(c.fields.SCHEDULE_NOTE, `${c.id}: an empty SCHEDULE needs a note`)
@@ -661,11 +666,11 @@ const ladder = src('components/QueenLadder.tsx')
 assert.match(ladder, /hudKeyOf\(item\.layer\)/, 'the ladder no longer shows each layer its key, and 7/8/9/0/t/g are advertised nowhere')
 
 // 6. Translations are connected through .t27 contract specs, never hardcoded.
-//    Every specs/i18n/*.t27 the corpus carries is in both catalogs' i18n lists
-//    (the vendored copy is English-only too); each contract's bundle exists at
-//    the declared path, names the contract back, matches the locale, and every
-//    entry resolves to a spec whose keys are within FIELDS (ORPHANS_ALLOWED is
-//    false in the shipped contract). Coverage is printed, not asserted (the
+//    Every specs/i18n/*.t27 the corpus carries, less the I18N_PENDING list below,
+//    is in both catalogs' i18n lists (the vendored copy is English-only too); each
+//    contract's bundle exists at the declared path, names the contract back,
+//    matches the locale, and every entry resolves to a spec whose keys are
+//    within FIELDS (ORPHANS_ALLOWED is false in the shipped contract). Coverage is printed, not asserted (the
 //    contract says COVERAGE_REQUIRED false), unless the spec says otherwise.
 const i18nDir = join('public/t27/files', I18N_SPEC_DIR)
 const i18nSpecFiles = existsSync(i18nDir) ? readdirSync(i18nDir).filter((f) => f.endsWith('.t27')).sort() : []
@@ -680,10 +685,31 @@ for (const f of i18nSpecFiles) assert.ok(!CYRILLIC.test(readFileSync(join(i18nDi
 const docsOut = 'public/docs/system-docs.json'
 const docsI18n = existsSync(docsOut) ? JSON.parse(readFileSync(docsOut, 'utf8')).i18n.map((l) => l.spec) : []
 for (const l of skills.i18n) assert.ok(l.scope.some((d) => ['specs/skills', 'specs/crons', 'specs/agents', 'specs/tools'].includes(d)), `${l.spec}: listed by the catalogs but scoped elsewhere (${l.scope.join(', ')})`)
+// Contracts t27 declares before trinity has a consumer for them: path -> the bundle
+// the spec names and why nothing reads it yet. The list may only shrink (the bound
+// below moves down with it). An entry leaves when a generator lists the contract or
+// its bundle appears -- both are asserted, so a stale entry fails here. Until the
+// world scan vendors the spec the entry just waits.
+const I18N_PENDING = new Map([
+  ['specs/i18n/blog-ru.t27', {
+    bundle: 'apps/website/i18n/blog.ru.json',
+    reason: 'scoped to specs/blog, whose one post spec (t27b_progress) is not published on t27.ai yet; ' +
+      'the Russian text of every published post is ruBody next to body in src/data/blog/bodies/*.ts (#1453)',
+  }],
+])
+assert.ok(I18N_PENDING.size <= 1, 'the pending i18n list may only shrink; consume a contract instead of adding it here')
+const claimedI18n = new Set([...skills.i18n.map((l) => l.spec), ...docsI18n])
+for (const [spec, { bundle, reason }] of I18N_PENDING) {
+  assert.ok(reason.length > 0, `${spec}: a pending contract needs a reason`)
+  assert.ok(!claimedI18n.has(spec), `${spec}: a generator lists it now; remove it from I18N_PENDING`)
+  assert.ok(!existsSync(join(REPO_ROOT, bundle)), `${spec}: ${bundle} exists now; claim it in a generator and remove it from I18N_PENDING`)
+  const file = join(i18nDir, spec.slice(I18N_SPEC_DIR.length + 1))
+  if (existsSync(file)) assert.ok(readFileSync(file, 'utf8').includes(`"${bundle}"`), `${spec}: no longer names ${bundle}; the pending entry is stale`)
+}
 assert.deepEqual(
-  [...new Set([...skills.i18n.map((l) => l.spec), ...docsI18n])].sort((a, b) => a.localeCompare(b)),
-  i18nSpecFiles.map((f) => `${I18N_SPEC_DIR}/${f}`).sort((a, b) => a.localeCompare(b)),
-  'the catalogs and the docs generator together list exactly the contract specs',
+  [...claimedI18n].sort((a, b) => a.localeCompare(b)),
+  i18nSpecFiles.map((f) => `${I18N_SPEC_DIR}/${f}`).filter((p) => !I18N_PENDING.has(p)).sort((a, b) => a.localeCompare(b)),
+  'the catalogs and the docs generator together list exactly the contract specs (less I18N_PENDING)',
 )
 assert.ok(skills.i18n.some((l) => l.spec === `${I18N_SPEC_DIR}/agents-ru.t27`), 'skills.i18n lists the Russian catalog contract')
 assert.deepEqual(crons.i18n.map((l) => l.spec).sort(), skills.i18n.map((l) => l.spec).sort(), 'both catalogs see the same contracts')
