@@ -213,16 +213,18 @@ const generation=new Map<string,number>();
 const flights=new Map<string,{ticket:number;controller:AbortController;snapshot:Promise<Snapshot|null>}>();
 // A merged PR never changes: its facts are kept for the session, keyed by the merge commit the index names.
 const prFacts=new Map<string,PrFacts>();
-const advance=(repo:string)=>{const next=(generation.get(repo)??0)+1;generation.set(repo,next);return next;};
-const supportsIssueProof=(repo:string)=>repo===policy.REPO;
-function invalidateIssueProof(repo:string):void{advance(repo);cache.delete(repo);flights.get(repo)?.controller.abort();flights.delete(repo);}
+const advance=(repo:string)=>{const k=repo.toLowerCase(),next=(generation.get(k)??0)+1;generation.set(k,next);return next;};
+// The world selector hands repositories over lower-cased (ghashtag/t27); GitHub names are case-insensitive.
+const same=(a:string,b:string)=>a.toLowerCase()===b.toLowerCase();
+const supportsIssueProof=(repo:string)=>same(repo,policy.REPO);
+function invalidateIssueProof(repo:string):void{const k=repo.toLowerCase();advance(repo);cache.delete(k);flights.get(k)?.controller.abort();flights.delete(k);}
 const sha40=(v:unknown):v is string=>typeof v==='string'&&/^[a-f0-9]{40}$/.test(v);
 async function snapshotOf(repo:string,signal:AbortSignal,fetcher:Fetcher):Promise<Snapshot>{
   const api=`https://api.github.com/repos/${repo}`;
   const head=await (await read(`${api}/commits/HEAD`,signal,fetcher)).json() as {sha?:string};
   if(!sha40(head.sha))throw new Error('proof commit identity');
   const raw=await (await read(`https://raw.githubusercontent.com/${policy.INDEX_REPO}/${policy.INDEX_REF}/${policy.INDEX_PATH}`,signal,fetcher)).json() as {repo?:string;issues?:Record<string,unknown>};
-  if(raw.repo!==repo||typeof raw.issues!=='object'||!raw.issues)throw new Error('proof index identity');
+  if(typeof raw.repo!=='string'||!same(raw.repo,policy.REPO)||typeof raw.issues!=='object'||!raw.issues)throw new Error('proof index identity');
   const index:Record<string,IndexPr[]>={};
   for(const [n,list] of Object.entries(raw.issues)){
     if(!/^[1-9][0-9]*$/.test(n)||!Array.isArray(list))continue;
@@ -236,22 +238,23 @@ async function snapshotOf(repo:string,signal:AbortSignal,fetcher:Fetcher):Promis
   return {commit:head.sha,index,observedAt:Date.now(),files:new Map(),budget:{left:policy.MAX_PR_LOOKUPS}};
 }
 async function snapshot(repo:string,signal:AbortSignal,fetcher:Fetcher):Promise<Snapshot|null>{
-  const held=cache.get(repo);
+  const k=repo.toLowerCase();
+  const held=cache.get(k);
   if(held&&Date.now()-held.observedAt<policy.CACHE_MS)return held;
-  cache.delete(repo); // A failed refresh must not reuse an old positive verdict.
-  let flight=flights.get(repo);
-  if(!flight||flight.ticket!==generation.get(repo)){
+  cache.delete(k); // A failed refresh must not reuse an old positive verdict.
+  let flight=flights.get(k);
+  if(!flight||flight.ticket!==generation.get(k)){
     const ticket=advance(repo),controller=new AbortController();
     const found=snapshotOf(repo,controller.signal,fetcher).then(s=>{
-      if(!publishesProof(true,generation.get(repo)===ticket,!controller.signal.aborted))return null;
-      cache.set(repo,s);
+      if(!publishesProof(true,generation.get(k)===ticket,!controller.signal.aborted))return null;
+      cache.set(k,s);
       return s;
-    }).finally(()=>{if(flights.get(repo)?.ticket===ticket)flights.delete(repo);});
+    }).finally(()=>{if(flights.get(k)?.ticket===ticket)flights.delete(k);});
     flight={ticket,controller,snapshot:found};
-    flights.set(repo,flight);
+    flights.set(k,flight);
   }
   const s=await flight.snapshot;
-  return publishesProof(s!==null,generation.get(repo)===flight.ticket,!signal.aborted)?s:null;
+  return publishesProof(s!==null,generation.get(k)===flight.ticket,!signal.aborted)?s:null;
 }
 const file=(s:Snapshot,repo:string,path:string,signal:AbortSignal,fetcher:Fetcher):Promise<ArrayBuffer|null>=>{
   let held=s.files.get(path);
@@ -308,13 +311,13 @@ async function proveIssue(s:Snapshot,repo:string,n:number,signal:AbortSignal,fet
 }
 async function proveWorldIssues<T extends Row>(rows:T[],repo:string,signal:AbortSignal,fetcher:Fetcher=fetch):Promise<T[]>{
   rows=rows.map(row=>({...row,coverage:'unknown' as const,proof:undefined}));
-  if(!supportsIssueProof(repo)||!rows.some(r=>r.repo===repo&&r.state==='closed'))return rows;
+  if(!supportsIssueProof(repo)||!rows.some(r=>same(r.repo,repo)&&r.state==='closed'))return rows;
   let snap:Snapshot|null;
   try{snap=await snapshot(repo,signal,fetcher);}catch{return rows;}
   if(!snap||signal.aborted)return rows;
   const out:T[]=[];
   for(const row of rows){
-    if(row.repo!==repo||row.state!=='closed'||!snap.index[String(row.number)]){out.push(row);continue;}
+    if(!same(row.repo,repo)||row.state!=='closed'||!snap.index[String(row.number)]){out.push(row);continue;}
     let verdict:Awaited<ReturnType<typeof proveIssue>>=null;
     try{verdict=await proveIssue(snap,repo,row.number,signal,fetcher);}catch{verdict=null;}
     if(signal.aborted){return rows;}
