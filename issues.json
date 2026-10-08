@@ -1,7 +1,7 @@
 {
  "repo": "gHashTag/t27",
- "generated_at": "2026-10-07T23:37:23.407Z",
- "watermark": "2026-10-07T23:23:30Z",
+ "generated_at": "2026-10-08T02:59:31.350Z",
+ "watermark": "2026-10-08T02:45:37Z",
  "issues": {
   "2279": [
    {
@@ -1500,6 +1500,26 @@
     "specs": []
    }
   ],
+  "7217": [
+   {
+    "pr": 7648,
+    "sha": "3cd2dfc60f9f5c910ace75f863b856c6b4ce8926",
+    "touched": [
+     "specs/tri/t27b/libm.t27",
+     "specs/tri/t27b/libm_plan.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/libm.t27",
+      "seal": ".trinity/seals/t27b_T27bLibm.json"
+     },
+     {
+      "path": "specs/tri/t27b/libm_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bLibmPlan.json"
+     }
+    ]
+   }
+  ],
   "7225": [
    {
     "pr": 7246,
@@ -1536,6 +1556,46 @@
     ]
    }
   ],
+  "7391": [
+   {
+    "pr": 7645,
+    "sha": "8c7b2ccff438f16bb57b02f4c4df4787d691c4ca",
+    "touched": [
+     "specs/tri/t27b/libm.t27",
+     "specs/tri/t27b/libm_plan.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/libm.t27",
+      "seal": ".trinity/seals/t27b_T27bLibm.json"
+     },
+     {
+      "path": "specs/tri/t27b/libm_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bLibmPlan.json"
+     }
+    ]
+   }
+  ],
+  "7423": [
+   {
+    "pr": 7657,
+    "sha": "5f308712519557028d680357280bcc941e0ec222",
+    "touched": [
+     "specs/tri/t27b/conformance/wide_int_const.t27",
+     "specs/tri/t27b/wide_plan.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/conformance/wide_int_const.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceWideConsts.json"
+     },
+     {
+      "path": "specs/tri/t27b/wide_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bWidePlan.json"
+     }
+    ]
+   }
+  ],
   "7575": [
    {
     "pr": 7583,
@@ -1556,6 +1616,31 @@
    {
     "pr": 7629,
     "sha": "b1c7d2cbbd007e4937b6af7f05e2bd9cafc459c4",
+    "specs": []
+   }
+  ],
+  "7632": [
+   {
+    "pr": 7633,
+    "sha": "03498c1b764b8fb0af0b709c37f5e832161cf223",
+    "touched": [
+     "specs/port/scripts/gen_w368.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/port/scripts/gen_w368.t27",
+      "seal": ".trinity/seals/scripts_port::scripts::gen_w368.json"
+     }
+    ]
+   }
+  ],
+  "7634": [
+   {
+    "pr": 7647,
+    "sha": "8415029ea7f642311dc7da7ef122d8af5bb803f2",
+    "touched": [
+     "specs/port/trios/crates/trios-chat/rings/CR-CHAT-02/src/epoch_rollover_wraparound_guard.t27"
+    ],
     "specs": []
    }
   ]
