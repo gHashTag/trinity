@@ -108,6 +108,10 @@ jobs:
           npm run check:onboarding
           # #1176 also vendored two gf16 ports that check:silicon requires to be classified.
           npm run check:silicon
+          # Every course lesson opens a spec under public/t27/files, and the build refuses one that
+          # is missing or not clean. #1535 re-vendored t27 master over 40 lesson specs that lived
+          # only here, and the apex publish broke; nothing in this list asked the course.
+          npm run check:course
 
       # Ruleset 23148303 ("T27 mandatory work report") requires the status check
       # "T27 work report" on refs/heads/main and lists no bypass actors, so the
