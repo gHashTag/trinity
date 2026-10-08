@@ -10,11 +10,24 @@
  * t27 master's, which this site's compiler does not read clean. The course
  * check refused all 47, and t27.ai stopped taking new builds.
  *
- * The scan now carries these files across its wipe, and the course's bytes
- * win (scripts/sync-t27-specs.mjs).
+ * The scan now carries these files across its wipe (scripts/sync-t27-specs.mjs).
+ * A scanned copy still wins when it is teachable -- t27's newer version of a
+ * lesson spec should reach the lesson -- and the course keeps its own copy only
+ * where the scan brought nothing or something a lesson cannot show.
  */
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { verdictOf } from './agents-from-specs.mjs'
+
+/** Every backend a lesson spec must print; course-from-spec checks the same list. */
+export const LESSON_BACKENDS = ['c', 'js', 'rust', 'ts', 'verilog', 'verilog_hir', 'zig']
+
+/** What course-from-spec --check calls clean: typechecks, nothing discarded, every backend prints. */
+export function teachable(analysis) {
+  if (!analysis) return false
+  const v = verdictOf(analysis)
+  return v.typecheckOk && !v.errors && !v.discarded && v.hirOk && LESSON_BACKENDS.every((b) => analysis.targets?.[b]?.ok)
+}
 
 const DECL = /\bLESSON_SPECS\s*:\s*\[\d*\]\s*str\s*=\s*\[([^\]]*)\]/
 

@@ -225,7 +225,7 @@ module GF8 {
 
     fn floor_log2(x: f32) -&gt; i8 {
         if (x &lt;= 0.0) { return -128; }
-        let mut exp : i8 = 0;
+        let exp : i8 = 0;
         while (x &gt;= 2.0) {
             x = x / 2.0;
             exp = exp + 1;
@@ -271,9 +271,9 @@ module GF8 {
         if (is_integer) {
             // Binary exponentiation for integer exponents
             let exp_int = exp as i32;
-            let mut result = 1.0;
-            let mut base_acc = base;
-            let mut e = exp_int;
+            let result = 1.0;
+            let base_acc = base;
+            let e = exp_int;
 
             if (e &lt; 0) {
                 e = -e;
@@ -322,9 +322,9 @@ module GF8 {
         }
 
         // Taylor series: e^x = 1 + x + x^2/2! + x^3/3! + ...
-        let mut result = 1.0;
-        let mut term = 1.0;
-        let mut exp_x = x;
+        let result = 1.0;
+        let term = 1.0;
+        let exp_x = x;
 
         // Scale down for large inputs to maintain accuracy
         if (exp_x &gt; 5.0 || exp_x &lt; -5.0) {

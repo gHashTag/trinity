@@ -27,7 +27,7 @@ import { createHash } from 'node:crypto'
 // scripts/discover-t27-worlds.mjs adds the repositories a GitHub scan finds through the
 // same functions, so a spec means the same thing however it reached the catalog.
 import { corpusEntry, corpusAggregates, registerDescriptionExceptions } from './t27-corpus.mjs'
-import { lessonSpecPaths } from './lesson-specs.mjs'
+import { lessonSpecPaths, teachable } from './lesson-specs.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const WEBSITE = join(HERE, '..')
@@ -295,10 +295,11 @@ const priorDiscovery = priorManifest?.discovery ?? null
 // at a pinned BrowserOS commit, a file nothing here reads. Wiping them made the world scan's catalog
 // commit delete 515 tool cards (check:tools caught it), so they are carried across the wipe.
 const KEPT = ['specs/tools/trinity/cli', 'specs/tools/trios/tri']
-// A course pins the bytes it teaches (scripts/lesson-specs.mjs): the 2026-10-08
+// The specs a course teaches from (scripts/lesson-specs.mjs): the 2026-10-08
 // scan (#1535) wiped 33 lesson specs that live nowhere else and swapped seven
-// for t27 master's, and the publisher's course check refused the site. They are
-// read now, before the wipe, and written back after the scan so the course wins.
+// for t27 master's copies that do not compile clean, and the publisher's course
+// check refused the site. They are read now, before the wipe, and settled after
+// the scan below.
 const pinned = new Map()
 for (const rel of lessonSpecPaths(join(WEBSITE, 'specs/course'))) {
   const at = join(SPECS_OUT, rel)
@@ -363,22 +364,30 @@ for (const abs of src.files) {
 }
 }
 
-// The course's copy of each lesson spec wins over the scan's. A spec the scan
-// also carries gets its row rebuilt from the bytes on disk, so the manifest
-// never describes a file that is not there; a spec only a course has stays a
-// file, as it always was, with no row of its own.
-let pinnedOver = 0
+// Each lesson spec settles here. A scanned copy a lesson can show (teachable:
+// the course check's own rule) stays, so t27's newer version reaches the lesson
+// and scripts/course-pages.mjs redraws its page. Otherwise the course keeps the
+// copy it had: the scan brought nothing, or brought a spec that does not compile
+// clean. A kept spec the scan also carries gets its manifest row rebuilt from
+// the bytes on disk; one only a course has stays a file with no row, as before.
+let keptMissing = 0, keptUnclean = 0, fresher = 0
 for (const [rel, text] of pinned) {
   const dest = join(SPECS_OUT, rel)
-  const row = entries.findIndex((e) => e.path === rel)
-  if (row >= 0 && readFileSync(dest, 'utf8') !== text) {
-    entries[row] = corpusEntry(rel, entries[row].repo, text, analyze)
-    pinnedOver++
+  const scanned = existsSync(dest) ? readFileSync(dest, 'utf8') : null
+  if (scanned === text) continue
+  if (scanned !== null) {
+    let a = null
+    try { a = analyze(scanned) } catch { a = null }
+    if (teachable(a)) { fresher++; continue }
   }
+  const row = entries.findIndex((e) => e.path === rel)
+  if (row >= 0) entries[row] = corpusEntry(rel, entries[row].repo, text, analyze)
   mkdirSync(dirname(dest), { recursive: true })
   writeFileSync(dest, text)
+  if (scanned === null) keptMissing++
+  else keptUnclean++
 }
-console.log(`  lesson specs: ${pinned.size} kept for the courses, ${pinnedOver} over a newer scanned copy`)
+console.log(`  lesson specs: ${pinned.size} read; kept ${keptMissing} the scan lacks and ${keptUnclean} it brought unclean; ${fresher} take t27's newer clean copy`)
 
 // The companions a spec cites.
 //

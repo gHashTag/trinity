@@ -4,7 +4,8 @@ import assert from 'node:assert/strict'
 import { existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { lessonSpecsOf, lessonSpecPaths } from './lesson-specs.mjs'
+import { lessonSpecsOf, lessonSpecPaths, teachable } from './lesson-specs.mjs'
+import { loadCompiler } from './agents-from-specs.mjs'
 
 const WEBSITE = join(dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -33,13 +34,30 @@ test('every course on the site is read, and every lesson spec is on disk', () =>
   assert.deepEqual(missing, [])
 })
 
-test('the scan carries the lesson specs across its wipe and lets them win', async () => {
+test('teachable is the course check: discarded lines alone make a spec unteachable', async () => {
+  const { readFileSync } = await import('node:fs')
+  const analyze = await loadCompiler(readFileSync(join(WEBSITE, 'public/t27/t27_compiler.wasm')))
+  const lesson = readFileSync(join(WEBSITE, 'public/t27/files/specs/basics/01_what_a_spec_is.t27'), 'utf8')
+  assert.equal(teachable(analyze(lesson)), true)
+  // The shape t27 master's fpga/uart.t27 had on 2026-10-08: it typechecks and
+  // every backend prints, but the compiler drops a clause it does not model.
+  const drops = 'module Drop {\n    const A : u8 = 1;\n\n    test a_clause_the_compiler_drops\n        tmp = 1\n        given y = 1\n        then tmp == y\n}\n'
+  const a = analyze(drops)
+  assert.equal(a.typecheck?.ok, true)
+  assert.ok(a.discarded.length > 0)
+  assert.equal(teachable(a), false)
+  assert.equal(teachable(null), false)
+})
+
+test('the scan reads lesson specs before its wipe and settles them after it', async () => {
   const { readFileSync } = await import('node:fs')
   const sync = readFileSync(join(WEBSITE, 'scripts/sync-t27-specs.mjs'), 'utf8')
   const read = sync.indexOf('lessonSpecPaths(')
   const wipe = sync.indexOf('rmSync(SPECS_OUT,')
   const write = sync.indexOf('writeFileSync(dest, text)')
-  const pin = sync.indexOf('for (const [rel, text] of pinned)')
+  const settle = sync.indexOf('for (const [rel, text] of pinned)')
   assert.ok(read > -1 && read < wipe, 'the lesson specs are read before the wipe')
-  assert.ok(pin > write, 'the course copy is written after the scan, so it wins')
+  assert.ok(settle > write, 'the lesson specs settle after the scan has written its copies')
+  // The scanned copy stays only when a lesson can show it.
+  assert.match(sync.slice(settle), /if \(teachable\(a\)\) \{ fresher\+\+; continue \}/)
 })

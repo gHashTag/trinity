@@ -31,6 +31,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { CYRILLIC, SITE, checkSchema, compilerErrors, constsOf, loadCompiler, sha256, verdictOf } from './agents-from-specs.mjs'
+import { LESSON_BACKENDS } from './lesson-specs.mjs'
 import { FORBIDDEN_EN, FORBIDDEN_RU } from './docs-from-specs.mjs'
 import { runSpecTests } from './viewport-from-spec.mjs'
 
@@ -46,7 +47,7 @@ export const ruSpecOf = (id) => `specs/course/${id}-ru.t27`
 export const publicSpecOf = (id) => `public/${SHARE_BASE}/${id}.t27`
 /** A t27 module name has no '-': ai-numbers is module ai_numbers, its contract ai_numbers_ru. */
 const moduleOf = (id) => id.replace(/-/g, '_')
-const BACKENDS = ['c', 'js', 'rust', 'ts', 'verilog', 'verilog_hir', 'zig']
+const BACKENDS = LESSON_BACKENDS
 
 const CATALOG_REQUIRED = {
   KIND: 'str', SCHEMA_VERSION: 'u8', GENERATED: 'arr', COURSE_COUNT: 'u8', COURSE_IDS: 'arr', COURSE_SPECS: 'arr',
