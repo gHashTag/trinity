@@ -1,4 +1,5 @@
 import { body as body_course_three_goldenfloat, ruBody as ruBody_course_three_goldenfloat } from './bodies/course-three-goldenfloat'
+import { body as body_course_three_goldenfloat_concepts, ruBody as ruBody_course_three_goldenfloat_concepts } from './bodies/course-three-goldenfloat-concepts'
 import { body as body_nine_modules_of_three_again, ruBody as ruBody_nine_modules_of_three_again } from './bodies/nine-modules-of-three-again'
 import { body as body_course_three_verifying_hardware, ruBody as ruBody_course_three_verifying_hardware } from './bodies/course-three-verifying-hardware'
 import { body as body_course_zero_t27_basics, ruBody as ruBody_course_zero_t27_basics } from './bodies/course-zero-t27-basics'
@@ -106,6 +107,7 @@ const bodies: Record<string, PostBody> = {
   'clocks-resets-and-cdc': { body: body_clocks_resets_and_cdc, ruBody: ruBody_clocks_resets_and_cdc },
   'course-three-verifying-hardware': { body: body_course_three_verifying_hardware, ruBody: ruBody_course_three_verifying_hardware },
   'course-three-goldenfloat': { body: body_course_three_goldenfloat, ruBody: ruBody_course_three_goldenfloat },
+  'course-three-goldenfloat-concepts': { body: body_course_three_goldenfloat_concepts, ruBody: ruBody_course_three_goldenfloat_concepts },
   'nine-modules-of-three-again': { body: body_nine_modules_of_three_again, ruBody: ruBody_nine_modules_of_three_again },
   'course-zero-t27-basics': { body: body_course_zero_t27_basics, ruBody: ruBody_course_zero_t27_basics },
   'tri-test-now-runs-the-tests': { body: body_tri_test_now_runs_the_tests, ruBody: ruBody_tri_test_now_runs_the_tests },
