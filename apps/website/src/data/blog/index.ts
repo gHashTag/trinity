@@ -282,6 +282,10 @@ export const postsIndex: PostMeta[] = [
         "Проверка видит, что файл тела поста добавлен или изменён, но не то, что пост — об изменении курса; это по-прежнему дело ревью.",
         "Выше предела API в 3000 файлов правило может выйти «не решено», а не вынесенным.",
         "Ручной перезапуск отчёта для старого PR курса, ушедшего без поста, теперь станет красным.",
+      ],
+    },
+  },
+  {
     slug: "seventy-bees-nothing-to-choose",
     title: "Seventy bees, nothing to choose: the Queen's new scheduler on its first morning",
     summary: "[one morning of readings from public endpoints; the lease table is not public, so leases were not counted; whether the 33-of-51 unfinished rate predates the change is not measured] The Queen now claims a fenced lease before she hands an issue to a bee, renews it with a heartbeat and logs every start and end, all from one t27 spec. Two hours after the deploy the board showed 40 of 70 bees running. Her own status said why: 982 issues were skipped in the last round, 287 of them for having no Boundary section, so no open issue was eligible. The fix is in how issues are written, not in the scheduler.",
