@@ -32,6 +32,9 @@ pub const ARGS : [0]str = [];
 pub const AGENTS : [0]str = [];
 pub const AGENTS_NOTE : str = "No source binds an agent letter to this command: the trios CLI is not named by docs/agents/AGENTS_ALPHABET.md or .claude/agents/*.md of gHashTag/t27.";
 pub const WHEN_TO_USE : str = "E3 RX_ER cases in simulation (conformance/eth_rxer_bench.py, about 4.5 min at nice 19): the pinned TB, model and RTL compiled unchanged plus formal/eth_rxer_inject.v as a second top that forces RX_CTL at one falling RXC edge; expectations fixed in NODE_ETHERNET_PLAN.md; exit 1 if any case disagrees. --gate also runs each case on the yosys netlist (the runner's gate_netlist) and requires every INJ/RXE/TXF/TB/UART| line of the gate log to equal the RTL log; each gate run took 28 to 30 min at nice 19 under load (15/15 at 22:35Z, 91b07fd86). Rerun after any E3 RTL change";
+; public/term/tri-fpga-rxer/meta.json lists 1 run(s) of `tri fpga-rxer`; recorded with the live ~/.local/bin/tri,
+; not a build of SOURCE_COMMIT. The site plays it at the end of this card.
+pub const CAST : str = "term/tri-fpga-rxer/session.cast";
 pub const WITNESS : str = "source-parse";
 pub const WITNESS_SOURCE : str = "gHashTag/BrowserOS:trios/bin/tri at 7366096248dfb09893e9a7d1a0f1c56ced13d16e, read as text (the help heredoc and the top-level case arms); the CLI was not run";
 pub const ENABLED : bool = true;

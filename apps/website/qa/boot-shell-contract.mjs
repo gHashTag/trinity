@@ -27,7 +27,8 @@ function linkProblems(html) {
   for (const h of hrefs) {
     if (h.includes('#')) out.push(`${h}: a crawler drops the hash`)
     else if (!h.startsWith(APEX)) out.push(`${h}: not absolute on the apex, so wrong under app.t27.ai/game/`)
-    else if (!/^[a-z0-9-]+\/$/.test(h.slice(APEX.length))) out.push(`${h}: not one section with its trailing slash`)
+    // A course's share page sits one level down (learn/<id>/, courses.t27 SHARE_BASE).
+    else if (!/^[a-z0-9-]+\/([a-z0-9-]+\/)?$/.test(h.slice(APEX.length))) out.push(`${h}: not a section path with its trailing slash`)
   }
   if (new Set(hrefs).size !== hrefs.length) out.push('a link twice')
   return out

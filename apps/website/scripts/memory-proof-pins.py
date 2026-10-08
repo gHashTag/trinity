@@ -28,10 +28,10 @@ SEALED = [
     ('edge_demo', 'specs/memory/edge_demo.t27', [3, 9]),
     ('formats_bitnet_cpp', 'specs/formats/bitnet_cpp.t27', [29, 30, 34]),
     ('formats_hf_bitnet', 'specs/formats/hf_bitnet.t27', [29, 30, 34]),
-    ('formats_llama_cpp', 'specs/formats/llama_cpp.t27', [29, 30, 34]),
+    ('formats_llama_cpp', 'specs/formats/llama_cpp.t27', [29, 30, 34, 98]),
     ('formats_mlx', 'specs/formats/mlx.t27', [29, 30, 34]),
     ('formats_onnx', 'specs/formats/onnx.t27', [29, 30, 34]),
-    ('formats_prismml', 'specs/formats/prismml.t27', [29, 30, 34]),
+    ('formats_prismml', 'specs/formats/prismml.t27', [29, 30, 34, 98]),
 ]
 SHARED = ['tools/check-specs.sh', 'native/compiler.lock']
 EVIDENCE_WORKFLOW = '.github/workflows/evidence.yml'
