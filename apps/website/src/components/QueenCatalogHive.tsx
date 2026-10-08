@@ -9,7 +9,8 @@ import {SELECTION_KEY,validSelection} from '../lib/queenEmbed';
 import {atlasAgentPacket,type UniverseAtlas,type AtlasIssue} from '../lib/queenUniverseAtlas';
 import type {CombHandle} from './queenHud';
 import type {HiveDisplayProjection,HiveDisplay} from './queenHiveDisplay';
-import {loadWorldIssues,retainObservation,withdrawWorldProof,type WorldIssue} from './queenRepositoryWorld';
+import {retainObservation,withdrawWorldProof,type WorldIssue} from './queenRepositoryWorld';
+import {applyWorldRead,readWorldPages} from './queenWorldPages';
 import {supportsIssueProof} from '../lib/queenIssueProof';
 import './QueenCatalogHive.css';
 
@@ -22,15 +23,20 @@ export function QueenCatalogHive({atlas,lang,handleRef,foundationVisible=true,fi
     if(!repo||!supportsIssueProof(repo))return;
     const request=new AbortController();
     // Refresh this small supported world when selected; a static atlas predating
-    // closure must not override the exact GitHub/native-proof observation.
-    loadWorldIssues(repo,1,request.signal).then(({rows,hasMore})=>{
+    // closure must not override the exact GitHub/native-proof observation. GitHub
+    // lists issues and pull requests together, 100 to a page, so the world is read
+    // page by page up to the ceiling of specs/queen/world_pages.t27 (#1513): it is
+    // complete only when the pages ran out without error, and a failure of a later
+    // page keeps the pages already read and leaves the world partial.
+    readWorldPages(repo,request.signal,read=>{
       if(request.signal.aborted)return;
-      setObserved(prev=>({...Object.fromEntries(Object.entries(prev).filter(([,row])=>row.repo!==repo)),...Object.fromEntries(rows.map(row=>[row.key,row]))}));
-      setCompleteWorlds(prev=>[...prev.filter(r=>r!==repo),...(!hasMore?[repo]:[])]);
+      setObserved(prev=>applyWorldRead(prev,repo,read));
+      if(read.done)setCompleteWorlds(prev=>[...prev.filter(r=>r!==repo),...(read.complete?[repo]:[])]);
     }).catch(()=>{
       // The dated atlas remains explicitly a snapshot on failure, but proof this
       // world showed earlier is withdrawn: only its lifecycle stays (#1392).
       if(!request.signal.aborted)setObserved(prev=>withdrawWorldProof(prev,repo));
+      if(!request.signal.aborted)setCompleteWorlds(prev=>prev.filter(r=>r!==repo));
     });
     return()=>request.abort();
   },[repo]);
