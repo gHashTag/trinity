@@ -1,7 +1,7 @@
 {
  "repo": "gHashTag/t27",
- "generated_at": "2026-10-08T10:27:50.643Z",
- "watermark": "2026-10-08T09:56:15Z",
+ "generated_at": "2026-10-08T17:53:19.506Z",
+ "watermark": "2026-10-08T17:47:04Z",
  "issues": {
   "2279": [
    {
@@ -1510,6 +1510,16 @@
     "specs": []
    }
   ],
+  "7133": [
+   {
+    "pr": 7764,
+    "sha": "01de65cbce0ac93f89abe42e4aa8a7e534b207a6",
+    "touched": [
+     "specs/port/scripts/gen_w637.t27"
+    ],
+    "specs": []
+   }
+  ],
   "7217": [
    {
     "pr": 7648,
@@ -1564,6 +1574,34 @@
       "seal": ".trinity/seals/scripts_gen_w387.json"
      }
     ]
+   }
+  ],
+  "7307": [
+   {
+    "pr": 7331,
+    "sha": "ce605a699717d037eb8f4f914934d70fa7fbd494",
+    "touched": [
+     "bootstrap/tests/fixtures/core_selfhost/both_refuse/switch_no_else.t27",
+     "bootstrap/tests/fixtures/core_selfhost/both_refuse/switch_no_else_char.t27",
+     "bootstrap/tests/fixtures/core_selfhost/both_refuse/switch_no_else_negative.t27",
+     "bootstrap/tests/fixtures/core_selfhost/genc/for_counter.t27",
+     "bootstrap/tests/fixtures/core_selfhost/genc/switch_exhaustive.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "7308": [
+   {
+    "pr": 7331,
+    "sha": "ce605a699717d037eb8f4f914934d70fa7fbd494",
+    "touched": [
+     "bootstrap/tests/fixtures/core_selfhost/both_refuse/switch_no_else.t27",
+     "bootstrap/tests/fixtures/core_selfhost/both_refuse/switch_no_else_char.t27",
+     "bootstrap/tests/fixtures/core_selfhost/both_refuse/switch_no_else_negative.t27",
+     "bootstrap/tests/fixtures/core_selfhost/genc/for_counter.t27",
+     "bootstrap/tests/fixtures/core_selfhost/genc/switch_exhaustive.t27"
+    ],
+    "specs": []
    }
   ],
   "7391": [
@@ -1685,6 +1723,60 @@
     ]
    }
   ],
+  "7448": [
+   {
+    "pr": 7470,
+    "sha": "1f2448e987ea8798137d611dbec7b7d4c2cceccf",
+    "touched": [
+     "specs/tri/t27b/conformance/str_module_var.t27",
+     "specs/tri/t27b/conformance/undefined_module_var.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "7485": [
+   {
+    "pr": 7490,
+    "sha": "a6d4e558e3a40c65575d8db744080a7ce51de147",
+    "touched": [
+     "specs/port/bootstrap/src/compiler/AsmRelocEntry_new.t27",
+     "specs/port/bootstrap/src/compiler/AssembledInstr_r_type.t27",
+     "specs/port/bootstrap/src/compiler/HirIpCatalog_new.t27",
+     "specs/port/bootstrap/src/compiler/HwType_hw_width.t27",
+     "specs/port/bootstrap/src/compiler/LinkSection_text.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "7486": [
+   {
+    "pr": 7491,
+    "sha": "d4f74f8252130ab845d90b5713ff2458f878413f",
+    "touched": [
+     "specs/port/browseros/trios/agent-server/apps/server/src/lib/identity.t27",
+     "specs/port/browseros/trios/agent-server/apps/server/src/tools/filesystem/ls.t27",
+     "specs/port/browseros/trios/agent-server/apps/server/src/tools/tool-registry.t27",
+     "specs/port/trios/apps/trios-macos/rings/RUST-04/clade-improve/src/oversight.t27",
+     "specs/port/trios/crates/trios-cli/src/cmd/report.t27",
+     "specs/port/trios/crates/trios-git/src/status.t27",
+     "specs/port/trios/crates/trios-igla-race/src/main.t27",
+     "specs/port/trios/crates/trios-server/src/mcp_endpoints/tasks.t27",
+     "specs/port/trios/crates/trios-server/src/tools/git.t27",
+     "specs/port/trios/crates/trios-trainer/src/train_loop.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "7524": [
+   {
+    "pr": 7530,
+    "sha": "4d7d2d3bd15121301159578dbb5b2ed6bff9fd3c",
+    "touched": [
+     "specs/tri/t27b/lencall.t27"
+    ],
+    "specs": []
+   }
+  ],
   "7550": [
    {
     "pr": 7660,
@@ -1712,6 +1804,46 @@
      {
       "path": "specs/ternary/gft_mlp2.t27",
       "seal": ".trinity/seals/ternary_GftMlp2.json"
+     }
+    ]
+   }
+  ],
+  "7578": [
+   {
+    "pr": 7579,
+    "sha": "f53a734b7061c2ed677b69b7d3eceb83a867cf05",
+    "touched": [
+     "specs/fpga/coverage.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/fpga/coverage.t27",
+      "seal": ".trinity/seals/fpga_Coverage.json"
+     }
+    ]
+   }
+  ],
+  "7585": [
+   {
+    "pr": 7586,
+    "sha": "14e1c7be95ed107d5f825d2a5ddf37fd93a1d599",
+    "touched": [
+     "specs/fpga/mmcm.t27",
+     "specs/fpga/mtbf.t27",
+     "specs/fpga/reset_sync.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/fpga/mmcm.t27",
+      "seal": ".trinity/seals/fpga_Mmcm.json"
+     },
+     {
+      "path": "specs/fpga/mtbf.t27",
+      "seal": ".trinity/seals/fpga_Mtbf.json"
+     },
+     {
+      "path": "specs/fpga/reset_sync.t27",
+      "seal": ".trinity/seals/fpga_ResetSync.json"
      }
     ]
    }
@@ -1764,6 +1896,17 @@
     "sha": "ade5b0578f0cb566fec8197176cc7dc0052d4ce2",
     "touched": [
      "specs/port/trios/crates/trios-scarab-types/rings/SR-00/src/lib.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "7668": [
+   {
+    "pr": 7447,
+    "sha": "e72af43c122d5344aaf2046fbf2f52149354656a",
+    "touched": [
+     "specs/tri/t27b/conformance/module_var_in_test.t27",
+     "specs/tri/t27b/conformance/shadow_module_var.t27"
     ],
     "specs": []
    }
@@ -1847,7 +1990,12 @@
     "touched": [
      "specs/queen/app.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/queen/app.t27",
+      "seal": ".trinity/seals/queen_QueenApp.json"
+     }
+    ]
    }
   ],
   "7684": [
@@ -1885,6 +2033,26 @@
     ]
    }
   ],
+  "7691": [
+   {
+    "pr": 7750,
+    "sha": "2781ae37b2d551cc95fb5023c7d8fdb2aaa90f65",
+    "touched": [
+     "specs/tri/t27b/conformance/scaffold_local.t27",
+     "specs/tri/t27b/scaffold_plan.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/conformance/scaffold_local.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceScaffoldLocal.json"
+     },
+     {
+      "path": "specs/tri/t27b/scaffold_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bScaffoldPlan.json"
+     }
+    ]
+   }
+  ],
   "7692": [
    {
     "pr": 7693,
@@ -1907,7 +2075,12 @@
     "touched": [
      "specs/queen/app.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/queen/app.t27",
+      "seal": ".trinity/seals/queen_QueenApp.json"
+     }
+    ]
    }
   ],
   "7697": [
@@ -1917,7 +2090,12 @@
     "touched": [
      "specs/queen/app.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/queen/app.t27",
+      "seal": ".trinity/seals/queen_QueenApp.json"
+     }
+    ]
    }
   ],
   "7699": [
@@ -1947,7 +2125,12 @@
     "touched": [
      "specs/queen/app.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/queen/app.t27",
+      "seal": ".trinity/seals/queen_QueenApp.json"
+     }
+    ]
    }
   ],
   "7710": [
@@ -2041,6 +2224,36 @@
     "specs": []
    }
   ],
+  "7735": [
+   {
+    "pr": 7743,
+    "sha": "0c729d9284d34b312073a28e1c8f1fd252a94f52",
+    "touched": [
+     "specs/tri/t27b/conformance/empty_anon_literal.t27",
+     "specs/tri/t27b/conformance/frame_address_store.t27",
+     "specs/tri/t27b/empty_lit_plan.t27",
+     "specs/tri/t27b/frame_store_plan.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/conformance/empty_anon_literal.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceEmptyAnonLiteral.json"
+     },
+     {
+      "path": "specs/tri/t27b/conformance/frame_address_store.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceFrameAddressStore.json"
+     },
+     {
+      "path": "specs/tri/t27b/empty_lit_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bEmptyLitPlan.json"
+     },
+     {
+      "path": "specs/tri/t27b/frame_store_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bFrameStorePlan.json"
+     }
+    ]
+   }
+  ],
   "7738": [
    {
     "pr": 7739,
@@ -2087,6 +2300,476 @@
      {
       "path": "specs/tri/t27b/coerce_plan.t27",
       "seal": ".trinity/seals/t27b_T27bCoercePlan.json"
+     }
+    ]
+   }
+  ],
+  "7756": [
+   {
+    "pr": 7760,
+    "sha": "8e0f774ee87161f2e7790ad7d9902059c2e3fc3a",
+    "touched": [
+     "specs/port/trios/crates/trinity_loss/src/lib.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "7758": [
+   {
+    "pr": 7761,
+    "sha": "b0ed25c6d45615bb0c39dce799c4b68f813e3941",
+    "touched": [
+     "specs/verified/device_dna.t27",
+     "specs/verified/die_binding.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/verified/device_dna.t27",
+      "seal": ".trinity/seals/verified_VerifiedDeviceDna.json"
+     },
+     {
+      "path": "specs/verified/die_binding.t27",
+      "seal": ".trinity/seals/verified_VerifiedDieBinding.json"
+     }
+    ]
+   }
+  ],
+  "7762": [
+   {
+    "pr": 7763,
+    "sha": "579bc55aab76deabadc6f3e4a359a089f47cc6bb",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "7765": [
+   {
+    "pr": 7786,
+    "sha": "7f7bf2cb6afddeb62ccb05172186dacdffe198a0",
+    "touched": [
+     "specs/tri/t27b/conformance/static_slice_literal.t27",
+     "specs/tri/t27b/slice_lit_plan.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/conformance/static_slice_literal.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceStaticSliceLiteral.json"
+     },
+     {
+      "path": "specs/tri/t27b/slice_lit_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bSliceLitPlan.json"
+     }
+    ]
+   }
+  ],
+  "7769": [
+   {
+    "pr": 7832,
+    "sha": "24a635debbdad8a42365ca1df25bddf3e1d47361",
+    "touched": [
+     "specs/port/trinity/src/tri/gen_geo_hash2d.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "7788": [
+   {
+    "pr": 7802,
+    "sha": "e6e8257c55d912b2f35c9865f7416c95db6054e2",
+    "touched": [
+     "specs/fpga/eth_beacon.t27",
+     "specs/fpga/rgmii_sniff.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/fpga/eth_beacon.t27",
+      "seal": ".trinity/seals/fpga_EthBeacon.json"
+     },
+     {
+      "path": "specs/fpga/rgmii_sniff.t27",
+      "seal": ".trinity/seals/fpga_RgmiiSniff.json"
+     }
+    ]
+   }
+  ],
+  "7789": [
+   {
+    "pr": 7800,
+    "sha": "c34dcd08e6c1eefe74d55a55c2ad89e3fbacb7f4",
+    "touched": [
+     "specs/queen/events.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "7790": [
+   {
+    "pr": 7808,
+    "sha": "81da894130db3bcaaa8c9ea917842441f1a5382c",
+    "touched": [
+     "specs/tri/t27b/builtin_plan.t27",
+     "specs/tri/t27b/conformance/div_trunc_panic.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/builtin_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bBuiltinPlan.json"
+     },
+     {
+      "path": "specs/tri/t27b/conformance/div_trunc_panic.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceDivTruncPanic.json"
+     }
+    ]
+   }
+  ],
+  "7791": [
+   {
+    "pr": 7818,
+    "sha": "78bb11a1bbbf549e56580c8338541d56b78eaf6e",
+    "touched": [
+     "specs/tri/t27b/bit_cast_plan.t27",
+     "specs/tri/t27b/conformance/bit_cast.t27",
+     "specs/tri/t27b/libm.t27",
+     "specs/tri/t27b/libm_plan.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/bit_cast_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bBitCastPlan.json"
+     },
+     {
+      "path": "specs/tri/t27b/conformance/bit_cast.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceBitCast.json"
+     },
+     {
+      "path": "specs/tri/t27b/libm.t27",
+      "seal": ".trinity/seals/t27b_T27bLibm.json"
+     },
+     {
+      "path": "specs/tri/t27b/libm_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bLibmPlan.json"
+     }
+    ]
+   }
+  ],
+  "7792": [
+   {
+    "pr": 7794,
+    "sha": "a6c8ab1ba4f90c06efe715978f455c763d37ee2e",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "7793": [
+   {
+    "pr": 7799,
+    "sha": "3e89e83a4df7309a3df044721ddc017f6b53bf74",
+    "touched": [
+     "specs/basics/01_what_a_spec_is.t27",
+     "specs/basics/02_the_module_line.t27",
+     "specs/basics/03_comments_and_prose.t27",
+     "specs/basics/04_constants.t27",
+     "specs/basics/05_whole_numbers.t27",
+     "specs/basics/06_true_false_and_text.t27",
+     "specs/basics/07_arrays.t27",
+     "specs/basics/08_trits.t27",
+     "specs/basics/09_expressions.t27",
+     "specs/basics/10_a_test_block.t27",
+     "specs/basics/11_many_tests.t27",
+     "specs/basics/12_functions.t27",
+     "specs/basics/13_local_names.t27",
+     "specs/basics/14_if_and_else.t27",
+     "specs/basics/15_loops.t27",
+     "specs/basics/16_pub_or_private.t27",
+     "specs/basics/17_structs.t27",
+     "specs/basics/18_enums.t27",
+     "specs/basics/19_use_other_modules.t27",
+     "specs/basics/20_invariants.t27",
+     "specs/basics/21_gen_ts.t27",
+     "specs/basics/22_seven_backends.t27",
+     "specs/basics/23_stages_of_t27c.t27",
+     "specs/basics/24_tri_commands.t27",
+     "specs/basics/25_reading_errors.t27",
+     "specs/basics/26_a_small_program.t27",
+     "specs/basics/27_where_next.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "7796": [
+   {
+    "pr": 7801,
+    "sha": "48d2c6512e2d5b80de072ca2c2bbec45c6ef56de",
+    "touched": [
+     "specs/tri/t27b/conformance/undefined_arg.t27",
+     "specs/tri/t27b/undefined_arg_plan.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/conformance/undefined_arg.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceUndefinedArg.json"
+     },
+     {
+      "path": "specs/tri/t27b/undefined_arg_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bUndefinedArgPlan.json"
+     }
+    ]
+   }
+  ],
+  "7804": [
+   {
+    "pr": 7496,
+    "sha": "4804cc221c24f852d4db450435c4d193b156867a",
+    "touched": [
+     "specs/math/phi_split_optimality.t27",
+     "specs/math/radix_economy.t27",
+     "specs/numeric/gf12.t27",
+     "specs/numeric/gf20.t27",
+     "specs/numeric/gf24.t27",
+     "specs/numeric/gf32.t27",
+     "specs/numeric/gf8.t27",
+     "specs/numeric/phi_ratio.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/math/phi_split_optimality.t27",
+      "seal": ".trinity/seals/PhiSplitOptimality.json"
+     },
+     {
+      "path": "specs/math/radix_economy.t27",
+      "seal": ".trinity/seals/RadixEconomy.json"
+     },
+     {
+      "path": "specs/numeric/gf12.t27",
+      "seal": ".trinity/seals/GF12.json"
+     },
+     {
+      "path": "specs/numeric/gf20.t27",
+      "seal": ".trinity/seals/GF20.json"
+     },
+     {
+      "path": "specs/numeric/gf24.t27",
+      "seal": ".trinity/seals/GF24.json"
+     },
+     {
+      "path": "specs/numeric/gf32.t27",
+      "seal": ".trinity/seals/GF32.json"
+     },
+     {
+      "path": "specs/numeric/gf8.t27",
+      "seal": ".trinity/seals/GF8.json"
+     },
+     {
+      "path": "specs/numeric/phi_ratio.t27",
+      "seal": ".trinity/seals/PhiRatio.json"
+     }
+    ]
+   }
+  ],
+  "7815": [
+   {
+    "pr": 7816,
+    "sha": "5263bba2214cd2aeabbdee320f8c1cbdf3bc3cf8",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "7820": [
+   {
+    "pr": 7821,
+    "sha": "6f1f971b94f33614597dd214fc973e7626542e70",
+    "touched": [
+     "specs/queen/hive.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "7824": [
+   {
+    "pr": 7825,
+    "sha": "fdecab9707c5ec15e407a6178f87a6406d0f0c09",
+    "touched": [
+     "specs/automation/bot-agent-memory.t27",
+     "specs/automation/bot-menu-press.t27",
+     "specs/automation/bot-topic-tabs.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/automation/bot-agent-memory.t27",
+      "seal": ".trinity/seals/automation_automation::bot_agent_memory.json"
+     },
+     {
+      "path": "specs/automation/bot-menu-press.t27",
+      "seal": ".trinity/seals/automation_automation::bot_menu_press.json"
+     },
+     {
+      "path": "specs/automation/bot-topic-tabs.t27",
+      "seal": ".trinity/seals/automation_automation::bot_topic_tabs.json"
+     }
+    ]
+   }
+  ],
+  "7826": [
+   {
+    "pr": 7827,
+    "sha": "6e97812016309e22e34d33a43042fdb38c1deacc",
+    "touched": [
+     "specs/queen/dashboard.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "7829": [
+   {
+    "pr": 7830,
+    "sha": "0d41ae9ba1a725c76c42ccf540c9b2a93c44bb49",
+    "touched": [
+     "specs/memory/graph/temporal.t27",
+     "specs/memory/graph/types.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/memory/graph/temporal.t27",
+      "seal": ".trinity/seals/graph_MemoryGraphTemporal.json"
+     },
+     {
+      "path": "specs/memory/graph/types.t27",
+      "seal": ".trinity/seals/graph_MemoryGraphTypes.json"
+     }
+    ]
+   }
+  ],
+  "7834": [
+   {
+    "pr": 7835,
+    "sha": "ce7f524fc12da6e2775a1d49600133acceba09fb",
+    "touched": [
+     "specs/queen/app.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/queen/app.t27",
+      "seal": ".trinity/seals/queen_QueenApp.json"
+     }
+    ]
+   }
+  ],
+  "7836": [
+   {
+    "pr": 7837,
+    "sha": "0c29f85c57aae5f14ead94a421c0aed8becee694",
+    "touched": [
+     "specs/automation/bot-agent-stream.t27",
+     "specs/automation/bot-event-tabs.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/automation/bot-agent-stream.t27",
+      "seal": ".trinity/seals/automation_automation::bot_agent_stream.json"
+     },
+     {
+      "path": "specs/automation/bot-event-tabs.t27",
+      "seal": ".trinity/seals/automation_automation::bot_event_tabs.json"
+     }
+    ]
+   }
+  ],
+  "7838": [
+   {
+    "pr": 7839,
+    "sha": "88c79f1eafac517b5d8c71d0a7c14b1bfc109b04",
+    "touched": [
+     "specs/queen/holds.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "7840": [
+   {
+    "pr": 7841,
+    "sha": "e354b18fee18715db2bedfc64634cdf206ba9ce8",
+    "touched": [
+     "specs/queen/reviewer.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "7848": [
+   {
+    "pr": 7858,
+    "sha": "c10ff5bd380bbbcab71667fa8d66aae1bb721918",
+    "touched": [
+     "specs/port/trinity/fpga/openxc7-synth/singularity_d6_top.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "7849": [
+   {
+    "pr": 7850,
+    "sha": "c893f082311fb3808c424b5b137bc687a4b16631",
+    "touched": [
+     "specs/automation/bot-topic-tabs.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/automation/bot-topic-tabs.t27",
+      "seal": ".trinity/seals/automation_automation::bot_topic_tabs.json"
+     }
+    ]
+   }
+  ],
+  "7854": [
+   {
+    "pr": 7855,
+    "sha": "8f79cc5a98a36d6a838625d9e5c223b8bc7f694d",
+    "touched": [
+     "specs/automation/agent-spec-bank.t27",
+     "specs/automation/bot-agent-team.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/automation/agent-spec-bank.t27",
+      "seal": ".trinity/seals/automation_automation::agent_spec_bank.json"
+     },
+     {
+      "path": "specs/automation/bot-agent-team.t27",
+      "seal": ".trinity/seals/automation_automation::bot_agent_team.json"
+     }
+    ]
+   }
+  ],
+  "7856": [
+   {
+    "pr": 7855,
+    "sha": "8f79cc5a98a36d6a838625d9e5c223b8bc7f694d",
+    "touched": [
+     "specs/automation/agent-spec-bank.t27",
+     "specs/automation/bot-agent-team.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/automation/agent-spec-bank.t27",
+      "seal": ".trinity/seals/automation_automation::agent_spec_bank.json"
+     },
+     {
+      "path": "specs/automation/bot-agent-team.t27",
+      "seal": ".trinity/seals/automation_automation::bot_agent_team.json"
+     }
+    ]
+   }
+  ],
+  "7860": [
+   {
+    "pr": 7861,
+    "sha": "0a1e86c32bda09222edb844d83a1c01077d0eefe",
+    "touched": [
+     "specs/automation/bot-agent-team.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/automation/bot-agent-team.t27",
+      "seal": ".trinity/seals/automation_automation::bot_agent_team.json"
      }
     ]
    }
