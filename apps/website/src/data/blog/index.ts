@@ -32,6 +32,35 @@ export const postsIndex: PostMeta[] = [
     },
   },
   {
+    slug: "course-three-goldenfloat-concepts",
+    title: "GoldenFloat regrouped: concepts, and what rounding costs in silicon",
+    summary: "[synthesis numbers are seed-1 runs on one part, xc7a200tfbg676-1, yosys 0.67+post, nextpnr-xilinx 0.9.2-107, shell 143 LUTs subtracted; the browser runs constant asserts, never function tests; the cost table covers the GF-T16 operators, the ops the family specs define] Course 3 no longer walks 17 widths one lesson at a time. New modules read the ladder of splits as one table, round to nearest even, sit beside the IEEE widths, and price the GF-T16 operators from real synthesis runs: 1134 LUTs and no DSP for the signed update, 3236 for the signed add, 223 carry cells against 79, and 16 flip-flops synthesis deletes because they can never change.",
+    date: "2026-10-08",
+    readingMinutes: 4,
+    tags: ["t27", "Course", "GoldenFloat", "FPGA"],
+    receipts: [
+      { label: "Course 3, GoldenFloat, regrouped", href: "https://t27.ai/learn/goldenfloat/" },
+      { label: "The course spec, specs/course/goldenfloat.t27", href: "https://t27.ai/learn/goldenfloat.t27" },
+      { label: "trinity#1479: the issue this regroup answers", href: "https://github.com/gHashTag/trinity/issues/1479" },
+      { label: "trinity#1523: the hardware-focus regroup of course 1 this stacks on", href: "https://github.com/gHashTag/trinity/pull/1523" },
+    ],
+    openQuestions: [
+      "The in-browser runner still skips test and invariant blocks (trinity#1477, fix open as PR 1495); lessons show recorded or named-machine runs.",
+      "The cost table is one seed on one part per operator, not a survey across seeds and speed grades.",
+      "The binary gfN specs define no arithmetic, so the table prices the GF-T16 operators only; a width-by-width cost table would need specs that do not exist yet.",
+    ],
+    published: true,
+    ru: {
+      title: "GoldenFloat перегруппирован: понятия и цена округления в кремнии",
+      summary: "[числа синтеза — прогоны одного seed на одной плате, xc7a200tfbg676-1, yosys 0.67+post, nextpnr-xilinx 0.9.2-107, оболочка 143 LUT вычтена; браузер запускает константные проверки, но не тесты функций; таблица цены покрывает операторы GF-T16 — операции, которые определяют спеки семейства] Курс 3 больше не идёт по 17 ширинам по уроку на ширину. Новые модули читают лестницу делений как одну таблицу, округляют к ближайшему чётному, встают рядом с ширинами IEEE и оценивают операторы GF-T16 по настоящим прогонам синтеза: 1134 LUT и ноль DSP у знакового обновления, 3236 у знакового сложения, 223 ячейки переноса против 79 и 16 триггеров, которые синтез удаляет, потому что они никогда не изменятся.",
+      openQuestions: [
+        "Раннер в браузере по-прежнему пропускает блоки test и invariant (trinity#1477, исправление открыто как PR 1495); уроки показывают записанные или именованные прогоны на машине.",
+        "Таблица цены — один seed на одной плате для каждого оператора, не обзор по seed'ам и градациям скорости.",
+        "Двоичные спеки gfN не определяют арифметики, поэтому таблица оценивает только операторы GF-T16; таблица цены по каждой ширине потребовала бы спек, которых ещё нет.",
+      ],
+    },
+  },
+  {
     slug: "clocks-resets-and-cdc",
     title: "Clocks, resets and clock-domain crossings, in 27 lessons",
     summary: "The clocks course teaches clock trees, reset strategy and crossing clock domains in 27 lessons, and every lesson opens a widget no other lesson uses, three of them minted for this course. The post body has sat unregistered in the tree since the course PR; this entry wires it up.",
