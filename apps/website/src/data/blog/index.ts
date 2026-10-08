@@ -250,6 +250,10 @@ export const postsIndex: PostMeta[] = [
         "15 новых уроков работают только в программе; ни один из них не запускался на плате.",
         "Записи используют tri test и tri mutate plant из t27#7400, который на момент написания не был влит, а t27c test-report выходит с кодом 0, когда тест падает (t27#7370), поэтому каждый вердикт читается из его текста.",
         "В сравнении оставлено 11 из 16 источников, чьи страницы читались 7 октября 2026 года; это не полный обзор. Курс, который уже подкладывает по одной ошибке на урок и показывает единственный упавший тест, сделал бы узкое утверждение поста неверным.",
+      ],
+    },
+  },
+  {
     slug: "the-queen-knows-how-to-build-a-course",
     title: "The Queen now knows how to build a course",
     summary: "[a recipe, not a course; the recipe modules compile but no CI job runs their tests yet] The t27 course recipe moved from one agent's private folder into the repository as two t27 modules, and AGENTS.md points at them, so the Queen can assign a new 27-lesson course for any topic.",
