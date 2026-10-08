@@ -188,8 +188,8 @@ module ZeroDSP_UART {
         then uart_state.bit_counter == 0
 
     test uart_statement_body_with_given
-        tmp = 1
-        given y = 2
+        given tmp = 1
+        and   y = 2
         then tmp == y
 
     invariant uart_status_valid
@@ -226,4 +226,4 @@ module ZeroDSP_UART {
 // takes a parameter, returns a value, has a body, and whose types all have a
 // known width. With one candidate the choice is forced, so this forwards and
 // invents nothing. 11 of 387 port-less specs qualified.
-fn on_clock(data: u8) -> void { uart_tx_send(data); }
+fn on_comb(data: u8) -> bool { return uart_tx_send(data); }

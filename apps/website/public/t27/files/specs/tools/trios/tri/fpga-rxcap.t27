@@ -32,9 +32,9 @@ pub const ARGS : [1]str = ["[--self-test]"];
 pub const AGENTS : [0]str = [];
 pub const AGENTS_NOTE : str = "No source binds an agent letter to this command: the trios CLI is not named by docs/agents/AGENTS_ALPHABET.md or .claude/agents/*.md of gHashTag/t27.";
 pub const WHEN_TO_USE : str = "E3 RX capture at the RX flip-flops in the same SDF (conformance/e3_rx_capture_model.py; spec specs/trinet/e3_rx_capture_model_ax7203.t27; reads /tmp/e3txhold, pinned by sha, runs no tool): with no argument prints the one recorded run (conformance/model_runs/e3_rx_capture_model.log) if it exists, else runs it once (seconds); exit 0 PASS, 1 FAIL, 2 NO VERDICT. PASS 00:21Z 2026-09-28: falling-edge hold 10900 ps on rxctl_n; RXC 2.4 ns behind its data through the BUFG, so rxd_p1 and an RX_ER nibble sample the new value over x -2.5..+0.5 ns (board ed should stay 0)";
-; public/term/tri-fpga-rgmii/meta.json lists 1 run(s) of `tri fpga-rxcap`; recorded with the live ~/.local/bin/tri,
+; public/term/tri-fpga-rxcap/meta.json lists 1 run(s) of `tri fpga-rxcap`; recorded with the live ~/.local/bin/tri,
 ; not a build of SOURCE_COMMIT. The site plays it at the end of this card.
-pub const CAST : str = "term/tri-fpga-rgmii/session.cast";
+pub const CAST : str = "term/tri-fpga-rxcap/session.cast";
 pub const WITNESS : str = "source-parse";
 pub const WITNESS_SOURCE : str = "gHashTag/BrowserOS:trios/bin/tri at 7366096248dfb09893e9a7d1a0f1c56ced13d16e, read as text (the help heredoc and the top-level case arms); the CLI was not run";
 pub const ENABLED : bool = true;

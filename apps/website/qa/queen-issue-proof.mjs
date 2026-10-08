@@ -106,3 +106,4 @@ assert.equal(matrix.vectors.length,16);
 for(const v of matrix.vectors)assert.equal(production.ACCEPT[v.mask],v.expected,`conformance mask ${v.mask}`);
 console.log(`Issue proof reader: ${cases} cases, ${matrix.vectors.length} policy and ${refresh.vectors.length} refresh conformance vectors PASS`);
 await import('./queen-memory-proof.mjs');
+await import('./queen-t27-proof.mjs');

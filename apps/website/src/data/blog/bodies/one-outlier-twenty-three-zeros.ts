@@ -127,11 +127,12 @@ export const body: Block[] = [
   {
     kind: 'ul',
     items: [
-      'Lesson 31, one scale for a block, with the player: t27.ai/learn/one-scale-per-block/',
-      'Lesson 32, the scale byte on a real machine: t27.ai/learn/scale-byte-native/',
-      'Lesson 33, one outlier, many zeros: t27.ai/learn/one-outlier/',
+      'AI numbers course, lesson 4, one scale for a block, with the player: t27.ai/learn/one-scale-per-block/',
+      'AI numbers course, lesson 5, the scale byte on a real machine: t27.ai/learn/scale-byte-native/',
+      'AI numbers course, lesson 6, one outlier, many zeros: t27.ai/learn/one-outlier/',
       'The player on e8m0.t27, seven backends and the tests: t27.ai/play/e8m0/',
-      'The whole course: t27.ai/#/course',
+      'The AI numbers course, where these three lessons now live: t27.ai/learn/ai-numbers/',
+      'The FPGA course it follows: t27.ai/learn/course/',
     ],
   },
 ]
@@ -257,11 +258,12 @@ export const ruBody: Block[] = [
   {
     kind: 'ul',
     items: [
-      'Урок 31, один масштаб на блок, с плеером: t27.ai/ru/learn/one-scale-per-block/',
-      'Урок 32, байт масштаба на настоящей машине: t27.ai/ru/learn/scale-byte-native/',
-      'Урок 33, один выброс, много нулей: t27.ai/ru/learn/one-outlier/',
+      'Курс «ИИ-числа», урок 4, один масштаб на блок, с плеером: t27.ai/ru/learn/one-scale-per-block/',
+      'Курс «ИИ-числа», урок 5, байт масштаба на настоящей машине: t27.ai/ru/learn/scale-byte-native/',
+      'Курс «ИИ-числа», урок 6, один выброс, много нулей: t27.ai/ru/learn/one-outlier/',
       'Плеер на e8m0.t27, семь бэкендов и тесты: t27.ai/play/e8m0/',
-      'Весь курс: t27.ai/#/course',
+      'Курс «ИИ-числа», где теперь живут эти три урока: t27.ai/ru/learn/ai-numbers/',
+      'Курс по FPGA, за которым он идёт: t27.ai/ru/learn/course/',
     ],
   },
 ]
