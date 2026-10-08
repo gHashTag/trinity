@@ -900,6 +900,93 @@
   box-shadow: none;
 }
 
+/* THE TASK FILTER (owner, 2026-10-08: a dashboard over all tasks, with any
+   filter). One row: find, kind, state, repository, reset, and the count of what
+   is shown out of what arrived. Selects, so the row stays one row; on a phone it
+   scrolls sideways rather than wrapping into a second row of chrome. */
+.queen27-task-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0 0 0.45rem;
+  color: var(--muted);
+  font-size: 0.62rem;
+}
+
+.queen27-task-filter select {
+  max-width: 12rem;
+  padding: 0.15rem 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text);
+  font: inherit;
+  background: #050505;
+}
+
+.queen27-task-filter small {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: inherit;
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .queen27-task-filter {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .queen27-task-filter > * {
+    flex: 0 0 auto;
+  }
+}
+
+/* A review or a job says what it is, and a task of another repository says
+   which, in words beside the number. */
+.queen27-card-kind {
+  padding: 0 0.3rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.55rem;
+  text-transform: uppercase;
+}
+
+/* The bee on a card: lane, state, how long, last heard. Working is the board's
+   running green; quiet is grey and queued is gold, so a bee that has said
+   nothing for minutes is never drawn as busy. The words carry it as well. */
+.queen27-card-bee {
+  display: flex !important;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--q-green) !important;
+  font-size: 0.55rem !important;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+/* the dot is a border, not a fill: it is the text's own colour, at text size */
+.queen27-card-bee i {
+  width: 0;
+  height: 0;
+  flex: 0 0 auto;
+  border: 2.5px solid currentColor;
+  border-radius: 50%;
+}
+
+.queen27-card-bee[data-bee-state="working"] i {
+  box-shadow: 0 0 10px currentColor;
+}
+
+.queen27-card-bee[data-bee-state="quiet"] {
+  color: var(--muted, #888) !important;
+}
+
+.queen27-card-bee[data-bee-state="queued"] {
+  color: var(--q-gold) !important;
+}
+
 /* The card is black. It carried a 7% wash of its direction colour, and on a
    board that is mostly code that read as a green board: the owner asked for the
    cards black again, 2026-10-03. Direction keeps three signs that are not a
@@ -3254,6 +3341,30 @@ body.queen-shell .queen27-comb.is-embedded canvas.queen-starfield {
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6);
 }
 .queen27-hover-card[aria-hidden="true"] { display: none; }
+
+/* A bee's name over its ship, on hover or tap: "#7513 · working · 12 min".
+   Placed by transform from the scene's projection of the ship, every frame it
+   is shown, so it rides with the ship instead of being re-laid out. */
+.queen-hive-bee-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 6;
+  pointer-events: none;
+  padding: 3px 8px;
+  border: 1px solid rgba(100, 220, 255, 0.6);
+  border-radius: 999px;
+  background: var(--hud-panel, rgba(2, 8, 6, 0.88));
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  color: var(--q27-text, #e6f0ec);
+  font: 11px/1.35 ui-monospace, Menlo, monospace;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.queen-hive-bee-label[aria-hidden="true"] { display: none; }
+.queen-hive-bee-label[data-state="quiet"] { border-color: rgba(230, 240, 236, 0.35); }
+.queen-hive-bee-label[data-state="queued"] { border-color: rgba(255, 212, 90, 0.6); }
 .queen27-hover-card b { display: block; color: #ffd45a; font-weight: 500; margin-bottom: 2px; }
 .queen27-hover-card span { display: block; color: rgba(230, 240, 236, 0.72); }
 
@@ -6164,6 +6275,7 @@ main:where(.queen27-page.is-shell) section {
 .queen27-page.is-shell .queen27-board-stack > .queen27-ladder,
 .queen27-page.is-shell .queen27-board-stack > .queen27-lane-switch,
 .queen27-page.is-shell .queen27-board-stack > .queen27-dir-filter,
+.queen27-page.is-shell .queen27-board-stack > .queen27-task-filter,
 .queen27-page.is-shell .queen27-board-stack > .queen27-lane-head {
   flex: 0 0 auto;
 }
@@ -7814,7 +7926,8 @@ body.queen-shell .queen-starfield-source {
    panel instead of flat black. A pressed chip is a state, not a surface, and
    this rule now declines to have an opinion about it. */
 .queen27-page.is-shell .queen27-chip:not([aria-pressed="true"]),
-.queen27-page.is-shell .queen27-lane-search {
+.queen27-page.is-shell .queen27-lane-search,
+.queen27-page.is-shell .queen27-task-filter select {
   border-color: var(--hud-line);
   background: var(--hud-panel);
   /* 0.88 leaves an eighth of the hive in a chip label, and the rows these ride
@@ -7884,6 +7997,19 @@ body.queen-shell .queen-starfield-source {
    belong here the day one of them gets a caption. */
 .queen27-page.is-shell :is(.queen27-lane-filter, .queen27-dir-filter) {
   padding: 0.35rem var(--hud-gap, 10px);
+  background: var(--hud-veil, rgba(2, 8, 6, 0.72));
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* The task filter row is the third filter row and takes the same ink and the
+   same ground as the two above, for the same reasons: its count and its
+   placeholder are text painted over the hive. A rule of its own rather than a
+   third member of the two `:is()` lists, which qa/queen-contrast-contract.mjs
+   asserts by their text. */
+.queen27-page.is-shell .queen27-task-filter {
+  padding: 0.35rem var(--hud-gap, 10px);
+  color: var(--hud-muted);
   background: var(--hud-veil, rgba(2, 8, 6, 0.72));
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
