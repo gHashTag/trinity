@@ -184,6 +184,11 @@ jobs:
       # be quietly painted as code. A colour is read as a fact. Pure, no browser.
       - name: The direction filter can only ever hide
         run: npm run check:queen-direction
+      # One task view (gHashTag/t27 specs/queen/tasks.t27): the spec's filter
+      # vectors against the mirror, the recorded route, the board fallback, the
+      # filter's address, the running cells and the ship. Pure, no network.
+      - name: The task view and its bees
+        run: npm run check:queen-tasks
       # The Queen board moved to app.t27.ai/queen/, and #/queen here hands its
       # visitors over. app.t27.ai builds THIS bundle, so the redirect code runs
       # at the destination too: keyed on the route alone it would send that page
