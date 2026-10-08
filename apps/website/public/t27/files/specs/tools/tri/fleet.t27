@@ -28,9 +28,16 @@ pub const ACTIONS_ABOUT : [2]str = ["Scan the USB bus and say plainly what hardw
 ; Top-level arguments/flags of the command itself, "<name>: doc".
 pub const ARGS : [0]str = [];
 ; Agent letters that own this command, only where a source line names it (AGENTS_NOTE cites it).
-pub const AGENTS : [0]str = [];
-pub const AGENTS_NOTE : str = "No source binds an agent letter to this command: docs/agents/AGENTS_ALPHABET.md (rows, key files, phase cycle), specs/OWNERS.md and .claude/agents/*.md do not name it. creator.md and verifier.md name tri gen/test/verify but are not letter agents.";
+pub const AGENTS : [2]str = ["T", "K"];
+pub const AGENTS_NOTE : str = "docs/agents/AGENTS_ALPHABET.md \"Who holds a tool, and who holds a skill\" binds every tool to the Queen (T). Domain lead K: ABOUT (the fleet.rs module doc) is \"is the hardware this plan assumes actually attached?\" and scan \"Scan the USB bus and say plainly what hardware is present\" -- the source matches on FTDI vendor id 1027 for the attached FPGA boards, so the subject is K's hardware.";
 ; From the about text (long about when the doc has more than one paragraph); no marketing.
 pub const WHEN_TO_USE : str = "`tri fleet` -- is the hardware this plan assumes actually attached?";
 pub const WITNESS : str = "source-parse";
 pub const ENABLED : bool = true;
+
+test basic_constants {
+    assert KIND == "tool";
+    assert ENABLED == true;
+    assert SCHEMA == 2;
+    assert ID == "tri/fleet";
+}

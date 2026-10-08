@@ -106,6 +106,21 @@ pub const UNKNOWN_OPCODE_RULE : str = "an opcode byte that is not one of the for
 pub const REGISTER_FIELD_RULE : str = "register fields are five bits wide (0..31); the executor refuses 27..31 with InvalidRegister; in the immediate form src1 is four bits (0..15)";
 pub const SRC2_LOSS_RULE : str = "DOT, BIND, BUNDLE2 execute with src1 and src2 but are not in SRC2_FORM: encode writes only src1 and decode reads src2 as 0 (register t0)";
 pub const SACR_MODE_RULE : str = "SACR selects its mode by the immediate, but SACR is not in IMM_FORM: decode reads the immediate as 0 and every decoded SACR adds modulo 19683; modes 2, 3 and 4 are reachable only by constructing an Instruction directly, as the owner's tests do";
+; --- The t27a field table (T736, specs/compiler/theory/isa_round_trip.t27; gHashTag/t27#6507) ---
+; The table above is the pinned one: it is what decoder.zig at PINNED_REVISION executes, and
+; tools/trinity_tri27.py replays the owner's programs through it, so it is not changed here. The
+; t27a assembler and disassembler (specs/isa/t27a.t27) write and read the widened table below
+; instead. Same layout and same shifts; DOT, BIND, BUNDLE2 and BUNDLE3 join the three-operand form,
+; SACR joins the immediate form, and BUNDLE3 writes its third register at V3_SHIFT. For the other
+; 42 opcodes it writes the same word as `encode` (T736 b). The decoder at PINNED_REVISION reads the
+; five widened opcodes the old way. gHashTag/trinity#1437 (180b29ef) made decoder.zig take this
+; table instead, as the `t27c gen` output of this file, so on the emulator a t27a word for DOT, BIND,
+; BUNDLE2, BUNDLE3 or SACR now means what t27a wrote (T27A_CONSUMER).
+pub const T27A_IMM_FORM_COUNT : u32 = 24;
+pub const T27A_SRC2_FORM_COUNT : u32 = 11;
+pub const T27A_TWO_OPERAND_COUNT : u32 = 12;
+pub const T27A_FIELD_RULE : str = "t27a: the immediate form is IMM_FORM plus SACR (src1 four bits, its mode in the immediate); the three-operand form is SRC2_FORM plus DOT, BIND, BUNDLE2, BUNDLE3; BUNDLE3 also writes its third register at bits 27:23; every other opcode writes dst and a five-bit src1 only";
+pub const T27A_CONSUMER : str = "gHashTag/trinity src/tri27/emu/decoder.zig since 180b29ef (trinity#1437) decodes and encodes through t27a_src1, t27a_src2, t27a_imm, t27a_imm_form and t27a_encode, vendored as src/tri27/emu/tri27_encoding.zig";
 ; --- Findings: the other layouts in the consumer's tree, recorded and not followed ----------
 pub const FINDING_COUNT : u32 = 6;
 pub const FINDINGS : [6]str = ["src/tri27/emu/encoder_simple.zig puts a sixteen-bit immediate at bit 16 (loads, stores) or bit 8 (jumps, calls); src/tri27/emu/asm_parser.zig, the assembler behind `tri tri27 assemble`, uses it, so its words are misread by decoder.zig", "src/tri27/emu/specs/tbin_format.md puts the opcode in bits 31:24 and a four-bit immediate in bits 3:0", "docs/tri27/t27_format.md puts a six-bit opcode in bits 31:26 and an eight-bit immediate in bits 7:0, with opcode numbers (ADD 0x60 ... DEC 0x65) that collide with DOT 0x60", "docs/tri27/README.md puts a six-bit opcode in bits 8:5", "src/tri27/emit_zig.zig emits a VM whose decoder reads the opcode from bits 31:24 and packs bytes big-endian; it also switches on LTI, PUSH, POP and RESET, which no enum declares", "the encoder_simple.zig enum lists 36 opcodes and misses MOV, EXP, SIN, JGT, JLT and every STR_ and FILE_ opcode; every document says 36, the decoder declares 47"];
@@ -265,8 +280,59 @@ pub fn bundle3_word(dst: u32, src1: u32, src2: u32, v3: u32) -> u32 {
     return OP_BUNDLE3 | ((dst & REG_MASK) << DST_SHIFT) | ((src1 & REG_MASK) << SRC1_SHIFT) | ((src2 & REG_MASK) << SRC2_SHIFT) | ((v3 & REG_MASK) << V3_SHIFT);
 }
 
-invariant the_immediate_range_is_fifteen_bits { IMM_MAX - IMM_MIN == 32767 }
-invariant the_forms_partition_the_opcodes { IMM_FORM_COUNT + SRC2_FORM_COUNT == 30 }
+; The t27a field table. Readers of a t27a word use these, not src1_of / src2_of / imm_of.
+pub fn t27a_imm_form(op: u32) -> bool {
+    if (op == OP_SACR) { return true; }
+    return has_imm(op);
+}
+
+pub fn t27a_src2_form(op: u32) -> bool {
+    if (has_src2(op)) { return true; }
+    if (op == OP_DOT) { return true; }
+    if (op == OP_BIND) { return true; }
+    if (op == OP_BUNDLE2) { return true; }
+    if (op == OP_BUNDLE3) { return true; }
+    return false;
+}
+
+pub fn t27a_encode(op: u32, dst: u32, s1: u32, s2: u32, v3: u32, imm: i32) -> u32 {
+    var w : u32 = (op & OPCODE_MASK) | ((dst & REG_MASK) << DST_SHIFT);
+    if (t27a_imm_form(op)) {
+        return w | ((s1 & SRC1_MASK_IMM_FORM) << SRC1_SHIFT) | (imm_field(imm) << IMM_SHIFT);
+    }
+    w = w | ((s1 & REG_MASK) << SRC1_SHIFT);
+    if (t27a_src2_form(op)) { w = w | ((s2 & REG_MASK) << SRC2_SHIFT); }
+    if (op == OP_BUNDLE3) { w = w | ((v3 & REG_MASK) << V3_SHIFT); }
+    return w;
+}
+
+pub fn t27a_src1(w: u32, op: u32) -> u32 {
+    if (t27a_imm_form(op)) { return (w >> SRC1_SHIFT) & SRC1_MASK_IMM_FORM; }
+    return (w >> SRC1_SHIFT) & REG_MASK;
+}
+
+pub fn t27a_src2(w: u32, op: u32) -> u32 {
+    if (t27a_src2_form(op)) { return (w >> SRC2_SHIFT) & REG_MASK; }
+    return 0;
+}
+
+pub fn t27a_imm(w: u32, op: u32) -> i32 {
+    if (t27a_imm_form(op) == false) { return 0; }
+    var raw : u32 = (w >> IMM_SHIFT) & IMM_MASK;
+    if ((raw & IMM_SIGN_BIT) != 0) { return (raw as i32) - 32768; }
+    return raw as i32;
+}
+
+; The invariants are assert statements: as bare expressions the generated Zig rejected them
+; ("value of type bool ignored") and the t27b reference reported this spec BLOCKED (#6507).
+invariant the_immediate_range_is_fifteen_bits {
+    assert IMM_MAX - IMM_MIN == 32767;
+}
+
+invariant the_forms_partition_the_opcodes {
+    assert IMM_FORM_COUNT + SRC2_FORM_COUNT == 30;
+    assert T27A_IMM_FORM_COUNT + T27A_SRC2_FORM_COUNT + T27A_TWO_OPERAND_COUNT == OPCODE_COUNT;
+}
 
 test every_opcode_byte_of_the_table_is_defined {
     assert is_defined_opcode(OP_NOP) == true;
@@ -357,4 +423,56 @@ test the_forms_are_disjoint {
     assert has_imm(OP_DOT) == false;
     assert has_src2(OP_DOT) == false;
     assert has_imm(OP_SYSCALL) == false;
+}
+
+; The t27a table counts its forms by walking all 256 bytes, so the three counts are measured, not
+; restated.
+test the_t27a_forms_partition_the_forty_seven_opcodes {
+    var b : u32 = 0;
+    var imm_form : u32 = 0;
+    var src2_form : u32 = 0;
+    var two_operand : u32 = 0;
+    var both : u32 = 0;
+    while (b < 256) {
+        if (is_defined_opcode(b)) {
+            if (t27a_imm_form(b)) { imm_form = imm_form + 1; }
+            if (t27a_src2_form(b)) { src2_form = src2_form + 1; }
+            if (t27a_imm_form(b) == false) {
+                if (t27a_src2_form(b) == false) { two_operand = two_operand + 1; }
+            }
+            if (t27a_imm_form(b)) {
+                if (t27a_src2_form(b)) { both = both + 1; }
+            }
+        }
+        b = b + 1;
+    }
+    assert imm_form == T27A_IMM_FORM_COUNT;
+    assert src2_form == T27A_SRC2_FORM_COUNT;
+    assert two_operand == T27A_TWO_OPERAND_COUNT;
+    assert both == 0;
+}
+
+; The five opcodes the pinned table loses keep every carried operand in the t27a table.
+test the_t27a_table_keeps_what_the_pinned_one_loses {
+    var w : u32 = t27a_encode(OP_DOT, 3, 1, 2, 0, 0);
+    assert t27a_src1(w, OP_DOT) == 1;
+    assert t27a_src2(w, OP_DOT) == 2;
+    assert src2_of(encode(OP_DOT, 3, 1, 2, 0), OP_DOT) == 0;
+    assert t27a_src2(t27a_encode(OP_BIND, 3, 1, 26, 0, 0), OP_BIND) == 26;
+    assert t27a_src2(t27a_encode(OP_BUNDLE2, 3, 1, 9, 0, 0), OP_BUNDLE2) == 9;
+    assert t27a_imm(t27a_encode(OP_SACR, 4, 1, 0, 0, 3), OP_SACR) == 3;
+    assert t27a_imm(t27a_encode(OP_SACR, 4, 1, 0, 0, 0 - 7), OP_SACR) == 0 - 7;
+    assert t27a_encode(OP_BUNDLE3, 3, 1, 2, 4, 0) == bundle3_word(3, 1, 2, 4);
+    assert v3_of(t27a_encode(OP_BUNDLE3, 3, 1, 2, 4, 0), OP_BUNDLE3) == 4;
+}
+
+; T736 (b) on single words: for the opcodes the pinned table already carries, t27a writes the word
+; encode writes.
+test the_t27a_table_moves_no_pinned_word {
+    assert t27a_encode(OP_ADD, 3, 1, 2, 0, 0) == encode(OP_ADD, 3, 1, 2, 0);
+    assert t27a_encode(OP_ADD, 3, 1, 2, 0, 0) == 533264;
+    assert t27a_encode(OP_LDI, 3, 0, 0, 0, 0 - 5) == 4294312708;
+    assert t27a_encode(OP_MOV, 3, 1, 0, 0, 0) == 8975;
+    assert t27a_encode(OP_JGT, 2, 1, 0, 0, 7) == encode(OP_JGT, 2, 1, 0, 7);
+    assert t27a_encode(OP_SYSCALL, 26, 26, 0, 0, 0) == encode(OP_SYSCALL, 26, 26, 0, 0);
 }

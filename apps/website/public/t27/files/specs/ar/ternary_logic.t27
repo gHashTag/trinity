@@ -4,7 +4,6 @@
 
 spec TernaryLogic {
     // K3 ternary values: True, Unknown, False
-    type Trit = Trit
 
     // K3 constant values
     const K_FALSE: Trit = Trit::FALSE
@@ -14,29 +13,29 @@ spec TernaryLogic {
     // Basic K3 operations
 
     // AND operation: K3 AND truth table
-    // T ∧ T = T, T ∧ F = F, F ∧ ? = F, T ∧ ? = ?, ? ∧ ? = ?
+    // T AND T = T, T AND F = F, F AND ? = F, T AND ? = ?, ? AND ? = ?
     fn k3_and(a: Trit, b: Trit) -> Trit {
         return Trit::min(a, b)
     }
 
     // OR operation: K3 OR truth table
-    // T ∨ T = T, T ∨ F = T, F ∨ ? = ?, F ∨ ? = ?, ? ∨ ? = ?
+    // T OR T = T, T OR F = T, F OR ? = ?, F OR ? = ?, ? OR ? = ?
     fn k3_or(a: Trit, b: Trit) -> Trit {
         return Trit::max(a, b)
     }
 
     // NOT operation: K3 negation
-    // ¬T = F, ¬F = T, ¬? = ?
+    // NOT T = F, NOT F = T, NOT ? = ?
     fn k3_not(a: Trit) -> Trit {
         return Trit::not(a)
     }
 
-    // IMPLIES operation: K3 implication (¬a ∨ b)
+    // IMPLIES operation: K3 implication (NOT a OR b)
     fn k3_implies(a: Trit, b: Trit) -> Trit {
         return k3_or(k3_not(a), b)
     }
 
-    // EQUIV operation: K3 logical equivalence ((a → b) ∧ (b → a))
+    // EQUIV operation: K3 logical equivalence ((a -> b) AND (b -> a))
     fn k3_equiv(a: Trit, b: Trit) -> Trit {
         let ab = k3_implies(a, b);
         let ba = k3_implies(b, a);
@@ -74,7 +73,7 @@ spec TernaryLogic {
         for i in range(0, len(clause_a)) {
             let a = clause_a[i];
             let b = clause_b[i];
-            // T/F complementary → unknown, otherwise OR
+            // T/F complementary -> unknown, otherwise OR
             let resolved = if a == K_TRUE && b == K_FALSE {
                 K_UNKNOWN
             } else if a == K_FALSE && b == K_TRUE {
@@ -120,12 +119,12 @@ spec TernaryLogic {
     }
 
     // K3 AND is associatave
-    invariant k3_and_associative(a, b, c: Trit) {
+    invariant k3_and_associative {
         assert k3_and(k3_and(a, b), c) == k3_and(a, k3_and(b, c))
     }
 
     // K3 OR is associatave
-    invariant k3_or_associative(a, b, c: Trit) {
+    invariant k3_or_associative {
         assert k3_or(k3_or(a, b), c) == k3_or(a, k3_or(b, c))
     }
 
@@ -222,17 +221,17 @@ spec TernaryLogic {
     }
 
     test k3_no_tautology_or_not_false {
-        // T ∨ ¬F = T ∨ T = T (not a tautology in K3)
+        // T OR NOT F = T OR T = T (not a tautology in K3)
         assert k3_or(K_TRUE, k3_not(K_FALSE)) != K_TRUE
     }
 
     test k3_no_tautology_or_not_true {
-        // T ∨ ¬T = T ∨ F = ? (not a tautology)
+        // T OR NOT T = T OR F = ? (not a tautology)
         assert k3_or(K_TRUE, k3_not(K_TRUE)) != K_TRUE
     }
 
     test k3_no_tautology_or_not_unknown_violation {
-        // ? ∨ ¬? = ? ∨ ? = ? (tautology in K3!)
+        // ? OR NOT ? = ? OR ? = ? (tautology in K3!)
         assert k3_or(K_UNKNOWN, k3_not(K_UNKNOWN)) == K_UNKNOWN
     }
 
@@ -265,44 +264,44 @@ spec TernaryLogic {
     }
 
     test k3_implication_ex_falso {
-        // F → anything (K3: F → x = ?)
+        // F -> anything (K3: F -> x = ?)
         let result = k3_implies(K_FALSE, K_TRUE);
         assert result == K_UNKNOWN;
     }
 
     test k3_implication_when_antecedent_true {
-        // T → x = x (if consequent true, result true)
+        // T -> x = x (if consequent true, result true)
         assert k3_implies(K_TRUE, K_TRUE) == K_TRUE;
         assert k3_implies(K_TRUE, K_UNKNOWN) == K_UNKNOWN;
         assert k3_implies(K_TRUE, K_FALSE) == K_FALSE;
     }
 
     test k3_implication_when_consequent_true {
-        // x → T = T (if consequent true, result true)
+        // x -> T = T (if consequent true, result true)
         assert k3_implies(K_TRUE, K_TRUE) == K_TRUE;
         assert k3_implies(K_UNKNOWN, K_TRUE) == K_TRUE;
         assert k3_implies(K_FALSE, K_TRUE) == K_TRUE;
     }
 
     test k3_implication_with_unknown {
-        // ? → ? = ? (unknown implies unknown)
+        // ? -> ? = ? (unknown implies unknown)
         assert k3_implies(K_UNKNOWN, K_UNKNOWN) == K_UNKNOWN;
     }
 
     test k3_equiv_reflexive {
-        // a ↔ a
+        // a <-> a
         assert k3_equiv(K_TRUE, K_TRUE);
         assert k3_equiv(K_UNKNOWN, K_UNKNOWN);
         assert k3_equiv(K_FALSE, K_FALSE);
     }
 
     test k3_equiv_symmetric {
-        // a ↔ b = b ↔ a
+        // a <-> b = b <-> a
         assert k3_equiv(K_TRUE, K_UNKNOWN) == k3_equiv(K_UNKNOWN, K_TRUE);
     }
 
     test k3_equiv_transitive {
-        // (a ↔ b) ∧ (b ↔ c) → (a ↔ c)
+        // (a <-> b) AND (b <-> c) -> (a <-> c)
         let ab = k3_equiv(K_TRUE, K_UNKNOWN);
         let bc = k3_equiv(K_UNKNOWN, K_FALSE);
         let ac = k3_equiv(K_TRUE, K_FALSE);
@@ -311,22 +310,22 @@ spec TernaryLogic {
     }
 
     test k3_equiv_when_both_true {
-        // T ↔ T = T
+        // T <-> T = T
         assert k3_equiv(K_TRUE, K_TRUE) == K_TRUE;
     }
 
     test k3_equiv_when_both_false {
-        // F ↔ F = T
+        // F <-> F = T
         assert k3_equiv(K_FALSE, K_FALSE) == K_TRUE;
     }
 
     test k3_equiv_when_opposite {
-        // T ↔ F = F
+        // T <-> F = F
         assert k3_equiv(K_TRUE, K_FALSE) == K_FALSE;
     }
 
     test forward_chain_modus_ponens_true {
-        // Rule: P → Q, Fact: P, Derive: Q
+        // Rule: P -> Q, Fact: P, Derive: Q
         let rule = Rule {antecedent: K_TRUE, consequent: K_UNKNOWN};
         let fact = K_TRUE;
         let result = forward_chain(rule, fact);
@@ -334,7 +333,7 @@ spec TernaryLogic {
     }
 
     test forward_chain_modus_ponens_false_consequent {
-        // Rule: P → F, Fact: P, Derive: F
+        // Rule: P -> F, Fact: P, Derive: F
         let rule = Rule {antecedent: K_TRUE, consequent: K_FALSE};
         let fact = K_TRUE;
         let result = forward_chain(rule, fact);
@@ -342,7 +341,7 @@ spec TernaryLogic {
     }
 
     test forward_chain_with_unknown_fact {
-        // Rule: P → Q, Fact: ?, Derive: ?
+        // Rule: P -> Q, Fact: ?, Derive: ?
         let rule = Rule {antecedent: K_TRUE, consequent: K_UNKNOWN};
         let fact = K_UNKNOWN;
         let result = forward_chain(rule, fact);
@@ -350,7 +349,7 @@ spec TernaryLogic {
     }
 
     test forward_chain_no_match {
-        // Rule: P → Q, Fact: F, Derive: ?
+        // Rule: P -> Q, Fact: F, Derive: ?
         let rule = Rule {antecedent: K_TRUE, consequent: K_UNKNOWN};
         let fact = K_FALSE;
         let result = forward_chain(rule, fact);
@@ -358,7 +357,7 @@ spec TernaryLogic {
     }
 
     test backward_chain_finds_support {
-        // Goal: Q, Rules: [P→Q, R→Q], Find: P or R
+        // Goal: Q, Rules: [P -> Q, R -> Q], Find: P or R
         let rules = [
             Rule {antecedent: K_TRUE, consequent: K_UNKNOWN},
             Rule {antecedent: K_FALSE, consequent: K_UNKNOWN}
@@ -369,7 +368,7 @@ spec TernaryLogic {
     }
 
     test backward_chain_no_support {
-        // Goal: Q, Rules: [P→R, R→S], Find: ?
+        // Goal: Q, Rules: [P -> R, R -> S], Find: ?
         let rules = [
             Rule {antecedent: K_TRUE, consequent: K_FALSE},
             Rule {antecedent: K_FALSE, consequent: K_TRUE}
@@ -391,7 +390,7 @@ spec TernaryLogic {
     }
 
     test resolve_complementary_literals {
-        // Resolve (T) and (F) → (?)
+        // Resolve (T) and (F) -> (?)
         let a = [K_TRUE];
         let b = [K_FALSE];
         let result = resolve(a, b);
@@ -399,7 +398,7 @@ spec TernaryLogic {
     }
 
     test resolve_non_complementary {
-        // Resolve (T) and (T) → (T)
+        // Resolve (T) and (T) -> (T)
         let a = [K_TRUE];
         let b = [K_TRUE];
         let result = resolve(a, b);
@@ -433,38 +432,38 @@ spec TernaryLogic {
     // BENCHMARKS - Performance metrics
 
     bench k3_and_latency {
-        // Target: <1μs on XC7A100T
+        // Target: <1us on XC7A100T
     }
 
     bench k3_or_latency {
-        // Target: <1μs on XC7A100T
+        // Target: <1us on XC7A100T
     }
 
     bench k3_not_latency {
-        // Target: <1μs on XC7A100T
+        // Target: <1us on XC7A100T
     }
 
     bench k3_implies_latency {
-        // Target: <2μs (two operations)
+        // Target: <2us (two operations)
     }
 
     bench k3_equiv_latency {
-        // Target: <3μs (three operations)
+        // Target: <3us (three operations)
     }
 
     bench forward_chain_latency {
-        // Target: <2μs
+        // Target: <2us
     }
 
     bench backward_chain_latency {
-        // Target: <5μs (iterative)
+        // Target: <5us (iterative)
     }
 
     bench resolve_latency {
-        // Target: <3μs
+        // Target: <3us
     }
 
     bench apply_restraint_latency {
-        // Target: <1μs
+        // Target: <1us
     }
 }

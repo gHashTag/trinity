@@ -63,12 +63,19 @@ module Tools {
         description: str?,     // Parameter description
         required: bool,         // Whether parameter is required
         default: any?,          // Default value
-        enum: [any]?,          // Enum values if applicable
+        enum_values: [str]?,   // Enum values if applicable (`enum` is a keyword)
+    }
+
+    // PropertyEntry is one named parameter. t27 has no map type: a
+    // `[str: ParameterSchema]` map is a slice of key/value entries (#5968).
+    struct PropertyEntry {
+        name: str,
+        schema: ParameterSchema,
     }
 
     // ToolParameters represents the parameters schema for a tool
     struct ToolParameters {
-        properties: [str: ParameterSchema],
+        properties: [PropertyEntry],
         required: [str],
     }
 
@@ -147,9 +154,21 @@ module Tools {
     // ════════════════════════════════════════════════════════════════════
 
     // ToolRegistry represents a registry of available tools
+    // ToolEntry and PermissionEntry: the registry's two maps, written as
+    // slices of key/value entries (t27 has no map type, #5968).
+    struct ToolEntry {
+        id: ToolID,
+        definition: ToolDefinition,
+    }
+
+    struct PermissionEntry {
+        id: ToolID,
+        permission: ToolPermission,
+    }
+
     struct ToolRegistry {
-        tools: [ToolID: ToolDefinition],
-        permissions: [ToolID: ToolPermission],
+        tools: [ToolEntry],
+        permissions: [PermissionEntry],
         custom: [ToolID],       // Custom tool IDs
     }
 
@@ -240,7 +259,7 @@ module Tools {
             description = "File path",
             required = true,
             default = null,
-            enum = null,
+            enum_values = null,
         };
         assert(param.type == "string");
         assert(param.required);
@@ -252,7 +271,7 @@ module Tools {
             description = "Limit",
             required = false,
             default = 10,
-            enum = null,
+            enum_values = null,
         };
         assert(param.default == 10);
         assert(!param.required);
@@ -264,27 +283,29 @@ module Tools {
             description = "Mode",
             required = true,
             default = null,
-            enum: ["read", "write", "append"],
+            enum_values: ["read", "write", "append"],
         };
-        assert(param.enum?.len == 3);
+        assert(param.enum_values?.len == 3);
     }
 
     test "tool_parameters_creation" {
-        // Map literal: t27 has no map literal, so the map is emptied and then
-        // filled with one index assignment per entry (same meaning).
-        var props: [str: ParameterSchema] = [];
-        props["file"] = ParameterSchema {
-            type = "string",
-            description = "File path",
-            required = true,
-            default = null,
-            enum = null,
+        // The properties map is a slice of entries (t27 has no map type).
+        var file_param = PropertyEntry {
+            name = "file",
+            schema = ParameterSchema {
+                type = "string",
+                description = "File path",
+                required = true,
+                default = null,
+                enum_values = null,
+            },
         };
         var params = ToolParameters {
-            properties = props,
+            properties = [file_param],
             required: ["file"],
         };
-        assert(params.properties["file"].required);
+        assert(params.properties[0].name == "file");
+        assert(params.properties[0].schema.required);
     }
 
     test "tool_metadata_safe" {

@@ -35,12 +35,26 @@ pub const EXIT_INVARIANT : str = "Orchestration completes, no stuck phases";
 pub const CLARA_ROLE : str = "TA2: AR Composition Engine - composes ML and AR components, manages interactions";
 ; Skill IDs the agent holds. Bound only where a source names the skill; SKILLS_NOTE
 ; cites that source or says why the list is empty.
-pub const SKILLS : [0]str = [];
-pub const SKILLS_NOTE : str = "No source binds a skill to this agent: the alphabet key files point at specs and docs, not at a skill directory, no .claude/agents file names one, and specs/OWNERS.md has no row for it.";
+pub const SKILLS : [2]str = ["t27/phi-loop", "t27/tri"];
+pub const SKILLS_NOTE : str = "docs/agents/AGENTS_ALPHABET.md \"Who holds a tool, and who holds a skill\", rule 2: domain lead for 2 skill card(s).";
 ; Tool IDs (specs/tools) the agent holds. Bound only where a source line names the command
 ; for this letter; TOOLS_NOTE cites that line or says why the list is empty.
-pub const TOOLS : [0]str = [];
-pub const TOOLS_NOTE : str = "No source binds a tri command or MCP server to this agent: docs/agents/AGENTS_ALPHABET.md (row, key files, phase cycle), specs/OWNERS.md and .claude/agents/*.md do not name one.";
+pub const TOOLS : [3]str = ["gHashTag/trinity:tri/omega", "gHashTag/trinity:tri/swarm", "tri/health"];
+pub const TOOLS_NOTE : str = "docs/agents/AGENTS_ALPHABET.md \"Who holds a tool, and who holds a skill\", rule 2: domain lead for 3 tool card(s), read off what each card states it does rather than off its name.";
 ; Where the agent logs episodes (AGENTS_ALPHABET.md: "Logs to .trinity/experience/").
 pub const EXPERIENCE_LOG : str = ".trinity/experience/";
 pub const ENABLED : bool = true;
+
+test test_agent_o_constants {
+  assert KIND == "agent";
+  assert ID == "t27/O";
+  assert LETTER == "O";
+  assert ORDINAL == 15;
+  assert LETTER_NAME == "Omicron";
+  assert NAME == "Omicron (Orchestration)";
+  assert DOMAIN == "Orchestration / Phases";
+  assert ARCHETYPE == "Eye - all-seeing oko";
+  assert REGISTER == "R14";
+  assert LAYER == "Spiritual";
+  assert ENABLED == true;
+}

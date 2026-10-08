@@ -20,6 +20,17 @@
 // zai. streamModel collected the diagnose() reason but only surfaced it inside the final
 // "nobody answered" error -- when a later provider succeeds the reason vanishes, and a dead
 // route stays invisible for as long as the others live. One warn line per skip fixes that.
+// WHY v2, a head without tools is demoted (2026-10-05, 999 issue #3659): AGENT_PROVIDER=ollama
+// on vibee-render put qwen3:1.7b (tools: false) at the head of every chat turn. The agent then
+// answered "made the poster with your photo" without calling a single tool. Nobody knew who set
+// the variable. v1 said OWNER_PICK_GOES_FIRST for the variable and the bot button alike. v2
+// splits them: the bot button is the owner's explicit pick and still wins, even without tools,
+// but /api/agent/provider flags it. A deploy-time head (the variable, or the default order after
+// absent providers drop out) that cannot call tools moves right behind the first provider that
+// can, and the status says "demoted: no tools". A chain with no tools-capable provider at all
+// keeps its order -- a model that talks beats silence -- and is flagged.
+// Same rule elsewhere (checked 2026-10-06): OpenRouter routes a request carrying `tools` only to
+// endpoints that support them; LiteLLM leaves it to the caller (supports_function_calling).
 // phi^2 + 1/phi^2 = 3 | TRINITY
 
 module automation::agent_provider_chain {
@@ -27,13 +38,21 @@ module automation::agent_provider_chain {
     pub const KIND : str = "automation";
     pub const ID : str = "agent-provider-chain";
     pub const REPO : str = "999-multibots-telegraf";
-    pub const VERSION : u8 = 1;
+    pub const VERSION : u8 = 2;
 
     // ---- The chain -----------------------------------------------------------------------
     // Default order: paid routes first, the reserve after them, our own model last.
     pub const ORDER_DEFAULT : str = "zai,zai-lite,nemotron,reserve,ollama";
     pub const PROVIDERS : u8 = 5;
-    pub const OWNER_PICK_GOES_FIRST : bool = true;  // AGENT_PROVIDER or the bot button moves one id to the front, the rest keep order
+    pub const OWNER_PICK_GOES_FIRST : bool = true;  // the bot button (or AGENT_PROVIDER) moves one id to the front, the rest keep order
+    // v2: the head of the AVAILABLE chain must call tools unless the bot button put it there.
+    pub const DEPLOY_HEAD_NEEDS_TOOLS : bool = true;
+    pub const BOT_PICK_KEEPS_HEAD_WITHOUT_TOOLS : bool = true;  // the owner's explicit choice is obeyed, and flagged
+    pub const NO_TOOLS_CHAIN_KEEPS_ORDER : bool = true;  // nothing to move behind: keep the order, flag it
+    pub const NOTE_DEMOTED : str = "demoted: no tools";
+    pub const NOTE_BOT_PICK : str = "owner pick: no tools";
+    pub const NOTE_NO_TOOLS : str = "no provider in the chain calls tools";
+    pub const NOTE_NONE : str = "";
     pub const EVERY_CONFIGURED_PROVIDER_IS_TRIED : bool = true;  // a key that is set is not a key that works; reasons are collected per id
 
     // ---- The reserve route ---------------------------------------------------------------
@@ -100,7 +119,7 @@ module automation::agent_provider_chain {
         return 4;
     }
 
-    test "the reserve route needs all three variables and sits after nemotron"
+    test "the reserve route needs all three variables and sits after nemotron" {
         assert(RESERVE_NEEDS_ALL_THREE);
         assert(reserve_available(true, true, true));
         assert(!reserve_available(true, true, false));
@@ -108,20 +127,22 @@ module automation::agent_provider_chain {
         assert(default_position("reserve") == default_position("nemotron") + 1);
         assert(default_position("ollama") == default_position("reserve") + 1);
         assert(PROVIDERS == 5);
+    }
 
-    test "capabilities of the reserve model are the owner's declaration"
+    test "capabilities of the reserve model are the owner's declaration" {
         assert(RESERVE_CAPABILITIES_DECLARED_NOT_MEASURED);
         assert(!RESERVE_THINKING);
         assert(RESERVE_IN_BOT_PICKER);
         assert(OWNER_PICK_GOES_FIRST);
         assert(EVERY_CONFIGURED_PROVIDER_IS_TRIED);
+    }
 
     // A prepaid vendor accepts the request only when the requested ceiling fits the balance.
     fn fits_budget(requested: u32, affordable: u32) -> bool {
         return requested <= affordable;
     }
 
-    test "the reserve route is configured live; an answer from it is not claimed"
+    test "the reserve route is configured live; an answer from it is not claimed" {
         assert(RESERVE_CONFIGURED_LIVE);
         assert(!RESERVE_ANSWERED_LIVE);
         assert(RESERVE_PROBES == 4);
@@ -131,10 +152,59 @@ module automation::agent_provider_chain {
         assert(RESERVE_PROBE_4_STATUS == 402);
         assert(RESERVE_PROBE_4_MAX_TOKENS_SENT == RESERVE_MAX_TOKENS_DEFAULT);
         assert(RESERVE_BLOCKER_IS_KEY_BALANCE);
+    }
 
-    test "the reserve sends a bounded max_tokens and 402 is named"
+    test "the reserve sends a bounded max_tokens and 402 is named" {
         assert(RESERVE_SENDS_MAX_TOKENS);
         assert(PAYMENT_REQUIRED_IS_DIAGNOSED);
         assert(!fits_budget(RESERVE_PROBE_3_REQUESTED_TOKENS, RESERVE_PROBE_3_AFFORDABLE_TOKENS));
         assert(fits_budget(RESERVE_MAX_TOKENS_DEFAULT, RESERVE_PROBE_3_AFFORDABLE_TOKENS));
+    }
+
+    // ---- v2: a head without tools ----------------------------------------------------------
+    // from_bot: the bot button chose this head. head_tools: the head calls tools.
+    // any_tools: some other provider in the available chain calls tools.
+    fn demote_head(from_bot: bool, head_tools: bool, any_tools: bool) -> bool {
+        return !from_bot && !head_tools && any_tools;
+    }
+
+    // What /api/agent/provider says about the head.
+    fn head_note(from_bot: bool, head_tools: bool, any_tools: bool) -> str {
+        if head_tools { return NOTE_NONE; }
+        if from_bot { return NOTE_BOT_PICK; }
+        if any_tools { return NOTE_DEMOTED; }
+        return NOTE_NO_TOOLS;
+    }
+
+    // Where a demoted head lands: right behind the first tools-capable provider. `rest_index`
+    // is that provider's 0-based index in the chain WITHOUT the head.
+    fn demoted_index(rest_index: u8) -> u8 {
+        return rest_index + 1;
+    }
+
+    test "a deploy-time head without tools moves behind the first one with tools" {
+        assert(DEPLOY_HEAD_NEEDS_TOOLS);
+        assert(demote_head(false, false, true));
+        assert(head_note(false, false, true) == NOTE_DEMOTED);
+        assert(demoted_index(0) == 1);
+        assert(demoted_index(2) == 3);
+        assert(!demote_head(false, true, true));
+        assert(head_note(false, true, true) == NOTE_NONE);
+    }
+
+    test "the bot pick keeps the head without tools and is flagged" {
+        assert(BOT_PICK_KEEPS_HEAD_WITHOUT_TOOLS);
+        assert(OWNER_PICK_GOES_FIRST);
+        assert(!demote_head(true, false, true));
+        assert(head_note(true, false, true) == NOTE_BOT_PICK);
+        assert(head_note(true, true, true) == NOTE_NONE);
+    }
+
+    test "a chain where nobody calls tools keeps its order and is flagged" {
+        assert(NO_TOOLS_CHAIN_KEEPS_ORDER);
+        assert(!demote_head(false, false, false));
+        assert(head_note(false, false, false) == NOTE_NO_TOOLS);
+        assert(head_note(true, false, false) == NOTE_BOT_PICK);
+    }
 }
+// phi^2 + 1/phi^2 = 3 | TRINITY

@@ -305,10 +305,7 @@ module JonesTopologyFilter {
         target: < 2500ns
 
     bench signatures_match_computation
-        measure: nanoseconds to compute signatures_match(
-            jones_signature(standard_structure()),
-            jones_signature(standard_structure())
-        )
+        measure: nanoseconds to compute signatures_match(jones_signature(standard_structure()), jones_signature(standard_structure()))
         target: < 1000ns
 
     bench complexity_name_lookup

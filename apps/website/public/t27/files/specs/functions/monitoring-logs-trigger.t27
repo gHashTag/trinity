@@ -40,3 +40,10 @@ pub const SAFE_PROBE : str = "{}";
 pub const PROBE_RESULT : str = "COMPLETED";
 pub const CONTROL : str = "spec+code";
 pub const NOTE : str = "Shares its file and its four steps with monitoring-logs-analyze; only the trigger differs.";
+
+test test_constants {
+  assert KIND == "function";
+  assert ID == "monitoring-logs-trigger";
+  assert LEGACY_ID == "trigger-log-monitor";
+  assert TRIGGER == "event";
+}

@@ -228,80 +228,45 @@ spec Composition {
 
     // Execute AR component
     fn execute_ar_component(ar: ARComponent, ml_outputs: [Trit]) -> (Trit, int) {
-        let mut result = K_UNKNOWN;
-        let mut steps = 0;
-        let mut trace = new_proof_trace();
-
-        // K3 reasoning on ML outputs
-        match ar.component_type {
-            ComponentType::AR_K3 => {
-                // Apply K3 logic to ML outputs
-                result = k3_and_all(ml_outputs);
-                steps = len(ml_outputs);
-            },
-            ComponentType::AR_ASP => {
-                // ASP solving on ML outputs
-                (result, steps) = asp_solve_on_trits(ml_outputs);
-            },
-            ComponentType::AR_DATALOG => {
-                // Datalog reasoning on ML outputs
-                (result, steps) = datalog_reason_on_trits(ml_outputs);
-            },
-            ComponentType::AR_CLASSICAL => {
-                // Classical constraints on ML outputs
-                (result, steps) = classical_constraints_on_trits(ml_outputs);
-            }
-        }
-
-        return (result, steps)
+        // K3 reasoning on ML outputs. This was a Rust `match` whose arms assigned
+        // a tuple, `(result, steps) = f(..)`, which t27 has no statement for, so
+        // typecheck refused the spec (#5949, #6446). Each arm now yields the
+        // (result, steps) pair it computed, and the switch is the return value.
+        return switch (ar.component_type) {
+            .AR_K3 => (k3_and_all(ml_outputs), len(ml_outputs)),  // K3 logic on ML outputs
+            .AR_ASP => asp_solve_on_trits(ml_outputs),  // ASP solving on ML outputs
+            .AR_DATALOG => datalog_reason_on_trits(ml_outputs),  // Datalog reasoning on ML outputs
+            .AR_CLASSICAL => classical_constraints_on_trits(ml_outputs),  // Classical constraints
+        };
     }
 
     // Fuse ML and AR results based on pattern
     fn fuse_results(ml_outputs: [Trit], ar_output: Trit, pattern: CompositionPattern) -> Trit {
-        match pattern {
-            CompositionPattern::CNN_RULES => {
-                // CNN + Rules: Apply rules to CNN output
-                return ar_output  // Rules dominate
-            },
-            CompositionPattern::MLP_BAYESIAN => {
-                // MLP + Bayesian: Weighted fusion
-                let ml_aggregate = majority_vote(ml_outputs);
-                return k3_and(ml_aggregate, ar_output)
-            },
-            CompositionPattern::RL_CLASSICAL => {
-                // RL + Classical: Constraint satisfaction
-                return k3_or(majority_vote(ml_outputs), ar_output)
-            },
-            CompositionPattern::NEURO_SYMBOLIC => {
-                // Neuro + ASP: ASP dominates
-                return ar_output
-            },
-            CompositionPattern::ATTENTION_LOGIC => {
-                // Attention + Logic: Logic constrains attention
-                return k3_and(majority_vote(ml_outputs), ar_output)
-            },
-            CompositionPattern::HYBRID_VSA => {
-                // VSA + K3: K3 logic on VSA bindings
-                return ar_output
-            },
-            CompositionPattern::ENSEMBLE_K3 => {
-                // Ensemble + K3: K3 voting
-                return k3_and_all(ml_outputs)
-            }
-        }
+        // A Rust `match` here lowered to an empty body in every backend (#5949).
+        // Its arms were blocks ending in `return`; each now returns its own value.
+        return switch (pattern) {
+            .CNN_RULES => ar_output,  // Rules dominate
+            .MLP_BAYESIAN => k3_and(majority_vote(ml_outputs), ar_output),  // Weighted fusion
+            .RL_CLASSICAL => k3_or(majority_vote(ml_outputs), ar_output),  // Constraint satisfaction
+            .NEURO_SYMBOLIC => ar_output,  // ASP dominates
+            .ATTENTION_LOGIC => k3_and(majority_vote(ml_outputs), ar_output),  // Logic constrains attention
+            .HYBRID_VSA => ar_output,  // K3 logic on VSA bindings
+            .ENSEMBLE_K3 => k3_and_all(ml_outputs),  // K3 voting
+        };
     }
 
     // Get fusion method name for reporting
     fn get_fusion_method(pattern: CompositionPattern) -> string {
-        match pattern {
-            CompositionPattern::CNN_RULES => "rule_application",
-            CompositionPattern::MLP_BAYESIAN => "weighted_fusion",
-            CompositionPattern::RL_CLASSICAL => "constraint_satisfaction",
-            CompositionPattern::NEURO_SYMBOLIC => "asp_dominant",
-            CompositionPattern::ATTENTION_LOGIC => "logic_constrained",
-            CompositionPattern::HYBRID_VSA => "k3_logic",
-            CompositionPattern::ENSEMBLE_K3 => "k3_voting"
-        }
+        // A Rust `match` here lowered to an empty body in every backend (#5949).
+        return switch (pattern) {
+            .CNN_RULES => "rule_application",
+            .MLP_BAYESIAN => "weighted_fusion",
+            .RL_CLASSICAL => "constraint_satisfaction",
+            .NEURO_SYMBOLIC => "asp_dominant",
+            .ATTENTION_LOGIC => "logic_constrained",
+            .HYBRID_VSA => "k3_logic",
+            .ENSEMBLE_K3 => "k3_voting",
+        };
     }
 
     // K3 AND across all inputs

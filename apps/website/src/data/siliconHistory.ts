@@ -173,6 +173,10 @@ export const SPEC_TO_FORMAT: Record<string, string> = {
   // Declares GF16 outright -- "[sign:1][exponent:6][mantissa:9], bias 31" with
   // the field accessors -- rather than merely consuming it.
   'tri-net/specs/gf16_format.t27': 'gf16',
+
+  // gHashTag/trinity's own t27/ copy (2026-04, the dialect before `module`) states the
+  // same layout outright: [S(1) E(6) M(9)], bias 31, the same masks and specials.
+  'trinity/t27/specs/numeric/gf16.t27': 'gf16',
 }
 
 /**
@@ -230,9 +234,10 @@ export const EXCLUDED: Record<string, string> = {
   'tt-trinity-euler/specs/fpga/gf16_to_fp16.t27': 'a converter between two formats',
   'tt-trinity-euler/specs/fpga/gf16_to_posit16.t27': 'a converter between two formats',
   'tt-trinity-euler/specs/fpga/gf32_to_fp32.t27': 'a converter between two formats',
-  'tt-trinity-gamma/specs/fpga/gf16_to_fp16.t27': 'a converter between two formats',
+  // tt-trinity-gamma's gf16_to_fp16 is byte-identical to tt-trinity-euler's now, so the corpus keeps one.
   'tt-trinity-gamma/specs/fpga/gf16_to_posit16.t27': 'a converter between two formats',
   'tt-trinity-gamma/specs/fpga/gf32_to_fp32.t27': 'a converter between two formats',
+  'tt-trinity-phi/specs/fpga/gf16_to_posit16.t27': 'a converter between two formats',
   // Vivado ports brought in by the 1737-spec catalog refresh (#1176).
   'specs/port/fpga/vivado/gf16_dot4.t27': 'a dot-product unit that consumes GF16, not a declaration of the format',
   'specs/port/fpga/vivado/gf16_matmul_top.t27': 'a board top (LED counter around gf16_dot4), not a declaration of the format',
@@ -243,6 +248,13 @@ export const EXCLUDED: Record<string, string> = {
   'dmitrii-f-t27/trinity-memory/t27/rtl/gf16_ffn.t27': 'an FFN controller that computes in GF16, not a declaration of the format',
   'dmitrii-f-t27/trinity-memory/t27/rtl/gf16_scalar.t27': 'clocked scalar arithmetic on GF16 operands, not a declaration of the format',
   'dmitrii-f-t27/trinity-memory/t27/rtl/gf16_wide_norm.t27': 'a wide product and normalization unit over GF16, not a declaration of the format',
+  // Brought in by the 2026-10-08 world scan (trinity#1529); each header says what it is.
+  'specs/port/fpga/vivado/gf16_matmul4x4.t27': 'a 4x4 matrix multiply over 16-bit operands, not a declaration of the format',
+  'specs/port/fpga/vivado/gf16_top.t27': 'a board top ported from fpga/vivado/gf16_top.v, not a declaration of the format',
+  'specs/port/fpga/vivado/gf16_uart_sim_bench.t27': 'a UART simulation bench for the GF16 matrix multiply, not a declaration of the format',
+  'specs/tri/t27b/conformance/scoped_gf16.t27': 'a t27b conformance file for the scoped type name gf16::GF16, not a declaration of the format',
+  'dmitrii-f-t27/trinity-memory/specs/memory/gf16_ffn_board_evidence.t27': 'retained AX7203 captures of the GF16 FFN replayed offline (Memory #127), not a declaration of the format',
+  'dmitrii-f-t27/trinity-memory/specs/memory/gf16_ffn_performance_evidence.t27': 'retained GF16 FFN performance captures replayed offline (Memory #127), not a declaration of the format',
 }
 
 /**
@@ -257,7 +269,7 @@ export const FAMILY_SPECS = new Set([
   'specs/math/gf_competitive.t27',
   'tt-trinity-euler/specs/numeric/goldenfloat_family.t27',
   'tt-trinity-euler/specs/numeric/formats.t27',
-  'trinity-fpga/t27/specs/numeric/goldenfloat_family.t27',
+  // trinity-fpga's t27/ copy is byte-identical to specs/numeric/goldenfloat_family.t27 now, so the corpus keeps one.
 ])
 
 /** Catalog-wide totals, as published in the v0.2 draft. */

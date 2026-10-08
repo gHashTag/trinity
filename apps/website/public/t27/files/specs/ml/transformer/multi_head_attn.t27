@@ -5,7 +5,6 @@
 module MultiHeadAttention;
     use base::types;
     use math::constants;
-    use math::statistics;
     use numeric::gf16;
 use numeric::gf16::GF16;
     use ml::transformer::positional_enc;

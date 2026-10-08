@@ -9,10 +9,18 @@
 ;   ts      its TypeScript, imported and called under bun: the claim of a row over 2112 inputs, the
 ;           public board's column, the single-flight round gate
 ;   queend  its Swift policy binary, built at the pin and asked choose, review and retry
-;   pg      PostgreSQL 16 with its own migrations: the singleton lease under 32 contenders, the dispatch
+;   pg      PostgreSQL with its own migrations: the singleton lease under 32 contenders, the dispatch
 ;           writers on real rows, the criteria release, the CI take-back, the round's own SELECT
-;   lotus   gHashTag/trinity's local Zig cycle compiled and its 29 tests run
+;           (17.7 at this pin; the run at the old pin c25e1b02 used 16.15)
+;   lotus   gHashTag/trinity's local Zig cycle compiled and its 29 tests run (at the trinity pin, which
+;           this re-pin does not move; measured with Zig 0.15.2 in the run at the old supervisor pin
+;           c25e1b02, not re-run here: Zig 0.15.2 was not on the re-pin host)
 ;   live    one snapshot of the public endpoints of the deployed supervisor
+; Re-pinned for gHashTag/t27#6368 from feat/queen-supervisor @ c25e1b02 (branch deleted) to the branch
+; production deploys. Between the pins every ts, queend and pg result is unchanged; what moved is read
+; from the source and named below: runner lanes (a claim in state queued that takes no worker slot,
+; a runner-only pass past the worker limit, leases and a 10-minute silence reaper for claimed bees)
+; and the public card's verdict and judgedHead.
 ; Not measured: GitHub itself, a real provider or bee, the Mac app's own loop, Railway's deploy of a
 ; revision other than the pin. ASCII only (L3).
 ; phi^2 + 1/phi^2 = 3 | TRINITY
@@ -23,12 +31,12 @@ pub const KIND : str = "queen-dispatch";
 pub const ID : str = "queen/dispatch";
 pub const NAME : str = "The Queen's task lifecycle, from candidate to done";
 pub const SUPERVISOR_REPO : str = "gHashTag/BrowserOS";
-pub const SUPERVISOR_BRANCH : str = "feat/queen-supervisor";
-pub const SUPERVISOR_PIN : str = "c25e1b0278a690745c8b6ab591a37d2885656573";
+pub const SUPERVISOR_BRANCH : str = "fix/queen-worker-provider-and-prompt-size";
+pub const SUPERVISOR_PIN : str = "879799a8bfb286e2ba8dbe840f0bcb81792d19ef";
 pub const CONSUMER_REPO : str = "gHashTag/trinity";
 pub const PINNED_REVISION : str = "afc9d38435ad01c48af6c33c311da422c38f046e";
 pub const ISSUE_BASELINE : str = "03ae2f93f5af2fd4fa23e4c613a3c0e19ac51530";
-pub const SOURCE_LINES : str = "trios/agent-server/apps/server/src/api/services/queen-tick.ts: stateOfDispatch :697-790, dispatchRowState :802-820, round :1441-1840, round SELECT :1596-1625, ceiling read :1659, releaseStaleContracts :2581-2619, review sweep :2621-2700; queen-dispatch.ts: finishDispatch :3958-3990, reapers :4094-4162, recordDispatch :4573-4729; queen-lease.ts :66-136; queen-ci-verdict.ts :147-229; routes/queen-kanban.ts: columns :90-105, columnFor :149-163, dispatchColumn :303-317, board SELECT :444-457; queen-core/Sources/queend/main.swift: choose :181-334, review :336-379; QueenCore/QueenReviewDecision.swift :41-88; QueenCore/QueenRetryPolicy.swift :60-149";
+pub const SOURCE_LINES : str = "trios/agent-server/apps/server/src/api/services/queen-tick.ts: stateOfDispatch :704-797, dispatchRowState :809-827, round :1459-1976, round SELECT :1645-1674, ceiling read :1722, runner-only pass :1909-1960, releaseStaleContracts :2717-2755, review sweep :2757-2846; queen-dispatch.ts: finishDispatch :4302-4334, reapers :4453-4550, recordDispatch :5175-5345; queen-runner-work.ts: reapSilentRunners :771-795; queen-lease.ts :66-136; queen-ci-verdict.ts :147-229; routes/queen-kanban.ts: columns :107-122, columnFor :179-193, dispatchColumn :333-347, board SELECT :494-507; queen-core/Sources/queend/main.swift: choose :181-334, review :336-379; QueenCore/QueenReviewDecision.swift :41-88; QueenCore/QueenRetryPolicy.swift :60-149";
 ; --- The decision: one canonical machine, the others are adapters ---------------------------------
 pub const CANONICAL : str = "the task lifecycle of the trios supervisor round: the only cycle that chooses, starts, ends, reviews and releases work, and the only one that runs (the deployed service answered working at the live snapshot)";
 pub const ADAPTERS : [5]str = [
@@ -96,12 +104,12 @@ pub const WAIT_FLOOR_MS : u64 = 21600000;
 pub const CEILING_RELEASE_MS : u64 = 3600000;
 pub const MAX_CEILING_RELEASES : u32 = 1;
 pub const SENDBACK_CEILING : u32 = 2;
-pub const CLAIM_RULE : str = "running holds the issue and its files; accepted is done; rejected and awaitingReview hold the issue (awaitingReview holds its files for 48 hours); failed frees both; a row older than 7 days, refused, or reaped holds nothing because the round does not select it";
+pub const CLAIM_RULE : str = "running holds the issue and its files (so does queued, a runner's task, which takes no container worker slot); accepted is done; rejected and awaitingReview hold the issue (awaitingReview holds its files for 48 hours); failed frees both; a row older than 7 days, refused, or reaped holds nothing because the round does not select it";
 ; --- Choosing ----------------------------------------------------------------------------------------
 pub const CHOICE_RULE : str = "capacity, then money (only in apiMetered billing), then for each candidate in the order GitHub listed the open issues: skip a live claim, skip landed work, skip a body without a boundary, skip a boundary held by another task, and take the FIRST that survives; nothing ranks the candidates";
 pub const PRIORITY_RULE : str = "there is no priority: GitHub's listing order (newest first by default) decides; QueenSalience ranks a review queue nothing calls; specs/queen/task_analysis.t27 states a priority order that no runtime applies";
 pub const DEPENDENCY_RULE : str = "none: blocked-by, sub-issues, epics and depends-on text are not read when choosing";
-pub const CAPACITY_RULE : str = "another bee may start while the bees in state running are fewer than TRIOS_QUEEN_MAX_WORKERS (default 4); keys x lanes bound it further at dispatch, and memory and disk guards can still refuse";
+pub const CAPACITY_RULE : str = "another bee may start while the bees in state running are fewer than TRIOS_QUEEN_MAX_WORKERS (default 4); keys x lanes bound it further at dispatch, and memory and disk guards can still refuse; when the container is full and a runner is idle, a runner-only pass asks queend again with the running bees relabelled queued and offers up to RUNNER_PASS_LIMIT (20) more tasks a round to runners only";
 pub const DEFAULT_WORKER_LIMIT : u32 = 4;
 pub const NONE_CHOSEN : u32 = 5;
 pub const COL_BACKLOG : u32 = 0;
@@ -114,7 +122,7 @@ pub const COL_DROPPED : u32 = 5;
 pub const LEASE_RULE : str = "one Queen at a time: queen_lease is taken by one INSERT ... ON CONFLICT DO UPDATE ... WHERE expired OR same holder, which bumps a fence; TTL 180 s, heartbeat 60 s, released after each round by expiring it, never deleting it, so the fence never restarts; only the round's recordTick is fenced";
 pub const LEASE_TTL_SECONDS : u32 = 180;
 pub const LEASE_HEARTBEAT_SECONDS : u32 = 60;
-pub const TASK_LEASE_RULE : str = "no per-task lease and no heartbeat: a bee is reaped only by age, 120 minutes after dispatch, or at the supervisor's boot; a turn has no wall-clock cap";
+pub const TASK_LEASE_RULE : str = "a bee the container runs has no per-task lease and no heartbeat: it is reaped only by age, 120 minutes after dispatch, or at the supervisor's boot, and its turn has no wall-clock cap; a claimed bee is also reaped after 10 minutes without a claimed_at renewal, a volunteer runner's task by its lease (offer unclaimed 10 minutes, lease unrenewed 15, any task older than 360), and neither reaper nor the boot reaper touches a runner's lane";
 pub const STALL_MINUTES : u32 = 120;
 ; --- Review, retries, evidence, cancellation --------------------------------------------------------
 pub const R_ACCEPT : u32 = 0;
@@ -129,12 +137,12 @@ pub const CANCEL_RULE : str = "none: no route aborts a running turn or drops a d
 ; --- Events, persistence, idempotency, projections --------------------------------------------------
 pub const EVENT_RULE : str = "no event IDs and no event log: GitHub is polled each round, a bee's result is read from its stream, and the only history is queen_dispatch_history (whole-row archives before an overwrite) and queen_transcript (keyed by conversation and sequence)";
 pub const IDEMPOTENCY_RULE : str = "a second ending matches no row; an ending of an older turn matches no row; a second criteria release and a second CI take-back find nothing; requests during a round coalesce into one more round";
-pub const PUBLIC_FIELDS : [6]str = ["/queen/status swarmState", "/queen/status queue.state", "/queen/status workers capacity, active, idle", "/queen/public-board columns", "/queen/public-board cards: number, title, column, criteria, needs", "/queen/public-board pulse: rounds, bees, verdicts, lastRoundAt, roundSeconds"];
+pub const PUBLIC_FIELDS : [6]str = ["/queen/status swarmState", "/queen/status queue.state", "/queen/status workers capacity, active, idle", "/queen/public-board columns", "/queen/public-board cards: number, title, column, criteria, needs, and for a finished row verdict and judgedHead", "/queen/public-board pulse: rounds, bees, verdicts, lastRoundAt, roundSeconds"];
 pub const PRIVATE_FIELDS : str = "owned paths, branches, conversations, transcripts, workers, holders, the refusal text, providers, keys and token counts stay on the authenticated /queen/board";
 pub const LOCAL_VERSUS_EXTERNAL : str = "local: gHashTag/trinity's Zig lotus-policy and its .trinity/queen files on one machine; external: the trios supervisor in a container on Railway, documented in trios/docs/public-swarm-state.md and reached over its public endpoints";
 ; --- Agents and workers ---------------------------------------------------------------------------------
 pub const AGENT_LETTERS : u32 = 27;
-pub const AGENTS_RULE : str = "the 27 named agents of AGENTS.md are documentation roles; no code maps an issue to a letter; a bee is a provider-backed model turn on one key and lane, told it works exactly one issue; the number of bees is bounded by keys, lanes and TRIOS_QUEEN_MAX_WORKERS, never by 27";
+pub const AGENTS_RULE : str = "the 27 named agents of AGENTS.md are documentation roles; no code maps an issue to a letter; a bee is a provider-backed model turn on one key and lane, told it works exactly one issue; the number of container bees is bounded by keys, lanes and TRIOS_QUEEN_MAX_WORKERS, runners add their own lanes, and nothing is bounded by 27";
 ; --- The specs this one sits beside ----------------------------------------------------------------------
 pub const NEIGHBOURS : [6]str = [
     "specs/queen/lotus.t27: the lotus-policy design; does not compile in C at master",
@@ -155,13 +163,13 @@ pub const FINDINGS : [15]str = [
     "f55 accept requires criteria met, a commit and a reviewer, but no pull request, CI run or merge; without an open pull request a red check cannot take it back [queend; pg]",
     "f56 one Queen at a time holds: 32 contenders, 20 rounds, one owner per term and a fence that only rises; only recordTick carries that fence [pg; source]",
     "f57 the dispatch writer enforces nothing: it replaced a row still awaiting review; exclusivity is the issue key plus a choice that skips live claims [pg]",
-    "f58 a bee has no heartbeat: it is reaped by age alone, at 121 minutes and not at 119, or at boot, and its turn has no wall-clock cap [pg; source]",
+    "f58 a bee the container runs has no heartbeat: it is reaped by age alone, at 121 minutes and not at 119, or at boot, and its turn has no wall-clock cap; at this pin a claimed bee or a runner's task is also reaped by a missed renewal (read, not run) [pg; source]",
     "f59 nothing cancels a running bee [source]",
     "f60 two counted send-backs then escalate, in review and in the CI take-back alike; QueenRetryPolicy is compiled and never asked [queend; pg; source]",
     "f61 a duplicate ending, a late ending of an older turn, a second criteria release and a second CI take-back change nothing; there are no event IDs [pg]",
     "f62 the 27 named agents are documentation: no code maps an issue to a letter, and task_analysis.t27's WORKER_COUNT = 27 equated them with workers [source; spec]",
     "f63 task_analysis.t27 sorted by returning its input; it now orders by score with tests on unsorted input, and is labelled as applied by no runtime [spec]",
-    "f64 the supervisor is a live service: at the snapshot it reported working with 7 of 20 workers and 930 public cards [live]"
+    "f64 the supervisor is a live service: at the snapshot (2026-10-05 05:59Z) it reported working with 18 of 70 workers and 1218 public cards [live]"
 ];
 pub const ENABLED : bool = true;
 

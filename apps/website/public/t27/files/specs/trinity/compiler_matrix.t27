@@ -46,7 +46,10 @@ pub const NEGATIVES : [5]str = ["neg_invalid_annotation.t27", "neg_false_assert.
 pub const NEGATIVE_STAGE : [5]str = ["declaration", "runtime", "declaration", "declaration", "declaration"];
 pub const NEGATIVE_NOTE : [5]str = ["str = 5: t27c typecheck accepts it, the matrix rejects it at declaration", "assert ONE > 2: typecheck ok, generated, compiled, the C runner aborts", "use nowhere::thing: t27c accepts it and the C runner passes, the matrix rejects it at declaration", "pub fn helper(x: u8) -> u8; : typecheck reports Expected LBrace", "a bare ; ahead of module: parse error at module level"];
 ; A backend nobody implemented: asking for it must yield blocked, never a stub.
-pub const ABSENT_BACKEND : str = "python";
+; This slot named python until t27c gen-python landed (gHashTag/t27#5983): that backend
+; exists now, and this matrix does not measure it yet, as it does not measure gen-js or
+; gen-ts. go has no generator at all.
+pub const ABSENT_BACKEND : str = "go";
 pub const ENABLED : bool = true;
 
 test the_stages_are_ordered_and_runtime_is_last {
@@ -79,7 +82,8 @@ test a_false_assertion_is_only_caught_at_runtime {
 }
 
 test the_absent_backend_is_not_a_backend {
-    assert ABSENT_BACKEND == "python";
+    assert ABSENT_BACKEND == "go";
+    assert ABSENT_BACKEND != "python";
     assert ABSENT_BACKEND != BACKENDS[0];
     assert ABSENT_BACKEND != BACKENDS[1];
     assert ABSENT_BACKEND != BACKENDS[2];

@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
+// Issue: https://github.com/dmitrii-f-t27/trinity-memory/issues/125
+// Coverage: https://github.com/dmitrii-f-t27/trinity-memory/issues/3
+// Coverage: https://github.com/dmitrii-f-t27/trinity-memory/issues/9
 // specs/memory/edge_demo.t27 -- Trinity Edge Demo contract
 // A small finished application on the memory stack: a hand-authored ternary
 // template classifier (three templates over twelve samples) stored as a

@@ -10,12 +10,18 @@ module EternalMonitor;
     // 2. Types
     // ═══════════════════════════════════════════════════════════
 
-    pub const Severity = struct {
-        variants : ,
+    pub const Severity = enum(u8) {
+        info,
+        warning,
+        critical,
+        fatal,
     };
 
-    pub const HealthStatus = struct {
-        variants : ,
+    pub const HealthStatus = enum(u8) {
+        healthy,
+        degraded,
+        failed,
+        unknown,
     };
 
     pub const Config = struct {

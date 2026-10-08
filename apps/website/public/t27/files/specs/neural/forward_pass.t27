@@ -9,7 +9,7 @@ module forward_pass;
 
 // `import x;` is the older spelling of `use x;`.
 use numeric::gf16;
-use tritype::Trit;
+use base::types::Trit;
 use vsa::vsa_core::{bind, unbind, bundle2, bundle3, permute, cosine_similarity};
 
 // ============================================================================
@@ -110,15 +110,15 @@ pub fn single_head_attention(
 ) -> Hypervector {
     // Query = bind(last_position, Q_role)
     const last_pos = positioned[CONTEXT_SIZE - 1];
-    const query = bind(last_pos, q_role, dim);
+    const query = bind(last_pos, q_role);
 
     // Find best-matching key
     var best_sim: gf16 = -2.0;
     var best_idx: usize = 0;
 
     for i in 0..CONTEXT_SIZE {
-        const key_i = bind(positioned[i], k_role, dim);
-        const sim = cosine_similarity(query, key_i, dim);
+        const key_i = bind(positioned[i], k_role);
+        const sim = cosine_similarity(query, key_i);
 
         if sim > best_sim {
             best_sim = sim;
@@ -127,7 +127,7 @@ pub fn single_head_attention(
     }
 
     // Value = bind(best_position, V_role)
-    return bind(positioned[best_idx], v_role, dim);
+    return bind(positioned[best_idx], v_role);
 }
 
 /// Multi-head forward pass with residual connection
@@ -140,7 +140,7 @@ pub fn forward_pass_multi_head(
     // Position encoding
     var positioned: Context = [[TRIT_ZERO; DEFAULT_DIM]; CONTEXT_SIZE];
     for i in 0..CONTEXT_SIZE {
-        positioned[i] = permute(context[i], i, dim);
+        positioned[i] = permute(context[i], i);
     }
 
     // 3-head attention
@@ -149,24 +149,24 @@ pub fn forward_pass_multi_head(
     const head2 = single_head_attention(positioned, roles[6], roles[7], roles[8], dim);
 
     // Merge heads via bundle3
-    const merged = bundle3(head0, head1, head2, dim);
+    const merged = bundle3(head0, head1, head2);
 
     // FFN: bind(FF1), then bind(FF2)
-    const ffn_mid = bind(merged, roles[FF1_ROLE_IDX], dim);
-    const ffn_out = bind(ffn_mid, roles[FF2_ROLE_IDX], dim);
+    const ffn_mid = bind(merged, roles[FF1_ROLE_IDX]);
+    const ffn_out = bind(ffn_mid, roles[FF2_ROLE_IDX]);
 
     // Residual connection: bundle with last positioned vector
-    return bundle2(ffn_out, positioned[CONTEXT_SIZE - 1], dim);
+    return bundle2(ffn_out, positioned[CONTEXT_SIZE - 1]);
 }
 
 /// Summarize context into a single hypervector
 /// Uses positional permutation + sequential bundling
 pub fn summarize_context(context: Context, dim: usize) -> Hypervector {
-    var summary = permute(context[0], 0, dim);
+    var summary = permute(context[0], 0);
 
     for i in 1..CONTEXT_SIZE {
-        const positioned = permute(context[i], i, dim);
-        summary = bundle2(summary, positioned, dim);
+        const positioned = permute(context[i], i);
+        summary = bundle2(summary, positioned);
     }
 
     return summary;
@@ -180,7 +180,7 @@ pub fn forward_pass_direct(
     dim: usize,
 ) -> Hypervector {
     const summary = summarize_context(context, dim);
-    return bind(summary, role, dim);
+    return bind(summary, role);
 }
 
 // ============================================================================
@@ -199,7 +199,7 @@ pub fn resonator_train_step(
 ) -> TrainResult {
     // Forward pass to get initial output
     const output = forward_pass_multi_head(context, roles.*, dim);
-    const initial_sim = cosine_similarity(output, target, dim);
+    const initial_sim = cosine_similarity(output, target);
     var best_loss: gf16 = 1.0 - initial_sim;
     var best_sim = initial_sim;
 
@@ -208,30 +208,30 @@ pub fn resonator_train_step(
         // Position encoding
         var positioned: Context = [[TRIT_ZERO; DEFAULT_DIM]; CONTEXT_SIZE];
         for i in 0..CONTEXT_SIZE {
-            positioned[i] = permute(context[i], i, dim);
+            positioned[i] = permute(context[i], i);
         }
 
         // Compute merged attention output
         const head0 = single_head_attention(positioned, roles[0], roles[1], roles[2], dim);
         const head1 = single_head_attention(positioned, roles[3], roles[4], roles[5], dim);
         const head2 = single_head_attention(positioned, roles[6], roles[7], roles[8], dim);
-        const merged = bundle3(head0, head1, head2, dim);
+        const merged = bundle3(head0, head1, head2);
 
         // Compute ideal FF2 direction
-        const merged_ff1 = bind(merged, roles[FF1_ROLE_IDX], dim);
-        const ideal_ff2 = unbind(target, merged_ff1, dim);
+        const merged_ff1 = bind(merged, roles[FF1_ROLE_IDX]);
+        const ideal_ff2 = unbind(target, merged_ff1);
 
         // Compute ideal FF1 direction
-        const ideal_ff1_input = unbind(target, roles[FF2_ROLE_IDX], dim);
-        const ideal_ff1 = unbind(ideal_ff1_input, merged, dim);
+        const ideal_ff1_input = unbind(target, roles[FF2_ROLE_IDX]);
+        const ideal_ff1 = unbind(ideal_ff1_input, merged);
 
         // Apply corrections (simplified - sparse updates)
-        roles[FF2_ROLE_IDX] = bind(roles[FF2_ROLE_IDX], ideal_ff2, dim);
-        roles[FF1_ROLE_IDX] = bind(roles[FF1_ROLE_IDX], ideal_ff1, dim);
+        roles[FF2_ROLE_IDX] = bind(roles[FF2_ROLE_IDX], ideal_ff2);
+        roles[FF1_ROLE_IDX] = bind(roles[FF1_ROLE_IDX], ideal_ff1);
 
         // Re-check
         const new_output = forward_pass_multi_head(context, roles.*, dim);
-        const new_sim = cosine_similarity(new_output, target, dim);
+        const new_sim = cosine_similarity(new_output, target);
         const new_loss = 1.0 - new_sim;
 
         if new_loss < best_loss {
@@ -264,13 +264,13 @@ pub fn compute_direct_role(
     }
 
     // Start with first sample
-    var accumulated_role = unbind(targets[0], summarize_context(contexts[0], dim), dim);
+    var accumulated_role = unbind(targets[0], summarize_context(contexts[0], dim));
 
     // Bundle remaining samples
     for i in 1..contexts.len {
         const summary = summarize_context(contexts[i], dim);
-        const ideal = unbind(targets[i], summary, dim);
-        accumulated_role = bundle2(accumulated_role, ideal, dim);
+        const ideal = unbind(targets[i], summary);
+        accumulated_role = bundle2(accumulated_role, ideal);
     }
 
     return accumulated_role;
@@ -331,7 +331,7 @@ pub fn measure_perplexity(
 
     for i in 0..contexts.len {
         const output = forward_pass_multi_head(contexts[i], roles, dim);
-        const sim = cosine_similarity(output, targets[i], dim);
+        const sim = cosine_similarity(output, targets[i]);
 
         // Convert similarity to pseudo-log-likelihood
         // Similarity in [-1, 1] maps to [low, high] likelihood
@@ -364,7 +364,7 @@ pub fn compute_accuracy(
 
     for i in 0..contexts.len {
         const output = forward_pass_multi_head(contexts[i], roles, dim);
-        const sim = cosine_similarity(output, targets[i], dim);
+        const sim = cosine_similarity(output, targets[i]);
 
         if sim > threshold {
             correct += 1;
@@ -618,7 +618,7 @@ test "bundle3_merges_three_heads" {
         h3[i] = TRIT_POS;
     }
 
-    const merged = bundle3(h1, h2, h3, 1024);
+    const merged = bundle3(h1, h2, h3);
 
     // With all +1, majority vote should be +1
     assert(merged[0] == TRIT_POS);
@@ -633,11 +633,11 @@ test "bind_unbind_self_inverse" {
         b[i] = ((i + 1) % 3) as i8 - 1;
     }
 
-    const bound = bind(a, b, 1024);
-    const recovered = unbind(bound, b, 1024);
+    const bound = bind(a, b);
+    const recovered = unbind(bound, b);
 
     // Check similarity
-    const sim = cosine_similarity(a, recovered, 1024);
+    const sim = cosine_similarity(a, recovered);
     // Should be high (perfect in theory, noise in practice)
     assert(sim > 0.8);
 }
@@ -648,7 +648,7 @@ test "permute_changes_hypervector" {
         hv[i] = (i % 3) as i8 - 1;
     }
 
-    const permuted = permute(hv, 5, 1024);
+    const permuted = permute(hv, 5);
 
     // Permuted should be different
     var same = true;
@@ -704,7 +704,7 @@ test "resonator_improves_similarity" {
 
     // Get initial similarity
     const initial_output = forward_pass_multi_head(context, roles, 1024);
-    const initial_sim = cosine_similarity(initial_output, target, 1024);
+    const initial_sim = cosine_similarity(initial_output, target);
 
     // Train
     const result = resonator_train_step(context, target, &roles, 1024, 0.5, 999);
@@ -862,21 +862,21 @@ invariant "compute_direct_role_returns_valid_dim" {
 invariant "bind_unbind_preserves_dimension" {
     const a: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
     const b: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
-    const bound = bind(a, b, 1024);
-    const recovered = unbind(bound, b, 1024);
+    const bound = bind(a, b);
+    const recovered = unbind(bound, b);
     assert(recovered.len == 1024);
 }
 
 invariant "permute_preserves_dimension" {
     const hv: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
-    const permuted = permute(hv, 5, 1024);
+    const permuted = permute(hv, 5);
     assert(permuted.len == 1024);
 }
 
 invariant "bundle2_preserves_dimension" {
     const a: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
     const b: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
-    const bundled = bundle2(a, b, 1024);
+    const bundled = bundle2(a, b);
     assert(bundled.len == 1024);
 }
 
@@ -884,7 +884,7 @@ invariant "bundle3_preserves_dimension" {
     const a: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
     const b: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
     const c: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
-    const bundled = bundle3(a, b, c, 1024);
+    const bundled = bundle3(a, b, c);
     assert(bundled.len == 1024);
 }
 
@@ -1080,7 +1080,7 @@ bench "bind_operation" {
     const b: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
 
     for _ in 0..iterations {
-        _ = bind(a, b, 1024);
+        _ = bind(a, b);
     }
 }
 
@@ -1091,7 +1091,7 @@ bench "bundle3_operation" {
     const c: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
 
     for _ in 0..iterations {
-        _ = bundle3(a, b, c, 1024);
+        _ = bundle3(a, b, c);
     }
 }
 
@@ -1100,6 +1100,6 @@ bench "permute_operation" {
     const hv: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
 
     for _ in 0..iterations {
-        _ = permute(hv, 5, 1024);
+        _ = permute(hv, 5);
     }
 }

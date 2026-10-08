@@ -23,8 +23,8 @@ module reproduce_contracts;
 pub const KIND : str = "contract-lock";
 pub const ID : str = "reproduce/contracts";
 pub const T27_REPO : str = "https://github.com/gHashTag/t27";
-pub const T27_REVISION : str = "de2a1aca2402afc050049eb9886fa5d9929b7927";
-pub const T27_REVISION_AT : str = "2026-10-01T15:21:11Z";
+pub const T27_REVISION : str = "39e06aa0ea955eece4d9b84e41192e2a36e5d276";
+pub const T27_REVISION_AT : str = "2026-10-04T08:44:49Z";
 pub const VENDOR_DIR : str = "external/t27";
 pub const COMPILER : str = "t27c, the package bootstrap/ of the Cargo workspace of gHashTag/t27";
 pub const COMPILER_PATHS : [5]str = [
@@ -35,11 +35,11 @@ pub const COMPILER_PATHS : [5]str = [
     "bootstrap/src"
 ];
 pub const COMPILER_IDS : [5]str = [
-    "46722d0846e561c5460008712639595ba10835ff",
+    "4dda364d4eb8fbeacb119413d375c5ce9be7ac98",
     "e76ab927ff80c0cbeed7a915a5cc3feac491c02b",
-    "41263df91bde3d8bffb28c4555a2fd4681d09029",
+    "6f2adc3eee0fce2260842ba67096b3f472a146dc",
     "98e6d64110d018294431689a144734b0f6cde455",
-    "81ea48976983b029c527f455540e15d862862c3b"
+    "0c32f36797e73ad3f5e6b598b23ac5bc7cf7dc8a"
 ];
 ; The Zig t27 runs its spec tests with (ZIG_VERSION in .github/workflows/oracle-nightly.yml at the
 ; revision): t27c test-report writes code for it, so check --t27c wants it on PATH.
@@ -79,9 +79,11 @@ pub const TEST_BLOCKED_ERRORS : [11]str = [
     "spec.zig:24:27: error: use of undeclared identifier 'Trit'"
 ];
 pub const TEST_NONE : [2]str = ["specs/tools/mcp/needle.t27", "specs/tools/mcp/trinity.t27"];
-pub const TESTS_RUN_MIN : u32 = 77;
+; 78 at gHashTag/t27@39e06aa0: 58 specs measured, all 78 of their tests passing. It was 77 at de2a1aca;
+; the one test of specs/trinity/capabilities/brain.regions.t27 is the only test this vendoring added.
+pub const TESTS_RUN_MIN : u32 = 78;
 ; Every vendored file, sorted, and its sha256.
-pub const FILES : [75]str = [
+pub const FILES : [76]str = [
     "conformance/trinity/fpga_adapter.json",
     "specs/api/c_abi.t27",
     "specs/api/tri_api_loop.t27",
@@ -107,6 +109,7 @@ pub const FILES : [75]str = [
     "specs/trinity/capabilities/archive.legacy.t27",
     "specs/trinity/capabilities/bench.suite.t27",
     "specs/trinity/capabilities/bot.tri-bot.t27",
+    "specs/trinity/capabilities/brain.regions.t27",
     "specs/trinity/capabilities/catalog.spec-mirror.t27",
     "specs/trinity/capabilities/catalog.world-scan.t27",
     "specs/trinity/capabilities/cli.tri.t27",
@@ -158,7 +161,7 @@ pub const FILES : [75]str = [
     "tools/trinity_fpga_adapter.py",
     "tools/trinity_manifest.py"
 ];
-pub const SHA256 : [75]str = [
+pub const SHA256 : [76]str = [
     "7ae9ac4cfa12dad2031a570401067fd8b3f76dce36e034026b7289c49a2cb037",
     "45f24257632e6874936c6c861577cfb3e7dfe9980d45a46cc270402ece70beef",
     "4f475cb07922ffa10a38fae730d2a10a6a6e512eda20c78a1f873856a789522a",
@@ -171,10 +174,10 @@ pub const SHA256 : [75]str = [
     "bebdc00ac0668a113958a3571a8c150155c6799de52129bcf898361e1090a153",
     "0b2bf5af0c55b2947d39b83c3fbec42e38c3672c5d1e48fe90a4e98b6b9a12b9",
     "1ec86e7561e1830b7f478ffc835f028522b5297c375296b7674990b182956235",
-    "e2bff492844bb71720dc0caa8615e6025c5bcbf68978e17da5e89ef661adb563",
-    "6d12259c8f9ce6b5c139b041f23558ef50c0f6a3edb22569fb4e2559f4ca3b54",
+    "c190bc0aa0ad7f34b9772f5ef3a569746b0373916b1d52827ed832e8865d4ad3",
+    "c3be9d879e41be06a5ebc1cc3dbb770c632deaae86f2c6a443df37a72586b91c",
     "c832c848030f8a8bf1a6661c10cb66c61b5e4cd53b7478a22fdfd57cd755a03b",
-    "8775eb3ee0282422ffb8c90dfeab6927559a25f894c2a20adc082f70547b04ad",
+    "627cc5d9594941436848eccb032e71b22168cf4c8b3064638837d8916b018d9f",
     "6336a6b10f16c0b0bf7e47bd4b23f8a84d7cee370e79aea21460274d7e0bf292",
     "2f44ec37731d354202474d2074769c31c6582d9e0486fe224c2daa8f6188bb47",
     "ffd65a9544a8d1bbfaa1a92b670c9e73137add7ef85524adf4ca692df16d5831",
@@ -184,6 +187,7 @@ pub const SHA256 : [75]str = [
     "90181cc2b6306945600f0e2a0202eca1788884a96bce5db64d16d820cf62ade5",
     "c3d50f765c9a9c0003446e9d2fa3df72d86d3c75c599c10498df31dfed1768f6",
     "b7dd2658343c40cb234c9abcafc5e9b9d492a4a0f4649b4c767009477b94b342",
+    "3e06b6b7b1df75d7c70dcd5bac52b7e381836103308c6c1bb01f7e741f7cb87a",
     "56bd42a76af68ab0c5d29cee4888d01b3a34216068371aa1d9db128277871aee",
     "dd87dea212ee6b002f1beb0da611d8599e23f4c3ea31a1460404131532feac0c",
     "21b016c6929f2280608718aef11682faa3254a6524af4cb3e50b6bbd43c79b37",
@@ -195,8 +199,8 @@ pub const SHA256 : [75]str = [
     "e0c9d0e21f7bbd9253fd5acdae3f3581ccc2cb38aa284315a98a2397e3ec1543",
     "9c72e0708c09aa65265bc7a089d77f35949d4304f42c67826f5ae269ac268264",
     "f055f3e19d5672b8a2a023c30ceb98afe73b1002e00c50a9eed5041cdb51da81",
-    "f6faf793a7547b31fda5fa9a40da0698c7b8f1100425bb474dd73b6d69ec127b",
-    "70156b4f00e3f1c9ce6951510a37233b65f156c48b9c7a1b5e038c17f00d514e",
+    "216f0ad33f1f4416f0243d298ceba0e0d96952fc4852b4e7e7867ef49d3972a6",
+    "aa736594cc93f43f2153e2b555ca44b7f6bb35bfcfa7078957d54bd38714a993",
     "41d804d63c7cea9c3bed9025f52bd8d5f576855b3cd8b065800d6e6ba53f99a9",
     "d3462e16b085abcac92fe0307513800bd1e11907889cdf65484c5ac103c12c97",
     "58fe891a66adf08ce55b8b9fd7a6b8d8cf1080549e4ac678068174abbb58b88a",
@@ -210,7 +214,7 @@ pub const SHA256 : [75]str = [
     "7c9c089d1b173d6d76941827409038da1d98eddfa3704b85c4d9203b417b2c3d",
     "68db08e2c74473cafa7fa60d467626f0b74106730d4f4b3c418442765125b168",
     "ceeade29b5422ff8ecbad180c425515d7a8962cebb7683aef5b35643c0ddc312",
-    "c5a5f4d86e39a33fe2eee3119242a951a9e942f8d2d1e8eddeda8f6ff0b0e9e4",
+    "9dea85455c2d0e7bf1536bc11b9ddf6ecc7437ed028db479357280d56e797d1f",
     "d1a693acd15cae25043e02fbfee7b30b09e309447e18c625574272912603eece",
     "2f44c7a542950430b6d29c51b912e967e045efb52490fb39ddcdfdd232f233ed",
     "f4cbc7903cba83f5b77de3ea9da6843b4ad6074a3fc695555573e68537ebdb07",
@@ -228,12 +232,12 @@ pub const SHA256 : [75]str = [
     "feb86eeefa90d0d29d448f031ca0ecebc52235f088d0697ef4cd0920d126ef60",
     "14dd9424bebdc314016df1e39e6ee13dc8ad8b6508cd23518885b006275d6476",
     "eabb5fbd560deceb47ad6ae9f8bc4f70a2b91e2504e8026ba09387963560b9f2",
-    "be8ecd253a1d1147bc19c61f76ae5f18a7a2a7e1aec301a7b4ca14bbc4d4fc10",
+    "527e23f251e5c88b93ce18294f5369a22360c7eb9c5c34a6464f7710742337f2",
     "eafbd92646695ec39378467b8ac4dad4381f2482007d13894a75b82bf1877b16",
     "365952af756282bd5f43c023843fa2f133348b922dc1dcd6b4db9f85034fbfd4",
     "bf26288bfe3ad776ed7f7a58c63c4793a72149b50669cee212c5a0c6d6cd484e",
     "11984d77c49424f7f30c6a11de2613a077aca03f89bbfce6d6f674bffdc1d99d",
-    "766d0017cb35bba3c3fb6a17eaac71204f447e112063e788cab2a5a073b8b6b1"
+    "aa856e991cc2074f54ca367c19ea5a8cfc15ef900eb87fc468e840e10d3aba22"
 ];
 pub const ENABLED : bool = true;
 
@@ -245,5 +249,5 @@ test the_lock_names_its_source {
 
 test the_ledgers_hold_together {
     assert PARSE_DISCARD_TOKENS[0] == 48;
-    assert TESTS_RUN_MIN == 77;
+    assert TESTS_RUN_MIN == 78;
 }

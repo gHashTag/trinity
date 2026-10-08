@@ -28,3 +28,12 @@ pub const TABLE : str = "laws";
 ; English canonical prose, Markdown, path from the t27 root.
 pub const BODY_EN : str = "docs/system/rules.md";
 pub const ENABLED : bool = true;
+
+test test_rules_constants {
+    assert KIND == "docs-chapter";
+    assert ID == "docs/rules";
+    assert ORDER == 2;
+    assert ENABLED == true;
+    assert SECTIONS[0] == "The constitutional stack";
+    assert SOURCES[1] == "AGENTS.md";
+}

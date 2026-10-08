@@ -23,3 +23,10 @@ pub const TAGS : [3]str = ["vsa", "math", "verify"];
 pub const ENABLED : bool = true;
 ; Default budget; SKILL.md declares no timeout of its own.
 pub const TIMEOUT_MIN : u16 = 30;
+
+test skill_trinity_vsa_verify_constants {
+    assert KIND == "skill";
+    assert ENABLED == true;
+    assert TIMEOUT_MIN == 30;
+    assert TAGS[0] == "vsa";
+}

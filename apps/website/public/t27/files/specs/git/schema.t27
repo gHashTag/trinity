@@ -48,10 +48,18 @@ module Git {
     // Git Execution Types
     // ════════════════════════════════════════════════════════════════════
 
+    // One environment variable for a git command
+    struct EnvVar {
+        name: str,
+        value: str,
+    }
+
     // Options for git command execution
+    // (`env` was `[str: str]`, a map type t27 does not have; gen-rust wrote it
+    // as `Vec<str:str>`. The callers build it from name/value pairs, #5968)
     struct Options {
         cwd: str,
-        env: [str: str],
+        env: []EnvVar,
     }
 
     // Result represents the output of a git command

@@ -536,7 +536,8 @@ module SDK {
         // Negate flips all trits
         const a = hypervector_random(100, 123);
         when result = hypervector_negate(a)
-        then for (i = 0; i < 100; i += 1) {
+        // Every one of the 100 trits.
+        for (0..100) |i| {
             const t1 = a.data.get(i);
             const t2 = result.data.get(i);
             assert t1 == -t2;

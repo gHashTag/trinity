@@ -1,4 +1,4 @@
-// Video bridge protocol: phone ↔ mesh node video transport.
+// Video bridge protocol: phone <-> mesh node video transport.
 // Defines frame format for H.264 NAL units split into mesh-sized fragments.
 // Phone sends raw H.264 Annex-B NAL units via UDP to mesh node.
 // Node fragments into VSTREAM packets for mesh transport.
@@ -82,7 +82,7 @@ module VideoBridge {
         if (rate == 0) {
             return 100;
         }
-        let scaled: u32 = spent;
+        let scaled: u32 = spent as u32;
         let pct: u32 = (scaled * 100) / rate;
         if (pct > 100) {
             return 100;
@@ -92,15 +92,15 @@ module VideoBridge {
 
     // Share of offered payloads the node had to drop, as a percentage.
     //
-    // Both operands go through a TYPED let: t27c widens operands inside a typed
-    // `let` but not inside a bare `return`, so `return (scaled * 100) / offered`
-    // emits `u32 / u16` and does not compile. Keep the shape.
+    // Widen both source operands explicitly before arithmetic. A typed local
+    // declaration alone does not convert an existing u16 value in generated
+    // Rust; multiplication must happen in u32, not overflow in u16 first.
     fn fb_drop_pct(dropped: u16, offered: u16) -> u8 {
         if (offered == 0) {
             return 0;
         }
-        let scaled: u32 = dropped;
-        let total: u32 = offered;
+        let scaled: u32 = dropped as u32;
+        let total: u32 = offered as u32;
         let pct: u32 = (scaled * 100) / total;
         return pct as u8;
     }
@@ -188,13 +188,13 @@ module VideoBridge {
     // ceiling (measuring capacity below saturation is impossible). Real loss
     // means the link has stated its throughput: what got through.
     //
-    // All operands go through typed lets (t27c widens there, not in returns).
+    // Cast the source operands explicitly before the wide threshold product.
     fn fb_effective_rate(sent: u16, delivered: u16, configured: u16) -> u16 {
         if (sent == 0) {
             return configured;
         }
-        let s: u32 = sent;
-        let d: u32 = delivered;
+        let s: u32 = sent as u32;
+        let d: u32 = delivered as u32;
         let threshold: u32 = (s * 9) / 10;
         if (d >= threshold) {
             return configured;
@@ -304,8 +304,8 @@ module VideoBridge {
     // Extract sequence number from fragment header (little-endian u16)
     // Param names must not shadow the seq_lo/seq_hi module fns below.
     fn frag_seq(s_lo: u8, s_hi: u8) -> u16 {
-        let lo: u16 = s_lo;
-        let hi: u16 = s_hi;
+        let lo: u16 = s_lo as u16;
+        let hi: u16 = s_hi as u16;
         return lo + (hi * 256);
     }
 
@@ -637,50 +637,76 @@ module VideoBridge {
         assert(fec_packet_size() == 76, "6 header + 70 data = 76");
     }
 
+    // ---- Full-width arithmetic regression tests ----
+
+    test util_pct_wide_product {
+        assert(fb_util_pct(32768, 65535) == 50, "u16 spent needs a wide product");
+    }
+
+    test drop_pct_u16_boundary {
+        assert(fb_drop_pct(65535, 65535) == 100, "full-width drop counts do not overflow");
+    }
+
+    test effective_rate_wide_threshold {
+        assert(fb_effective_rate(65535, 58980, 65535) == 58980, "full-width 90 percent threshold");
+    }
+
     // ---- invariants ----
 
-    invariant frag_header_is_5_bytes
-        assert FRAG_HEADER_LEN == 5
+    invariant frag_header_is_5_bytes {
+        assert(FRAG_HEADER_LEN == 5, "frag_header_is_5_bytes");
+    }
 
-    invariant max_data_is_70
-        assert MAX_FRAG_DATA == 70
+    invariant max_data_is_70 {
+        assert(MAX_FRAG_DATA == 70, "max_data_is_70");
+    }
 
-    invariant vstream_type_is_8
-        assert VSTREAM_TYPE == 8
+    invariant vstream_type_is_8 {
+        assert(VSTREAM_TYPE == 8, "vstream_type_is_8");
+    }
 
     // A parity packet must be distinguishable from a data fragment on the wire.
-    invariant fec_type_differs_from_data_type
-        assert VSTREAM_FEC_TYPE != VSTREAM_TYPE
+    invariant fec_type_differs_from_data_type {
+        assert(VSTREAM_FEC_TYPE != VSTREAM_TYPE, "fec_type_differs_from_data_type");
+    }
 
     // The parity header carries one extra byte (last_len) over a data header.
-    invariant fec_header_is_one_longer
-        assert FEC_HEADER_LEN == 6
+    invariant fec_header_is_one_longer {
+        assert(FEC_HEADER_LEN == 6, "fec_header_is_one_longer");
+    }
 
     // Class is declared by port, so the ports must not collide.
-    invariant audio_port_differs_from_video
-        assert AUDIO_IN_PORT != VIDEO_IN_PORT
+    invariant audio_port_differs_from_video {
+        assert(AUDIO_IN_PORT != VIDEO_IN_PORT, "audio_port_differs_from_video");
+    }
 
-    invariant feedback_port_is_its_own
-        assert FEEDBACK_PORT != AUDIO_IN_PORT
+    invariant feedback_port_is_its_own {
+        assert(FEEDBACK_PORT != AUDIO_IN_PORT, "feedback_port_is_its_own");
+    }
 
     // The hysteresis gap is the whole point: one threshold oscillates.
-    invariant feedback_carries_advice
-        assert FEEDBACK_LEN == 6
+    invariant feedback_carries_advice {
+        assert(FEEDBACK_LEN == 6, "feedback_carries_advice");
+    }
 
     // The three verdicts must stay distinct or the app cannot tell them apart.
-    invariant advice_values_are_distinct
-        assert ADVICE_BACK_OFF != ADVICE_CLIMB
+    invariant advice_values_are_distinct {
+        assert(ADVICE_BACK_OFF != ADVICE_CLIMB, "advice_values_are_distinct");
+    }
 
     // No dead zone: climb up to the same point we back off at. Damping is in the
     // AIMD step law, not a band. If these ever diverge again, a HOLD region
     // reopens and the loop will freeze in it (measured: ~25% link wasted).
-    invariant no_dead_zone
-        assert CLIMB_BELOW_PCT == BACK_OFF_AT_PCT
+    invariant no_dead_zone {
+        assert(CLIMB_BELOW_PCT == BACK_OFF_AT_PCT, "no_dead_zone");
+    }
 
     // The rx-report must not be mistaken for a fragment or a parity.
-    invariant rx_report_type_is_distinct
-        assert RX_REPORT_TYPE != VSTREAM_TYPE
+    invariant rx_report_type_is_distinct {
+        assert(RX_REPORT_TYPE != VSTREAM_TYPE, "rx_report_type_is_distinct");
+    }
 
-    invariant rx_report_differs_from_fec
-        assert RX_REPORT_TYPE != VSTREAM_FEC_TYPE
+    invariant rx_report_differs_from_fec {
+        assert(RX_REPORT_TYPE != VSTREAM_FEC_TYPE, "rx_report_differs_from_fec");
+    }
 }

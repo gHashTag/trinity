@@ -26,7 +26,10 @@ fn AnnounceHeader_parse(buf: []const u8, out: *AnnounceHeader) -> bool {
     return true;
 }
 
-fn AnnounceHeader_serialise(self: AnnounceHeader, buf: [*]u8) -> void {
+// The source takes `&mut [u8; MIN_WIRE]`: a buffer whose length is known. A slice keeps
+// that length, so a buffer shorter than MIN_WIRE is an index out of bounds, where `[*]u8` had
+// no length to check against.
+fn AnnounceHeader_serialise(self: AnnounceHeader, buf: []u8) -> void {
     buf[0] = PACKET_TYPE_ANNOUNCE;
     var i: usize = 0;
     while (i < 16) {

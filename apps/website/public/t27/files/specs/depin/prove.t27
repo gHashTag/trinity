@@ -288,14 +288,88 @@ pub fn gf16_matmul(a: [16][16]u8, b: [16][16]u8) [16][16]u8 {
 
 pub fn pack_gf16_matrix(m: [16][16]u8) [128]u8 {
     // Pack 16x16 nibble matrix into 128 bytes (2 nibbles per byte)
+    var result: [128]u8 = [_]u8{0} ** 128;
+    var byte_idx: usize = 0;
+    var i: usize = 0;
+    while (i < 16) {
+        var j: usize = 0;
+        while (j < 16) {
+            if ((j & 1) == 0) {
+                // First nibble in the byte
+                result[byte_idx] = m[i][j] & 0xF;
+            } else {
+                // Second nibble in the byte
+                result[byte_idx] |= ((m[i][j] & 0xF) << 4);
+                byte_idx += 1;
+            }
+            j += 1;
+        }
+        i += 1;
+    }
+    return result;
 }
 
 pub fn merkle_root(leaves: [][32]u8) [32]u8 {
     // Binary Merkle tree root computation
+    if (leaves.len == 0) {
+        // Empty tree has zero root
+        var zero: [32]u8 = [_]u8{0} ** 32;
+        return zero;
+    }
+    
+    var current_level = leaves;
+    while (current_level.len > 1) {
+        var next_level: [][32]u8 = [];
+        var i: usize = 0;
+        while (i < current_level.len) {
+            if (i + 1 < current_level.len) {
+                // Pair two leaves and hash them
+                var hasher = TriSha256.init();
+                _ = hasher.update(&current_level[i]);
+                _ = hasher.update(&current_level[i + 1]);
+                var hash = hasher.final();
+                next_level = next_level ++ [hash];
+                i += 2;
+            } else {
+                // Odd number of leaves: promote last leaf to next level
+                next_level = next_level ++ [current_level[i]];
+                i += 1;
+            }
+        }
+        current_level = next_level;
+    }
+    
+    return current_level[0];
 }
 
 pub fn verify_merkle(root: [32]u8, leaf: [32]u8, siblings: [][32]u8, index: usize) bool {
     // Merkle inclusion proof verification
+    var current = leaf;
+    var sibling_idx: usize = 0;
+    
+    // Build up the proof by hashing with siblings according to the index bits
+    while (sibling_idx < siblings.len) {
+        var hasher = TriSha256.init();
+        if (((index >> sibling_idx) & 1) == 0) {
+            // Current is left child, sibling is right child
+            _ = hasher.update(&current);
+            _ = hasher.update(&siblings[sibling_idx]);
+        } else {
+            // Current is right child, sibling is left child
+            _ = hasher.update(&siblings[sibling_idx]);
+            _ = hasher.update(&current);
+        }
+        current = hasher.final();
+        sibling_idx += 1;
+    }
+    
+    // The final hash should match the root
+    var i: usize = 0;
+    while (i < 32) {
+        if (current[i] != root[i]) return false;
+        i += 1;
+    }
+    return true;
 }
 
 // ============================================================================
@@ -384,6 +458,135 @@ test "test_post_prove_v2_wrong_response" {
 
 test "test_gf16_matmul_associative" {
     // gf16_matmul(a, gf16_matmul(b, c)) == gf16_matmul(gf16_matmul(a, b), c)
+}
+
+// #6954 wrote these tests with `return false` in a test body, which Zig
+// rejects (a test returns anyerror!void), and expected 0x11 at packed[j*8]
+// for the identity matrix -- but row j's diagonal nibble sits at byte
+// j*8 + j/2, low nibble for even j and high nibble for odd j. Measured on
+// the t27c lab: the pack tests below pass 3/3, and a mutant that drops the
+// `<< 4` fails two of them.
+test "test_pack_gf16_matrix_identity" {
+    var identity: [16][16]u8 = [_][16]u8{ [_]u8{0} ** 16 } ** 16;
+    var i: usize = 0;
+    while (i < 16) {
+        identity[i][i] = 1;
+        i += 1;
+    }
+    const packed = pack_gf16_matrix(identity);
+    var k: usize = 0;
+    while (k < 128) {
+        const row = k / 8;
+        var want: u8 = 0;
+        if (k == row * 8 + row / 2) {
+            if ((row & 1) == 0) {
+                want = 0x01;
+            } else {
+                want = 0x10;
+            }
+        }
+        assert(packed[k] == want);
+        k += 1;
+    }
+}
+
+test "test_pack_gf16_matrix_zero" {
+    var zero: [16][16]u8 = [_][16]u8{ [_]u8{0} ** 16 } ** 16;
+    const packed = pack_gf16_matrix(zero);
+    var i: usize = 0;
+    while (i < 128) {
+        assert(packed[i] == 0);
+        i += 1;
+    }
+}
+
+test "test_pack_gf16_matrix_nibble_order" {
+    var m: [16][16]u8 = [_][16]u8{ [_]u8{0} ** 16 } ** 16;
+    m[3][4] = 0xA;
+    m[3][5] = 0x5;
+    m[15][15] = 0xF;
+    const packed = pack_gf16_matrix(m);
+    assert(packed[3 * 8 + 2] == 0x5A);
+    assert(packed[127] == 0xF0);
+}
+
+// The Merkle tests below cannot run yet: `use tri::crypto::sha256::TriSha256`
+// does not resolve, so the whole spec's tests are BLOCKED at compile time
+// (recorded as such in the seal). They are written as asserts so that they
+// compile once it resolves.
+test "test_merkle_root_single_leaf" {
+    // Single leaf should return itself as root
+    var leaf: [32]u8 = [_]u8{1} ** 32;
+    var leaves = [leaf];
+    var root = merkle_root(leaves);
+    var i: usize = 0;
+    while (i < 32) {
+        assert(root[i] == leaf[i]);
+        i += 1;
+    }
+}
+
+test "test_merkle_root_two_leaves" {
+    // Two leaves should hash to root
+    var leaf1: [32]u8 = [_]u8{1} ** 32;
+    var leaf2: [32]u8 = [_]u8{2} ** 32;
+    var leaves = [leaf1, leaf2];
+    var root = merkle_root(leaves);
+    var expected_hash = TriSha256.hash(&leaf1 ++ leaf2);
+    var i: usize = 0;
+    while (i < 32) {
+        assert(root[i] == expected_hash[i]);
+        i += 1;
+    }
+}
+
+test "test_merkle_root_empty" {
+    // Empty tree should return zero root
+    var leaves: [][32]u8 = [];
+    var root = merkle_root(leaves);
+    var zero: [32]u8 = [_]u8{0} ** 32;
+    var i: usize = 0;
+    while (i < 32) {
+        assert(root[i] == zero[i]);
+        i += 1;
+    }
+}
+
+test "test_verify_merkle_single_leaf" {
+    // Single leaf should verify against itself
+    var leaf: [32]u8 = [_]u8{1} ** 32;
+    var leaves = [leaf];
+    var root = merkle_root(leaves);
+    var siblings: [][32]u8 = [];
+    assert(verify_merkle(root, leaf, siblings, 0));
+}
+
+test "test_verify_merkle_two_leaves_left" {
+    // Verify left leaf (index 0) in 2-leaf tree
+    var leaf1: [32]u8 = [_]u8{1} ** 32;
+    var leaf2: [32]u8 = [_]u8{2} ** 32;
+    var leaves = [leaf1, leaf2];
+    var root = merkle_root(leaves);
+    var siblings: [][32]u8 = [leaf2]; // Right sibling
+    assert(verify_merkle(root, leaf1, siblings, 0));
+}
+
+test "test_verify_merkle_two_leaves_right" {
+    // Verify right leaf (index 1) in 2-leaf tree
+    var leaf1: [32]u8 = [_]u8{1} ** 32;
+    var leaf2: [32]u8 = [_]u8{2} ** 32;
+    var leaves = [leaf1, leaf2];
+    var root = merkle_root(leaves);
+    var siblings: [][32]u8 = [leaf1]; // Left sibling
+    assert(verify_merkle(root, leaf2, siblings, 1));
+}
+
+test "test_verify_merkle_wrong_root" {
+    // Should fail with wrong root
+    var leaf: [32]u8 = [_]u8{1} ** 32;
+    var wrong_root: [32]u8 = [_]u8{0} ** 32;
+    var siblings: [][32]u8 = [];
+    assert(!verify_merkle(wrong_root, leaf, siblings, 0));
 }
 
 // ============================================================================

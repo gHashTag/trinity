@@ -23,3 +23,18 @@ pub const TAGS : [3]str = ["memory", "notebooklm", "session"];
 pub const ENABLED : bool = true;
 ; Default budget; SKILL.md declares no timeout of its own.
 pub const TIMEOUT_MIN : u16 = 30;
+
+test basic_constants {
+    assert KIND == "skill";
+    assert ID == "t27/wrap-up";
+    assert NAME == "wrap-up";
+    assert REPO == "t27";
+    assert ENABLED == true;
+    assert TIMEOUT_MIN == 30;
+    assert COMMAND == "/wrap-up";
+    assert TAGS[0] == "memory";
+    assert TAGS[1] == "notebooklm";
+    assert TAGS[2] == "session";
+    assert SPECS.len == 1;
+    assert SPECS[0] == "specs/automation/wrapup-auto.t27";
+}

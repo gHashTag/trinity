@@ -49,12 +49,13 @@ module IGLAMultiLangHarness;
         }
         
         // Simple heuristic: if code contains basic language patterns, assume it compiles
-        match lang {
-            LangTarget.C => return code.contains("int") || code.contains("void") || code.contains("return"),
-            LangTarget.Rust => return code.contains("fn") || code.contains("let") || code.contains("return"),
-            LangTarget.Zig => return code.contains("fn") || code.contains("const") || code.contains("return"),
-            LangTarget.Verilog => return code.contains("module") || code.contains("always") || code.contains("assign"),
-        }
+        // A Rust `match` here lowered to an empty body in every backend (#5949).
+        return switch (lang) {
+            .C => code.contains("int") || code.contains("void") || code.contains("return"),
+            .Rust => code.contains("fn") || code.contains("let") || code.contains("return"),
+            .Zig => code.contains("fn") || code.contains("const") || code.contains("return"),
+            .Verilog => code.contains("module") || code.contains("always") || code.contains("assign"),
+        };
     }
 
     // syntax_check(lang: LangTarget, code: str) -> bool
@@ -67,10 +68,11 @@ module IGLAMultiLangHarness;
         // Simple syntax validation: check for balanced braces and basic structure
         let brace_count = 0;
         for i in 0..code.len() {
-            match code[i] {
-                '{' => brace_count += 1,
-                '}' => brace_count -= 1,
-                _ => continue,
+            // A Rust `match` here lowered to nothing (#5949), so the count stayed 0.
+            if (code[i] == '{') {
+                brace_count += 1;
+            } else if (code[i] == '}') {
+                brace_count -= 1;
             }
         }
         

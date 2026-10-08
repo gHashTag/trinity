@@ -66,12 +66,12 @@ module MeshProtocolStack {
         }
     }
 
-    // TX path: application → wire format
+    // TX path: application -> wire format
     fn tx_path(src: u32, dst: u32, payload: u8) -> u32 {
         return build_packet(src, dst, MAX_HOPS as u8, payload);
     }
 
-    // RX path: wire format → application payload
+    // RX path: wire format -> application payload
     fn rx_path(packet: u32) -> u8 {
         return extract_payload(packet);
     }
@@ -83,7 +83,7 @@ module MeshProtocolStack {
         // no direct Verilog lowering (a call is not part-selectable), so
         // destructure the tuple into locals first.
         let (new_pkt, expired) = decrement_ttl(packet);
-        if (expired) {
+        if (expired == true) {
             return (new_pkt, true, 0); // TTL expired
         }
         
@@ -96,6 +96,30 @@ module MeshProtocolStack {
     }
 
     // ---- Tests ----
+
+    test forward_packet_expires_at_zero_and_one {
+        let zero: u32 = build_packet(NODE_A, NODE_B, 0, 255);
+        let one: u32 = build_packet(NODE_A, NODE_B, 1, 255);
+        let (zero_packet, zero_expired, zero_hop) = forward_packet(zero, NODE_A);
+        let (one_packet, one_expired, one_hop) = forward_packet(one, NODE_A);
+        assert(zero_packet == zero, "zero TTL is unchanged");
+        assert(zero_expired == true, "zero TTL expires");
+        assert(zero_hop == 0, "zero TTL has no next hop");
+        assert(extract_ttl(one_packet) == 0, "one TTL becomes zero");
+        assert(one_expired == true, "one TTL expires immediately");
+        assert(one_hop == 0, "one TTL is not routed");
+    }
+
+    test forwarding_preserves_reserved_bits {
+        let (expired_packet, expired, expired_hop) = forward_packet(0x01021F7A, NODE_A);
+        let (forwarded_packet, live_expired, next_hop) = forward_packet(0x01023F7A, NODE_A);
+        assert(expired_packet == 0x01020F7A, "expired packet retains reserved bits");
+        assert(expired == true, "expired flag is boolean true");
+        assert(expired_hop == 0, "expired packet has no route");
+        assert(forwarded_packet == 0x01022F7A, "only the TTL nibble changes");
+        assert(live_expired == false, "live packet remains live");
+        assert(next_hop == NODE_B, "live packet takes its route");
+    }
 
     test build_packet_correct_layout {
         pkt = build_packet(NODE_A, NODE_B, 3, 5);
@@ -141,17 +165,17 @@ module MeshProtocolStack {
 
     test route_packet_direct_a_to_b {
         next_hop = route_packet(NODE_A, NODE_B, 0);
-        assert(next_hop == NODE_B, "direct route A→B");
+        assert(next_hop == NODE_B, "direct route A->B");
     }
 
     test route_packet_via_b_a_to_c {
         next_hop = route_packet(NODE_A, NODE_C, 0);
-        assert(next_hop == NODE_B, "route A→C via B");
+        assert(next_hop == NODE_B, "route A->C via B");
     }
 
     test route_packet_direct_b_to_c {
         next_hop = route_packet(NODE_B, NODE_C, 0);
-        assert(next_hop == NODE_C, "direct route B→C");
+        assert(next_hop == NODE_C, "direct route B->C");
     }
 
     test forward_packet_decrements_ttl {
@@ -206,12 +230,12 @@ module MeshProtocolStack {
     test multi_hop_routing {
         pkt = tx_path(NODE_A, NODE_C, 7);
         
-        // First hop (A → B)
+        // First hop (A -> B)
         (pkt1, exp1, hop1) = forward_packet(pkt, NODE_A);
         assert(hop1 == NODE_B, "first hop to B");
         assert(exp1 == false, "not expired");
         
-        // Second hop (B → C)
+        // Second hop (B -> C)
         (pkt2, exp2, hop2) = forward_packet(pkt1, NODE_B);
         assert(hop2 == NODE_C, "second hop to C");
         assert(exp2 == false, "not expired");

@@ -40,3 +40,10 @@ pub const SAFE_PROBE : str = "";
 pub const PROBE_RESULT : str = "not-deployed";
 pub const CONTROL : str = "spec+code";
 pub const NOTE : str = "Not on the production Railway build as of 2026-09-09 (deployed_2026_09_09 false in the manifest): the deployed app registers 24 base functions and this one is not among them. Guard is unknown because the function could not be probed there.";
+
+test test_training_model_complete_constants {
+  assert KIND == "function";
+  assert ID == "training-model-complete";
+  assert TRIGGER == "event";
+  assert RETRIES == 2;
+}

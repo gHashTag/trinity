@@ -5,7 +5,6 @@
 
 module portable::relay_observer;
 
-use tritype::base;
 use compiler::lexer;
 
 // ============================================================================

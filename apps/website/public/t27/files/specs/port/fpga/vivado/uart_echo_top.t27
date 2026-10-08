@@ -281,88 +281,92 @@ module uart_echo_top {
         and new_state.chain[1] == false   // chain[0] was false
 
     test oscillator_output_from_last_element
-        given state = UartOscillatorState{.chain = [true, false, false, false, false, false,
+        given state = UartOscillatorState { chain: [true, false, false, false, false, false,
                                                false, false, false, false, false, false,
                                                false, false, false, false, false, false,
-                                               false, false]}
+                                               false, false] }
         then get_oscillator_output(state) == false  // chain[19] = false
 
-    test_counter_initial_value
+    test counter_initial_value
         given counter = init_counter_state()
         then counter.value == 0
 
-    test_counter_increment
+    test counter_increment
         given counter = init_counter_state()
         let new_counter = increment_counter(counter)
         then new_counter.value == 1
 
-    test_counter_bit_extraction
-        given counter = CounterState{.value = 1}  // binary: ...0001
+    test counter_bit_extraction
+        given counter = CounterState { value: 1 }  // binary: ...0001
         then get_counter_bit(counter, 0) == true
         and get_counter_bit(counter, 1) == false
         and get_counter_bit(counter, 19) == false
         and get_counter_bit(counter, 20) == false
 
-    test_counter_bit_19_set
-        given counter = CounterState{.value = 524288}  // 2^19
+    test counter_bit_19_set
+        given counter = CounterState { value: 524288 }  // 2^19
         then get_counter_bit(counter, 19) == true
         and get_counter_bit(counter, 20) == false
 
-    test_counter_bit_20_set
-        given counter = CounterState{.value = 1048576}  // 2^20
+    test counter_bit_20_set
+        given counter = CounterState { value: 1048576 }  // 2^20
         then get_counter_bit(counter, 19) == false
         and get_counter_bit(counter, 20) == true
 
-    test_echo_state_machine_idle_to_send
+    test echo_state_machine_idle_to_send
         given echo = init_echo_state()
         let new_echo = echo_state_machine(echo, true, 0x42, false)
         then new_echo.state == State.SEND_ECHO
         and new_echo.tx_data == 0xAA
         and new_echo.tx_start == true
 
-    test_echo_state_machine_send_to_idle
-        given echo = EchoState{.state = State.SEND_ECHO, .tx_data = 0xAA, .tx_start = false}
+    test echo_state_machine_send_to_idle
+        given echo = EchoState { state: State.SEND_ECHO, tx_data: 0xAA, tx_start: false }
         let new_echo = echo_state_machine(echo, false, 0, true)  // tx_done = true
         then new_echo.state == State.IDLE
         and new_echo.tx_start == false
 
-    test_echo_state_machine_stays_in_send
-        given echo = EchoState{.state = State.SEND_ECHO, .tx_data = 0xAA, .tx_start = false}
+    test echo_state_machine_stays_in_send
+        given echo = EchoState { state: State.SEND_ECHO, tx_data: 0xAA, tx_start: false }
         let new_echo = echo_state_machine(echo, false, 0, false)  // tx_done = false
         then new_echo.state == State.SEND_ECHO
 
-    test_led_outputs_counter_zero
+    test led_outputs_counter_zero
         given counter = init_counter_state()
         let interface = get_led_outputs(counter)
         then interface.led_r23 == true   // ~counter[20] = ~0 = true
         and interface.led_t23 == true    // ~counter[19] = ~0 = true
 
-    test_led_outputs_bit20_set
-        given counter = CounterState{.value = 1048576}  // 2^20
+    test led_outputs_bit20_set
+        given counter = CounterState { value: 1048576 }  // 2^20
         let interface = get_led_outputs(counter)
         then interface.led_r23 == false  // ~counter[20] = ~1 = false
         and interface.led_t23 == true    // ~counter[19] = ~0 = true
 
-    test_led_outputs_bit19_set
-        given counter = CounterState{.value = 524288}  // 2^19
+    test led_outputs_bit19_set
+        given counter = CounterState { value: 524288 }  // 2^19
         let interface = get_led_outputs(counter)
         then interface.led_r23 == true   // ~counter[20] = ~0 = true
         and interface.led_t23 == false   // ~counter[19] = ~1 = false
 
-    test_full_simulation_step
+    test full_simulation_step
         given osc = init_oscillator_state()
         given counter = init_counter_state()
         given echo = init_echo_state()
-        let (new_osc, new_counter, new_echo, interface) = simulate_step(osc, counter, echo, false)
+        // simulate_step returns (osc, counter, echo, interface): out[0] .. out[3]
+        let out = simulate_step(osc, counter, echo, false)
         // After one step, oscillator chain has propagated
-        then new_osc.chain[0] == true
-        // Counter increments on positive edge (osc went from 0->1)
-        and new_counter.value == 1
+        then out[0].chain[0] == true
+        // The oscillator output is chain[19] (see oscillator_output_from_last_element),
+        // and one step from the all-false chain leaves chain[19] false: no
+        // positive edge yet, so the counter stays at 0. The first draft expected 1
+        // here, reading the edge off chain[0].
+        and out[1].value == 0
         // Echo state unchanged (no rx_valid)
-        and new_echo.state == State.IDLE
+        and out[2].state == State.IDLE
         // LEDs based on new counter
-        and interface.led_r23 == true
-        and interface.led_t23 == true
+        and out[3].led_r23 == true
+        and out[3].led_t23 == true
 
     // === Invariants ===
 

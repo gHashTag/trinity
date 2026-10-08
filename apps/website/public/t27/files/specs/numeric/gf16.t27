@@ -46,12 +46,13 @@ pub const GF16 = u16;
 // Lookup Tables
 // ============================================================================
 
-// Powers of 2 for exponents 0-31
+// Powers of 2 for exponents 0-31: 2^n is E = 31 + n, M = 0, so code = (31 + n) << 9.
+// (Until #6940 this held IEEE binary16 codes -- 0x3C00 is 1.0 in fp16 but 0.5 in GF16.)
 pub const pow2_table : [32]u16 = [32]u16{
-    0x3C00, 0x3D00, 0x3D80, 0x3E00, 0x3E40, 0x3E80, 0x3EC0, 0x3F00,
-    0x3F40, 0x3F80, 0x3FC0, 0x3FE0, 0x3FF0, 0x4000, 0x4040, 0x4080,
-    0x40C0, 0x4100, 0x4140, 0x4180, 0x41C0, 0x4200, 0x4240, 0x4280,
-    0x42C0, 0x4300, 0x4340, 0x4380, 0x43C0, 0x4400, 0x4440, 0x4480,
+    0x3E00, 0x4000, 0x4200, 0x4400, 0x4600, 0x4800, 0x4A00, 0x4C00,
+    0x4E00, 0x5000, 0x5200, 0x5400, 0x5600, 0x5800, 0x5A00, 0x5C00,
+    0x5E00, 0x6000, 0x6200, 0x6400, 0x6600, 0x6800, 0x6A00, 0x6C00,
+    0x6E00, 0x7000, 0x7200, 0x7400, 0x7600, 0x7800, 0x7A00, 0x7C00,
 };
 
 // ============================================================================
@@ -67,24 +68,24 @@ pub fn gf16_extract_sign(gf16: GF16) i8 {
 }
 
 // gf16_extract_exponent(gf16: GF16) → i8
-// Extract exponent bits (bits 14-9)
-// Returns: 0-63
+// Extract the biased exponent field E (bits 14-9): mask first, then shift.
+// Returns: 0-63. Decision #6940 D4: (x & EXP_MASK) >> EXP_SHIFT, so 0x3E00 (1.0) -> 31 = BIAS.
 pub fn gf16_extract_exponent(gf16: GF16) i8 {
-    return @as(i8, @intCast((gf16 >> EXP_SHIFT) & EXP_MASK));
+    return @as(i8, @intCast((gf16 & EXP_MASK) >> EXP_SHIFT));
 }
 
 // gf16_extract_mantissa(gf16: GF16) → i16
 // Extract mantissa bits (bits 8-0)
 // Returns: 0-511
 pub fn gf16_extract_mantissa(gf16: GF16) i16 {
-    return @as(i16, gf16 & MANT_MASK);
+    return @as(i16, @intCast(gf16 & MANT_MASK));
 }
 
 // gf16_from_components(sign: i8, exp: i8, mant: i16) → GF16
-// Assemble GF16 from sign, exponent, mantissa
+// Assemble GF16 from sign, biased exponent field (0-63), mantissa field (0-511)
 pub fn gf16_from_components(sign: i8, exp: i8, mant: i16) GF16 {
-    const sign_bit = if (sign < 0) 1 else 0;
-    return (@as(GF16, @intCast(sign_bit)) << SIGN_SHIFT) |
+    const sign_bit : u16 = if (sign < 0) 1 else 0;
+    return (sign_bit << SIGN_SHIFT) |
            (@as(GF16, @intCast(exp)) << EXP_SHIFT) |
            @as(GF16, @intCast(mant));
 }
@@ -101,137 +102,143 @@ pub fn gf16_is_special(gf16: GF16) bool {
     return gf16_extract_exponent(gf16) == EXP_MAX;
 }
 
-// gf16_encode_f32(f32: f32) → GF16
-// Encode IEEE 754 single precision to GF16
-// Round-to-nearest, ties to even
-// Range: 2^-31 to 2^32 (normal), subnormals flushed to zero
+// gf16_encode_f32(value: f32) → GF16
+// Encode IEEE 754 single precision to GF16.
+//
+// Decisions #6940, each against conformance/FORMAT-SPEC-001.json:
+//   D1 no subnormals. value_formula is (-1)^S * 2^(E - bias) * (1 + M / 2^mant_bits) with no
+//      subnormal clause, so E = 0 with M != 0 is a NORMAL number (smallest positive
+//      0x0001 = (1 + 2^-9) * 2^-31) and only E = 0, M = 0 is zero. 2^-31 itself has no code.
+//      Every |x| that does not round to a nonzero code flushes to signed zero, as the frozen
+//      RTL gf16_v2_mul.v flushes underflow.
+//   D2 round to nearest, ties toward zero. frozen_silicon_anchor.rounding_mode is
+//      "ties-to-zero (frozen)": the 14 discarded f32 mantissa bits round up only when they are
+//      strictly above half (0x2000); an exact tie keeps the truncated magnitude.
+//   D3 NaN encodes to GF16_NAN = 0xFE01, the code gf16_v2_mul.v emits (16'hFE01).
+// Range: largest finite 0x7DFF = (2 - 2^-9) * 2^31; above it -> +-Inf.
 pub fn gf16_encode_f32(value: f32) GF16 {
-    // Handle zero
-    if (value == 0.0) {
-        return if (std.math.signbit(value)) GF16_ZERO_NEG else GF16_ZERO_POS;
-    }
+    const bits : u32 = @bitCast(value);
+    const sign_bits : u16 = @intCast((bits >> 16) & 0x8000);
+    const fe : u32 = (bits >> 23) & 0xFF;
+    const fm : u32 = bits & 0x7FFFFF;
 
-    // Extract sign
-    const sign = if (value < 0.0) -1 else 0;
-    const abs_value = if (value < 0.0) -value else value;
-
-    // Get f32 components
-    const f32_bits: u32 = @bitCast(abs_value);
-    var f32_exp: i8 = @intCast((f32_bits >> 23) & 0xFF) - 127;
-    var f32_mant: u32 = f32_bits & 0x7FFFFF;
-
-    // Convert exp from f32 bias (127) to GF16 bias (31)
-    // gf16_exp = f32_exp + 31 - 127 = f32_exp - 96
-    var gf16_exp: u8 = @as(u8, @intCast(f32_exp - 96));
-
-    // Clamp exponent
-    if (gf16_exp < 0) {
-        gf16_exp = 0;  // Underflow to zero
-    } else if (gf16_exp > EXP_MAX) {
-        gf16_exp = EXP_MAX;  // Overflow to Inf
-    }
-
-    // Extract mantissa and scale to 9 bits
-    // f32 mantissa is 23 bits, GF16 needs 9 bits
-    // Shift right by 14 bits (23 - 9 = 14)
-    var mant = @as(u16, @intCast(f32_mant >> 14));
-
-    // Round-to-nearest
-    const discarded = f32_mant & 0x3FFF;
-    if ((discarded & 0x2000) != 0) {
-        mant += 1;
-        if (mant > MANT_MASK) {
-            mant = 0;
-            if (gf16_exp < EXP_MAX) {
-                gf16_exp += 1;
-            }
+    // f32 Inf / NaN
+    if (fe == 0xFF) {
+        if (fm != 0) {
+            return GF16_NAN;
         }
+        return sign_bits | GF16_INF_POS;
     }
 
-    return gf16_from_components(sign, gf16_exp, mant);
+    // |x| < 2^-31 (f32 biased exponent below 127 - 31 = 96): flush to signed zero
+    if (fe < 96) {
+        return sign_bits;
+    }
+
+    // |x| >= 2^32: overflow to signed Inf
+    if (fe > 158) {
+        return sign_bits | GF16_INF_POS;
+    }
+
+    // Rebias 127 -> 31 and keep the top 9 of 23 mantissa bits
+    var e : u32 = fe - 96;
+    var m : u32 = fm >> 14;
+    const rem : u32 = fm & 0x3FFF;
+
+    // Ties toward zero: round up only strictly above half
+    if (rem > 0x2000) {
+        m = m + 1;
+    }
+    if (m > 511) {
+        m = 0;
+        e = e + 1;
+    }
+    if (e > 62) {
+        return sign_bits | GF16_INF_POS;
+    }
+
+    // E = 0, M = 0 would be 2^-31, which has no code: flush to signed zero
+    if (e == 0 and m == 0) {
+        return sign_bits;
+    }
+
+    return sign_bits | @as(u16, @intCast((e << 9) | m));
 }
 
 // gf16_decode_to_f32(gf16: GF16) → f32
-// Decode GF16 to IEEE 754 single precision
+// Decode GF16 to IEEE 754 single precision. Exact: every GF16 value is an f32 value.
+// value = (-1)^S * 2^(E - 31) * (1 + M / 512) for every E in 0..62 (no subnormals, #6940 D1).
 pub fn gf16_decode_to_f32(gf16: GF16) f32 {
+    const s : u32 = @as(u32, gf16 & SIGN_MASK) << 16;
+    const e : u32 = @as(u32, (gf16 & EXP_MASK) >> EXP_SHIFT);
+    const m : u32 = @as(u32, gf16 & MANT_MASK);
+
     // Handle zero
-    if (gf16_is_zero(gf16)) {
-        const sign = gf16_extract_sign(gf16);
-        return if (sign < 0) -0.0 else 0.0;
+    if (e == 0 and m == 0) {
+        const zero_bits : u32 = s;
+        const zero : f32 = @bitCast(zero_bits);
+        return zero;
     }
 
     // Handle special values (Inf/NaN)
-    if (gf16_is_special(gf16)) {
-        const mant = gf16_extract_mantissa(gf16);
-        const sign = gf16_extract_sign(gf16);
-        if (mant == 0) {
-            // Infinity
-            return if (sign < 0) -std.math.inf(f32) else std.math.inf(f32);
-        } else {
-            // NaN
-            return std.math.nan(f32);
+    if (e == 63) {
+        if (m == 0) {
+            const inf_bits : u32 = s | 0x7F800000;
+            const inf : f32 = @bitCast(inf_bits);
+            return inf;
         }
+        return std.math.nan(f32);
     }
 
-    // Normal number: value = (-1)^s * (1 + m/2^9) * 2^(e - 31)
-    const sign = gf16_extract_sign(gf16);
-    const exp = gf16_extract_exponent(gf16);
-    const mant = gf16_extract_mantissa(gf16);
-
-    const sign_mult = if (sign < 0) -1.0 else 1.0;
-    const mant_mult = 1.0 + @as(f32, @floatFromInt(mant)) / 512.0;
-    const exp_mult = @as(f32, @exp2(f32, @floatFromInt(exp - BIAS)));
-
-    return sign_mult * mant_mult * exp_mult;
+    // Normal number: rebias 31 -> 127, widen the 9-bit mantissa to 23 bits
+    const out_bits : u32 = s | ((e + 96) << 23) | (m << 14);
+    const out : f32 = @bitCast(out_bits);
+    return out;
 }
 
 // gf16_round_phi(value: f32) → GF16
-// Phi-optimized rounding for GF16
-// Uses golden ratio bias for rounding decisions instead of standard round-to-nearest
-// Bias = (1/φ - 0.5) * scale, where 1/φ ≈ 0.618
-// This improves numerical stability for sacred physics calculations
+// Phi-biased rounding for GF16: the encoder of gf16_encode_f32 with the round-up threshold
+// moved from one half to 1/phi of a GF16 ulp (0.618 * 2^14 = 10125 of the 14 discarded bits).
+// Specials, flush-to-zero and overflow follow gf16_encode_f32 (#6940 D1, D3).
 pub fn gf16_round_phi(value: f32) GF16 {
-    // Handle zero
-    if (value == 0.0) {
-        return if (std.math.signbit(value)) GF16_ZERO_NEG else GF16_ZERO_POS;
-    }
+    const bits : u32 = @bitCast(value);
+    const sign_bits : u16 = @intCast((bits >> 16) & 0x8000);
+    const fe : u32 = (bits >> 23) & 0xFF;
+    const fm : u32 = bits & 0x7FFFFF;
 
-    // Extract sign
-    const sign = if (value < 0.0) -1 else 0;
-    const abs_value = if (value < 0.0) -value else value;
-
-    // Get f32 components
-    const f32_bits: u32 = @bitCast(abs_value);
-    var f32_exp: i8 = @intCast((f32_bits >> 23) & 0xFF) - 127;
-    var f32_mant: u32 = f32_bits & 0x7FFFFF;
-
-    // Convert exp from f32 bias (127) to GF16 bias (31)
-    var gf16_exp: u8 = @as(u8, @intCast(f32_exp - 96));
-
-    // Clamp exponent
-    if (gf16_exp < 0) {
-        gf16_exp = 0;
-    } else if (gf16_exp > EXP_MAX) {
-        gf16_exp = EXP_MAX;
-    }
-
-    // Add implied 1 for normalization
-    const normalized_mant: u32 = f32_mant | 0x00800000;
-
-    // Scale to 9 bits with phi bias
-    var mant = @as(u16, @intCast((normalized_mant >> 15) + PHI_BIAS));
-
-    // Check for overflow and adjust
-    if (mant > MANT_MASK) {
-        mant = 0;
-        if (gf16_exp < EXP_MAX) {
-            gf16_exp += 1;
-        } else {
-            gf16_exp = EXP_MAX;  // Overflow to Inf
+    if (fe == 0xFF) {
+        if (fm != 0) {
+            return GF16_NAN;
         }
+        return sign_bits | GF16_INF_POS;
+    }
+    if (fe < 96) {
+        return sign_bits;
+    }
+    if (fe > 158) {
+        return sign_bits | GF16_INF_POS;
     }
 
-    return gf16_from_components(sign, gf16_exp, mant);
+    var e : u32 = fe - 96;
+    var m : u32 = fm >> 14;
+    const rem : u32 = fm & 0x3FFF;
+
+    // Round up only at or above 1/phi of an ulp
+    if (rem >= 10125) {
+        m = m + 1;
+    }
+    if (m > 511) {
+        m = 0;
+        e = e + 1;
+    }
+    if (e > 62) {
+        return sign_bits | GF16_INF_POS;
+    }
+    if (e == 0 and m == 0) {
+        return sign_bits;
+    }
+
+    return sign_bits | @as(u16, @intCast((e << 9) | m));
 }
 
 // gf16_is_inf(gf16: GF16) → bool
@@ -543,7 +550,8 @@ pub fn gf16_ceil(a: GF16) GF16 {
 }
 
 // gf16_round(a: GF16) → GF16
-// Round to nearest integer, ties to even (IEEE 754 roundTiesToEven)
+// Round to nearest integer, ties away from zero (C round(), Zig @round): 2.5 -> 3.0, -2.5 -> -3.0.
+// The old comment said roundTiesToEven, which this code never did (#6940); gf16_trunc rounds toward zero.
 // Returns NaN for NaN input, unchanged for Inf/-Inf
 pub fn gf16_round(a: GF16) GF16 {
     if (gf16_is_nan(a)) return GF16_NAN;
@@ -636,7 +644,7 @@ pub fn gf16_fmod(a: GF16, b: GF16) GF16 {
     // Handle zero dividend
     if (a_val == 0.0) return a;
 
-    const result = @mod(a_val, b_val);
+    const result = @rem(a_val, b_val);  // truncated remainder: sign follows the dividend (C fmod)
 
     return gf16_encode_f32(result);
 }
@@ -648,38 +656,30 @@ pub fn gf16_is_finite(gf16: GF16) bool {
 }
 
 // gf16_is_normal(gf16: GF16) → bool
-// Check if GF16 value is a normal (normalized) number
-// Normal numbers have exponent in range [1, EXP_MAX-1] and are not zero
+// Check if GF16 value is a normal (normalized) number.
+// GF16 has no subnormals (#6940 D1): every finite nonzero code is normal, including
+// E = 0 with M != 0 (smallest 0x0001 = (1 + 2^-9) * 2^-31). E = 63 is Inf/NaN.
 pub fn gf16_is_normal(gf16: GF16) bool {
     if (gf16_is_zero(gf16) or gf16_is_nan(gf16) or gf16_is_inf(gf16)) {
         return false;
     }
 
     const exp = gf16_extract_exponent(gf16);
-    // GF16: exp = 0 is subnormal, exp = 31 is inf/nan, 1-30 is normal
-    return exp > 0 and exp < GF16_EXP_MAX;
+    return exp >= 0 and exp < EXP_MAX;
 }
 
 // gf16_is_subnormal(gf16: GF16) → bool
-// Check if GF16 value is subnormal (denormal)
-// Subnormal numbers have exponent = 0 and mantissa != 0
+// GF16 has no subnormal codes (#6940 D1, FORMAT-SPEC-001 value_formula has no subnormal
+// clause), so this is false for every code. Kept for API parity with IEEE formats.
 pub fn gf16_is_subnormal(gf16: GF16) bool {
-    if (gf16_is_zero(gf16) or gf16_is_nan(gf16) or gf16_is_inf(gf16)) {
-        return false;
-    }
-
-    const exp = gf16_extract_exponent(gf16);
-    const mant = gf16_extract_mantissa(gf16);
-
-    // Subnormal: exp = 0 and mantissa != 0
-    return exp == 0 and mant != 0;
+    return gf16_is_finite(gf16) and !gf16_is_zero(gf16) and !gf16_is_normal(gf16);
 }
 
 // gf16_signbit(gf16: GF16) → bool
 // Check if the sign bit is set (value is negative or negative zero)
 // Returns true for negative values and negative zero
 pub fn gf16_signbit(gf16: GF16) bool {
-    return (gf16 & GF16_SIGN_MASK) != 0;
+    return (gf16 & SIGN_MASK) != 0;
 }
 
 // gf16_sign(gf16: GF16) → i8
@@ -792,7 +792,7 @@ pub fn gf16_fnma(a: GF16, b: GF16, c: GF16) GF16 {
 
 // gf16_exp(x: GF16) → GF16
 // Compute e^x (exponential function)
-// Uses Taylor series approximation for small values
+// f32 @exp rounded once to GF16
 // Returns Inf for very large positive inputs, 0 for very large negative inputs
 pub fn gf16_exp(x: GF16) GF16 {
     if (gf16_is_nan(x)) return GF16_NAN;
@@ -813,18 +813,9 @@ pub fn gf16_exp(x: GF16) GF16 {
         return GF16_ZERO_POS;
     }
 
-    // Taylor series: e^x = 1 + x + x^2/2! + x^3/3! + x^4/4! + ...
-    // Use 5 terms for reasonable accuracy with GF16 precision
-    var result: f32 = 1.0;
-    var term: f32 = 1.0;
-    const num_terms: u32 = 5;
-
-    for (0..num_terms) |i| {
-        if (i > 0) {
-            term *= x_val / @as(f32, @floatFromInt(i));
-            result += term;
-        }
-    }
+    // f32 exp, then one GF16 rounding. (A 5-term Taylor series stood here before #6940; it gave
+    // e^88 ~ 2.6e6, finite, where the true value overflows GF16.) e^x > 2^32 encodes to +Inf.
+    const result : f32 = @exp(x_val);
 
     return gf16_encode_f32(result);
 }
@@ -921,7 +912,7 @@ pub fn gf16_pow(base: GF16, exponent: GF16) GF16 {
     if (exp_val == 1.0) return base;
 
     // Use stdlib pow for general case
-    const result = @pow(base_val, exp_val);
+    const result = std.math.pow(f32, base_val, exp_val);
 
     return gf16_encode_f32(result);
 }
@@ -1012,20 +1003,29 @@ test "gf16_inf_encoding" {
 
 test "gf16_sign_extraction" {
     try std.testing.expectEqual(@as(i8, -1), gf16_extract_sign(0x8000));
-    try std.testing.expectEqual(@as(i8, 0), gf16_extract_sign(0x3C00));
-    try std.testing.expectEqual(@as(i8, 1), gf16_extract_sign(0x8000));
-    try std.testing.expectEqual(@as(i8, 0), gf16_extract_sign(0x3C00));
+    try std.testing.expectEqual(@as(i8, -1), gf16_extract_sign(0xBE00));
+    try std.testing.expectEqual(@as(i8, 0), gf16_extract_sign(0x3E00));
+    try std.testing.expectEqual(@as(i8, 0), gf16_extract_sign(0x0000));
 }
 
 test "gf16_exponent_extraction" {
-    try std.testing.expectEqual(@as(i8, 0), gf16_extract_exponent(0x3C00));
-    try std.testing.expectEqual(@as(i8, 1), gf16_extract_exponent(0x3D00));
+    // #6940 D4: E = (x & EXP_MASK) >> EXP_SHIFT, pinned on several codes
+    try std.testing.expectEqual(@as(i8, 31), gf16_extract_exponent(0x3E00));  // 1.0
+    try std.testing.expectEqual(@as(i8, 30), gf16_extract_exponent(0x3C00));  // 0.5
+    try std.testing.expectEqual(@as(i8, 30), gf16_extract_exponent(0x3D00));  // 0.75
+    try std.testing.expectEqual(@as(i8, 32), gf16_extract_exponent(0x4000));  // 2.0
+    try std.testing.expectEqual(@as(i8, 0), gf16_extract_exponent(0x0001));   // smallest positive
+    try std.testing.expectEqual(@as(i8, 0), gf16_extract_exponent(0x8000));   // -0
+    try std.testing.expectEqual(@as(i8, 62), gf16_extract_exponent(0x7DFF));  // largest finite
+    try std.testing.expectEqual(@as(i8, 63), gf16_extract_exponent(0x7E00));  // +Inf
+    try std.testing.expectEqual(@as(i8, 63), gf16_extract_exponent(0xFE01));  // canonical NaN
 }
 
 test "gf16_mantissa_extraction" {
-    try std.testing.expectEqual(@as(i16, 0), gf16_extract_mantissa(0x3C00));
-    try std.testing.expectEqual(@as(i16, 1), gf16_extract_mantissa(0x3C01));
+    try std.testing.expectEqual(@as(i16, 0), gf16_extract_mantissa(0x3E00));
+    try std.testing.expectEqual(@as(i16, 1), gf16_extract_mantissa(0x3E01));
     try std.testing.expectEqual(@as(i16, 511), gf16_extract_mantissa(0x3DFF));
+    try std.testing.expectEqual(@as(i16, 1), gf16_extract_mantissa(0xFE01));
 }
 
 test "gf16_zero_detection" {
@@ -1037,18 +1037,134 @@ test "gf16_zero_detection" {
 test "gf16_special_detection" {
     try std.testing.expect(gf16_is_special(0x7E00));
     try std.testing.expect(gf16_is_special(0xFE01));
-    try std.testing.expect(!gf16_is_special(0x3C00));
+    try std.testing.expect(!gf16_is_special(0x3E00));
+    try std.testing.expect(!gf16_is_special(0x7DFF));
 }
 
 test "gf16_from_components" {
-    const result = gf16_from_components(0, 0, 0);
-    try std.testing.expectEqual(@as(GF16, 0x3C00), result);
+    try std.testing.expectEqual(@as(GF16, 0x0000), gf16_from_components(0, 0, 0));
+    try std.testing.expectEqual(@as(GF16, 0x3E00), gf16_from_components(0, 31, 0));
+    try std.testing.expectEqual(@as(GF16, 0xFE01), gf16_from_components(-1, 63, 1));
+    try std.testing.expectEqual(@as(GF16, 0x7DFF), gf16_from_components(0, 62, 511));
 }
 
 test "gf16_nan_encoding" {
     const nan_val = gf16_from_components(0, 63, 1);
     const decoded = gf16_decode_to_f32(nan_val);
     try std.testing.expect(std.math.isNan(decoded));
+}
+
+// ----------------------------------------------------------------------------
+// #6940 decision pins: concrete bit patterns, each against FORMAT-SPEC-001.json
+// ----------------------------------------------------------------------------
+
+test "gf16_6940_ties_toward_zero" {
+    // D2: frozen_silicon_anchor.rounding_mode = "ties-to-zero (frozen)" (gf16_v2_mul.v).
+    // f32 0x3F802000 = 1 + 2^-10, exactly halfway between 0x3E00 (1.0) and 0x3E01.
+    const tie_b : u32 = 0x3F802000;
+    const tie : f32 = @bitCast(tie_b);
+    try std.testing.expectEqual(@as(GF16, 0x3E00), gf16_encode_f32(tie));
+    // One f32 ulp above the tie rounds up.
+    const above_b : u32 = 0x3F802001;
+    const above : f32 = @bitCast(above_b);
+    try std.testing.expectEqual(@as(GF16, 0x3E01), gf16_encode_f32(above));
+    // One f32 ulp below the tie rounds down.
+    const below_b : u32 = 0x3F801FFF;
+    const below : f32 = @bitCast(below_b);
+    try std.testing.expectEqual(@as(GF16, 0x3E00), gf16_encode_f32(below));
+    // 1 + 3 * 2^-10 ties between 0x3E01 (odd M) and 0x3E02: ties-to-even would pick 0x3E02,
+    // ties-to-zero keeps 0x3E01.
+    const odd_b : u32 = 0x3F806000;
+    const odd : f32 = @bitCast(odd_b);
+    try std.testing.expectEqual(@as(GF16, 0x3E01), gf16_encode_f32(odd));
+    // The tie rule is on the magnitude, so a negative tie also goes toward zero.
+    const neg_b : u32 = 0xBF802000;
+    const neg : f32 = @bitCast(neg_b);
+    try std.testing.expectEqual(@as(GF16, 0xBE00), gf16_encode_f32(neg));
+}
+
+test "gf16_6940_ties_at_overflow" {
+    // Largest finite 0x7DFF = (2 - 2^-9) * 2^31 = f32 0x4F7FC000.
+    const max_b : u32 = 0x4F7FC000;
+    const max_f : f32 = @bitCast(max_b);
+    try std.testing.expectEqual(@as(GF16, 0x7DFF), gf16_encode_f32(max_f));
+    try std.testing.expectEqual(max_f, gf16_decode_to_f32(0x7DFF));
+    // The tie between 0x7DFF and 2^32 stays finite; one ulp above goes to +Inf.
+    const tie_b : u32 = 0x4F7FE000;
+    const tie : f32 = @bitCast(tie_b);
+    try std.testing.expectEqual(@as(GF16, 0x7DFF), gf16_encode_f32(tie));
+    const over_b : u32 = 0x4F7FE001;
+    const over : f32 = @bitCast(over_b);
+    try std.testing.expectEqual(@as(GF16, GF16_INF_POS), gf16_encode_f32(over));
+    try std.testing.expectEqual(@as(GF16, GF16_INF_NEG), gf16_encode_f32(-over));
+}
+
+test "gf16_6940_no_subnormals" {
+    // D1: value_formula (-1)^S * 2^(E - bias) * (1 + M / 2^mant_bits) has no subnormal clause.
+    // 0x0001 is the smallest positive value, (1 + 2^-9) * 2^-31 = f32 0x30004000 (normal).
+    const min_b : u32 = 0x30004000;
+    const min_f : f32 = @bitCast(min_b);
+    try std.testing.expectEqual(@as(GF16, 0x0001), gf16_encode_f32(min_f));
+    try std.testing.expectEqual(min_f, gf16_decode_to_f32(0x0001));
+    try std.testing.expectEqual(-min_f, gf16_decode_to_f32(0x8001));
+    try std.testing.expectEqual(@as(GF16, 0x8001), gf16_encode_f32(-min_f));
+    // 0x01FF = (2 - 2^-9) * 2^-31 = f32 0x307FC000, and 0x0200 = 2^-30 = f32 0x30800000.
+    const top_b : u32 = 0x307FC000;
+    const top_f : f32 = @bitCast(top_b);
+    try std.testing.expectEqual(top_f, gf16_decode_to_f32(0x01FF));
+    const next_b : u32 = 0x30800000;
+    const next_f : f32 = @bitCast(next_b);
+    try std.testing.expectEqual(next_f, gf16_decode_to_f32(0x0200));
+    // 2^-31 (f32 0x30000000) would be E = 0, M = 0, which is zero: it flushes.
+    const p31_b : u32 = 0x30000000;
+    const p31 : f32 = @bitCast(p31_b);
+    try std.testing.expectEqual(@as(GF16, GF16_ZERO_POS), gf16_encode_f32(p31));
+    try std.testing.expectEqual(@as(GF16, GF16_ZERO_NEG), gf16_encode_f32(-p31));
+    // The tie between 2^-31 and 0x0001 also flushes (ties toward zero); above it rounds to 0x0001.
+    const half_b : u32 = 0x30002000;
+    const half : f32 = @bitCast(half_b);
+    try std.testing.expectEqual(@as(GF16, GF16_ZERO_POS), gf16_encode_f32(half));
+    const half_up_b : u32 = 0x30002001;
+    const half_up : f32 = @bitCast(half_up_b);
+    try std.testing.expectEqual(@as(GF16, 0x0001), gf16_encode_f32(half_up));
+    // Below 2^-31 everything flushes to signed zero, including f32 subnormals.
+    const p32_b : u32 = 0x2F800000;
+    const p32 : f32 = @bitCast(p32_b);
+    try std.testing.expectEqual(@as(GF16, GF16_ZERO_POS), gf16_encode_f32(p32));
+    const f32_sub_b : u32 = 0x00000001;
+    const f32_sub : f32 = @bitCast(f32_sub_b);
+    try std.testing.expectEqual(@as(GF16, GF16_ZERO_POS), gf16_encode_f32(f32_sub));
+    // Classification agrees: 0x0001 is normal, nothing is subnormal.
+    try std.testing.expect(gf16_is_normal(0x0001));
+    try std.testing.expect(!gf16_is_subnormal(0x0001));
+    try std.testing.expect(!gf16_is_subnormal(0x01FF));
+}
+
+test "gf16_6940_canonical_nan" {
+    // D3: GF16_NAN = 0xFE01, the code gf16_v2_mul.v emits (16'hFE01).
+    try std.testing.expectEqual(@as(GF16, 0xFE01), GF16_NAN);
+    try std.testing.expectEqual(@as(GF16, 0xFE01), gf16_encode_f32(std.math.nan(f32)));
+    try std.testing.expectEqual(@as(GF16, 0xFE01), gf16_encode_f32(-std.math.nan(f32)));
+    const payload_b : u32 = 0x7FC00001;
+    const payload : f32 = @bitCast(payload_b);
+    try std.testing.expectEqual(@as(GF16, 0xFE01), gf16_encode_f32(payload));
+    // Every E = 63, M != 0 code is NaN, including 0x7F01 (the code formats.t27 used to emit).
+    try std.testing.expect(gf16_is_nan(0xFE01));
+    try std.testing.expect(gf16_is_nan(0x7F01));
+    try std.testing.expect(gf16_is_nan(0x7FFF));
+    try std.testing.expect(std.math.isNan(gf16_decode_to_f32(0x7F01)));
+    // Operations that produce NaN produce the canonical code.
+    try std.testing.expectEqual(@as(GF16, 0xFE01), gf16_round(0x7F01));
+}
+
+test "gf16_6940_decode_exact" {
+    try std.testing.expectEqual(@as(f32, 1.0), gf16_decode_to_f32(0x3E00));
+    try std.testing.expectEqual(@as(f32, 0.5), gf16_decode_to_f32(0x3C00));
+    try std.testing.expectEqual(@as(f32, 2.0), gf16_decode_to_f32(0x4000));
+    try std.testing.expectEqual(@as(f32, -1.0), gf16_decode_to_f32(0xBE00));
+    try std.testing.expectEqual(@as(f32, 1.001953125), gf16_decode_to_f32(0x3E01));
+    try std.testing.expect(std.math.isPositiveInf(gf16_decode_to_f32(0x7E00)));
+    try std.testing.expect(std.math.isNegativeInf(gf16_decode_to_f32(0xFE00)));
 }
 
 test "gf16_round_phi_preserves_phi" {
@@ -1077,9 +1193,14 @@ test "gf16_round_phi_negative" {
 }
 
 test "gf16_pow2_table_consistency" {
-    try std.testing.expectEqual(@as(u16, 0x3C00), pow2_table[0]);  // 2^0 = 1.0
-    try std.testing.expectEqual(@as(u16, 0x3D00), pow2_table[1]);  // 2^1 = 2.0
-    try std.testing.expectEqual(@as(u16, 0x3D80), pow2_table[2]);  // 2^2 = 4.0
+    // 2^n is E = 31 + n, M = 0; every entry decodes to exactly 2^n
+    try std.testing.expectEqual(@as(u16, 0x3E00), pow2_table[0]);  // 2^0 = 1.0
+    try std.testing.expectEqual(@as(u16, 0x4000), pow2_table[1]);  // 2^1 = 2.0
+    try std.testing.expectEqual(@as(u16, 0x4200), pow2_table[2]);  // 2^2 = 4.0
+    try std.testing.expectEqual(@as(u16, 0x7C00), pow2_table[31]); // 2^31
+    try std.testing.expectEqual(@as(f32, 1.0), gf16_decode_to_f32(pow2_table[0]));
+    try std.testing.expectEqual(@as(f32, 1024.0), gf16_decode_to_f32(pow2_table[10]));
+    try std.testing.expectEqual(@as(f32, 2147483648.0), gf16_decode_to_f32(pow2_table[31]));
 }
 
 test "gf16_exp_bias_identity" {
@@ -1087,8 +1208,10 @@ test "gf16_exp_bias_identity" {
 }
 
 test "gf16_identity_encoding" {
-    // For GF16 representing 1.0: sign=0, exp=0, mant=0, raw value = 0x3C00
-    try std.testing.expectEqual(@as(GF16, 0x3C00), gf16_from_components(0, 0, 0));
+    // 1.0 is sign = 0, E = BIAS = 31, M = 0: raw 0x3E00. All-zero fields are +0, not 1.0.
+    try std.testing.expectEqual(@as(GF16, 0x3E00), gf16_from_components(0, 31, 0));
+    try std.testing.expectEqual(@as(GF16, 0x3E00), gf16_encode_f32(1.0));
+    try std.testing.expectEqual(@as(GF16, GF16_ZERO_POS), gf16_from_components(0, 0, 0));
 }
 
 test "gf16_special_exp_all_ones" {
@@ -1134,8 +1257,10 @@ test "gf16_negate_sign_flip" {
 }
 
 test "gf16_negate_zero_stays_zero" {
-    try std.testing.expectEqual(GF16_ZERO_POS, gf16_negate(GF16_ZERO_POS));
-    try std.testing.expectEqual(GF16_ZERO_NEG, gf16_negate(GF16_ZERO_NEG));
+    // negate flips the sign bit only, as IEEE 754 negate does: -(+0) = -0 and -(-0) = +0
+    try std.testing.expectEqual(GF16_ZERO_NEG, gf16_negate(GF16_ZERO_POS));
+    try std.testing.expectEqual(GF16_ZERO_POS, gf16_negate(GF16_ZERO_NEG));
+    try std.testing.expect(gf16_is_zero(gf16_negate(GF16_ZERO_POS)));
 }
 
 test "gf16_negate_double_negate" {
@@ -1230,8 +1355,8 @@ test "gf16_min_with_nan" {
 // ============================================================================
 
 invariant gf16_identity_encoding {
-    // For GF16 representing 1.0: sign=0, exp=0, mant=0, raw value = 0x3C00
-    @compileAssert(gf16_from_components(0, 0, 0) == 0x3C00);
+    // GF16 1.0 is sign = 0, E = BIAS = 31, M = 0: raw 0x3E00 (0x3C00 is 1.0 only in IEEE fp16)
+    @compileAssert(gf16_from_components(0, 31, 0) == 0x3E00);
 }
 
 invariant gf16_sign_mask_bit_position {
@@ -2186,10 +2311,11 @@ test "gf16_ceil_nan_returns_nan" {
 }
 
 test "gf16_round_half_up" {
+    // gf16_round rounds ties away from zero (#6940: the old roundTiesToEven comment was wrong)
     const a = gf16_encode_f32(2.5);
     const result = gf16_round(a);
-    const decoded = gf16_decode_to_f32(result);
-    try std.testing.expectApproxEqAbs(2.0, decoded, 0.1); // roundTiesToEven
+    try std.testing.expectEqual(@as(f32, 3.0), gf16_decode_to_f32(result));
+    try std.testing.expectEqual(@as(f32, -3.0), gf16_decode_to_f32(gf16_round(gf16_encode_f32(-2.5))));
 }
 
 test "gf16_round_positive_value" {
@@ -2455,19 +2581,15 @@ test "gf16_is_normal_false_for_nan" {
     try std.testing.expect(!gf16_is_normal(GF16_NAN));
 }
 
-test "gf16_is_subnormal_true_for_subnormal" {
-    // Verify: subnormal (denormal) numbers return true
-    // Smallest subnormal in GF16: exp=0, mant=1 (approximately 2^-14 * 2^-9 = 2^-23)
-    // We'll check a value that decodes to subnormal
-    const sub = gf16_encode_f32(0.000001);
-    const decoded = gf16_decode_to_f32(sub);
-    // If the value rounds to subnormal, is_subnormal should be true
-    // This test depends on GF16 subnormal threshold (~6.1e-5)
-    const is_sub = gf16_is_subnormal(sub);
-    _ = decoded;
-    _ = is_sub;
-    // We just verify the function doesn't crash for now
-    try std.testing.expect(true);
+test "gf16_is_subnormal_false_for_tiny_values" {
+    // GF16 has no subnormals (#6940 D1): even the smallest codes are normal.
+    // 1e-6 is about 2^-19.9, well inside the normal range (smallest positive is about 4.66e-10).
+    const tiny = gf16_encode_f32(0.000001);
+    try std.testing.expect(!gf16_is_subnormal(tiny));
+    try std.testing.expect(gf16_is_normal(tiny));
+    try std.testing.expect(!gf16_is_subnormal(0x0001));
+    try std.testing.expect(gf16_is_normal(0x0001));
+    try std.testing.expect(!gf16_is_subnormal(0x81FF));
 }
 
 test "gf16_is_subnormal_false_for_normal" {
@@ -2500,10 +2622,7 @@ test "gf16_classification_complete_coverage" {
     // OR is_inf
     // OR is_nan
 
-    const test_values = [_]f32{
-        0.0, -0.0, 1.0, -1.0, 100.0, -100.0,
-        0.0001, -0.0001,
-    };
+    const test_values : [8]f32 = [0.0, -0.0, 1.0, -1.0, 100.0, -100.0, 0.0001, -0.0001];
 
     for (test_values) |val| {
         const gf = gf16_encode_f32(val);
@@ -3485,11 +3604,13 @@ test "gf16_lp_phi_dist_registered" {
     // phi_dist = |exp_bits/mant_bits - phi^-1| = |6/9 - phi^-1|
     //          = |0.6667 - 0.6180| = 0.04863...
     // This matches the registered value to 4 significant figures.
+    // phi^-1 is a local here: a pub PHI_INV would clash with specs that `use numeric::gf16`.
+    const phi_inv : f64 = 0.6180339887498949;
     const ratio_canonical : f64 = 6.0 / 9.0;  // ~ 0.6667
-    const phi_dist_canonical = if (ratio_canonical > PHI_INV)
-        ratio_canonical - PHI_INV
+    const phi_dist_canonical = if (ratio_canonical > phi_inv)
+        ratio_canonical - phi_inv
     else
-        PHI_INV - ratio_canonical;
+        phi_inv - ratio_canonical;
     const d = phi_dist_canonical - GF16_PHI_DIST_REGISTERED;
     const d_abs = if (d < 0.0) -d else d;
     try std.testing.expect(d_abs < 1e-4);
@@ -3500,18 +3621,17 @@ test "gf16_lp_alternate_split_phi_dist_larger" {
     // This is the phi-motivation for the 1-6-9 split [Open conjecture: this
     //   structural closeness to phi^-1 is hypothesised to benefit training,
     //   but that hypothesis is what C3 tests].
+    const phi_inv : f64 = 0.6180339887498949;
     const ratio_canonical : f64 = 6.0 / 9.0;
     const ratio_alt_a : f64 = 7.0 / 8.0;    // 0.875
     const ratio_alt_b : f64 = 8.0 / 7.0;    // ~1.143
 
-    fn phi_dist(r: f64) f64 {
-        const d = r - PHI_INV;
-        return if (d < 0.0) -d else d;
-    }
-
-    const pd_canonical = phi_dist(ratio_canonical);
-    const pd_alt_a = phi_dist(ratio_alt_a);
-    const pd_alt_b = phi_dist(ratio_alt_b);
+    const d_canonical = ratio_canonical - phi_inv;
+    const d_alt_a = ratio_alt_a - phi_inv;
+    const d_alt_b = ratio_alt_b - phi_inv;
+    const pd_canonical = if (d_canonical < 0.0) -d_canonical else d_canonical;
+    const pd_alt_a = if (d_alt_a < 0.0) -d_alt_a else d_alt_a;
+    const pd_alt_b = if (d_alt_b < 0.0) -d_alt_b else d_alt_b;
 
     // Canonical 1-6-9 has minimum phi_dist (registered structural fact).
     try std.testing.expect(pd_canonical < pd_alt_a);
@@ -3588,12 +3708,9 @@ test "gf16_lp_fp8_canonical_vs_alt_error_comparison" {
     // Check: neither split dominates by more than 1 FP8 ULP.
     const diff = if (err_canonical > err_alt) err_canonical - err_alt else err_alt - err_canonical;
     // NOTE: if diff > FP8_ULP, one split is measurably better in this context.
-    // The test records the comparison; it does NOT assert which is better.
-    // The parent agent must check the actual run result to evaluate the conjecture.
-    const within_one_ulp = diff < @as(f32, @floatCast(FP8_ULP));
-    // The result of this test is informational: pass in either direction.
-    // (A strict > assertion here would pre-judge the conjecture.)
-    _ = within_one_ulp;
+    // The test records the comparison; it does NOT assert which is better
+    // (a strict > assertion here would pre-judge the conjecture).
+    try std.testing.expect(diff >= 0.0);
     // Structural sanity: errors are finite and non-negative.
     try std.testing.expect(err_canonical >= 0.0);
     try std.testing.expect(err_alt >= 0.0);

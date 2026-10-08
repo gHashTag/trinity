@@ -58,7 +58,7 @@ pub const Contract = struct {
     module_name : string,
     precond     : string,   // e.g. "a >= 0 && b >= 0"
     postcond    : string,   // e.g. "y == a + b"
-    invariant   : string,   // e.g. "no_overflow"
+    invariant_expr : string,   // e.g. "no_overflow" (`invariant` is a keyword)
     clk         : string,   // clock signal name
     reset       : string,   // reset signal name
 };
@@ -707,7 +707,7 @@ fn check_balanced_braces(s: string, idx: u32, depth: u32) -> bool {
 pub fn temporal_trace_check(rtl: string, contract: Contract) -> bool {
     if (rtl.len() == 0 || contract.module_name.len() == 0) { return false; }
     let name_ok = eval::has_substring(rtl, contract.module_name, 0);
-    let assert_ok = eval::has_substring(rtl, "assert", 0) && eval::has_substring(contract.invariant, "assert", 0);
+    let assert_ok = eval::has_substring(rtl, "assert", 0) && eval::has_substring(contract.invariant_expr, "assert", 0);
     return name_ok && assert_ok;
 }
 

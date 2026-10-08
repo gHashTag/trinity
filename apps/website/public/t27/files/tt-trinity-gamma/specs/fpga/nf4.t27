@@ -96,7 +96,7 @@ module NF4 {
     // 7. Helper Functions
 
     fn abs(x: f32) -> f32 {
-        if (x < 0.0) { -x } else { x };
+        return if (x < 0.0) { -x } else { x };
     }
 
     fn quantization_error_pct(value: f32) -> f32 {
@@ -135,44 +135,44 @@ module NF4 {
     // TDD-Inside-Spec: Tests and Invariants for NF4
 
     test nf4_decode_zero
-        given nf = NF4{ raw = 0 }
+        const nf = NF4{ raw = 0 };
         when value = decode(nf)
         then value == 0.0
 
     test nf4_encode_zero_roundtrip
-        given original = 0.0
+        const original = 0.0;
         and   encoded = encode(original)
         and   decoded = decode(encoded)
         then decoded == original
 
     test nf4_decode_max
-        given nf = NF4{ raw = 15 }
+        const nf = NF4{ raw = 15 };
         when value = decode(nf)
         then value == 1.0
 
     test nf4_encode_max_roundtrip
-        given original = 1.0
+        const original = 1.0;
         and   encoded = encode(original)
         and   decoded = decode(encoded)
         then decoded == original
 
     test nf4_encode_clamp_below_zero
-        given original = -0.5
+        const original = -0.5;
         and   encoded = encode(original)
         then encoded.raw == 0
 
     test nf4_encode_clamp_above_one
-        given original = 1.5
+        const original = 1.5;
         and   encoded = encode(original)
         then encoded.raw == 15
 
     test nf4_quantize_mid_values
-        given mid = 0.5
+        const mid = 0.5;
         and   encoded = encode(mid)
         then encoded.raw == 7 or encoded.raw == 8
 
     test nf4_decode_preserves_linearity
-        given nf1 = NF4{ raw = 5 }
+        const nf1 = NF4{ raw = 5 };
         and   nf2 = NF4{ raw = 10 }
         and   decoded1 = decode(nf1)
         and   decoded2 = decode(nf2)
@@ -185,26 +185,26 @@ module NF4 {
         then LEVELS == 16
 
     test nf4_min_value
-        given min_val = min_value()
+        const min_val = min_value();
         then min_val == 0.0
 
     test nf4_max_value
-        given max_val = max_value()
+        const max_val = max_value();
         then max_val == 1.0
 
     test nf4_epsilon_positive
-        given eps = epsilon()
+        const eps = epsilon();
         then eps > 0.0
 
     test nf4_epsilon_correct
         then abs(epsilon() - 1.0 / 15.0) < 0.001
 
     test nf4_memory_ratio_vs_fp32
-        given ratio = MEMORY_RATIO_VS_FP32
+        const ratio = MEMORY_RATIO_VS_FP32;
         then abs(ratio - 0.125) < 0.01
 
     test nf4_validate_format_success
-        given valid = validate_format()
+        const valid = validate_format();
         then valid == true
 
     test nf4_all_levels_encode_decode
@@ -212,37 +212,37 @@ module NF4 {
         then abs(decode(NF4{ raw = i }) - (i as f64) / 15.0) < 0.01
 
     test nf4_quantization_error_small_mid_range
-        given value = 0.5
+        const value = 0.5;
         and   error = quantization_error(value, encode(value))
         then error < 0.05
 
     test nf4_quantization_error_zero
-        given value = 0.0
+        const value = 0.0;
         and   error = quantization_error(value, encode(value))
         then error == 0.0
 
     test nf4_quantization_error_one
-        given value = 1.0
+        const value = 1.0;
         and   error = quantization_error(value, encode(value))
         then error == 0.0
 
     test nf4_eq_true
-        given a = NF4{ raw = 7 }
+        const a = NF4{ raw = 7 };
         and   b = NF4{ raw = 7 }
         then eq(a, b) == true
 
     test nf4_eq_false
-        given a = NF4{ raw = 7 }
+        const a = NF4{ raw = 7 };
         and   b = NF4{ raw = 8 }
         then eq(a, b) == false
 
     test nf4_lt_true
-        given a = NF4{ raw = 3 }
+        const a = NF4{ raw = 3 };
         and   b = NF4{ raw = 7 }
         then lt(a, b) == true
 
     test nf4_ge_true
-        given a = NF4{ raw = 10 }
+        const a = NF4{ raw = 10 };
         and   b = NF4{ raw = 5 }
         then ge(a, b) == true
 
@@ -275,12 +275,12 @@ module NF4 {
         then decode(NF4{ raw = i }) >= 0.0 and decode(NF4{ raw = i }) <= 1.0
 
     invariant nf4_epsilon_is_step_size
-        given val = decode(NF4{ raw = 1 })
+        const val = decode(NF4{ raw = 1 });
         and   next_val = decode(NF4{ raw = 2 })
         then abs(next_val - val) == epsilon()
 
     invariant nf4_encode_monotonic
-        given x1 = 0.3 and x2 = 0.6
+        const x1 = 0.3 and x2 = 0.6;
         then encode(x1).raw <= encode(x2).raw
 
     invariant nf4_decode_monotonic
@@ -292,7 +292,7 @@ module NF4 {
         then quantization_error(0.0, NF4{ raw = 0 }) == 0.0
 
     invariant nf4_symmetric_quantization
-        given x = 0.5
+        const x = 0.5;
         then quantization_error_pct(x) < 50.0
 
     bench nf4_encode_latency

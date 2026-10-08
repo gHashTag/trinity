@@ -5,7 +5,6 @@
 module TriChannel;
     use base::types;
     use math::constants;
-    use tri::collections::TriMaybe;
 
     // ═══════════════════════════════════════════════════════════
     // 2. Types

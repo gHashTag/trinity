@@ -501,7 +501,7 @@ module ToolsRegistry {
     }
 
     // set_all_permissions sets permissions for multiple tools
-    fn set_all_permissions(registry: ToolRegistry, permissions: [ToolID: ToolPermission]) -> Result<void, ToolError> {
+    fn set_all_permissions(registry: ToolRegistry, permissions: [PermissionEntry]) -> Result<void, ToolError> {
         // Simple implementation - return Ok() for now
         return Ok();
     }
@@ -706,7 +706,7 @@ module ToolsRegistry {
     //         description = "File path",
     //         required = true,
     //         default = null,
-    //         enum = null,
+    //         enum_values = null,
     //     },
     // };
     // var params = ToolParameters {
@@ -908,7 +908,7 @@ module ToolsRegistry {
             description = "Path",
             required = true,
             default = null,
-            enum = null,
+            enum_values = null,
         };
         assert(param.type == "string");
         assert(param.required);
@@ -1029,17 +1029,16 @@ module ToolsRegistry {
                 outputPath = null,
             },
         };
-        // Map literal: t27 has no map literal, so the map is emptied and then
-        // filled with one index assignment per entry (same meaning).
-        registry.tools = [];
-        registry.tools[ToolID("tool1")] = tool1;
-        registry.tools[ToolID("tool2")] = tool2;
+        // The tools map is a slice of entries (t27 has no map type).
+        registry.tools = [
+            ToolEntry { id = ToolID("tool1"), definition = tool1 },
+            ToolEntry { id = ToolID("tool2"), definition = tool2 },
+        ];
         
-        // Map literal: t27 has no map literal, so the map is emptied and then
-        // filled with one index assignment per entry (same meaning).
-        var permissions: [ToolID: ToolPermission] = [];
-        permissions[ToolID("tool1")] = ToolPermission::Denied;
-        permissions[ToolID("tool2")] = ToolPermission::Allowed;
+        var permissions: [PermissionEntry] = [
+            PermissionEntry { id = ToolID("tool1"), permission = ToolPermission::Denied },
+            PermissionEntry { id = ToolID("tool2"), permission = ToolPermission::Allowed },
+        ];
         
         var result = set_all_permissions(registry, permissions);
         assert(result.Ok);
@@ -1063,10 +1062,10 @@ module ToolsRegistry {
                 outputPath = null,
             },
         };
-        // Map literal: t27 has no map literal, so the map is emptied and then
-        // filled with one index assignment per entry (same meaning).
-        registry.tools = [];
-        registry.tools[ToolID("test-tool")] = tool;
+        // The tools map is a slice of entries (t27 has no map type).
+        registry.tools = [
+            ToolEntry { id = ToolID("test-tool"), definition = tool },
+        ];
         
         clear(registry);
         assert(registry.tools.len == 0);
@@ -1107,11 +1106,11 @@ module ToolsRegistry {
                 outputPath = null,
             },
         };
-        // Map literal: t27 has no map literal, so the map is emptied and then
-        // filled with one index assignment per entry (same meaning).
-        registry.tools = [];
-        registry.tools[ToolID("file-read")] = tool1;
-        registry.tools[ToolID("file-write")] = tool2;
+        // The tools map is a slice of entries (t27 has no map type).
+        registry.tools = [
+            ToolEntry { id = ToolID("file-read"), definition = tool1 },
+            ToolEntry { id = ToolID("file-write"), definition = tool2 },
+        ];
         
         var results = find_by_description(registry, "file");
         assert(results.len == 2);
@@ -1140,10 +1139,10 @@ module ToolsRegistry {
                 outputPath = null,
             },
         };
-        // Map literal: t27 has no map literal, so the map is emptied and then
-        // filled with one index assignment per entry (same meaning).
-        registry.tools = [];
-        registry.tools[ToolID("test-tool")] = tool;
+        // The tools map is a slice of entries (t27 has no map type).
+        registry.tools = [
+            ToolEntry { id = ToolID("test-tool"), definition = tool },
+        ];
         
         assert(count(registry) == 1);
     }
@@ -1168,10 +1167,10 @@ module ToolsRegistry {
                 outputPath = null,
             },
         };
-        // Map literal: t27 has no map literal, so the map is emptied and then
-        // filled with one index assignment per entry (same meaning).
-        registry.tools = [];
-        registry.tools[ToolID("test-tool")] = tool;
+        // The tools map is a slice of entries (t27 has no map type).
+        registry.tools = [
+            ToolEntry { id = ToolID("test-tool"), definition = tool },
+        ];
         
         assert(!is_empty(registry));
         

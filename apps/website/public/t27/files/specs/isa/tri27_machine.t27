@@ -277,8 +277,13 @@ pub fn ld_in_range(imm: i32, memory_bytes: u32) -> bool {
     return ld_byte_addr(imm) + 4 <= memory_bytes;
 }
 
+// Two's complement reading of a 32-bit word, written as arithmetic: a cast through i32 is a
+// range-checked narrowing in the Zig backend and traps for words above 2^31 - 1.
 pub fn ld_sign_extend(word: u32) -> i64 {
-    return (word as i32) as i64;
+    if (word >= 2147483648) {
+        return (word as i64) - 4294967296;
+    }
+    return word as i64;
 }
 
 pub fn st_in_range(imm: i32, memory_bytes: u32) -> bool {

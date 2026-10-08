@@ -1,0 +1,197 @@
+// Review jam case detection and Queen action mapping
+// Part of EPIC #5388 - gHashTag/t27#5700
+
+module review_jam;
+
+// Jam case constants (u8, position = value, starting at 0)
+pub const JAM_NONE: u8 = 0;
+pub const JAM_NO_REVIEWER: u8 = 1;
+pub const JAM_STACKED_ON_OPEN: u8 = 2;
+pub const JAM_REFUSED_NOT_FIXED: u8 = 3;
+pub const JAM_REFUSED_THEN_PUSHED: u8 = 4;
+pub const JAM_LABELED_NOT_MERGED: u8 = 5;
+pub const JAM_CONFLICTING: u8 = 6;
+pub const JAM_NOISE_RED: u8 = 7;
+pub const JAM_DRAFT_OR_FRESH: u8 = 8;
+pub const JAM_UNMEASURED: u8 = 9;
+
+// Queen action constants (u8, position = value, starting at 0)
+pub const ACT_NOTHING: u8 = 0;
+pub const ACT_DISPATCH_REVIEWER: u8 = 1;
+pub const ACT_WAIT_FOR_BASE: u8 = 2;
+pub const ACT_DISPATCH_CODER: u8 = 3;
+pub const ACT_DISPATCH_RE_REVIEW: u8 = 4;
+pub const ACT_FINISH_MERGE: u8 = 5;
+pub const ACT_REBASE_BY_CODER: u8 = 6;
+pub const ACT_NAME_NOISE_AND_REVIEW: u8 = 7;
+pub const ACT_WAIT: u8 = 8;
+pub const ACT_MEASURE_AGAIN: u8 = 9;
+
+// Determine the jam case based on PR state
+// First matching rule wins, in this order:
+// 1. not measured -> UNMEASURED
+// 2. draft or fresh -> DRAFT_OR_FRESH
+// 3. stacked on an open PR -> STACKED_ON_OPEN
+// 4. conflicting -> CONFLICTING
+// 5. labeled reviewed (and still open) -> LABELED_NOT_MERGED
+// 6. refused and pushed after -> REFUSED_THEN_PUSHED
+// 7. refused -> REFUSED_NOT_FIXED
+// 8. only noise checks red -> NOISE_RED
+// 9. no reviewer -> NO_REVIEWER
+// 10. otherwise NONE
+pub fn jam_case(measured: bool, draft_or_fresh: bool, stacked_on_open: bool, conflicting: bool, labeled_reviewed: bool, refused: bool, pushed_after_refusal: bool, has_reviewer: bool, only_noise_red: bool) -> u8 {
+    if !measured {
+        return JAM_UNMEASURED;
+    }
+    if draft_or_fresh {
+        return JAM_DRAFT_OR_FRESH;
+    }
+    if stacked_on_open {
+        return JAM_STACKED_ON_OPEN;
+    }
+    if conflicting {
+        return JAM_CONFLICTING;
+    }
+    if labeled_reviewed {
+        return JAM_LABELED_NOT_MERGED;
+    }
+    if refused && pushed_after_refusal {
+        return JAM_REFUSED_THEN_PUSHED;
+    }
+    if refused {
+        return JAM_REFUSED_NOT_FIXED;
+    }
+    if only_noise_red {
+        return JAM_NOISE_RED;
+    }
+    if !has_reviewer {
+        return JAM_NO_REVIEWER;
+    }
+    JAM_NONE
+}
+
+// Map jam case to Queen action
+// Case maps to action with same position (NONE -> NOTHING, NO_REVIEWER -> DISPATCH_REVIEWER, etc.)
+// Any value above 9 -> ACT_MEASURE_AGAIN (unknown case is never "nothing to do")
+pub fn jam_action(case: u8) -> u8 {
+    if case > 9 {
+        return ACT_MEASURE_AGAIN;
+    }
+    case
+}
+
+// Determine if it's the Queen's turn to act
+// True for every case except NONE, DRAFT_OR_FRESH and STACKED_ON_OPEN
+pub fn jam_is_queens_turn(case: u8) -> bool {
+    case != JAM_NONE && case != JAM_DRAFT_OR_FRESH && case != JAM_STACKED_ON_OPEN
+}
+
+// Tests - one per case, plus edge cases
+
+test "unmeasured beats every other flag" {
+    assert jam_case(false, true, true, true, true, true, true, true, true) == JAM_UNMEASURED;
+}
+
+test "draft or fresh" {
+    assert jam_case(true, true, false, false, false, false, false, false, false) == JAM_DRAFT_OR_FRESH;
+}
+
+test "stacked on open PR" {
+    assert jam_case(true, false, true, false, false, false, false, false, false) == JAM_STACKED_ON_OPEN;
+}
+
+test "conflicting" {
+    assert jam_case(true, false, false, true, false, false, false, false, false) == JAM_CONFLICTING;
+}
+
+test "labeled not merged" {
+    assert jam_case(true, false, false, false, true, false, false, false, false) == JAM_LABELED_NOT_MERGED;
+}
+
+test "refused then pushed" {
+    assert jam_case(true, false, false, false, false, true, true, false, false) == JAM_REFUSED_THEN_PUSHED;
+}
+
+test "refused not fixed" {
+    assert jam_case(true, false, false, false, false, true, false, false, false) == JAM_REFUSED_NOT_FIXED;
+}
+
+test "noise red" {
+    assert jam_case(true, false, false, false, false, false, false, false, true) == JAM_NOISE_RED;
+}
+
+test "no reviewer" {
+    assert jam_case(true, false, false, false, false, false, false, false, false) == JAM_NO_REVIEWER;
+}
+
+test "none" {
+    assert jam_case(true, false, false, false, false, false, false, true, false) == JAM_NONE;
+}
+
+test "unknown case maps to measure again" {
+    assert jam_action(200) == ACT_MEASURE_AGAIN;
+}
+
+test "queen's turn for labeled not merged" {
+    assert jam_is_queens_turn(JAM_LABELED_NOT_MERGED) == true;
+}
+
+test "queen's turn for no reviewer" {
+    assert jam_is_queens_turn(JAM_NO_REVIEWER) == true;
+}
+
+test "queen's turn for conflicting" {
+    assert jam_is_queens_turn(JAM_CONFLICTING) == true;
+}
+
+test "queen's turn for refused then pushed" {
+    assert jam_is_queens_turn(JAM_REFUSED_THEN_PUSHED) == true;
+}
+
+test "queen's turn for refused not fixed" {
+    assert jam_is_queens_turn(JAM_REFUSED_NOT_FIXED) == true;
+}
+
+test "queen's turn for noise red" {
+    assert jam_is_queens_turn(JAM_NOISE_RED) == true;
+}
+
+test "queen's turn for unmeasured" {
+    assert jam_is_queens_turn(JAM_UNMEASURED) == true;
+}
+
+test "not queen's turn for none" {
+    assert jam_is_queens_turn(JAM_NONE) == false;
+}
+
+test "not queen's turn for draft or fresh" {
+    assert jam_is_queens_turn(JAM_DRAFT_OR_FRESH) == false;
+}
+
+test "not queen's turn for stacked on open" {
+    assert jam_is_queens_turn(JAM_STACKED_ON_OPEN) == false;
+}
+
+test "specific scenario: labeled reviewed but still open" {
+    assert jam_case(true, false, false, false, true, false, false, true, false) == JAM_LABELED_NOT_MERGED;
+}
+
+test "specific scenario: unmeasured with any other flags" {
+    assert jam_case(false, true, true, true, true, true, true, true, true) == JAM_UNMEASURED;
+}
+
+test "action mapping: none to nothing" {
+    assert jam_action(JAM_NONE) == ACT_NOTHING;
+}
+
+test "action mapping: no reviewer to dispatch reviewer" {
+    assert jam_action(JAM_NO_REVIEWER) == ACT_DISPATCH_REVIEWER;
+}
+
+test "action mapping: labeled not merged to finish merge" {
+    assert jam_action(JAM_LABELED_NOT_MERGED) == ACT_FINISH_MERGE;
+}
+
+test "action mapping: unmeasured to measure again" {
+    assert jam_action(JAM_UNMEASURED) == ACT_MEASURE_AGAIN;
+}

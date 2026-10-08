@@ -9,7 +9,6 @@
 module igla-coder-arch;
 use base::types;
 use math::constants;
-use math::igla_primitives;
 use igla::race::bram_weights;
 
 // ============================================================================

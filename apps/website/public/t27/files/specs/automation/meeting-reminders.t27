@@ -24,6 +24,9 @@
 //       through a token of its own, never the tap token.
 // v1, 2026-10-01: first cut. Reminders before the start, a snooze that cannot land
 //       after the start, a follow-up after the end, a calendar file.
+// v2, 2026-10-03: "later" is idempotent. A second press while a snooze is still pending
+//       adds nothing -- so a relay that lost the answer may put the buttons back, and a
+//       double tap or a retried tap does not ring twice ten minutes from now.
 // Claim status: RUN_LIVE is false until a real reminder has reached a real chat.
 // phi^2 + 1/phi^2 = 3 | TRINITY
 
@@ -32,7 +35,7 @@ module automation::meeting_reminders {
     pub const KIND : str = "automation";
     pub const ID : str = "meeting-reminders";
     pub const REPO : str = "999-multibots-telegraf";
-    pub const VERSION : u8 = 1;
+    pub const VERSION : u8 = 2;
 
     // ---- The doors ------------------------------------------------------------------
     pub const TOOL_CREATE : str = "meeting_create";
@@ -65,6 +68,7 @@ module automation::meeting_reminders {
     pub const REMIND_FLOOR_MIN : u32 = 5;  // closer than this, the person is already walking
     pub const REMIND_CEIL_MIN : u32 = 10080;  // a week ahead at most
     pub const SNOOZE_MIN : u32 = 10;  // "later" = ten minutes, never past the start
+    pub const SNOOZES_PENDING_MAX : u8 = 1;  // a second "later" while one waits adds none
     pub const FOLLOWUP_AFTER_END_MIN : u32 = 5;  // the proactive half: how did it go?
 
     // ---- The sweep ------------------------------------------------------------------
@@ -110,6 +114,13 @@ module automation::meeting_reminders {
     fn snooze_allowed(now_s: u64, starts_s: u64) -> bool {
         let lead : u64 = SNOOZE_MIN * 60;
         return now_s + lead < starts_s;
+    }
+
+    // "Later" adds a reminder only when none of its own is still waiting. The answer is
+    // the same either way ("I'll remind you in ten minutes" -- true, the first one will),
+    // so a press the relay could not confirm is safe to press again.
+    fn snooze_adds(pending_snoozes: u8) -> bool {
+        return pending_snoozes < SNOOZES_PENDING_MAX;
     }
 
     // The follow-up asks how it went: after the end, and never for a cancelled one.
@@ -170,6 +181,13 @@ module automation::meeting_reminders {
         assert(!snooze_allowed(0, 600));
         assert(!snooze_allowed(0, 10));
         assert(SNOOZE_MIN == 10);
+    }
+
+    test "a second later never doubles the reminder" {
+        assert(snooze_adds(0));
+        assert(!snooze_adds(1));
+        assert(!snooze_adds(2));
+        assert(SNOOZES_PENDING_MAX == 1);
     }
 
     test "the follow-up comes after the end, and never for a cancelled meeting" {

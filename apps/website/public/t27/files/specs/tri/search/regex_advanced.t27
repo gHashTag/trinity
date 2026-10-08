@@ -10,8 +10,10 @@ module TriRegexAdvanced;
     // 2. Types
     // ═══════════════════════════════════════════════════════════
 
-    pub const RegexFlags = struct {
-        enum : [IgnoreCase, Multiline, DotAll],
+    pub const RegexFlags = enum(u8) {
+        IgnoreCase,
+        Multiline,
+        DotAll,
     };
 
     pub const AdvancedRegex = struct {

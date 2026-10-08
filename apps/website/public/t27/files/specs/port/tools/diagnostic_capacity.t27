@@ -63,21 +63,21 @@ pub fn main() -> i32 {
 // Test blocks for each function
 test "test_c_uncap_flag" {
     let result = c_uncap_flag();
-    assert!(result == "-ferror-limit=0", "c_uncap_flag should return a compiler flag");
+    assert(result == "-ferror-limit=0", "c_uncap_flag should return a compiler flag");
 }
 
 test "test_fixtures" {
     let temp_dir = "/tmp/test";
     let result = fixtures(temp_dir);
     // Just check that it returns a tuple of 5 strings
-    assert!(true, "fixtures should return file paths");
+    assert(true, "fixtures should return file paths");
 }
 
 test "test_run" {
     let argv = ["echo", "hello"];
     let result = run(argv);
     // run returns Option<str>, just check it doesn't panic
-    assert!(true, "run should return an option");
+    assert(true, "run should return an option");
 }
 
 test "test_counts" {
@@ -85,24 +85,24 @@ test "test_counts" {
     let files = ("c.c", "rs.rs", "zig.zig", "v.v", "y.v");
     let result = counts(temp_dir, files);
     // Just check it returns a tuple of 5 options
-    assert!(true, "counts should return error counts");
+    assert(true, "counts should return error counts");
 }
 
 test "test_self_check" {
     let temp_dir = "/tmp/test";
     let files = ("c.c", "rs.rs", "zig.zig", "v.v", "y.v");
     let result = self_check(temp_dir, files);
-    assert!(result == 0, "self_check should return 0 on success");
+    assert(result == 0, "self_check should return 0 on success");
 }
 
 test "test_main_self_check" {
     @setArg("--self-check");
     let result = main();
     @clearArg("--self-check");
-    assert!(result == 0, "main with --self-check should return 0");
+    assert(result == 0, "main with --self-check should return 0");
 }
 
 test "test_main_default" {
     let result = main();
-    assert!(result == 0, "main should return 0 by default");
+    assert(result == 0, "main should return 0 by default");
 }

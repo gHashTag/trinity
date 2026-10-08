@@ -57,6 +57,9 @@ module automation::inngest_queen_scheduler {
     pub const DISPATCH_TIMER : str = "tick-only";
     // railway-cron: Railway owns the schedule; tick event only.
     pub const DISPATCH_RAILWAY_CRON : str = "tick-only";
+    // launchd: a launch agent or crontab line on the owner's Mac; launchd owns the schedule and
+    //   nothing outside the Mac can start it, so the card is reported (tick event only), never dispatched.
+    pub const DISPATCH_LAUNCHD : str = "tick-only";
     // A card with ENABLED = false or an empty SCHEDULE gets no cron trigger, only the tick event.
     pub const DISABLED_CARD : str = "tick-only";
     // SCHEDULE is a five-field cron expression evaluated in the card's TZ.

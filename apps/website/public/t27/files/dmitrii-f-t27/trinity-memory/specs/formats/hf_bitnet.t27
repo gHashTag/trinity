@@ -1,4 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
+// Issue: https://github.com/dmitrii-f-t27/trinity-memory/issues/125
+// Coverage: https://github.com/dmitrii-f-t27/trinity-memory/issues/29
+// Coverage: https://github.com/dmitrii-f-t27/trinity-memory/issues/30
+// Coverage: https://github.com/dmitrii-f-t27/trinity-memory/issues/34
 // specs/formats/hf_bitnet.t27 -- Hugging Face transformers BitNet packed weights
 // Restates upstream huggingface/transformers@07338b6c74a578868368e6e549dea83414e4b8cb
 // src/transformers/integrations/bitnet.py: :14 (VALUES_PER_ITEM 4), :17-53

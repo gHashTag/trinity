@@ -1,4 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
+// Issue: https://github.com/dmitrii-f-t27/trinity-memory/issues/125
+// Issue: https://github.com/dmitrii-f-t27/trinity-memory/issues/131
+// Coverage: https://github.com/dmitrii-f-t27/trinity-memory/issues/29
+// Coverage: https://github.com/dmitrii-f-t27/trinity-memory/issues/30
+// Coverage: https://github.com/dmitrii-f-t27/trinity-memory/issues/34
+// Coverage: https://github.com/dmitrii-f-t27/trinity-memory/issues/98
 // specs/formats/prismml.t27 -- PrismML llama.cpp fork: PQ2_0, PTQ1_0 and its group-64 Q2_0
 // Restates upstream PrismML-Eng/llama.cpp@87268f775d74cf8f7ffc6c22a95684aa55995533
 // (branch prism): ggml/include/ggml.h:431-437 (Q1_0 41, Q2_0 42, PQ2_0 142,
@@ -15,6 +21,21 @@
 // GGUF type-id rule is stated in specs/formats/llama_cpp.t27.
 // Group-128 bytes read as group 64 are a synthetic negative case of this
 // repository: the published Q2_0 file holds valid group-64 blocks.
+// Hadamard load rules (issue #98, section 6 below), same commit, src/llama-model.cpp
+// (blob c2ac6a50): :1196-1208 (prism.hadamard.tied_output read first, an optional bool;
+// prism.hadamard.version 1 or 2, any other value throws; version 2 exactly when
+// tied_output; tied_output needs output.weight absent) and :1345-1356 (tied_output
+// needs version 2 and a latent token_embd.weight among the inverse tables; a latent
+// token_embd.weight with no output.weight needs version 2 and tied_output). Not
+// restated: the rule "prism.hadamard.tied_output is not bound to the token
+// embedding" (:1997-2002) depends on the architecture's graph builder
+// (src/models/<arch>.cpp, output falling back to tok_embd), which no pinned file
+// carries and t27/live.t27 does not model; and every other prism.hadamard.* rule
+// (status classes -63, -64, -66 to -71 in specs/formats/OWNERS.md): the scanner
+// t27/live.t27 (tlv_hadamard) states them, and they run between the two stages
+// of section 6. The fork has no reader of general.tensor_extra.* (no hit in its
+// src/llama-model.cpp, llama-arch.cpp, llama-model-loader.cpp, llama.cpp,
+// llama-arch.h at this commit); the stock rule is in specs/formats/llama_cpp.t27.
 // phi^2 + 1/phi^2 = 3 | TRINITY
 module TrinityFormatsPrismmlSpec {
     // 1. Status classes (specs/formats/OWNERS.md).
@@ -62,6 +83,69 @@ module TrinityFormatsPrismmlSpec {
     // 5. The shortest byte run that is a whole number of blocks in both 2-bit
     //    layouts: 9 PQ2_0 blocks (1152 weights) or 17 Q2_0 blocks (1088).
     pub const TFS_PRISM_COMMON_BYTES: u32 = 306;
+
+    // 6. Hadamard load rules of the fork (issue #98). Status classes of
+    //    specs/formats/OWNERS.md; the key prism.hadamard.version is 1 (no tied
+    //    output) or 2 (tied output, no output.weight).
+    pub const TFS_PRISM_ERR_HADAMARD_VERSION: i32 = -65;
+    pub const TFS_PRISM_ERR_HADAMARD_TIED: i32 = -88;
+    pub const TFS_PRISM_HADAMARD_VERSION_UNTIED: u32 = 1;
+    pub const TFS_PRISM_HADAMARD_VERSION_TIED: u32 = 2;
+
+    // Stage 1 of the fork's Hadamard rules (src/llama-model.cpp:1197-1208), run
+    // right after the metadata is read. has_version: prism.hadamard.version is
+    // present; version: its value; tied: prism.hadamard.tied_output is true (an
+    // absent key reads false); has_output: the file has a tensor named output.weight.
+    // No version key means the fork applies no rotation and checks nothing here.
+    // A present version must be 1 or 2 (:1199-1201, status -65); version 2 exactly
+    // when tied (:1203-1205) and a tied output has no output.weight (:1206-1208),
+    // both status -88.
+    pub fn tfs_prism_hadamard_keys_status(has_version: bool, version: u32, tied: bool, has_output: bool) -> i32 {
+        if (!has_version) { return 0; }
+        if (version != TFS_PRISM_HADAMARD_VERSION_UNTIED && version != TFS_PRISM_HADAMARD_VERSION_TIED) {
+            return TFS_PRISM_ERR_HADAMARD_VERSION;
+        }
+        if (version == TFS_PRISM_HADAMARD_VERSION_TIED && !tied) { return TFS_PRISM_ERR_HADAMARD_TIED; }
+        if (version == TFS_PRISM_HADAMARD_VERSION_UNTIED && tied) { return TFS_PRISM_ERR_HADAMARD_TIED; }
+        if (tied && has_output) { return TFS_PRISM_ERR_HADAMARD_TIED; }
+        return 0;
+    }
+
+    // Stage 2 (:1345-1356), run after the weight lists and the inverse tables have
+    // been read. has_latent: token_embd.weight is among the names of
+    // prism.hadamard.inverse_weight_names, the only inverse table the fork lets
+    // through (:1335). A tied output needs version 2 (:1346-1348, so also a version
+    // key) and the latent token embedding (:1349-1352); without a tied output a
+    // latent token embedding needs an output.weight (:1354-1356). Without a version
+    // key the inverse tables are never read, so has_latent counts as false.
+    pub fn tfs_prism_hadamard_embedding_status(has_version: bool, version: u32, tied: bool,
+                                               has_output: bool, has_latent: bool) -> i32 {
+        var latent: bool = has_version && has_latent;
+        if (tied) {
+            if (!has_version || version != TFS_PRISM_HADAMARD_VERSION_TIED) { return TFS_PRISM_ERR_HADAMARD_TIED; }
+            if (!latent) { return TFS_PRISM_ERR_HADAMARD_TIED; }
+            return 0;
+        }
+        if (latent && !has_output) { return TFS_PRISM_ERR_HADAMARD_TIED; }
+        return 0;
+    }
+
+    // Both stages for a file whose other prism.hadamard.* keys and tensors pass
+    // (the rules between the stages, OWNERS.md -63, -64, -66 to -71, are not
+    // restated here): the first refusal wins.
+    pub fn tfs_prism_hadamard_tied_status(has_version: bool, version: u32, tied: bool,
+                                          has_output: bool, has_latent: bool) -> i32 {
+        var keys: i32 = tfs_prism_hadamard_keys_status(has_version, version, tied, has_output);
+        if (keys != 0) { return keys; }
+        return tfs_prism_hadamard_embedding_status(has_version, version, tied, has_output, has_latent);
+    }
+
+    // The fork at 87268f77 has no reader of general.tensor_extra.name or
+    // general.tensor_extra.prec_a4: whatever those keys hold, they do not refuse a
+    // load. Stock llama.cpp refuses (specs/formats/llama_cpp.t27, status -89).
+    pub fn tfs_prism_tensor_extra_status() -> i32 {
+        return 0;
+    }
 
     pub fn tfs_prism_block_weights(format: i32) -> usize {
         if (format == TFS_PRISM_Q2_0) { return TFS_PRISM_Q2_0_BLOCK_WEIGHTS as usize; }
@@ -296,6 +380,8 @@ module TrinityFormatsPrismmlSpec {
     invariant prism_scale_share_is_one_eighth_bit { assert TFS_PRISM_SCALE_BITS * 8 == TFS_PRISM_PQ2_0_BLOCK_WEIGHTS && TFS_PRISM_SCALE_BITS * 8 == TFS_PRISM_PTQ1_0_BLOCK_WEIGHTS; }
     invariant prism_common_byte_run { assert TFS_PRISM_COMMON_BYTES == 9 * TFS_PRISM_PQ2_0_BLOCK_BYTES && TFS_PRISM_COMMON_BYTES == 17 * TFS_PRISM_Q2_0_BLOCK_BYTES; }
     invariant prism_type_ids { assert TFS_PRISM_TYPE_PQ2_0 == 142 && TFS_PRISM_TYPE_PTQ1_0 == 143 && TFS_PRISM_TYPE_Q2_0 == 42 && TFS_PRISM_TYPE_COUNT == 144; }
+    invariant prism_hadamard_status_classes { assert TFS_PRISM_ERR_HADAMARD_VERSION == -65 && TFS_PRISM_ERR_HADAMARD_TIED == -88; }
+    invariant prism_hadamard_versions { assert TFS_PRISM_HADAMARD_VERSION_UNTIED == 1 && TFS_PRISM_HADAMARD_VERSION_TIED == 2; }
 
     test "prism pq2_0 and ptq1_0 encoder examples" {
         var p: [128]i32;
@@ -360,5 +446,72 @@ module TrinityFormatsPrismmlSpec {
         assert tfs_prism_decode(TFS_PRISM_PTQ1_0, pt, 56, 256, v, 256, s, 2) == TFS_PRISM_ERR_PADDING;
         assert tfs_prism_flags(TFS_PRISM_PTQ1_0, pt, 56, 256, f) == TFS_PRISM_ERR_PADDING && f[1] == 0;
         assert tfs_prism_b3_padded(2) && !tfs_prism_b3_padded(1) && !tfs_prism_b3_padded(73);
+    }
+    test "prism hadamard version is 1 or 2 and tied_output follows it" {
+        // No version key: the fork checks nothing at stage 1, whatever else is set.
+        assert tfs_prism_hadamard_keys_status(false, 0, false, false) == 0;
+        assert tfs_prism_hadamard_keys_status(false, 2, true, true) == 0;
+        // Versions: 1 and 2 pass, 0, 3 and the largest u32 are status -65 (the
+        // version is read before tied_output is compared with it).
+        assert tfs_prism_hadamard_keys_status(true, 1, false, false) == 0;
+        assert tfs_prism_hadamard_keys_status(true, 2, true, false) == 0;
+        assert tfs_prism_hadamard_keys_status(true, 0, false, false) == TFS_PRISM_ERR_HADAMARD_VERSION;
+        assert tfs_prism_hadamard_keys_status(true, 3, true, false) == TFS_PRISM_ERR_HADAMARD_VERSION;
+        assert tfs_prism_hadamard_keys_status(true, 4294967295, false, true) == TFS_PRISM_ERR_HADAMARD_VERSION;
+        // Version 2 needs tied_output true; version 1 forbids it.
+        assert tfs_prism_hadamard_keys_status(true, 2, false, false) == TFS_PRISM_ERR_HADAMARD_TIED;
+        assert tfs_prism_hadamard_keys_status(true, 2, false, true) == TFS_PRISM_ERR_HADAMARD_TIED;
+        assert tfs_prism_hadamard_keys_status(true, 1, true, false) == TFS_PRISM_ERR_HADAMARD_TIED;
+        assert tfs_prism_hadamard_keys_status(true, 1, true, true) == TFS_PRISM_ERR_HADAMARD_TIED;
+        // A tied output has no output.weight; an untied one may have it.
+        assert tfs_prism_hadamard_keys_status(true, 2, true, true) == TFS_PRISM_ERR_HADAMARD_TIED;
+        assert tfs_prism_hadamard_keys_status(true, 1, false, true) == 0;
+    }
+    test "prism hadamard tied output needs the latent token embedding" {
+        // Stage 2 alone.
+        assert tfs_prism_hadamard_embedding_status(true, 2, true, false, true) == 0;
+        assert tfs_prism_hadamard_embedding_status(true, 2, true, false, false) == TFS_PRISM_ERR_HADAMARD_TIED;
+        assert tfs_prism_hadamard_embedding_status(true, 1, true, false, true) == TFS_PRISM_ERR_HADAMARD_TIED;
+        assert tfs_prism_hadamard_embedding_status(false, 0, true, false, true) == TFS_PRISM_ERR_HADAMARD_TIED;
+        assert tfs_prism_hadamard_embedding_status(false, 0, false, false, true) == 0;
+        assert tfs_prism_hadamard_embedding_status(true, 1, false, false, true) == TFS_PRISM_ERR_HADAMARD_TIED;
+        assert tfs_prism_hadamard_embedding_status(true, 1, false, true, true) == 0;
+        assert tfs_prism_hadamard_embedding_status(true, 1, false, false, false) == 0;
+    }
+    test "prism hadamard tied status over every version, tied_output, output.weight and latent embedding" {
+        // No version key: only a tied_output refuses (the rotation is not declared).
+        assert tfs_prism_hadamard_tied_status(false, 0, false, false, false) == 0;
+        assert tfs_prism_hadamard_tied_status(false, 0, false, true, true) == 0;
+        assert tfs_prism_hadamard_tied_status(false, 0, true, false, true) == TFS_PRISM_ERR_HADAMARD_TIED;
+        assert tfs_prism_hadamard_tied_status(false, 0, true, true, false) == TFS_PRISM_ERR_HADAMARD_TIED;
+        // Version 1, tied_output absent or false: accepted unless a latent token
+        // embedding stands without an output.weight.
+        assert tfs_prism_hadamard_tied_status(true, 1, false, false, false) == 0;
+        assert tfs_prism_hadamard_tied_status(true, 1, false, true, false) == 0;
+        assert tfs_prism_hadamard_tied_status(true, 1, false, true, true) == 0;
+        assert tfs_prism_hadamard_tied_status(true, 1, false, false, true) == TFS_PRISM_ERR_HADAMARD_TIED;
+        // Version 1 with tied_output true: refused in all four.
+        assert tfs_prism_hadamard_tied_status(true, 1, true, false, false) == TFS_PRISM_ERR_HADAMARD_TIED;
+        assert tfs_prism_hadamard_tied_status(true, 1, true, false, true) == TFS_PRISM_ERR_HADAMARD_TIED;
+        assert tfs_prism_hadamard_tied_status(true, 1, true, true, false) == TFS_PRISM_ERR_HADAMARD_TIED;
+        assert tfs_prism_hadamard_tied_status(true, 1, true, true, true) == TFS_PRISM_ERR_HADAMARD_TIED;
+        // Version 2 without tied_output: refused in all four.
+        assert tfs_prism_hadamard_tied_status(true, 2, false, false, false) == TFS_PRISM_ERR_HADAMARD_TIED;
+        assert tfs_prism_hadamard_tied_status(true, 2, false, false, true) == TFS_PRISM_ERR_HADAMARD_TIED;
+        assert tfs_prism_hadamard_tied_status(true, 2, false, true, false) == TFS_PRISM_ERR_HADAMARD_TIED;
+        assert tfs_prism_hadamard_tied_status(true, 2, false, true, true) == TFS_PRISM_ERR_HADAMARD_TIED;
+        // Version 2 with tied_output: only without output.weight and with the latent embedding.
+        assert tfs_prism_hadamard_tied_status(true, 2, true, false, true) == 0;
+        assert tfs_prism_hadamard_tied_status(true, 2, true, false, false) == TFS_PRISM_ERR_HADAMARD_TIED;
+        assert tfs_prism_hadamard_tied_status(true, 2, true, true, true) == TFS_PRISM_ERR_HADAMARD_TIED;
+        assert tfs_prism_hadamard_tied_status(true, 2, true, true, false) == TFS_PRISM_ERR_HADAMARD_TIED;
+        // An unsupported version wins over the tied rules.
+        assert tfs_prism_hadamard_tied_status(true, 3, true, false, true) == TFS_PRISM_ERR_HADAMARD_VERSION;
+        assert tfs_prism_hadamard_tied_status(true, 0, false, true, false) == TFS_PRISM_ERR_HADAMARD_VERSION;
+    }
+    test "prism fork does not read general.tensor_extra" {
+        // Whatever shape the two keys have (conformance/formats_prismml.json replays the
+        // shapes stock llama.cpp refuses through t27/live.t27), the load is not refused.
+        assert tfs_prism_tensor_extra_status() == 0;
     }
 }

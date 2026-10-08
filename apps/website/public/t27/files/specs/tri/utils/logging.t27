@@ -5,14 +5,16 @@
 module TriLogging;
     use base::types;
     use math::constants;
-    use std;
 
     // ═══════════════════════════════════════════════════════════
     // 2. Types
     // ═══════════════════════════════════════════════════════════
 
-    pub const LogLevel = struct {
-        enum : [debug, info, warn, error],
+    pub const LogLevel = enum(u8) {
+        debug,
+        info,
+        warn,
+        error,
     };
 
     pub const LogEntry = struct {

@@ -12,23 +12,23 @@ pub fn tanhDerivative(x: f64) f64 {
 
 test tanh_zero {
     let result = tanh(0.0);
-    assert!((result - 0.0).abs() < 1e-6);
+    assert((result - 0.0).abs() < 1e-6);
 }
 
 test tanh_one {
     let result = tanh(1.0);
     let expected = 0.7615941559557649;
-    assert!((result - expected).abs() < 1e-6);
+    assert((result - expected).abs() < 1e-6);
 }
 
 test tanhDerivative_zero {
     let result = tanhDerivative(0.0);
-    assert!((result - 1.0).abs() < 1e-6);
+    assert((result - 1.0).abs() < 1e-6);
 }
 
 test tanhDerivative_one {
     let result = tanhDerivative(1.0);
     let t = tanh(1.0);
     let expected = 1.0 - t * t;
-    assert!((result - expected).abs() < 1e-6);
+    assert((result - expected).abs() < 1e-6);
 }

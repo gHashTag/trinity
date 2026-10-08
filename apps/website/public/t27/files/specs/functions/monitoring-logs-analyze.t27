@@ -40,3 +40,10 @@ pub const SAFE_PROBE : str = "{}";
 pub const PROBE_RESULT : str = "COMPLETED";
 pub const CONTROL : str = "spec+code";
 pub const NOTE : str = "The same schedule is stated as a cron card, specs/crons ID inngest/999-multibots-telegraf/log-monitor. When LOG_DIR is absent on the host the analysis has nothing to read; the hardening list asks for a fallback to the Inngest run summary.";
+
+test test_constants {
+  assert KIND == "function";
+  assert ID == "monitoring-logs-analyze";
+  assert LEGACY_ID == "log-monitor";
+  assert TRIGGER == "cron";
+}

@@ -9,9 +9,8 @@ module provider-stream;
 // Imports
 // ============================================================================
 
-use tritype-base::usize;
-use provider-schema::StreamingChunk;
-use provider-schema::ChunkType;
+use provider::schema::StreamingChunk;
+use provider::schema::ChunkType;
 
 // ============================================================================
 // Constants

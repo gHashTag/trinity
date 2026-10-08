@@ -28,3 +28,12 @@ pub const TABLE : str = "ladder-counts";
 ; English canonical prose, Markdown, path from the t27 root.
 pub const BODY_EN : str = "docs/system/layers.md";
 pub const ENABLED : bool = true;
+
+test test_layers_constants {
+    assert KIND == "docs-chapter";
+    assert ID == "docs/layers";
+    assert ORDER == 3;
+    assert ENABLED == true;
+    assert SECTIONS[0] == "Specs";
+    assert SOURCES[1] == "specs/crons/README.md";
+}

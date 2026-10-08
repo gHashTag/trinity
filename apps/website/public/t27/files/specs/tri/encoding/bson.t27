@@ -5,14 +5,23 @@
 module TriBson;
     use base::types;
     use math::constants;
-    use std;
 
     // ═══════════════════════════════════════════════════════════
     // 2. Types
     // ═══════════════════════════════════════════════════════════
 
-    pub const BsonValue = struct {
-        enum : [Double, String, Document, Array, Binary, ObjectId, Boolean, DateTime, Null, Int32, Int64],
+    pub const BsonValue = enum(u8) {
+        Double,
+        String,
+        Document,
+        Array,
+        Binary,
+        ObjectId,
+        Boolean,
+        DateTime,
+        Null,
+        Int32,
+        Int64,
     };
 
     pub const BsonDocument = struct {

@@ -10,12 +10,21 @@ module BatchRunner;
     // 2. Types
     // ═══════════════════════════════════════════════════════════
 
-    pub const CompileStatus = struct {
-        variants : ,
+    pub const CompileStatus = enum(u8) {
+        pass,
+        ast_fail,
+        compile_fail,
+        gen_fail,
+        lint_fail,
+        timeout,
+        skipped,
     };
 
-    pub const FilterMode = struct {
-        variants : ,
+    pub const FilterMode = enum(u8) {
+        all,
+        lint_pass,
+        lint_fail,
+        changed_only,
     };
 
     pub const PipelineResult = struct {

@@ -35,7 +35,7 @@ pub const RESOURCES_ABOUT : [0]str = [];
 pub const TOOLS_NOTE : str = "Tool list lives in the external npm package, not in this repository; nothing is listed rather than guessed.";
 ; true when the server is a third-party package launched by npx or an outside binary.
 pub const EXTERNAL : bool = true;
-pub const AGENTS : [0]str = [];
-pub const AGENTS_NOTE : str = "No source binds an agent letter to this server: docs/agents/AGENTS_ALPHABET.md, specs/OWNERS.md and .claude/agents/*.md do not name it.";
+pub const AGENTS : [1]str = ["T"];
+pub const AGENTS_NOTE : str = "docs/agents/AGENTS_ALPHABET.md \"Who holds a tool, and who holds a skill\" binds every tool to the Queen (T). No card states what this tool is for in this project, so no bee is named a domain lead.";
 pub const WITNESS : str = "source-parse";
 pub const ENABLED : bool = true;

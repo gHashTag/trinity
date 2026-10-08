@@ -186,7 +186,7 @@ pub fn posit16_decode(p: Posit16) -> PositComponents {
         while (bits & 0x4000 != 0) {
             regime += 1;
             if (regime > 16) break;
-            bits <<= 1;
+            bits = bits << 1;
             regime_bits += 1;
         }
     } else {
@@ -194,12 +194,12 @@ pub fn posit16_decode(p: Posit16) -> PositComponents {
         while (bits & 0x4000 == 0) {
             regime -= 1;
             if (regime < -16) break;
-            bits <<= 1;
+            bits = bits << 1;
             regime_bits += 1;
         }
     }
 
-    bits <<= 1;  // Skip last regime bit
+    bits = bits << 1;  // Skip last regime bit
 
     // Extract exponent
     var exponent : u8 = 0;
@@ -208,7 +208,7 @@ pub fn posit16_decode(p: Posit16) -> PositComponents {
         if (bits & 0x8000 != 0) {
             exponent |= (@as(u8, 1) << (POSIT16_ES - 1 - exp_bit));
         }
-        bits <<= 1;
+        bits = bits << 1;
         exp_bit += 1;
     }
 
@@ -219,7 +219,7 @@ pub fn posit16_decode(p: Posit16) -> PositComponents {
         if (bits & 0x8000 != 0) {
             mantissa |= (@as(u16, 1) << (POSIT16_MANT_BITS - 1 - mant_bit));
         }
-        bits <<= 1;
+        bits = bits << 1;
         mant_bit += 1;
     }
 
@@ -299,10 +299,10 @@ pub fn gf16_to_posit16_raw(gf: Gf16) -> Posit16 {
     for (0..@as(usize, @intCast(regime_count))) |_| {
         if (regime >= 0) {
             result_bits |= temp_bits;
-            if (temp_bits != 0x8000) temp_bits >>= 1;
+            if (temp_bits != 0x8000) temp_bits = temp_bits >> 1;
         } else {
             result_bits |= temp_bits;
-            if (temp_bits != 0) temp_bits >>= 1;
+            if (temp_bits != 0) temp_bits = temp_bits >> 1;
         }
     }
 
@@ -311,7 +311,7 @@ pub fn gf16_to_posit16_raw(gf: Gf16) -> Posit16 {
 
     // Mantissa (9 to 12 bits, pad with zeros)
     var mant : u16 = @as(u16, gf.mant);
-    mant <<= 3;  // 9 bits -> 12 bits
+    mant = mant << 3;  // 9 bits -> 12 bits
     result_bits |= mant & 0x0FFF;
 
     return posit16_from_bits(result_bits);
@@ -398,77 +398,77 @@ test "posit16_regime_mant_bits" {
 }
 
 test "gf16_from_bits_roundtrip" {
-    given bits = 0x1234
-    try std.testing.expect(gf = gf16_from_bits(bits));
-    try std.testing.expect(result = gf16_to_bits(gf));
+    const bits = 0x1234;
+    const gf = gf16_from_bits(bits);
+    const result = gf16_to_bits(gf);
     try std.testing.expect(result == bits);
 }
 
 test "gf16_is_zero_true" {
-    given gf = Gf16{.sign = 0, .exp = 0, .mant = 0}
+    const gf = Gf16{.sign = 0, .exp = 0, .mant = 0};
     try std.testing.expect(gf16_is_zero(gf) == true);
 }
 
 test "gf16_is_subnormal_true" {
-    given gf = Gf16{.sign = 0, .exp = 0, .mant = 1}
+    const gf = Gf16{.sign = 0, .exp = 0, .mant = 1};
     try std.testing.expect(gf16_is_subnormal(gf) == true);
 }
 
 test "gf16_is_normal_true" {
-    given gf = Gf16{.sign = 0, .exp = 32, .mant = 0}
+    const gf = Gf16{.sign = 0, .exp = 32, .mant = 0};
     try std.testing.expect(gf16_is_normal(gf) == true);
 }
 
 test "gf16_is_infinity_true" {
-    given gf = Gf16{.sign = 0, .exp = 0x3F, .mant = 0}
+    const gf = Gf16{.sign = 0, .exp = 0x3F, .mant = 0};
     try std.testing.expect(gf16_is_infinity(gf) == true);
 }
 
 test "gf16_is_nan_true" {
-    given gf = Gf16{.sign = 0, .exp = 0x3F, .mant = 1}
+    const gf = Gf16{.sign = 0, .exp = 0x3F, .mant = 1};
     try std.testing.expect(gf16_is_nan(gf) == true);
 }
 
 test "posit16_from_bits_roundtrip" {
-    given bits = 0x4000
-    try std.testing.expect(p = posit16_from_bits(bits));
-    try std.testing.expect(result = posit16_to_bits(p));
+    const bits = 0x4000;
+    const p = posit16_from_bits(bits);
+    const result = posit16_to_bits(p);
     try std.testing.expect(result == bits);
 }
 
 test "posit16_is_zero_true" {
-    given p = posit16_from_bits(0x0000)
+    const p = posit16_from_bits(0x0000);
     try std.testing.expect(posit16_is_zero(p) == true);
 }
 
 test "posit16_is_one_true" {
-    given p = posit16_from_bits(0x4000)
+    const p = posit16_from_bits(0x4000);
     try std.testing.expect(posit16_is_one(p) == true);
 }
 
 test "posit16_is_neg_one_true" {
-    given p = posit16_from_bits(0xC000)
+    const p = posit16_from_bits(0xC000);
     try std.testing.expect(posit16_is_neg_one(p) == true);
 }
 
 test "posit16_is_naR_true" {
-    given p = posit16_from_bits(0x8000)
+    const p = posit16_from_bits(0x8000);
     try std.testing.expect(posit16_is_naR(p) == true);
 }
 
 test "posit16_get_sign_positive" {
-    given p = posit16_from_bits(0x4000)
+    const p = posit16_from_bits(0x4000);
     try std.testing.expect(posit16_get_sign(p) == false);
 }
 
 test "posit16_get_sign_negative" {
-    given p = posit16_from_bits(0xC000)
+    const p = posit16_from_bits(0xC000);
     try std.testing.expect(posit16_get_sign(p) == true);
 }
 
 test "posit16_decode_one" {
-    given p = posit16_from_bits(0x4000)
-    try std.testing.expect(comp = posit16_decode(p));
+    const p = posit16_from_bits(0x4000);
+    const comp = posit16_decode(p);
     try std.testing.expect(comp.sign == false);
     try std.testing.expect(comp.regime == 0);
     try std.testing.expect(comp.exponent == 0);
@@ -476,34 +476,34 @@ test "posit16_decode_one" {
 }
 
 test "conversion_config_init_structure" {
-    given config = conversion_config_init()
+    const config = conversion_config_init();
     try std.testing.expect(config.round_mode == 0);
     try std.testing.expect(config.clamp_overflow == true);
 }
 
 test "gf16_to_posit16_zero" {
-    given gf = Gf16{.sign = 0, .exp = 0, .mant = 0}
-    try std.testing.expect(p = gf16_to_posit16(gf));
+    const gf = Gf16{.sign = 0, .exp = 0, .mant = 0};
+    const p = gf16_to_posit16(gf);
     try std.testing.expect(posit16_is_zero(p) == true);
 }
 
 test "gf16_to_posit16_infinity" {
-    given gf = Gf16{.sign = 0, .exp = 0x3F, .mant = 0}
-    try std.testing.expect(p = gf16_to_posit16(gf));
+    const gf = Gf16{.sign = 0, .exp = 0x3F, .mant = 0};
+    const p = gf16_to_posit16(gf);
     try std.testing.expect(posit16_is_naR(p) == true);
 }
 
 test "gf16_to_posit16_nan" {
-    given gf = Gf16{.sign = 0, .exp = 0x3F, .mant = 1}
-    try std.testing.expect(p = gf16_to_posit16(gf));
+    const gf = Gf16{.sign = 0, .exp = 0x3F, .mant = 1};
+    const p = gf16_to_posit16(gf);
     try std.testing.expect(posit16_is_naR(p) == true);
 }
 
 test "gf16_to_posit16_preserves_sign" {
-    given gf_pos = Gf16{.sign = 1, .exp = 32, .mant = 0}
-    try std.testing.expect(gf_neg = Gf16{.sign = 0, .exp = 32, .mant = 0});
-    try std.testing.expect(p_pos = gf16_to_posit16(gf_pos));
-    try std.testing.expect(p_neg = gf16_to_posit16(gf_neg));
+    const gf_pos = Gf16{.sign = 1, .exp = 32, .mant = 0};
+    const gf_neg = Gf16{.sign = 0, .exp = 32, .mant = 0};
+    const p_pos = gf16_to_posit16(gf_pos);
+    const p_neg = gf16_to_posit16(gf_neg);
     try std.testing.expect(posit16_get_sign(p_pos) == true and posit16_get_sign(p_neg) == false);
 }
 
@@ -512,116 +512,132 @@ test "gf16_bits_to_posit16_bits_zero" {
 }
 
 test "gf16_bits_to_posit16_bits_sign_preserved" {
-    given gf_pos = 0x8000  // Negative zero
-    try std.testing.expect(gf_neg = 0x0000  // Positive zero);
+    const gf_pos = 0x8000  // Negative zero;
+    const gf_neg = 0x0000  // Positive zero;
     try std.testing.expect((gf16_bits_to_posit16_bits(gf_pos) & 0x8000) != 0);
     try std.testing.expect((gf16_bits_to_posit16_bits(gf_neg) & 0x8000) == 0);
 }
 
 test "gf16_to_posit16_with_result_zero" {
-    given gf = Gf16{.sign = 0, .exp = 0, .mant = 0}
-    try std.testing.expect(config = conversion_config_init());
-    try std.testing.expect(result = gf16_to_posit16_with_result(gf, config));
+    const gf = Gf16{.sign = 0, .exp = 0, .mant = 0};
+    const config = conversion_config_init();
+    const result = gf16_to_posit16_with_result(gf, config);
     try std.testing.expect(result.overflow == false);
     try std.testing.expect(result.underflow == false);
     try std.testing.expect(result.inexact == false);
 }
 
 test "gf16_to_posit16_with_result_infinity" {
-    given gf = Gf16{.sign = 0, .exp = 0x3F, .mant = 0}
-    try std.testing.expect(config = conversion_config_init());
-    try std.testing.expect(result = gf16_to_posit16_with_result(gf, config));
+    const gf = Gf16{.sign = 0, .exp = 0x3F, .mant = 0};
+    const config = conversion_config_init();
+    const result = gf16_to_posit16_with_result(gf, config);
     try std.testing.expect(result.inexact == true);
     try std.testing.expect(result.bits == 0x8000);
 }
 
 test "gf16_to_posit16_with_result_overflow_clamped" {
-    given gf = Gf16{.sign = 0, .exp = 0x3E, .mant = 0x1FF}  // Large value
-    try std.testing.expect(config = conversion_config_init());
-    try std.testing.expect(result = gf16_to_posit16_with_result(gf, config));
+    const gf = Gf16{.sign = 0, .exp = 0x3E, .mant = 0x1FF}  // Large value;
+    const config = conversion_config_init();
+    const result = gf16_to_posit16_with_result(gf, config);
     try std.testing.expect(result.overflow == true);
-    try std.testing.expect(result.bits != 0x8000  // Clamped, not NaR);
+    try std.testing.expect(result.bits != 0x8000); // Clamped, not NaR
 }
 
 test "gf16_to_posit16_with_result_overflow_not_clamped" {
-    given gf = Gf16{.sign = 0, .exp = 0x3E, .mant = 0x1FF}
-    try std.testing.expect(config = ConversionConfig{.round_mode = 0, .clamp_overflow = false});
-    try std.testing.expect(result = gf16_to_posit16_with_result(gf, config));
+    const gf = Gf16{.sign = 0, .exp = 0x3E, .mant = 0x1FF};
+    const config = ConversionConfig{.round_mode = 0, .clamp_overflow = false};
+    const result = gf16_to_posit16_with_result(gf, config);
     try std.testing.expect(result.overflow == true);
-    try std.testing.expect(result.bits == 0x8000  // NaR);
+    try std.testing.expect(result.bits == 0x8000); // NaR
 }
 
 // ============================================================================
 // Invariants
 // ============================================================================
 
+invariant gf16_bits_total {
+    assert GF16_BITS == 16;
+    assert GF16_SIGN_BIT == GF16_BITS - 1;
 }
-invariant gf16_bits_total
-    assert GF16_BITS == 16
-    try std.testing.expect(GF16_SIGN_BIT == GF16_BITS - 1);
 
-invariant gf16_exp_mant_sum
-    assert GF16_EXP_BITS + GF16_MANT_BITS == GF16_BITS - 1
+invariant gf16_exp_mant_sum {
+    assert GF16_EXP_BITS + GF16_MANT_BITS == GF16_BITS - 1;
+}
 
-invariant posit16_bits_total
-    assert POSIT16_BITS == 16
+invariant posit16_bits_total {
+    assert POSIT16_BITS == 16;
+}
 
-invariant posit16_es_value
-    assert POSIT16_ES == 1
+invariant posit16_es_value {
+    assert POSIT16_ES == 1;
+}
 
-invariant posit16_regime_mant_sum
-    assert POSIT16_REGIME_BITS + POSIT16_MANT_BITS == POSIT16_BITS - POSIT16_ES - 1
+invariant posit16_regime_mant_sum {
+    assert POSIT16_REGIME_BITS + POSIT16_MANT_BITS == POSIT16_BITS - POSIT16_ES - 1;
+}
 
-invariant gf16_from_bits_roundtrip
-    given bits = 0x5678
-    assert gf16_to_bits(gf16_from_bits(bits)) == bits
+invariant gf16_from_bits_roundtrip {
+    const bits = 0x5678;
+    assert gf16_to_bits(gf16_from_bits(bits)) == bits;
+}
 
-invariant posit16_from_bits_roundtrip
-    given bits = 0x4000
-    assert posit16_to_bits(posit16_from_bits(bits)) == bits
+invariant posit16_from_bits_roundtrip {
+    const bits = 0x4000;
+    assert posit16_to_bits(posit16_from_bits(bits)) == bits;
+}
 
-invariant gf16_zero_exp_zero_mant_zero
-    given gf = Gf16{.sign = 0, .exp = 0, .mant = 0}
-    assert gf16_is_zero(gf) and not gf16_is_subnormal(gf)
+invariant gf16_zero_exp_zero_mant_zero {
+    const gf = Gf16{.sign = 0, .exp = 0, .mant = 0};
+    assert gf16_is_zero(gf) and !gf16_is_subnormal(gf);
+}
 
-invariant gf16_subnormal_exp_zero_mant_nonzero
-    given gf = Gf16{.sign = 0, .exp = 0, .mant = 1}
-    assert gf16_is_subnormal(gf) and not gf16_is_zero(gf)
+invariant gf16_subnormal_exp_zero_mant_nonzero {
+    const gf = Gf16{.sign = 0, .exp = 0, .mant = 1};
+    assert gf16_is_subnormal(gf) and !gf16_is_zero(gf);
+}
 
-invariant gf16_normal_exp_nonzero
-    given gf = Gf16{.sign = 0, .exp = 1, .mant = 0}
-    assert gf16_is_normal(gf) and not gf16_is_zero(gf)
+invariant gf16_normal_exp_nonzero {
+    const gf = Gf16{.sign = 0, .exp = 1, .mant = 0};
+    assert gf16_is_normal(gf) and !gf16_is_zero(gf);
+}
 
-invariant posit16_zero_bits_zero
-    given p = posit16_from_bits(0x0000)
-    assert posit16_is_zero(p) and posit16_get_sign(p) == false
+invariant posit16_zero_bits_zero {
+    const p = posit16_from_bits(0x0000);
+    assert posit16_is_zero(p) and posit16_get_sign(p) == false;
+}
 
-invariant posit16_one_bits_one
-    given p = posit16_from_bits(0x4000)
-    assert posit16_is_one(p) and not posit16_is_zero(p)
+invariant posit16_one_bits_one {
+    const p = posit16_from_bits(0x4000);
+    assert posit16_is_one(p) and !posit16_is_zero(p);
+}
 
-invariant posit16_naR_bits_naR
-    given p = posit16_from_bits(0x8000)
-    assert posit16_is_naR(p)
+invariant posit16_naR_bits_naR {
+    const p = posit16_from_bits(0x8000);
+    assert posit16_is_naR(p);
+}
 
-invariant conversion_config_init_clamp_enabled
-    given config = conversion_config_init()
-    assert config.clamp_overflow == true
+invariant conversion_config_init_clamp_enabled {
+    const config = conversion_config_init();
+    assert config.clamp_overflow == true;
+}
 
-invariant gf16_to_posit16_zero_preserves
-    given gf = Gf16{.sign = 0, .exp = 0, .mant = 0}
-    try std.testing.expect(p = gf16_to_posit16(gf));
-    try std.testing.expect(posit16_is_zero(p) and not posit16_get_sign(p));
+invariant gf16_to_posit16_zero_preserves {
+    const gf = Gf16{.sign = 0, .exp = 0, .mant = 0};
+    const p = gf16_to_posit16(gf);
+    assert posit16_is_zero(p) and !posit16_get_sign(p);
+}
 
-invariant gf16_to_posit16_infinity_to_naR
-    given gf = Gf16{.sign = 0, .exp = 0x3F, .mant = 0}
-    try std.testing.expect(p = gf16_to_posit16(gf));
-    try std.testing.expect(posit16_is_naR(p));
+invariant gf16_to_posit16_infinity_to_naR {
+    const gf = Gf16{.sign = 0, .exp = 0x3F, .mant = 0};
+    const p = gf16_to_posit16(gf);
+    assert posit16_is_naR(p);
+}
 
-invariant gf16_to_posit16_nan_to_naR
-    given gf = Gf16{.sign = 0, .exp = 0x3F, .mant = 1}
-    try std.testing.expect(p = gf16_to_posit16(gf));
-    try std.testing.expect(posit16_is_naR(p));
+invariant gf16_to_posit16_nan_to_naR {
+    const gf = Gf16{.sign = 0, .exp = 0x3F, .mant = 1};
+    const p = gf16_to_posit16(gf);
+    assert posit16_is_naR(p);
+}
 
 // ============================================================================
 // Benchmarks

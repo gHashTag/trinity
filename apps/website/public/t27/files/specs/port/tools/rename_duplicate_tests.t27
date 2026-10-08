@@ -4,7 +4,6 @@
 
 module rename_duplicate_tests;
     use base::types;
-    use io::file;
 
 const DIGITS : [10]str = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
 

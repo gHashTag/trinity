@@ -35,12 +35,12 @@ pub const EXIT_INVARIANT : str = "Toxicity is detected, proof traces are generat
 pub const CLARA_ROLE : str = "TA2: AR Validation & Proof - validates AR reasoning, generates proofs";
 ; Skill IDs the agent holds. Bound only where a source names the skill; SKILLS_NOTE
 ; cites that source or says why the list is empty.
-pub const SKILLS : [0]str = [];
-pub const SKILLS_NOTE : str = "No source binds a skill to this agent: the alphabet key files point at specs and docs, not at a skill directory, no .claude/agents file names one, and specs/OWNERS.md has no row for it.";
+pub const SKILLS : [3]str = ["t27/tri-pipeline", "trinity/review-code", "trinity/status"];
+pub const SKILLS_NOTE : str = "docs/agents/AGENTS_ALPHABET.md \"Who holds a tool, and who holds a skill\", rule 2: domain lead for 3 skill card(s).";
 ; Tool IDs (specs/tools) the agent holds. Bound only where a source line names the command
 ; for this letter; TOOLS_NOTE cites that line or says why the list is empty.
-pub const TOOLS : [2]str = ["tri/test", "tri/verdict"];
-pub const TOOLS_NOTE : str = ".claude/agents/agent-v-verify.md:47 (tri test) and :49 (tri verdict); docs/agents/AGENTS_ALPHABET.md:80 PHASE 5 VERDICT names tri verdict --toxic for V. Line 48 names tri verify, which is not a tri command at this commit.";
+pub const TOOLS : [8]str = ["gHashTag/trinity:tri/bench", "gHashTag/trinity:tri/test", "tri/competitors", "tri/mutate", "tri/orphaned", "tri/test", "tri/verdict", "tri/vsim"];
+pub const TOOLS_NOTE : str = "docs/agents/AGENTS_ALPHABET.md \"Who holds a tool, and who holds a skill\", rule 2: domain lead for 8 tool card(s), read off what each card states it does rather than off its name.";
 ; Where the agent logs episodes (AGENTS_ALPHABET.md: "Logs to .trinity/experience/").
 pub const EXPERIENCE_LOG : str = ".trinity/experience/";
 pub const ENABLED : bool = true;

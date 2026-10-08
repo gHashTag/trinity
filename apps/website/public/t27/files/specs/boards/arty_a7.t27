@@ -2,6 +2,13 @@
 // t27/specs/boards/arty_a7.t27
 // Digilent Arty A7 Board Profile
 // Artix-7 XC7A35T/XC7A100T, 100MHz clock, 4 LEDs, 4 buttons, UART
+// Pin/bank source: Digilent/digilent-xdc@00a3404901f35aa9567b01ecb3f2c233b6efe9f4
+// Arty-A7-35-Master.xdc (Rev D/E) and Arty-A7-100-Master.xdc (Rev D/E).
+// UART names below are FPGA-facing: TX D10/output, RX A9/input. Vendor
+// board.xml + part0_pins.xml E.0/1.1 confirm direction; the Master XDC
+// uart_rxd_out/uart_txd_in labels are the USB bridge/PC viewpoint.
+// Bank fields identify physical FPGA I/O banks, not logical array indices.
+// Existing FPGA part strings are retained; this is not a SKU/revision audit.
 // phi^2 + 1/phi^2 = 3 | TRINITY
 
 module BoardArtyA7 {
@@ -40,77 +47,77 @@ module BoardArtyA7 {
         .is_clock = true,
         .is_input = true,
         .is_output = false,
-        .bank = 0,
+        .bank = 35,
     };
 
     const PIN_RST_N : PinAssignment = PinAssignment{
         .port_name = "rst_n",
-        .package_pin = "C12",
+        .package_pin = "C2",
         .iostandard = "LVCMOS33",
         .is_clock = false,
         .is_input = true,
         .is_output = false,
-        .bank = 0,
+        .bank = 35,
     };
 
     const PIN_UART_TX : PinAssignment = PinAssignment{
         .port_name = "uart_tx",
-        .package_pin = "A9",
+        .package_pin = "D10",
         .iostandard = "LVCMOS33",
         .is_clock = false,
         .is_input = false,
         .is_output = true,
-        .bank = 0,
+        .bank = 16,
     };
 
     const PIN_UART_RX : PinAssignment = PinAssignment{
         .port_name = "uart_rx",
-        .package_pin = "C9",
+        .package_pin = "A9",
         .iostandard = "LVCMOS33",
         .is_clock = false,
         .is_input = true,
         .is_output = false,
-        .bank = 0,
+        .bank = 16,
     };
 
     const PIN_LED_0 : PinAssignment = PinAssignment{
         .port_name = "led[0]",
-        .package_pin = "R5",
+        .package_pin = "H5",
         .iostandard = "LVCMOS33",
         .is_clock = false,
         .is_input = false,
         .is_output = true,
-        .bank = 0,
+        .bank = 35,
     };
 
     const PIN_LED_1 : PinAssignment = PinAssignment{
         .port_name = "led[1]",
-        .package_pin = "T5",
+        .package_pin = "J5",
         .iostandard = "LVCMOS33",
         .is_clock = false,
         .is_input = false,
         .is_output = true,
-        .bank = 0,
+        .bank = 35,
     };
 
     const PIN_LED_2 : PinAssignment = PinAssignment{
         .port_name = "led[2]",
-        .package_pin = "T8",
-        .iostandard = "LVCMOS33",
-        .is_clock = false,
-        .is_input = false,
-        .is_output = true,
-        .bank = 0,
-    };
-
-    const PIN_LED_3 : PinAssignment = PinAssignment{
-        .port_name = "led[3]",
         .package_pin = "T9",
         .iostandard = "LVCMOS33",
         .is_clock = false,
         .is_input = false,
         .is_output = true,
-        .bank = 0,
+        .bank = 14,
+    };
+
+    const PIN_LED_3 : PinAssignment = PinAssignment{
+        .port_name = "led[3]",
+        .package_pin = "T10",
+        .iostandard = "LVCMOS33",
+        .is_clock = false,
+        .is_input = false,
+        .is_output = true,
+        .bank = 14,
     };
 
     const PIN_BTN_0 : PinAssignment = PinAssignment{
@@ -120,7 +127,7 @@ module BoardArtyA7 {
         .is_clock = false,
         .is_input = true,
         .is_output = false,
-        .bank = 0,
+        .bank = 16,
     };
 
     const PIN_BTN_1 : PinAssignment = PinAssignment{
@@ -130,7 +137,7 @@ module BoardArtyA7 {
         .is_clock = false,
         .is_input = true,
         .is_output = false,
-        .bank = 0,
+        .bank = 16,
     };
 
     const PIN_BTN_2 : PinAssignment = PinAssignment{
@@ -140,7 +147,7 @@ module BoardArtyA7 {
         .is_clock = false,
         .is_input = true,
         .is_output = false,
-        .bank = 0,
+        .bank = 16,
     };
 
     const PIN_BTN_3 : PinAssignment = PinAssignment{
@@ -150,7 +157,7 @@ module BoardArtyA7 {
         .is_clock = false,
         .is_input = true,
         .is_output = false,
-        .bank = 0,
+        .bank = 16,
     };
 
     fn count_leds() -> usize {
@@ -209,38 +216,62 @@ module BoardArtyA7 {
         given mhz = clock_freq_mhz()
         then mhz == 100
 
-    test pin_clk_is_e3
+    test pin_clk_matches_digilent
         given pin = PIN_CLK
-        then pin.package_pin == "E3" and pin.is_clock == true
+        then pin.package_pin == "E3" and pin.bank == 35 and pin.iostandard == "LVCMOS33" and pin.port_name == "clk" and pin.is_clock == true and pin.is_input == true and pin.is_output == false
 
-    test pin_rst_n_is_c12
+    test pin_rst_n_matches_digilent
         given pin = PIN_RST_N
-        then pin.package_pin == "C12" and pin.is_input == true
+        then pin.package_pin == "C2" and pin.bank == 35 and pin.iostandard == "LVCMOS33" and pin.port_name == "rst_n" and pin.is_clock == false and pin.is_input == true and pin.is_output == false
 
-    test pin_uart_tx_is_a9
+    test pin_uart_tx_matches_digilent
         given pin = PIN_UART_TX
-        then pin.package_pin == "A9" and pin.is_output == true
+        then pin.package_pin == "D10" and pin.bank == 16 and pin.iostandard == "LVCMOS33" and pin.port_name == "uart_tx" and pin.is_clock == false and pin.is_input == false and pin.is_output == true
 
-    test pin_uart_rx_is_c9
+    test pin_uart_rx_matches_digilent
         given pin = PIN_UART_RX
-        then pin.package_pin == "C9" and pin.is_input == true
+        then pin.package_pin == "A9" and pin.bank == 16 and pin.iostandard == "LVCMOS33" and pin.port_name == "uart_rx" and pin.is_clock == false and pin.is_input == true and pin.is_output == false
 
-    test pin_led0_is_r5
+    test pin_led_0_matches_digilent
         given pin = PIN_LED_0
-        then pin.package_pin == "R5" and pin.port_name == "led[0]"
+        then pin.package_pin == "H5" and pin.bank == 35 and pin.iostandard == "LVCMOS33" and pin.port_name == "led[0]" and pin.is_clock == false and pin.is_input == false and pin.is_output == true
 
-    test pin_led3_is_t9
+    test pin_led_3_matches_digilent
         given pin = PIN_LED_3
-        then pin.package_pin == "T9" and pin.port_name == "led[3]"
+        then pin.package_pin == "T10" and pin.bank == 14 and pin.iostandard == "LVCMOS33" and pin.port_name == "led[3]" and pin.is_clock == false and pin.is_input == false and pin.is_output == true
 
-    test pin_btn0_is_d9
+    test pin_btn_0_matches_digilent
         given pin = PIN_BTN_0
-        then pin.package_pin == "D9" and pin.is_input == true
+        then pin.package_pin == "D9" and pin.bank == 16 and pin.iostandard == "LVCMOS33" and pin.port_name == "btn[0]" and pin.is_clock == false and pin.is_input == true and pin.is_output == false
 
     test two_fpga_parts_available
         given p35 = FPGA_PART_35T
         and   p100 = FPGA_PART_100T
         then p35 != "" and p100 != ""
+
+    test count_buttons_returns_4
+        given count = count_buttons()
+        then count == 4
+
+    test pin_led_1_matches_digilent
+        given pin = PIN_LED_1
+        then pin.package_pin == "J5" and pin.bank == 35 and pin.iostandard == "LVCMOS33" and pin.port_name == "led[1]" and pin.is_clock == false and pin.is_input == false and pin.is_output == true
+
+    test pin_led_2_matches_digilent
+        given pin = PIN_LED_2
+        then pin.package_pin == "T9" and pin.bank == 14 and pin.iostandard == "LVCMOS33" and pin.port_name == "led[2]" and pin.is_clock == false and pin.is_input == false and pin.is_output == true
+
+    test pin_btn_1_matches_digilent
+        given pin = PIN_BTN_1
+        then pin.package_pin == "C9" and pin.bank == 16 and pin.iostandard == "LVCMOS33" and pin.port_name == "btn[1]" and pin.is_clock == false and pin.is_input == true and pin.is_output == false
+
+    test pin_btn_2_matches_digilent
+        given pin = PIN_BTN_2
+        then pin.package_pin == "B9" and pin.bank == 16 and pin.iostandard == "LVCMOS33" and pin.port_name == "btn[2]" and pin.is_clock == false and pin.is_input == true and pin.is_output == false
+
+    test pin_btn_3_matches_digilent
+        given pin = PIN_BTN_3
+        then pin.package_pin == "B8" and pin.bank == 16 and pin.iostandard == "LVCMOS33" and pin.port_name == "btn[3]" and pin.is_clock == false and pin.is_input == true and pin.is_output == false
 
     invariant board_name_not_empty
         assert BOARD_NAME != ""

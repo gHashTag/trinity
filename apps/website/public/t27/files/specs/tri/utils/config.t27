@@ -5,7 +5,6 @@
 module TriConfig;
     use base::types;
     use math::constants;
-    use std;
 
     // ═══════════════════════════════════════════════════════════
     // 2. Types

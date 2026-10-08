@@ -22,3 +22,11 @@ pub const RUNS_NOTE : str = "no skill invocation found in source";
 pub const ENABLED : bool = true;
 pub const ON_FAILURE : str = "log";
 pub const CONTROL : str = "inngest-dashboard";
+
+test telegraf_periodic_webhook_health_check_constants {
+  assert KIND == "cron";
+  assert ENABLED == true;
+  assert TZ == "UTC";
+  assert HOST == "inngest";
+  assert ON_FAILURE == "log";
+}

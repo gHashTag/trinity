@@ -24,3 +24,10 @@ pub const ENABLED : bool = true;
 pub const NOTE : str = "Only starts when a session signing key is configured; a deployed render server refuses to boot without one.";
 pub const ON_FAILURE : str = "log";
 pub const CONTROL : str = "code-only";
+
+test basic_constants {
+  assert KIND == "cron";
+  assert ENABLED == true;
+  assert INTERVAL_MS >= 5000;
+  assert HOST == "timer";
+}

@@ -35,7 +35,7 @@ pub const RESOURCES_ABOUT : [2]str = ["Constitutional laws including L1 TRACEABI
 pub const TOOLS_NOTE : str = "";
 ; true when the server is a third-party package launched by npx or an outside binary.
 pub const EXTERNAL : bool = false;
-pub const AGENTS : [0]str = [];
-pub const AGENTS_NOTE : str = "No source binds an agent letter to this server: docs/agents/AGENTS_ALPHABET.md, specs/OWNERS.md and .claude/agents/*.md do not name it.";
+pub const AGENTS : [3]str = ["T", "W", "S"];
+pub const AGENTS_NOTE : str = "docs/agents/AGENTS_ALPHABET.md \"Who holds a tool, and who holds a skill\" binds every tool to the Queen (T). Domain lead W, S: Held: ABOUT \"checks L1 TRACEABILITY (Closes #N) in commit messages and PR descriptions, generates compliant commit messages ... serves the PHI LOOP stacked-branch template\" is the commit/branch side W owns (EXIT_INVARIANT \"Hash is verified, commit is signed\"), and validate_branch_name \"Validate branch name follows t27 naming conventions\" is almost verbatim S's EXIT_INVARIANT \"Standards are consistent, naming rules followed\"; the constitution resource gives A a lesser claim than either.";
 pub const WITNESS : str = "source-parse";
 pub const ENABLED : bool = true;

@@ -568,6 +568,81 @@ The Coptic alphabet = 24 Greek letters + 7 Demotic (from ancient Egyptian writin
 
 ---
 
+---
+
+## Who holds a tool, and who holds a skill
+
+The cards under `specs/tools/` and `specs/skills/` each name the agent letters a
+source binds to them, and for a long time almost no source bound anything: 86 of
+92 tool cards and 23 of 26 skill cards carried an `AGENTS_NOTE` or `SKILLS_NOTE`
+saying, truthfully, that this document, `specs/OWNERS.md` and `.claude/agents/*.md`
+did not name them. That is an honest record of an absence, and it left the ladder
+Specs -> Skills -> Crons -> Agents -> Tools with a rung nothing stood on.
+
+This section is the source those notes were looking for. Two rules, and they are
+independent of each other.
+
+**1. The Queen holds the whole toolset.** Agent **T** (Tau) is the orchestrator:
+every `tri` command and every MCP server in `specs/tools/` is hers to run, and
+every skill in `specs/skills/` is hers to invoke. Her cycle already required it --
+she was bound to `tri/gen` and `tri/test` while `tri/verdict`, `tri/cell` and
+`tri/experience`, the VERIFY, EVOLVE and LEARN steps of her own nine-phase loop,
+were bound to V, W and E and not to her. A Queen who cannot run the steps she
+orchestrates is a gap in the model, not a property of it.
+
+**2. Every tool and skill also has a domain lead.** The bee whose subject the tool
+is: the one who is asked first, whose invariants it serves, and who answers when
+it breaks. A domain lead is read off what the card states it does -- its `ABOUT`,
+`ACTIONS`, `SOURCE`, `SUMMARY_EN` -- and never off its name. Six tool cards have
+no domain lead, and they say why: four are external MCP servers whose cards record
+only that they are registered in `.mcp.json`, and two state a subject too thin to
+place (`tri/doctor` starts and stops a state file; `tri/dashboard` says "Sacred
+dashboard"). They remain the Queen's alone until a card says what they are for.
+
+A domain lead is not exclusive. Two letters share a card when it genuinely spans
+two domains, and a tool the Queen runs daily may still be N's or K's to answer for.
+
+| Agent | Tools | Skills | Held |
+|-------|-------|--------|------|
+| **A** | 0 | 0 | — |
+| **B** | 13 | 4 | `mcp/trinity`, `tri/ci`, `tri/fmt`, `tri/gates`, `tri/harness`, `tri/hooks`, `tri/issues`, `tri/ledgers`, `tri/mods`, `tri/orphaned`, `tri/pr`, `tri/red`, `tri/reseal`, *t27/tri-pipeline*, *trinity/cloud*, *trinity/run-tests*, *trinity/trinity-test* |
+| **C** | 19 | 2 | `gHashTag/trinity:tri/needle`, `gHashTag/trinity:tri/needle-check`, `gHashTag/trinity:tri/needle-search`, `mcp/needle`, `tri/abandoned`, `tri/discard`, `tri/elab`, `tri/emit`, `tri/gen`, `tri/jumps`, `tri/kinds`, `tri/misread`, `tri/one-away`, `tri/quantifiers`, `tri/reseal`, `tri/seals`, `tri/types`, `tri/unparsed`, `tri/vsim`, *t27/self-host*, *trinity/vibee-gen* |
+| **D** | 1 | 1 | `mcp/zig-docs`, *trinity/vibee-gen* |
+| **E** | 2 | 1 | `tri/experience`, `tri/skill`, *t27/wrap-up* |
+| **F** | 2 | 1 | `tri/lean`, `tri/vectors`, *trinity/vsa-verify* |
+| **G** | 0 | 1 | *trinity/tech-tree* |
+| **H** | 0 | 1 | *trinity/farm-garden* |
+| **I** | 0 | 0 | — |
+| **J** | 4 | 4 | `gHashTag/trinity:tri/swarm`, `mcp/inngest-dev`, `tri/loop`, `tri/topic`, *t27/wave-audit*, *trinity/board-sync*, *trinity/tech-tree*, *trinity/ux-wave* |
+| **K** | 7 | 1 | `gHashTag/trinity:tri/fpga`, `gHashTag/trinity:tri/sacred-const`, `tri/fleet`, `tri/fpga`, `tri/rtl`, `tri/sweep`, `tri/synth`, *trinity/fpga-synth* |
+| **L** | 2 | 0 | `tri/quantifiers`, `tri/unparsed` |
+| **M** | 4 | 5 | `gHashTag/trinity:tri/bench`, `tri/census`, `tri/issues`, `tri/window`, *t27/measure-corpus*, *trinity/cloud*, *trinity/god-mode*, *trinity/status*, *trinity/tri* |
+| **N** | 5 | 2 | `gHashTag/trinity:tri/fib`, `gHashTag/trinity:tri/gematria`, `gHashTag/trinity:tri/lucas`, `gHashTag/trinity:tri/phi`, `gHashTag/trinity:tri/vsa`, *trinity/trinity-test*, *trinity/vsa-verify* |
+| **O** | 3 | 2 | `gHashTag/trinity:tri/omega`, `gHashTag/trinity:tri/swarm`, `tri/health`, *t27/phi-loop*, *t27/tri* |
+| **P** | 9 | 0 | `gHashTag/trinity:tri/bio`, `gHashTag/trinity:tri/blindspots`, `gHashTag/trinity:tri/conscious`, `gHashTag/trinity:tri/constants`, `gHashTag/trinity:tri/cosmos`, `gHashTag/trinity:tri/particles`, `gHashTag/trinity:tri/quantum`, `gHashTag/trinity:tri/sacred-const`, `gHashTag/trinity:tri/spiral` |
+| **Q** | 1 | 1 | `mcp/inngest-dev`, *trinity/god-mode* |
+| **R** | 0 | 0 | — |
+| **S** | 4 | 1 | `mcp/t27-traceability`, `tri/prose`, `tri/seals`, `tri/types`, *t27/measure-corpus* |
+| **T** | 0 | 0 | — |
+| **U** | 0 | 0 | — |
+| **V** | 8 | 3 | `gHashTag/trinity:tri/bench`, `gHashTag/trinity:tri/test`, `tri/competitors`, `tri/mutate`, `tri/orphaned`, `tri/test`, `tri/verdict`, `tri/vsim`, *t27/tri-pipeline*, *trinity/review-code*, *trinity/status* |
+| **W** | 7 | 3 | `mcp/t27-traceability`, `mcp/tri-mcp`, `tri/cell`, `tri/merging`, `tri/pr`, `tri/status`, `tri/worktrees`, *t27/phi-loop*, *t27/tri*, *trinity/implement-issue* |
+| **X** | 0 | 1 | *trinity/scholar* |
+| **Y** | 7 | 3 | `gHashTag/trinity:tri/govern`, `gHashTag/trinity:tri/hardware`, `gHashTag/trinity:tri/identity`, `gHashTag/trinity:tri/mesh`, `gHashTag/trinity:tri/reputation`, `gHashTag/trinity:tri/wallet`, `tri/serve`, *t27/providers-steward*, *trinity/farm-garden*, *trinity/wave* |
+| **Z** | 2 | 4 | `mcp/tri-ssot`, `tri/now`, *trinity/blog-post*, *trinity/doctor*, *trinity/queen-hive-visuals*, *trinity/ux-wave* |
+| **TI** | 1 | 0 | `gHashTag/trinity:tri/identity` |
+
+Tools are written in `code`, skills in *italics*. The Queen is not listed: she
+holds all 92 tools and all 27 skills by rule 1, which is why her own cards say so
+rather than repeating this table.
+
+Each binding is recorded twice and checked both ways: a tool card's `AGENTS` must
+name the letter, and that agent's card's `TOOLS` must name the tool.
+`scripts/agents-from-specs.mjs` in gHashTag/trinity fails the build on a link
+declared from one side only, so this table cannot quietly drift from the specs.
+
+---
+
 ## φ² + 1/φ² = 3 = TRINITY
 
 The agent alphabet is not just a list of modules, but a **mental model** of the system. Each letter = archetype with 4000-year history.

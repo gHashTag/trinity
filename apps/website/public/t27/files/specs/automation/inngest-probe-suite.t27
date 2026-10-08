@@ -14,7 +14,7 @@ module automation::inngest_probe_suite {
     pub const KIND : str = "automation";
     pub const ID : str = "inngest-probe-suite";
     pub const REPO : str = "999-multibots-telegraf";
-    pub const VERSION : u8 = 1;
+    pub const VERSION : u8 = 2;  // 2: LIVE_RUN_STATUS witnessed; status route split, see inngest-functions-status.t27
 
     // How the suite is started and by whom.
     pub const COMMAND : str = "/inngest_probe";
@@ -60,11 +60,32 @@ module automation::inngest_probe_suite {
     pub const EXPECT_FAILED_AT_GUARD_AT_251571C : u8 = 17;
     pub const EXPECT_COMPLETED_AT_251571C : u8 = 11;
 
-    // Honesty. The suite has not been run against production from this spec's commit: the
-    // GraphQL endpoint is private to the Railway network, so the first real run happens
-    // after deploy, from the admin chat. The unit tests drive the orchestrator with a fake
-    // Inngest (src/__tests__/inngest/probeSuite.test.ts, src/__tests__/bot/inngestProbeCommand.test.ts).
-    pub const LIVE_RUN_STATUS : str = "not-yet-run";
+    // Honesty. VERSION 1 said "not-yet-run". Three production runs exist since. The invoked
+    // runs of all three are visible in the production Inngest GraphQL (read 2026-09-12); the
+    // verdict counts below are as recorded by the host in docs/inngest/probe-suite.md and
+    // docs/inngest/witness/2026-09-10-probe-suite-03-19Z.json, not re-derived here.
+    //   2026-09-09T19:11Z  from the admin chat; the judge of that build reported 17 mismatch,
+    //                      later attributed to the judge reading Attempt 0 only
+    //   2026-09-10T02:17Z  mirror run right after a deploy: 21 skipped with a FAILED run id
+    //                      (two judge defects, fixed in host PR #2331)
+    //   2026-09-10T03:19Z  runProbeSuite from host main 224a87f against the production GraphQL,
+    //                      from an operator sandbox: 28 invoked, 28 match, 0 mismatch,
+    //                      0 timeout, 0 invoke-error; 03:19:17Z - 03:20:05Z (the witness file)
+    // What is still not witnessed: the Telegram path of the merged judge (/inngest_probe ->
+    // button -> report inside the deployed bot process). Unit tests drive the orchestrator with
+    // a fake Inngest (src/__tests__/inngest/probeSuite.test.ts, src/__tests__/bot/inngestProbeCommand.test.ts).
+    pub const LIVE_RUN_STATUS : str = "witnessed-2026-09-10T03:19Z";
+    pub const LIVE_RUNS : u8 = 3;
+    pub const LIVE_LAST_MATCH : u8 = 28;
+    pub const LIVE_LAST_MISMATCH : u8 = 0;
+    pub const TELEGRAM_PATH_WITNESSED_WITH_MERGED_JUDGE : bool = false;
+
+    // A probe run that FAILED at its guard is the good outcome here and a red dot nowhere:
+    // the status route keeps such runs out of lastRun and out of the failed counters
+    // (specs/automation/inngest-functions-status.t27). The onFailure handler of every function
+    // recognises a probe event and sends no admin alert (host: isProbeFailureEvent in client.ts).
+    pub const PROBE_RUN_IS_HEALTH_SIGNAL : bool = false;
+    pub const PROBE_FAILURE_ALERTS_ADMIN : bool = false;
 
     struct ProbePlan {
         id: str,

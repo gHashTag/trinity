@@ -59,14 +59,15 @@ spec Restraint {
             }
         }
 
-        match config.restraint_type {
-            RestraintType::UNKNOWN_TO_FALSE => unknown_to_false(value),
-            RestraintType::BOUNDED_UNCERTAINTY => bounded_uncertainty(value, config.threshold),
-            RestraintType::CONFIDENCE_THRESHOLD => confidence_threshold(value, config.threshold),
-            RestraintType::TEMPORAL_DECAY => temporal_decay(value, config.threshold),
-            RestraintType::COMPLEXITY_PENALTY => complexity_penalty(value),
-            RestraintType::TOXICITY_BLOCK => toxicity_block(value)
-        }
+        // A Rust `match` here lowered to an empty body in every backend (#5949).
+        return switch (config.restraint_type) {
+            .UNKNOWN_TO_FALSE => unknown_to_false(value),
+            .BOUNDED_UNCERTAINTY => bounded_uncertainty(value, config.threshold),
+            .CONFIDENCE_THRESHOLD => confidence_threshold(value, config.threshold),
+            .TEMPORAL_DECAY => temporal_decay(value, config.threshold),
+            .COMPLEXITY_PENALTY => complexity_penalty(value),
+            .TOXICITY_BLOCK => toxicity_block(value),
+        };
     }
 
     // Restraint: K_UNKNOWN becomes K_FALSE

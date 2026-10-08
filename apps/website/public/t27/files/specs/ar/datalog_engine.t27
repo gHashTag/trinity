@@ -148,11 +148,8 @@ spec DatalogEngine {
         let mut trace = new_proof_trace();
         let mut iteration = 0;
 
-        loop {
+        while iteration < MAX_STEPS {
             iteration = iteration + 1;
-            if iteration > MAX_STEPS {
-                break
-            }
 
             let mut derived_facts: [Fact] = [];
 
@@ -326,19 +323,19 @@ spec DatalogEngine {
     // BENCHMARKS
 
     bench query_latency {
-        // Target: <5μs for simple lookup
+        // Target: <5us for simple lookup
     }
 
     bench add_fact_latency {
-        // Target: <1μs per fact
+        // Target: <1us per fact
     }
 
     bench eval_bottom_up_latency {
-        // Target: <100μs for 10-rule database
+        // Target: <100us for 10-rule database
     }
 
     bench eval_top_down_latency {
-        // Target: <10μs for single derivation
+        // Target: <10us for single derivation
     }
 
     bench memory_per_fact {

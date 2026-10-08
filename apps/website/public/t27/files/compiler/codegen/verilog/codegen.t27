@@ -503,7 +503,7 @@ module verilog_codegen {
 
         // Emit a single invariant as Verilog assertion
         fn emit_verilog_assertion(self: *VerilogCodegen, inv: InvariantDecl) void {
-            const verilog_name = mangle_verilog_name(inv.name);
+            const verilog_name = self.mangle_verilog_name(inv.name);
 
             self.emit("// Invariant: ");
             self.emit(inv.formal_statement);
@@ -658,7 +658,7 @@ module verilog_codegen {
 
         // Emit a single test case as Verilog task
         fn emit_verilog_test_task(self: *VerilogCodegen, test_case: TestCase) void {
-            const verilog_name = mangle_verilog_name(test_case.name);
+            const verilog_name = self.mangle_verilog_name(test_case.name);
 
             self.emit("// Test: ");
             self.emit(test_case.name);
@@ -729,7 +729,7 @@ module verilog_codegen {
             if (self.ast.test_section) |test_section| {
                 self.emit_line("// Run tests");
                 for (test_section.test_cases) |test_case| {
-                    const verilog_name = mangle_verilog_name(test_case.name);
+                    const verilog_name = self.mangle_verilog_name(test_case.name);
                     self.emit("test_");
                     self.emit(verilog_name);
                     self.emit_line("();");

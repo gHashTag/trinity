@@ -23,3 +23,12 @@ pub const TAGS : [3]str = ["tests", "build", "zig"];
 pub const ENABLED : bool = true;
 ; Default budget; SKILL.md declares no timeout of its own.
 pub const TIMEOUT_MIN : u16 = 30;
+
+test trinity_run_tests_constants {
+    assert KIND == "skill";
+    assert REPO == "trinity";
+    assert SOURCE == "SKILL.md";
+    assert ENABLED == true;
+    assert TIMEOUT_MIN == 30;
+    assert TAGS[0] == "tests";
+}

@@ -1,4 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
+// Issue: https://github.com/dmitrii-f-t27/trinity-memory/issues/125
+// Coverage: https://github.com/dmitrii-f-t27/trinity-memory/issues/29
+// Coverage: https://github.com/dmitrii-f-t27/trinity-memory/issues/30
+// Coverage: https://github.com/dmitrii-f-t27/trinity-memory/issues/34
 // specs/formats/mlx.t27 -- MLX 2-bit affine quantization (codes, scales, biases)
 // Restates upstream ml-explore/mlx@0a8e18e034d61b591f53a0616c722d2d9770f379
 // mlx/ops.cpp: :4974-5019 (pack_and_quantize: q = clip(round((w - bias) /

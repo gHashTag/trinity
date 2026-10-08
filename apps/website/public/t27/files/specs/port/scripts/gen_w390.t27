@@ -1,79 +1,75 @@
-module port::scripts;
+// specs/port/scripts/gen_w390.t27 -- port of scripts/gen_w390.py:
+// wave_segments() finds the "// Wave Loop N" headers in a spec's text and
+// returns one segment per header with its byte range. The host then appends
+// the W390 blocks; append_w390 is stubbed, as in the sibling ports.
+// The language has no regex or byte indexing, so the port reads one header
+// per line and tracks the running byte offset.
 
-const Segment = struct { wave: u32, start: usize, end: usize };
-const Segments = struct { items: [100]Segment, len: usize };
-const Match = struct { start: usize, wave: u32 };
+module port-scripts;
 
-fn parse_int(s: []const u8) -> u32 {
-    var val: u32 = 0;
-    for c in s {
-        if (c < '0' or c > '9') {
-            break;
-        }
-        val = val * 10 + (c - '0') as u32;
+pub const Segment = struct {
+    wave: u32,
+    start: u32,
+    end: u32,
+};
+
+pub const Segments = struct {
+    items: [100]Segment,
+    len: u32,
+};
+
+// "// Wave Loop 389 some content" -- the wave number is the fourth token.
+fn parse_wave(header: str) -> u32 {
+    let parts = header.split(" ");
+    if parts.len < 4 {
+        return 0;
     }
-    return val;
+    return parts[3].parse_u32().unwrap_or(0);
 }
 
-fn wave_segments(text: []const u8) -> Segments {
-    const pattern = "// Wave Loop ";
-    const pattern_len = 13; // len(pattern)
-    var matches: [100]Match;
-    var match_count: usize = 0;
-    var i: usize = 0;
-    const len = text.len;
-    while (i < len and match_count < 100) {
-        // Check if we have enough characters left for the pattern
-        if (i + pattern_len > len) {
-            break;
-        }
-        // Check for pattern match
-        var matched = true;
-        for j in 0..pattern_len {
-            if (text[i + j] != pattern[j]) {
-                matched = false;
-                break;
+// One segment per "// Wave Loop N" header line; start/end are byte offsets of
+// the header line and the next header line (or the end of the text).
+pub fn wave_segments(text: str) -> Segments {
+    var segs: Segments = undefined;
+    segs.len = 0;
+    var pos: u32 = 0;
+
+    for line in text.lines() {
+        let header = line.trim();
+        if header.starts_with("// Wave Loop ") {
+            let wave = parse_wave(header);
+            if wave > 0 && segs.len < 100 {
+                segs.items[segs.len] = Segment{
+                    .wave = wave,
+                    .start = pos,
+                    .end = 0,
+                };
+                segs.len += 1;
             }
         }
-        if (matched) {
-            var wave_start = i + pattern_len;
-            var j = wave_start;
-            while (j < len and text[j] >= '0' and text[j] <= '9') {
-                j += 1;
-            }
-            if (j == wave_start) {
-                // No digits found, skip this occurrence
-                i += 1;
-                continue;
-            }
-            let wave = parse_int(text[wave_start..j]);
-            matches[match_count] = .{ .start = i, .wave = wave };
-            match_count += 1;
-            i = j; // Move past the number
-        } else {
-            i += 1;
-        }
+        pos += line.len + 1;
     }
 
-    var segments: Segments = .{ .items = [_]Segment{ .wave = 0, .start = 0, .end = 0 } ** 100, .len = 0 };
-    for k in 0..match_count {
-        let seg_start = matches[k].start;
-        let seg_end = if (k + 1 < match_count) matches[k+1].start else len;
-        let seg_wave = matches[k].wave;
-        if (segments.len < 100) {
-            segments.items[segments.len] = .{ .wave = seg_wave, .start = seg_start, .end = seg_end };
-            segments.len += 1;
-        }
+    // Close each segment at the next header's start, the last at text.len.
+    var k: u32 = 0;
+    while k + 1 < segs.len {
+        segs.items[k].end = segs.items[k + 1].start;
+        k += 1;
     }
-    return segments;
+    if segs.len > 0 {
+        segs.items[segs.len - 1].end = text.len;
+    }
+    return segs;
 }
 
-pub fn append_w390(path: []const u8) -> void {
-    undefined;
+// Stub: the host reads the file, rewrites the last W389 block and writes it
+// back. The port cannot do host I/O.
+pub fn append_w390(path: str) -> void {
+    return;
 }
 
 test wave_segments_empty {
-    const text = [];
+    const text = "";
     const segments = wave_segments(text);
     assert(segments.len == 0);
 }
@@ -84,18 +80,16 @@ test wave_segments_single {
     assert(segments.len == 1);
     assert(segments.items[0].wave == 389);
     assert(segments.items[0].start == 0);
-    // The end should be the length of the text
     assert(segments.items[0].end == text.len);
 }
 
 test wave_segments_multiple {
-    const text = "// Wave Loop 100 first// Wave Loop 200 second";
+    const text = "// Wave Loop 100 first\n// Wave Loop 200 second";
     const segments = wave_segments(text);
     assert(segments.len == 2);
     assert(segments.items[0].wave == 100);
     assert(segments.items[0].start == 0);
-    assert(segments.items[0].end == 19); // start of second match
+    assert(segments.items[0].end == segments.items[1].start);
     assert(segments.items[1].wave == 200);
-    assert(segments.items[1].start == 19);
     assert(segments.items[1].end == text.len);
 }

@@ -9,9 +9,9 @@ module lsp-server;
 // Imports
 // ============================================================================
 
-use lsp-schema::Range;
-use lsp-schema::Diagnostic;
-use lsp-schema::DocumentSymbol;
+use lsp::schema::Range;
+use lsp::schema::Diagnostic;
+use lsp::schema::DocumentSymbol;
 
 // ============================================================================
 // Constants

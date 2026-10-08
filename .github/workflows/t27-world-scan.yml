@@ -65,6 +65,9 @@ jobs:
           # gHashTag/t27 sat 540 specs behind its own master while a daily job
           # claimed to keep the catalog current.
           node scripts/sync-t27-specs.mjs
+          # The sync keeps the generated trinity/cli cards; rebuild them against the
+          # trinity/tri cards it just vendored, which decide what is already covered.
+          node scripts/tools-from-trinity-tri.mjs
           npm run discover -- scan --out "$RUNNER_TEMP/discovery.json"
           npm run discover -- vendor --report "$RUNNER_TEMP/discovery.json"
           npm run core -- index

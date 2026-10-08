@@ -35,7 +35,20 @@ pub const RESOURCES_ABOUT : [0]str = [];
 pub const TOOLS_NOTE : str = "The manifest names python3 -m contrib.backend.github.mcp_server, but the t27 tree at this commit has no contrib/backend/github/mcp_server.py (git ls-tree); the tool list is taken from the manifest alone (declared, not executed).";
 ; true when the server is a third-party package launched by npx or an outside binary.
 pub const EXTERNAL : bool = false;
-pub const AGENTS : [0]str = [];
-pub const AGENTS_NOTE : str = "No source binds an agent letter to this server: docs/agents/AGENTS_ALPHABET.md, specs/OWNERS.md and .claude/agents/*.md do not name it.";
+pub const AGENTS : [2]str = ["T", "Z"];
+pub const AGENTS_NOTE : str = "docs/agents/AGENTS_ALPHABET.md \"Who holds a tool, and who holds a skill\" binds every tool to the Queen (T). Domain lead Z: Changed from Z,J to Z: ABOUT \"SSOT Integration for t27: GitHub Issues + PRs + Documentation -> NotebookLM\" with tri_docs \"Documentation management: upload to NotebookLM, sync, query\" and tri_search \"Unified search across GitHub Issues, PRs, NotebookLM docs\" is Z's Docs. J was dropped because J's card defines its domain as the task queue and scheduler (\"No stuck jobs > 1 hour, all jobs assigned\"), whereas tri_issue and tri_pr are stated as \"create, update, list, close\" / \"create, merge, close, get status\" -- CRUD on GitHub records, with no routing or assignment anywhere in the card.";
 pub const WITNESS : str = "source-parse";
 pub const ENABLED : bool = true;
+
+test verify_tri_ssot_constants {
+    assert KIND == "tool";
+    assert FAMILY == "mcp";
+    assert SERVER_VERSION == "1.0.0";
+    assert TRANSPORT == "stdio";
+    assert SCHEMA == 2;
+    assert REPO == "gHashTag/t27";
+    assert QUALIFIED_ID == "gHashTag/t27:mcp/tri-ssot";
+    assert ENABLED == true;
+    assert AGENTS[0] == "T";
+    assert TOOLS[0] == "tri_issue";
+}

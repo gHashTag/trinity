@@ -28,3 +28,12 @@ pub const TABLE : str = "tools";
 ; English canonical prose, Markdown, path from the t27 root.
 pub const BODY_EN : str = "docs/system/tooling.md";
 pub const ENABLED : bool = true;
+
+test test_tooling_constants {
+    assert KIND == "docs-chapter";
+    assert ID == "docs/tooling";
+    assert ORDER == 6;
+    assert ENABLED == true;
+    assert SECTIONS[0] == "The tri CLI";
+    assert SOURCES[1] == "specs/tools/tri/cell.t27";
+}

@@ -9,13 +9,12 @@ module provider-transform;
 // Imports
 // ============================================================================
 
-use tritype-base::usize;
-use provider-schema::Message;
-use provider-schema::MessageRole;
-use provider-schema::MessageContent;
-use provider-schema::ContentType;
-use provider-schema::Tool;
-use provider-schema::ProviderType;
+use provider::schema::Message;
+use provider::schema::MessageRole;
+use provider::schema::MessageContent;
+use provider::schema::ContentType;
+use provider::schema::Tool;
+use provider::schema::ProviderType;
 
 // ============================================================================
 // Constants

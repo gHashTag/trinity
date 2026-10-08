@@ -150,7 +150,8 @@ module PackedVsa {
         // Verify: Self-similarity equals 1.0
         given vec = randomPackedVector(100, 999)
         and sim = packedCosineSimilarity(&vec, &vec)
-        then sim ≈ 1.0
+        // "approximately 1.0": the cosine of a vector with itself, up to rounding.
+        then abs(sim - 1.0) < 1e-6
 
     test packed_cosine_orthogonal_is_zero
         // Verify: Orthogonal vectors have similarity ~0

@@ -28,8 +28,8 @@ pub const ACTIONS_ABOUT : [1]str = ["Walk the corpus through `t27c icarus-simula
 ; Top-level arguments/flags of the command itself, "<name>: doc".
 pub const ARGS : [0]str = [];
 ; Agent letters that own this command, only where a source line names it (AGENTS_NOTE cites it).
-pub const AGENTS : [0]str = [];
-pub const AGENTS_NOTE : str = "No source binds an agent letter to this command: docs/agents/AGENTS_ALPHABET.md (rows, key files, phase cycle), specs/OWNERS.md and .claude/agents/*.md do not name it. creator.md and verifier.md name tri gen/test/verify but are not letter agents.";
+pub const AGENTS : [3]str = ["T", "C", "V"];
+pub const AGENTS_NOTE : str = "docs/agents/AGENTS_ALPHABET.md \"Who holds a tool, and who holds a skill\" binds every tool to the Queen (T). Domain lead C, V: CHANGED (V,C -> C,V): the lead was on V, but vsim.rs says outright \"It reports and never gates\" and refuses to judge, which is not a verdict tool; its subject is the Verilog backend's output -- ABOUT \"How far each spec gets when its generated Verilog is actually RUN\" -- and every defect the module doc credits it with (a float multiply routed through an integer ladder, `break` lowered to `disable fork`, an early `return` that does not leave its loop, `invariant` emitted as a comment) is a lowering bug, so C leads and V stays second as the simulating arm \"that can catch a defect whose whole nature is that it compiles\".";
 ; From the about text (long about when the doc has more than one paragraph); no marketing.
 pub const WHEN_TO_USE : str = "How far each spec gets when its generated Verilog is actually RUN. The one arm that can catch a defect whose nature is that it compiles, and the one arm whose gate has had no targets since #2283 -- see #2987.";
 pub const WITNESS : str = "source-parse";

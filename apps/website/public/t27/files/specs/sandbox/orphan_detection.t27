@@ -16,11 +16,6 @@
 
 module sandbox.orphan_detection;
 
-// The original `import timestamp;` / `import sandbox.session;` lines, in the
-// `use` form t27 reads (as in specs/sandbox/health.t27).
-use timestamp;
-use sandbox.session;
-
 // ---------------------------------------------
 // Session Type Definition (shared with session_timeout)
 // ---------------------------------------------

@@ -25,3 +25,11 @@ pub const ENABLED : bool = false;
 pub const NOTE : str = "Started only by running this module from the command line with the `monitor` argument; the bot's own entry point never starts it.";
 pub const ON_FAILURE : str = "log";
 pub const CONTROL : str = "code-only";
+
+test telegraf_production_monitor_l80_constants {
+  assert KIND == "cron";
+  assert ENABLED == false;
+  assert TZ == "UTC";
+  assert INTERVAL_MS == 300000;
+  assert ON_FAILURE == "log";
+}

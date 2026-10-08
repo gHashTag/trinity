@@ -23,3 +23,11 @@ pub const TAGS : [3]str = ["dashboard", "agents", "monitoring"];
 pub const ENABLED : bool = true;
 ; Default budget; SKILL.md declares no timeout of its own.
 pub const TIMEOUT_MIN : u16 = 30;
+
+test basic_constants {
+    assert KIND == "skill";
+    assert ID == "trinity/god-mode";
+    assert NAME == "god-mode";
+    assert ENABLED == true;
+    assert TAGS[0] == "dashboard";
+}

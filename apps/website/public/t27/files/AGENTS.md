@@ -71,26 +71,162 @@ The seven **Invariant Laws (L1–L8)** are defined in [`docs/T27-CONSTITUTION.md
 
 ---
 
+## 7. Crons and skills are specs
+
+A scheduled job is a `.t27` card before it is anything else. Cron cards live in
+[`specs/crons/`](specs/crons/README.md) (the README holds the schema and the
+rules the generator enforces), skill cards in [`specs/skills/`](specs/skills/),
+and the scheduler contract is
+[`specs/automation/inngest-queen-scheduler.t27`](specs/automation/inngest-queen-scheduler.t27).
+This repository is the only place to edit them.
+
+Before you add, move, list or "migrate" a cron -- a workflow `schedule:`, an
+Inngest function, a Railway cron service, a `setInterval`, a launchd plist or a
+crontab line on the owner's Mac -- find its card here, and write one if it is
+missing. Do not start a second registry (a database table, a JSON list, a
+profile tab with its own store). A page that shows crons reads the cards.
+
+Who reads the cards, and what each reader can and cannot tell you:
+
+| Reader | Reads | Tells you | Does not tell you |
+|---|---|---|---|
+| `app.t27.ai/game/crons` (gHashTag/trinity `CronExplorer`) | a vendored copy, compiled at site build time into `/queen/crons/spec-crons.json` | the card typechecks and the code it names exists | whether the job ran: `health: ok` describes the card, and the page loads no run history |
+| The Queen: Inngest app `t27-queen` in gHashTag/BrowserOS `trios/agent-server` | its own vendored copy, pinned to a t27 commit (`GET /queen/scheduler`, field `pin`) | how it serves each card: `HOST github-actions` gets `workflow-dispatch`, every other host gets `tick-only` | anything about a `tick-only` card, whose tick event has no consumer |
+| The host (GitHub Actions, the 999 Inngest app, Railway, the process) | its own schedule | whether the job ran and how it ended | -- |
+
+So "is this cron working?" is answered by the host, never by the card or the
+page: `gh run list -R <repo> --workflow <file> --event schedule` for
+`github-actions`, the 999 Inngest dashboard for `inngest`, the service logs for
+`timer` and `railway-cron`. Put what you measured into the card's `NOTE` with
+its date, and re-measure a `NOTE` before you repeat it.
+
+Gaps that are open until a PR closes them. Do not assume otherwise:
+
+- **The owner's Mac has no `HOST`.** The vocabulary is `github-actions`,
+  `inngest`, `railway-cron`, `timer`. launchd jobs, crontab lines and Claude
+  Code scheduled tasks therefore have no card, and neither the page nor the
+  Queen sees them. A new host is a schema change in `specs/crons/README.md`
+  first, then in the trinity generator (`apps/website/scripts/agents-from-specs.mjs`),
+  then in the Queen's `src/inngest/plan.ts`.
+- **Dispatched workflows fire twice.** A `github-actions` card the Queen
+  dispatches still has its `schedule:` block until a PR removes it, in the
+  order fixed by
+  [`docs/now/2026-09-13-the-queen-holds-the-scheduler-crons-and-skills-as-one-inngest-app.md`](docs/now/2026-09-13-the-queen-holds-the-scheduler-crons-and-skills-as-one-inngest-app.md).
+- **There are three copies.** The trinity site and the Queen each vendor the
+  cards. Edit them here, then refresh the copies: trinity
+  `apps/website/scripts/sync-t27-specs.mjs`, the Queen
+  `trios/agent-server/scripts/sync-t27-specs.sh`. Check the Queen's `pin` after
+  a squash merge: a pin to a deleted branch cannot be reproduced.
+
+---
+
 **φ² + 1/φ² = 3 | TRINITY**
 
 ---
 
-## 5. Law Reference
+## Only t27 (owner hard rule, 2026-10-05)
 
-The seven **Invariant Laws (L1–L8)** are defined in [`docs/T27-CONSTITUTION.md`](docs/T27-CONSTITUTION.md#2--invariant-laws-never-change-without-constitutional-amendment):
+Owner's rule, 2026-10-05: no new commit or pull request may contain code in
+another language; the hooks must stop it. It binds people, bees and agents alike.
 
-| Law | Name | Legacy alias | Summary |
-|-----|------|-------------|---------|
-| **L1** | TRACEABILITY | ISSUE-GATE | No code merged without `Closes #N` |
-| **L2** | GENERATION | NO-HAND-EDIT-GEN | Files under `gen/` are generated; edit specs instead |
-| **L3** | PURITY | SOUL-ASCII | Source files must be ASCII-only with English identifiers |
-| **L4** | TESTABILITY | TDD-MANDATE | Every `.t27` spec must contain `test`/`invariant`/`bench` |
-| **L5** | IDENTITY | PHI-IDENTITY | φ² = φ + 1; φ² + φ⁻² = 3; IEEE f64 checks use tolerance |
-| **L6** | CEILING | TRINITY-SACRED | `FORMAT-SPEC-001.json` + `gf16.t27` are numeric SSOT |
-| **L7** | UNITY | NO-NEW-SHELL | No new `*.sh` on critical path; use `tri`/`t27c` |
+- **Allowed:** `.t27` specs; files `t27c` generated under a generated root
+  (`gen/`, `bootstrap/gen/`, `bootstrap/src/memory/generated/`); prose and data
+  (`.md`, `.txt`, `.json`); and **deletions**.
+- **Denied:** adding or modifying hand-written code in any other language --
+  `.rs .py .ts .js .sh .zig .c .go .v .lean .yml .toml`, Dockerfile, Makefile and
+  the rest of the list in the spec. A change to existing Rust
+  (`bootstrap/src/compiler.rs`, `cli/t27b`) or Python is denied too.
+- **The rule is** `specs/policy/own_language.t27`; its `t27c gen-c` output
+  `gen/c/policy/own_language.c` runs in `lefthook.yml` (pre-commit, pre-push)
+  and in `.github/workflows/own-language.yml` on every pull request. Read the
+  spec for the exact list; do not copy it here.
+- **The only override** is the label `owner-approved-foreign`. It is applied
+  only on the owner's explicit approval, and the pull request body quotes that
+  approval (in English, with its date and where it was given). Changing the gate
+  itself needs the label as well.
+- **Owner-approved exceptions** live in `tools/policy/foreign-exceptions.txt`:
+  data, one path prefix per line, each under a comment naming the approval. On
+  an approved branch, add the entry in the same branch; the local hooks read the
+  working-tree list, so the commit goes through. CI reads the list from the pull
+  request's base, and any change to the list file needs the owner's label, so
+  every entry on master was approved by the owner. There is no env-var bypass.
+- **Existing foreign code is debt** that only shrinks: by deletion, or by
+  replacing it with a spec and its generated output.
+- **`--no-verify` is forbidden**, and so is `LEFTHOOK=0`. Install the hooks
+  once per clone with `lefthook install`.
+- What gen cannot express yet is a compiler defect: file it on the self-host
+  epic (#5980) instead of writing the code by hand.
 
-**Law Priority:** L1 > L2 > L3 > L4 > L5 > L6 > L7 > L8 (Asimov-style hierarchy)
+## t27b is written in t27
 
+Owner's rule, 2026-10-05: t27b -- the native backend -- and the tools that
+measure it are written in **t27**, not in Rust or Python by hand.
+
+- New t27b logic starts as a `.t27` spec with `test` blocks and reaches Rust
+  or Python only through `t27c gen-rust` / `gen-c` / `gen-js`. The generated
+  file is never hand-edited (L2).
+- What gen cannot express yet is a defect of the self-host work (#5980): file
+  it there. Do not work around it in a hand-written file.
+- A hand-written addition or modification is denied by the gate in "Only t27"
+  above unless the owner labels the pull request `owner-approved-foreign`; such
+  a PR still names the spec that will replace it and links the port epic #6198.
+- The debt only shrinks. On 2026-10-05 (master c532fcae5, `wc -l`) it is
+  `cli/t27b/src/*.rs` 8247 lines plus `cli/t27b/tests/*.rs` 2865 (Rust, and
+  it mounts `bootstrap/src/compiler.rs`; 14338 plus 7070 after #6864's
+  brace-invariant predicates, +54 and +53; 14327 plus 7072 after #6911's
+  module-var-in-test fix, -11 and +2; 15453 plus 7719 after #7368's odd-width
+  integers, +111 and +42 on master cd6708d32's 15342 plus 7677; 14952 plus 7757
+  after #7531 moved the A64 encoders to `specs/tri/t27b/a64.t27`, -520 on master
+  ec5c3cf78's 15472 plus 7757; 14847 plus 7775 after #7526's Mach-O port to
+  `specs/tri/t27b/macho.t27`, -132 and 0 on master 27493414d's 14979 plus
+  7775; 14745 plus 7775 after #7549 moved `bitmask_imm`, `logic_imm` and
+  `mov_imm` to `a64.t27` too, -102 on master 499487306's 14847 plus 7775;
+  14812 plus 7814 after #7394's glue for `@abs`, `@max`, `@min` and
+  `std.math.pi` / `e`, whose plan is `specs/tri/t27b/builtin_plan.t27`, +43
+  and 0 on master 95182e95b's 14769 plus 7814; 14848 plus 7833 after #7412's
+  glue for `@intCast` with an integer result type, whose plan is
+  `specs/tri/t27b/int_cast_plan.t27`, +36 and +19 on master 1120d30ae's 14812
+  plus 7814; 14881 plus 7848 after #7391's glue for `@exp`, whose plan is
+  `specs/tri/t27b/libm_plan.t27` and whose routines are
+  `specs/tri/t27b/libm.t27`, +33 and +15 on master 6fba037d1's 14848 plus
+  7833; 14881 plus 7858 after #7217's `@log` from the same plan, 0 and +10
+  on master 8c7b2ccff's 14881 plus 7848; 14917 plus 7877 after #7423's glue
+  for integer constants wider than 64 bits, whose plan is
+  `specs/tri/t27b/wide_plan.t27`, +36 and +19 on master 8415029ea's 14881
+  plus 7858; 14945 plus 7877 after #7550's refusal of a return that hands
+  out the address of the fn's own frame, +28 and 0 on master 5f3087125's
+  14917 plus 7877; 14919 plus 7874 after #7422 removed the stale
+  `StmtAssign(reference redeclares)` scan, -26 and -3 on master 2eabc3edd's
+  14945 plus 7877; 14876 plus 7874 after #7673 moved the greedy blockers
+  order, its replay and FNV-1a to `specs/tri/t27b/blockers.t27`, -43 and 0
+  on master ef26684a1's 14919 plus 7874; 14842 plus 7866 after #7680's glue
+  for array literals the reference prints as `@constCast(&[_]E{ ... })`,
+  whose plan is `specs/tri/t27b/slice_lit_plan.t27`, -34 and -8 on master
+  3d7130691's 14876 plus 7874; 14885 plus 7924 after #7740's glue for the
+  `type mismatch` family, whose plan is `specs/tri/t27b/coerce_plan.t27`,
+  +12 and +19 on master b8cb93f34's 14873 plus 7905),
+  `scripts/tri_loop/t27b.py` 1829
+  (Python, `tri t27b`; 894 at c532fcae5, 1481 after #6317's `next`, 1568 after #6334's master look-back, 1829 after #6445's `reduce` wiring), `scripts/tri_loop/t27b_reduce.py` 632 (Python, `tri t27b reduce`, #6445; its decisions are `specs/tri/t27b/reduce.t27`), and `contrib/railway/t27b-lab/lab.py` 608 (Python, the
+  Railway lab; 956 on master 0fbb0a033, 986 after #7672's lane requests). Update these numbers in the PR that moves them.
+
+This is the "Own language first" rule below, applied to code: a project whose
+claim is "here is a language worth writing" writes its own backend in it.
+
+**A lane's evidence (#7672).** A t27b coverage PR proves "nothing regressed"
+with two signed corpus receipts, not a pasted table of lab numbers.
+
+- Base: `git merge-base origin/master HEAD`. Head: the PR's head, pushed to a
+  branch on origin. Use `https://t27b-lab-production.up.railway.app/runs/<sha>.receipt.json`
+  when it exists; otherwise request it with a fresh challenge you keep:
+  `c=$(openssl rand -hex 32); ssh t27b-lab "mkdir -p /srv/requests && printf %s $c > /srv/requests/<sha>"`.
+  The lab runs one request between master polls (about 10 minutes each, at most
+  4 waiting, dropped after 6 hours) and publishes `/runs/<sha>.json` and the receipt.
+- From a master checkout's root: `t27c corpus-receipt compare BASE.json HEAD.json
+  --challenge <base's> --challenge-head <head's>` (omit a challenge you did not
+  write). Paste its output and exit code: `lane` lines name each changed file.
+- Exit 3 IMPROVED_ONLY, 0 EQUIVALENT or 4 NEUTRAL may merge. Exit 1 REGRESSED
+  blocks the merge; exit 2 REFUSED means the evidence did not authenticate, so
+  it proves nothing. The rules are `specs/verified/corpus_receipt.t27`.
 
 ## Own language first
 

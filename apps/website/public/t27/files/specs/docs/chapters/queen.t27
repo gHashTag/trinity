@@ -28,3 +28,12 @@ pub const TABLE : str = "phases";
 ; English canonical prose, Markdown, path from the t27 root.
 pub const BODY_EN : str = "docs/system/queen.md";
 pub const ENABLED : bool = true;
+
+test test_queen_constants {
+    assert KIND == "docs-chapter";
+    assert ID == "docs/queen";
+    assert ORDER == 5;
+    assert ENABLED == true;
+    assert SECTIONS[0] == "The six-phase cycle and Phase 7";
+    assert SOURCES[1] == "CLAUDE.md";
+}

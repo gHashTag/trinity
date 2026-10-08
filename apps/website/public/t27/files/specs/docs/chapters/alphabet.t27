@@ -28,3 +28,12 @@ pub const TABLE : str = "agents";
 ; English canonical prose, Markdown, path from the t27 root.
 pub const BODY_EN : str = "docs/system/alphabet.md";
 pub const ENABLED : bool = true;
+
+test test_alphabet_constants {
+    assert KIND == "docs-chapter";
+    assert ID == "docs/alphabet";
+    assert ORDER == 4;
+    assert ENABLED == true;
+    assert SECTIONS[0] == "Twenty-seven letters, three nonas";
+    assert SOURCES[1] == "specs/agents/README.md";
+}

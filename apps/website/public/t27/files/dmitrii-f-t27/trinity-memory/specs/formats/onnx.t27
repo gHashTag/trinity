@@ -1,4 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
+// Issue: https://github.com/dmitrii-f-t27/trinity-memory/issues/125
+// Coverage: https://github.com/dmitrii-f-t27/trinity-memory/issues/29
+// Coverage: https://github.com/dmitrii-f-t27/trinity-memory/issues/30
+// Coverage: https://github.com/dmitrii-f-t27/trinity-memory/issues/34
 // specs/formats/onnx.t27 -- ONNX Runtime com.microsoft.MatMulNBits with bits = 2
 // Restates upstream microsoft/onnxruntime@2b758bc652dc122fbbbc033664ffca69991a7e63:
 // docs/ContribOperators.md:3756-3830 (MatMulNBits: :3762 dequantized_weight =

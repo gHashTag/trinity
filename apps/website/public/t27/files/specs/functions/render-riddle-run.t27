@@ -40,3 +40,10 @@ pub const SAFE_PROBE : str = "{}";
 pub const PROBE_RESULT : str = "FAILED-at-guard";
 pub const CONTROL : str = "spec+code";
 pub const NOTE : str = "Guard is zod-schema. The step names generate-broll-${index} and wait-broll-${index} are templates expanded once per scene; start-avatar-generation and wait-avatar-completion appear twice in the code and are listed twice here.";
+
+test test_render_riddle_run_constants {
+  assert KIND == "function";
+  assert ID == "render-riddle-run";
+  assert TRIGGER == "event";
+  assert RETRIES == 3;
+}

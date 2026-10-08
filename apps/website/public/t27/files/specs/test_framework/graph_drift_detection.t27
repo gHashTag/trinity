@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: Apache-2.0
 // t27/specs/test_framework/graph_drift_detection.t27
-// Ring 054 — Graph Drift Detection for Structural Change Detection
+// Ring 054 -- Graph Drift Detection for Structural Change Detection
 // Monitors structural changes in mathematical and physics specifications over time
 
 module GraphDriftDetection {
     use test_framework::core::{TestResult, Verdict, ToleranceTier, EngineeringStatus};
     use std::collections::{HashMap, HashSet};
     
-    // ─────────────────────────────────────────────────────
+    // -----------------------------------------------------
     // 1. Drift Detection Configuration
-    // ─────────────────────────────────────────────────────
+    // -----------------------------------------------------
     
     // Graph node representing a mathematical/physics entity
     struct GraphNode {
@@ -87,9 +87,9 @@ module GraphDriftDetection {
         };
     }
     
-    // ─────────────────────────────────────────────────────
+    // -----------------------------------------------------
     // 2. Graph Construction and Parsing
-    // ─────────────────────────────────────────────────────
+    // -----------------------------------------------------
     
     // Parse T27 spec file and extract graph structure
     fn parse_t27_spec_to_graph(file_path: string) -> DriftGraph {
@@ -127,7 +127,7 @@ module GraphDriftDetection {
             edges: edges,
             version: extract_version(content),
             timestamp: get_current_timestamp(),
-            hash: compute_graph_hash(nodes, edges),
+            hash: compute_graph_hash(nodes.length(), edges),
         };
     }
     
@@ -140,7 +140,7 @@ module GraphDriftDetection {
         const tolerance_tier = extract_tolerance_tier(line);
         
         return GraphNode{
-            id: format!("{}::{}", module, name),
+            id: format("{}::{}", module, name),
             name: name,
             type: NodeType::CONSTANT,
             claim_id: claim_id,
@@ -160,7 +160,7 @@ module GraphDriftDetection {
         const tolerance_tier = extract_tolerance_tier(line);
         
         return GraphNode{
-            id: format!("{}::{}", module, name),
+            id: format("{}::{}", module, name),
             name: name,
             type: NodeType::FUNCTION,
             claim_id: claim_id,
@@ -179,21 +179,21 @@ module GraphDriftDetection {
         const tolerance_tier = extract_tolerance_tier(line);
         
         return GraphNode{
-            id: format!("{}::{}", module, name),
+            id: format("{}::{}", module, name),
             name: name,
             type: NodeType::TEST,
             claim_id: claim_id,
             tolerance_tier: tolerance_tier,
             value: 0.0,
-            formula: format!("test_{}", name),
+            formula: format("test_{}", name),
             dependencies: extract_test_dependencies(line),
             metadata: HashMap::new(),
         };
     }
     
-    // ─────────────────────────────────────────────────────
+    // -----------------------------------------------------
     // 3. Drift Detection Algorithms
-    // ─────────────────────────────────────────────────────
+    // -----------------------------------------------------
     
     // Drift detection result
     struct DriftResult {
@@ -265,8 +265,10 @@ module GraphDriftDetection {
         let mut drift_score = 0.0;
         let mut total_comparisons = 0;
         
-        for (node_id, baseline_node) in baseline.nodes {
-            if let Some(current_node) = current.nodes.get(node_id) {
+        for node_id in baseline.nodes.keys() {
+            const baseline_node = baseline.nodes.get(node_id);
+            if current.nodes.contains_key(node_id) {
+                const current_node = current.nodes.get(node_id);
                 // Compare values for constants
                 if baseline_node.type == NodeType::CONSTANT && current_node.type == NodeType::CONSTANT {
                     const value_diff = abs(baseline_node.value - current_node.value);
@@ -304,47 +306,51 @@ module GraphDriftDetection {
         let mut total_elements = baseline.nodes.length() + baseline.edges.length();
         
         // Check for added nodes
-        for (node_id, current_node) in current.nodes {
+        for node_id in current.nodes.keys() {
+            const current_node = current.nodes.get(node_id);
             if !baseline.nodes.contains_key(node_id) {
                 drift_score += 1.0;
                 changes.push(DriftChange{
                     change_type: ChangeType::NODE_ADDED,
                     node_id: node_id,
                     before: "",
-                    after: format!("{:?}", current_node),
+                    after: format("{:?}", current_node),
                     severity: 0.8,
-                    description: format!("New node added: {}", node_id),
+                    description: format("New node added: {}", node_id),
                 });
             }
         }
         
         // Check for removed nodes
-        for (node_id, baseline_node) in baseline.nodes {
+        for node_id in baseline.nodes.keys() {
+            const baseline_node = baseline.nodes.get(node_id);
             if !current.nodes.contains_key(node_id) {
                 drift_score += 1.0;
                 changes.push(DriftChange{
                     change_type: ChangeType::NODE_REMOVED,
                     node_id: node_id,
-                    before: format!("{:?}", baseline_node),
+                    before: format("{:?}", baseline_node),
                     after: "",
                     severity: 0.9,
-                    description: format!("Node removed: {}", node_id),
+                    description: format("Node removed: {}", node_id),
                 });
             }
         }
         
         // Check for modified nodes
-        for (node_id, baseline_node) in baseline.nodes {
-            if let Some(current_node) = current.nodes.get(node_id) {
+        for node_id in baseline.nodes.keys() {
+            const baseline_node = baseline.nodes.get(node_id);
+            if current.nodes.contains_key(node_id) {
+                const current_node = current.nodes.get(node_id);
                 if baseline_node != current_node {
                     drift_score += 0.5;
                     changes.push(DriftChange{
                         change_type: ChangeType::NODE_MODIFIED,
                         node_id: node_id,
-                        before: format!("{:?}", baseline_node),
-                        after: format!("{:?}", current_node),
+                        before: format("{:?}", baseline_node),
+                        after: format("{:?}", current_node),
                         severity: 0.6,
-                        description: format!("Node modified: {}", node_id),
+                        description: format("Node modified: {}", node_id),
                     });
                 }
             }
@@ -360,9 +366,9 @@ module GraphDriftDetection {
         return 0.0;
     }
     
-    // ─────────────────────────────────────────────────────
+    // -----------------------------------------------------
     // 4. Drift Monitoring and Alerting
-    // ─────────────────────────────────────────────────────
+    // -----------------------------------------------------
     
     // Drift monitoring system
     struct DriftMonitor {
@@ -397,7 +403,7 @@ module GraphDriftDetection {
     
     // Trigger drift alert
     fn trigger_drift_alert(result: DriftResult) {
-        const alert_message = format!(
+        const alert_message = format(
             "DRIFT ALERT: Semantic drift detected (score: {:.4})\nChanges: {}\nDetails: {}",
             result.semantic_drift,
             result.changes.length(),
@@ -411,9 +417,9 @@ module GraphDriftDetection {
         // send_alert_to_monitoring_system(alert_message);
     }
     
-    // ─────────────────────────────────────────────────────
+    // -----------------------------------------------------
     // 5. Integration with Test Framework
-    // ─────────────────────────────────────────────────────
+    // -----------------------------------------------------
     
     // Run drift detection as part of test suite
     fn run_drift_detection_tests() -> [TestResult] {
@@ -460,9 +466,9 @@ module GraphDriftDetection {
         measure: milliseconds to run run_drift_detection_tests()
         target: < 1000ms
     
-    // ─────────────────────────────────────────────────────
+    // -----------------------------------------------------
     // 6. TDD-Inside-Spec: Drift Detection Tests
-    // ─────────────────────────────────────────────────────
+    // -----------------------------------------------------
     
     test drift_config_creation
         given config = default_drift_config()
@@ -591,13 +597,13 @@ fn get_current_timestamp() -> u64 {
     return 1642694400;  // Placeholder
 }
 
-fn compute_graph_hash(nodes: HashMap<string, GraphNode>, edges: [GraphEdge]) -> string {
+fn compute_graph_hash(node_count: usize, edges: [GraphEdge]) -> string {
     // Implementation would compute hash of graph structure
     return "abc123";
 }
 
 fn generate_drift_details(drift_score: f64, config: DriftConfig) -> string {
-    return format!("Drift score: {:.4}, threshold: {:.4}", drift_score, config.threshold);
+    return format("Drift score: {:.4}, threshold: {:.4}", drift_score, config.threshold);
 }
 
 fn all_results_have_claim_ids(results: [TestResult]) -> bool {
@@ -641,10 +647,12 @@ fn log_error(category: string, message: string) {
 }
 
 fn parse_tolerance_tier(tier_str: string) -> ToleranceTier {
-    match tier_str {
-        "EXACT" => ToleranceTier::EXACT,
-        "CONJECTURAL" => ToleranceTier::CONJECTURAL,
-        "WITHIN_UNCERTAINTY" => ToleranceTier::WITHIN_UNCERTAINTY,
-        _ => ToleranceTier::WITHIN_UNCERTAINTY,
+    if tier_str == "EXACT" {
+        return ToleranceTier::EXACT;
     }
+    if tier_str == "CONJECTURAL" {
+        return ToleranceTier::CONJECTURAL;
+    }
+    // "WITHIN_UNCERTAINTY" and anything unrecognised.
+    return ToleranceTier::WITHIN_UNCERTAINTY;
 }

@@ -28,8 +28,8 @@ pub const ACTIONS_ABOUT : [0]str = [];
 ; Top-level arguments/flags of the command itself, "<name>: doc".
 pub const ARGS : [1]str = ["<spec-path>"];
 ; Agent letters that own this command, only where a source line names it (AGENTS_NOTE cites it).
-pub const AGENTS : [2]str = ["C", "T"];
-pub const AGENTS_NOTE : str = ".claude/agents/agent-c-compiler.md:40 (tri gen -- Generate code from specs; trigger On tri gen command, line 7); .claude/agents/trinity.md:68 (5. Gen - Run tri gen).";
+pub const AGENTS : [2]str = ["T", "C"];
+pub const AGENTS_NOTE : str = "docs/agents/AGENTS_ALPHABET.md \"Who holds a tool, and who holds a skill\" binds every tool to the Queen (T). Domain lead C: The spec's AGENTS field is [\"C\",\"T\"] citing agent-c-compiler.md:40 (tri gen -- Generate code from specs); T is excluded by the Queen rule, leaving C, and ABOUT is \"Generates backends from a .t27 spec file using t27c\".";
 ; From the about text (long about when the doc has more than one paragraph); no marketing.
 pub const WHEN_TO_USE : str = "Generates backends from a .t27 spec file using t27c.";
 pub const WITNESS : str = "source-parse";

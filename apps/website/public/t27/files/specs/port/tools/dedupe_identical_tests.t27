@@ -109,15 +109,17 @@ fn parse_test_line(line: str) -> Option<(str, bool)> {
     return Some((name, has_brace));
 }
 
-struct Block {
+// A test's line span. Not named Block: scripts/gen_w377.t27 uses Block for a
+// character buffer (tri types ratchet, #7437).
+struct TestSpan {
     start: u32,
     end: u32,
     name: str,
 }
 
-fn blocks(lines: []str) -> []Block {
+fn blocks(lines: []str) -> []TestSpan {
     let mut i: u32 = 0;
-    let mut result: []Block = [];
+    let mut result: []TestSpan = [];
     while (i < lines.len()) {
         let parsed = parse_test_line(lines[i]);
         if (parsed == None) {
@@ -281,13 +283,13 @@ fn blocks(lines: []str) -> []Block {
         // We'll do that.
         // So for now, we'll set:
         //   let mut end: u32 = start + 1; // placeholder
-        //   result = result . [Block{start: start, end: end, name: name}];
+        //   result = result . [TestSpan{start: start, end: end, name: name}];
         //   i = end;
         // and then we'll fix the brace form later.
         // We'll do that.
         // We'll change the code to:
         //   let mut end: u32 = start + 1;
-        //   result = result . [Block{start: start, end: end, name: name}];
+        //   result = result . [TestSpan{start: start, end: end, name: name}];
         //   i = end;
         // and then we'll remove the brace form and gherkin form logic.
         // We'll do that now.

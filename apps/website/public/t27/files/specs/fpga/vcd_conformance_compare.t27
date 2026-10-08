@@ -225,32 +225,32 @@ module VcdConformanceCompare {
     test record_pass_increments
         var r = compare_result();
         record_pass(&r);
-        invariant r.total_checks == 1;
-        invariant r.passed == 1;
+        then r.total_checks == 1
+        and r.passed == 1
 
     test record_fail_increments
         var r = compare_result();
         record_fail(&r);
-        invariant r.total_checks == 1;
-        invariant r.failed == 1;
+        then r.total_checks == 1
+        and r.failed == 1
 
     test record_error_increments
         var r = compare_result();
         record_error(&r);
-        invariant r.total_checks == 1;
-        invariant r.errors == 1;
+        then r.total_checks == 1
+        and r.errors == 1
 
     test all_passed_true_when_no_failures
         var r = compare_result();
         record_pass(&r);
         record_pass(&r);
-        invariant all_passed(r) == true;
+        then all_passed(r) == true
 
     test all_passed_false_when_failures
         var r = compare_result();
         record_pass(&r);
         record_fail(&r);
-        invariant all_passed(r) == false;
+        then all_passed(r) == false
 
     test signal_ref_creation
         given s = signal_ref("!", "led_out", 8)

@@ -14,10 +14,9 @@
 // φ² + 1/φ² = 3 | TRINITY
 
 module QueenLotus {
-    // Import base types, HSLM, and runtime
+    // Import base types and HSLM
     use base::types;
     use nn::hslm;
-    use compiler::runtime;
 
     // ═════════════════════════════════════════════════════
     // 1. Lotus Configuration

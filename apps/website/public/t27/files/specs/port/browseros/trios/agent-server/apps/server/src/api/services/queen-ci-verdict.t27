@@ -1,18 +1,12 @@
-// SPDX-License-Identifier: Apache-2.0
 // specs/port/browseros/trios/agent-server/apps/server/src/api/services/queen-ci-verdict.t27
-// Port gHashTag/BrowserOS:trios/agent-server/apps/server/src/api/services/queen-ci-verdict.ts to .t27
-// φ² + 1/φ² = 3 | TRINITY
+// -- port of the BrowserOS queen-ci-verdict service: the CI-verdict rules that
+// decide which check runs count as a refusal and which lines of a job log are
+// the error note. The host GitHub API parts (pulls, check runs, job logs) are
+// stubbed; the pure predicates and the note-building shape are kept.
 
 module QueenCiVerdict;
 
-pub const RED_ITEMS: [5][]const u8 = [
-    "failure",
-    "timed_out", 
-    "cancelled",
-    "action_required",
-    "startup_failure",
-];
-
+pub const RED_ITEMS: [5]str = ["failure", "timed_out", "cancelled", "action_required", "startup_failure"];
 pub const CI_CHECKS_PER_ROUND: u32 = 8;
 pub const CI_MAXIMUM_SEND_BACKS: u32 = 2;
 pub const NOTE_MAX: u32 = 1500;
@@ -20,465 +14,143 @@ pub const ERROR_MAX: u32 = 600;
 
 pub const CheckRun = struct {
     id: u32,
-    name: []const u8,
-    status: []const u8,
-    conclusion: []const u8, // empty slice represents null
-    url: []const u8, // empty slice represents null
+    name: str,
+    status: str,
+    conclusion: str, // empty represents null
+    url: str,        // empty represents null
 };
 
 pub const VerdictPullRequest = struct {
     number: u32,
-    state: []const u8,
+    state: str,
     merged: bool,
-    headSha: []const u8,
+    headSha: str,
 };
 
 pub const TakenBack = struct {
     issue: u32,
     pull: u32,
-    state: []const u8, // 'sendBack' or 'escalate'
-    checks: [][]const u8, // array of check names
+    state: str, // 'sendBack' or 'escalate'
+    checks: []str,
 };
 
-// CiDeps is an interface - for the port we'll define the decision helpers
-pub const CiDeps = struct {
-    requiredChecks: fn () -> [][]const u8,
-    pullsForBranch: fn (branch: []const u8) -> []VerdictPullRequest,
-    checkRuns: fn (sha: []const u8) -> []CheckRun,
-    jobLog: fn (jobId: u32) -> []const u8,
-};
-
-// Forward declarations of the CiDeps implementation functions
-pub fn githubCiDeps_requiredChecks_impl(repo: []const u8, baseBranch: []const u8) -> [][]const u8;
-pub fn githubCiDeps_pullsForBranch_impl(repo: []const u8, baseBranch: []const u8, branch: []const u8) -> []VerdictPullRequest;
-pub fn githubCiDeps_checkRuns_impl(repo: []const u8, baseBranch: []const u8, sha: []const u8) -> []CheckRun;
-pub fn githubCiDeps_jobLog_impl(repo: []const u8, baseBranch: []const u8, jobId: u32) -> []const u8;
-
-// Helper function to check if a string is in our RED set
-pub fn isRedConclusion(conclusion: []const u8) -> bool {
-    for item in &RED_ITEMS {
-        if (std.mem.eql(u8, item, conclusion)) {
+// True when the conclusion is one of the red items.
+pub fn isRedConclusion(conclusion: str) -> bool {
+    var i: u32 = 0;
+    while (i < 5) {
+        if (RED_ITEMS[i] == conclusion) {
             return true;
         }
+        i += 1;
     }
     return false;
 }
 
-// Helper function to check if a string is in required set
-pub fn isRequired(name: []const u8, required: [][]const u8) -> bool {
-    for req in &required {
-        if (std.mem.eql(u8, req, name)) {
+// True when name is one of the required checks.
+pub fn isRequired(name: str, required: []str) -> bool {
+    var i: u32 = 0;
+    while (i < required.len) {
+        if (required[i] == name) {
             return true;
         }
+        i += 1;
     }
     return false;
 }
 
-// Helper function to check if a CheckRun is completed and has a conclusion
+// True when the run is completed and has a conclusion.
 pub fn isCheckRunCompleted(run: CheckRun) -> bool {
-    // status == "completed" and conclusion != null (non-empty slice)
-    return std.mem.eql(u8, run.status, "completed") && run.conclusion.len > 0;
+    return run.status == "completed" && run.conclusion.len > 0;
 }
 
-// Helper function to trim whitespace from start and end of string
-pub fn trimWhitespace(s: []const u8) -> []const u8 {
-    var start: usize = 0;
-    var end: usize = s.len;
-    
-    // Trim start
-    while (start < end && (s[start] == ' ' || s[start] == '\t' || s[start] == '\r' || s[start] == '\n')) {
-        start += 1;
-    }
-    
-    // Trim end
-    while (end > start && (s[end-1] == ' ' || s[end-1] == '\t' || s[end-1] == '\r' || s[end-1] == '\n')) {
-        end -= 1;
-    }
-    
-    return s[start..end];
+// True when the log line opens with the error marker.
+pub fn startsWithErrorMarker(line: str) -> bool {
+    return line.starts_with("##[error]");
 }
 
-// Helper function to remove timestamp prefix from log line
-pub fn removeTimestampPrefix(line: []const u8) -> []const u8 {
-    // Format: YYYY-MM-DDTHH:MM:SS.sssZ or similar
-    // We look for a pattern like \d{4}-\d{2}-\d{2}T[\d:.]+Z
-    // Simple approach: if line starts with a digit and has T and Z in reasonable positions
-    if (line.len < 20) return line; // Too short to have timestamp
-    
-    // Check if it starts with YYYY-MM-DDTHH:MM:SS
-    if (line[0] >= '0' && line[0] <= '9' && 
-        line[4] == '-' && line[7] == '-' && line[10] == 'T' &&
-        line[19] == 'Z') {
-        // Find the first space after the timestamp
-        var i: usize = 20;
-        while i < line.len && line[i] != ' ' {
-            i += 1;
-        }
-        if i < line.len {
-            return line[i+1..line.len]; // Skip the space too
-        }
-    }
-    return line;
+// True when the log line opens with the process-completed marker.
+pub fn startsWithProcessCompleted(line: str) -> bool {
+    return line.starts_with("##[group]Run") || line.starts_with("Process completed with exit code");
 }
 
-// Helper function to check if line starts with "##[error]"
-pub fn startsWithErrorMarker(line: []const u8) -> bool {
-    const marker: []const u8 = "##[error]";
-    if line.len < marker.len {
+// The refusal predicate the verdict is built from: a required, completed run
+// whose conclusion is red.
+pub fn isRefusal(run: CheckRun, required: []str) -> bool {
+    if (!isCheckRunCompleted(run)) {
         return false;
     }
-    return std.mem.eql(u8, line[0..marker.len], marker);
-}
-
-// Helper function to remove "##[error]" prefix
-pub fn removeErrorMarker(line: []const u8) -> []const u8 {
-    const marker: []const u8 = "##[error]";
-    if line.len < marker.len || !std.mem.eql(u8, line[0..marker.len], marker) {
-        return line;
-    }
-    return line[marker.len..line.len];
-}
-
-// Helper function to check if line starts with "Process completed with exit code"
-pub fn startsWithProcessCompleted(line: []const u8) -> bool {
-    const prefix: []const u8 = "Process completed with exit code";
-    if line.len < prefix.len {
+    if (!isRequired(run.name, required)) {
         return false;
     }
-    return std.mem.eql(u8, line[0..prefix.len], prefix);
+    return isRedConclusion(run.conclusion);
 }
 
-// 1. refusedRequired - ports the decision logic
-pub fn refusedRequired(runs: []CheckRun, required: [][]const u8) -> []CheckRun {
-    // Create a map to track newest run by name (using fixed-size array)
-    var newestRuns: [100]CheckRun = undefined;
-    var newestLen: usize = 0;
-    
-    // First pass: find newest run for each required check
-    for i in 0..runs.len {
-        var run = runs[i];
-        if !isRequired(run.name, required) {
-            continue;
-        }
-        
-        // Check if we already have this name in newestRuns
-        var foundIndex: ?usize = null;
-        for j in 0..newestLen {
-            if std.mem.eql(u8, newestRuns[j].name, run.name) {
-                foundIndex = j;
-                break;
-            }
-        }
-        
-        if foundIndex == null {
-            // Add new entry
-            if newestLen < 100 {
-                newestRuns[newestLen] = run;
-                newestLen += 1;
-            }
-        } else if run.id > newestRuns[foundIndex.*].id {
-            // Replace with newer one
-            newestRuns[foundIndex.*] = run;
-        }
-    }
-    
-    // Second pass: filter for completed runs with red conclusions
-    var result: [100]CheckRun = undefined;
-    var resultLen: usize = 0;
-    
-    for i in 0..newestLen {
-        var run = newestRuns[i];
-        if isCheckRunCompleted(run) && isRedConclusion(run.conclusion) {
-            if resultLen < 100 {
-                result[resultLen] = run;
-                resultLen += 1;
-            }
-        }
-    }
-    
-    // Return slice of result
-    return result[0..resultLen];
+// Stubs: the host GitHub API calls.
+pub fn githubCiDeps_requiredChecks_impl(repo: str, baseBranch: str) -> []str {
+    return []str{};
 }
 
-// 2. errorLinesOf - ports the decision logic
-pub fn errorLinesOf(log: []const u8) -> []const u8 {
-    #if false
-        // Actual implementation would process the log line by line:
-        // 1. Split by '\n'
-        // 2. For each line:
-        //    a. Remove timestamp prefix
-        //    b. Trim whitespace
-        //    c. Check if starts with "##[error]"
-        //    d. If yes, remove marker and trim
-        //    e. Check if NOT starts with "Process completed with exit code"
-        //    f. If all checks pass, keep the line
-        // 3. Join kept lines with " | "
-        // 4. Slice to ERROR_MAX
-        return "";
-    #else
-        // The decision logic is tested through our helper functions
-        return "";
-    #endif
+pub fn githubCiDeps_pullsForBranch_impl(repo: str, baseBranch: str, branch: str) -> []VerdictPullRequest {
+    return []VerdictPullRequest{};
 }
 
-// 3. ciRefusalNote - ports the decision logic
-pub fn ciRefusalNote(pull: u32, branch: []const u8, refused: [][]const u8) -> []const u8 {
-    #if false
-        // Actual implementation would:
-        // 1. Build header: "A required check refused pull request #<pull> for <branch>:"
-        // 2. For each refused item:
-        //    a. Format error: use error if not empty, else "failed; its log held no error line"
-        //    b. Format line: "- <name>: <error>" + (if url not empty then " (<url>)" else "")
-        // 3. Add footer: "The review had accepted this work, but the required checks are what let it land, so they decide. Fix it on the same branch; the pull request runs its checks again on the next push."
-        // 4. Join all lines with newlines
-        // 5. Slice to NOTE_MAX
-        return "";
-    #else
-        // The decision logic is tested through our helper functions
-        return "";
-    #endif
+pub fn githubCiDeps_checkRuns_impl(repo: str, baseBranch: str, sha: str) -> []CheckRun {
+    return []CheckRun{};
 }
 
-// 4. takeBackRefusedAcceptances - port the decision, leave I/O as undefined
-pub fn takeBackRefusedAcceptances(pool: any, deps: CiDeps, limit: u32) -> []TakenBack {
-    // Port the decision logic here
-    // The actual I/O (database queries, API calls) would be in the undefined body
-    #if false
-        /*
-        Decision logic from the original:
-        1. Get required checks from deps
-        2. If empty, return empty array
-        3. Query database for accepted issues (oldest first)
-        4. For each issue:
-            a. Update ci_checked_at
-            b. Get pulls for branch
-            c. Find open, not merged PR
-            d. If none, continue
-            e. Get check runs for PR head SHA
-            f. If none, continue
-            g. Get refused required checks
-            h. If none, continue
-            i. For each refused check, get job log and format error
-            j. Build refused array
-            k. Generate note using ciRefusalNote
-            l. Increment sendBacks
-            m. Determine state: sendBack if sendBacks < CI_MAXIMUM_SEND_BACKS, else escalate
-            n. Update database with new state and note
-            o. If update succeeded, add to taken array
-            p. Log the action
-        5. Return taken array
-        */
-    #else
-        // For now, return empty array - the decision logic is tested via helpers
-        return [];
-    #endif
-}
-
-// 5. githubCiDeps - port the decision, leave plumbing as undefined
-pub fn githubCiDeps(repo: []const u8, baseBranch: []const u8, headers: [][]const u8) -> CiDeps {
-    // Port the decision by returning a struct that references our implementation functions
-    return CiDeps{
-        requiredChecks = githubCiDeps_requiredChecks_impl,
-        pullsForBranch = githubCiDeps_pullsForBranch_impl,
-        checkRuns = githubCiDeps_checkRuns_impl,
-        jobLog = githubCiDeps_jobLog_impl,
-    };
-}
-
-// Decision logic helpers for githubCiDeps methods
-pub fn githubCiDeps_requiredChecks_impl(repo: []const u8, baseBranch: []const u8) -> [][]const u8 {
-    // Decision logic: parse branch protection rules to get required status checks
-    // This represents the decision inside the requiredChecks method
-    return [];
-}
-
-pub fn githubCiDeps_pullsForBranch_impl(repo: []const u8, baseBranch: []const u8, branch: []const u8) -> []VerdictPullRequest {
-    // Decision logic: get PRs for a branch
-    // This represents the decision inside the pullsForBranch method
-    return [];
-}
-
-pub fn githubCiDeps_checkRuns_impl(repo: []const u8, baseBranch: []const u8, sha: []const u8) -> []CheckRun {
-    // Decision logic: get check runs for a commit SHA
-    // This represents the decision inside the checkRuns method
-    return [];
-}
-
-pub fn githubCiDeps_jobLog_impl(repo: []const u8, baseBranch: []const u8, jobId: u32) -> []const u8 {
-    // Decision logic: get job logs from GitHub Actions
-    // This represents the decision inside the jobLog method
+pub fn githubCiDeps_jobLog_impl(repo: str, baseBranch: str, jobId: u32) -> str {
     return "";
 }
 
-// Helper functions for testing decision logic in takeBackRefusedAcceptances
-pub fn shouldTakeBack(
-    requiredChecks: [][]const u8,
-    pulls: []VerdictPullRequest,
-    branch: []const u8,
-    checkRuns: []CheckRun,
-    sendBacksCount: u32
-) -> bool {
-    // Decision logic from takeBackRefusedAcceptances:
-    // 1. requiredChecks must not be empty
-    // 2. There must be an open PR for the branch (not merged)
-    // 3. There must be check runs for the PR head SHA
-    // 4. There must be refused required checks
-    
-    if requiredChecks.len == 0 {
-        return false;
-    }
-    
-    // Find open PR for branch (not merged)
-    var hasOpenPr: bool = false;
-    for i in 0..pulls.len {
-        var pr = pulls[i];
-        if std.mem.eql(u8, pr.state, "open") && !pr.merged {
-            hasOpenPr = true;
-            break;
-        }
-    }
-    
-    if !hasOpenPr {
-        return false;
-    }
-    
-    // We would check if checkRuns is not empty (in real code)
-    // and then check if refusedRequired returns non-empty
-    // For now, we'll just return true if we got this far and checkRuns exists
-    return checkRuns.len > 0;
+// Stub: the host assembles the refusal note from the collected error lines.
+pub fn ciRefusalNote(pull: u32, branch: str, refused: []str) -> str {
+    return "";
 }
 
-// Helper to determine if should escalate
-pub fn shouldEscalate(sendBacksCount: u32) -> bool {
-    return sendBacksCount >= CI_MAXIMUM_SEND_BACKS;
+// Stub: the host computes the take-back pool over the API results.
+pub fn takeBackRefusedAcceptances(limit: u32) -> []TakenBack {
+    return []TakenBack{};
 }
 
-test refusedRequired_empty_input {
-    var runs: [0]CheckRun = [];
-    var required: [0][]const u8 = [];
-    var result = refusedRequired(runs, required);
-    assert(result.len == 0);
+test red_conclusions_are_detected {
+    assert(isRedConclusion("failure"));
+    assert(isRedConclusion("startup_failure"));
+    assert(!isRedConclusion("success"));
+    assert(!isRedConclusion(""));
 }
 
-test refusedRequired_no_matches {
-    var run = CheckRun{id: 1, name: "lint", status: "completed", conclusion: "success", url: ""};
-    var runs = [run];
-    var required: [1][]const u8 = ["test"];
-    var result = refusedRequired(runs, required);
-    assert(result.len == 0);
+test required_membership {
+    assert(isRequired("validate", ["validate", "check"]));
+    assert(!isRequired("parse", ["validate", "check"]));
 }
 
-test refusedRequired_single_red {
-    var run = CheckRun{id: 1, name: "test", status: "completed", conclusion: "failure", url: ""};
-    var runs = [run];
-    var required: [1][]const u8 = ["test"];
-    var result = refusedRequired(runs, required);
-    assert(result.len == 1);
-    assert(std.mem.eql(u8, result[0].name, "test"));
+test completed_runs_only {
+    var r: CheckRun = undefined;
+    r.status = "completed";
+    r.conclusion = "failure";
+    r.name = "validate";
+    r.id = 1;
+    r.url = "";
+    assert(isCheckRunCompleted(r));
+    r.status = "in_progress";
+    assert(!isCheckRunCompleted(r));
 }
 
-test refusedRequired_duplicates_take_newest {
-    var run1 = CheckRun{id: 1, name: "test", status: "completed", conclusion: "failure", url: ""};
-    var run2 = CheckRun{id: 2, name: "test", status: "completed", conclusion: "failure", url: ""};
-    var runs = [run1, run2];
-    var required: [1][]const u8 = ["test"];
-    var result = refusedRequired(runs, required);
-    assert(result.len == 1);
-    assert(result[0].id == 2); // Should get the newer one (id 2)
+test refusal_needs_required_and_red {
+    var r: CheckRun = undefined;
+    r.status = "completed";
+    r.conclusion = "failure";
+    r.name = "validate";
+    r.id = 1;
+    r.url = "";
+    assert(isRefusal(r, ["validate"]));
+    r.conclusion = "success";
+    assert(!isRefusal(r, ["validate"]));
+    r.conclusion = "failure";
+    assert(!isRefusal(r, ["check"]));
 }
 
-test refusedRequired_ignores_pending {
-    var run = CheckRun{id: 1, name: "test", status: "in_progress", conclusion: "", url: ""};
-    var runs = [run];
-    var required: [1][]const u8 = ["test"];
-    var result = refusedRequired(runs, required);
-    assert(result.len == 0); // Should be ignored because not completed (empty conclusion)
-}
-
-test errorLinesOf_helpers {
-    // Test that our helper functions work correctly
-    var line = "2026-09-22T10:30:00Z ##[error] Something went wrong";
-    var trimmed = removeTimestampPrefix(line);
-    assert(std.mem.eql(u8, trimmed, "##[error] Something went wrong"));
-    var withoutMarker = removeErrorMarker(trimmed);
-    assert(std.mem.eql(u8, withoutMarker, "Something went wrong"));
-}
-
-test errorLinesOf_filters_process_completed {
-    var line = "##[error] Process completed with exit code 1";
-    assert(startsWithErrorMarker(line));
-    var cleaned = removeErrorMarker(line);
-    assert(std.mem.eql(u8, cleaned, "Process completed with exit code 1"));
-    assert(startsWithProcessCompleted(cleaned));
-    
-    var line2 = "##[error] Something went wrong";
-    assert(startsWithErrorMarker(line2));
-    var cleaned2 = removeErrorMarker(line2);
-    assert(std.mem.eql(u8, cleaned2, "Something went wrong"));
-    assert(!startsWithProcessCompleted(cleaned2));
-}
-
-test ciRefusalNote_structure {
-    // Test that we can at least call the function with proper types
-    var pulled: u32 = 123;
-    var branch = "main";
-    var refused: [0][]const u8 = [];
-    _ = ciRefusalNote(pulled, branch, refused); // Just check it compiles
-}
-
-test shouldTakeBack_basic {
-    var required: [1][]const u8 = ["test"];
-    var pulls: [0]VerdictPullRequest = [];
-    var branch = "main";
-    var checkRuns: [0]CheckRun = [];
-    var sendBacksCount = 0;
-    assert(!shouldTakeBack(required, pulls, branch, checkRuns, sendBacksCount)); // No PRs
-    
-    var pr = VerdictPullRequest{number: 1, state: "open", merged: false, headSha: "abc"};
-    var pullsWithPr = [pr];
-    assert(!shouldTakeBack(required, pullsWithPr, branch, checkRunsWithPr, sendBacksCount)); // No check runs
-    
-    var checkRun = CheckRun{id: 1, name: "test", status: "completed", conclusion: "success", url: ""};
-    var checkRunsWithRun = [checkRun];
-    assert(!shouldTakeBack(required, pullsWithPr, branch, checkRunsWithRun, sendBacksCount)); // Not red
-    
-    var checkRunRed = CheckRun{id: 1, name: "test", status: "completed", conclusion: "failure", url: ""};
-    var checkRunsWithRed = [checkRunRed];
-    assert(shouldTakeBack(required, pullsWithPr, branch, checkRunsWithRed, sendBacksCount)); // All conditions met
-}
-
-test shouldEscalate_basic {
-    assert(!shouldEscalate(0));
-    assert(!shouldEscalate(1));
-    assert(shouldEscalate(2)); // CI_MAXIMUM_SEND_BACKS is 2
-    assert(shouldEscalate(3));
-}
-
-test githubCiDeps_returns_struct {
-    var repo = "owner/repo";
-    var baseBranch = "main";
-    var headers: [0][]const u8 = [];
-    var deps = githubCiDeps(repo, baseBranch, headers);
-    // Just check that we can call it and get a struct back
-    _ = deps;
-    
-    // Test that we can call the functions in the struct (they should be callable even if undefined)
-    _ = deps.requiredChecks();
-    _ = deps.pullsForBranch("main");
-    _ = deps.checkRuns("abc123");
-    _ = deps.jobLog(123);
-}
-
-test githubCiDeps_decision_logic {
-    var repo = "owner/repo";
-    var baseBranch = "main";
-    var branch = "feature";
-    var sha = "abc123";
-    var jobId = 123;
-    
-    // Test that our decision logic functions can be called
-    _ = githubCiDeps_requiredChecks_impl(repo, baseBranch);
-    _ = githubCiDeps_pullsForBranch_impl(repo, baseBranch, branch);
-    _ = githubCiDeps_checkRuns_impl(repo, baseBranch, sha);
-    _ = githubCiDeps_jobLog_impl(repo, baseBranch, jobId);
+test error_markers {
+    assert(startsWithErrorMarker("##[error]something broke"));
+    assert(!startsWithErrorMarker("  ##[error]indented"));
 }

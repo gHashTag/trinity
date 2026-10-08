@@ -15,8 +15,7 @@ module SemanticSearch;
 
 use base::types::Float;
 use base::math::cosine_sim;
-use base::math::normalize_l2;
-use base::constants::PHI;
+use math::constants::PHI;
 
 // ============================================================================
 // Constants

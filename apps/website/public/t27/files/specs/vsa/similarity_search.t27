@@ -6,7 +6,6 @@
 // φ² + 1/φ² = 3 | TRINITY
 
 module VSASimilaritySearch {
-    use vsa::core;
     use math::constants;
 
     // ═════════════════════════════════════════════════════

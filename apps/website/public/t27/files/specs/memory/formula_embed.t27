@@ -16,8 +16,7 @@ module FormulaEmbed;
 use base::types::Float;
 use base::math::l2_norm;
 use base::math::normalize_l2;
-use base::math::phi_distance;
-use base::constants::PHI;
+use math::constants::PHI;
 
 // ============================================================================
 // Constants

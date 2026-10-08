@@ -1,4 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
+// Issue: https://github.com/dmitrii-f-t27/trinity-memory/issues/125
+// Coverage: https://github.com/dmitrii-f-t27/trinity-memory/issues/3
+// Coverage: https://github.com/dmitrii-f-t27/trinity-memory/issues/7
+// Coverage: https://github.com/dmitrii-f-t27/trinity-memory/issues/15
 // specs/memory/stream_compute.t27 -- Trinity Stream Compute contract
 // The path from stored codes to a dot product: the synchronous storage
 // sequencer (load, start, busy, one registered read per word), the view that

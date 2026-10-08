@@ -176,7 +176,7 @@ fn runSpecCommand(allocator: std.mem.Allocator, args: []const string) !void {
     } else if (std.mem.eql(u8, subcommand, "list")) {
         try specList(allocator);
     } else {
-        try printError("Unknown spec subcommand: {s}\n", .{subcommand});
+        try printErrorFmt("Unknown spec subcommand: {s}\n", .{subcommand});
     }
 }
 
@@ -211,7 +211,7 @@ fn runGitCommand(allocator: std.mem.Allocator, args: []const string) !void {
     } else if (std.mem.eql(u8, subcommand, "status")) {
         try gitStatusWithCell(allocator);
     } else {
-        try printError("Unknown git subcommand: {s}\n", .{subcommand});
+        try printErrorFmt("Unknown git subcommand: {s}\n", .{subcommand});
     }
 }
 
@@ -234,7 +234,7 @@ fn runLintCommand(allocator: std.mem.Allocator, args: []const string) !void {
 fn specCreate(allocator: std.mem.Allocator, name: []const u8, path: []const u8) !void {
     // Validate spec name
     if (!isValidSpecName(name)) {
-        try printError("Invalid spec name: {s}\n", .{name});
+        try printErrorFmt("Invalid spec name: {s}\n", .{name});
         try printError("Spec names must be lowercase alphanumeric with underscores\n");
         return error.InvalidSpecName;
     }
@@ -247,7 +247,7 @@ fn specCreate(allocator: std.mem.Allocator, name: []const u8, path: []const u8) 
 
     // Check if file exists
     if (fileExists(output_path)) {
-        try printError("Spec already exists: {s}\n", .{output_path});
+        try printErrorFmt("Spec already exists: {s}\n", .{output_path});
         try printError("Use --force to overwrite (not implemented yet)\n");
         return error.FileExists;
     }
@@ -264,7 +264,7 @@ fn specCreate(allocator: std.mem.Allocator, name: []const u8, path: []const u8) 
 
 fn specValidate(allocator: std.mem.Allocator, spec_path: []const u8) !void {
     if (!fileExists(spec_path)) {
-        try printError("Spec not found: {s}\n", .{spec_path});
+        try printErrorFmt("Spec not found: {s}\n", .{spec_path});
         return error.FileNotFound;
     }
 
@@ -275,7 +275,7 @@ fn specValidate(allocator: std.mem.Allocator, spec_path: []const u8) !void {
     const context = parseSimple(content, spec_path);
 
     if (context.errors.len > 0) {
-        try printError("Parse errors in {s}:\n", .{spec_path});
+        try printErrorFmt("Parse errors in {s}:\n", .{spec_path});
         for (context.errors) |err| {
             try std.io.getStdErr().writer().print(
                 "  Line {d}:{d}: {s}\n",
@@ -289,7 +289,7 @@ fn specValidate(allocator: std.mem.Allocator, spec_path: []const u8) !void {
     const tdd_errors = try validateTDDCompliance(allocator, &context.ast_root);
 
     if (tdd_errors.items.len > 0) {
-        try printError("TDD compliance violations in {s}:\n", .{spec_path});
+        try printErrorFmt("TDD compliance violations in {s}:\n", .{spec_path});
         for (tdd_errors.items) |err| {
             try std.io.getStdErr().writer().print("  {s}\n", .{err});
         }
@@ -416,7 +416,7 @@ fn parseGenOptions(allocator: std.mem.Allocator, args: []const string) !GenOptio
 fn gen(allocator: std.mem.Allocator, spec_path: []const u8, options: GenOptions) !void {
     // Check if spec exists
     if (!fileExists(spec_path)) {
-        try printError("Spec not found: {s}\n", .{spec_path});
+        try printErrorFmt("Spec not found: {s}\n", .{spec_path});
         return error.FileNotFound;
     }
 
@@ -425,7 +425,7 @@ fn gen(allocator: std.mem.Allocator, spec_path: []const u8, options: GenOptions)
 
     // Validate language policy (no Cyrillic)
     if (!validateNoCyrillic(content, spec_path)) {
-        try printError("Language policy violation: {s} contains Cyrillic\n", .{spec_path});
+        try printErrorFmt("Language policy violation: {s} contains Cyrillic\n", .{spec_path});
         return error.LanguagePolicyViolation;
     }
 
@@ -433,7 +433,7 @@ fn gen(allocator: std.mem.Allocator, spec_path: []const u8, options: GenOptions)
     const context = parseSimple(content, spec_path);
 
     if (context.errors.len > 0) {
-        try printError("Parse errors in {s}:\n", .{spec_path});
+        try printErrorFmt("Parse errors in {s}:\n", .{spec_path});
         for (context.errors) |err| {
             try std.io.getStdErr().writer().print(
                 "  Line {d}:{d}: {s}\n",
@@ -629,7 +629,7 @@ fn gitStatusWithCell(allocator: std.mem.Allocator) !void {
 
 fn lintFile(allocator: std.mem.Allocator, file_path: []const u8) !void {
     if (!fileExists(file_path)) {
-        try printError("File not found: {s}\n", .{file_path});
+        try printErrorFmt("File not found: {s}\n", .{file_path});
         return error.FileNotFound;
     }
 
@@ -640,7 +640,7 @@ fn lintFile(allocator: std.mem.Allocator, file_path: []const u8) !void {
 
     // Check 1: Language policy (no Cyrillic)
     if (!validateNoCyrillic(content, file_path)) {
-        try printError("a Language policy: contains Cyrillic\n", .{});
+        try printErrorFmt("a Language policy: contains Cyrillic\n", .{});
         errors += 1;
     } else {
         std.debug.print("a Language policy: ASCII-only\n", .{});
@@ -651,14 +651,14 @@ fn lintFile(allocator: std.mem.Allocator, file_path: []const u8) !void {
         const context = parseSimple(content, file_path);
 
         if (context.errors.len > 0) {
-            try printError("a Parse errors: {d}\n", .{context.errors.len});
+            try printErrorFmt("a Parse errors: {d}\n", .{context.errors.len});
             errors += context.errors.len;
         } else {
             std.debug.print("a Parse: OK\n", .{});
         }
 
         if (!hasTestsOrInvariants(&context.ast_root)) {
-            try printError("a TDD contract: no tests or invariants\n", .{});
+            try printErrorFmt("a TDD contract: no tests or invariants\n", .{});
             errors += 1;
         } else {
             std.debug.print("a TDD contract: has tests/invariants\n", .{});

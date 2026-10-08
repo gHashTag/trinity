@@ -5,7 +5,6 @@
 module LayerNorm;
     use base::types;
     use math::constants;
-    use math::statistics;
     use numeric::gf16;
 
     // ═══════════════════════════════════════════════════════════

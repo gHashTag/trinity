@@ -163,6 +163,7 @@ name `tri gen`/`tri test` but are not letter agents. The alphabet's key files po
 | `AGENTS` | `[N]str` | owning letters, only where a source names the command |
 | `AGENTS_NOTE` | `str` | the source line, or why the list is empty |
 | `WHEN_TO_USE` | `str` | the long about when the doc has more than one paragraph, else `ABOUT` |
+| `CAST` | `str` | optional: `term/<id>/session.cast`, a recorded run of the command published at `t27.ai/term/<id>/`; the rules are `castProblems()` in `gHashTag/trinity` `apps/website/scripts/agents-from-specs.mjs`, and a CAST does not change `WITNESS` |
 | `WITNESS` | `str` | `"source-parse"` |
 | `ENABLED` | `bool` | |
 

@@ -9,7 +9,6 @@ module runtime-process;
 // Imports
 // ============================================================================
 
-use std;
 
 // ============================================================================
 // Constants
@@ -534,6 +533,11 @@ test "runtime_output_signal_some" {
     const output = output_with_signal("", "", .kill);
     const signal = output_signal(&output);
     try std.testing.expect(signal != null);
+}
+
+test "runtime_process_continue" {
+    const result = process_continue(1234);
+    try std.testing.expect(result);
 }
 
 // ============================================================================

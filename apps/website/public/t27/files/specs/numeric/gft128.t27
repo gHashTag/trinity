@@ -35,10 +35,10 @@ module triformat_gft128 {
     const SIGN_BITS: u32 = 1;
     const EXP_TRITS: u32 = 49;     // round((N-1)/phi^2)
     const MANT_BITS: u32 = 78;      // the remaining positions, all of them
-    const EXP_OFFSET: u32 = 119649664615308764795041;
-    const OFFSET_MAX: u32 = 239299329230617529590082;
+    const EXP_OFFSET: u128 = 119649664615308764795041;
+    const OFFSET_MAX: u128 = 239299329230617529590082;
 
-    fn is_finite(offset: u32) -> bool { return offset != OFFSET_MAX; }
+    fn is_finite(offset: u128) -> bool { return offset != OFFSET_MAX; }
     fn exp_values() -> u32 { return 0; }
 
     // ---- Tests / invariants ----

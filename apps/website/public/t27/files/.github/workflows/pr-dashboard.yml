@@ -2,8 +2,8 @@ name: PR Dashboard
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 * * * *'
+  # No schedule: block. The Queen (Inngest app t27-queen) dispatches this workflow
+  # on '0 * * * *' UTC from the card specs/crons/t27-pr-dashboard.t27.
   pull_request:
     types: [opened, synchronize]
     branches: [master, main]

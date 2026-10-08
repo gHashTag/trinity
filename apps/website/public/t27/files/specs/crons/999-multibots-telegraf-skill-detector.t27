@@ -22,3 +22,10 @@ pub const RUNS_NOTE : str = "the \"skills\" it saves are bot prompt patterns, no
 pub const ENABLED : bool = true;
 pub const ON_FAILURE : str = "log";
 pub const CONTROL : str = "inngest-dashboard";
+
+test basic_constants {
+  assert KIND == "cron";
+  assert ENABLED == true;
+  assert SCHEDULE == "0 10 * * *";
+  assert HOST == "inngest";
+}

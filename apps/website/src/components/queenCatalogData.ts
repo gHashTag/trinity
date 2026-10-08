@@ -72,9 +72,12 @@ export function catalogUniverse(input:UniverseAtlas,observed:WorldIssue[]=[],com
     const issueStart=hexCellCount(hexRingsFor(specs.length+1));
     const scale=.55,ring=hexRingsFor(Math.max(issueStart+snapshot.length+64,issueStart+unique.length));
     const radius=(S_CELL*ring+HEX_R)*scale;
-    const origin=positions[portalIndex],length=Math.hypot(origin.x,origin.y)||1;
-    const distance=coreRadius+radius+S_CELL*2;
-    const region:CatalogRegion={repo:portal.repo,portalIndex,x:origin.x/length*distance,y:origin.y/length*distance,radius,focusRadius:HEX_R*scale,scale,indices:[],specIndices:[],slots:[-1]};
+    const origin=positions[portalIndex],length=Math.hypot(origin.x,origin.y)||1,ux=origin.x/length,uy=origin.y/length;
+    // Keep the portal's direction, but move out until every region placed so far is clear: at one fixed
+    // distance a bigger catalogue (15 repositories on 2026-10-07) made neighbouring regions overlap.
+    let distance=coreRadius+radius+S_CELL*2;
+    while(regions.some(o=>Math.hypot(ux*distance-o.x,uy*distance-o.y)<=radius+o.radius))distance+=S_CELL;
+    const region:CatalogRegion={repo:portal.repo,portalIndex,x:ux*distance,y:uy*distance,radius,focusRadius:HEX_R*scale,scale,indices:[],specIndices:[],slots:[-1]};
     const append=(local:number,resource:CatalogCell|null,row:WorldIssue|null)=>{
       const point=hexToWorld(spiralAxial(local)),index=cells.length;
       region.slots[local]=index;cells.push(resource);displays.push(row);

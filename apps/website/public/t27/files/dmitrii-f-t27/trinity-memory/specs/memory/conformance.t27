@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
+// Issue: https://github.com/dmitrii-f-t27/trinity-memory/issues/125
+// Coverage: https://github.com/dmitrii-f-t27/trinity-memory/issues/3
+// Coverage: https://github.com/dmitrii-f-t27/trinity-memory/issues/8
 // specs/memory/conformance.t27 -- Trinity Conformance Lab contract
 // One fixture of shared vectors, the experiment plan the native runtime
 // executes against it (golden bytes, loopback HTTP transfer, exact dot, RTL

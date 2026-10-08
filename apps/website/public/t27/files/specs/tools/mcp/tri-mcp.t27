@@ -35,7 +35,20 @@ pub const RESOURCES_ABOUT : [0]str = [];
 pub const TOOLS_NOTE : str = "Not registered in .mcp.json at this commit; the server exists as the tri-mcp crate.";
 ; true when the server is a third-party package launched by npx or an outside binary.
 pub const EXTERNAL : bool = false;
-pub const AGENTS : [0]str = [];
-pub const AGENTS_NOTE : str = "No source binds an agent letter to this server: docs/agents/AGENTS_ALPHABET.md, specs/OWNERS.md and .claude/agents/*.md do not name it.";
+pub const AGENTS : [2]str = ["T", "W"];
+pub const AGENTS_NOTE : str = "docs/agents/AGENTS_ALPHABET.md \"Who holds a tool, and who holds a skill\" binds every tool to the Queen (T). Domain lead W: Changed from W,O to W: tri_cell_checkpoint/tri_cell_seal carry tri/cell.t27's own text verbatim and that card is bound to W, and README LAW 2 calls the PHI LOOP a \"9-step workflow with 4 SHA-256 hashes\", matching W's \"Hash is verified\". O was dropped because the card never names a phase, src/tri/pipeline/ or specs/ar/composition.t27 (O's KEY_FILES) -- and its remaining tools mirror tri/gen (C,T), tri/test and tri/verdict (V) and tri/experience (E), four domains, so no single second letter is earned.";
 pub const WITNESS : str = "source-parse";
 pub const ENABLED : bool = true;
+
+test verify_tri_mcp_constants {
+    assert KIND == "tool";
+    assert FAMILY == "mcp";
+    assert SERVER_VERSION == "0.1.0";
+    assert TRANSPORT == "stdio";
+    assert SCHEMA == 2;
+    assert REPO == "gHashTag/t27";
+    assert QUALIFIED_ID == "gHashTag/t27:mcp/tri-mcp";
+    assert ENABLED == true;
+    assert AGENTS[0] == "T";
+    assert TOOLS[0] == "tri_status";
+}

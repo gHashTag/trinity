@@ -1,4 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
+// Issue: https://github.com/dmitrii-f-t27/trinity-memory/issues/125
+// Issue: https://github.com/dmitrii-f-t27/trinity-memory/issues/131
+// Coverage: https://github.com/dmitrii-f-t27/trinity-memory/issues/29
+// Coverage: https://github.com/dmitrii-f-t27/trinity-memory/issues/30
+// Coverage: https://github.com/dmitrii-f-t27/trinity-memory/issues/34
+// Coverage: https://github.com/dmitrii-f-t27/trinity-memory/issues/98
 // specs/formats/llama_cpp.t27 -- llama.cpp ternary block formats and GGUF tensor rules
 // Restates upstream ggml-org/llama.cpp@4364bf7232e65c34eca8d9500c5464389662de6b:
 // ggml/include/ggml.h:424-433 (type ids TQ1_0 34, TQ2_0 35, Q1_0 41, Q2_0 42,
@@ -21,6 +27,15 @@
 // src/llama-model-loader.h:46-48 (tensor data within the file bounds).
 // It also states the GGUF type-id rule this repository applies across the
 // ggml-org, PrismML and bitnet.cpp id namespaces (specs/formats/OWNERS.md).
+// Activation precision policy (issue #98, section 7 below), same commit:
+// src/llama-model.cpp:1237-1272 (llama_prec_policy::load, called from load_tensors
+// at :1799: general.tensor_extra.name read as an optional string array, then
+// general.tensor_extra.prec_a4 must be a bool array of the same length) and
+// src/llama-model-loader.cpp:305-332 (get_arr: a key that is not an array reads as
+// absent, a string array is the only element type accepted for a string vector).
+// The PrismML fork at 87268f77 has no such reader (specs/formats/prismml.t27).
+// Not restated: what the policy does with the values (which tensors keep 8-bit
+// activations); only the load verdict is a rule of this specification.
 // The reference functions follow the upstream loop order; they are independent
 // restatements used by tests/native_spec_formats.c, not the implementation
 // (t27/formats.t27).
@@ -114,6 +129,15 @@ module TrinityFormatsLlamaCppSpec {
     // name bytes and 8 bytes per dimension.
     pub const TFS_LLAMA_GGUF_INFO_FIXED_BYTES: u32 = 24;
     pub const TFS_LLAMA_GGUF_INFO_DIM_BYTES: u32 = 8;
+
+    // 7. Per-tensor activation precision (issue #98): status class tensor_extra of
+    //    specs/formats/OWNERS.md. GGUF value type ids (gguf.h: BOOL 7, STRING 8,
+    //    ARRAY 9); ABSENT stands for a key the file does not hold and is no type id.
+    pub const TFS_LLAMA_ERR_TENSOR_EXTRA: i32 = -89;
+    pub const TFS_LLAMA_GGUF_TYPE_BOOL: u32 = 7;
+    pub const TFS_LLAMA_GGUF_TYPE_STRING: u32 = 8;
+    pub const TFS_LLAMA_GGUF_TYPE_ARRAY: u32 = 9;
+    pub const TFS_LLAMA_GGUF_TYPE_ABSENT: u32 = 0xffffffff;
 
     // ---- reference functions ---------------------------------------------
     pub fn tfs_llama_block_weights(format: i32) -> usize {
@@ -466,6 +490,24 @@ module TrinityFormatsLlamaCppSpec {
         return 8 * (tfs_llama_gguf_info_bytes(name_size, dims) + data_bytes + tfs_llama_gguf_padding(data_bytes, alignment));
     }
 
+    // Load verdict of general.tensor_extra.* in stock llama.cpp. *_kind is the GGUF
+    // value type of the key (ABSENT when the file has none), *_elem the element
+    // type when the key is an array, *_len the element count. A names key that is
+    // not an array reads as absent and the policy is not loaded (status 0, even
+    // when prec_a4 is malformed). An array of anything but strings is refused by the
+    // loader's array read; prec_a4 must exist as an array of bools, however many
+    // names there are (an empty names array included), and have as many elements as
+    // names has.
+    pub fn tfs_llama_tensor_extra_status(names_kind: u32, names_elem: u32, names_len: u64,
+                                         prec_kind: u32, prec_elem: u32, prec_len: u64) -> i32 {
+        if (names_kind != TFS_LLAMA_GGUF_TYPE_ARRAY) { return 0; }
+        if (names_elem != TFS_LLAMA_GGUF_TYPE_STRING) { return TFS_LLAMA_ERR_TENSOR_EXTRA; }
+        if (prec_kind != TFS_LLAMA_GGUF_TYPE_ARRAY) { return TFS_LLAMA_ERR_TENSOR_EXTRA; }
+        if (prec_elem != TFS_LLAMA_GGUF_TYPE_BOOL) { return TFS_LLAMA_ERR_TENSOR_EXTRA; }
+        if (prec_len != names_len) { return TFS_LLAMA_ERR_TENSOR_EXTRA; }
+        return 0;
+    }
+
     // ---- invariants ---------------------------------------------------------
     invariant llama_status_classes_are_distinct { assert TFS_LLAMA_ERR_LENGTH == TFS_LLAMA_ERR_FORMAT - 1 && TFS_LLAMA_ERR_NOT_FOUND == TFS_LLAMA_ERR_FORMAT - 7 && TFS_LLAMA_ERR_SCALE_NONFINITE == TFS_LLAMA_ERR_NOT_FOUND - 1 && TFS_LLAMA_ERR_EXTENT == TFS_LLAMA_ERR_SCALE_NONFINITE - 4; }
     invariant llama_tq1_0_block_layout { assert TFS_LLAMA_TQ1_0_QS_BYTES + TFS_LLAMA_TQ1_0_QH_BYTES == TFS_LLAMA_TQ1_0_SCALE_AT && TFS_LLAMA_TQ1_0_SCALE_AT + 2 == TFS_LLAMA_TQ1_0_BLOCK_BYTES && TFS_LLAMA_TQ1_0_QS_BYTES == (TFS_LLAMA_QK_K - 4 * TFS_LLAMA_QK_K / 64) / 5 && TFS_LLAMA_TQ1_0_QH_BYTES == TFS_LLAMA_QK_K / 64; }
@@ -481,6 +523,7 @@ module TrinityFormatsLlamaCppSpec {
     invariant llama_base3_code_counts { assert TFS_LLAMA_B3_QS_CANONICAL == 3 * 3 * 3 * 3 * 3 && TFS_LLAMA_B3_QH_CANONICAL == 3 * 3 * 3 * 3 && TFS_LLAMA_B3_QS_CANONICAL < 256 && TFS_LLAMA_B3_QH_CANONICAL + TFS_LLAMA_B3_QH_PADDED + 5 == 256; }
     invariant llama_gguf_alignment_is_a_power_of_two { assert TFS_LLAMA_GGUF_INFO_FIXED_BYTES == 8 + 4 + 4 + 8 && 0 == (TFS_LLAMA_GGUF_DEFAULT_ALIGNMENT & (TFS_LLAMA_GGUF_DEFAULT_ALIGNMENT - 1)); }
     invariant llama_type_ids { assert TFS_LLAMA_TYPE_TQ1_0 == 34 && TFS_LLAMA_TYPE_TQ2_0 == 35 && TFS_LLAMA_TYPE_Q1_0 == 41 && TFS_LLAMA_TYPE_Q2_0 == 42 && TFS_LLAMA_TYPE_COUNT == 43; }
+    invariant llama_tensor_extra_types { assert TFS_LLAMA_ERR_TENSOR_EXTRA == -89 && TFS_LLAMA_GGUF_TYPE_BOOL == 7 && TFS_LLAMA_GGUF_TYPE_STRING == 8 && TFS_LLAMA_GGUF_TYPE_ARRAY == 9 && TFS_LLAMA_GGUF_TYPE_ABSENT > 12; }
 
     // ---- tests ----------------------------------------------------------------
     test "llama q1_0 worked example decodes bits low first" {
@@ -635,5 +678,40 @@ module TrinityFormatsLlamaCppSpec {
         assert tfs_llama_gguf_info_bytes(21, 2) == 61;
         assert tfs_llama_gguf_padding(25067520, 32) == 0 && tfs_llama_gguf_padding(396, 64) == 52;
         assert tfs_llama_gguf_tensor_bits(21, 2, 25067520, 32) == 200540648;
+    }
+    test "llama tensor_extra: names and prec_a4 must be string and bool arrays of one length" {
+        var absent: u32 = TFS_LLAMA_GGUF_TYPE_ABSENT;
+        var arr: u32 = TFS_LLAMA_GGUF_TYPE_ARRAY;
+        var str: u32 = TFS_LLAMA_GGUF_TYPE_STRING;
+        var flag: u32 = TFS_LLAMA_GGUF_TYPE_BOOL;
+        // No names array: nothing is read, whatever prec_a4 holds.
+        assert tfs_llama_tensor_extra_status(absent, 0, 0, absent, 0, 0) == 0;
+        assert tfs_llama_tensor_extra_status(absent, 0, 0, arr, flag, 3) == 0;
+        assert tfs_llama_tensor_extra_status(absent, 0, 0, flag, 0, 0) == 0;
+        // A names key that is a scalar string (or any non-array) reads as absent.
+        assert tfs_llama_tensor_extra_status(str, 0, 0, absent, 0, 0) == 0;
+        assert tfs_llama_tensor_extra_status(flag, 0, 0, arr, str, 7) == 0;
+        // Lengths 0, 1 and N with a matching bool array are accepted.
+        assert tfs_llama_tensor_extra_status(arr, str, 0, arr, flag, 0) == 0;
+        assert tfs_llama_tensor_extra_status(arr, str, 1, arr, flag, 1) == 0;
+        assert tfs_llama_tensor_extra_status(arr, str, 2, arr, flag, 2) == 0;
+        assert tfs_llama_tensor_extra_status(arr, str, 4096, arr, flag, 4096) == 0;
+        // The length must match exactly, in both directions, including 0 against 1.
+        assert tfs_llama_tensor_extra_status(arr, str, 2, arr, flag, 1) == TFS_LLAMA_ERR_TENSOR_EXTRA;
+        assert tfs_llama_tensor_extra_status(arr, str, 1, arr, flag, 2) == TFS_LLAMA_ERR_TENSOR_EXTRA;
+        assert tfs_llama_tensor_extra_status(arr, str, 0, arr, flag, 1) == TFS_LLAMA_ERR_TENSOR_EXTRA;
+        assert tfs_llama_tensor_extra_status(arr, str, 1, arr, flag, 0) == TFS_LLAMA_ERR_TENSOR_EXTRA;
+        assert tfs_llama_tensor_extra_status(arr, str, 4096, arr, flag, 4095) == TFS_LLAMA_ERR_TENSOR_EXTRA;
+        // prec_a4 missing, not an array, or an array of anything but bool (int32 5, uint8 0).
+        assert tfs_llama_tensor_extra_status(arr, str, 2, absent, 0, 0) == TFS_LLAMA_ERR_TENSOR_EXTRA;
+        assert tfs_llama_tensor_extra_status(arr, str, 0, absent, 0, 0) == TFS_LLAMA_ERR_TENSOR_EXTRA;
+        assert tfs_llama_tensor_extra_status(arr, str, 1, flag, 0, 0) == TFS_LLAMA_ERR_TENSOR_EXTRA;
+        assert tfs_llama_tensor_extra_status(arr, str, 2, arr, 5, 2) == TFS_LLAMA_ERR_TENSOR_EXTRA;
+        assert tfs_llama_tensor_extra_status(arr, str, 2, arr, 0, 2) == TFS_LLAMA_ERR_TENSOR_EXTRA;
+        assert tfs_llama_tensor_extra_status(arr, str, 0, arr, str, 0) == TFS_LLAMA_ERR_TENSOR_EXTRA;
+        // The names array holds something other than strings (int32 5, bool).
+        assert tfs_llama_tensor_extra_status(arr, 5, 2, arr, flag, 2) == TFS_LLAMA_ERR_TENSOR_EXTRA;
+        assert tfs_llama_tensor_extra_status(arr, flag, 2, arr, flag, 2) == TFS_LLAMA_ERR_TENSOR_EXTRA;
+        assert tfs_llama_tensor_extra_status(arr, 5, 0, absent, 0, 0) == TFS_LLAMA_ERR_TENSOR_EXTRA;
     }
 }

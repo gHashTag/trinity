@@ -5,12 +5,19 @@
 // phi^2 + 1/phi^2 = 3 | TRINITY
 
 module BuildVerify {
-    const TOTAL_FPGA_MODULES : u32 = 33;
+    // Counted from the tree on 2026-10-06 (#6659), not carried over:
+    //   specs/fpga/*.t27            36 modules
+    //   specs/fpga/testbench/*.t27  30 testbenches
+    //   specs/fpga/boards/*.t27      2 board configs
+    // and `t27c gen-verilog` succeeds on all 68 of them (Railway lab, 099ac2224).
+    // The previous values (33 / 30 / 3 = 66) matched no tree: #1399 raised the
+    // module constant to 33 while its own test still asserted 31.
+    const TOTAL_FPGA_MODULES : u32 = 36;
     const TOTAL_TESTBENCHES : u32 = 30;
-    const TOTAL_BOARD_CONFIGS : u32 = 3;
-    const TOTAL_SPECS : u32 = 66;
+    const TOTAL_BOARD_CONFIGS : u32 = 2;
+    const TOTAL_SPECS : u32 = 68;
     const NUM_BACKENDS : u32 = 4;
-    const VERILOG_FILES : u32 = 66;
+    const VERILOG_FILES : u32 = 68;
 
     struct ModuleReport {
         name : str;
@@ -42,7 +49,7 @@ module BuildVerify {
     }
 
     test test_module_count {
-        invariant TOTAL_FPGA_MODULES == 31;
+        invariant TOTAL_FPGA_MODULES == 36;
     }
 
     test test_testbench_count {
@@ -50,7 +57,7 @@ module BuildVerify {
     }
 
     test test_board_count {
-        invariant TOTAL_BOARD_CONFIGS == 3;
+        invariant TOTAL_BOARD_CONFIGS == 2;
     }
 
     test test_total_specs {

@@ -47,11 +47,15 @@ pub fn user1(idx: i32, nbits: i32) u8 {
     }
 }
 
-test shift_ir_test
+test shift_ir_test {
     const mpsse = mpsse_new(0);
     shift_ir(mpsse, 0x12);
-    expect true
+    assert true;  // smoke test: shift_ir returns
+}
 
-test user1_test
+// The first draft checked `result == result`, which holds for any value.
+// user1 masks its read to nbits bits, so with nbits = 4 the result is below 16.
+test user1_test {
     const result = user1(0, 4);
-    expect result == result
+    assert result < 16;
+}
