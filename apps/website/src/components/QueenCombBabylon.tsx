@@ -38,6 +38,8 @@ import { PointerEventTypes } from "@babylonjs/core/Events/pointerEvents";
 import { HivePointers } from './queenHivePointers';
 import { Ray } from "@babylonjs/core/Culling/ray";
 import { loadShipGeometry, shipTint } from './queenShipModel';
+import { hiveCellEffect, hiveFlashAlpha, hiveShipAlpha, hiveShipKept, hiveShipMode } from '../lib/queenHiveCard';
+import { CELL_NONE, CELL_PLACED, FLASH_MS, FX_ACCEPT, FX_CANCEL, FX_LOST, FX_NONE, FX_SEND_BACK, FX_START, SM_HOME, SM_ORBIT, SM_PARK, SM_PORTAL } from '../lib/queenHive.generated';
 import { beeLabel, type BeeState } from '../lib/queenTasks';
 import { S, EDGES } from "./QueenComb";
 import { eventTone, ringTone, type BeeLine, type HudEvent, type HudModule, type HudPick, type Tone , eventIdentity , hexCellSummaries, hexIndexAt, hexCornersAt, HEX_HOME, HEX_R, foundationCells, spiralAxial, S_CELL, type FoundationIssue,
@@ -69,7 +71,34 @@ export interface HiveBee {
   number: number | null;
   since: string | null;
   target: number | null;
+  /** Where its issue's cell stands (gHashTag/t27 specs/queen/hive.t27 CELL_*). */
+  cell: number;
+  /** Its repository's portal cell, where it waits while its own cell is pending. */
+  portal: number | null;
 }
+
+/**
+ * One event of the Queen's bus, for a flash on a cell (hive.t27 cell_effect).
+ * `seq` orders them; `seenAt` is this page's clock; `target` is the cell, or the
+ * repository's portal while the issue has no cell yet.
+ */
+export interface HiveFlash {
+  seq: number;
+  kind: number;
+  accepted: boolean;
+  seenAt: number;
+  target: number | null;
+}
+
+// The colour of each flash (hive.t27 FX_*): gold an acceptance, amber a send-back,
+// red a lost lease, grey a cancel, white a start.
+const FLASH_HEX: Record<number, string> = {
+  [FX_START]: "#FFFFFF",
+  [FX_ACCEPT]: "#FFD45A",
+  [FX_SEND_BACK]: "#FFA040",
+  [FX_LOST]: "#FF4D5E",
+  [FX_CANCEL]: "#9AA0A6",
+};
 
 interface QueenCombBabylonProps {
   sceneKey?: string;
@@ -104,6 +133,8 @@ interface QueenCombBabylonProps {
    * the slot motes that paired the k-th busy slot with the k-th running card.
    */
   liveBees?: readonly HiveBee[];
+  /** The bus's latest events, as flashes on their cells. Read through a ref: a flash never rebuilds the scene. */
+  liveFlashes?: readonly HiveFlash[];
   /** The honeycomb foundation: the loop's snapshot of closed GitHub issues, one honey hex each. */
   foundation?: { issues: FoundationIssue[]; generatedAt: string; source: "wire" | "file"; rings?: string[]; epics?: EpicRecord[]; releases?: Array<{ tag: string; name: string; publishedAt: string | null; prerelease: boolean }> } | null;
   /** Which layers draw: FOUNDATION (tiles and honey), CASTLE (the rings' towers), CODE (the module buildings). Bees always. */
@@ -127,7 +158,7 @@ const RING_POOL = 24;
 const ALL_LAYERS: Record<FieldLayer, boolean> = { foundation: true, castle: true, code: true };
 const UNKNOWN_HEALTH: HiveSignalHealth = {board:'unknown',activity:'unknown'};
 
-export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fitInset = 0, events = EMPTY_EVENTS, modules, beeTargets, liveBees, foundation = null, layers = ALL_LAYERS, handleRef, t27Coverage = null, law, displays, lang = 'en', onInspect, signalHealth = UNKNOWN_HEALTH, catalogLayer,catalogControlRef,onCatalogPick,onCatalogProject,sceneKey='default',inspectIssueKey,inspectCatalogKey,onDisplaySelect }: QueenCombBabylonProps) {
+export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fitInset = 0, events = EMPTY_EVENTS, modules, beeTargets, liveBees, liveFlashes, foundation = null, layers = ALL_LAYERS, handleRef, t27Coverage = null, law, displays, lang = 'en', onInspect, signalHealth = UNKNOWN_HEALTH, catalogLayer,catalogControlRef,onCatalogPick,onCatalogProject,sceneKey='default',inspectIssueKey,inspectCatalogKey,onDisplaySelect }: QueenCombBabylonProps) {
   const catalogRef=useRef(catalogLayer),catalogPickRef=useRef(onCatalogPick),catalogProjectRef=useRef(onCatalogProject),catalogController=useRef<CatalogController|null>(null);
   useEffect(()=>{catalogRef.current=catalogLayer;catalogPickRef.current=onCatalogPick;catalogProjectRef.current=onCatalogProject;},[catalogLayer,onCatalogPick,onCatalogProject]);
   useImperativeHandle(catalogControlRef,()=>({inspect:(index,focus)=>catalogController.current?.inspect(index,focus),overview:()=>catalogController.current?.overview(),hover:index=>catalogController.current?.hover(index)}),[]);
@@ -193,9 +224,12 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
   const modulesRef = useRef(modules);
   const targetsRef = useRef(beeTargets);
   const liveBeesRef = useRef(liveBees);
+  const liveFlashesRef = useRef(liveFlashes);
   // Where each ship is, by bee id, across scene rebuilds: a rebuild for a new
-  // cell must not send every ship back to the hive entrance.
-  const shipsRef = useRef(new Map<string, { x: number; z: number; heading: number; seed: number }>());
+  // cell must not send every ship back to the hive entrance. A ship whose bee
+  // left the feed stays here, flying home (hive.t27 SM_HOME), until ship_kept
+  // says it is gone; `bee` is what it last was, `left` when it left.
+  const shipsRef = useRef(new Map<string, { x: number; z: number; heading: number; seed: number; bee?: HiveBee; left?: number }>());
   const beeLabelRef = useRef<HTMLDivElement>(null);
   const buildsRef = useRef(0);
   const langRef = useRef(lang);
@@ -210,12 +244,13 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     modulesRef.current = modules;
     targetsRef.current = beeTargets;
     liveBeesRef.current = liveBees;
+    liveFlashesRef.current = liveFlashes;
     langRef.current = lang;
     foundationRef.current = foundation;
     layersRef.current = layers;
     coverageRef.current = t27Coverage;
     lawRef.current = law;
-  }, [cards, workers, modules, beeTargets, liveBees, lang, foundation, layers, t27Coverage, law]);
+  }, [cards, workers, modules, beeTargets, liveBees, liveFlashes, lang, foundation, layers, t27Coverage, law]);
 
   useImperativeHandle(handleRef, () => ({
     zoomIn: () => cameraRef.current?.zoomIn(),
@@ -722,65 +757,90 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     let beeLabelFor = "";
     let pointerAt: { x: number; y: number; at: number } | null = null;
     const flyShips = (nowMs: number, dt: number) => {
-      const list = liveBeesRef.current;
-      if (!list) return;
+      const live = liveBeesRef.current;
+      if (!live) return;
       const store = shipsRef.current;
       const still = motionPreference.matches;
       const stale = signalHealthRef.current.board !== "live";
       // how many comb units one CSS pixel is, so a ship never shrinks below a readable size at overview
       const unitsPerPx = (camera.orthoTop! - camera.orthoBottom!) / Math.max(1, host.clientHeight);
       const ease = still ? 1 : 1 - Math.pow(2, -dt / 320);
-      const seen = new Set<string>();
-      let waiting = 0, working = 0, quiet = 0, queued = 0, targeted = 0;
-      const parked = list.filter((bee) => bee.state === "queued" || bee.target === null || !cells[bee.target]);
+      // The bees in the feed, then the ships whose bees left it and are still
+      // flying home: hive.t27 ship_kept says for how long.
+      const seen = new Set(live.map((bee) => bee.id));
+      for (const [id, state] of store) {
+        if (seen.has(id)) { state.left = undefined; continue; }
+        if (state.left === undefined) state.left = nowMs;
+        if (!state.bee || !hiveShipKept(nowMs - state.left)) store.delete(id);
+      }
+      const list: Array<{ bee: HiveBee; left: number | null }> = live.map((bee) => ({ bee, left: null }));
+      for (const [, state] of store) if (state.left !== undefined && state.bee) list.push({ bee: state.bee, left: state.left });
+      let waiting = 0, working = 0, quiet = 0, queued = 0, targeted = 0, leaving = 0, atPortal = 0;
+      const modes = list.map(({ bee, left }) => {
+        // a cell the feed calls placed but this build has not drawn yet is none, for now
+        const cell = bee.cell === CELL_PLACED && (bee.target === null || !cells[bee.target]) ? CELL_NONE : bee.cell;
+        return hiveShipMode(bee.state === "queued", bee.state === "working", cell, left !== null);
+      });
+      const parked = list.filter((_, i) => modes[i] === SM_PARK);
       fitShips(list.length);
       shipSlots.length = 0;
-      list.forEach((bee, i) => {
-        seen.add(bee.id);
+      list.forEach(({ bee, left }, i) => {
+        const mode = modes[i];
         let state = store.get(bee.id);
         if (!state) { state = { x: entrance.x, z: entrance.z, heading: 0, seed: (i * 2.399) % (Math.PI * 2) }; store.set(bee.id, state); }
-        const target = bee.target !== null && cells[bee.target] ? bee.target : null;
-        const cellWidth = target !== null ? S_CELL * cellScale(target) : S_CELL;
+        if (left === null) state.bee = bee;
+        const target = mode === SM_PORTAL ? bee.portal : bee.target;
+        const at = target !== null && cells[target] ? target : null;
+        const cellWidth = at !== null ? S_CELL * cellScale(at) : S_CELL;
         const size = Math.max(cellWidth * 0.42, 18 * unitsPerPx);
         let goalX: number, goalZ: number;
-        if (bee.state === "queued" || target === null) {
+        if (mode === SM_PARK) {
           // parked in a row at the entrance, in arrival order
-          const k = parked.indexOf(bee), n = parked.length;
+          const k = parked.findIndex((p) => p.bee.id === bee.id), n = parked.length;
           goalX = entrance.x + (k - (n - 1) / 2) * size * 1.25; goalZ = entrance.z + (still ? 0 : Math.sin(nowMs / 900 + state.seed) * size * 0.08);
-          waiting += 1;
-        } else if (bee.state === "working") {
-          // circling its issue along the rim: zoomed in, the cell's own card
-          // covers its middle, and a ship under a card is a ship nobody sees
-          const radius = Math.max(HEX_R * cellScale(target) * 0.92, 10 * unitsPerPx);
+        } else if (mode === SM_HOME || at === null) {
+          // home: back to the entrance, where every ship first appeared
+          goalX = entrance.x; goalZ = entrance.z;
+        } else if (mode === SM_ORBIT || mode === SM_PORTAL) {
+          // circling along the rim: zoomed in, the cell's own card covers its
+          // middle, and a ship under a card is a ship nobody sees. At a portal
+          // the circle is the repository's, until its own cell is placed.
+          const radius = Math.max(HEX_R * cellScale(at) * (mode === SM_PORTAL ? 1.3 : 0.92), 10 * unitsPerPx);
           const angle = still ? state.seed : nowMs / 1400 + state.seed;
-          goalX = cells[target].x + Math.cos(angle) * radius; goalZ = cells[target].y + Math.sin(angle) * radius;
+          goalX = cells[at].x + Math.cos(angle) * radius; goalZ = cells[at].y + Math.sin(angle) * radius;
         } else {
-          // quiet: hovering at its issue's rim, not working it
-          goalX = cells[target].x + Math.cos(state.seed) * HEX_R * cellScale(target) * 0.9;
-          goalZ = cells[target].y + Math.sin(state.seed) * HEX_R * cellScale(target) * 0.9 + (still ? 0 : Math.sin(nowMs / 1300 + state.seed) * size * 0.06);
+          // hover: still at its issue's rim, not working it
+          goalX = cells[at].x + Math.cos(state.seed) * HEX_R * cellScale(at) * 0.9;
+          goalZ = cells[at].y + Math.sin(state.seed) * HEX_R * cellScale(at) * 0.9 + (still ? 0 : Math.sin(nowMs / 1300 + state.seed) * size * 0.06);
         }
-        if (target !== null) targeted += 1;
-        if (bee.state === "working") working += 1; else if (bee.state === "quiet") quiet += 1; else queued += 1;
+        if (mode === SM_PARK) waiting += 1;
+        if (mode === SM_HOME) leaving += 1;
+        if (mode === SM_PORTAL && at !== null) atPortal += 1;
+        else if (bee.target !== null && mode !== SM_PARK) targeted += 1;
+        if (mode !== SM_HOME) { if (bee.state === "working") working += 1; else if (bee.state === "quiet") quiet += 1; else queued += 1; }
         const dx = goalX - state.x, dz = goalZ - state.z;
         state.x += dx * ease; state.z += dz * ease;
         // face where it is going; a ship that has arrived keeps its heading
         if (Math.hypot(dx, dz) > size * 0.02) state.heading = Math.atan2(dx, dz);
-        const y = 24 + (still || bee.state !== "working" ? 0 : Math.sin(nowMs / 260 + state.seed) * 2);
-        const scale = size / shipLength;
+        const y = 24 + (still || mode !== SM_ORBIT ? 0 : Math.sin(nowMs / 260 + state.seed) * 2);
+        // a ship flying home shrinks as it fades (hive.t27 ship_alpha), so it
+        // leaves the map instead of blinking out
+        const fade = hiveShipAlpha(left !== null, left === null ? 0 : nowMs - left) / 1000;
+        const scale = (size / shipLength) * (0.25 + 0.75 * fade);
         shipScale.copyFromFloats(scale, scale, scale);
         Quaternion.RotationYawPitchRollToRef(state.heading, 0, 0, shipTurn);
         shipAt.copyFromFloats(state.x, y, state.z);
         Matrix.ComposeToRef(shipScale, shipTurn, shipAt, shipMatrix);
         shipMatrix.copyToArray(shipMatrices, i * 16);
-        const tint = shipTint(bee.lane, bee.state !== "working" || stale);
+        const tint = shipTint(bee.lane, mode !== SM_ORBIT || stale);
         shipColors.set(tint, i * 4);
-        shipSlots.push({ id: bee.id, x: state.x, y, z: state.z, size, bee });
+        if (left === null) shipSlots.push({ id: bee.id, x: state.x, y, z: state.z, size, bee });
       });
-      for (const id of store.keys()) if (!seen.has(id)) store.delete(id);
       shipMesh.thinInstanceCount = list.length;
       shipMesh.isVisible = list.length > 0;
       if (list.length > 0) { shipMesh.thinInstanceBufferUpdated("matrix"); shipMesh.thinInstanceBufferUpdated("color"); }
-      const tally = `${list.length}:${working}:${quiet}:${queued}:${targeted}:${waiting}`;
+      // bees : working : quiet : queued : over their cell : parked : flying home : at a portal
+      const tally = `${live.length}:${working}:${quiet}:${queued}:${targeted}:${waiting}:${leaving}:${atPortal}`;
       if (host.getAttribute("data-bees") !== tally) host.setAttribute("data-bees", tally);
       // the label: the ship under the pointer, or the one last tapped
       const label = beeLabelRef.current;
@@ -979,7 +1039,7 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     }
 
     // ---- event glints: a ring that grows and fades on the issue's cell ----
-    interface Effect { index: number; tone: Tone; start: number; flip: boolean; flare?: string; signalColor?: string; sourceAt?: number; priority?: number }
+    interface Effect { index: number; tone: Tone; start: number; flip: boolean; flare?: string; signalColor?: string; sourceAt?: number; priority?: number; bus?: boolean }
     let flaredPick: number | null = null;
     const effects: Effect[] = [];
     const rings: LinesMesh[] = [];
@@ -990,6 +1050,23 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
       m.isPickable = false; m.isVisible = false; m.parent = fieldRoot;
       rings.push(m);
     }
+    // The bus's events, as flashes on their cells (gHashTag/t27 specs/queen/hive.t27
+    // cell_effect and flash_alpha). Each event once, by its number; one older than
+    // FLASH_MS when this scene first sees it is not drawn at all.
+    let flashedThrough = -1;
+    const ingestFlashes = (nowMs: number) => {
+      const list = liveFlashesRef.current;
+      if (!list?.length) return;
+      for (const flash of list) {
+        if (flash.seq <= flashedThrough) continue;
+        flashedThrough = flash.seq;
+        const effect = hiveCellEffect(flash.kind, flash.accepted);
+        const age = Date.now() - flash.seenAt;
+        if (effect === FX_NONE || flash.target === null || !cells[flash.target] || age >= FLASH_MS) continue;
+        if (effects.length >= RING_POOL) effects.shift();
+        effects.push({ index: flash.target, tone: "muted", start: nowMs - age, flip: false, signalColor: FLASH_HEX[effect] ?? "#FFFFFF", bus: true });
+      }
+    };
     let lastEvents: HudEvent[] | null = null;
     let lastSignalHealth = '';
     const ingestEvents = (stamp: number) => {
@@ -1319,22 +1396,24 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
       });
       flyShips(nowMs, dt);
       ingestEvents(nowMs);
+      ingestFlashes(nowMs);
       let write = 0;
       for (let i = 0; i < effects.length; i += 1) {
-        const fx = effects[i]; const cell = cells[fx.index]; const life = fx.signalColor ? 3000 : fx.flare ? 500 : fx.flip ? 900 : 1300; const age = nowMs - fx.start;
-        if (!cell || age > life || (fx.signalColor && signalHealthRef.current.activity !== 'live')) continue;
+        const fx = effects[i]; const cell = cells[fx.index]; const life = fx.bus ? FLASH_MS : fx.signalColor ? 3000 : fx.flare ? 500 : fx.flip ? 900 : 1300; const age = nowMs - fx.start;
+        if (!cell || age > life || (fx.signalColor && !fx.bus && signalHealthRef.current.activity !== 'live')) continue;
         effects[write] = fx; write += 1;
       }
       effects.length = Math.min(write, RING_POOL);
       for (let k = 0; k < RING_POOL; k += 1) {
         const fx = effects[k]; const ring = rings[k];
         if (!fx) { ring.isVisible = false; continue; }
-        const cell = cells[fx.index]; const life = fx.signalColor ? 3000 : fx.flare ? 500 : fx.flip ? 900 : 1300; const u2 = motionPreference.matches ? .45 : (nowMs - fx.start) / life;
-        const r = fx.flare ? S * (0.9 - 0.6 * u2) : S * (0.12 + 0.5 * u2);
+        const cell = cells[fx.index]; const life = fx.bus ? FLASH_MS : fx.signalColor ? 3000 : fx.flare ? 500 : fx.flip ? 900 : 1300; const u2 = motionPreference.matches ? .45 : (nowMs - fx.start) / life;
+        // a bus flash is sized to its cell, which on the catalog map is not S
+        const r = fx.bus ? HEX_R * cellScale(fx.index) * (0.7 + 0.5 * u2) : fx.flare ? S * (0.9 - 0.6 * u2) : S * (0.12 + 0.5 * u2);
         ring.position.set(cell.x, 1.5, cell.y);
         ring.scaling.set(r, 1, r);
         ring.color = Color3.FromHexString(fx.signalColor ?? fx.flare ?? TONE_HEX[fx.tone]);
-        ring.alpha = 0.9 * (1 - u2);
+        ring.alpha = fx.bus ? hiveFlashAlpha(nowMs - fx.start) / 1000 : 0.9 * (1 - u2);
         ring.isVisible = true;
       }
       const p = selectedDisplayRef.current ?? pickRef.current;

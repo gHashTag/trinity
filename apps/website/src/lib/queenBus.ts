@@ -33,6 +33,13 @@ export interface BusEvent {
   issue: number | null;
   /** `owner/name#N`, the task the event names. */
   task: string | null;
+  /** A review's verdict, as the route projects it (a plain token). */
+  verdict: string | null;
+}
+
+/** An event as this page received it: `seenAt` is this page's clock, which is what a flash fades by. */
+export interface SeenEvent extends BusEvent {
+  seenAt: number;
 }
 
 export interface BusPage {
@@ -62,6 +69,7 @@ export function parseBusPage(raw: unknown): BusPage | null {
       at: typeof row.at === "string" ? row.at : "",
       issue: issue !== null && issue > 0 ? issue : null,
       task: typeof row.task === "string" ? row.task : null,
+      verdict: typeof row.verdict === "string" ? row.verdict : null,
     });
   }
   return { cursor, resync: body.resync === true, events };
@@ -83,6 +91,8 @@ export async function loadBusPage(api: string, after: number, waitSeconds: numbe
 export interface PagePlan {
   /** The cursor after this page. */
   cursor: number;
+  /** The events applied from this page, in order: what the game draws. */
+  applied: BusEvent[];
   /** Take a whole snapshot: a gap, a pruned cursor, or more changed tasks than one refresh carries. */
   snapshot: boolean;
   /** The repository of the tasks to read again, and their numbers. */
@@ -94,17 +104,19 @@ export interface PagePlan {
 
 /** What one page asks of the board, decided event by event by the card. */
 export function planPage(cursor: number, page: BusPage): PagePlan {
-  const none: PagePlan = { cursor: page.cursor, snapshot: true, repo: null, refresh: [], touched: new Map() };
+  const none: PagePlan = { cursor: page.cursor, applied: [], snapshot: true, repo: null, refresh: [], touched: new Map() };
   if (page.resync) return none;
   let at = cursor;
   let repo: string | null = null;
   const refresh = new Set<number>();
   const touched = new Map<number, string>();
+  const applied: BusEvent[] = [];
   for (const event of page.events) {
     const action = cardDeltaAction(at, event.seq);
     if (action === DA_SKIP) continue;
     if (action === DA_RESYNC) return none;
     at = event.seq;
+    applied.push(event);
     if (event.issue === null) continue;
     const doing = cardBoardAction(event.kind);
     if (doing === EA_REFRESH) {
@@ -115,7 +127,7 @@ export function planPage(cursor: number, page: BusPage): PagePlan {
     }
   }
   const snapshot = cardRefreshAction(refresh.size) === RF_SNAPSHOT;
-  return { cursor: at, snapshot, repo, refresh: [...refresh], touched };
+  return { cursor: at, applied, snapshot, repo, refresh: [...refresh], touched };
 }
 
 /** A bee's state at `nowMs`, as the card says: queued stays queued; the rest is working or quiet by when it was last heard. */
