@@ -1,0 +1,38 @@
+// SPDX-License-Identifier: Apache-2.0
+; Issue: https://github.com/gHashTag/trinity/issues/1563
+; Which commit an issue proof may name (Corona and Memory readers).
+; The reader verifies the pinned evidence at the default-branch HEAD, but the
+; canonical push CI of a brand-new HEAD takes minutes, so for that time there is
+; no run to accept. Without a rule every covered cell goes unknown after every
+; merge, although the evidence did not change.
+; The reader walks back from HEAD, newest commit first, over at most MAX_BEHIND
+; older commits. For each candidate it knows the state of the canonical push CI:
+; state 0 = pending (queued, running, absent, cancelled), 1 = success, 2 = failed.
+; skippable = 1 only while the candidate is younger than PENDING_GRACE_MS and
+; fewer than MAX_BEHIND commits behind HEAD; an unknown commit date is not young.
+; WALK is indexed by state * 2 + skippable and answers:
+; 0 = continue with the next older commit, 1 = select this commit, 2 = stop.
+; A pending commit is skipped only inside the bound, a failed commit always
+; stops the walk, and a success selects its commit. The reader also requires
+; every pinned file to match its hash at HEAD as well as at the selected commit,
+; so any change to the evidence is unknown at once, with or without CI.
+module queen_proof_commit;
+
+pub const MAX_BEHIND : u32 = 4;
+pub const PENDING_GRACE_MS : u32 = 7200000;
+pub const WALK : [6]u8 = [2, 0, 1, 1, 2, 2];
+
+test a_pending_commit_is_skipped_only_inside_the_bound {
+    assert WALK[0] == 2;
+    assert WALK[1] == 0;
+}
+test success_selects_and_failure_stops {
+    assert WALK[2] == 1;
+    assert WALK[3] == 1;
+    assert WALK[4] == 2;
+    assert WALK[5] == 2;
+}
+test the_bound_is_small_and_fixed {
+    assert MAX_BEHIND == 4;
+    assert PENDING_GRACE_MS == 7200000;
+}

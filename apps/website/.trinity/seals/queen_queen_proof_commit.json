@@ -1,0 +1,20 @@
+{
+  "built_by": "t27c-bootstrap@0.5.1+579bc55aa",
+  "gen_hash_c": "sha256:a95001eb1de75214bf75f99aedbc5ee5e0a91da74379fa303f7b484d2a13f931",
+  "gen_hash_rust": "sha256:04882ef205fd1c8c4d8b3c965fa007f2df5574708108b9781791ab7895116b11",
+  "gen_hash_verilog": "sha256:1321c10f21bd1c3e88795d844bd01cf267dec8f2ef8bf310fc646799fd90171e",
+  "gen_hash_zig": "sha256:0a0506ff6155baf2fa5724e17e64c611bb3cbb27c6a78ba9d921e04f45d95c89",
+  "module": "queen_proof_commit",
+  "ring": 12,
+  "sealed_at": "2026-10-08T18:56:44Z",
+  "sealed_by": "t27c-bootstrap@0.5.1",
+  "spec_hash": "sha256:70057967ba5e8f76b0c694ca7d73715f88d3c1d30e77c8f5777166e13633b873",
+  "spec_path": "specs/queen/proof_commit.t27",
+  "tests": {
+    "failed": 0,
+    "failing": [],
+    "forced": false,
+    "passed": 3,
+    "total": 3
+  }
+}
