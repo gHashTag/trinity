@@ -117,6 +117,7 @@ module FPGA_Bridge;
         rx_tail : usize,                // RX buffer tail
         tx_head : usize,                // TX buffer head
         tx_tail : usize,                // TX buffer tail
+        tx_bytes : [TX_BUFFER_SIZE]u8,    // TX ring storage (struct field: wasm + verilog both accept)
 
         // Packet state
         packet_len : u8,                // Current packet length
@@ -135,6 +136,7 @@ module FPGA_Bridge;
         .rx_tail = 0,
         .tx_head = 0,
         .tx_tail = 0,
+        .tx_bytes = [0u8; TX_BUFFER_SIZE],
         .packet_len = 0,
         .packet_type = 0,
         .timeout_cnt = 0,
@@ -148,7 +150,6 @@ module FPGA_Bridge;
 
     // RX and TX buffers
     var rx_buffer : [RX_BUFFER_SIZE]u8 = [0u8; RX_BUFFER_SIZE];
-    var tx_buffer : [TX_BUFFER_SIZE]u8 = [0u8; TX_BUFFER_SIZE];
 
     // buffer_write(buf: []u8, size: usize, head: usize, data: u8) → bool
     // Write byte to circular buffer
@@ -302,7 +303,7 @@ module FPGA_Bridge;
              if (bridge_tx_space() &gt; 0) {
                  const ok = true;
                  const new_head = (bridge.tx_head + 1) % TX_BUFFER_SIZE;
-                 buffer_write(tx_buffer, TX_BUFFER_SIZE, bridge.tx_head, data);
+                 bridge.tx_bytes[bridge.tx_head] = data;
                  bridge.tx_head = new_head;
              }
             i = i + 1;
@@ -382,13 +383,13 @@ module FPGA_Bridge;
         // Send result back via TX
         if (bridge_tx_space() &gt;= 4) {
             const acc = mac_get_accumulator(unit_byte) as u32;
-            buffer_write(tx_buffer, TX_BUFFER_SIZE, bridge.tx_head, (acc &amp; 0xFF) as u8);
+            bridge.tx_bytes[bridge.tx_head] = (acc &amp; 0xFF) as u8;
             bridge.tx_head = (bridge.tx_head + 1) % TX_BUFFER_SIZE;
-            buffer_write(tx_buffer, TX_BUFFER_SIZE, bridge.tx_head, ((acc &gt;&gt; 8) &amp; 0xFF) as u8);
+            bridge.tx_bytes[bridge.tx_head] = ((acc &gt;&gt; 8) &amp; 0xFF) as u8;
             bridge.tx_head = (bridge.tx_head + 1) % TX_BUFFER_SIZE;
-            buffer_write(tx_buffer, TX_BUFFER_SIZE, bridge.tx_head, ((acc &gt;&gt; 16) &amp; 0xFF) as u8);
+            bridge.tx_bytes[bridge.tx_head] = ((acc &gt;&gt; 16) &amp; 0xFF) as u8;
             bridge.tx_head = (bridge.tx_head + 1) % TX_BUFFER_SIZE;
-            buffer_write(tx_buffer, TX_BUFFER_SIZE, bridge.tx_head, ((acc &gt;&gt; 24) &amp; 0xFF) as u8);
+            bridge.tx_bytes[bridge.tx_head] = ((acc &gt;&gt; 24) &amp; 0xFF) as u8;
             bridge.tx_head = (bridge.tx_head + 1) % TX_BUFFER_SIZE;
         }
     }
@@ -406,7 +407,7 @@ module FPGA_Bridge;
         var i : usize = 0;
         while (i &lt; 4) {
             if (bridge_tx_space() &gt; 0) {
-                buffer_write(tx_buffer, TX_BUFFER_SIZE, bridge.tx_head, status[i]);
+                bridge.tx_bytes[bridge.tx_head] = status[i];
                 bridge.tx_head = (bridge.tx_head + 1) % TX_BUFFER_SIZE;
             }
             i = i + 1;
@@ -576,7 +577,7 @@ module FPGA_Bridge;
         target: &lt; 50ns
 
     bench bridge_tx_read_latency
-        measure: nanoseconds to buffer_read(tx_buffer, TX_BUFFER_SIZE, bridge.tx_tail)
+        measure: nanoseconds to buffer_read(bridge.tx_bytes, TX_BUFFER_SIZE, bridge.tx_tail)
         target: &lt; 50ns
 
     bench bridge_parse_header_latency

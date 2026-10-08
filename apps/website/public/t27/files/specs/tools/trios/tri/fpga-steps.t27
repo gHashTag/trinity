@@ -32,6 +32,8 @@ pub const ARGS : [2]str = ["KEY", "[--plan FILE]"];
 pub const AGENTS : [0]str = [];
 pub const AGENTS_NOTE : str = "No source binds an agent letter to this command: the trios CLI is not named by docs/agents/AGENTS_ALPHABET.md or .claude/agents/*.md of gHashTag/t27.";
 pub const WHEN_TO_USE : str = "where a pre-registered board sequence stands (default plan NODE_ETHERNET_PLAN.md, e.g. KEY=E3; FILE is looked up here, then in conformance/; KEY is the start of the heading, e.g. \"The board run\" --plan UART_LOSS_HUBFREE.md): each tri fpga-run/-flash line against its board_runs log, commands that differ from the plan, out-of-order logs, the next step; prints only, runs nothing, judges nothing; exit 2 on a problem";
+; public/term/tri-fpga-steps/meta.json lists 1 run(s) of `tri fpga-steps`, exit 0. The site plays it at the end of this card.
+pub const CAST : str = "term/tri-fpga-steps/session.cast";
 pub const WITNESS : str = "source-parse";
 pub const WITNESS_SOURCE : str = "gHashTag/BrowserOS:trios/bin/tri at 7366096248dfb09893e9a7d1a0f1c56ced13d16e, read as text (the help heredoc and the top-level case arms); the CLI was not run";
 pub const ENABLED : bool = true;
