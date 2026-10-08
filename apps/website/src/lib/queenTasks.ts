@@ -103,6 +103,8 @@ export interface QueenTasksFeed {
   bees: QueenBee[];
   /** The route stopped at its page limit, so the tasks are not all of them. */
   truncated: boolean;
+  /** The event bus's number when the route read this (events.t27); null from the fallback or an older route. */
+  cursor: number | null;
 }
 
 function record(value: unknown): Record<string, unknown> | null {
@@ -167,7 +169,15 @@ export function parseTasksFeed(raw: unknown): QueenTasksFeed | null {
       lastEventAt: text(row.lastEventAt),
     });
   }
-  return { at: text(body.at), source: "tasks", tasks, bees, truncated: body.truncated === true };
+  const cursor = count(body.cursor);
+  return {
+    at: text(body.at),
+    source: "tasks",
+    tasks,
+    bees,
+    truncated: body.truncated === true,
+    cursor: cursor !== null && cursor >= 0 ? cursor : null,
+  };
 }
 
 /**
@@ -200,15 +210,24 @@ export function withEarliestSince(previous: QueenTasksFeed | null, next: QueenTa
 /** The two answers the page asks for: every task, or only the running ones (the bees come with either). */
 export type TasksScope = "all" | "running";
 
-export function tasksUrl(api: string, scope: TasksScope): string {
+export function tasksUrl(api: string, scope: TasksScope, issues: readonly number[] = []): string {
+  const only = issues.length > 0 ? `&issues=${issues.join(",")}` : "";
   return scope === "all"
-    ? `${api}/queen/public-tasks?limit=${TASK_PAGE_MAX}`
-    : `${api}/queen/public-tasks?state=running&limit=${TASK_PAGE_MAX}`;
+    ? `${api}/queen/public-tasks?limit=${TASK_PAGE_MAX}${only}`
+    : `${api}/queen/public-tasks?state=running&limit=${TASK_PAGE_MAX}${only}`;
 }
 
-/** One read of the route. Throws on anything that is not the contract, so the caller can fall back. */
-export async function loadTasksFeed(api: string, scope: TasksScope, signal?: AbortSignal): Promise<QueenTasksFeed> {
-  const response = await fetch(tasksUrl(api, scope), { headers: { Accept: "application/json" }, cache: "no-store", signal });
+/**
+ * One read of the route; with `issues`, only those (what a page of events
+ * named). Throws on anything that is not the contract, so the caller can fall back.
+ */
+export async function loadTasksFeed(
+  api: string,
+  scope: TasksScope,
+  signal?: AbortSignal,
+  issues: readonly number[] = [],
+): Promise<QueenTasksFeed> {
+  const response = await fetch(tasksUrl(api, scope, issues), { headers: { Accept: "application/json" }, cache: "no-store", signal });
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   const feed = parseTasksFeed(await response.json());
   if (!feed) throw new Error("not the tasks contract");
@@ -303,7 +322,7 @@ export function tasksFromBoard(
       lastEventAt: heard === undefined ? null : new Date(heard).toISOString(),
     });
   }
-  return { at: new Date(nowMs).toISOString(), source: "board", tasks, bees, truncated: false };
+  return { at: new Date(nowMs).toISOString(), source: "board", tasks, bees, truncated: false, cursor: null };
 }
 
 // ---- the filter, as the board's address carries it ----
