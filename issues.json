@@ -1,7 +1,7 @@
 {
  "repo": "gHashTag/t27",
- "generated_at": "2026-10-08T17:53:19.506Z",
- "watermark": "2026-10-08T17:47:04Z",
+ "generated_at": "2026-10-08T22:30:26.069Z",
+ "watermark": "2026-10-08T22:28:12Z",
  "issues": {
   "2279": [
    {
@@ -1540,6 +1540,16 @@
     ]
    }
   ],
+  "7220": [
+   {
+    "pr": 7919,
+    "sha": "63484146b28888bed6a70872fef330e1aaeda97d",
+    "touched": [
+     "specs/port/scripts/gen_w638.t27"
+    ],
+    "specs": []
+   }
+  ],
   "7225": [
    {
     "pr": 7246,
@@ -1723,6 +1733,54 @@
     ]
    }
   ],
+  "7428": [
+   {
+    "pr": 7880,
+    "sha": "430c52293506130c5be6e175ad2e6fbb733da395",
+    "touched": [
+     "bootstrap/tests/fixtures/core_selfhost/genc/switch_exhaustive.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "7429": [
+   {
+    "pr": 7436,
+    "sha": "21fd562a04b940544dbfe6aeb3b2f20f41c019dc",
+    "touched": [
+     "bootstrap/tests/fixtures/core_selfhost/accept/for_ranges.t27",
+     "bootstrap/tests/fixtures/core_selfhost/accept/switch_values.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e2_for_each_array.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e2_for_end_assigned_in_body.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e2_for_end_call.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e2_for_end_global_and_call.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e2_for_inclusive.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e2_for_two_ranges.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e2_slice_range.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e2_switch_as_operand.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e2_switch_bool_label.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e2_switch_call_subject.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e2_switch_char_label.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e2_switch_else_not_last.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e2_switch_multi_label.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e2_switch_no_else.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e2_switch_separator_label.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e2_switch_statement.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e2_switch_wildcard_arm.t27",
+     "specs/compiler/core/t27core.t27",
+     "specs/compiler/core/t27core_ddc.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "7441": [
+   {
+    "pr": 7495,
+    "sha": "188da7ec11a7f5d3f07331b46914080ece623c5b",
+    "touched": [],
+    "specs": []
+   }
+  ],
   "7448": [
    {
     "pr": 7470,
@@ -1790,6 +1848,14 @@
       "seal": ".trinity/seals/conformance_T27bConformanceFrameAddressReturn.json"
      }
     ]
+   }
+  ],
+  "7565": [
+   {
+    "pr": 7566,
+    "sha": "9f8087489aec3fa5db1762ac67b1d1f2c03e9f38",
+    "touched": [],
+    "specs": []
    }
   ],
   "7575": [
@@ -2254,6 +2320,26 @@
     ]
    }
   ],
+  "7737": [
+   {
+    "pr": 7744,
+    "sha": "bbb77f0c38c8bf453330621a5d1411433c8604bb",
+    "touched": [
+     "specs/tri/t27b/conformance/opaque_pointer.t27",
+     "specs/tri/t27b/opaque_plan.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/conformance/opaque_pointer.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceOpaquePointer.json"
+     },
+     {
+      "path": "specs/tri/t27b/opaque_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bOpaquePlan.json"
+     }
+    ]
+   }
+  ],
   "7738": [
    {
     "pr": 7739,
@@ -2516,6 +2602,26 @@
     ]
    }
   ],
+  "7803": [
+   {
+    "pr": 7870,
+    "sha": "3d16be1f2f7868eb731dedbca3b4a52531018a0f",
+    "touched": [
+     "specs/tri/t27b/coerce_plan.t27",
+     "specs/tri/t27b/conformance/float_from_int_literal.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/coerce_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bCoercePlan.json"
+     },
+     {
+      "path": "specs/tri/t27b/conformance/float_from_int_literal.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceFloatFromIntLiteral.json"
+     }
+    ]
+   }
+  ],
   "7804": [
    {
     "pr": 7496,
@@ -2566,12 +2672,77 @@
     ]
    }
   ],
+  "7810": [
+   {
+    "pr": 7853,
+    "sha": "824c82d78a80017c1f6eab248b3d19ba08c15f97",
+    "touched": [
+     "specs/tri/t27b/conformance/discard_value.t27",
+     "specs/tri/t27b/discard_plan.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/conformance/discard_value.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceDiscardValue.json"
+     },
+     {
+      "path": "specs/tri/t27b/discard_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bDiscardPlan.json"
+     }
+    ]
+   }
+  ],
+  "7811": [
+   {
+    "pr": 7934,
+    "sha": "408d740d9d825049787b20a9b4b6fe6b21d202b4",
+    "touched": [
+     "specs/tri/t27b/conformance/optional_enum_compare.t27",
+     "specs/tri/t27b/optional_compare_plan.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/conformance/optional_enum_compare.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceOptionalEnumCompare.json"
+     },
+     {
+      "path": "specs/tri/t27b/optional_compare_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bOptionalComparePlan.json"
+     }
+    ]
+   }
+  ],
   "7815": [
    {
     "pr": 7816,
     "sha": "5263bba2214cd2aeabbdee320f8c1cbdf3bc3cf8",
     "touched": [],
     "specs": []
+   }
+  ],
+  "7819": [
+   {
+    "pr": 7863,
+    "sha": "10831352cfcaa399799783775d6fc4f5747459e6",
+    "touched": [
+     "specs/tri/t27b/conformance/libm_rounding.t27",
+     "specs/tri/t27b/libm.t27",
+     "specs/tri/t27b/libm_plan.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/conformance/libm_rounding.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceLibmRounding.json"
+     },
+     {
+      "path": "specs/tri/t27b/libm.t27",
+      "seal": ".trinity/seals/t27b_T27bLibm.json"
+     },
+     {
+      "path": "specs/tri/t27b/libm_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bLibmPlan.json"
+     }
+    ]
    }
   ],
   "7820": [
@@ -2719,6 +2890,14 @@
     ]
    }
   ],
+  "7852": [
+   {
+    "pr": 7869,
+    "sha": "7c884488c8983812295d29d8304090e3693495dc",
+    "touched": [],
+    "specs": []
+   }
+  ],
   "7854": [
    {
     "pr": 7855,
@@ -2770,6 +2949,243 @@
      {
       "path": "specs/automation/bot-agent-team.t27",
       "seal": ".trinity/seals/automation_automation::bot_agent_team.json"
+     }
+    ]
+   }
+  ],
+  "7865": [
+   {
+    "pr": 7866,
+    "sha": "837879239b6df5f49ac759b68d60210ca97ac515",
+    "touched": [
+     "specs/queen/actors.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "7879": [
+   {
+    "pr": 7880,
+    "sha": "430c52293506130c5be6e175ad2e6fbb733da395",
+    "touched": [
+     "bootstrap/tests/fixtures/core_selfhost/genc/switch_exhaustive.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "7881": [
+   {
+    "pr": 7885,
+    "sha": "98c6de5e461e516322f59950ae0d2c29ff31630d",
+    "touched": [
+     "specs/memory/graph/crypt.t27",
+     "specs/memory/graph/scope.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/memory/graph/crypt.t27",
+      "seal": ".trinity/seals/graph_MemoryGraphCrypt.json"
+     },
+     {
+      "path": "specs/memory/graph/scope.t27",
+      "seal": ".trinity/seals/graph_MemoryGraphScope.json"
+     }
+    ]
+   }
+  ],
+  "7882": [
+   {
+    "pr": 7885,
+    "sha": "98c6de5e461e516322f59950ae0d2c29ff31630d",
+    "touched": [
+     "specs/memory/graph/crypt.t27",
+     "specs/memory/graph/scope.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/memory/graph/crypt.t27",
+      "seal": ".trinity/seals/graph_MemoryGraphCrypt.json"
+     },
+     {
+      "path": "specs/memory/graph/scope.t27",
+      "seal": ".trinity/seals/graph_MemoryGraphScope.json"
+     }
+    ]
+   }
+  ],
+  "7883": [
+   {
+    "pr": 7884,
+    "sha": "7f499b933f4929d883a4324d9fe26d1083989ab1",
+    "touched": [
+     "specs/automation/bot-neuro-office.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/automation/bot-neuro-office.t27",
+      "seal": ".trinity/seals/automation_automation::bot_neuro_office.json"
+     }
+    ]
+   }
+  ],
+  "7888": [
+   {
+    "pr": 7889,
+    "sha": "02c7d53eb29ef3ff9064ab7334873bbefaf26d30",
+    "touched": [
+     "specs/automation/bot-topic-tabs.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/automation/bot-topic-tabs.t27",
+      "seal": ".trinity/seals/automation_automation::bot_topic_tabs.json"
+     }
+    ]
+   }
+  ],
+  "7898": [
+   {
+    "pr": 7899,
+    "sha": "8dee18c35a61d79f2c51384a5438f18c740035dc",
+    "touched": [
+     "specs/queen/reviewer.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "7900": [
+   {
+    "pr": 7907,
+    "sha": "7fbde9502c57df0286ed374923f22c0a3432e3cf",
+    "touched": [
+     "specs/queen/actors.t27"
+    ],
+    "specs": []
+   },
+   {
+    "pr": 7901,
+    "sha": "47a00d1100b4f785354ee8c5a0844f88ecaa4a02",
+    "touched": [
+     "specs/queen/actors.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "7914": [
+   {
+    "pr": 7916,
+    "sha": "f8a5f4db8915e1d747a6bd46f82c8b69e4d423cf",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "7921": [
+   {
+    "pr": 7922,
+    "sha": "1758892cb8e600f9d58d6f08efa7ca76b135a496",
+    "touched": [
+     "specs/automation/bot-neuro-office.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/automation/bot-neuro-office.t27",
+      "seal": ".trinity/seals/automation_automation::bot_neuro_office.json"
+     }
+    ]
+   }
+  ],
+  "7929": [
+   {
+    "pr": 7931,
+    "sha": "e714adb1004e7d6f5f55f2048470065752b81f6d",
+    "touched": [
+     "bootstrap/tests/fixtures/core_selfhost/accept/local_arrays.t27",
+     "bootstrap/tests/fixtures/core_selfhost/accept/separator_dimensions.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e2_numeric_power.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e2_numeric_power_const.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_local_array_shadows_global.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_local_array_shadows_local.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_local_array_shadows_param.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e9_local_array_computed_const_dimension.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e9_local_array_out_of_scope.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e9_local_array_runtime_dimension.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e9_local_repeat_count_short.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e9_repeat_count_short.t27",
+     "specs/compiler/core/t27core.t27",
+     "specs/compiler/core/t27core_ddc.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "7932": [
+   {
+    "pr": 7933,
+    "sha": "577c02bd9766a9764bdc21c448b3264492512d9b",
+    "touched": [
+     "specs/automation/bot-neuro-office.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/automation/bot-neuro-office.t27",
+      "seal": ".trinity/seals/automation_automation::bot_neuro_office.json"
+     }
+    ]
+   }
+  ],
+  "7935": [
+   {
+    "pr": 7950,
+    "sha": "6af01bd4cf3dfcdecb1622512b7698b38b642a05",
+    "touched": [
+     "bootstrap/tests/fixtures/core_selfhost/accept/use_transitive.t27",
+     "bootstrap/tests/fixtures/core_selfhost/accept/use_whole_module.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e10_use_no_spec.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e11_use_ambiguous.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e11_use_brace_on_next_line.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e11_use_const_captures_local.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e11_use_module_var.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e11_use_name_also_declared.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e11_use_prose_pulls.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e11_use_qualified_in_comment.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e11_use_sizes_a_global.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e2_pub_use.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e2_shift_left_assign.t27",
+     "bootstrap/tests/fixtures/core_selfhost/specs/selfhost_use/use_brace.t27",
+     "bootstrap/tests/fixtures/core_selfhost/specs/selfhost_use/use_dep.t27",
+     "bootstrap/tests/fixtures/core_selfhost/specs/selfhost_use/use_mid.t27",
+     "bootstrap/tests/fixtures/core_selfhost/specs/selfhost_use/use_other.t27",
+     "specs/compiler/core/t27core.t27",
+     "specs/compiler/core/t27core_ddc.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "7948": [
+   {
+    "pr": 7949,
+    "sha": "8dcc6db9ea1f1fb8b24ab8fccfacc3e67f8cb0bb",
+    "touched": [
+     "specs/automation/bot-neuro-office.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/automation/bot-neuro-office.t27",
+      "seal": ".trinity/seals/automation_automation::bot_neuro_office.json"
+     }
+    ]
+   }
+  ],
+  "7953": [
+   {
+    "pr": 7954,
+    "sha": "4bf9a02220e0461fc194e94b4688921a8b11ecb7",
+    "touched": [
+     "specs/automation/bot-neuro-office.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/automation/bot-neuro-office.t27",
+      "seal": ".trinity/seals/automation_automation::bot_neuro_office.json"
      }
     ]
    }
