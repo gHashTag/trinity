@@ -52,6 +52,12 @@ fn magsub(hi: i32, lo: i32) -> i32 {
     if (rem > half) { mant = mant + 1; }
     else { if (rem == half) { if (sticky == 1) { mant = mant + 1; } else { if ((q & 1) == 1) { mant = mant + 1; } } } }
     if (mant >= 512) { mant = 0; off = off + 1; if (off >= 80) { off = 80; } }
+    // #5506: below the smallest binade the normalisation stops at its floor and
+    // q stays under 512, so mant goes negative and (off << 9) | mant is no
+    // GF-T16 encoding at all (sadd(256, 66047) gave 0xFFFFFEFF). There are no
+    // subnormals: such a difference is zero, exactly as enc() makes any
+    // value below 2^-40 zero.
+    if (mant < 0) { return 0; }
     return (off << 9) | mant;
 }
 fn sadd(a: u32, b: u32) -> u32 {
@@ -63,9 +69,12 @@ fn sadd(a: u32, b: u32) -> u32 {
     // different signs: a top-level r==0 guard (NOT nested inside the ma>=mb
     // branch -- gen-verilog does not lower that as an early return, so it fell
     // through to (sign<<16)|0 = a wrong negative zero on exact cancellation).
+    // #5506: order the operands BEFORE subtracting. magsub(hi, lo) shifts by
+    // hi_off - lo_off, so calling it unordered shifts by a negative count:
+    // undefined in C, unchecked in Rust -O, a trap in Zig ReleaseSafe.
     var bsign : i32 = sa;
-    var r : i32 = magsub(ma, mb);
-    if (ma < mb) { r = magsub(mb, ma); bsign = sb; }
+    var r : i32 = 0;
+    if (ma < mb) { r = magsub(mb, ma); bsign = sb; } else { r = magsub(ma, mb); }
     if (r == 0) { return 0; }
     return ((bsign << 16) | r) as u32;
 }

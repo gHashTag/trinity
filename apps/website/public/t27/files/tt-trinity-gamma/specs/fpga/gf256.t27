@@ -43,7 +43,7 @@ module GF256 {
         const abs_val = if (value < 0.0) { -value } else { value };
 
         // Extract exponent (unbiased)
-        const exp_unbiased = floor_log2(abs_val) as i128;
+        const exp_unbiased = @as(i128, floor_log2(abs_val));  // was `as u128`/`1u128` (128-bit width kept); written as @as() because `x as u128` does not parse
         let exp_biased_lo = ((exp_unbiased + 158886469278522817) & 0xFFFFFFFFFFFFFFFF) as u64;
         let exp_biased_hi = ((exp_unbiased >> 64) + 127) as u64;
 
@@ -56,8 +56,8 @@ module GF256 {
         // Extract mantissa (158 bits, split across 3 u64 words)
         const normalized = abs_val / pow(2.0, exp_unbiased as f64);
         const frac = normalized - 1.0;
-        const max_mant = (1u128 << MANT_BITS) - 1;
-        const mant = (frac * (max_mant + 1) as f64) as u128;
+        const max_mant = (@as(u128, 1) << MANT_BITS) - 1;  // was `as u128`/`1u128` (128-bit width kept); written as @as() because `x as u128` does not parse
+        const mant = @as(u128, (frac * (max_mant + 1) as f64));  // was `as u128`/`1u128` (128-bit width kept); written as @as() because `x as u128` does not parse
         const clamped_mant = if (mant > max_mant) { max_mant } else { mant };
 
         // Pack mantissa
@@ -90,12 +90,12 @@ module GF256 {
         const exp_biased_lo = exp_lo_part | (exp_mid_part << 31);
         const exp_biased_hi = exp_hi_part >> 62;
 
-        const exp_biased_128 = ((exp_biased_hi as u128) << 64) | exp_biased_lo as u128;
+        const exp_biased_128 = ((@as(u128, exp_biased_hi)) << 64) | @as(u128, exp_biased_lo);  // was `as u128`/`1u128` (128-bit width kept); written as @as() because `x as u128` does not parse
 
         // Extract mantissa (158 bits)
         const mant_lo = gf.raw_0;
         const mant_mid = gf.raw_1 & 0x1FFFFFFFFFFFFFFF;
-        const mant = ((mant_mid as u128) << 64) | mant_lo as u128;
+        const mant = ((@as(u128, mant_mid)) << 64) | @as(u128, mant_lo);  // was `as u128`/`1u128` (128-bit width kept); written as @as() because `x as u128` does not parse
 
         // Zero
         if (exp_biased_128 == 0 && mant == 0) {
@@ -103,15 +103,15 @@ module GF256 {
         }
 
         // Exponent
-        const exp_bias_128 = ((EXP_BIAS_HI as u128) << 64) | EXP_BIAS_LO as u128;
+        const exp_bias_128 = ((@as(u128, EXP_BIAS_HI)) << 64) | @as(u128, EXP_BIAS_LO);  // was `as u128`/`1u128` (128-bit width kept); written as @as() because `x as u128` does not parse
         const exp_unbiased = if (exp_biased_128 == 0) {
-            -(exp_bias_128 as i128) + 1
+            -(@as(i128, exp_bias_128)) + 1  // was `as u128`/`1u128` (128-bit width kept); written as @as() because `x as u128` does not parse
         } else {
-            (exp_biased_128 as i128) - exp_bias_128 as i128
+            (@as(i128, exp_biased_128)) - @as(i128, exp_bias_128)  // was `as u128`/`1u128` (128-bit width kept); written as @as() because `x as u128` does not parse
         };
 
         // Mantissa
-        const max_mant = (1u128 << MANT_BITS) - 1;
+        const max_mant = (@as(u128, 1) << MANT_BITS) - 1;  // was `as u128`/`1u128` (128-bit width kept); written as @as() because `x as u128` does not parse
         const mant_normalized = if (exp_biased_128 == 0) {
             (mant as f64) / (max_mant + 1) as f64
         } else {
@@ -128,21 +128,21 @@ module GF256 {
 
     // Format Properties
     fn max_value() -> f64 {
-        const max_mant = (1u128 << MANT_BITS) - 1;
+        const max_mant = (@as(u128, 1) << MANT_BITS) - 1;  // was `as u128`/`1u128` (128-bit width kept); written as @as() because `x as u128` does not parse
         const mant_max = 1.0 + (max_mant as f64) / (max_mant + 1) as f64;
-        const exp_max = ((1i128 << EXP_BITS) - 1) as f64 - (EXP_BIAS_HI as f64 * 4294967296.0 + EXP_BIAS_LO as f64);
+        const exp_max = ((@as(i128, 1) << EXP_BITS) - 1) as f64 - (EXP_BIAS_HI as f64 * 4294967296.0 + EXP_BIAS_LO as f64);  // was `as u128`/`1u128` (128-bit width kept); written as @as() because `x as u128` does not parse
         return mant_max * pow(2.0, exp_max);
     }
 
     fn min_positive() -> f64 {
-        const max_mant = (1u128 << MANT_BITS) - 1;
+        const max_mant = (@as(u128, 1) << MANT_BITS) - 1;  // was `as u128`/`1u128` (128-bit width kept); written as @as() because `x as u128` does not parse
         const mant_min = 1.0 / (max_mant + 1) as f64;
         const exp_min = -((EXP_BIAS_HI as f64 * 4294967296.0 + EXP_BIAS_LO as f64)) + 1.0;
         return mant_min * pow(2.0, exp_min);
     }
 
     fn epsilon() -> f64 {
-        const max_mant = (1u128 << MANT_BITS) - 1;
+        const max_mant = (@as(u128, 1) << MANT_BITS) - 1;  // was `as u128`/`1u128` (128-bit width kept); written as @as() because `x as u128` does not parse
         return 1.0 / (max_mant + 1) as f64;
     }
 
@@ -253,7 +253,7 @@ module GF256 {
     }
 
     fn floor(x: f64) -> f64 {
-        let xi = x as i128;
+        let xi = @as(i128, x);  // was `as u128`/`1u128` (128-bit width kept); written as @as() because `x as u128` does not parse
         if (x >= 0.0 || x == xi as f64) {
             return xi as f64;
         }
@@ -263,42 +263,42 @@ module GF256 {
     // TDD-Inside-Spec: Tests and Invariants for GF256
 
     test gf256_decode_zero
-        given gf = GF256{ raw_0 = 0, raw_1 = 0, raw_2 = 0, raw_3 = 0 }
+        const gf = GF256{ raw_0 = 0, raw_1 = 0, raw_2 = 0, raw_3 = 0 };
         when value = decode(gf)
         then value == 0.0
 
     test gf256_encode_zero_roundtrip
-        given original = 0.0
+        const original = 0.0;
         and   encoded = encode(original)
         and   decoded = decode(encoded)
         then decoded == original
 
     test gf256_bits_sum_correct
-        given total = SIGN_BITS + EXP_BITS + MANT_BITS
+        const total = SIGN_BITS + EXP_BITS + MANT_BITS;
         then total == BITS
 
     test gf256_max_value_positive
-        given max_val = max_value()
+        const max_val = max_value();
         then max_val > 0.0
 
     test gf256_min_positive_greater_than_zero
-        given min_pos = min_positive()
+        const min_pos = min_positive();
         then min_pos > 0.0
 
     test gf256_epsilon_positive
-        given eps = epsilon()
+        const eps = epsilon();
         then eps > 0.0
 
     test gf256_phi_distance_good
-        given phi_dist = PHI_DISTANCE
+        const phi_dist = PHI_DISTANCE;
         then phi_dist < 0.01
 
     test gf256_memory_ratio_vs_fp32
-        given ratio = MEMORY_RATIO_VS_FP32
+        const ratio = MEMORY_RATIO_VS_FP32;
         then abs(ratio - 8.0) < 0.01
 
     test gf256_validate_format_success
-        given valid = validate_format()
+        const valid = validate_format();
         then valid == true
 
     invariant gf256_bits_constant

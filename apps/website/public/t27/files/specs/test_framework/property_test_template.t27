@@ -32,7 +32,8 @@
 
 module PBTTemplate {
     use test_framework::core::{TestResult, Verdict, ToleranceTier, EngineeringStatus};
-    use numeric::golden_float::{GF16, GF32};
+    use numeric::gf16::GF16;
+    use numeric::gf32::GF32;
     // Text helpers from core stand in for format! (see translation notes;
     // they need the rewritten core.t27, see DEPENDENCY above).
     use test_framework::core::{Text, text_from, text_append_str, text_append_u32, text_append_text, f64_to_text};

@@ -35,12 +35,12 @@ pub const EXIT_INVARIANT : str = "Hash is verified, commit is signed";
 pub const CLARA_ROLE : str = "";
 ; Skill IDs the agent holds. Bound only where a source names the skill; SKILLS_NOTE
 ; cites that source or says why the list is empty.
-pub const SKILLS : [0]str = [];
-pub const SKILLS_NOTE : str = "No source binds a skill to this agent: the alphabet key files point at specs and docs, not at a skill directory, no .claude/agents file names one, and specs/OWNERS.md has no row for it.";
+pub const SKILLS : [3]str = ["t27/phi-loop", "t27/tri", "trinity/implement-issue"];
+pub const SKILLS_NOTE : str = "docs/agents/AGENTS_ALPHABET.md \"Who holds a tool, and who holds a skill\", rule 2: domain lead for 3 skill card(s).";
 ; Tool IDs (specs/tools) the agent holds. Bound only where a source line names the command
 ; for this letter; TOOLS_NOTE cites that line or says why the list is empty.
-pub const TOOLS : [1]str = ["tri/cell"];
-pub const TOOLS_NOTE : str = "docs/agents/AGENTS_ALPHABET.md:144: agent W domain Workflow / tri cell, key file src/tri/cell.zig; PHASE 6 EVOLVE: W seals tri-cell commit (hash seal).";
+pub const TOOLS : [7]str = ["mcp/t27-traceability", "mcp/tri-mcp", "tri/cell", "tri/merging", "tri/pr", "tri/status", "tri/worktrees"];
+pub const TOOLS_NOTE : str = "docs/agents/AGENTS_ALPHABET.md \"Who holds a tool, and who holds a skill\", rule 2: domain lead for 7 tool card(s), read off what each card states it does rather than off its name.";
 ; Where the agent logs episodes (AGENTS_ALPHABET.md: "Logs to .trinity/experience/").
 pub const EXPERIENCE_LOG : str = ".trinity/experience/";
 pub const ENABLED : bool = true;

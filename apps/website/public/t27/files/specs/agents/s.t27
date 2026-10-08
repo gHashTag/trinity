@@ -35,12 +35,30 @@ pub const EXIT_INVARIANT : str = "Standards are consistent, naming rules followe
 pub const CLARA_ROLE : str = "TA1: AR Spec Standards - defines and enforces AR spec conventions";
 ; Skill IDs the agent holds. Bound only where a source names the skill; SKILLS_NOTE
 ; cites that source or says why the list is empty.
-pub const SKILLS : [0]str = [];
-pub const SKILLS_NOTE : str = "No source binds a skill to this agent: the alphabet key files point at specs and docs, not at a skill directory, no .claude/agents file names one, and specs/OWNERS.md has no row for it.";
+pub const SKILLS : [1]str = ["t27/measure-corpus"];
+pub const SKILLS_NOTE : str = "docs/agents/AGENTS_ALPHABET.md \"Who holds a tool, and who holds a skill\", rule 2: domain lead for 1 skill card(s).";
 ; Tool IDs (specs/tools) the agent holds. Bound only where a source line names the command
 ; for this letter; TOOLS_NOTE cites that line or says why the list is empty.
-pub const TOOLS : [0]str = [];
-pub const TOOLS_NOTE : str = "No source binds a tri command or MCP server to this agent. docs/agents/AGENTS.md:97 lists tri gen, tri test, tri verdict --toxic, tri bench inside a sample prevention payload attributed to S; that is an example message, not an ownership binding.";
+pub const TOOLS : [4]str = ["mcp/t27-traceability", "tri/prose", "tri/seals", "tri/types"];
+pub const TOOLS_NOTE : str = "docs/agents/AGENTS_ALPHABET.md \"Who holds a tool, and who holds a skill\", rule 2: domain lead for 4 tool card(s), read off what each card states it does rather than off its name.";
 ; Where the agent logs episodes (AGENTS_ALPHABET.md: "Logs to .trinity/experience/").
 pub const EXPERIENCE_LOG : str = ".trinity/experience/";
 pub const ENABLED : bool = true;
+
+test agent_s_constants {
+  assert KIND == "agent";
+  assert ID == "t27/S";
+  assert LETTER == "S";
+  assert ORDINAL == 19;
+  assert LETTER_NAME == "Sigma";
+  assert NAME == "Sigma (Specs)";
+  assert DOMAIN == "Specs / Standardization / AR Specs";
+  assert ARCHETYPE == "Teeth - sharpness, flame";
+  assert REGISTER == "R18";
+  assert LAYER == "Physical";
+  assert ENABLED == true;
+  assert CLARA_ROLE == "TA1: AR Spec Standards - defines and enforces AR spec conventions";
+  assert KEY_FILES[0] == "specs/";
+  assert KEY_FILES[1] == "specs/ar/*.t27";
+  assert KEY_FILES[2] == "docs/NUMERIC-*.md";
+}

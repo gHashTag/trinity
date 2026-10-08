@@ -9,11 +9,10 @@ module bus-pubsub;
 // Imports
 // ============================================================================
 
-use tritype-base::usize;
-use bus-schema::Event;
-use bus-schema::Subscription;
-use bus-schema::TopicPattern;
-use bus-schema::BusState;
+use bus::schema::Event;
+use bus::schema::Subscription;
+use bus::schema::TopicPattern;
+use bus::schema::BusState;
 
 // ============================================================================
 // Constants

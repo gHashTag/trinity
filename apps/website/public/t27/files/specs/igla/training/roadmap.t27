@@ -37,13 +37,14 @@ module IGLARoadmap;
 
     // next_phase(current: Phase) -> Phase
     fn next_phase(current: Phase) -> Phase {
-        match current {
-            Phase.P4_Pilot => Phase.P5_Harness,
-            Phase.P5_Harness => Phase.P6_ScaleUp,
-            Phase.P6_ScaleUp => Phase.P7_LowBit,
-            Phase.P7_LowBit => Phase.P8_Integration,
-            Phase.P8_Integration => Phase.P8_Integration, // Terminal phase
-        }
+        // A Rust `match` here lowered to an empty body in every backend (#5949).
+        return switch (current) {
+            .P4_Pilot => Phase.P5_Harness,
+            .P5_Harness => Phase.P6_ScaleUp,
+            .P6_ScaleUp => Phase.P7_LowBit,
+            .P7_LowBit => Phase.P8_Integration,
+            .P8_Integration => Phase.P8_Integration, // Terminal phase
+        };
     }
 
     // progress(status: RoadmapStatus) -> f64

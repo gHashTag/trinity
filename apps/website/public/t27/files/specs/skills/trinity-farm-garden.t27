@@ -23,3 +23,11 @@ pub const TAGS : [3]str = ["farm", "hslm", "workers"];
 pub const ENABLED : bool = true;
 ; Default budget; SKILL.md declares no timeout of its own.
 pub const TIMEOUT_MIN : u16 = 30;
+
+test basic_constants {
+    assert KIND == "skill";
+    assert ID == "trinity/farm-garden";
+    assert NAME == "Garden — Quantum Gardener for Trinity Farm";
+    assert ENABLED == true;
+    assert TAGS[0] == "farm";
+}

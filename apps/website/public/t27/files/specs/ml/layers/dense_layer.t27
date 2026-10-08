@@ -24,15 +24,13 @@ module Dense;
         activation : ActivationType,
     };
 
-    pub const ActivationType = struct {
-        enum_type : "enum",
-        values : ,
-        None : Auto,
-        ReLU : Auto,
-        GELU : Auto,
-        Sigmoid : Auto,
-        Tanh : Auto,
-        Softmax : Auto,
+    pub const ActivationType = enum(u8) {
+        None,
+        ReLU,
+        GELU,
+        Sigmoid,
+        Tanh,
+        Softmax,
     };
 
     // ═══════════════════════════════════════════════════════════

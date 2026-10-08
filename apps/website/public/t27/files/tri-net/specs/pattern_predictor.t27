@@ -68,52 +68,32 @@ module pattern_predictor {
         return 0;
     }
 
-    // Calculate simple moving average
+    // Empty windows yield zero; larger windows use all sixteen stored samples.
     fn calculate_moving_average(array: [u32; 16], window: u32) -> u32 {
-        let sum = 0;
-        let count = window;
-        
+        let count: u32 = window;
         if (count > 16) { count = 16; }
-        
-        sum = sum + get_sample_value(get_sample_at(array, 0));
-        sum = sum + get_sample_value(get_sample_at(array, 1));
-        sum = sum + get_sample_value(get_sample_at(array, 2));
-        sum = sum + get_sample_value(get_sample_at(array, 3));
-        
-        if (count > 4) {
-            sum = sum + get_sample_value(get_sample_at(array, 4));
-            sum = sum + get_sample_value(get_sample_at(array, 5));
-            sum = sum + get_sample_value(get_sample_at(array, 6));
-            sum = sum + get_sample_value(get_sample_at(array, 7));
+        if (count == 0) { return 0; }
+        let sum: u32 = 0;
+        let index: u32 = 0;
+        while (index < count) {
+            sum = sum + get_sample_value(get_sample_at(array, index));
+            index = index + 1;
         }
-        
-        if (count > 8) {
-            sum = sum + get_sample_value(get_sample_at(array, 8));
-            sum = sum + get_sample_value(get_sample_at(array, 9));
-            sum = sum + get_sample_value(get_sample_at(array, 10));
-            sum = sum + get_sample_value(get_sample_at(array, 11));
-        }
-        
-        if (count > 12) {
-            sum = sum + get_sample_value(get_sample_at(array, 12));
-            sum = sum + get_sample_value(get_sample_at(array, 13));
-            sum = sum + get_sample_value(get_sample_at(array, 14));
-            sum = sum + get_sample_value(get_sample_at(array, 15));
-        }
-        
-        return (sum / count);
+        return sum / count;
     }
 
     // Detect trend direction (0=stable, 1=increasing, 2=decreasing)
     fn detect_trend(array: [u32; 16], samples: u32) -> u32 {
-        if (samples < 2) { return 0; }
-        
-        let first = get_sample_value(get_sample_at(array, 0));
-        let last = get_sample_value(get_sample_at(array, samples - 1));
+        let count: u32 = samples;
+        if (count > 16) { count = 16; }
+        if (count < 2) { return 0; }
+
+        let first: u32 = get_sample_value(get_sample_at(array, 0));
+        let last: u32 = get_sample_value(get_sample_at(array, count - 1));
         
         if (last > first + 5) {
             return 1; // Increasing
-        } else if (last < first - 5) {
+        } else if (first > last + 5) {
             return 2; // Decreasing
         } else {
             return 0; // Stable
@@ -122,17 +102,22 @@ module pattern_predictor {
 
     // Predict next value based on trend
     fn predict_next_value(array: [u32; 16], samples: u32) -> u32 {
-        let trend = detect_trend(array, samples);
-        let current = get_sample_value(get_sample_at(array, samples - 1));
+        let count: u32 = samples;
+        if (count > 16) { count = 16; }
+        if (count == 0) { return 0; }
+        let trend: u32 = detect_trend(array, count);
+        let current: u32 = get_sample_value(get_sample_at(array, count - 1));
         
         if (trend == 1) {
             // Increasing trend
             return current + 10;
         } else if (trend == 2) {
             // Decreasing trend
-            let predicted = current - 10;
-            if (predicted < 0) { predicted = 0; }
-            return predicted;
+            if (current < 10) {
+                return 0;
+            } else {
+                return current - 10;
+            }
         } else {
             // Stable trend
             return current;
@@ -141,7 +126,7 @@ module pattern_predictor {
 
     // Check if current value is anomalous
     fn is_anomalous(array: [u32; 16], samples: u32, current_value: u32) -> u32 {
-        let predicted = predict_next_value(array, samples);
+        let predicted: u32 = predict_next_value(array, samples);
         
         if (predicted > current_value) {
             return (predicted - current_value);
@@ -177,54 +162,69 @@ module pattern_predictor {
         return 0; // No pattern
     }
 
-    // Calculate variance (simple measure of variability)
+    // Mean squared deviation from the truncated integer average.
     fn calculate_variance(array: [u32; 16], samples: u32) -> u32 {
-        if (samples < 2) { return 0; }
-        
-        let avg = calculate_moving_average(array, samples);
-        let sum_sq_diff = 0;
-        
-        if (samples >= 1) {
-            // |sample - avg|: unsigned subtraction underflows when the sample is below
-            // the mean, and the square only needs the magnitude.
-            let v0: u32 = get_sample_value(get_sample_at(array, 0));
-            let diff: u32 = 0;
-            if (v0 >= avg) { diff = v0 - avg; } else { diff = avg - v0; }
-            sum_sq_diff = sum_sq_diff + (diff * diff);
+        let count: u32 = samples;
+        if (count > 16) { count = 16; }
+        if (count < 2) { return 0; }
+        let avg: u32 = calculate_moving_average(array, count);
+        let sum_sq_diff: u32 = 0;
+        let index: u32 = 0;
+        while (index < count) {
+            let value: u32 = get_sample_value(get_sample_at(array, index));
+            let diff: u32 = value;
+            if (value >= avg) { diff = diff - avg; } else { diff = avg - diff; }
+            sum_sq_diff = sum_sq_diff + diff * diff;
+            index = index + 1;
         }
-        
-        if (samples >= 2) {
-            // |sample - avg|: unsigned subtraction underflows when the sample is below
-            // the mean, and the square only needs the magnitude.
-            let v1: u32 = get_sample_value(get_sample_at(array, 1));
-            let diff: u32 = 0;
-            if (v1 >= avg) { diff = v1 - avg; } else { diff = avg - v1; }
-            sum_sq_diff = sum_sq_diff + (diff * diff);
-        }
-        
-        if (samples >= 3) {
-            // |sample - avg|: unsigned subtraction underflows when the sample is below
-            // the mean, and the square only needs the magnitude.
-            let v2: u32 = get_sample_value(get_sample_at(array, 2));
-            let diff: u32 = 0;
-            if (v2 >= avg) { diff = v2 - avg; } else { diff = avg - v2; }
-            sum_sq_diff = sum_sq_diff + (diff * diff);
-        }
-        
-        if (samples >= 4) {
-            // |sample - avg|: unsigned subtraction underflows when the sample is below
-            // the mean, and the square only needs the magnitude.
-            let v3: u32 = get_sample_value(get_sample_at(array, 3));
-            let diff: u32 = 0;
-            if (v3 >= avg) { diff = v3 - avg; } else { diff = avg - v3; }
-            sum_sq_diff = sum_sq_diff + (diff * diff);
-        }
-        
-        if (samples < 2) { return 0; }
-        return (sum_sq_diff / samples);
+        return sum_sq_diff / count;
     }
 
     // ---- Tests ----
+
+    test empty_windows_are_defined {
+        let array = create_sample_array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        assert(calculate_moving_average(array, 0) == 0, "empty mean");
+        assert(calculate_variance(array, 0) == 0, "empty variance");
+        assert(predict_next_value(array, 0) == 0, "empty prediction");
+        assert(detect_trend(array, 0) == 0, "empty trend");
+    }
+
+    test partial_and_oversized_windows_use_exact_samples {
+        let array = create_sample_array(
+            0x02000001, 0x04000001, 0x06000001, 0x08000001,
+            0x0A000001, 0x0C000001, 0x0E000001, 0x10000001,
+            0x12000001, 0x14000001, 0x16000001, 0x18000001,
+            0x1A000001, 0x1C000001, 0x1E000001, 0x20000001);
+        assert(calculate_moving_average(array, 1) == 2, "one sample");
+        assert(calculate_moving_average(array, 5) == 6, "five samples");
+        assert(calculate_moving_average(array, 9) == 10, "nine samples");
+        assert(calculate_moving_average(array, 4294967295) == 17, "clamped mean");
+        assert(predict_next_value(array, 4294967295) == 42, "clamped prediction");
+        assert(calculate_variance(array, 5) == 8, "all five variance terms");
+        assert(calculate_variance(array, 16) == 85, "all sixteen variance terms");
+        assert(calculate_variance(array, 4294967295) == 85, "clamped variance");
+    }
+
+    test unsigned_trends_and_prediction_floor {
+        let low = create_sample_array(0x02000001, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        let falling = create_sample_array(0x1E000001, 0x04000001, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        let rising = create_sample_array(1, 0xFF000001, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        assert(detect_trend(low, 2) == 0, "small stable trend");
+        assert(predict_next_value(falling, 2) == 0, "decrease saturates at zero");
+        assert(predict_next_value(rising, 2) == 265, "wide prediction remains unchanged");
+        assert(calculate_variance(low, 1) == 0, "single sample variance");
+    }
+
+    test bounded_window_extrema {
+        let array = create_sample_array(
+            0xFF000001, 0xFF000001, 0xFF000001, 0xFF000001,
+            0xFF000001, 0xFF000001, 0xFF000001, 0xFF000001,
+            0xFF000001, 0xFF000001, 0xFF000001, 0xFF000001,
+            0xFF000001, 0xFF000001, 0xFF000001, 0xFF000001);
+        assert(calculate_moving_average(array, 16) == 255, "maximum byte mean");
+        assert(calculate_variance(array, 16) == 0, "constant population variance");
+    }
 
     test create_sample_basic {
         sample = create_sample(50, 100, 1, 1);

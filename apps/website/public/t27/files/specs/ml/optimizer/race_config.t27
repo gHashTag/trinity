@@ -53,8 +53,13 @@ module RaceConfig {
     const RACE_LR_CHAMPION           : f64 = 0.004;               // INV-8 phi-band anchor
 
     // phi-damped variant (adamw.t27 legacy -- Phase B1 comparison arm)
-    const RACE_BETA1_PHI_DAMPED  : f64 = 0.5559321608...;  // 0.9 / phi  [Open conjecture]
-    const RACE_BETA2_PHI_DAMPED  : f64 = 0.6174052591...;  // 0.999 / phi [Open conjecture]
+    // The literals carried a trailing "..." that the parser dropped; the
+    // digits are kept exactly as they were (they are what t27c already
+    // emitted). Note: they differ from the quotients in the comments in the
+    // fourth decimal -- 0.9/phi = 0.5562305899, 0.999/phi = 0.6174159548.
+    // Which one the comparison arm should use is left to the owner.
+    const RACE_BETA1_PHI_DAMPED  : f64 = 0.5559321608;  // 0.9 / phi  [Open conjecture]
+    const RACE_BETA2_PHI_DAMPED  : f64 = 0.6174052591;  // 0.999 / phi [Open conjecture]
 
     // Standard control arm (tuned AdamW -- equal-budget baseline)
     const CTRL_BETA1         : f64 = 0.9;

@@ -175,7 +175,7 @@ module GF128 {
         // Lower 64 bits of mantissa
         const normalized = value / pow2_128(exp as f64);
         const frac = normalized - 1.0;
-        const mant_full = (frac * 633825300114114700748351602689.0) as u128;
+        const mant_full = @as(u128, (frac * 633825300114114700748351602689.0));  // was `as u128`/`1u128` (128-bit width kept); written as @as() because `x as u128` does not parse
         return (mant_full & 0xFFFFFFFFFFFFFFFF) as u64;
     }
 
@@ -183,12 +183,12 @@ module GF128 {
         // Upper 35 bits of mantissa
         const normalized = value / pow2_128(exp as f64);
         const frac = normalized - 1.0;
-        const mant_full = (frac * 633825300114114700748351602689.0) as u128;
+        const mant_full = @as(u128, (frac * 633825300114114700748351602689.0));  // was `as u128`/`1u128` (128-bit width kept); written as @as() because `x as u128` does not parse
         return ((mant_full >> 64) & 0x7FFFFFFFF) as u64;
     }
 
     fn mant_to_f64_128(low: u64, high: u64) -> f64 {
-        const mant_u128 = ((high as u128) << 64) | (low as u128);
+        const mant_u128 = ((@as(u128, high)) << 64) | (@as(u128, low));  // was `as u128`/`1u128` (128-bit width kept); written as @as() because `x as u128` does not parse
         return mant_u128 as f64;
     }
 
@@ -213,86 +213,86 @@ module GF128 {
     // TDD-Inside-Spec: Tests and Invariants for GF128
 
     test gf128_decode_zero
-        given gf = GF128{ .low = 0, .high = 0 }
+        const gf = GF128{ .low = 0, .high = 0 };
         when value = decode(gf)
         then value == 0.0
 
     test gf128_encode_zero_roundtrip
-        given original = 0.0
+        const original = 0.0;
         and   encoded = encode(original)
         and   decoded = decode(encoded)
         then decoded == original
 
     test gf128_encode_positive_value
-        given original = 1.5
+        const original = 1.5;
         and   encoded = encode(original)
         and   decoded = decode(encoded)
         then abs(decoded - 1.5) < 1e-10
 
     test gf128_bits_sum_correct
-        given total = SIGN_BITS + EXP_BITS + MANT_BITS
+        const total = SIGN_BITS + EXP_BITS + MANT_BITS;
         then total == BITS
 
     test gf128_max_value_positive
-        given max_val = max_value()
+        const max_val = max_value();
         then max_val > 0.0
 
     test gf128_min_positive_greater_than_zero
-        given min_pos = min_positive()
+        const min_pos = min_positive();
         then min_pos > 0.0
 
     test gf128_epsilon_positive
-        given eps = epsilon()
+        const eps = epsilon();
         then eps > 0.0
 
     test gf128_memory_ratio_vs_fp32
-        given ratio = MEMORY_RATIO_VS_FP32
+        const ratio = MEMORY_RATIO_VS_FP32;
         then abs(ratio - 4.0) < 0.01
 
     test gf128_validate_format_success
-        given valid = validate_format()
+        const valid = validate_format();
         then valid == true
 
     test gf128_dynamic_range_enormous
-        given range = dynamic_range()
+        const range = dynamic_range();
         then range > 1e300
 
     test gf128_is_extended_range_true
-        given extended = is_extended_range()
+        const extended = is_extended_range();
         then extended == true
 
     test gf128_encode_large_value
-        given original = 1e150
+        const original = 1e150;
         and   encoded = encode(original)
         and   decoded = decode(encoded)
         then abs(decoded / original - 1.0) < 0.1
 
     test gf128_encode_small_value
-        given original = 1e-150
+        const original = 1e-150;
         and   encoded = encode(original)
         and   decoded = decode(encoded)
         then abs(decoded / original - 1.0) < 0.1
 
     test gf128_negative_encoding
-        given original = -2.5
+        const original = -2.5;
         and   encoded = encode(original)
         and   decoded = decode(encoded)
         then decoded < 0.0 and abs(decoded - (-2.5)) < 1e-10
 
     test gf128_sign_bit_negative
-        given value = -1.0
+        const value = -1.0;
         and   encoded = encode(value)
         and   sign_bit = (encoded.high >> 63) as u8
         then sign_bit == 1
 
     test gf128_sign_bit_positive
-        given value = 1.0
+        const value = 1.0;
         and   encoded = encode(value)
         and   sign_bit = (encoded.high >> 63) as u8
         then sign_bit == 0
 
     test gf128_phi_ratio_low
-        given ratio = (EXP_BITS as f64) / (MANT_BITS as f64)
+        const ratio = (EXP_BITS as f64) / (MANT_BITS as f64);
         then ratio < 0.3  // Extended range mode
 
     invariant gf128_bits_constant
@@ -329,11 +329,11 @@ module GF128 {
         assert epsilon() <= min_positive()
 
     invariant gf128_exp_mant_ratio_is_phi_approx
-        given ratio = (EXP_BITS as f64) / (MANT_BITS as f64)
+        const ratio = (EXP_BITS as f64) / (MANT_BITS as f64);
         then abs(ratio - 0.608) < 0.01
 
     invariant gf128_high_low_consistency
-        given gf = GF128{ .low = 0xFFFFFFFFFFFFFFFF, .high = 0x7FFFFFFFF }
+        const gf = GF128{ .low = 0xFFFFFFFFFFFFFFFF, .high = 0x7FFFFFFFF };
         then decode(gf) > 0.0
 
     bench gf128_encode_latency

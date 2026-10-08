@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
+// Issue: https://github.com/dmitrii-f-t27/trinity-memory/issues/125
+// Coverage: https://github.com/dmitrii-f-t27/trinity-memory/issues/3
+// Coverage: https://github.com/dmitrii-f-t27/trinity-memory/issues/5
 // specs/memory/bridge.t27 -- Trinity Bridge protocol contract
 // JSON-RPC 2.0 over loopback HTTP between an application and a memory device.
 // Stage one is an explicitly labelled in-process emulator: capabilities, upload,

@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
+// Issue: https://github.com/dmitrii-f-t27/trinity-memory/issues/125
+// Coverage: https://github.com/dmitrii-f-t27/trinity-memory/issues/3
+// Coverage: https://github.com/dmitrii-f-t27/trinity-memory/issues/4
 // specs/memory/types.t27 -- shared contract constants for Trinity Memory
 // Contract layer for the executable modules in t27/: trit lane codes, codec
 // identifiers and group geometry, valid-code limits, TMEM v1 framing, CRC32

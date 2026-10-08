@@ -28,3 +28,12 @@ pub const TABLE : str = "claims";
 ; English canonical prose, Markdown, path from the t27 root.
 pub const BODY_EN : str = "docs/system/project.md";
 pub const ENABLED : bool = true;
+
+test test_project_constants {
+    assert KIND == "docs-chapter";
+    assert ID == "docs/project";
+    assert ORDER == 1;
+    assert ENABLED == true;
+    assert SECTIONS[0] == "What t27 and Trinity are";
+    assert SOURCES[1] == "AGENTS.md";
+}

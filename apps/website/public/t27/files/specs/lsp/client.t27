@@ -9,9 +9,9 @@ module lsp-client;
 // Imports
 // ============================================================================
 
-use lsp-schema::Position;
-use lsp-schema::DiagnosticSeverity;
-use lsp-schema::TextDocumentSyncKind;
+use lsp::schema::Position;
+use lsp::schema::DiagnosticSeverity;
+use lsp::schema::TextDocumentSyncKind;
 
 // ============================================================================
 // Constants

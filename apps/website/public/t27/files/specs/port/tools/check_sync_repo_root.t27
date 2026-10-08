@@ -139,7 +139,7 @@ fn main() -> i32 {
 // Test block for self_check function
 test "self_check_returns_zero_when_all_cases_pass" {
     let result = self_check();
-    assert!(result == 0, "self_check should return 0 (success) when all tests pass");
+    assert(result == 0, "self_check should return 0 (success) when all tests pass");
 }
 
 // Test block for main function with --self-check
@@ -147,7 +147,7 @@ test "main_with_self_check_returns_zero" {
     @setArg("--self-check");
     let result = main();
     @clearArg("--self-check");
-    assert!(result == 0, "main with --self-check should return 0");
+    assert(result == 0, "main with --self-check should return 0");
 }
 
 // Additional test: main returns 2 when target file missing
@@ -163,5 +163,5 @@ test "main_returns_two_when_target_missing" {
     // We'll test that without --self-check, main returns 0 or 1 depending on file state.
     // Since we know the file exists and likely has correct assignment, we expect 0.
     // But to avoid flakiness, we'll just ensure it returns an integer (0,1,2).
-    assert!(result == 0 || result == 1 || result == 2, "main should return 0, 1, or 2");
+    assert(result == 0 || result == 1 || result == 2, "main should return 0, 1, or 2");
 }

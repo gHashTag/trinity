@@ -5,7 +5,6 @@
 module check_conflict_markers;
 
 use std::fs;
-use std::process;
 use std::mem;
 
 // Constants from the original implementation
@@ -16,9 +15,9 @@ pub const CLOSE : &str = ">>>>>>> ";
 
 pub const BASELINE : &str = "tools/conflict_markers_baseline.txt";
 
-pub const SKIP_SUFFIX : [&str; 7] = .{
+pub const SKIP_SUFFIX : [7]str = [
     ".png", ".jpg", ".gif", ".pdf", ".bin", ".bit", ".fasm"
-};
+];
 
 // ============================================================================
 // Function 1: _git(root: Path, args, binary=False) - Ported from line 47
@@ -43,7 +42,9 @@ pub fn tracked_files(root: &str) &str {
 // ============================================================================
 
 pub fn staged_files(root: &str) &str {
-    const output = _git(root, "diff", "--cached", "-z", "--name-only", "--diff-filter=ACMR", false);
+    // _git takes two argument strings; the Python passed six separate args, and
+    // seven arguments to a four-parameter function is what typecheck refused (#6446).
+    const output = _git(root, "diff", "--cached -z --name-only --diff-filter=ACMR", false);
     return output;
 }
 

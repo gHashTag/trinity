@@ -720,7 +720,10 @@ module GitOperations {
     test "options_construction" {
         var opts = Options {
             cwd = "/path/to/repo",
-            env = [("PATH", "/usr/bin"), ("HOME", "/home/user")],
+            env = [
+                EnvVar { name = "PATH", value = "/usr/bin" },
+                EnvVar { name = "HOME", value = "/home/user" },
+            ],
         };
         assert(opts.cwd == "/path/to/repo");
         assert(opts.env.len == 2);

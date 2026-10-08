@@ -36,12 +36,28 @@ pub const CLARA_ROLE : str = "";
 ; Skill IDs the agent holds. Bound only where a source names the skill; SKILLS_NOTE
 ; cites that source or says why the list is empty.
 pub const SKILLS : [0]str = [];
-pub const SKILLS_NOTE : str = "No source binds a skill to this agent: the alphabet key files point at specs and docs, not at a skill directory, no .claude/agents file names one, and specs/OWNERS.md has no row for it.";
+pub const SKILLS_NOTE : str = "docs/agents/AGENTS_ALPHABET.md \"Who holds a tool, and who holds a skill\": no skill card states this domain as its subject. The Queen holds every skill by rule 1.";
 ; Tool IDs (specs/tools) the agent holds. Bound only where a source line names the command
 ; for this letter; TOOLS_NOTE cites that line or says why the list is empty.
-pub const TOOLS : [0]str = [];
-pub const TOOLS_NOTE : str = "No source binds a tri command or MCP server to this agent: docs/agents/AGENTS_ALPHABET.md (row, key files, phase cycle), specs/OWNERS.md and .claude/agents/*.md do not name one.";
+pub const TOOLS : [1]str = ["gHashTag/trinity:tri/identity"];
+pub const TOOLS_NOTE : str = "docs/agents/AGENTS_ALPHABET.md \"Who holds a tool, and who holds a skill\", rule 2: domain lead for 1 tool card(s), read off what each card states it does rather than off its name.";
 ; Where the agent logs episodes (AGENTS_ALPHABET.md: "Logs to .trinity/experience/").
 pub const EXPERIENCE_LOG : str = ".trinity/experience/";
 ; Reserved seat: the alphabet marks its key files as future, so the agent is not enabled.
 pub const ENABLED : bool = false;
+
+test agent_ti_constants {
+  assert KIND == "agent";
+  assert ID == "t27/TI";
+  assert LETTER == "TI";
+  assert ORDINAL == 27;
+  assert LETTER_NAME == "Ti";
+  assert NAME == "Ti (Security)";
+  assert DOMAIN == "Security / Reserve";
+  assert ARCHETYPE == "Egyptian cross - \"sacred gift\"";
+  assert REGISTER == "R26";
+  assert LAYER == "Physical";
+  assert ENABLED == false;
+  assert CLARA_ROLE == "";
+  assert TOOLS[0] == "gHashTag/trinity:tri/identity";
+}

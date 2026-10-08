@@ -29,8 +29,15 @@ pub const ACTIONS_ABOUT : [0]str = [];
 pub const ARGS : [1]str = ["<spec-path>"];
 ; Agent letters that own this command, only where a source line names it (AGENTS_NOTE cites it).
 pub const AGENTS : [2]str = ["T", "V"];
-pub const AGENTS_NOTE : str = ".claude/agents/agent-v-verify.md:47 (tri test -- Run conformance tests); .claude/agents/trinity.md:70 (7. Verify - Run tri test).";
+pub const AGENTS_NOTE : str = "docs/agents/AGENTS_ALPHABET.md \"Who holds a tool, and who holds a skill\" binds every tool to the Queen (T). Domain lead V: The spec's own AGENTS field is [\"T\",\"V\"] with AGENTS_NOTE citing .claude/agents/agent-v-verify.md:47 (\"tri test -- Run conformance tests\"); with T excluded by rule, V is the domain lead.";
 ; From the about text (long about when the doc has more than one paragraph); no marketing.
 pub const WHEN_TO_USE : str = "Runs tests for a .t27 spec file using t27c.";
 pub const WITNESS : str = "source-parse";
 pub const ENABLED : bool = true;
+
+test verify_tool_constants {
+  assert KIND == "tool";
+  assert FAMILY == "tri-cli";
+  assert SCHEMA == 2;
+  assert ENABLED == true;
+}

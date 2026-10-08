@@ -41,8 +41,8 @@ pub const RESOURCES_ABOUT : [0]str = [];
 pub const TOOLS_NOTE : str = "Recorded from the live tools/list, not from source: the server is the upstream inngest binary, its source is not in this repository. Measured 2026-09-13 without a key: health, get_apps and list_runs answer REST API v2 returned HTTP 401: Authentication failed; list_docs and grep_docs answer (173 documents). The REST-backed tools need Authorization: Bearer <INNGEST_SIGNING_KEY> on the MCP request.";
 ; The server is the upstream inngest binary run by Railway, not code of this repository.
 pub const EXTERNAL : bool = true;
-pub const AGENTS : [1]str = ["T"];
-pub const AGENTS_NOTE : str = "specs/agents/t.t27 TOOLS names mcp/inngest-dev: the Queen (Tau) holds the scheduler; a bee reaches it through the Queen's brief, not by its own registration.";
+pub const AGENTS : [3]str = ["T", "Q", "J"];
+pub const AGENTS_NOTE : str = "docs/agents/AGENTS_ALPHABET.md \"Who holds a tool, and who holds a skill\" binds every tool to the Queen (T). Domain lead Q, J: Held: the card's own header calls it \"the scheduler the Queen holds\" and ABOUT says it \"runs the Queen's crons and skills as functions\" (Q, whose DOMAIN is Queue / Scheduling), while list_runs / get_run / list_function_runs / rerun / cancel_run are run-lifecycle tools matching J's card exactly (\"Task queue exists, scheduler is running\" -> \"No stuck jobs > 1 hour, all jobs assigned\"); AGENTS = [\"T\"] is excluded by the rule.";
 ; help-output is the nearest witness the catalog vocabulary has for 'diffed against the server's own tools/list on a named host'; no workflow runs it yet, so nothing here claims runtime.
 pub const WITNESS : str = "help-output";
 pub const ENABLED : bool = true;

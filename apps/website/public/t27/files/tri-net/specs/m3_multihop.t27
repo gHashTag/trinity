@@ -23,7 +23,7 @@ module M3MultiHop {
     fn iperf3_sequence(packet_byte: u8) -> u32 {
         // First 4 bytes are sequence number (big-endian)
         // Simplified: just return byte value for demonstration
-        packet_byte as u32
+        return packet_byte as u32;
     }
     
     // Calculate expected packet loss rate from attenuation
@@ -145,6 +145,12 @@ module M3MultiHop {
     // blocks are not emitted into any executable backend, so these
     // assertions had never actually run) ----
 
+    test sequence_byte_preserves_unsigned_value {
+        assert(iperf3_sequence(0) == 0, "zero byte sequence");
+        assert(iperf3_sequence(128) == 128, "high-bit byte stays unsigned");
+        assert(iperf3_sequence(255) == 255, "maximum byte sequence");
+    }
+
     // Test expected loss rate calculation
     test expected_loss_rate_calculation {
         // No attenuation: 0.5%
@@ -178,7 +184,7 @@ module M3MultiHop {
         // 10dB: ~98%
         let factor10: u8 = throughput_factor_p8(10);
         assert(factor10 > 0xF0, "factor10 > 0xF0");
-        assert(factor10 < 0x100, "factor10 < 0x100");
+        assert(factor10 == 250, "ten dB model factor is exactly 250");
         
         // 30dB: ~85%
         let factor30: u8 = throughput_factor_p8(30);
@@ -202,7 +208,7 @@ module M3MultiHop {
         // 10dB per hop: ~96% delivery
         let rate10: u8 = delivery_rate_p8(10, 10);
         assert(rate10 > 0xF0, "rate10 > 0xF0");
-        assert(rate10 < 0x100, "rate10 < 0x100");
+        assert(rate10 == 244, "ten dB two-hop model rate is exactly 244");
     }
     
     // Test iperf3 TCP packet generation

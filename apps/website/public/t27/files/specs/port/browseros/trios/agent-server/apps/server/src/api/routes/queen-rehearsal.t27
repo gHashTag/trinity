@@ -73,8 +73,8 @@ pub fn build_initial_frame(model: []const u8) -> SseFrame {
     };
 }
 
-pub fn build_content_frame(model: []const u8, word: []const u8) -> SseFrame {
-    var content_buf: [256]u8 = undefined;
+// The caller owns the buffer: a slice of a local array would dangle once this fn returns.
+pub fn build_content_frame(model: []const u8, word: []const u8, content_buf: []u8) -> SseFrame {
     var content_len: usize = 0;
     var i: usize = 0;
     while (i < word.len) {
@@ -155,7 +155,8 @@ test build_initial_frame_has_correct_structure {
 }
 
 test build_content_frame_includes_word_with_space {
-    const frame = build_content_frame("rehearsal", "test");
+    var buf: [256]u8 = undefined;
+    const frame = build_content_frame("rehearsal", "test", &buf);
     assert(frame.delta_content == "test ");
     assert(frame.finish_reason == null);
 }

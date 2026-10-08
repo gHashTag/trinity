@@ -39,7 +39,7 @@ spec CoaPlanning {
         steps: [COAStep],
         total_steps: int,
         total_duration: float,
-        verification_status: Trit
+        verification_status: Trit,
         proof_trace: ProofTrace
     }
 
@@ -204,34 +204,18 @@ spec CoaPlanning {
 
     // Check if COA satisfies a constraint
     fn satisfies_constraint(coa: CourseOfAction, constraint: COAConstraint) -> bool {
-        match constraint.constraint_type {
-            ConstraintType::TEMPORAL => {
-                // Total duration within limits
-                return coa.total_duration < constraint.description as float
-            },
-            ConstraintType::RESOURCE => {
-                // Resource availability satisfied
-                // (Detailed in constraint description)
-                return true
-            },
-            ConstraintType::GEOSPATIAL => {
-                // Geographic feasibility
-                return true
-            },
-            ConstraintType::TACTICAL => {
-                // Tactical constraints
-                return true
-            },
-            ConstraintType::LOGICAL => {
-                // Logical consistency using K3
-                let all_consistent = k3_and_all(constraint.enforces);
-                return all_consistent == K_TRUE
-            },
-            ConstraintType::ROB => {
-                // ROE compliance
-                return true
-            }
-        }
+        // A Rust `match` here lowered to an empty body in every backend (#5949).
+        // Its arms were blocks ending in `return`; each now returns its own value.
+        // TEMPORAL casts `description`, a `string`, to compare it with a duration;
+        // kept as written except `as float`, which t27 spells `as f64`.
+        return switch (constraint.constraint_type) {
+            .TEMPORAL => coa.total_duration < constraint.description as f64,
+            .RESOURCE => true,
+            .GEOSPATIAL => true,
+            .TACTICAL => true,
+            .LOGICAL => k3_and_all(constraint.enforces) == K_TRUE,
+            .ROB => true,
+        };
     }
 
     // Validate COA prerequisites
@@ -321,19 +305,20 @@ spec CoaPlanning {
 
     // Convert ActionType to string
     fn action_type_to_string(action: ActionType) -> string {
-        match action {
-            ActionType::ASSESS => "ASSESS",
-            ActionType::ALLOCATE => "ALLOCATE",
-            ActionType::EXECUTE => "EXECUTE",
-            ActionType::VERIFY => "VERIFY",
-            ActionType::COORDINATE => "COORDINATE",
-            ActionType::EVACUATE => "EVACUATE",
-            ActionType::DEFEND => "DEFEND",
-            ActionType::NEUTRALIZE => "NEUTRALIZE",
-            ActionType::DEPLOY => "DEPLOY",
-            ActionType::WITHDRAW => "WITHDRAW",
-            ActionType::MAINTAIN => "MAINTAIN"
-        }
+        // A Rust `match` here lowered to an empty body in every backend (#5949).
+        return switch (action) {
+            .ASSESS => "ASSESS",
+            .ALLOCATE => "ALLOCATE",
+            .EXECUTE => "EXECUTE",
+            .VERIFY => "VERIFY",
+            .COORDINATE => "COORDINATE",
+            .EVACUATE => "EVACUATE",
+            .DEFEND => "DEFEND",
+            .NEUTRALIZE => "NEUTRALIZE",
+            .DEPLOY => "DEPLOY",
+            .WITHDRAW => "WITHDRAW",
+            .MAINTAIN => "MAINTAIN",
+        };
     }
 
     // INVARIANTS

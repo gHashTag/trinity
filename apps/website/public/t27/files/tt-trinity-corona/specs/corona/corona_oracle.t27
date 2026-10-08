@@ -3,7 +3,8 @@
 // TRI-1 Corona -- Format Conformance Oracle (top-level SSOT)
 // phi^2 + 1/phi^2 = 3 | TRINITY | TRI-NET line, chip 4 of 4
 
-// Status: [Spec] (no silicon yet; pre-Phase-A)
+// Status: [Empirical fit] digital GF180MCU build; never submitted or fabricated.
+// Phase A receipts and boundaries: phase_a.t27 and docs/phase_a/README.md (#1).
 // SSOT source for the 80-record numeric-format catalog is
 // gHashTag/t27 specs/numeric/formats_catalog.t27 (PR #1028, issue #1029).
 // This file is the chip-level descriptor; per-format records live in t27.
@@ -29,15 +30,15 @@ module CoronaOracle {
     pub const CHIP_LINE       : string = "TRI-NET";
     pub const CHIP_LINE_INDEX : u8     = 4;            // Phi=1, Euler=2, Gamma=3, Corona=4
     pub const CHIP_ROLE       : string = "format-conformance-oracle";
-    pub const TARGET_SHUTTLE  : string = "TTGF26b";
+    pub const TARGET_SHUTTLE  : string = "TTGF26a";  // historical, not submitted
     pub const TARGET_PDK      : string = "GF180MCU";
     pub const TARGET_PROCESS  : string = "180nm";
-    pub const CHIP_STATUS     : string = "Spec";       // pre-Phase-A; paper design only
+    pub const CHIP_STATUS     : string = "Digital-validated-not-submitted";
 
-    // Tile-size decision is the Phase A output (8x2 vs 8x4).
-    // Both are listed; Phase A synthesis trial picks one.
-    pub const TILE_OPTION_A   : string = "8x2";        // ROM + 5 converter MVP
-    pub const TILE_OPTION_B   : string = "8x4";        // Full Tier-1 (12-15 modules)
+    // Historical candidates; the implemented 4x4 supersedes both (ADR-0001).
+    pub const TILE_OPTION_A   : string = "8x2";
+    pub const TILE_OPTION_B   : string = "8x4";
+    pub const SELECTED_TILE   : string = "4x4";
 
     // ========================================================================
     // 2. MISSION

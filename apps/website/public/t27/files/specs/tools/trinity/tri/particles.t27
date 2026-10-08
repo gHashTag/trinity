@@ -47,8 +47,8 @@ pub const EXAMPLES : [4]str = ["tri particles", "tri particles all", "tri partic
 pub const EXIT_CODES : [2]str = ["0: every path that returns to main, including UnifiedOutput status failure or denied", "1: only where a handler calls std.process.exit (not-implemented arms, cell dispatch failures)"];
 pub const RESULT : str = "UnifiedOutput (text or --json) with status success|failure|partial|canceled|denied|timeout; UNKNOWN_COMMAND is reported as status denied with exit 0; the sysexits mapping of src/tri/observability.zig is dead code";
 pub const COLLIDES_WITH : str = "";
-pub const AGENTS : [0]str = [];
-pub const AGENTS_NOTE : str = "No source binds an agent letter to this command: docs/agents/AGENTS_ALPHABET.md and .claude/agents/*.md of gHashTag/t27 name the t27 tri, not this binary.";
+pub const AGENTS : [2]str = ["T", "P"];
+pub const AGENTS_NOTE : str = "docs/agents/AGENTS_ALPHABET.md \"Who holds a tool, and who holds a skill\" binds every tool to the Queen (T). Domain lead P: ABOUT \"Particle physics sacred formulas (49 constants from phi)\" with EXAMPLES \"tri particles tier1\"/\"search alpha_s\": constants derived from phi, P's entry invariant \"phi^2 + phi^-2 = 3 holds in all calculations\"; kept unchanged.";
 pub const WHEN_TO_USE : str = "Particle physics sacred formulas (49 constants from \u03c6)";
 pub const WITNESS : str = "registry-export";
 pub const WITNESS_SOURCE : str = ".trinity/registry.json at 976df5174 (version 1.0.0, generated_at 1773041968), exported by `zig build export-registry` and held to the binary by .github/workflows/ci.yml";

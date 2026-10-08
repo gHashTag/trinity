@@ -31,3 +31,18 @@ pub const COVERAGE_REQUIRED : bool = false;
 ; false: a bundle entry whose ID matches no spec in SCOPE fails the build.
 pub const ORPHANS_ALLOWED : bool = false;
 pub const ENABLED : bool = true;
+
+test agents_ru_config {
+	assert KIND == "i18n";
+	assert LOCALE == "ru";
+	assert SOURCE_LOCALE == "en";
+	assert ENABLED == true;
+	assert COVERAGE_REQUIRED == false;
+	assert ORPHANS_ALLOWED == false;
+	assert SCOPE[0] == "specs/skills";
+	assert FIELDS[0] == "SUMMARY";
+	assert BUNDLE_REPO == "trinity";
+	assert BUNDLE_FORMAT == "json";
+	assert KEY == "ID";
+	assert FALLBACK == "en";
+}

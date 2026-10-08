@@ -44,13 +44,11 @@ module FeedForwardLayer;
         is_training : bool,         // Training/inference mode
     };
 
-    pub const ActivationType = struct {
-        enum_type : "enum",
-        values : ,
-        GELU : Auto,
-        ReLU : Auto,
-        SiLU : Auto,
-        GELU_Approx : Auto,
+    pub const ActivationType = enum(u8) {
+        GELU,
+        ReLU,
+        SiLU,
+        GELU_Approx,
     };
 
     pub const FFNGradients = struct {

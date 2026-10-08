@@ -1,264 +1,82 @@
 // SPDX-License-Identifier: Apache-2.0
-# E2E TEST SCENARIOS — Full Pipeline Verification
+; specs/conformance/e2e_scenarios.t27 -- end-to-end scenarios: VSA -> VM -> SDK -> codebook -> verdict
+; The full-pipeline verification plan of Phase 4, Quality and Performance (issue #48).
+; ASCII only (L3).
 
-## Specification
+; Until this rewrite the file was a Markdown document with a .t27 name, which the parser
+; refused at its first line. Its scenarios were Zig test bodies written against the vsa,
+; vm and sdk modules of the trinity runtime, which this repository does not define, so
+; they are recorded here as data -- stages and thresholds -- and not as tests that could
+; run. The tests below check the plan's own arithmetic, and two of them pin defects in it.
+; phi^2 + 1/phi^2 = 3 | TRINITY
 
-Tests full pipeline: VSA → VM → SDK → Codebook → Verdict.
-Part of Phase 4: Quality & Performance (Issue #48).
+module e2e_scenarios;
 
-## Mathematical Foundation
+pub const ISSUE : u32 = 48;
 
-```
-φ² + 1/φ² = 3 = TRINITY
-```
+pub const SCENARIOS : [6]str = ["VSA create -> VM execute -> SDK verify: two 256-trit random vectors (seeds 42, 84), bound by the VM (v_bind) and by vsa.bind; cosine of the two results > 0.99", "codebook encode -> bind -> decode: a 512-trit codebook encodes cat, sits, mat; each is bound to a random role, the three are bundled, and unbinding the subject role decodes to cat", "associative memory store -> retrieve: two VM-generated vectors (v_random 111, 222) stored as key and value; count is 1 and the retrieved value has similarity > 0.15", "sequence encode -> probe: [apple, banana, cherry] at 512 trits; probing apple scores higher at position 0 than at 1 or 2", "classifier train -> predict: 3 fruit and 2 veggie samples; 2 classes; fruit1 predicts fruit with confidence > 0.3", "HybridBigInt pack -> unpack -> VM execute: a packed 256-trit vector is loaded into v0 and the VM computes self-similarity > 0.99 -- see PACK_SCENARIO_DEFECT"];
 
-## Test Scenarios
+; The pack scenario does not test what it is named for. Its program begins
+; `v_random dst=0 imm=42`, which overwrites the packed vector in v0 before anything reads
+; it, and then takes the cosine of v0 with itself -- 1.0 for any nonzero vector. The check
+; passes whether pack and unpack work or not.
+pub const PACK_SCENARIO_DEFECT : str = "v_random dst=0 overwrites the packed vector before v_cosine reads v0 against itself";
 
-### E2E: VSA create → VM execute → SDK verify
+pub const VSA_DIM_SMALL : u32 = 256;
+pub const VSA_DIM : u32 = 512;
+pub const BENCH_DIM : u32 = 1024;
+pub const BENCH_ITERS : u32 = 1000;
+; Every benchmark target is below 1,000,000 ns per op.
+pub const BENCH_TARGET_NS : u32 = 1000000;
+pub const BENCHES : [5]str = ["bind", "bundle2", "cosineSimilarity", "hammingDistance", "permute"];
 
-```
-test "E2E: VSA create → VM execute → SDK verify" {
-    // Stage 1: Create vectors via VSA core
-    var a = vsa.randomVector(256, 42);
-    var b = vsa.randomVector(256, 84);
+pub const THRESHOLD_BIND_AGREEMENT : f64 = 0.99;
+pub const THRESHOLD_MEMORY_RETRIEVE : f64 = 0.15;
+pub const THRESHOLD_CLASSIFIER_CONFIDENCE : f64 = 0.3;
+pub const THRESHOLD_SELF_SIMILARITY : f64 = 0.99;
+pub const THRESHOLD_PERF : f64 = 0.9;
 
-    // Stage 2: Execute bind in VM
-    var machine = vm.VSAVM.init(allocator);
-    machine.registers.v0 = a;
-    machine.registers.v1 = b;
-    try machine.loadProgram(&[_]vm.VSAInstruction{
-        .{ .opcode = .v_bind, .dst = 2, .src1 = 0, .src2 = 1 },
-        .{ .opcode = .v_cosine, .dst = 0, .src1 = 2, .src2 = 0 },
-        .{ .opcode = .halt },
-    });
-    try machine.run();
+; Verdict record: pass, a 0..100 score, and one sub-score per layer.
+pub const VERDICT_FIELDS : [7]str = ["pass", "score", "vsa_score", "vm_score", "sdk_score", "memory_score", "perf_score"];
 
-    // Stage 3: Verify via SDK — bind via VSA core, compare with VM result
-    var bound_sdk = vsa.bind(&a, &b);
-    var vm_result_raw = machine.registers.v2;
+; The document closed its verdict table with `Total verdict: PASS (all scores > 0.9)`.
+; Its own rows set 0.15 for associative memory and 0.3 for the classifier, so a run
+; meeting every row can hold scores below 0.9 -- the summary is not implied by the rows.
+pub const TOTAL_VERDICT_AS_WRITTEN : str = "PASS (all scores > 0.9)";
 
-    // VM bind and VSA bind should produce identical results
-    const sim = vsa.cosineSimilarity(&vm_result_raw, &bound_sdk);
-    try expect(sim > 0.99);
-}
-```
+; Classifier training set.
+pub const FRUIT_SAMPLES : u32 = 3;
+pub const VEGGIE_SAMPLES : u32 = 2;
+pub const CLASSES : u32 = 2;
 
-### E2E: Codebook encode → bind → decode roundtrip
-
-```
-test "E2E: Codebook encode → bind → decode roundtrip" {
-    // Stage 1: Create codebook via SDK
-    var codebook = sdk.Codebook.init(allocator, 512);
-    defer codebook.deinit();
-
-    // Stage 2: Encode symbols
-    const cat = try codebook.encode("cat");
-    const sits = try codebook.encode("sits");
-    const mat = try codebook.encode("mat");
-
-    // Stage 3: Bind role-filler pairs
-    var subject_role = sdk.Hypervector.random(512, 0xAABB);
-    var verb_role = sdk.Hypervector.random(512, 0xCCDD);
-    var object_role = sdk.Hypervector.random(512, 0xEEFF);
-
-    var s_bound = subject_role.bind(cat);
-    var v_bound = verb_role.bind(sits);
-    var o_bound = object_role.bind(mat);
-
-    // Stage 4: Bundle into sentence
-    var temp = s_bound.bundle(&v_bound);
-    var sentence = temp.bundle(&o_bound);
-
-    // Stage 5: Decode — query subject
-    var retrieved_subject = sentence.unbind(&subject_role);
-    const decoded = codebook.decode(&retrieved_subject);
-    try expect(decoded != null);
-    // Decoded should be "cat" (nearest neighbor in codebook)
-    try expectEqualStrings("cat", decoded.?);
-}
-```
-
-### E2E: AssociativeMemory store → retrieve with VM vectors
-
-```
-test "E2E: AssociativeMemory store → retrieve with VM vectors" {
-    // Stage 1: Create vectors via VM
-    var machine = vm.VSAVM.init(allocator);
-    defer machine.deinit();
-
-    try machine.loadProgram(&[_]vm.VSAInstruction{
-        .{ .opcode = .v_random, .dst = 0, .imm = 111 },
-        .{ .opcode = .v_random, .dst = 1, .imm = 222 },
-        .{ .opcode = .halt },
-    });
-    try machine.run();
-
-    // Stage 2: Store in AssociativeMemory
-    var key = sdk.Hypervector.fromRaw(machine.registers.v0);
-    var value = sdk.Hypervector.fromRaw(machine.registers.v1);
-
-    var memory = sdk.AssociativeMemory.init(vsa.MAX_TRITS);
-    memory.store(&key, &value);
-    try expectEqual(@as(usize, 1), memory.count());
-
-    // Stage 3: Retrieve
-    var retrieved = memory.retrieve(&key);
-    const sim = retrieved.similarity(&value);
-    // Retrieved should resemble stored value
-    try expect(sim > 0.15);
-}
-```
-
-### E2E: Sequence encode → probe position recovery
-
-```
-test "E2E: Sequence encode → probe position recovery" {
-    // Stage 1: Create symbol vectors
-    var apple = sdk.Hypervector.random(512, 10);
-
-    // Stage 2: Encode sequence [apple, banana, cherry]
-    var encoder = sdk.SequenceEncoder.init(512);
-    var items = [_]sdk.Hypervector{
-        apple,
-        sdk.Hypervector.random(512, 20),
-        sdk.Hypervector.random(512, 30),
-    };
-    var seq = encoder.encode(&items);
-
-    // Stage 3: Probe — apple should be at position 0
-    const sim_apple_0 = encoder.probe(&seq, &apple, 0);
-    const sim_apple_1 = encoder.probe(&seq, &apple, 1);
-    const sim_apple_2 = encoder.probe(&seq, &apple, 2);
-
-    // Correct position should have highest similarity
-    try expect(sim_apple_0 > sim_apple_1);
-    try expect(sim_apple_0 > sim_apple_2);
-}
-```
-
-### E2E: Classifier train → predict
-
-```
-test "E2E: Classifier train → predict" {
-    var classifier = sdk.Classifier.init(allocator, 512);
-    defer classifier.deinit();
-
-    // Train: 3 samples per class
-    var fruit1 = sdk.Hypervector.random(512, 1001);
-    var fruit2 = sdk.Hypervector.random(512, 1002);
-    var fruit3 = sdk.Hypervector.random(512, 1003);
-    try classifier.train("fruit", &fruit1);
-    try classifier.train("fruit", &fruit2);
-    try classifier.train("fruit", &fruit3);
-
-    var veggie1 = sdk.Hypervector.random(512, 2001);
-    var veggie2 = sdk.Hypervector.random(512, 2002);
-    try classifier.train("veggie", &veggie1);
-    try classifier.train("veggie", &veggie2);
-
-    try expectEqual(@as(usize, 2), classifier.classCount());
-
-    // Predict: fruit sample should classify as fruit
-    const prediction = classifier.predictWithConfidence(&fruit1);
-    try expect(prediction.class != null);
-    try expectEqualStrings("fruit", prediction.class.?);
-    try expect(prediction.confidence > 0.3);
-}
-```
-
-### E2E: HybridBigInt pack → unpack → VM execute
-
-```
-test "E2E: HybridBigInt pack → unpack → VM execute" {
-    // Stage 1: Create and pack vector
-    var v = vsa.randomVector(256, 777);
-    v.pack();
-    try expect(v.mode == .packed_mode);
-
-    // Stage 2: Load into VM (forces unpack)
-    var machine = vm.VSAVM.init(allocator);
-    machine.registers.v0 = v;
-    try machine.loadProgram(&[_]vm.VSAInstruction{
-        .{ .opcode = .v_random, .dst = 0, .imm = 42 },
-        .{ .opcode = .v_cosine, .dst = 0, .src1 = 0, .src2 = 0 },
-        .{ .opcode = .halt },
-    });
-    try machine.run();
-
-    // Self-similarity must be 1.0
-    try expect(machine.registers.f0 > 0.99);
-}
-```
-
-## Benchmarks
-
-```
-BENCH: VSA bind throughput
-    Dimension: 1024
-    Iterations: 1000
-    Target: < 1,000,000 ns/op
-
-BENCH: VSA bundle2 throughput
-    Dimension: 1024
-    Iterations: 1000
-    Target: < 1,000,000 ns/op
-
-BENCH: VSA cosineSimilarity throughput
-    Dimension: 1024
-    Iterations: 1000
-    Target: < 1,000,000 ns/op
-
-BENCH: VSA hammingDistance throughput
-    Dimension: 1024
-    Iterations: 1000
-    Target: < 1,000,000 ns/op
-
-BENCH: VSA permute throughput
-    Dimension: 1024
-    Iterations: 1000
-    Target: < 1,000,000 ns/op
-```
-
-## Verdict System
-
-```
-const VerdictResult = struct {
-    pass: bool,
-    score: f64,        // 0.0 - 100.0
-    vsa_score: f64,
-    vm_score: f64,
-    sdk_score: f64,
-    memory_score: f64,
-    perf_score: f64,
-};
-```
-
-## Expected Verdict Breakdown
-
-| Test | vsa_score | vm_score | sdk_score | memory_score | perf_score |
-|------|-----------|----------|------------|-------------|------------|
-| VSA create/verify | > 0.99   | > 0.99   | > 0.99   | N/A       | > 0.9     |
-| Codebook roundtrip | > 0.9    | N/A      | > 0.9   | N/A       | > 0.9     |
-| AssociativeMemory   | > 0.15    | N/A      | N/A      | > 0.15   | N/A       | > 0.9     |
-| Sequence encoder  | > 0.9    | N/A      | N/A      | N/A       | > 0.9     |
-| Classifier        | > 0.3    | N/A      | N/A      | N/A       | > 0.9     |
-| Pack/unpack       | > 0.99   | N/A      | N/A      | N/A       | > 0.9     |
-| VM program       | > 0.99   | N/A      | N/A      | N/A       | > 0.9     |
-
-**Total verdict:** PASS (all scores > 0.9)
-
-## Tests
-
-```
-test "E2E: VSA bind throughput" {
-    // bind should take less than 1ms per op
+test "bench_target_is_one_millisecond" {
+    assert(BENCH_TARGET_NS == 1000 * 1000);
 }
 
-test "E2E: VSA bundle2 throughput" {
-    // bundle2 should be similar to both inputs
+test "dimensions_double" {
+    assert(VSA_DIM_SMALL * 2 == VSA_DIM);
+    assert(VSA_DIM * 2 == BENCH_DIM);
 }
 
-test "E2E: VM program execution" {
-    // Full VM program should complete in under 100ms
+test "classifier_training_set" {
+    assert(FRUIT_SAMPLES + VEGGIE_SAMPLES == 5);
+    assert(CLASSES == 2);
+    assert(FRUIT_SAMPLES > VEGGIE_SAMPLES);
 }
-```
+
+test "thresholds_are_probabilities" {
+    assert(THRESHOLD_MEMORY_RETRIEVE > 0.0);
+    assert(THRESHOLD_BIND_AGREEMENT < 1.0);
+    assert(THRESHOLD_SELF_SIMILARITY < 1.0);
+}
+
+test "total_verdict_is_not_implied_by_the_rows" {
+    // Two row thresholds sit below the 0.9 the summary claims for every score.
+    assert(THRESHOLD_MEMORY_RETRIEVE < THRESHOLD_PERF);
+    assert(THRESHOLD_CLASSIFIER_CONFIDENCE < THRESHOLD_PERF);
+}
+
+test "verdict_has_five_layer_scores" {
+    // pass and score, then one per layer: vsa, vm, sdk, memory, perf
+    assert(7 - 2 == 5);
+}

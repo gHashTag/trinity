@@ -35,12 +35,12 @@ pub const EXIT_INVARIANT : str = "Generated code compiles, AST is valid";
 pub const CLARA_ROLE : str = "TA1: AR Language Implementation - implements AR language features in t27 compiler";
 ; Skill IDs the agent holds. Bound only where a source names the skill; SKILLS_NOTE
 ; cites that source or says why the list is empty.
-pub const SKILLS : [0]str = [];
-pub const SKILLS_NOTE : str = "No source binds a skill to this agent: the alphabet key files point at specs and docs, not at a skill directory, no .claude/agents file names one, and specs/OWNERS.md has no row for it.";
+pub const SKILLS : [2]str = ["trinity/vibee-gen", "t27/self-host"];
+pub const SKILLS_NOTE : str = "docs/agents/AGENTS_ALPHABET.md \"Who holds a tool, and who holds a skill\", rule 2: domain lead for 2 skill card(s).";
 ; Tool IDs (specs/tools) the agent holds. Bound only where a source line names the command
 ; for this letter; TOOLS_NOTE cites that line or says why the list is empty.
-pub const TOOLS : [1]str = ["tri/gen"];
-pub const TOOLS_NOTE : str = ".claude/agents/agent-c-compiler.md:40 names tri gen (trigger On tri gen command, line 7). Line 41 names tri seal, which is not a tri command at this commit (tri cell seal is not bound here).";
+pub const TOOLS : [19]str = ["gHashTag/trinity:tri/needle", "gHashTag/trinity:tri/needle-check", "gHashTag/trinity:tri/needle-search", "mcp/needle", "tri/abandoned", "tri/discard", "tri/elab", "tri/emit", "tri/gen", "tri/jumps", "tri/kinds", "tri/misread", "tri/one-away", "tri/quantifiers", "tri/reseal", "tri/seals", "tri/types", "tri/unparsed", "tri/vsim"];
+pub const TOOLS_NOTE : str = "docs/agents/AGENTS_ALPHABET.md \"Who holds a tool, and who holds a skill\", rule 2: domain lead for 19 tool card(s), read off what each card states it does rather than off its name.";
 ; Where the agent logs episodes (AGENTS_ALPHABET.md: "Logs to .trinity/experience/").
 pub const EXPERIENCE_LOG : str = ".trinity/experience/";
 pub const ENABLED : bool = true;

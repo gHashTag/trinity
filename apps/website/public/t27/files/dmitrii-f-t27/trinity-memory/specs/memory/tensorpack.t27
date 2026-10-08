@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
+// Issue: https://github.com/dmitrii-f-t27/trinity-memory/issues/125
+// Coverage: https://github.com/dmitrii-f-t27/trinity-memory/issues/3
+// Coverage: https://github.com/dmitrii-f-t27/trinity-memory/issues/6
 // specs/memory/tensorpack.t27 -- TensorPack v1 (TTPK) container contract
 // Named ternary tensors with shapes, axis labels and scalar or per-axis scales
 // around unchanged TMEM v1 files: a 32-byte little-endian header, strict JSON

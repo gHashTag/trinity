@@ -22,3 +22,10 @@ pub const RUNS_NOTE : str = "no skill invocation found in source";
 pub const ENABLED : bool = true;
 pub const ON_FAILURE : str = "log";
 pub const CONTROL : str = "github-actions-dispatch";
+
+test trinity_site_live_gate_constants {
+  assert KIND == "cron";
+  assert ENABLED == true;
+  assert TZ == "UTC";
+  assert ON_FAILURE == "log";
+}

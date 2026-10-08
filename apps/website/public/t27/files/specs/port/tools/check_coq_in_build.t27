@@ -111,7 +111,7 @@ test "self_check_function" {
     // We know the test cases are designed to pass with the real is_coq.
     // Our stubbed is_coq might not be perfect, but we hope it works for these cases.
     let result = self_check();
-    assert!(result == 0, "self_check should return 0 (success)");
+    assert(result == 0, "self_check should return 0 (success)");
 }
 
 // Test block for main function
@@ -124,5 +124,5 @@ test "main_function_self_check" {
     // We'll do a second test that checks main returns 0 when there are no outside files and baseline is empty.
     let result = main();
     // We expect 0 because our stubs return empty lists and no --self-check or --bless.
-    assert!(result == 0, "main should return 0 when no outside files and baseline empty");
+    assert(result == 0, "main should return 0 when no outside files and baseline empty");
 }

@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
 // specs/automation/engage-desk.t27 -- the engage desk: the owner's signed-in browser
-// searches X, LinkedIn, Reddit, Threads, Habr, Facebook and Telegram for recent posts
-// on the topics of his research (the topics come from his own blog feed), drafts one
-// substantive comment tied to his work, and asks him. A comment is posted only after his yes, per item.
+// searches X, LinkedIn, Reddit, Threads and Habr for recent posts on the topics of his
+// research (the topics come from his own blog feed), drafts one substantive comment
+// tied to his work, and asks him. A comment is posted only after his yes, per item.
 // Host: 999-multibots-telegraf apps/vibee-editor/render/src/agent/engage-desk.ts (the
-//       tick: open questions first, then at most one proposal per network per search;
+//       tick: open questions first, then at most two proposals per network per search;
 //       the caps, the dedupe, the claim and mention guards, the receipt) beside
 //       src/agent/engage-desk-wiring.ts (the search pages read in the owner's
 //       browser, the model's draft, the comment box pressed by its label), driven by
@@ -38,6 +38,25 @@
 //       never by joining one). Habr's login is what Habr says, not a cookie: measured,
 //       the profile held connect_sid, habrsession_id and PHPSESSID while Habr's own
 //       /kek/v2/me answered empty and its page showed the sign-in button.
+// v3 (2026-10-05): more proactive, because the owner asked for it ("make the agent more
+//       proactive! it works slowly and not on all networks"). Measured before
+//       (999-multibots-telegraf#3606): one search every 6 h, one topic per search, so a
+//       topic came once per 36 h; every network answered "nothing fresh on topic", a
+//       line that hid five different causes; Habr was never searched (its login is
+//       always unknown); the search mark was written BEFORE the search, so a deploy
+//       mid-search lost 6 h. Now: a search every 2 h (SEARCH_EVERY_MS), three feed
+//       topics per search in rotation (TOPICS_PER_SEARCH, topic_at), two proposals per
+//       network per search and five a day (PER_SEARCH_PER_NETWORK, DAILY_CAP_PER_NETWORK);
+//       the mark is written when the search ENDS, and a start left open by a cut search
+//       is retried after SEARCH_STALE_MS (search_may_start); the owner's own posts are
+//       never commented on (worth_a_comment); Habr is read from its public search
+//       without a sign-in (may_search) and a Habr question says when the pod has no
+//       Habr sign-in to post with (ask_says_no_sign_in); an empty search says why, by
+//       count (NOTHING_FOUND_REASONS). Unchanged: the owner's yes, per comment.
+//       Corrected: v2 named Facebook and Telegram readers; neither was built in the host
+//       (its vendored copy was still v1 on 2026-10-05). READER_NETWORKS counts the
+//       readers that exist (5); the Facebook and Telegram rules stay for the readers
+//       to come.
 // phi^2 + 1/phi^2 = 3 | TRINITY
 
 module automation::engage_desk {
@@ -45,19 +64,22 @@ module automation::engage_desk {
     pub const KIND : str = "automation";
     pub const ID : str = "engage-desk";
     pub const REPO : str = "999-multibots-telegraf";
-    pub const VERSION : u8 = 2;
+    pub const VERSION : u8 = 3;
 
     // ---- The pace -------------------------------------------------------------------
     pub const TICK_MS : u32 = 300000;  // render-server.ts: every five minutes, so a yes
                                        // is acted on within five minutes
-    pub const SEARCH_EVERY_MS : u32 = 21600000;  // 6 h between searches; the mark lives in
-                                                 // agent_strategies, a deploy cannot reset it
+    pub const SEARCH_EVERY_MS : u32 = 7200000;  // 2 h between searches; the mark lives in
+                                                // agent_strategies, a deploy cannot reset it
+    pub const SEARCH_STALE_MS : u32 = 1800000;  // a search started 30 min ago and never
+                                                // ended was cut (a deploy): run it again
+    pub const TOPICS_PER_SEARCH : u32 = 3;  // feed topics per search, in rotation
     pub const ANSWER_WAIT_MS : u32 = 86400000;  // 24 h: the approval's own lifetime
     pub const DAY_MS : u32 = 86400000;  // the window the daily cap is counted in
 
     // ---- The limits -----------------------------------------------------------------
-    pub const DAILY_CAP_PER_NETWORK : u8 = 3;  // comment proposals per network per day
-    pub const PER_SEARCH_PER_NETWORK : u8 = 1;  // one proposal per network per search
+    pub const DAILY_CAP_PER_NETWORK : u8 = 5;  // comment proposals per network per day
+    pub const PER_SEARCH_PER_NETWORK : u8 = 2;  // proposals per network per search
     pub const POST_MAX_AGE_MS : u32 = 604800000;  // 7 days: only recent posts
     pub const COMMENT_MIN_CHARS : u16 = 80;  // shorter is not substantive
     pub const COMMENT_MAX_CHARS : u16 = 1000;  // LinkedIn and Reddit
@@ -70,11 +92,17 @@ module automation::engage_desk {
     pub const MENTIONS_ALLOWED : bool = false;  // no @name, no u/name
     pub const DMS_ALLOWED : bool = false;  // the desk never writes a direct message
     pub const CLAIM_GUARD_REQUIRED : bool = true;  // the draft passes the claim guard
+    pub const OWN_POSTS_SKIPPED : bool = true;  // never a comment under the owner's own post
+    // An empty search says why, by count: the search failed, it read no item, items
+    // without a time, stale, off topic, the owner's own, already proposed.
+    pub const NOTHING_FOUND_REASONS : u8 = 7;
 
     // ---- Many networks, many tabs ---------------------------------------------------
-    // Searched when the owner is SEEN signed in: x, linkedin, reddit, threads, habr,
-    // facebook, telegram. A network he is not signed into is reported, never guessed at.
-    pub const READER_NETWORKS : u8 = 7;
+    // Readers built: x, linkedin, reddit, threads (searched when the owner is SEEN signed
+    // in) and habr (its public search, read without a sign-in). Facebook and Telegram
+    // have rules here and no reader yet: reported, never guessed at.
+    pub const READER_NETWORKS : u8 = 5;
+    pub const HABR_READS_WITHOUT_SIGN_IN : bool = true;
     pub const PARALLEL_TABS_MAX : u8 = 8;  // the desk's tabs at once, when the pod has room
 
     // ---- The pod's room, measured 2026-10-02 ----------------------------------------
@@ -125,6 +153,38 @@ module automation::engage_desk {
     // A search is due when none ever ran, or the last one is a pace old.
     fn search_due(ever_searched: bool, since_last_ms: u32) -> bool {
         return !ever_searched || since_last_ms >= SEARCH_EVERY_MS;
+    }
+
+    // A search may start when no start is open, or the open one is stale (it was cut).
+    fn search_may_start(started_open: bool, started_since_ms: u32) -> bool {
+        return !started_open || started_since_ms >= SEARCH_STALE_MS;
+    }
+
+    // The k-th topic of the n-th search: TOPICS_PER_SEARCH consecutive feed topics,
+    // the next search starting where this one stopped.
+    fn topic_at(search_index: u32, k: u32, topic_count: u32) -> u32 {
+        return (search_index * TOPICS_PER_SEARCH + k) % topic_count;
+    }
+
+    // A found post is worth a draft: recent, on the topic, not the owner's own, and
+    // not already proposed.
+    fn worth_a_comment(is_fresh: bool, on_topic: bool, own_post: bool, seen_post: bool) -> bool {
+        return is_fresh && on_topic && !own_post && !seen_post;
+    }
+
+    // Room for one more question in this search on this network.
+    fn search_has_room(made_this_search: u8, asked_today: u8) -> bool {
+        return made_this_search < PER_SEARCH_PER_NETWORK && asked_today < DAILY_CAP_PER_NETWORK;
+    }
+
+    // Searched: a network the owner is seen signed into, and Habr always (public search).
+    fn may_search(network: str, signed_in: bool) -> bool {
+        return signed_in || network == "habr";
+    }
+
+    // A Habr question found without a sign-in tells the owner the pod cannot post it yet.
+    fn ask_says_no_sign_in(network: str, signed_in: bool) -> bool {
+        return network == "habr" && !signed_in;
     }
 
     // Only a post younger than a week is worth a comment.
@@ -217,10 +277,11 @@ module automation::engage_desk {
             && (!ever_checked || since_check_ms >= LEAD_CHECK_AFTER_MS);
     }
 
-    test "a search every six hours, on a five-minute tick" {
+    test "a search every two hours, on a five-minute tick" {
         assert(search_due(false, 0));
-        assert(!search_due(true, 21599999));
-        assert(search_due(true, 21600000));
+        assert(!search_due(true, 7199999));
+        assert(search_due(true, 7200000));
+        assert(SEARCH_EVERY_MS == 7200000);
         assert(TICK_MS == 300000);
         assert(TICK_MS < SEARCH_EVERY_MS);
     }
@@ -246,13 +307,66 @@ module automation::engage_desk {
         assert(!fits("telegram", 1001));
     }
 
-    test "at most three proposals a day per network" {
+    test "at most five proposals a day per network, two per search" {
         assert(may_propose(0, false, false, true));
-        assert(may_propose(2, false, false, true));
-        assert(!may_propose(3, false, false, true));
-        assert(DAILY_CAP_PER_NETWORK == 3);
-        assert(PER_SEARCH_PER_NETWORK == 1);
+        assert(may_propose(4, false, false, true));
+        assert(!may_propose(5, false, false, true));
+        assert(DAILY_CAP_PER_NETWORK == 5);
+        assert(PER_SEARCH_PER_NETWORK == 2);
+        assert(DAILY_CAP_PER_NETWORK >= PER_SEARCH_PER_NETWORK);
+        assert(search_has_room(0, 0));
+        assert(search_has_room(1, 4));
+        assert(!search_has_room(2, 0));
+        assert(!search_has_room(0, 5));
         assert(DAY_MS == 86400000);
+        assert(ASK_NEEDS_YES);
+    }
+
+    test "three topics a search, every topic within two searches" {
+        assert(TOPICS_PER_SEARCH == 3);
+        assert(topic_at(0, 0, 6) == 0);
+        assert(topic_at(0, 2, 6) == 2);
+        assert(topic_at(1, 0, 6) == 3);
+        assert(topic_at(1, 2, 6) == 5);
+        assert(topic_at(2, 0, 6) == 0);
+        assert(topic_at(5, 1, 4) == 0);
+        assert(topic_at(0, 2, 2) == 0);
+        // six seed topics: each one comes every 4 h, where v2 took 36 h
+        assert((6 / TOPICS_PER_SEARCH) * SEARCH_EVERY_MS == 14400000);
+    }
+
+    test "a search is marked when it ends, and a cut one is run again" {
+        assert(search_may_start(false, 0));
+        assert(!search_may_start(true, 0));
+        assert(!search_may_start(true, 1799999));
+        assert(search_may_start(true, 1800000));
+        assert(SEARCH_STALE_MS < SEARCH_EVERY_MS);
+        assert(SEARCH_STALE_MS > TICK_MS);
+    }
+
+    test "the owner's own posts are not commented on" {
+        assert(worth_a_comment(true, true, false, false));
+        assert(!worth_a_comment(true, true, true, false));
+        assert(!worth_a_comment(false, true, false, false));
+        assert(!worth_a_comment(true, false, false, false));
+        assert(!worth_a_comment(true, true, false, true));
+        assert(OWN_POSTS_SKIPPED);
+    }
+
+    test "an empty search says why" {
+        assert(NOTHING_FOUND_REASONS == 7);
+    }
+
+    test "Habr is read without a sign-in, and its question says so" {
+        assert(HABR_READS_WITHOUT_SIGN_IN);
+        assert(may_search("habr", false));
+        assert(may_search("habr", true));
+        assert(may_search("x", true));
+        assert(!may_search("x", false));
+        assert(!may_search("linkedin", false));
+        assert(ask_says_no_sign_in("habr", false));
+        assert(!ask_says_no_sign_in("habr", true));
+        assert(!ask_says_no_sign_in("x", false));
     }
 
     test "never twice on the same post" {
@@ -303,7 +417,7 @@ module automation::engage_desk {
     }
 
     test "many networks side by side, as many tabs as the pod has room for" {
-        assert(READER_NETWORKS == 7);
+        assert(READER_NETWORKS == 5);
         assert(PARALLEL_TABS_MAX == 8);
         assert(tabs_room(0) == 8);
         assert(tabs_room(6) == 8);
@@ -387,7 +501,7 @@ module automation::engage_desk {
 
     test "the desk is built, a confirmed comment is not yet" {
         assert(!RUN_LIVE);
-        assert(VERSION == 2);
+        assert(VERSION == 3);
     }
 }
 

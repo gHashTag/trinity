@@ -267,13 +267,16 @@ module Assembler {
         then is_gf16_instr(instr) == true
         and is_r_type(instr) == true
 
+    // #7575: exact words, so a constant body cannot pass.
+    // (1<<26)|(5<<21)|(6<<16)|(7<<11) = 78002176
     test encode_r_type
         given instr = r_instruction(1, 5, 6, 7)
-        then encode_r_type(instr) > 0
+        then encode_r_type(instr) == 78002176
 
+    // (2<<26)|(5<<21)|(6<<16)|(42 & 65535) = 145096746
     test encode_i_type
         given instr = i_instruction(2, 5, 6, 42)
-        then encode_i_type(instr) > 0
+        then encode_i_type(instr) == 145096746
 
     test section_end
         given sec = AsmSection{.name = ".text", .kind = 0, .base_address = 0, .size = 128}

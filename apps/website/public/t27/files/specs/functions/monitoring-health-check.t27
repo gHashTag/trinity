@@ -40,3 +40,10 @@ pub const SAFE_PROBE : str = "{}";
 pub const PROBE_RESULT : str = "COMPLETED";
 pub const CONTROL : str = "spec+code";
 pub const NOTE : str = "The same schedule is stated as a cron card, specs/crons ID inngest/999-multibots-telegraf/health-check. Lives in the same file as monitoring-error-report.";
+
+test test_constants {
+  assert KIND == "function";
+  assert ID == "monitoring-health-check";
+  assert LEGACY_ID == "health-check";
+  assert TRIGGER == "cron";
+}

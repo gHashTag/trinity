@@ -23,3 +23,16 @@ pub const TAGS : [3]str = ["workflow", "spec-first", "tdd"];
 pub const ENABLED : bool = true;
 ; Default budget; SKILL.md declares no timeout of its own.
 pub const TIMEOUT_MIN : u16 = 30;
+
+test basic_constants {
+    assert KIND == "skill";
+    assert ID == "t27/phi-loop";
+    assert NAME == "PHI LOOP";
+    assert REPO == "t27";
+    assert ENABLED == true;
+    assert TIMEOUT_MIN == 30;
+    assert TAGS[0] == "workflow";
+    assert TAGS[1] == "spec-first";
+    assert TAGS[2] == "tdd";
+    assert SPECS.len == 0;
+}

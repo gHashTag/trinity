@@ -88,7 +88,7 @@ module SequenceHdc {
      pub struct LanguageDetector {
          item_memory : *ItemMemory,
          dimension : usize,
-         language_vectors : map[:]const u8, PackedBigInt>,
+         language_vectors : map<[]const u8, PackedBigInt>,
      }
  
      // ========================================================================

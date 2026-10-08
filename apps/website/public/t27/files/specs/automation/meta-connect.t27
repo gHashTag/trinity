@@ -19,6 +19,13 @@
 // Measured from Meta's documentation, 2026-10-02: Threads 500 characters, 5 links and
 //       250 posts a day; Instagram 100 API posts in a moving day, JPEG only, from a
 //       public URL, aspect between 4:5 and 1.91:1; a Page post is one call to /feed.
+// Instagram linked later (v2, 2026-10-07): the Page's Instagram account used to be read
+//       only at Connect. The owner linked t27_dev to the Page afterwards, the row kept an
+//       empty ig_id, and every approved post skipped Instagram until he pressed Connect
+//       again. Now the host re-reads the Page's instagram_business_account with the Page
+//       token it already holds -- no new consent -- when the id is missing or a publish
+//       failed, at most once per IG_RELINK_EVERY_MS per owner, and retries a failed
+//       publish once only when a different account came back.
 // UI words (the owner reads Russian) stay in the host; the spec holds the rules.
 // Claim status: written before any token exists; nothing has been posted through it.
 // phi^2 + 1/phi^2 = 3 | TRINITY
@@ -28,7 +35,7 @@ module automation::meta_connect {
     pub const KIND : str = "automation";
     pub const ID : str = "meta-connect";
     pub const REPO : str = "999-multibots-telegraf";
-    pub const VERSION : u8 = 1;
+    pub const VERSION : u8 = 2;
 
     // ---- Each network's own limits --------------------------------------------------
     pub const THREADS_TEXT_MAX : u16 = 500;  // characters of one Threads post
@@ -54,6 +61,11 @@ module automation::meta_connect {
     pub const POLL_EVERY_MS : u16 = 3000;  // the container's status is read again
     pub const POLLS : u8 = 10;  // about half a minute before the desk gives up
     pub const ASK_NEEDS_YES : bool = true;  // the desk's own yes still comes first
+
+    // ---- Instagram linked after Connect (v2) ----------------------------------------
+    pub const IG_RELINK_EVERY_MS : u32 = 600000;  // one Page re-read per owner per ten minutes
+    pub const IG_RELINK_NEEDS_CONSENT : bool = false;  // the held Page token already may read it
+    pub const IG_PUBLISH_RETRIES : u8 = 1;  // a failed publish is tried again once, no more
 
     // ---- Not claimed ----------------------------------------------------------------
     pub const RUN_LIVE : bool = false;  // flips when a post returns its id in production
@@ -109,6 +121,19 @@ module automation::meta_connect {
     // The last moment a container is waited on, from the first look.
     fn last_poll_ms() -> u32 {
         return (POLLS - 1) * POLL_EVERY_MS;
+    }
+
+    // The Page's Instagram account is read again when the row does not know it or a
+    // publish just failed -- and never twice inside the window, so a Page that truly
+    // has no Instagram is not asked on every post.
+    fn should_relink(ig_known: bool, publish_failed: bool, since_last_ms: u32) -> bool {
+        return (!ig_known || publish_failed) && since_last_ms >= IG_RELINK_EVERY_MS;
+    }
+
+    // A failed publish is retried only when the re-read found an account, and a
+    // different one: the same id would fail the same way.
+    fn retry_after_relink(old_id: str, new_id: str) -> bool {
+        return new_id != "" && new_id != old_id;
     }
 
     test "a held token goes by the API, a signed-in browser by the browser, else nothing" {
@@ -186,9 +211,28 @@ module automation::meta_connect {
         assert(ASK_NEEDS_YES);
     }
 
+    test "an Instagram linked after Connect is read again, at most once in ten minutes" {
+        assert(should_relink(false, false, 600000));
+        assert(should_relink(false, false, 4294967295));
+        assert(!should_relink(false, false, 599999));
+        assert(should_relink(true, true, 600000));
+        assert(!should_relink(true, true, 599999));
+        assert(!should_relink(true, false, 4294967295));
+        assert(IG_RELINK_EVERY_MS == STATE_TTL_MS);
+        assert(!IG_RELINK_NEEDS_CONSENT);
+    }
+
+    test "a failed Instagram publish is retried once, only for another account" {
+        assert(retry_after_relink("", "ig2"));
+        assert(retry_after_relink("ig1", "ig2"));
+        assert(!retry_after_relink("ig1", "ig1"));
+        assert(!retry_after_relink("ig1", ""));
+        assert(IG_PUBLISH_RETRIES == 1);
+    }
+
     test "nothing has been posted through it yet" {
         assert(!RUN_LIVE);
-        assert(VERSION == 1);
+        assert(VERSION == 2);
     }
 }
 // phi^2 + 1/phi^2 = 3 | TRINITY

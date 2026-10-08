@@ -352,10 +352,10 @@ module SPI_Master;
         assert spi.data_width > 0 and spi.data_width <= MAX_DATA_WIDTH
 
     invariant spi_busy_implies_cs_asserted
-        assert spi.busy == false or spi.cs_asserted or spi.state == SPI_CS_ASSERT
+        assert spi.busy implies spi.cs_asserted or spi.state == SPI_CS_ASSERT
 
     invariant spi_busy_only_in_transfer
-        assert spi.busy == false or spi.state == SPI_CS_ASSERT or spi.state == SPI_TRANSFER or spi.state == SPI_CS_DEASSERT
+        assert spi.busy implies spi.state == SPI_CS_ASSERT or spi.state == SPI_TRANSFER or spi.state == SPI_CS_DEASSERT
 
     invariant spi_sck_alternates
         given old_sck = spi_get_sck()
@@ -366,7 +366,8 @@ module SPI_Master;
 
     invariant spi_cs_deasserted_after_transfer
         given spi.data_width = 8
-        and   spi_transfer(0xAA)
+        and   spi.transfer(0xAA)
+        and   // Complete transfer simulation
         then spi.state == SPI_CS_DEASSERT or spi.state == SPI_IDLE
 
     invariant spi_rx_data_masked
@@ -395,10 +396,9 @@ module SPI_Master;
         and   freq = spi_get_sck_freq()
         then freq == 25_000_000  // 50MHz / 2
 
-    // CS_ASSERT_DELAY (100ns) plus margin
     bench spi_cs_assertion_time
-        measure: nanoseconds for CS assertion
-        target: < 150ns
+        measure: nanoseconds for CS to assert
+        target: < 150ns  // CS_ASSERT_DELAY + margin
 
     bench spi_prescaler_change_latency
         measure: nanoseconds to spi_set_prescaler(PRESCALER_32)

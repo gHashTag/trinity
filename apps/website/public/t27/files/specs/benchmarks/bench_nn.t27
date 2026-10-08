@@ -1,165 +1,103 @@
 // SPDX-License-Identifier: Apache-2.0
-# NN BENCHMARK — Small NN Inference
+; specs/benchmarks/bench_nn.t27 -- small-NN inference benchmark: ternary against FP16/BF16/GF16
+; An MNIST-shaped workload (784 -> 128 -> 10, ReLU) run with weights quantized to each
+; format, reporting accuracy, MSE loss and storage per weight. ASCII only (L3).
 
-## Specification
+; Until this rewrite the file was a Markdown document with a .t27 name, which the parser
+; refused at its first line. Its three tests had empty bodies. What it described is kept
+; below; two statements that disagree with the repository are corrected, and the results
+; table is kept as what the document EXPECTED, because it is not a measurement.
+; phi^2 + 1/phi^2 = 3 | TRINITY
 
-Scientific benchmark for TRI-27 algorithms.
-Tests ternary vs FP16/BF16/GF16 on MNIST-like workload.
+module bench_nn;
 
-## Mathematical Foundation
+; Model: 28 x 28 MNIST input, one hidden dense layer with ReLU, 10 digit classes.
+pub const IMAGE_ROWS : u32 = 28;
+pub const IMAGE_COLS : u32 = 28;
+pub const INPUT_SIZE : u32 = 784;
+pub const HIDDEN_SIZE : u32 = 128;
+pub const OUTPUT_SIZE : u32 = 10;
+pub const WEIGHT_COUNT : u32 = 101632;
+pub const BIAS_COUNT : u32 = 138;
 
-```
-φ² + 1/φ² = 3 = TRINITY
-```
+; Ternary quantization: x > 0.5 maps to 1, x < -0.5 to -1, everything else to 0.
+pub const TERNARY_THRESHOLD : f32 = 0.5;
 
-## Format Conversion
-
-### Ternary Quantization
-
-```
-quantizeTernary(x: f32) -> i2
-    if x > 0.5 return 1
-    if x < -0.5 return -1
-    return 0
-```
-
-### GF16 Encode/Decode
-
-```
-f32ToGf16(x: f32) -> u16
-    Encodes f32 to GF16 (5-bit exp, 9-bit mantissa, sign)
-
-gf16ToF32(x: u16) -> f32
-    Decodes GF16 back to f32
-```
-
-### FP16 Encode/Decode
-
-```
-f32ToFp16(x: f32) -> u16
-    IEEE 754 half precision (5-bit exp, 10-bit mantissa)
-
-fp16ToF32(x: u16) -> f32
-    Decodes FP16 to f32
-```
-
-### BF16 Encode/Decode
-
-```
-f32ToBf16(x: f32) -> u16
-    Brain float (8-bit exp, 7-bit mantissa)
-
-bf16ToF32(x: u16) -> f32
-    Decodes BF16 to f32
-```
-
-## Model Architecture
-
-```
-LayerConfig:
-    input_size: 784    // 28x28 MNIST
-    hidden_size: 128
-    output_size: 10    // digits 0-9
-
-denseLayer(input, weights, bias, output, in_size, out_size) -> void
-    Dense layer with ReLU activation
-
-relu(x: f32) -> f32
-    ReLU activation function
-```
-
-## Forward Pass Implementations
-
-```
-forwardTernary(input, w1, b1, w2, b2, hidden, output, config) -> void
-    Ternary weights {-1, 0, +1}
-
-forwardGf16(input, w1, b1, w2, b2, hidden, output, config) -> void
-    GF16 quantized weights
-
-forwardFp16(input, w1, b1, w2, b2, hidden, output, config) -> void
-    FP16 quantized weights
-
-forwardBf16(input, w1, b1, w2, b2, hidden, output, config) -> void
-    BF16 quantized weights
-```
-
-## MNIST Loading
-
-```
-MnistHeader:
-    magic: u32
-    count: u32
-    rows: u32
-    cols: u32
-
-readMnistImages(filename, allocator) -> struct {
-    data: []f32,
-    count: usize,
-    rows: usize,
-    cols: usize,
+fn quantize_ternary(x : f32) -> i8 {
+    if (x > TERNARY_THRESHOLD) {
+        return 1;
+    }
+    if (x < 0.0 - TERNARY_THRESHOLD) {
+        return -1;
+    }
+    return 0;
 }
 
-readMnistLabels(filename, allocator) -> []u8
-```
+; Bit layouts, sign + exponent + mantissa. The document gave GF16 as 5-bit exponent and
+; 9-bit mantissa, which is 15 bits; the numeric SSOT (L6: conformance/FORMAT-SPEC-001.json
+; and specs/numeric/gf16.t27) is 1 + 6 + 9 with bias 31, and that is what is written here.
+pub const GF16_EXP_BITS : u32 = 6;
+pub const GF16_MANT_BITS : u32 = 9;
+pub const FP16_EXP_BITS : u32 = 5;
+pub const FP16_MANT_BITS : u32 = 10;
+pub const BF16_EXP_BITS : u32 = 8;
+pub const BF16_MANT_BITS : u32 = 7;
 
-## Results Structure
+; Storage per weight. The document's column was headed bytes_per_weight and held 32, 16,
+; 16, 2: those are BITS (an f32 is 4 bytes). The ternary 2 is a 2-bit field per weight.
+pub const F32_BITS_PER_WEIGHT : u32 = 32;
+pub const F16_BITS_PER_WEIGHT : u32 = 16;
+pub const GF16_BITS_PER_WEIGHT : u32 = 16;
+pub const TERNARY_BITS_PER_WEIGHT : u32 = 2;
 
-```
-BenchmarkResult:
-    format: []const u8
-    accuracy: f32
-    loss: f32
-    bytes_per_weight: f32
-```
+; The CSV header the benchmark writes, and the document's expected rows. EXPECTED, not
+; measured: the document wrote them with a `~` and names no run that produced them. The
+; benchmark is described for FP16, BF16 and GF16, but no BF16 row was given.
+pub const CSV_HEADER : str = "format,accuracy,loss,bytes_per_weight";
+pub const EXPECTED_ROWS : [4]str = ["f32,95.2,0.048,32", "f16_soft,94.8,0.052,16", "gf16_soft,94.9,0.051,16", "ternary,88.5,0.12,2"];
+pub const EXPECTED_F32_ACCURACY : f64 = 95.2;
+pub const EXPECTED_GF16_ACCURACY : f64 = 94.9;
+pub const EXPECTED_F16_ACCURACY : f64 = 94.8;
+pub const EXPECTED_TERNARY_ACCURACY : f64 = 88.5;
 
-## Accuracy Computation
+; MNIST idx header fields, in file order.
+pub const MNIST_HEADER_FIELDS : [4]str = ["magic", "count", "rows", "cols"];
 
-```
-computeAccuracy(predictions, labels, num_classes) -> f32
-    Returns percentage of correct predictions
-
-mseLoss(predictions, targets) -> f32
-    Returns mean squared error loss
-```
-
-## Tests
-
-```
-test "NN-Bench: quantization roundtrip" {
-    // Verify quantization-dequantization preserves reasonable accuracy
+test "input_is_one_mnist_image" {
+    assert(IMAGE_ROWS * IMAGE_COLS == INPUT_SIZE);
 }
 
-test "NN-Bench: GF16 accuracy" {
-    // GF16 should maintain > 90% accuracy vs f32 baseline
+test "parameter_count" {
+    assert(INPUT_SIZE * HIDDEN_SIZE + HIDDEN_SIZE * OUTPUT_SIZE == WEIGHT_COUNT);
+    assert(HIDDEN_SIZE + OUTPUT_SIZE == BIAS_COUNT);
 }
 
-test "NN-Bench: forward pass consistency" {
-    // All formats should produce similar outputs
+test "ternary_quantization" {
+    assert(quantize_ternary(0.9) == 1);
+    assert(quantize_ternary(-0.9) == -1);
+    assert(quantize_ternary(0.5) == 0);
+    assert(quantize_ternary(-0.5) == 0);
+    assert(quantize_ternary(0.0) == 0);
 }
-```
 
-## Benchmarks
+test "sixteen_bit_layouts_fill_sixteen_bits" {
+    assert(1 + GF16_EXP_BITS + GF16_MANT_BITS == GF16_BITS_PER_WEIGHT);
+    assert(1 + FP16_EXP_BITS + FP16_MANT_BITS == F16_BITS_PER_WEIGHT);
+    assert(1 + BF16_EXP_BITS + BF16_MANT_BITS == 16);
+    // the layout the document wrote does not
+    assert(1 + 5 + 9 == 15);
+}
 
-CSV output format:
-```
-format,accuracy,loss,bytes_per_weight
-f32,95.2,0.048,32
-f16_soft,94.8,0.052,16
-gf16_soft,94.9,0.051,16
-ternary,88.5,0.12,2
-```
+test "storage_ratios" {
+    assert(F32_BITS_PER_WEIGHT == 8 * 4);
+    assert(F32_BITS_PER_WEIGHT / GF16_BITS_PER_WEIGHT == 2);
+    assert(F32_BITS_PER_WEIGHT / TERNARY_BITS_PER_WEIGHT == 16);
+}
 
-## Expected Results
-
-| Format | Accuracy | Loss | Bytes/Weight |
-|--------|----------|------|--------------|
-| f32    | ~95.2%   | 0.048 | 32           |
-| f16    | ~94.8%   | 0.052 | 16           |
-| gf16   | ~94.9%   | 0.051 | 16           |
-| ternary| ~88.5%   | 0.12  | 2            |
-
-**Key findings:**
-- GF16 maintains competitive accuracy vs f32 baseline
-- Ternary shows significant accuracy drop due to limited representation
-- All soft implementations have overhead vs hardware f32
+test "expected_accuracy_order" {
+    assert(EXPECTED_GF16_ACCURACY < EXPECTED_F32_ACCURACY);
+    assert(EXPECTED_F16_ACCURACY < EXPECTED_GF16_ACCURACY);
+    assert(EXPECTED_TERNARY_ACCURACY < EXPECTED_F16_ACCURACY);
+    // the document's GF16 target: above 90% of the f32 baseline
+    assert(EXPECTED_GF16_ACCURACY > 0.9 * EXPECTED_F32_ACCURACY);
+}

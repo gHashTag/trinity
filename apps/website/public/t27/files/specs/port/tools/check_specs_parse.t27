@@ -1,9 +1,5 @@
 module CheckSpecsParse {
-    use std::fs;
-    use std::os;
-    use std::process;
     use std::string;
-    use std::temp;
 
     // Helper function to create a map of string to u32 (for DISCARD_DEBT)
     fn make_discard_debt_map() -> Map {

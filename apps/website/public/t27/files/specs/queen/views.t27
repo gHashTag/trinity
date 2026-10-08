@@ -336,6 +336,9 @@ test only_exact_and_hash_are_identity {
     assert is_identity(ID_NUMBER_ONLY) == false;
     assert relation_of(ID_SUFFIX) == REL_CANDIDATE;
     assert may_bind(ID_NUMBER_ONLY) == false;
+    // #7077: and an identity does bind
+    assert relation_of(ID_EXACT) == REL_SAME;
+    assert may_bind(ID_HASH);
 }
 
 test a_row_of_another_repository_never_joins {
@@ -357,6 +360,7 @@ test an_explicit_address_never_shows_another_spec {
     assert view_of_address(false, R_MISSING, true) == V_UNAVAILABLE;
     assert view_of_address(true, R_RESOLVED, false) == V_UNCHANGED;
     assert accept_answer(3, 4) == false;
+    assert accept_answer(4, 4);
 }
 
 test nothing_but_accepted_marks_done {
@@ -366,6 +370,7 @@ test nothing_but_accepted_marks_done {
     assert marks_done(DONE_FROM_COMPLETED) == false;
     assert marks_done(DONE_FROM_NOT_PLANNED) == false;
     assert counts_toward_progress(true, false) == false;
+    assert counts_toward_progress(true, true);
     assert epic_complete(true, 4, 3) == false;
     assert epic_complete(true, 4, 4);
     assert epic_complete(true, 0, 0) == false;
@@ -380,13 +385,19 @@ test a_snapshot_is_never_live {
     assert presentation(SRC_LIVE, true, false, false, false) == P_OFFLINE;
     assert presentation(SRC_LIVE, false, true, false, true) == P_LOADING;
     assert presentation(SRC_LIVE, false, false, true, true) == P_UNAVAILABLE;
+    // #7077: the true side of every rule below, not only the false one
+    assert presentation(SRC_LIVE, false, false, false, false) == P_OFFLINE;
     assert change_is_event(P_SNAPSHOT, P_SNAPSHOT) == false;
     assert change_is_event(P_LIVE, P_LIVE);
+    assert change_is_event(P_STALE, P_LIVE) == false;
     assert live_badge_allowed(SRC_SNAPSHOT) == false;
+    assert live_badge_allowed(SRC_LIVE);
     assert stale_age_s(42, 0, true, true) == 42;
+    assert stale_age_s(100, 58, true, true) == 42;
     assert stale_age_s(42, 0, true, false) == -1;
     assert stale_age_s(42, 0, false, true) == -1;
     assert shows_number(false) == false;
+    assert shows_number(true);
 }
 
 test a_spec_in_three_placements_counts_once {

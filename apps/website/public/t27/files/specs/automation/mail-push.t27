@@ -33,6 +33,14 @@
 //       in (mail_push_state is 42P01 through the gateway while the sweep writes it),
 //       so a PostgREST table would be a second home for the truth -- the one home is
 //       the ledger db, and the only door that reaches it is the render's own MCP door.
+// v2.2, 2026-09-30: the door opens both ways. v2.1 made the ledger write-only from
+//       outside -- jcrm could export the digest but never read back what the owner's
+//       taps recorded (outcomes, feedback pairs), so the dashboard still said "we
+//       owe" right after a reply was sent. LEDGER_TOOL (mail_push_ledger) is a
+//       SELECT-only, owner-gated read of the same three tables through the same
+//       door, and the pulse now also reports digest age (a digest nobody refreshed
+//       within DIGEST_STALE_H is cards going out blind, and the heartbeat must
+//       say so, not just the laptop that may be asleep).
 // Claim status: v1 is LIVE -- the cron fired on schedule from 2026-09-29 10:30
 //       (measured: Inngest runs 10:30/10:35/10:40/10:45/10:50, the debut baselined the
 //       Inbox, no letter has been carded yet -- none arrived). RUN_LIVE flips when the
@@ -92,6 +100,10 @@ module automation::mail_push {
                                                        // card reads, exported_at is stamped
                                                        // by the receiver's clock (v2.1)
     pub const DIGEST_STALE_H : u8 = 26;  // a day and a bit: older context is not shown
+    pub const LEDGER_TOOL : str = "mail_push_ledger";  // SELECT-only read of the
+                                                       // ledger through the same door:
+                                                       // digest, outcomes, feedback --
+                                                       // the circle closes
                                          // (channels.json law: a stale number is never
                                          // presented as current)
     pub const HISTORY_MESSAGES : u8 = 6;  // recent both-direction lines feeding the draft
@@ -243,6 +255,15 @@ module automation::mail_push {
         assert(!pulse_fresh(31));
         assert(PULSE_TOOL == "mail_push_pulse");
         assert(PULSE_CRON == "17 9 * * *");
+    }
+
+    test "the ledger reads back through the same door, select only" {
+        assert(LEDGER_TOOL == "mail_push_ledger");
+        assert(LEDGER_TOOL != TOOL);  // reading is not sweeping
+        assert(LEDGER_TOOL != DIGEST_DOOR);  // reading is not exporting
+        assert(DIGEST_TABLE == "crm_matter_digest");
+        assert(OUTCOMES_TABLE == "mail_push_outcomes");
+        assert(FEEDBACK_TABLE == "mail_push_feedback");
     }
 }
 

@@ -1,6 +1,6 @@
 module runner;
 
-use core::{TestResult, Verdict, ToleranceTier, EngineeringStatus, GatePipeline, for_all, metamorphic, differential, TapReporter, JsonReporter, Text, Report, ResultList, PropertySamples, MAX_CASES, text_empty, text_from, text_append_str, text_append_text, f64_to_text, report_empty, report_append_str, result_list_empty, result_list_push, result_list_count_verdict, gate_pipeline_verdict, tap_reporter_new, tap_reporter_generate_tap, json_reporter_new, json_reporter_generate_json};
+use test_framework::core::{TestResult, Verdict, ToleranceTier, EngineeringStatus, GatePipeline, for_all, metamorphic, differential, TapReporter, JsonReporter, Text, Report, ResultList, PropertySamples, MAX_CASES, text_empty, text_from, text_append_str, text_append_text, f64_to_text, report_empty, report_append_str, result_list_empty, result_list_push, result_list_count_verdict, gate_pipeline_verdict, tap_reporter_new, tap_reporter_generate_tap, json_reporter_new, json_reporter_generate_json};
 
 // Port notes (Rust dialect -> t27):
 // - `impl` blocks do not exist in t27: every method is a free function whose

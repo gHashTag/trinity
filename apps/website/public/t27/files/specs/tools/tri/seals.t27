@@ -28,8 +28,8 @@ pub const ACTIONS_ABOUT : [5]str = ["Is the built compiler newer than the source
 ; Top-level arguments/flags of the command itself, "<name>: doc".
 pub const ARGS : [0]str = [];
 ; Agent letters that own this command, only where a source line names it (AGENTS_NOTE cites it).
-pub const AGENTS : [0]str = [];
-pub const AGENTS_NOTE : str = "No source binds an agent letter to this command: docs/agents/AGENTS_ALPHABET.md (rows, key files, phase cycle), specs/OWNERS.md and .claude/agents/*.md do not name it. creator.md and verifier.md name tri gen/test/verify but are not letter agents.";
+pub const AGENTS : [3]str = ["T", "S", "C"];
+pub const AGENTS_NOTE : str = "docs/agents/AGENTS_ALPHABET.md \"Who holds a tool, and who holds a skill\" binds every tool to the Queen (T). Domain lead S, C: CHANGED (W,C -> S,C): W was an equivocation on the word \"seal\" -- W's seal is `tri cell seal`, \"a SHA-256 hash of its checkpoint history\" (cell.t27, AGENTS [\"W\"]), whereas `.trinity/seals/<module>.json` is a per-spec record (`spec_path`, `spec_hash`, `gen_hash_rust/c/verilog/zig`) written by `t27c seal <spec> --save`; the twins/sync-twins actions are about two key schemes naming one spec (\"the name it derives is path-based. Many specs also carry an OLDER seal keyed by the bare module name\") -- spec-registry naming (S) -- and drift/fresh/hollow are defined against \"what the compiler produces\" (C).";
 ; From the about text (long about when the doc has more than one paragraph); no marketing.
 pub const WHEN_TO_USE : str = "What `.trinity/seals` says about a spec, when it says it twice.";
 ; Recorded run: https://t27.ai/term/t27-tri-seals/ (gHashTag/trinity apps/website/public/term/t27-tri-seals/).

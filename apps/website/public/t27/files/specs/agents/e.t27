@@ -35,12 +35,20 @@ pub const EXIT_INVARIANT : str = "Lessons learned are catalogued, explanations a
 pub const CLARA_ROLE : str = "TA2: AR Explanation & XAI - generates human-readable explanations for AR outputs";
 ; Skill IDs the agent holds. Bound only where a source names the skill; SKILLS_NOTE
 ; cites that source or says why the list is empty.
-pub const SKILLS : [0]str = [];
-pub const SKILLS_NOTE : str = "No source binds a skill to this agent. .claude/agents/agent-e-experience.md mentions phi-loop only as the label of the feedback field (1 = phi-loop, 0 = agent cycle); the alphabet key files point at the experience log and AR specs, not at a skill directory.";
+pub const SKILLS : [1]str = ["t27/wrap-up"];
+pub const SKILLS_NOTE : str = "docs/agents/AGENTS_ALPHABET.md \"Who holds a tool, and who holds a skill\", rule 2: domain lead for 1 skill card(s).";
 ; Tool IDs (specs/tools) the agent holds. Bound only where a source line names the command
 ; for this letter; TOOLS_NOTE cites that line or says why the list is empty.
-pub const TOOLS : [1]str = ["tri/experience"];
-pub const TOOLS_NOTE : str = ".claude/agents/agent-e-experience.md:64 names tri experience save; lines 65-66 name tri experience query and tri notebook, which the CLI does not have at this commit. The tri-mcp server mirrors the command as tool tri_experience_save.";
+pub const TOOLS : [2]str = ["tri/experience", "tri/skill"];
+pub const TOOLS_NOTE : str = "docs/agents/AGENTS_ALPHABET.md \"Who holds a tool, and who holds a skill\", rule 2: domain lead for 2 tool card(s), read off what each card states it does rather than off its name.";
 ; Where the agent logs episodes (AGENTS_ALPHABET.md: "Logs to .trinity/experience/").
 pub const EXPERIENCE_LOG : str = ".trinity/experience/";
 pub const ENABLED : bool = true;
+
+test verify_agent_e_constants {
+    assert KIND == "agent";
+    assert ID == "t27/E";
+    assert LETTER == "E";
+    assert ORDINAL == 5;
+    assert ENABLED == true;
+}

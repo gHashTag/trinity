@@ -35,12 +35,28 @@ pub const EXIT_INVARIANT : str = "All rings are sealed, verdict is clean";
 pub const CLARA_ROLE : str = "TA2: AR Orchestrator - coordinates all AR agents for CLARA submission";
 ; Skill IDs the agent holds. Bound only where a source names the skill; SKILLS_NOTE
 ; cites that source or says why the list is empty.
-pub const SKILLS : [2]str = ["t27/phi-loop", "t27/tri-pipeline"];
-pub const SKILLS_NOTE : str = ".claude/agents/trinity.md, Phase 2 PLAN: \"Identify required skills (phi-loop, tri-pipeline)\"; Phase 4 VERIFY: \"Run conformance tests via tri-pipeline\". specs/OWNERS.md lists skills/ and crons/ under T-Queen, which is catalog ownership, not a held skill.";
+pub const SKILLS : [27]str = ["t27/measure-corpus", "t27/phi-loop", "t27/providers-steward", "t27/tri", "t27/tri-pipeline", "t27/wave-audit", "t27/wrap-up", "trinity/blog-post", "trinity/board-sync", "trinity/cloud", "trinity/doctor", "trinity/farm-garden", "trinity/fpga-synth", "trinity/god-mode", "trinity/implement-issue", "trinity/queen-hive-visuals", "trinity/review-code", "trinity/run-tests", "trinity/scholar", "trinity/status", "trinity/tech-tree", "trinity/tri", "trinity/trinity-test", "trinity/ux-wave", "trinity/vibee-gen", "trinity/vsa-verify", "trinity/wave"];
+pub const SKILLS_NOTE : str = "docs/agents/AGENTS_ALPHABET.md \"Who holds a tool, and who holds a skill\", rule 1: every skill in specs/skills/ is the Queen to invoke -- all 27.";
 ; Tool IDs (specs/tools) the agent holds. Bound only where a source line names the command
 ; for this letter; TOOLS_NOTE cites that line or says why the list is empty.
-pub const TOOLS : [3]str = ["tri/gen", "tri/test", "mcp/inngest-dev"];
-pub const TOOLS_NOTE : str = ".claude/agents/trinity.md:68 (5. Gen - Run tri gen) and :70 (7. Verify - Run tri test); specs/automation/inngest-queen-scheduler.t27 OWNER = \"T\" binds the scheduler mcp/inngest-dev to the Queen (specs/OWNERS.md: skills/ and crons/ under T-Queen). No source binds tri loop or tri health to T.";
+pub const TOOLS : [92]str = ["gHashTag/trinity:tri/bench", "gHashTag/trinity:tri/bio", "gHashTag/trinity:tri/blindspots", "gHashTag/trinity:tri/conscious", "gHashTag/trinity:tri/constants", "gHashTag/trinity:tri/cosmos", "gHashTag/trinity:tri/dashboard", "gHashTag/trinity:tri/fib", "gHashTag/trinity:tri/fpga", "gHashTag/trinity:tri/gematria", "gHashTag/trinity:tri/govern", "gHashTag/trinity:tri/hardware", "gHashTag/trinity:tri/identity", "gHashTag/trinity:tri/lucas", "gHashTag/trinity:tri/mesh", "gHashTag/trinity:tri/needle", "gHashTag/trinity:tri/needle-check", "gHashTag/trinity:tri/needle-search", "gHashTag/trinity:tri/omega", "gHashTag/trinity:tri/particles", "gHashTag/trinity:tri/phi", "gHashTag/trinity:tri/quantum", "gHashTag/trinity:tri/reputation", "gHashTag/trinity:tri/sacred-const", "gHashTag/trinity:tri/spiral", "gHashTag/trinity:tri/swarm", "gHashTag/trinity:tri/test", "gHashTag/trinity:tri/vsa", "gHashTag/trinity:tri/wallet", "mcp/gitbutler", "mcp/inngest-dev", "mcp/needle", "mcp/neon", "mcp/notebooklm", "mcp/railway-mcp-server", "mcp/t27-traceability", "mcp/tri-mcp", "mcp/tri-ssot", "mcp/trinity", "mcp/zig-docs", "tri/abandoned", "tri/cell", "tri/census", "tri/ci", "tri/competitors", "tri/discard", "tri/doctor", "tri/elab", "tri/emit", "tri/experience", "tri/fleet", "tri/fmt", "tri/fpga", "tri/gates", "tri/gen", "tri/harness", "tri/health", "tri/hooks", "tri/issues", "tri/jumps", "tri/kinds", "tri/lean", "tri/ledgers", "tri/loop", "tri/merging", "tri/misread", "tri/mods", "tri/mutate", "tri/now", "tri/one-away", "tri/orphaned", "tri/pr", "tri/prose", "tri/quantifiers", "tri/red", "tri/reseal", "tri/rtl", "tri/seals", "tri/serve", "tri/skill", "tri/status", "tri/sweep", "tri/synth", "tri/test", "tri/topic", "tri/types", "tri/unparsed", "tri/vectors", "tri/verdict", "tri/vsim", "tri/window", "tri/worktrees"];
+pub const TOOLS_NOTE : str = "docs/agents/AGENTS_ALPHABET.md \"Who holds a tool, and who holds a skill\", rule 1: the Queen orchestrates the loop, so every tool in specs/tools/ is hers to run -- all 92, the VERIFY, EVOLVE and LEARN steps of her own cycle (tri/verdict, tri/cell, tri/experience) included, which were bound to V, W and E and not to her.";
 ; Where the agent logs episodes (AGENTS_ALPHABET.md: "Logs to .trinity/experience/").
 pub const EXPERIENCE_LOG : str = ".trinity/experience/";
 pub const ENABLED : bool = true;
+
+test agent_t_constants {
+  assert KIND == "agent";
+  assert ID == "t27/T";
+  assert LETTER == "T";
+  assert ORDINAL == 20;
+  assert LETTER_NAME == "Tau";
+  assert NAME == "Tau (TRINITY Queen)";
+  assert DOMAIN == "Queen / Lotus Orchestrator";
+  assert ARCHETYPE == "CROSS - seal, signature, truth";
+  assert REGISTER == "R19";
+  assert LAYER == "Physical";
+  assert ENABLED == true;
+  assert CLARA_ROLE == "TA2: AR Orchestrator - coordinates all AR agents for CLARA submission";
+  assert KEY_FILES[0] == "t27/specs/queen/lotus.t27";
+}

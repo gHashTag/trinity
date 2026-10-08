@@ -58,7 +58,35 @@ module Formats {
     //      value = (-1)^s * (1 + m/2^9) * 2^(e - Bias)
     //
     // Complexity: O(1)
-    pub fn gf16_to_f32(x: u16) -> gf16;
+    pub fn gf16_to_f32(x: u16) -> gf16 {
+        const s = (x & SignMask) >> 15;
+        const e = (x & ExpMask) >> 9;
+        const m = x & MantMask;
+        const sign : f64 = if (s == 1) -1.0 else 1.0;
+        if (e == ExpMax) {
+            if (m == 0) {
+                return gf16.from_f64(sign * std.math.inf(f64));
+            }
+            return gf16.from_f64(std.math.nan(f64));
+        }
+        var frac : f64 = @as(f64, m) / 512.0;
+        var unbiased : i32 = 1 - Bias;
+        if (e != 0) {
+            frac = 1.0 + frac;
+            unbiased = @as(i32, e) - Bias;
+        }
+        var scale : f64 = 1.0;
+        var k : i32 = 0;
+        while (k < unbiased) {
+            scale = scale * 2.0;
+            k = k + 1;
+        }
+        while (k > unbiased) {
+            scale = scale / 2.0;
+            k = k - 1;
+        }
+        return gf16.from_f64(sign * frac * scale);
+    }
 
     // ========================================================================
     // 3. f32 1 GF16 (encode, round-to-nearest)
@@ -76,7 +104,45 @@ module Formats {
     //   6. Check underflow/overflow
     //
     // Complexity: O(1)
-    pub fn f32_to_gf16(a: f32) -> u16;
+    pub fn f32_to_gf16(a: f32) -> u16 {
+        if (a != a) {
+            return 0x7F01;
+        }
+        var sbit : u16 = 0;
+        if (a < 0.0 or (a == 0.0 and 1.0 / a < 0.0)) {
+            sbit = SignMask;
+        }
+        if (a == 0.0) {
+            return sbit;
+        }
+        const mag : f64 = if (a < 0.0) -@as(f64, a) else @as(f64, a);
+        if (mag == std.math.inf(f64)) {
+            return sbit | ExpMask;
+        }
+        var mm : f64 = mag;
+        var e : i32 = 0;
+        while (mm >= 2.0) {
+            mm = mm / 2.0;
+            e = e + 1;
+        }
+        while (mm < 1.0) {
+            mm = mm * 2.0;
+            e = e - 1;
+        }
+        var be : i32 = e + Bias;
+        var mant : u16 = @intCast((mm - 1.0) * 512.0 + 0.5);
+        if (mant == 512) {
+            mant = 0;
+            be = be + 1;
+        }
+        if (be >= 63) {
+            return sbit | ExpMask;
+        }
+        if (be <= 0) {
+            return sbit;
+        }
+        return sbit | (@as(u16, be) << 9) | mant;
+    }
 
     // ========================================================================
     // 4. Ternary Quantization
@@ -98,14 +164,30 @@ module Formats {
     //   - Otherwise: return 0
     //
     // Complexity: O(1)
-    pub fn f32_to_ternary(x: f32) -> Trit;
+    pub fn f32_to_ternary(x: f32) -> Trit {
+        if (x > 0.5) {
+            return .pos;
+        }
+        if (x < -0.5) {
+            return .neg;
+        }
+        return .zero;
+    }
 
     // ternary_to_f32(t: Trit) -> gf16
     // Convert ternary to f32
     //
     // Mapping: -1 -> -1.0, 0 -> 0.0, +1 -> 1.0
     // Complexity: O(1)
-    pub fn ternary_to_f32(t: Trit) -> gf16;
+    pub fn ternary_to_f32(t: Trit) -> gf16 {
+        if (t == .pos) {
+            return gf16.from_f64(1.0);
+        }
+        if (t == .neg) {
+            return gf16.from_f64(-1.0);
+        }
+        return gf16.from_f64(0.0);
+    }
 
     // ========================================================================
     // 5. Format Enum
@@ -172,7 +254,33 @@ module Formats {
     // - posit16: 2 bytes (16 bits)
     //
     // Complexity: O(1)
-    pub fn format_bytes(fmt: Format) -> usize;
+    pub fn format_bytes(fmt: Format) -> usize {
+        // Sub-byte formats report whole bytes (floor), as the tests expect
+        return switch (fmt) {
+            .fp32 => 4,
+            .fp16 => 2,
+            .bf16 => 2,
+            .fp8_e4m3 => 1,
+            .fp8_e5m2 => 1,
+            .gf4 => 0,
+            .gf8 => 1,
+            .gf12 => 1,
+            .gf16 => 2,
+            .gf20 => 2,
+            .gf24 => 3,
+            .gf32 => 4,
+            .gf64 => 8,
+            .gf128 => 16,
+            .gf256 => 32,
+            .int4 => 0,
+            .int8 => 1,
+            .nf4 => 0,
+            .binary16 => 2,
+            .ternary => 1,
+            .posit16 => 2,
+            else => 0,
+        };
+    }
 
     // ========================================================================
     // 6. Quantization Utility
@@ -182,7 +290,37 @@ module Formats {
     // Quantize f32 to target format
     //
     // Complexity: O(1)
-    pub fn quantize_value(x: f32, fmt: Format) -> gf16;
+    pub fn quantize_value(x: f32, fmt: Format) -> gf16 {
+        if (fmt == .ternary) {
+            return ternary_to_f32(f32_to_ternary(x));
+        }
+        var v : f64 = @as(f64, x);
+        if (fmt == .int8) {
+            if (v > 127.0) {
+                v = 127.0;
+            }
+            if (v < -128.0) {
+                v = -128.0;
+            }
+        }
+        if (fmt == .int4) {
+            if (v > 7.0) {
+                v = 7.0;
+            }
+            if (v < -8.0) {
+                v = -8.0;
+            }
+        }
+        if (fmt == .nf4) {
+            if (v > 1.0) {
+                v = 1.0;
+            }
+            if (v < -1.0) {
+                v = -1.0;
+            }
+        }
+        return gf16.from_f64(v);
+    }
 
     // ========================================================================
     // TDD - Tests
@@ -495,43 +633,43 @@ module Formats {
         // Measure: cycles for gf16_to_f32 conversion
         // Target: < 50 cycles (simple bit extraction + lookup)
         @setEvalBranchQuota(10000);
-        var result : gf16;
-        const test_value: u16 = 0x3C00;
+        var result_g2f : gf16;
+        const test_value_g2f: u16 = 0x3C00;
         for (0..1000) |_| {
-            result = gf16_to_f32(test_value);
+            result_g2f = gf16_to_f32(test_value_g2f);
         }
-        _ = result;
+        _ = result_g2f;
 
     bench f32_to_gf16_latency
         // Measure: cycles for f32_to_gf16 conversion
         // Target: < 100 cycles (frexp + bit packing)
         @setEvalBranchQuota(10000);
-        var result : u16;
-        const test_value: f32 = 1.5;
+        var result_f2g : u16;
+        const test_value_f2g: f32 = 1.5;
         for (0..1000) |_| {
-            result = f32_to_gf16(test_value);
+            result_f2g = f32_to_gf16(test_value_f2g);
         }
-        _ = result;
+        _ = result_f2g;
 
     bench f32_to_ternary_latency
         // Measure: cycles for f32_to_ternary conversion
         // Target: < 10 cycles (single comparison)
         @setEvalBranchQuota(10000);
-        var result : Trit;
-        const test_value: f32 = 0.75;
+        var result_f2t : Trit;
+        const test_value_f2t: f32 = 0.75;
         for (0..1000) |_| {
-            result = f32_to_ternary(test_value);
+            result_f2t = f32_to_ternary(test_value_f2t);
         }
-        _ = result;
+        _ = result_f2t;
 
     bench ternary_to_f32_latency
         // Measure: cycles for ternary_to_f32 conversion
         // Target: < 10 cycles (simple switch)
         @setEvalBranchQuota(10000);
-        var result : gf16;
-        const test_trit: Trit = .pos;
+        var result_t2f : gf16;
+        const test_trit_t2f: Trit = .pos;
         for (0..1000) |_| {
-            result = ternary_to_f32(test_trit);
+            result_t2f = ternary_to_f32(test_trit_t2f);
         }
-        _ = result;
+        _ = result_t2f;
 }

@@ -9,8 +9,7 @@ module config-load;
 // Imports
 // ============================================================================
 
-use std;
-use config-schema::{Config, ValidationResult, PathsConfig, ConfigError, AgentConfig};
+use config::schema::{Config, ValidationResult, PathsConfig, ConfigError, AgentConfig};
 
 // ============================================================================
 // Constants

@@ -40,3 +40,10 @@ pub const SAFE_PROBE : str = "";
 pub const PROBE_RESULT : str = "not-deployed";
 pub const CONTROL : str = "spec+code";
 pub const NOTE : str = "Not on the production Railway build as of 2026-09-09 (deployed_2026_09_09 false in the manifest). Guard is unknown because the function could not be probed there.";
+
+test test_constants {
+    assert KIND == "function";
+    assert TRIGGER == "event";
+    assert RETRIES == 2;
+    assert DOMAIN == "welcome";
+}

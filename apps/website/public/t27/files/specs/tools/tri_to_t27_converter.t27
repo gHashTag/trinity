@@ -4,7 +4,6 @@
 
 module TriToT27Converter;
     use base::types;
-    use io::file;
 
     // ═══════════════════════════════════════════════════════════
     // 1. Constants

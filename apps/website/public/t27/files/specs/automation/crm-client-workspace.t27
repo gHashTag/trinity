@@ -44,6 +44,47 @@
 //       A named agent the owner may call gets the task; a name the owner may not call, or one
 //       that is no agent, falls back to the chosen specialist, then the assistant -- the task is
 //       never lost (task_owner).
+// v5 (2026-10-03): the widgets follow the specialist. The owner: the content dashboard shows only
+//       when the Blogger is chosen, every other specialist by analogy, and the widgets in one
+//       place, a menu on the left. A widget is the client's (shown under anybody) or one
+//       specialist's (shown only while that specialist is chosen): the content widget -- the
+//       portrait gift and the story reel, on the card "always" since 2026-09-29 -- is the
+//       Blogger's; a specialist's templates are its own. All of them sit in one menu in the left
+//       column under the client's head, one open at a time, the waiting drafts pinned above it;
+//       the Queen keeps the right column and is not a widget (widget_shown, open_after_switch).
+//       The same day, the agent sent an old render while the reel panel stood open with a topic
+//       and 3 frames: the panel's state never reached it. A client thread's request now carries
+//       `widgets` -- the ids shown, the open one, the shown widgets' own state -- checked (known
+//       ids, capped values, a capped whole) and put beside the client's brief as context, not
+//       instruction. A hidden widget is not reported, and the self thread ignores the field
+//       (widget_reported, capped).
+// v6 (2026-10-04): client work carries the client's marks. The owner (2026-10-03), on a client's
+//       reel that ended with HIS call: "why does it make my CTA and not the client's?" On client
+//       work the caller id is the seller's, so a prompt keyed on the caller gave a client's
+//       content the house's Blogger brief (the house blog, the house offer, the house triptych)
+//       and the seller's 30-day content plan and post voice. A turn is client work when it
+//       carries faceOf (a client thread, the duet's buyer) or sellerSweep (an unattended sweep
+//       over the seller's leads) -- the only two marks a turn has (content_for). There the
+//       Blogger gets the client's brief and the seller's plan stays out; his SOUL still speaks
+//       the words sent in his name (the duet). The content is the client's: what the seller said
+//       about this client, else the client's profile and plan, else neutral -- never the house's
+//       (blogger_brief_is_house, seller_plan_in_prompt). From the review the same day, two more
+//       of the house's marks reached client work. A StoryReel rendered for a client with no end
+//       card, or a card short of a colour, stood on the house's card -- gold on black, a green
+//       button -- because the composition fills whatever is missing with it. On client work her
+//       colours are kept, a missing one is the neutral ink or ground that reads against hers, a
+//       call with no card stands on the neutral card, and all of it is settled before the twin
+//       lookup and the charge (story_card_from). And the prompt told the model on every turn that
+//       the bot in speech is the house's; on client work that line is not said
+//       (bot_named_in_speech). From the second review the same day, the card was still the
+//       house's on the road most client reels take: a reel pressed in the CRM, by the seller or
+//       by the client herself, and story_reel for a named lead from the seller's own thread. On
+//       that road the turn carries no client mark -- the job runs as its payer, and on her own
+//       press the payer is the client -- so the card was left to the composition. Whose reel it
+//       is now decides the card, not who is paying for it: a client's when the turn carries a
+//       client mark, or when the reel is about a lead who is not the seller (reel_is_clients).
+//       The seller's own reel -- his lead is himself, no mark, no lead named -- stays on the
+//       house card as given.
 // phi^2 + 1/phi^2 = 3 | TRINITY
 
 module automation::crm_client_workspace {
@@ -51,7 +92,7 @@ module automation::crm_client_workspace {
     pub const KIND : str = "automation";
     pub const ID : str = "crm-client-workspace";
     pub const REPO : str = "999-multibots-telegraf";
-    pub const VERSION : u8 = 4;
+    pub const VERSION : u8 = 6;
 
     // ---- Who ----------------------------------------------------------------------------
     pub const CALLER : str = "seller";  // owner id or a row in tg_sessions (crm-sellers.t27)
@@ -80,7 +121,7 @@ module automation::crm_client_workspace {
     pub const THREAD_PARAM : str = "client";  // body.client on POST, ?client= on GET/DELETE
     pub const ROUTES_WITH_THREAD : u8 = 4;  // chat, history GET, history POST, history DELETE
     pub const DELETE_CLEARS_ONLY_ITS_THREAD : bool = true;  // a client thread never wipes 'self'
-    pub const CONTEXT_INJECTED : str = "crm_client_profile+lead_context";  // as context, not instructions
+    pub const CONTEXT_INJECTED : str = "crm_client_profile+lead_context+widgets";  // as context, not instructions; widgets v5
     pub const GATE_BEFORE_DB : bool = true;  // 400 bad client / 403 not a seller / 400 client == caller
 
     // ---- The dashboard --------------------------------------------------------------------
@@ -115,6 +156,50 @@ module automation::crm_client_workspace {
     // ---- Not claimed ----------------------------------------------------------------------
     pub const DASHBOARD_SEEN_LIVE : bool = true;  // 2026-09-13 ~20:40 +07: /crm, /crm/435572800 and its chat opened by the owner on app.t27.ai after the #2384 deploy (#3608)
     pub const RUN_SURVIVED_REDEPLOY : bool = false;
+
+    // ---- The widgets in the client's chat (v5) ---------------------------------------------
+    pub const WIDGETS_FOLLOW_SPECIALIST : bool = true;  // a specialist's widget shows only while it is chosen
+    pub const CONTENT_WIDGET_AGENT : str = "blogger";  // the portrait gift and the story reel
+    pub const WIDGET_IDS : str = "moves,group,soul,package,plan,history,content,templates";  // the registry, the client's first
+    pub const CLIENT_WIDGETS : u8 = 6;  // moves, group, soul, package, plan, history: shown under anybody
+    pub const WIDGETS_IN_ONE_MENU : bool = true;  // one menu; no second row of tabs
+    pub const WIDGET_MENU_SIDE : str = "left";  // the column under the client's head
+    pub const OPEN_WIDGETS : u8 = 1;  // one open at a time
+    pub const DRAFTS_PINNED_ABOVE_MENU : bool = true;  // waiting drafts are never behind an entry
+    pub const QUEEN_IS_NOT_A_WIDGET : bool = true;  // she keeps the right column
+    // What is open after the chosen specialist changes (open_after_switch).
+    pub const OPEN_KEEPS : u8 = 0;  // the open widget is still shown: it stays open
+    pub const OPEN_SPECIALISTS_FIRST : u8 = 1;  // the newly chosen specialist's first widget opens
+    pub const OPEN_FALLS_TO_CLIENT : u8 = 2;  // the open one left with its specialist: a client widget opens
+
+    // ---- What the agent is told about the widgets (v5) -------------------------------------
+    pub const AGENT_SEES_WIDGETS : bool = true;
+    pub const WIDGET_CONTEXT_PARAM : str = "widgets";  // body.widgets on the chat POST
+    pub const WIDGET_CONTEXT_ONLY_IN_CLIENT_THREAD : bool = true;  // the self thread and the Queen's ignore it
+    pub const HIDDEN_WIDGET_NOT_REPORTED : bool = true;  // the player does not send it, the render does not read it
+    pub const WIDGET_TEXT_MAX_CHARS : u16 = 600;  // one value: the panel's longest field (style) allows 600
+    pub const WIDGET_LIST_MAX : u8 = 8;  // ideas, template titles
+    pub const WIDGET_CONTEXT_MAX_CHARS : u16 = 4000;  // the whole block; a reel panel filled to every limit fits
+
+    // ---- Client work carries the client's marks (v6) ---------------------------------------
+    pub const CLIENT_WORK_MARKS : str = "faceOf,sellerSweep";  // the caller id is the seller's on client work
+    pub const CONTENT_IS_CALLERS : u8 = 0;  // the seller's own turn
+    pub const CONTENT_IS_CLIENTS : u8 = 1;  // client work: the client's offer, plan and voice
+    pub const HOUSE_BRIEF_ON_CLIENT_WORK : bool = false;  // the Blogger's house brief: house blog, offer, triptych
+    pub const SELLER_PLAN_ON_CLIENT_WORK : bool = false;  // the seller's 30-day plan and post voice
+    pub const SELLER_SOUL_SPEAKS_HIS_OWN_WORDS : bool = true;  // a message sent in his name keeps his voice
+    pub const CLIENT_CONTENT_FROM : str = "seller-for-this-client,client-profile,neutral";  // the first that has a value
+    pub const CLIENT_STORYREEL_NO_HOUSE_PALETTE : bool = true;  // a client's story reel never stands on the house card
+    pub const STORY_CARD_AS_GIVEN : u8 = 0;  // the seller's own turn: the composition's card, the house's when none
+    pub const STORY_CARD_HERS : u8 = 1;  // client work with her card: her colours, a missing one neutral
+    pub const STORY_CARD_NEUTRAL : u8 = 2;  // client work, a call and no card: the neutral card
+    pub const STORY_CARD_NONE : u8 = 3;  // client work, no call and no card: the pause shows none
+    pub const NEUTRAL_CARD_DARK : str = "#1f1f1f";  // the neutral ground, and the ink on a light ground
+    pub const NEUTRAL_CARD_LIGHT : str = "#f5f5f5";  // the neutral ink, and the ground under a dark colour
+    pub const CLIENT_PROMPT_NO_HOUSE_BOT_NAME : bool = true;  // "the bot in speech is ours" stays off client work
+    pub const CLIENT_REEL_IS : str = "client-mark,lead-not-seller";  // whose reel it is, the first that holds
+    pub const CLIENT_REEL_ROUTES : str = "client-turn,crm-template,story-reel-for-lead";  // every road to her reel
+    pub const CLIENT_REEL_BY_PAYER : bool = false;  // her own press makes her the payer; the reel is hers all the same
 
     // What a request's thread comes to. A named client that is malformed, or is the caller,
     // is refused: a request about somebody never quietly becomes a request about oneself.
@@ -157,6 +242,81 @@ module automation::crm_client_workspace {
 
     fn run_reads_as_lost(state_running: bool, minutes_since_start: u8) -> bool {
         return state_running && minutes_since_start > RUN_LOST_AFTER_MIN;
+    }
+
+    // A widget is shown when it is the client's, or when the specialist it belongs to is chosen.
+    fn widget_shown(belongs_to_specialist: bool, owner_is_chosen: bool) -> bool {
+        return !belongs_to_specialist || owner_is_chosen;
+    }
+
+    // What is open after the chosen specialist changes: the new specialist's own widget when it
+    // brings one, else the open widget while it is still shown, else a client widget.
+    fn open_after_switch(chosen_has_widgets: bool, open_still_shown: bool) -> u8 {
+        if chosen_has_widgets {
+            return OPEN_SPECIALISTS_FIRST;
+        }
+        if open_still_shown {
+            return OPEN_KEEPS;
+        }
+        return OPEN_FALLS_TO_CLIENT;
+    }
+
+    // The agent hears of a widget only when the owner sees it, and only in a client's thread.
+    fn widget_reported(shown: bool, client_thread: bool) -> bool {
+        return shown && client_thread;
+    }
+
+    // A value longer than its cap is cut to the cap.
+    fn capped(length: u16, cap: u16) -> u16 {
+        if length > cap {
+            return cap;
+        }
+        return length;
+    }
+
+    // Whose content a turn makes: the client's when it carries either mark, never by the caller id.
+    fn content_for(face_of: bool, seller_sweep: bool) -> u8 {
+        if face_of || seller_sweep {
+            return CONTENT_IS_CLIENTS;
+        }
+        return CONTENT_IS_CALLERS;
+    }
+
+    // The Blogger's house brief is for the seller's own turns only.
+    fn blogger_brief_is_house(client_work: bool) -> bool {
+        return !client_work;
+    }
+
+    // The seller's content plan and post voice go into the prompt on his own turns only.
+    fn seller_plan_in_prompt(seller_soul: bool, client_work: bool) -> bool {
+        return seller_soul && !client_work;
+    }
+
+    // Whose reel a StoryReel is: a client's when the turn carries a client mark, or when the reel
+    // is about a lead who is not the seller -- the CRM template, pressed by the seller or by her,
+    // and story_reel for a named lead. Who pays is never asked: on her own press she is the payer.
+    fn reel_is_clients(client_turn: bool, lead_named: bool, lead_is_seller: bool, lead_is_payer: bool) -> bool {
+        return client_turn || (lead_named && !lead_is_seller);
+    }
+
+    // The card a StoryReel's pause stands on. On client work the house's card is never left to
+    // the composition's defaults: her colours, else neutral; nothing when there is nothing to show.
+    fn story_card_from(client_work: bool, card_given: bool, call_given: bool) -> u8 {
+        if !client_work {
+            return STORY_CARD_AS_GIVEN;
+        }
+        if card_given {
+            return STORY_CARD_HERS;
+        }
+        if call_given {
+            return STORY_CARD_NEUTRAL;
+        }
+        return STORY_CARD_NONE;
+    }
+
+    // The prompt names the house's bot in speech on the seller's own turns only.
+    fn bot_named_in_speech(client_work: bool) -> bool {
+        return !client_work;
     }
 
     test "a client thread is separate from the seller's own thread and clearing one keeps the other" {
@@ -234,6 +394,128 @@ module automation::crm_client_workspace {
         assert(ROUTE_CLIENT_CHAT == "/crm/:clientId/chat");
         assert(DASHBOARD_SEEN_LIVE);
         assert(!RUN_SURVIVED_REDEPLOY);
+    }
+
+    test "a client widget shows under any specialist, a specialist's only while it is chosen" {
+        assert(WIDGETS_FOLLOW_SPECIALIST);
+        assert(widget_shown(false, false));
+        assert(widget_shown(false, true));
+        assert(widget_shown(true, true));
+        assert(!widget_shown(true, false));
+        assert(CLIENT_WIDGETS == 6);
+    }
+
+    test "the content widget is the Blogger's: absent under the Assistant and under any other specialist" {
+        assert(CONTENT_WIDGET_AGENT == "blogger");
+        assert(WIDGETS_FOLLOW_SPECIALIST);
+        assert(!widget_shown(true, false));
+        assert(widget_shown(true, true));
+    }
+
+    test "all widgets sit in one menu on the left, one open at a time, the drafts above it, and the Queen is not one of them" {
+        assert(WIDGETS_IN_ONE_MENU);
+        assert(WIDGET_MENU_SIDE == "left");
+        assert(OPEN_WIDGETS == 1);
+        assert(DRAFTS_PINNED_ABOVE_MENU);
+        assert(QUEEN_IS_NOT_A_WIDGET);
+        assert(WIDGET_IDS == "moves,group,soul,package,plan,history,content,templates");
+        assert(PANELS == 7);
+    }
+
+    test "choosing a specialist opens its widget, and leaving it falls back to a client widget" {
+        assert(open_after_switch(true, true) == OPEN_SPECIALISTS_FIRST);
+        assert(open_after_switch(true, false) == OPEN_SPECIALISTS_FIRST);
+        assert(open_after_switch(false, true) == OPEN_KEEPS);
+        assert(open_after_switch(false, false) == OPEN_FALLS_TO_CLIENT);
+    }
+
+    test "the agent is told the widgets the owner sees, in a client's thread only, and never a hidden one" {
+        assert(AGENT_SEES_WIDGETS);
+        assert(WIDGET_CONTEXT_PARAM == "widgets");
+        assert(CONTEXT_INJECTED == "crm_client_profile+lead_context+widgets");
+        assert(HIDDEN_WIDGET_NOT_REPORTED);
+        assert(WIDGET_CONTEXT_ONLY_IN_CLIENT_THREAD);
+        assert(widget_reported(true, true));
+        assert(!widget_reported(false, true));
+        assert(!widget_reported(true, false));
+        assert(!widget_reported(false, false));
+    }
+
+    test "a widget's values are capped one by one and as a whole" {
+        assert(capped(601, WIDGET_TEXT_MAX_CHARS) == WIDGET_TEXT_MAX_CHARS);
+        assert(capped(120, WIDGET_TEXT_MAX_CHARS) == 120);
+        assert(capped(5000, WIDGET_CONTEXT_MAX_CHARS) == WIDGET_CONTEXT_MAX_CHARS);
+        assert(WIDGET_TEXT_MAX_CHARS < WIDGET_CONTEXT_MAX_CHARS);
+        assert(WIDGET_LIST_MAX == 8);
+    }
+
+    test "work for a client is told by its marks, never by the caller id" {
+        assert(CLIENT_WORK_MARKS == "faceOf,sellerSweep");
+        assert(content_for(true, false) == CONTENT_IS_CLIENTS);
+        assert(content_for(false, true) == CONTENT_IS_CLIENTS);
+        assert(content_for(true, true) == CONTENT_IS_CLIENTS);
+        assert(content_for(false, false) == CONTENT_IS_CALLERS);
+    }
+
+    test "on client work the Blogger gets the client's brief, never the house's" {
+        assert(!HOUSE_BRIEF_ON_CLIENT_WORK);
+        assert(blogger_brief_is_house(false));
+        assert(!blogger_brief_is_house(true));
+        assert(CLIENT_CONTENT_FROM == "seller-for-this-client,client-profile,neutral");
+    }
+
+    test "on client work the seller's plan and post voice stay out, and his SOUL speaks only his own words" {
+        assert(!SELLER_PLAN_ON_CLIENT_WORK);
+        assert(SELLER_SOUL_SPEAKS_HIS_OWN_WORDS);
+        assert(seller_plan_in_prompt(true, false));
+        assert(!seller_plan_in_prompt(true, true));
+        assert(!seller_plan_in_prompt(false, false));
+        assert(!seller_plan_in_prompt(false, true));
+    }
+
+    test "a client's story reel never stands on the house card" {
+        assert(CLIENT_STORYREEL_NO_HOUSE_PALETTE);
+        assert(story_card_from(false, false, true) == STORY_CARD_AS_GIVEN);
+        assert(story_card_from(false, true, false) == STORY_CARD_AS_GIVEN);
+        assert(story_card_from(true, true, false) == STORY_CARD_HERS);
+        assert(story_card_from(true, true, true) == STORY_CARD_HERS);
+        assert(story_card_from(true, false, true) == STORY_CARD_NEUTRAL);
+        assert(story_card_from(true, false, false) == STORY_CARD_NONE);
+        assert(NEUTRAL_CARD_DARK == "#1f1f1f");
+        assert(NEUTRAL_CARD_LIGHT == "#f5f5f5");
+    }
+
+    test "a reel about a lead who is not the seller is hers on every road, whoever pays" {
+        assert(CLIENT_REEL_IS == "client-mark,lead-not-seller");
+        assert(CLIENT_REEL_ROUTES == "client-turn,crm-template,story-reel-for-lead");
+        assert(!CLIENT_REEL_BY_PAYER);
+        // The CRM template pressed by the seller for her: he pays, the reel is hers.
+        assert(reel_is_clients(false, true, false, false));
+        // Her own press: she pays, and the reel is still hers.
+        assert(reel_is_clients(false, true, false, true));
+        // story_reel for a named lead from the seller's own thread.
+        assert(reel_is_clients(false, true, false, false));
+        // A turn for a client, with or without a lead named.
+        assert(reel_is_clients(true, false, false, false));
+        assert(reel_is_clients(true, true, false, false));
+        // The seller's own reel: his lead is himself, or no lead at all.
+        assert(!reel_is_clients(false, true, true, true));
+        assert(!reel_is_clients(false, false, false, true));
+        // And her reel never stands on the house card, by any road.
+        assert(story_card_from(reel_is_clients(false, true, false, true), false, true) == STORY_CARD_NEUTRAL);
+        assert(story_card_from(reel_is_clients(false, true, false, true), false, false) == STORY_CARD_NONE);
+        assert(story_card_from(reel_is_clients(false, true, false, false), true, true) == STORY_CARD_HERS);
+        assert(story_card_from(reel_is_clients(false, true, true, true), false, true) == STORY_CARD_AS_GIVEN);
+    }
+
+    test "on client work the prompt does not say the bot in speech is the house's" {
+        assert(CLIENT_PROMPT_NO_HOUSE_BOT_NAME);
+        assert(bot_named_in_speech(false));
+        assert(!bot_named_in_speech(true));
+    }
+
+    test "VERSION says what the header's last note says" {
+        assert(VERSION == 6);
     }
 }
 

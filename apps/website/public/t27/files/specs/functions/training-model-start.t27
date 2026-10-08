@@ -40,3 +40,10 @@ pub const SAFE_PROBE : str = "{\"telegram_id\": \"0\", \"bot_name\": \"e2e_nonex
 pub const PROBE_RESULT : str = "FAILED-at-guard";
 pub const CONTROL : str = "spec+code";
 pub const NOTE : str = "RETRIES is 0 by declaration: a failed start is not retried, because a retry would create a second Replicate training. Guard is validate-steps.";
+
+test test_training_model_start_constants {
+  assert KIND == "function";
+  assert ID == "training-model-start";
+  assert TRIGGER == "event";
+  assert RETRIES == 0;
+}

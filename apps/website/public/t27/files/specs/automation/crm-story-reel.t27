@@ -125,9 +125,141 @@
 // link under a finished reel leads to the chat with the agent, not to a page of its own. The
 // chat now shows the same reels widget above the talk when her template is ready, so the next
 // reel and the agent who makes it stand on one screen. PAGE_ROUTE is "chat".
+// v19 (2026-10-03, owner's reel of that morning): a still with no person, a reel of 18 s, and
+// delivery from a bot he does not talk to. Scene one came back an empty street: the prompt
+// named the setting first and the person second, and nothing looked at the picture. The
+// person now leads the still's prompt, and our own vision answers "is a face visible?" of
+// every new still: no face, one redraw; still none, the run stops before a voice or a lip-sync
+// is paid for it. Vision down is "unchecked", said aloud, never a refusal. Each line is heard
+// before its lip-sync: a voice longer than LINE_MAX_MS names the line to shorten and skips
+// that scene's lip-sync, so three lines, two breaths and the pause stay within the 15 s story.
+// The owner, the same day: a talking-head reel opens on the talking head in a wide shot, not on
+// a picture, and its first line is a hook, not "good morning in the rain". Scene one's still is
+// now the source photo itself, never redrawn and never given a setting; a first line that
+// opens with a greeting is refused before anything is drawn or paid for.
+// And then: "we do everything without leaving the studio, working with shots" -- his reel had
+// put him on a street in the rain. A scene with no setting is now a SHOT of the source photo:
+// wide, medium or close, cut from the same picture, so the studio and the look stay exactly his.
+// Nothing is drawn for it, nothing is paid for it, no face check is needed. A setting is still
+// drawn when a caller asks for one (a client's gift reel), never by default.
+// The finished reel reaches the person through their own bot -- the house through @t27ai_bot
+// -- before the service's main bot. And the house no longer asks ElevenLabs for a voice: a
+// voice of its own there used to win over the owner's clone.
+// v20 (2026-10-03, owner on that reel: "save the template as .t27 with all its parameters; a
+// call like the one in the reel widget; where are the yellow subtitles; let others in the CRM
+// use this template", then "an English version right away, for different clients", then "a
+// widget in the CRM with templates, for making one comfortably"). The hook reel is now the
+// template TEMPLATE_HOOK_STUDIO: the source photo, four shots of the studio, a hook first, the
+// person's own voice, captions, the pause and the call. Its lines exist in two languages; a
+// seller picks the template and the language in the CRM, may edit every line before the press,
+// and the server lists the templates -- the panel draws what it is told. Every story reel now
+// carries yellow captions, word by word, heard from each clip's own soundtrack: no offsets to
+// add, and a line whose words whisper counted alike is shown as written. Captions that cannot
+// be heard leave the reel without them, said aloud, never unmade. The pause shows the call the
+// way the widget draws it: the call in the title colour, pulsing, over a round button in the
+// accent colour -- when there is anything to call.
+// v21 (2026-10-03, owner: "close the hole"): a reel ordered by a topic still left the studio.
+// The writer of a topic reel was told "one NEW setting per scene, never repeat the
+// background", so every reel she pressed for herself, and every reel a seller ordered by a
+// topic alone, put her in invented places and paid a still and a face check for each -- while
+// a seller's template stayed in the studio. NEW_SETTING_EACH_SCENE is now false. The writer is
+// asked for lines only (WRITER_WRITES_SETTINGS), and a place it returns anyway is dropped by
+// code before the job keeps its scenes (WRITER_SETTING_DROPPED), not left to the prompt. A
+// place is drawn only when a caller names it in a script of their own (setting_drawn).
+// v22 (2026-10-03, owner: "why does it make MY call and not the client's? what a mess"): a
+// reel made FOR A CLIENT ended with the house's call. A seller's template press took the
+// template's call ("Write to Trinity") and its button (@t27ai_bot) for any client, the
+// template's last line said the house's call aloud, and story_reel for a client read neither
+// her call nor her card. A client's reel now never carries the house's mark. The call is the
+// seller's for this reel, else hers -- her story call, her approved call, the default -- and
+// the template's call only on the house's own reel (call_from, profile_call_from). The button
+// is the seller's, her kept card, her profile, or none, never the template's (button_from). A
+// given call or button naming the house (HOUSE_MARKS) is replaced by hers, and the answer says
+// so (house_word_replaced). The template's last line ends with her call when it fits the
+// editor (last_line_way). story_reel for a client takes the same order and speaks her voice: a
+// client turn's face is the client, and a client turn naming another client is refused
+// (voice_of). The stopgap that kept the template at home for a client is superseded: the
+// template is open to a client, told in its CLIENT VERSION. No line of a client's reel names the
+// house -- not a template's line, not a line the agent, the writer or a seller wrote or edited,
+// so no caption either, and no call or button on the end card -- unless it is the person's own
+// words, typed this turn (line_way). Own words are judged LINE BY LINE, not by the message: a
+// line naming the house is hers only when that line -- the whole line, or each house name in it
+// with the line's words around it (OWN_WORDS_REACH) -- is in what she typed this turn, read as
+// words with case, punctuation and spaces aside (own_words). Her message naming the house
+// anywhere is not enough: sellers address the bot by name, so "Trinity, make a reel" lends
+// "This is Trinity" nothing (NAMING_THE_BOT_LENDS), while "at the end let it say: Write to
+// Trinity" makes "Write to Trinity" hers. Every template line has a house-free client version,
+// kept by the host, and a client's list shows only those; any other line naming the house is
+// refused before anything is spent (REFUSED_BEFORE_SPEND, charged), as split-reel v7 refuses it.
+// v23 (2026-10-04, 999#3564): the detector of the house's names missed two spellings and
+// caught two things that are not the house. "write to t27ai" passed: T27 was read only as a
+// whole word, so the handle and the domain slipped by. Trinity in Russian with a Latin T passed:
+// a model writing Russian mixes letters that look alike, and the detector read code points, not
+// what a reader sees. Both are now read as a reader reads them. The text and every mark are
+// folded first -- NFKC (a superscript three is a 3), invisible characters dropped
+// (INVISIBLES_DROPPED), one case, each Cyrillic letter that looks Latin read as that Latin letter
+// (FOLD_LOOKALIKES, LOOKALIKE_LATIN) -- and then each mark is judged by what stands around it:
+// a name anywhere, inside a longer word too (name_mark); T27 when it starts a word, t27ai and
+// t27_ai included, not after a letter (at27) nor before a digit (T270) (code_mark,
+// CODE_MARK_PREFIX). The product is one token (product_mark, PRODUCT_ONE_TOKEN): "our S3 AI
+// pipeline" is S3 the storage and the word AI, not S3AI. "I studied at Trinity College" stays
+// a house name (NAME_IN_ANY_CONTEXT). No rule on the word after a name clears the college and
+// not the house: "Trinity" before a capital word is also "Trinity AI", "Trinity Bot" and every
+// title-cased call ("Write To Trinity AI"). And the costs are not equal: a refusal costs a line
+// the agent wrote, rewritten for free, never one she typed herself (own_words), while a miss
+// puts the house's name on a client's reel. So a rule that clears a false positive must not
+// clear a mark: the bare name, Trinity S3AI, T27 and @t27ai_bot stay flagged.
+// v24 (2026-10-04, t27#5913): HOUSE_SKIPS_ELEVENLABS is gone, and its assertion with it. The
+// flag described a lookup: audio_generate asking ElevenLabs for a voice when no voice and no
+// clone was chosen, skipped for the house. split-reel v8 (t27#5890) removed that lookup. An
+// ordinary caller with no voice is now refused before the charge, and the house speaks the
+// owner's clone. Nothing performs the lookup any more, so a flag saying the house skips it was
+// true of nothing. The house's voice is split-reel's rule (voice_refused, owner_voice_allowed)
+// and is not restated here. The delivery half of that test stands.
+// v25 (2026-10-05, owner's rule: a client's reel ends in the client's colours, the house's gold
+// only on the house's own reel): a client with no palette -- none from the seller, none kept,
+// none in her profile -- still got the closing card whenever there was a call, and StoryReel.tsx
+// drew it in the defaults above: the house's gold call and green button on her reel. A client
+// with half a palette got the gold for the half she lacked. The host now fills every colour of
+// a client's card before the render whenever the pause shows it (card_filled): hers where she
+// has one, else ink -- white or black, whichever contrasts more with her ground (default_ink),
+// which always reads (EXTREME_MIN_CONTRAST_X10). The contrast check reads the card as it will
+// be drawn (CLIENT_CARD_CHECKED_AS_DRAWN): a cream ground with no call colour is no longer
+// refused for a gold that would never be drawn. The house's own reel keeps the defaults.
+// v26 (2026-10-06, two defects seen on job 11, the owner's own reel): (1) crm_story_reel for
+// the owner refused his own lines naming Trinity. The voice step named him as for_lead, so it
+// read his reel as a client's and refused the house's name. A reel whose client is the caller
+// himself is his own reel (reel_is_own): line_way keeps his lines as on any own reel. The
+// owner's voice is not widened by this: only the house's own turn speaks the owner's clone.
+// (2) The end card of an own reel given only a button drew no ground and a dark title over the
+// face: the composition's defaults are not applied to a card passed with some fields, so every
+// field left out was empty. Now every card the pause shows has every colour set before the
+// render (card_complete): a client's as in v25, the own reel's from the defaults, which are now
+// a near-black ground #0B0B0B with gold #FFD700 for the call and the button and white text.
+// The defaults read: gold on the ground is 14.0:1 and white 19.6:1, both measured by the host
+// (DEFAULT_TITLE_CONTRAST_X10, DEFAULT_TEXT_CONTRAST_X10) and both above END_CARD_CONTRAST_MIN_X10.
 // Delivered live on 2026-09-26 (two reels for one client, forwarded by the owner). On
 // 2026-09-27 the voice provider answered HTTP 402 (no credit): the voice leg is BLOCKED by
 // money, not by code, and Kie has no voice cloning to fall back to.
+// v27 (2026-10-06, 999#3803): the template gallery previews each script's end card before the
+// press, and with no card in the panel yet it drew black and a green #00FF88 button while the
+// render delivers #0B0B0B and gold. A preview is a promise about the render: a field the panel
+// has no card for is drawn in END_CARD_DEFAULT_*, the same values card_complete fills, never a
+// colour of the host's own theme (gallery_preview_field).
+// v28 (2026-10-07, 999#3804, t27#6999): a failed job threw away the clips it had already made
+// (jobs 10 and 11), so a retry paid for them twice. A retry renders only the empty slots: of
+// slots_total, slots_done are kept and slots_total - slots_done are rendered (slots_to_render);
+// the price counts only those (retry_price); a done slot is never rendered again (slot_renders).
+// v29 (2026-10-07, 999#3806): brand kit. A client's saved palette (the one kept for her, v10)
+// colours every surface that shows her end card -- each template preview in the gallery and the
+// rendered card alike -- and with none saved both fall to END_CARD_DEFAULT_*. No surface ever
+// takes the host theme's green (brand_kit_field; preview and render never disagree).
+// v30 (2026-10-07, 999#3818, t27#7343): the v28 reuse rule did not say WHAT must match for a
+// made piece to be carried. A retry in another style kept stills drawn in the old style, and a
+// retry in another voice mode kept clips lip-synced to the old voice. Stills are carried only
+// when the style matches (carry_stills); clips only when the stills are carried AND the voice
+// mode matches (carry_clips) -- a clip is a still that speaks. A failed job that never recorded
+// its voice mode carries no clips: an unknown voice cannot be said to match.
 // phi^2 + 1/phi^2 = 3 | TRINITY
 
 module automation::crm_story_reel {
@@ -135,7 +267,7 @@ module automation::crm_story_reel {
     pub const KIND : str = "automation";
     pub const ID : str = "crm-story-reel";
     pub const REPO : str = "999-multibots-telegraf";
-    pub const VERSION : u8 = 18;
+    pub const VERSION : u8 = 30;
 
     // ---- Who qualifies ------------------------------------------------------------------
     // Both halves, nothing else. A profile only overrides the look, the call and who pays.
@@ -153,7 +285,7 @@ module automation::crm_story_reel {
     pub const SCENES_DEFAULT : u16 = 3;
     pub const SCENES_MIN : u16 = 1;
     pub const SCENES_MAX : u16 = 6;
-    pub const NEW_SETTING_EACH_SCENE : bool = true;  // the source photo's background never repeats
+    pub const NEW_SETTING_EACH_SCENE : bool = false;  // v21: a scene keeps the studio unless a caller names a place
     pub const PAUSE_SEC : u16 = 3;
     pub const PAUSE_SEC_MIN : u16 = 1;
     pub const PAUSE_SEC_MAX : u16 = 4;
@@ -261,10 +393,25 @@ module automation::crm_story_reel {
     pub const END_CARD_ARG : str = "end_card";  // crm_story_reel and story_reel
     pub const END_CARD_KEPT_IN_JOB : bool = true;  // story_jobs.end_card: a resume renders the same card
     pub const END_CARD_BUTTON_MAX : u16 = 60;
-    pub const END_CARD_DEFAULT_BG : str = "#000000";  // StoryReel.tsx takes its defaults from here
+    pub const END_CARD_DEFAULT_BG : str = "#0B0B0B";  // StoryReel.tsx takes its defaults from here
     pub const END_CARD_DEFAULT_TITLE : str = "#FFD700";
     pub const END_CARD_DEFAULT_TEXT : str = "#FFFFFF";
-    pub const END_CARD_DEFAULT_ACCENT : str = "#00FF88";
+    pub const END_CARD_DEFAULT_ACCENT : str = "#FFD700";  // v26: the button is gold, as the call
+    // ---- A client's card is never the house's (v25) ------------------------------------------
+    // The defaults above are the house's: gold call, green button. On a client's reel a colour
+    // nobody gave is ink -- white or black, whichever contrasts more with the card's ground.
+    pub const HOUSE_COLOURS_ON_CLIENT_REEL : bool = false;
+    pub const INK_HOUSE : u8 = 0;  // the house's own reel: the defaults above
+    pub const INK_WHITE : u8 = 1;
+    pub const INK_BLACK : u8 = 2;
+    pub const INK_WHITE_HEX : str = "#FFFFFF";
+    pub const INK_BLACK_HEX : str = "#000000";
+    pub const CLIENT_CARD_CHECKED_AS_DRAWN : bool = true;  // the contrast check reads the ink, not the gold
+    // ---- Every card shown is complete; the caller's own lead is his own reel (v26) ------------
+    pub const OWN_CARD_FILLED : bool = true;  // the own reel's card takes the defaults before the render
+    pub const DEFAULT_TITLE_CONTRAST_X10 : u16 = 140;  // #FFD700 on #0B0B0B, measured by the host
+    pub const DEFAULT_TEXT_CONTRAST_X10 : u16 = 196;  // #FFFFFF on #0B0B0B, measured by the host
+    pub const CALLER_OWN_LEAD_IS_OWN_REEL : bool = true;  // for_lead == the caller: his own reel
     pub const FIELD_FROM_DEFAULT : u8 = 0;
     pub const FIELD_FROM_PROFILE : u8 = 1;
     pub const FIELD_FROM_SELLER : u8 = 2;
@@ -373,6 +520,158 @@ module automation::crm_story_reel {
     pub const LIVE_RUN_STATUS : str = "delivered-2026-09-26";
     pub const VOICE_LEG_STATUS : str = "clone-402-falls-to-notes-on-kie-2026-09-27";
     pub const CAP_LEG_STATUS : str = "lipsync-met-daily-cap-attempts-burned-2026-09-27";
+
+    // ---- What the owner's reel of 2026-10-03 showed (v19) ------------------------------------
+    pub const STILL_IDENTITY_FIRST : bool = true;  // the person leads the still's prompt, the setting follows
+    pub const STILL_FACE_CHECKED : bool = true;  // our own vision: "is a face visible?" of every new still
+    pub const STILL_FACE_REDRAWS : u16 = 1;  // then the run stops, before a voice is paid for it
+    pub const FACE_UNKNOWN_KEEPS : bool = true;  // vision down: keep it, say "unchecked"
+    pub const FACE_KEEP : u8 = 0;
+    pub const FACE_REDRAW : u8 = 1;
+    pub const FACE_STOP : u8 = 2;
+    pub const LINE_MAX_MS : u32 = 3500;  // one line as heard, the top of "2-4 s" that still fits 15 s
+    pub const LINE_MEASURED_BEFORE_LIPSYNC : bool = true;  // a long line skips its lip-sync, named
+    pub const STORY_DEFAULT_MAX_SEC : u16 = 15;  // the default reel: three lines, two breaths, the pause
+    pub const DELIVER_VIA_HOME_BOT : bool = true;  // the person's own bot before the main one
+    pub const HOUSE_DELIVERY_BOT : str = "t27ai_bot";  // where the owner talks to Trinity
+    pub const OPEN_ON_SOURCE : bool = true;  // scene one is the talking head itself, wide: the source photo
+    pub const OPEN_SCENE : u16 = 0;  // the scene that shows the source photo as it is
+    pub const FIRST_LINE_HOOK : bool = true;  // a greeting first is refused before anything is paid
+    pub const STUDIO_SHOTS : bool = true;  // no setting = a shot of the source, the studio never left
+    pub const SHOT_WIDE : u8 = 0;
+    pub const SHOT_MEDIUM : u8 = 1;
+    pub const SHOT_CLOSE : u8 = 2;
+    pub const SHOT_MEDIUM_PERMILLE : u16 = 650;  // of the source's side: head, shoulders, the mic
+    pub const SHOT_CLOSE_PERMILLE : u16 = 420;  // the face and the mic
+    pub const FACE_X_PERMILLE : u16 = 500;  // where a portrait's face sits in the source
+    pub const WRITER_WRITES_SETTINGS : bool = false;  // a topic reel: the writer writes lines, never places
+    pub const WRITER_SETTING_DROPPED : bool = true;  // a place it returns anyway is dropped by code
+
+    // ---- The hook reel, a template anyone can take (v20) --------------------------------------
+    pub const TEMPLATE_ARG : str = "template";  // crm_story_reel: which template the press makes
+    pub const LANGUAGE_ARG : str = "language";  // and in which language its lines are spoken
+    pub const TEMPLATE_HOOK_STUDIO : str = "hook-studio";
+    pub const TEMPLATES_FROM_SERVER : bool = true;  // the panel draws the server's list, no copy of its own
+    pub const RETRY_REUSES_DONE_SLOTS : bool = true;  // v28: a retry keeps every clip already made
+    pub const BRAND_KIT_ON_EVERY_SURFACE : bool = true;  // v29: saved palette on preview and render alike
+    pub const SURFACE_PREVIEW : u8 = 0;  // a template's preview in the gallery
+    pub const SURFACE_RENDER : u8 = 1;  // the rendered end card
+    pub const HOST_THEME_ACCENT : str = "#00FF88";  // the host's own green: never a card colour
+    pub const GALLERY_PREVIEW_FROM_CARD_DEFAULTS : bool = true;  // v27: no card yet -> the render's defaults, not the theme
+    pub const TEMPLATE_LINES_EDITABLE : bool = true;  // every line may be changed before the press
+    pub const TEMPLATE_SCENES : u16 = 4;  // wide on the hook, then close, medium, close
+    pub const TEMPLATE_BUTTON : str = "@t27ai_bot";  // where the reel sends whoever wants the same
+    pub const TEMPLATE_CALL_EN : str = "Write to Trinity";
+    pub const TEMPLATE_LINE_EN_1 : str = "This isn't me talking. This is Trinity.";
+    pub const TEMPLATE_LINE_EN_2 : str = "She learned my voice from my reels.";
+    pub const TEMPLATE_LINE_EN_3 : str = "Every reel now sounds like me.";
+    pub const TEMPLATE_LINE_EN_4 : str = "Want the same? Message Trinity.";
+    pub const LANG_RU : u8 = 0;  // the host keeps the Russian lines; this file stays ASCII
+    pub const LANG_EN : u8 = 1;
+    pub const LANGUAGES : u8 = 2;
+    pub const LINE_MAX_CHARS : u16 = 48;  // what a line may hold in the editor, near LINE_MAX_MS spoken
+
+    // ---- Yellow captions, word by word (v20) --------------------------------------------------
+    pub const CAPTIONS_ON : bool = true;  // every story reel, not only the template
+    pub const CAPTIONS_PER_SCENE : bool = true;  // each clip heard by itself: times start at its own zero
+    pub const CAPTION_TEXT_FROM_LINE : bool = true;  // words counted alike: the line as written
+    pub const CAPTIONS_MISSING_KEEPS_REEL : bool = true;  // nothing heard: the reel without them, said
+    pub const CAPTION_COLOR : str = "#FFFF00";
+    pub const CAPTION_MAX_WORDS : u16 = 1;
+    pub const CAPTION_TOP_PERCENT : u16 = 70;  // under the face of every shot, above the bottom bar
+
+    // ---- The call, as the widget draws it (v20) -----------------------------------------------
+    pub const CTA_CARD_LIKE_WIDGET : bool = true;  // the call in the title colour over a round button
+    pub const CTA_PULSE_MS : u16 = 2400;  // the widget's story-reel-pulse
+    pub const FACE_Y_PERMILLE : u16 = 290;  // measured on studio-lab: 270-290
+    pub const FACE_IN_SHOT_PERMILLE : u16 = 360;  // the face a third down the cut shot
+    pub const SHOT_WIDTH : u16 = 720;  // what a cut shot is scaled to for the lip-sync
+    pub const SHOT_HEIGHT : u16 = 1280;
+
+    // ---- A client's reel carries the client's call (v22) --------------------------------------
+    // The house is named by BOT_SPOKEN_AS, its Russian spelling (kept by the host, this file
+    // stays ASCII), HOUSE_DELIVERY_BOT (TEMPLATE_BUTTON is it with an at-sign), HOUSE_BRAND and
+    // HOUSE_PRODUCT (its superscript spelling too, after the fold of v23). One detector in the host
+    // reads them all, for every spec that refuses a house name on a client's reel.
+    pub const HOUSE_BRAND : str = "T27";
+    pub const HOUSE_PRODUCT : str = "S3AI";
+    pub const HOUSE_MARKS : u8 = 5;
+    pub const HOUSE_CALL_ON_CLIENT_REEL : bool = false;  // the template's call: the house's own reel only
+    pub const HOUSE_BUTTON_ON_CLIENT_REEL : bool = false;  // and its button
+    pub const HOUSE_WORD_REPLACED_SAID : bool = true;  // a given house call replaced is said in the answer
+    pub const CALL_FROM_SELLER : u8 = 0;  // the seller's call for this reel
+    pub const CALL_FROM_TEMPLATE : u8 = 1;  // the template's call
+    pub const CALL_FROM_PROFILE : u8 = 2;  // the lead's own call, from her profile
+    pub const CALL_FROM_STORY : u8 = 3;  // her story_reel.cta
+    pub const CALL_FROM_APPROVED : u8 = 4;  // her approved_cta
+    pub const CALL_FROM_DEFAULT : u8 = 5;  // the host's default call, "write to me"
+    pub const FIELD_FROM_TEMPLATE : u8 = 4;  // the template's button, the house's own reel only
+    pub const TEMPLATE_LEAD_EN_4 : str = "Want the same?";  // the last line, before the call
+    pub const LAST_LINE_LEAD_AND_CALL : u8 = 0;  // "Want the same?" and her call
+    pub const LAST_LINE_CALL : u8 = 1;  // her call alone, when both do not fit
+    pub const LAST_LINE_LEAD : u8 = 2;  // the lead-in alone: no call, or one in another language
+    pub const SPEAKS_LEAD : u8 = 0;  // the lead's voice: her clone, or her notes
+    pub const SPEAKS_CALLER : u8 = 1;  // the caller's own voice, on the caller's own reel
+    pub const SPEAKS_REFUSED : u8 = 2;  // a client turn naming another client
+    pub const CLIENT_TURN_SPEAKS_CLIENT : bool = true;  // a client turn's face is the client
+
+    // ---- The house's names, read as a reader reads them (v23) ----------------------------------
+    // The text and every mark are folded the same way before they are compared: NFKC (the
+    // superscript three is a 3, a full-width letter is its letter), invisible characters dropped,
+    // one case, and each Cyrillic letter whose capital looks like a Latin capital read as that
+    // Latin letter (Te is T, Er is P, En is H; LOOKALIKE_LATIN lists the Latin side). Greek is not
+    // folded: the leak is a model writing Russian that mixes the two scripts it writes. Then each
+    // mark found is judged by what stands around it -- a name (name_mark), the brand as a code
+    // (code_mark), the product as one code token (product_mark). The rows of 999#3564 are vectors
+    // the host runs through its detector; the Russian row, Trinity in Cyrillic with a Latin T, is
+    // kept by the host, as this file stays ASCII.
+    pub const FOLD_LOOKALIKES : bool = true;  // a Cyrillic look-alike reads as its Latin letter
+    pub const INVISIBLES_DROPPED : bool = true;  // a zero-width or soft-hyphen character splits no mark
+    pub const LOOKALIKE_LATIN : str = "abcdehijkmopqstwxy";  // the Latin letters a Cyrillic one passes for
+    pub const NAME_INSIDE_WORD : bool = true;  // TrinityBot, #trinity: still the name
+    pub const NAME_IN_ANY_CONTEXT : bool = true;  // Trinity College too: no word after it tells which
+    pub const CODE_MARK_PREFIX : bool = true;  // T27 starting a word -- t27ai, t27_ai -- is the brand
+    pub const PRODUCT_ONE_TOKEN : bool = true;  // S3AI is one token; S3 AI is two words
+    pub const MARK_ROW_T27AI_EN : str = "write to t27ai";  // names the house: the brand starts a word
+    pub const MARK_ROW_S3_SPACE_EN : str = "our S3 AI pipeline";  // names nothing: S3 and AI
+    pub const MARK_ROW_COLLEGE_EN : str = "I studied at Trinity College";  // names the house
+    pub const MARK_ROW_TITLE_CASE_EN : str = "Write To Trinity AI";  // a title-cased call: the house
+
+    // ---- Every line of a client's reel (v22) ---------------------------------------------------
+    // Every line is checked, the first as much as the last: the captions are the lines as
+    // written (CAPTION_TEXT_FROM_LINE), so a line naming the house is a caption naming it too.
+    // A template's line on a client's reel is its client version, always -- the host keeps one
+    // for every line, in every language, and none of them names the house. A line someone wrote
+    // or edited -- the agent, the writer of a topic reel, a seller in the editor -- stands when it
+    // names no house mark, or when it is the person's own words typed this turn (what she typed,
+    // set by code, never by the model) -- judged for THAT line, not for her message (own_words).
+    // Any other is refused before the first paid step.
+    pub const HOUSE_LINE_ON_CLIENT_REEL : bool = false;  // a house name nobody typed, on a client's reel
+    pub const CLIENT_VERSION_NAMES_HOUSE : bool = false;  // no template's client version names the house
+    pub const CLIENT_LIST_HOUSE_FREE : bool = true;  // a client's template list: client versions only
+    pub const LINE_FROM_TEMPLATE : u8 = 0;  // the template's line as the template has it
+    pub const LINE_FROM_EDIT : u8 = 1;  // written or edited: the agent, the writer, a seller
+    pub const LINE_FROM_PERSON : u8 = 2;  // the person's own words, typed this turn
+    pub const LINE_KEPT : u8 = 0;
+    pub const LINE_CLIENT_VERSION : u8 = 1;  // the template's house-free version of the line
+    pub const LINE_REFUSED : u8 = 2;  // refused before anything is spent
+    // A refusal here comes before the first paid step -- the still, the voice, the lip-sync --
+    // so a refused press takes nothing and nothing is given back (split-reel v7, the same word).
+    pub const REFUSED_BEFORE_SPEND : bool = true;
+
+    // ---- Her own words, line by line (v22) ----------------------------------------------------
+    // A line naming the house is hers only when THAT LINE's words are in what she typed this
+    // turn: the whole line, or each house name in it with up to OWN_WORDS_REACH of the line's
+    // words either side. Both are read as words -- case, punctuation and spaces aside -- and must
+    // hold a word that is not a house name, so the bot's name alone is never her line. Her
+    // message naming the house somewhere lends no line its name: sellers address the bot by name,
+    // and a message-level reading let every house name through in that, the common case.
+    pub const NAMING_THE_BOT_LENDS : bool = false;  // her message naming the house lends no line
+    pub const OWN_WORDS_REACH : u8 = 2;  // the line's words either side that come with a house name
+    pub const OWN_SAID_ADDRESS_EN : str = "Trinity, make a reel";  // she addresses the bot...
+    pub const OWN_LINE_ADDRESS_EN : str = "This is Trinity";  // ...so this line is not hers
+    pub const OWN_SAID_QUOTE_EN : str = "at the end let it say: Write to Trinity";  // she dictates...
+    pub const OWN_LINE_QUOTE_EN : str = "Write to Trinity";  // ...so this line is hers
 
     struct Job {
         has_face: bool,
@@ -512,6 +811,54 @@ module automation::crm_story_reel {
         return FIELD_FROM_DEFAULT;
     }
 
+    // Where a gallery preview takes a field of the end card (v27): the panel's card when it holds
+    // one, else the render's default -- the preview never invents a colour of its own.
+    fn gallery_preview_field(panel_has: bool) -> u8 {
+        if panel_has {
+            return FIELD_FROM_SELLER;
+        }
+        return FIELD_FROM_DEFAULT;
+    }
+
+    // Where a surface takes an end-card colour (v29, brand kit): the client's saved palette when
+    // she has one, else the render's default -- the same answer on every surface.
+    fn brand_kit_field(has_client_palette: bool, surface: u8) -> u8 {
+        if has_client_palette {
+            return FIELD_FROM_KEPT;
+        }
+        return FIELD_FROM_DEFAULT;
+    }
+
+    // How many slots a retry renders (v28): only the empty ones. A count of done slots above the
+    // total is a broken row, and renders nothing rather than wrapping around.
+    fn slots_to_render(slots_total: u16, slots_done: u16) -> u16 {
+        if slots_done >= slots_total {
+            return 0;
+        }
+        return slots_total - slots_done;
+    }
+
+    // What a retry charges (v28): the slots it renders, never the ones already made.
+    fn retry_price(slots_total: u16, slots_done: u16, per_slot: u16) -> u16 {
+        return slots_to_render(slots_total, slots_done) * per_slot;
+    }
+
+    // Whether one slot is rendered on a retry (v28): a done slot never is.
+    fn slot_renders(done: bool) -> bool {
+        return !done;
+    }
+
+    // Whether a retry keeps the stills a failed job made (v30): only in the same style.
+    fn carry_stills(same_style: bool) -> bool {
+        return same_style;
+    }
+
+    // Whether a retry keeps the clips a failed job made (v30): only when its stills are carried
+    // and the voice mode is recorded and the same. An unrecorded voice mode never matches.
+    fn carry_clips(same_style: bool, same_voice: bool, voice_known: bool) -> bool {
+        return carry_stills(same_style) && voice_known && same_voice;
+    }
+
     // Whether a #hex colour has a length CSS reads: #rgb, #rgba, #rrggbb, #rrggbbaa.
     fn hex_digits_ok(n: u8) -> bool {
         return n == 3 || n == 4 || n == 6 || n == 8;
@@ -628,8 +975,303 @@ module automation::crm_story_reel {
     }
 
     // Whether the reel leaves for a client chat: the owner's press, and nothing else.
+    // What a new still's face check leads to: kept, drawn once more, or the run stops.
+    fn still_face_action(has_face: bool, redraws: u16) -> u8 {
+        if has_face {
+            return FACE_KEEP;
+        }
+        if redraws < STILL_FACE_REDRAWS {
+            return FACE_REDRAW;
+        }
+        return FACE_STOP;
+    }
+
+    // Whether a scene shows the source photo as it is, with no still drawn for it.
+    fn scene_is_source(scene: u16) -> bool {
+        return OPEN_ON_SOURCE && scene == OPEN_SCENE;
+    }
+
+    // Whether a scene's place is drawn (v21): only one a caller named in a script of their
+    // own. The writer of a topic reel writes lines, and a place it returns anyway is dropped.
+    fn setting_drawn(from_writer: bool, has_setting: bool) -> bool {
+        return has_setting && (!from_writer || WRITER_WRITES_SETTINGS);
+    }
+
+    // Which shot a scene is: wide first, then close and medium by turns -- a cut always
+    // changes the size, so a jump between two scenes never looks like a glitch.
+    fn shot_of_scene(scene: u16) -> u8 {
+        if scene == OPEN_SCENE {
+            return SHOT_WIDE;
+        }
+        if scene % 2 == 1 {
+            return SHOT_CLOSE;
+        }
+        return SHOT_MEDIUM;
+    }
+
+    // How much of the source's side a shot keeps.
+    fn shot_permille(shot: u8) -> u16 {
+        if shot == SHOT_CLOSE {
+            return SHOT_CLOSE_PERMILLE;
+        }
+        if shot == SHOT_MEDIUM {
+            return SHOT_MEDIUM_PERMILLE;
+        }
+        return 1000;
+    }
+
+    // Whether a line, as heard, may go on to its lip-sync.
+    fn line_fits(ms: u32) -> bool {
+        return ms <= LINE_MAX_MS;
+    }
+
+    // Whether a line typed in the editor may be sent: something, and no more than it holds.
+    fn line_fits_chars(chars: u16) -> bool {
+        return chars > 0 && chars <= LINE_MAX_CHARS;
+    }
+
+    // The longest a reel of n scenes may run, in ms: its lines, the breaths, the pause.
+    fn reel_max_ms(scenes: u16) -> u32 {
+        return scenes * LINE_MAX_MS + (scenes - 1) * BREATH_MS + PAUSE_SEC * 1000;
+    }
+
+    // The language a line is spoken in: any Cyrillic letter makes it Russian.
+    fn language_of(has_cyrillic: bool) -> u8 {
+        if has_cyrillic {
+            return LANG_RU;
+        }
+        return LANG_EN;
+    }
+
+    // Whether the captions of a scene show its line as written, or the words as heard.
+    fn caption_uses_line(line_words: u16, heard_words: u16) -> bool {
+        return CAPTION_TEXT_FROM_LINE && heard_words > 0 && line_words == heard_words;
+    }
+
+    // Whether the pause shows the widget's call card: when there is a call or a card to show.
+    fn cta_card_shown(call_chars: u16, has_end_card: bool) -> bool {
+        return CTA_CARD_LIKE_WIDGET && (has_end_card || call_chars > 0);
+    }
+
+    // Whether the host fills every colour of a reel's end card before the render (v25): on a
+    // client's reel, whenever the pause shows the card -- so the composition's house defaults
+    // are never what a client's card is drawn in.
+    fn card_filled(own_reel: bool, has_end_card: bool, call_chars: u16) -> bool {
+        return !own_reel && !HOUSE_COLOURS_ON_CLIENT_REEL && cta_card_shown(call_chars, has_end_card);
+    }
+
+    // Whether every colour of the card is set before the render (v26): whenever the pause shows
+    // it -- a client's in ink (card_filled), the own reel's in the defaults.
+    fn card_complete(own_reel: bool, has_end_card: bool, call_chars: u16) -> bool {
+        if card_filled(own_reel, has_end_card, call_chars) {
+            return true;
+        }
+        return own_reel && OWN_CARD_FILLED && cta_card_shown(call_chars, has_end_card);
+    }
+
+    // Whether a reel is the caller's own (v26): the house's own turn, or a reel whose client
+    // is the caller himself.
+    fn reel_is_own(house_own: bool, lead_is_caller: bool) -> bool {
+        if house_own {
+            return true;
+        }
+        return lead_is_caller && CALLER_OWN_LEAD_IS_OWN_REEL;
+    }
+
+    // The colour a field nobody gave takes (v25): the house's default on its own reel, else
+    // white or black, whichever contrasts more with the ground (a tie is white).
+    fn default_ink(own_reel: bool, white_x10: u16, black_x10: u16) -> u8 {
+        if own_reel || HOUSE_COLOURS_ON_CLIENT_REEL {
+            return INK_HOUSE;
+        }
+        if white_x10 >= black_x10 {
+            return INK_WHITE;
+        }
+        return INK_BLACK;
+    }
+
     fn leaves_for_client(owner_pressed: bool) -> bool {
         return owner_pressed && !SENT_WITHOUT_PRESS;
+    }
+
+    // Whether a call or a button given for a reel is used: something, and on a client's reel
+    // nothing that names the house.
+    fn word_taken(chars: u16, names_house: bool, own_reel: bool) -> bool {
+        return chars > 0 && (own_reel || !names_house);
+    }
+
+    // Whether a given call or button is replaced by hers -- and the answer says so.
+    fn house_word_replaced(chars: u16, names_house: bool, own_reel: bool) -> bool {
+        return HOUSE_WORD_REPLACED_SAID && chars > 0 && names_house && !own_reel;
+    }
+
+    // Where a reel's call comes from: the seller's word for it, the template's on the house's
+    // own reel, else the lead's own.
+    fn call_from(seller_ok: bool, template_given: bool, own_reel: bool) -> u8 {
+        if seller_ok {
+            return CALL_FROM_SELLER;
+        }
+        if template_given && (own_reel || HOUSE_CALL_ON_CLIENT_REEL) {
+            return CALL_FROM_TEMPLATE;
+        }
+        return CALL_FROM_PROFILE;
+    }
+
+    // Which of her own calls: her story call, her approved call, or the default.
+    fn profile_call_from(story_ok: bool, approved_ok: bool) -> u8 {
+        if story_ok {
+            return CALL_FROM_STORY;
+        }
+        if approved_ok {
+            return CALL_FROM_APPROVED;
+        }
+        return CALL_FROM_DEFAULT;
+    }
+
+    // Where a reel's end-card button comes from: the seller's, the template's on the house's own
+    // reel, else her kept card, her profile, or none.
+    fn button_from(seller_ok: bool, template_given: bool, own_reel: bool, kept_ok: bool, profile_ok: bool) -> u8 {
+        if seller_ok {
+            return FIELD_FROM_SELLER;
+        }
+        if template_given && (own_reel || HOUSE_BUTTON_ON_CLIENT_REEL) {
+            return FIELD_FROM_TEMPLATE;
+        }
+        if kept_ok {
+            return FIELD_FROM_KEPT;
+        }
+        if profile_ok {
+            return FIELD_FROM_PROFILE;
+        }
+        return FIELD_FROM_DEFAULT;
+    }
+
+    // How the template's last line ends on a client's reel: the lead-in and her call, her call
+    // alone, or the lead-in alone -- never longer than the editor holds.
+    fn last_line_way(lead_chars: u16, call_chars: u16, same_language: bool) -> u8 {
+        if call_chars == 0 || !same_language {
+            return LAST_LINE_LEAD;
+        }
+        if lead_chars + 1 + call_chars <= LINE_MAX_CHARS {
+            return LAST_LINE_LEAD_AND_CALL;
+        }
+        if call_chars <= LINE_MAX_CHARS {
+            return LAST_LINE_CALL;
+        }
+        return LAST_LINE_LEAD;
+    }
+
+    // Whose voice story_reel speaks: the lead's when one is named or the turn is a client's,
+    // the caller's on its own reel, and a client turn naming another client is refused.
+    fn voice_of(lead_named: bool, client_turn: bool, names_this_client: bool) -> u8 {
+        if client_turn && lead_named && !names_this_client {
+            return SPEAKS_REFUSED;
+        }
+        if lead_named || (client_turn && CLIENT_TURN_SPEAKS_CLIENT) {
+            return SPEAKS_LEAD;
+        }
+        return SPEAKS_CALLER;
+    }
+
+    // What becomes of one line of a reel: on the caller's own reel it stands; on a client's, a
+    // template's line is its client version, and a written or edited one stands only when it
+    // names no house mark or is the person's own words typed this turn -- her line, or its
+    // house-name words, in what she typed (own_words, line_from). Her message naming the house
+    // anywhere is not enough. Any other is refused.
+    fn line_way(names_house: bool, own_reel: bool, from: u8) -> u8 {
+        if own_reel {
+            return LINE_KEPT;
+        }
+        if from == LINE_FROM_TEMPLATE {
+            return LINE_CLIENT_VERSION;
+        }
+        if !names_house || from == LINE_FROM_PERSON {
+            return LINE_KEPT;
+        }
+        if HOUSE_LINE_ON_CLIENT_REEL {
+            return LINE_KEPT;
+        }
+        return LINE_REFUSED;
+    }
+
+    // Whether a client's reel says the house's name aloud (and so in its captions): only through
+    // a line kept as written, never through a client version.
+    fn line_names_house(way: u8, names_house: bool) -> bool {
+        if way == LINE_CLIENT_VERSION {
+            return CLIENT_VERSION_NAMES_HOUSE;
+        }
+        return way == LINE_KEPT && names_house;
+    }
+
+    // Whether a press is charged: one that goes ahead pays its price; a refused one pays
+    // nothing, because its refusal came before the charge. The same body as split-reel v7's
+    // `charged`, copied on purpose and recorded in tools/duplicate_bodies_baseline.txt: a
+    // `use a::b;` still generates no import (#5718), so no spec can reuse another's function.
+    fn charged(refused: bool) -> bool {
+        if !refused {
+            return true;
+        }
+        return !REFUSED_BEFORE_SPEND;
+    }
+
+    // Whether a line naming the house is the person's own words, judged for that line: the whole
+    // line is in what she typed this turn (line_in_said), or each house name in it is, with the
+    // line's words around it (phrase_in_said) -- read as words, case, punctuation and spaces
+    // aside, holding a word that is not a house name. That her message names the house somewhere
+    // (said_names_house) lends the line nothing (NAMING_THE_BOT_LENDS).
+    fn own_words(line_in_said: bool, phrase_in_said: bool, said_names_house: bool) -> bool {
+        if line_in_said || phrase_in_said {
+            return true;
+        }
+        return said_names_house && NAMING_THE_BOT_LENDS;
+    }
+
+    // Where a written or edited line comes from, for line_way: the person's when it is her own
+    // words (own_words), else the agent's, the writer's or a seller's edit.
+    fn line_from(own: bool) -> u8 {
+        if own {
+            return LINE_FROM_PERSON;
+        }
+        return LINE_FROM_EDIT;
+    }
+
+    // Whether a house name found in the folded text names the house: anywhere, inside a longer
+    // word too (TrinityBot, #trinity, the handle), and whatever word follows it -- Trinity
+    // College as much as Trinity AI, since no word after the name tells which Trinity it is.
+    fn name_mark(inside_word: bool, word_after: bool) -> bool {
+        if inside_word {
+            return NAME_INSIDE_WORD;
+        }
+        if word_after {
+            return NAME_IN_ANY_CONTEXT;
+        }
+        return true;
+    }
+
+    // Whether a code found in the folded text is the house's: not when a letter or a digit
+    // stands right before it (at27) or a digit right after it (T270 is another number), and yes
+    // when it starts a word (t27ai, the handle and the domain: CODE_MARK_PREFIX).
+    fn code_mark(word_before: bool, digit_after: bool, letter_after: bool) -> bool {
+        if word_before || digit_after {
+            return false;
+        }
+        if letter_after {
+            return CODE_MARK_PREFIX;
+        }
+        return true;
+    }
+
+    // Whether the product found in the folded text is the house's: a code like the brand
+    // (code_ok, from code_mark), written as one token. With a space inside it is two words --
+    // "S3 AI" is S3 the storage and the word AI -- and names nothing (PRODUCT_ONE_TOKEN).
+    fn product_mark(code_ok: bool, space_inside: bool) -> bool {
+        if !code_ok {
+            return false;
+        }
+        if space_inside {
+            return !PRODUCT_ONE_TOKEN;
+        }
+        return true;
     }
 
     test "a client qualifies with a face and a voice, and with nothing less" {
@@ -670,7 +1312,6 @@ module automation::crm_story_reel {
         assert(scenes_ok(6));
         assert(!scenes_ok(0));
         assert(!scenes_ok(7));
-        assert(NEW_SETTING_EACH_SCENE);
     }
 
     test "the pause stays between one and four seconds, three by default" {
@@ -818,6 +1459,16 @@ module automation::crm_story_reel {
         assert(DM_SEND_RECORDED_AS_GIFT);
     }
 
+    test "a gallery preview with no card yet is drawn in the render's defaults, not the theme's green" {
+        assert(GALLERY_PREVIEW_FROM_CARD_DEFAULTS);
+        assert(gallery_preview_field(false) == FIELD_FROM_DEFAULT);
+        assert(gallery_preview_field(true) == FIELD_FROM_SELLER);
+        assert(gallery_preview_field(false) == end_card_field(false, false, false));
+        assert(END_CARD_DEFAULT_ACCENT == END_CARD_DEFAULT_TITLE);
+        assert(END_CARD_DEFAULT_ACCENT != "#00FF88");
+        assert(END_CARD_DEFAULT_BG != "#000000");
+    }
+
     test "her visual at the end: the seller's word, then her profile, then the default, kept in the job" {
         assert(END_CARD_ARG == "end_card");
         assert(END_CARD_KEPT_IN_JOB);
@@ -826,10 +1477,10 @@ module automation::crm_story_reel {
         assert(end_card_field(false, false, true) == FIELD_FROM_PROFILE);
         assert(end_card_field(false, false, false) == FIELD_FROM_DEFAULT);
         assert(END_CARD_BUTTON_MAX == 60);
-        assert(END_CARD_DEFAULT_BG == "#000000");
+        assert(END_CARD_DEFAULT_BG == "#0B0B0B");
         assert(END_CARD_DEFAULT_TITLE == "#FFD700");
         assert(END_CARD_DEFAULT_TEXT == "#FFFFFF");
-        assert(END_CARD_DEFAULT_ACCENT == "#00FF88");
+        assert(END_CARD_DEFAULT_ACCENT == "#FFD700");
     }
 
     test "a colour is #hex that CSS reads, and an unreadable palette of the seller's is refused before spending" {
@@ -955,8 +1606,166 @@ module automation::crm_story_reel {
         assert(price_estimate_notes(3, NOTES_MAX_SEC) < PRICE_ESTIMATE_TOKENS);
     }
 
+    test "a still without a face is drawn once more, then the run stops" {
+        assert(STILL_IDENTITY_FIRST);
+        assert(STILL_FACE_CHECKED);
+        assert(FACE_UNKNOWN_KEEPS);
+        assert(still_face_action(true, 0) == FACE_KEEP);
+        assert(still_face_action(true, STILL_FACE_REDRAWS) == FACE_KEEP);
+        assert(still_face_action(false, 0) == FACE_REDRAW);
+        assert(still_face_action(false, STILL_FACE_REDRAWS) == FACE_STOP);
+    }
+
+    test "a line is heard before its lip-sync, and the default reel stays within 15 s" {
+        assert(LINE_MEASURED_BEFORE_LIPSYNC);
+        assert(line_fits(LINE_MAX_MS));
+        assert(!line_fits(LINE_MAX_MS + 1));
+        assert(!line_fits(4900));  // a line of the 18.3 s reel of 2026-10-03
+        assert(SCENES_DEFAULT * LINE_MAX_MS + (SCENES_DEFAULT - 1) * BREATH_MS + PAUSE_SEC * 1000 <= STORY_DEFAULT_MAX_SEC * 1000);
+        assert(STORY_DEFAULT_MAX_SEC <= REEL_MAX_SEC);
+    }
+
+    test "the finished reel reaches the house through its own bot" {
+        assert(DELIVER_VIA_HOME_BOT);
+        assert(HOUSE_DELIVERY_BOT == "t27ai_bot");
+    }
+
+    test "a talking-head reel opens on the talking head, wide, with a hook" {
+        assert(OPEN_ON_SOURCE);
+        assert(FIRST_LINE_HOOK);
+        assert(scene_is_source(OPEN_SCENE));
+        assert(scene_is_source(0));
+        assert(!scene_is_source(1));
+        assert(!scene_is_source(SCENES_DEFAULT - 1));
+    }
+
+    test "the studio is never left: scenes with no setting are shots of the source" {
+        assert(STUDIO_SHOTS);
+        assert(shot_of_scene(0) == SHOT_WIDE);
+        assert(shot_of_scene(1) == SHOT_CLOSE);
+        assert(shot_of_scene(2) == SHOT_MEDIUM);
+        assert(shot_of_scene(3) == SHOT_CLOSE);
+        assert(shot_permille(SHOT_WIDE) == 1000);
+        assert(shot_permille(SHOT_CLOSE) < shot_permille(SHOT_MEDIUM));
+        assert(shot_permille(SHOT_MEDIUM) < shot_permille(SHOT_WIDE));
+        assert(SHOT_WIDTH * 16 == SHOT_HEIGHT * 9);
+        assert(FACE_IN_SHOT_PERMILLE < 500);
+    }
+
+    test "a reel ordered by a topic stays in the studio: the writer writes lines, never places" {
+        assert(STUDIO_SHOTS);
+        assert(!NEW_SETTING_EACH_SCENE);
+        assert(!WRITER_WRITES_SETTINGS);
+        assert(WRITER_SETTING_DROPPED);
+        assert(!setting_drawn(true, true));
+        assert(!setting_drawn(true, false));
+        assert(setting_drawn(false, true));
+        assert(!setting_drawn(false, false));
+    }
+
+    test "brand kit: no palette -> defaults on preview and render" {
+        assert(BRAND_KIT_ON_EVERY_SURFACE);
+        assert(brand_kit_field(false, SURFACE_PREVIEW) == FIELD_FROM_DEFAULT);
+        assert(brand_kit_field(false, SURFACE_RENDER) == FIELD_FROM_DEFAULT);
+        assert(brand_kit_field(false, SURFACE_PREVIEW) == end_card_field(false, false, false));
+        assert(END_CARD_DEFAULT_ACCENT != HOST_THEME_ACCENT);
+    }
+
+    test "brand kit: palette present -> client colours on every surface, never theme green" {
+        assert(brand_kit_field(true, SURFACE_PREVIEW) == FIELD_FROM_KEPT);
+        assert(brand_kit_field(true, SURFACE_RENDER) == FIELD_FROM_KEPT);
+        assert(brand_kit_field(true, SURFACE_PREVIEW) == brand_kit_field(true, SURFACE_RENDER));
+        assert(brand_kit_field(true, SURFACE_RENDER) == end_card_field(false, true, false));
+        assert(brand_kit_field(true, SURFACE_PREVIEW) != FIELD_FROM_DEFAULT);
+        assert(brand_kit_field(true, SURFACE_PREVIEW) != FIELD_FROM_TEMPLATE);
+    }
+
     test "VERSION says what the header's last note says" {
-        assert(VERSION == 18);
+        assert(VERSION == 30);
+    }
+
+    test "a client's end card is never drawn in the house's gold: a colour nobody gave is white or black ink" {
+        assert(!HOUSE_COLOURS_ON_CLIENT_REEL);
+        assert(INK_WHITE_HEX == "#FFFFFF");
+        assert(INK_BLACK_HEX == "#000000");
+        // The house's own reel keeps the house's defaults.
+        assert(default_ink(true, 210, 10) == INK_HOUSE);
+        assert(default_ink(true, 11, 180) == INK_HOUSE);
+        // A client's: whichever of white and black reads more on her ground.
+        assert(default_ink(false, 210, 10) == INK_WHITE);
+        assert(default_ink(false, 11, 180) == INK_BLACK);
+        assert(default_ink(false, 45, 45) == INK_WHITE);
+        assert(default_ink(false, 44, 45) == INK_BLACK);
+        assert(default_ink(false, 46, 45) == INK_WHITE);
+        // The better of the two always reads, so the ink never needs a refusal.
+        assert(end_card_readable(EXTREME_MIN_CONTRAST_X10));
+        assert(CLIENT_CARD_CHECKED_AS_DRAWN);
+    }
+
+    test "a client's card is filled whenever the pause shows it, so the house default never reaches her reel" {
+        assert(card_filled(false, false, 14));
+        assert(card_filled(false, true, 0));
+        assert(card_filled(false, true, 14));
+        assert(!card_filled(false, false, 0));
+        assert(!card_filled(true, false, 14));
+        assert(!card_filled(true, true, 14));
+        assert(card_filled(false, false, 1) == cta_card_shown(1, false));
+    }
+
+    test "the hook reel is a template of four studio shots with the call to the house bot" {
+        assert(TEMPLATE_ARG == "template");
+        assert(LANGUAGE_ARG == "language");
+        assert(TEMPLATE_HOOK_STUDIO == "hook-studio");
+        assert(TEMPLATES_FROM_SERVER);
+        assert(TEMPLATE_LINES_EDITABLE);
+        assert(TEMPLATE_SCENES >= SCENES_MIN);
+        assert(TEMPLATE_SCENES <= SCENES_MAX);
+        assert(TEMPLATE_SCENES > SCENES_DEFAULT);
+        assert(reel_max_ms(TEMPLATE_SCENES) <= REEL_MAX_SEC * 1000);
+        assert(reel_max_ms(SCENES_DEFAULT) <= STORY_DEFAULT_MAX_SEC * 1000);
+        assert(reel_max_ms(TEMPLATE_SCENES) > STORY_DEFAULT_MAX_SEC * 1000);
+        assert(TEMPLATE_BUTTON == "@t27ai_bot");
+        assert(TEMPLATE_CALL_EN == "Write to Trinity");
+        assert(TEMPLATE_LINE_EN_1 == "This isn't me talking. This is Trinity.");
+        assert(TEMPLATE_LINE_EN_4 == "Want the same? Message Trinity.");
+        assert(shot_of_scene(TEMPLATE_SCENES - 1) == SHOT_CLOSE);
+    }
+
+    test "a template line fits the editor, and an empty or long one is refused before the press" {
+        assert(line_fits_chars(1));
+        assert(line_fits_chars(LINE_MAX_CHARS));
+        assert(!line_fits_chars(0));
+        assert(!line_fits_chars(LINE_MAX_CHARS + 1));
+        assert(LINE_MAX_CHARS * 1000 / LINE_MAX_MS >= 13);
+    }
+
+    test "a line with a Cyrillic letter is Russian, any other is English" {
+        assert(LANGUAGES == 2);
+        assert(LANG_RU != LANG_EN);
+        assert(language_of(true) == LANG_RU);
+        assert(language_of(false) == LANG_EN);
+    }
+
+    test "captions are yellow, word by word, heard from each clip, and the line is shown as written" {
+        assert(CAPTIONS_ON);
+        assert(CAPTIONS_PER_SCENE);
+        assert(CAPTIONS_MISSING_KEEPS_REEL);
+        assert(CAPTION_COLOR == "#FFFF00");
+        assert(CAPTION_MAX_WORDS == 1);
+        assert(CAPTION_TOP_PERCENT > 50);
+        assert(CAPTION_TOP_PERCENT < 85);
+        assert(caption_uses_line(6, 6));
+        assert(!caption_uses_line(6, 7));
+        assert(!caption_uses_line(7, 6));
+        assert(!caption_uses_line(0, 0));
+    }
+
+    test "the pause shows the call as the widget draws it, when there is a call" {
+        assert(CTA_PULSE_MS == 2400);
+        assert(cta_card_shown(14, false));
+        assert(cta_card_shown(0, true));
+        assert(cta_card_shown(14, true));
+        assert(!cta_card_shown(0, false));
     }
 
     test "every reel for a client is a story reel; the silent plan reel only when the owner names it" {
@@ -982,6 +1791,271 @@ module automation::crm_story_reel {
         assert(VOICE_LEG_STATUS == "clone-402-falls-to-notes-on-kie-2026-09-27");
         assert(CAP_LEG_STATUS == "lipsync-met-daily-cap-attempts-burned-2026-09-27");
     }
+
+    test "a client's reel carries her call: the seller's for her, then her own, never the house's" {
+        assert(!HOUSE_CALL_ON_CLIENT_REEL);
+        assert(call_from(true, true, false) == CALL_FROM_SELLER);
+        assert(call_from(true, true, true) == CALL_FROM_SELLER);
+        assert(call_from(false, true, false) == CALL_FROM_PROFILE);
+        assert(call_from(false, true, true) == CALL_FROM_TEMPLATE);
+        assert(call_from(false, false, true) == CALL_FROM_PROFILE);
+        assert(call_from(false, false, false) == CALL_FROM_PROFILE);
+        assert(profile_call_from(true, true) == CALL_FROM_STORY);
+        assert(profile_call_from(true, false) == CALL_FROM_STORY);
+        assert(profile_call_from(false, true) == CALL_FROM_APPROVED);
+        assert(profile_call_from(false, false) == CALL_FROM_DEFAULT);
+    }
+
+    test "a call or a button naming the house on a client's reel is replaced by hers, and the answer says so" {
+        assert(HOUSE_MARKS == 5);
+        assert(BOT_SPOKEN_AS == "Trinity");
+        assert(HOUSE_DELIVERY_BOT == "t27ai_bot");
+        assert(HOUSE_BRAND == "T27");
+        assert(HOUSE_PRODUCT == "S3AI");
+        assert(TEMPLATE_BUTTON == "@t27ai_bot");
+        assert(HOUSE_WORD_REPLACED_SAID);
+        assert(word_taken(12, false, false));
+        assert(!word_taken(12, true, false));
+        assert(word_taken(12, true, true));
+        assert(!word_taken(0, false, false));
+        assert(!word_taken(0, false, true));
+        assert(house_word_replaced(12, true, false));
+        assert(!house_word_replaced(12, true, true));
+        assert(!house_word_replaced(12, false, false));
+        assert(!house_word_replaced(0, true, false));
+        assert(call_from(word_taken(16, true, false), false, false) == CALL_FROM_PROFILE);
+        assert(call_from(word_taken(16, true, true), false, true) == CALL_FROM_SELLER);
+    }
+
+    test "a client's end-card button: the seller's, her kept card, her profile, or none -- never the house bot" {
+        assert(!HOUSE_BUTTON_ON_CLIENT_REEL);
+        assert(FIELD_FROM_TEMPLATE != FIELD_FROM_SELLER);
+        assert(FIELD_FROM_TEMPLATE != FIELD_FROM_KEPT);
+        assert(FIELD_FROM_TEMPLATE != FIELD_FROM_PROFILE);
+        assert(FIELD_FROM_TEMPLATE != FIELD_FROM_DEFAULT);
+        assert(button_from(true, true, false, true, true) == FIELD_FROM_SELLER);
+        assert(button_from(false, true, false, true, true) == FIELD_FROM_KEPT);
+        assert(button_from(false, true, false, false, true) == FIELD_FROM_PROFILE);
+        assert(button_from(false, true, false, false, false) == FIELD_FROM_DEFAULT);
+        assert(button_from(false, true, true, true, true) == FIELD_FROM_TEMPLATE);
+        assert(button_from(false, false, true, true, true) == FIELD_FROM_KEPT);
+        assert(button_from(true, true, true, false, false) == FIELD_FROM_SELLER);
+    }
+
+    test "the template's last line on a client's reel ends with her call, within the editor's limit" {
+        assert(TEMPLATE_LEAD_EN_4 == "Want the same?");
+        assert(last_line_way(14, 16, true) == LAST_LINE_LEAD_AND_CALL);
+        assert(last_line_way(14, LINE_MAX_CHARS - 15, true) == LAST_LINE_LEAD_AND_CALL);
+        assert(last_line_way(14, LINE_MAX_CHARS - 14, true) == LAST_LINE_CALL);
+        assert(last_line_way(14, LINE_MAX_CHARS, true) == LAST_LINE_CALL);
+        assert(last_line_way(14, LINE_MAX_CHARS + 1, true) == LAST_LINE_LEAD);
+        assert(last_line_way(14, 16, false) == LAST_LINE_LEAD);
+        assert(last_line_way(14, 0, true) == LAST_LINE_LEAD);
+    }
+
+    test "story_reel for a client takes the same call and card, and speaks her voice, never the owner's" {
+        assert(CLIENT_TURN_SPEAKS_CLIENT);
+        assert(voice_of(true, false, false) == SPEAKS_LEAD);
+        assert(voice_of(false, true, false) == SPEAKS_LEAD);
+        assert(voice_of(true, true, true) == SPEAKS_LEAD);
+        assert(voice_of(true, true, false) == SPEAKS_REFUSED);
+        assert(voice_of(false, false, false) == SPEAKS_CALLER);
+        assert(call_from(false, false, false) == CALL_FROM_PROFILE);
+        assert(button_from(false, false, false, true, false) == FIELD_FROM_KEPT);
+        assert(button_from(false, false, false, false, true) == FIELD_FROM_PROFILE);
+    }
+
+    test "every template line on a client's reel is its client version, the first as much as the last" {
+        assert(!CLIENT_VERSION_NAMES_HOUSE);
+        assert(CLIENT_LIST_HOUSE_FREE);
+        assert(line_way(true, false, LINE_FROM_TEMPLATE) == LINE_CLIENT_VERSION);
+        assert(line_way(false, false, LINE_FROM_TEMPLATE) == LINE_CLIENT_VERSION);
+        assert(!line_names_house(line_way(true, false, LINE_FROM_TEMPLATE), true));
+        assert(!line_names_house(line_way(false, false, LINE_FROM_TEMPLATE), false));
+        assert(line_way(true, true, LINE_FROM_TEMPLATE) == LINE_KEPT);
+        assert(line_way(false, true, LINE_FROM_TEMPLATE) == LINE_KEPT);
+    }
+
+    test "a written or edited line naming the house on a client's reel is refused before anything is spent" {
+        assert(!HOUSE_LINE_ON_CLIENT_REEL);
+        assert(REFUSED_BEFORE_SPEND);
+        assert(line_way(true, false, LINE_FROM_EDIT) == LINE_REFUSED);
+        assert(line_way(false, false, LINE_FROM_EDIT) == LINE_KEPT);
+        assert(line_way(true, true, LINE_FROM_EDIT) == LINE_KEPT);
+        assert(line_way(false, true, LINE_FROM_EDIT) == LINE_KEPT);
+        assert(!line_names_house(line_way(true, false, LINE_FROM_EDIT), true));
+        assert(!line_names_house(line_way(false, false, LINE_FROM_EDIT), false));
+        assert(!charged(line_way(true, false, LINE_FROM_EDIT) == LINE_REFUSED));
+        assert(charged(line_way(false, false, LINE_FROM_EDIT) == LINE_REFUSED));
+    }
+
+    test "only the person's own words typed this turn may name the house on a client's reel" {
+        assert(line_way(true, false, LINE_FROM_PERSON) == LINE_KEPT);
+        assert(line_way(false, false, LINE_FROM_PERSON) == LINE_KEPT);
+        assert(line_way(true, true, LINE_FROM_PERSON) == LINE_KEPT);
+        assert(line_names_house(line_way(true, false, LINE_FROM_PERSON), true));
+        assert(!line_names_house(line_way(false, false, LINE_FROM_PERSON), false));
+        assert(line_way(true, false, LINE_FROM_EDIT) != line_way(true, false, LINE_FROM_PERSON));
+    }
+
+    test "her own words are judged line by line: naming the bot lends no line the house's name" {
+        // OWN_SAID_ADDRESS_EN + OWN_LINE_ADDRESS_EN: her message names the house, the line is
+        // not in it -- refused, before anything is spent.
+        assert(!NAMING_THE_BOT_LENDS);
+        assert(!own_words(false, false, true));
+        assert(line_from(own_words(false, false, true)) == LINE_FROM_EDIT);
+        assert(line_way(true, false, line_from(own_words(false, false, true))) == LINE_REFUSED);
+        assert(!charged(line_way(true, false, line_from(own_words(false, false, true))) == LINE_REFUSED));
+        // OWN_SAID_QUOTE_EN + OWN_LINE_QUOTE_EN: the whole line is in what she typed -- hers.
+        assert(own_words(true, false, true));
+        assert(line_way(true, false, line_from(own_words(true, false, true))) == LINE_KEPT);
+        // A house name with her words around it, inside a longer line of hers, is hers too.
+        assert(own_words(false, true, true));
+        assert(line_from(own_words(false, true, true)) == LINE_FROM_PERSON);
+        assert(OWN_WORDS_REACH > 0);
+        assert(!own_words(false, false, false));
+    }
+
+    test "a refusal comes before the charge, so a refused press costs nothing" {
+        assert(!charged(true));
+        assert(charged(false));
+        assert(LINE_REFUSED != LINE_KEPT);
+        assert(LINE_REFUSED != LINE_CLIENT_VERSION);
+        assert(LINE_KEPT != LINE_CLIENT_VERSION);
+        assert(LINE_FROM_TEMPLATE != LINE_FROM_EDIT);
+        assert(LINE_FROM_EDIT != LINE_FROM_PERSON);
+        assert(LINE_FROM_TEMPLATE != LINE_FROM_PERSON);
+    }
+
+    test "a Cyrillic letter that looks Latin reads as that letter, and an invisible one splits no name" {
+        // The Russian row -- Trinity in Cyrillic with a Latin T -- folds to the Russian mark,
+        // folded the same way, so it is the bare name, and an agent's line with it is refused.
+        assert(FOLD_LOOKALIKES);
+        assert(INVISIBLES_DROPPED);
+        assert(LOOKALIKE_LATIN == "abcdehijkmopqstwxy");
+        assert(name_mark(false, false));
+        assert(line_way(name_mark(false, false), false, LINE_FROM_EDIT) == LINE_REFUSED);
+        assert(!charged(line_way(name_mark(false, false), false, LINE_FROM_EDIT) == LINE_REFUSED));
+    }
+
+    test "T27 starting a word is the brand: t27ai and t27_ai, not at27 nor T270" {
+        assert(MARK_ROW_T27AI_EN == "write to t27ai");
+        assert(CODE_MARK_PREFIX);
+        assert(code_mark(false, false, true));
+        assert(code_mark(false, false, false));
+        assert(!code_mark(true, false, false));
+        assert(!code_mark(true, false, true));
+        assert(!code_mark(false, true, false));
+        assert(line_way(code_mark(false, false, true), false, LINE_FROM_EDIT) == LINE_REFUSED);
+        assert(line_way(code_mark(true, false, true), false, LINE_FROM_EDIT) == LINE_KEPT);
+    }
+
+    test "the product is one token: our S3 AI pipeline names no house" {
+        assert(MARK_ROW_S3_SPACE_EN == "our S3 AI pipeline");
+        assert(HOUSE_PRODUCT == "S3AI");
+        assert(PRODUCT_ONE_TOKEN);
+        assert(!product_mark(code_mark(false, false, false), true));
+        assert(product_mark(code_mark(false, false, false), false));
+        assert(product_mark(code_mark(false, false, true), false));
+        assert(!product_mark(code_mark(true, false, false), false));
+        assert(line_way(product_mark(code_mark(false, false, false), true), false, LINE_FROM_EDIT) == LINE_KEPT);
+        assert(line_way(product_mark(code_mark(false, false, false), false), false, LINE_FROM_EDIT) == LINE_REFUSED);
+    }
+
+    test "Trinity College stays a house name: a refused line is rewritten, a missed one is on her reel" {
+        assert(MARK_ROW_COLLEGE_EN == "I studied at Trinity College");
+        assert(NAME_IN_ANY_CONTEXT);
+        assert(name_mark(false, true));
+        // The agent's line: refused before anything is spent, and written again.
+        assert(line_way(name_mark(false, true), false, LINE_FROM_EDIT) == LINE_REFUSED);
+        assert(!charged(line_way(name_mark(false, true), false, LINE_FROM_EDIT) == LINE_REFUSED));
+        // Her own typed line: hers to say, college and all.
+        assert(line_way(name_mark(false, true), false, line_from(own_words(true, false, true))) == LINE_KEPT);
+    }
+
+    test "no rule that clears a false positive clears a mark: Trinity, Trinity S3AI, T27 and @t27ai_bot stay" {
+        assert(BOT_SPOKEN_AS == "Trinity");
+        assert(HOUSE_BRAND == "T27");
+        assert(TEMPLATE_BUTTON == "@t27ai_bot");
+        assert(MARK_ROW_TITLE_CASE_EN == "Write To Trinity AI");
+        // Trinity alone, and Trinity before any word: Trinity S3AI, Write To Trinity AI.
+        assert(name_mark(false, false));
+        assert(name_mark(false, true));
+        // TrinityBot, and the delivery bot inside a longer handle.
+        assert(NAME_INSIDE_WORD);
+        assert(name_mark(true, false));
+        // S3AI after Trinity, T27 alone, and the t27 starting @t27ai_bot.
+        assert(product_mark(code_mark(false, false, false), false));
+        assert(code_mark(false, false, false));
+        assert(code_mark(false, false, true));
+        assert(line_way(name_mark(false, true), false, LINE_FROM_EDIT) == LINE_REFUSED);
+        assert(line_way(code_mark(false, false, false), false, LINE_FROM_EDIT) == LINE_REFUSED);
+    }
+
+    test "a reel whose client is the caller himself is his own, and his lines may name the house" {
+        assert(CALLER_OWN_LEAD_IS_OWN_REEL);
+        assert(reel_is_own(false, true));
+        assert(reel_is_own(true, false));
+        assert(reel_is_own(true, true));
+        assert(!reel_is_own(false, false));
+        assert(line_way(true, reel_is_own(false, true), LINE_FROM_EDIT) == LINE_KEPT);
+        assert(line_way(true, reel_is_own(false, false), LINE_FROM_EDIT) == LINE_REFUSED);
+    }
+
+    test "a retry renders only the empty slots and charges only for them" {
+        assert(RETRY_REUSES_DONE_SLOTS);
+        // Nothing made yet: every slot, at full price.
+        assert(slots_to_render(3, 0) == 3);
+        assert(retry_price(3, 0, TOKENS_PER_STILL) == 3 * TOKENS_PER_STILL);
+        // Partly made: only the rest.
+        assert(slots_to_render(3, 2) == 1);
+        assert(retry_price(3, 2, TOKENS_PER_LINE) == TOKENS_PER_LINE);
+        assert(slots_to_render(5, 1) == 4);
+        // All made: nothing rendered, nothing charged.
+        assert(slots_to_render(3, 3) == 0);
+        assert(retry_price(3, 3, TOKENS_PER_LINE) == 0);
+        assert(slots_to_render(0, 0) == 0);
+        // A broken row with more done than total renders nothing, never wraps.
+        assert(slots_to_render(2, 5) == 0);
+        // A done slot is never rendered again; an empty one is.
+        assert(!slot_renders(true));
+        assert(slot_renders(false));
+    }
+
+    test "every end card the pause shows has a ground and a readable call and button" {
+        assert(OWN_CARD_FILLED);
+        assert(card_complete(true, false, 14));
+        assert(card_complete(true, true, 0));
+        assert(card_complete(true, false, 1));
+        assert(card_complete(false, false, 14));
+        assert(card_complete(false, true, 0));
+        assert(!card_complete(true, false, 0));
+        assert(!card_complete(false, false, 0));
+        assert(END_CARD_DEFAULT_ACCENT == END_CARD_DEFAULT_TITLE);
+        assert(DEFAULT_TITLE_CONTRAST_X10 == 140);
+        assert(DEFAULT_TEXT_CONTRAST_X10 == 196);
+        assert(end_card_readable(DEFAULT_TITLE_CONTRAST_X10));
+        assert(end_card_readable(DEFAULT_TEXT_CONTRAST_X10));
+    }
+
+    test "a retry carries stills only in the same style" {
+        assert(carry_stills(true));
+        assert(!carry_stills(false));
+    }
+
+    test "a retry carries clips only with carried stills and a recorded, matching voice mode" {
+        // Same style, same recorded voice: clips kept.
+        assert(carry_clips(true, true, true));
+        // Same style, other voice: stills kept, clips re-rendered.
+        assert(carry_stills(true));
+        assert(!carry_clips(true, false, true));
+        // Other style: neither stills nor clips, whatever the voice.
+        assert(!carry_clips(false, true, true));
+        // Voice mode never recorded: no clips, even with the same style.
+        assert(!carry_clips(true, true, false));
+        assert(!carry_clips(true, false, false));
+    }
+
 }
 
 // phi^2 + 1/phi^2 = 3 | TRINITY

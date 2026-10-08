@@ -40,3 +40,10 @@ pub const SAFE_PROBE : str = "{}";
 pub const PROBE_RESULT : str = "COMPLETED";
 pub const CONTROL : str = "spec+code";
 pub const NOTE : str = "No guard: the event is emitted by the application itself. The hardening list asks the formatter to render string, Error and {message} payloads and never print [object Object].";
+
+test test_constants {
+  assert KIND == "function";
+  assert ID == "monitoring-error-report";
+  assert LEGACY_ID == "critical-error-monitor";
+  assert RETRIES == 1;
+}

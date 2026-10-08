@@ -1,15 +1,16 @@
 // SPDX-License-Identifier: Apache-2.0
 // t27/specs/test_framework/verilog_bench_harness.t27
-// Ring 053 — Verilog Bench Harness for Hardware-in-the-Loop Testing
+// Ring 053 -- Verilog Bench Harness for Hardware-in-the-Loop Testing
 // Integration framework for testing GoldenFloat operations against Verilog RTL
 
 module VerilogBenchHarness {
     use test_framework::core::{TestResult, Verdict, ToleranceTier, EngineeringStatus};
-    use numeric::golden_float::{GF16, GF32};
+    use numeric::gf16::GF16;
+    use numeric::gf32::GF32;
     
-    // ─────────────────────────────────────────────────────
+    // -----------------------------------------------------
     // 1. Verilog Integration Configuration
-    // ─────────────────────────────────────────────────────
+    // -----------------------------------------------------
     
     // Verilog simulation configuration
     struct VerilogConfig {
@@ -59,9 +60,9 @@ module VerilogBenchHarness {
         };
     }
     
-    // ─────────────────────────────────────────────────────
+    // -----------------------------------------------------
     // 2. Test Vector Generation
-    // ─────────────────────────────────────────────────────
+    // -----------------------------------------------------
     
     // Test vector for Verilog simulation
     struct VerilogTestVector {
@@ -169,20 +170,20 @@ module VerilogBenchHarness {
             const product = a * b;
             
             vectors.push(VerilogTestVector{
-                name: format!("random_gf16_op_{}", i),
+                name: format("random_gf16_op_{}", i),
                 inputs: [a, b],
                 expected_outputs: [sum, product],
                 tolerance: 1e-4,  // Looser tolerance for random values
-                description: format!("Random GF16 operations test {}", i)
+                description: format("Random GF16 operations test {}", i)
             });
         }
         
         return vectors;
     }
     
-    // ─────────────────────────────────────────────────────
+    // -----------------------------------------------------
     // 3. Verilog Test Execution
-    // ─────────────────────────────────────────────────────
+    // -----------------------------------------------------
     
     // Verilog simulation result
     struct VerilogSimulationResult {
@@ -239,7 +240,7 @@ module VerilogBenchHarness {
                         verdict: Verdict::PASS,
                         claim_id: vector.claim_id,
                         tolerance_tier: vector.tolerance_tier,
-                        details: format!("Verilog simulation passed: {}", test_name),
+                        details: format("Verilog simulation passed: {}", test_name),
                         engineering_status: EngineeringStatus::READY,
                     });
                 }
@@ -251,7 +252,7 @@ module VerilogBenchHarness {
                         verdict: Verdict::FAIL,
                         claim_id: vector.claim_id,
                         tolerance_tier: vector.tolerance_tier,
-                        details: format!("Verilog simulation failed: {}", test_name),
+                        details: format("Verilog simulation failed: {}", test_name),
                         engineering_status: EngineeringStatus::NEEDS_INVESTIGATION,
                         differences: differences,
                     });
@@ -265,9 +266,9 @@ module VerilogBenchHarness {
         return results;
     }
     
-    // ─────────────────────────────────────────────────────
+    // -----------------------------------------------------
     // 4. Hardware-Software Co-verification
-    // ─────────────────────────────────────────────────────
+    // -----------------------------------------------------
     
     // Compare software and hardware results
     fn compare_sw_hw_results(sw_results: [TestResult], hw_results: [TestResult]) -> TestResult {
@@ -290,7 +291,7 @@ module VerilogBenchHarness {
                 verdict: Verdict::PASS,
                 claim_id: "C-gf-001",
                 tolerance_tier: ToleranceTier::WITHIN_UNCERTAINTY,
-                details: format!("Software-Hardware co-verification passed: {} tests match", matches),
+                details: format("Software-Hardware co-verification passed: {} tests match", matches),
                 engineering_status: EngineeringStatus::READY,
             };
         } else {
@@ -298,16 +299,16 @@ module VerilogBenchHarness {
                 verdict: Verdict::FAIL,
                 claim_id: "C-gf-001",
                 tolerance_tier: ToleranceTier::WITHIN_UNCERTAINTY,
-                details: format!("Software-Hardware co-verification failed: {} mismatches out of {}", 
+                details: format("Software-Hardware co-verification failed: {} mismatches out of {}", 
                                mismatches, matches + mismatches),
                 engineering_status: EngineeringStatus::NEEDS_INVESTIGATION,
             };
         }
     }
     
-    // ─────────────────────────────────────────────────────
+    // -----------------------------------------------------
     // 5. Comprehensive Test Orchestration
-    // ─────────────────────────────────────────────────────
+    // -----------------------------------------------------
     
     // Full GoldenFloat hardware verification flow
     fn goldenfloat_hardware_verification() -> [TestResult] {
@@ -326,7 +327,7 @@ module VerilogBenchHarness {
                 verdict: Verdict::FAIL,
                 claim_id: "C-gf-001",
                 tolerance_tier: ToleranceTier::WITHIN_UNCERTAINTY,
-                details: format!("Verilog simulation failed: {}", sim_result.error),
+                details: format("Verilog simulation failed: {}", sim_result.error),
                 engineering_status: EngineeringStatus::BLOCKED,
             }];
         }
@@ -351,9 +352,9 @@ module VerilogBenchHarness {
         measure: milliseconds to run goldenfloat_hardware_verification()
         target: < 60000ms
     
-    // ─────────────────────────────────────────────────────
+    // -----------------------------------------------------
     // 6. TDD-Inside-Spec: Verilog Harness Tests
-    // ─────────────────────────────────────────────────────
+    // -----------------------------------------------------
     
     test verilog_config_creation
         given config = default_verilog_config()
@@ -419,12 +420,12 @@ fn execute_command(cmd: string, timeout_ms: u32) -> CommandResult {
     return CommandResult{exit_code: 0, stdout: "", stderr: ""};
 }
 
-fn find_test_vector(vectors: [VerilogTestVector], name: string) -> VerilogTestVector? {
+fn find_test_vector(vectors: [VerilogTestVector], name: string) -> ?VerilogTestVector {
     // Implementation would find test vector by name
     return null;
 }
 
-fn find_matching_result(results: [TestResult], name: string) -> TestResult? {
+fn find_matching_result(results: [TestResult], name: string) -> ?TestResult {
     // Implementation would find matching test result
     return null;
 }

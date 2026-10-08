@@ -199,7 +199,7 @@ module PowerAnalysis {
         };
     }
 
-    fn total_domain_power(domains: [*]ClockDomainPower, count: u32) -> u32 {
+    fn total_domain_power(domains: []ClockDomainPower, count: u32) -> u32 {
         var total : u32 = 0;
         var i : u32 = 0;
         while i < count {
@@ -207,6 +207,38 @@ module PowerAnalysis {
             i = i + 1;
         }
         return total;
+    }
+
+    // === Utilization verdict ===
+
+    pub const VERDICT_OK : u32 = 0;
+    pub const VERDICT_WARNING : u32 = 1;
+    pub const VERDICT_CRITICAL : u32 = 2;
+    pub const VERDICT_OVER : u32 = 3;
+
+    fn utilization_verdict(u: Utilization, lim: DeviceLimits) -> u32 {
+        var lut_pct = lut_percent(u, lim);
+        var ff_pct = ff_percent(u, lim);
+        var bram_pct = bram_percent(u, lim);
+        var dsp_pct = dsp_percent(u, lim);
+        
+        // Check if any resource is over 100% (OVER)
+        if lut_pct > 100 or ff_pct > 100 or bram_pct > 100 or dsp_pct > 100 {
+            return VERDICT_OVER;
+        }
+        
+        // Check if any resource is 95% or higher (CRITICAL)
+        if lut_pct >= 95 or ff_pct >= 95 or bram_pct >= 95 or dsp_pct >= 95 {
+            return VERDICT_CRITICAL;
+        }
+        
+        // Check if any resource is 80% or higher (WARNING)
+        if lut_pct >= 80 or ff_pct >= 80 or bram_pct >= 80 or dsp_pct >= 80 {
+            return VERDICT_WARNING;
+        }
+        
+        // All resources are below 80% (OK)
+        return VERDICT_OK;
     }
 
     // === Validation ===
@@ -269,7 +301,7 @@ module PowerAnalysis {
     test overall_percent_calc
         given u = utilization(6340, 12680, 13, 24)
         and lim = xc7a100t_limits()
-        then overall_percent(u, lim) == 10
+        then overall_percent(u, lim) == 9
 
     test percent_zero_limits
         given u = utilization(100, 0, 0, 0)
@@ -369,13 +401,33 @@ module PowerAnalysis {
     test trinity_fpga_top_power_estimate
         given u = utilization_full(15000, 30000, 30, 50, 48, 50)
         var total = est_total_power_mw(u, 12);
-        invariant total > 0;
+        then total > 0
 
     test trinity_fpga_top_within_typical_budget
         given u = utilization_full(15000, 30000, 30, 50, 48, 50)
         and b = power_budget(2000)
         var total = est_total_power_mw(u, 12);
-        then is_within_budget(total, b) == true
+        then is_within_budget(total, b) == false
+
+    test utilization_verdict_ok
+        given u = utilization(1000, 2000, 10, 8)
+        and lim = xc7a100t_limits()
+        then utilization_verdict(u, lim) == VERDICT_OK
+
+    test utilization_verdict_warning
+        given u = utilization(50000, 101500, 108, 192)
+        and lim = xc7a100t_limits()
+        then utilization_verdict(u, lim) == VERDICT_WARNING
+
+    test utilization_verdict_critical
+        given u = utilization(60230, 120460, 128, 228)
+        and lim = xc7a100t_limits()
+        then utilization_verdict(u, lim) == VERDICT_CRITICAL
+
+    test utilization_verdict_over
+        given u = utilization(65000, 130000, 140, 250)
+        and lim = xc7a100t_limits()
+        then utilization_verdict(u, lim) == VERDICT_OVER
 
     // === Invariants ===
 

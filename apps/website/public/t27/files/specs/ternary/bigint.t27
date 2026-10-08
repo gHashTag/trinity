@@ -22,9 +22,9 @@ module TernaryBigInt;
 // Imports
 // ============================================================================
 
-use tritype-base::Trit;
-use tritype-base::trit_negate;
-use tritype-base::trit_multiply;
+use base::types::Trit;
+use base::types::trit_negate;
+use base::types::trit_multiply;
 
 // ============================================================================
 // Constants
@@ -34,9 +34,9 @@ use tritype-base::trit_multiply;
 pub const MAX_TRITS : usize = 256;
 
 /// Trit constants for convenience
-pub const TRIT_NEG : Trit = .neg;
-pub const TRIT_ZERO : Trit = .zero;
-pub const TRIT_POS : Trit = .pos;
+pub const TRIT_NEG : Trit = Trit.neg;
+pub const TRIT_ZERO : Trit = Trit.zero;
+pub const TRIT_POS : Trit = Trit.pos;
 
 /// SIMD chunk size (32 trits = 256 bits = AVX2)
 pub const SIMD_CHUNK_SIZE : usize = 32;

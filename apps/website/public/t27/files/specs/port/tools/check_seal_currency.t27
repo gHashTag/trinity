@@ -270,7 +270,7 @@ test "t27c_function" {
     // This test would require mocking the filesystem and environment
     // For now, we just check that the function exists and returns a string
     let result = t27c();
-    assert!(result.len() >= 0, "t27c should return a string (possibly empty)");
+    assert(result.len() >= 0, "t27c should return a string (possibly empty)");
 }
 
 // Test block for current_hashes function
@@ -280,7 +280,7 @@ test "current_hashes_function" {
     let binary = "echo"; // dummy binary
     let spec = "dummy.spec";
     let result = current_hashes(binary, spec);
-    assert!(true, "current_hashes function exists and returns a map");
+    assert(true, "current_hashes function exists and returns a map");
 }
 
 // Test block for scan function
@@ -290,19 +290,19 @@ test "scan_function" {
     let binary = "echo";
     let seal_dir = "/tmp";
     let result = scan(binary, seal_dir);
-    assert!(true, "scan function exists");
+    assert(true, "scan function exists");
 }
 
 // Test block for self_check function
 test "self_check_function" {
     let result = self_check();
     // self_check can return 0 (success), 1 (failure), or 2 (could not run)
-    assert!(result == 0 || result == 1 || result == 2, "self_check should return 0, 1, or 2");
+    assert(result == 0 || result == 1 || result == 2, "self_check should return 0, 1, or 2");
 }
 
 // Test block for main function
 test "main_function" {
     let result = main();
     // main can return 0 (success) or 1 (failure) or 2 (could not run)
-    assert!(result == 0 || result == 1 || result == 2, "main should return 0, 1, or 2");
+    assert(result == 0 || result == 1 || result == 2, "main should return 0, 1, or 2");
 }

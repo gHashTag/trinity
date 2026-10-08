@@ -40,7 +40,10 @@ module Timing_Testbench {
 
     fn compute_fmax(critical_path_ps : u32) -> u32 {
         if critical_path_ps == 0 { return 0; }
-        return 1_000_000_000 / critical_path_ps;
+        // MHz = 10^6 / ps. Was 10^9 / ps (kHz): compute_fmax(10000) gave
+        // 100000, not the 100 test_fmax_computation and TARGET_FMAX_MHZ mean
+        // (tri lab-exec 2026-10-05).
+        return 1_000_000 / critical_path_ps;
     }
 
     test test_reset_state {
@@ -84,8 +87,12 @@ module Timing_Testbench {
     invariant clk_period_positive : CLK_PERIOD > 0;
 
     test test_tick_function {
+        // clk is module state shared by every test (reset() ticks it too), so
+        // its absolute value depends on test order; tick() toggles it.
+        // original: tick(); invariant clk == true;
+        const before : bool = clk;
         tick();
-        invariant clk == true;
+        invariant clk == !before;
     }
 
     test test_tick_empty_implementation {

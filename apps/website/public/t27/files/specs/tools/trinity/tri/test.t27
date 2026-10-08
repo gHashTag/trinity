@@ -47,9 +47,17 @@ pub const EXAMPLES : [3]str = ["tri test src/vsa.zig", "tri test src/math/comman
 pub const EXIT_CODES : [2]str = ["0: every path that returns to main, including UnifiedOutput status failure or denied", "1: only where a handler calls std.process.exit (not-implemented arms, cell dispatch failures)"];
 pub const RESULT : str = "UnifiedOutput (text or --json) with status success|failure|partial|canceled|denied|timeout; UNKNOWN_COMMAND is reported as status denied with exit 0; the sysexits mapping of src/tri/observability.zig is dead code";
 pub const COLLIDES_WITH : str = "gHashTag/t27:tri/test";
-pub const AGENTS : [0]str = [];
-pub const AGENTS_NOTE : str = "No source binds an agent letter to this command: docs/agents/AGENTS_ALPHABET.md and .claude/agents/*.md of gHashTag/t27 name the t27 tri, not this binary.";
+pub const AGENTS : [2]str = ["T", "V"];
+pub const AGENTS_NOTE : str = "docs/agents/AGENTS_ALPHABET.md \"Who holds a tool, and who holds a skill\" binds every tool to the Queen (T). Domain lead V: CHANGED (dropped B): ABOUT \"Generate comprehensive test suites\" with ARGS \"<coverage>: Include coverage markers\" and MCP_DISPLAY_NAME \"Test Generator\" (mcp/trinity.t27: tri_test \"Generate tests for code\", separate from tri_test_run) -- tests are V's subject (.claude/agents/agent-v-verify.md: \"L4 TESTABILITY -- specs have tests\", \"tri test -- Run conformance tests\"); nothing in the card mentions a build or CI pipeline, so B was read in.";
 pub const WHEN_TO_USE : str = "Generate comprehensive test suites";
 pub const WITNESS : str = "registry-export";
 pub const WITNESS_SOURCE : str = ".trinity/registry.json at 976df5174 (version 1.0.0, generated_at 1773041968), exported by `zig build export-registry` and held to the binary by .github/workflows/ci.yml";
 pub const ENABLED : bool = true;
+
+test test_constants {
+    assert KIND == "tool";
+    assert FAMILY == "tri-cli";
+    assert SCHEMA == 2;
+    assert ROUTED == true;
+    assert ENABLED == true;
+}

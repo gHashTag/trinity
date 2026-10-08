@@ -272,107 +272,107 @@ fn smul(a: i32, b: i32) -> i32 {
 
 test "gft_value_zero" {
     let result = gft_value(0);
-    assert!(result == 0.0, "gft_value(0) should return 0.0");
+    assert(result == 0.0, "gft_value(0) should return 0.0");
 }
 
 test "gft_value_one" {
     let result = gft_value(20480);
-    assert!((result - 1.0).abs() < 1e-6, "gft_value(20480) should return 1.0");
+    assert((result - 1.0).abs() < 1e-6, "gft_value(20480) should return 1.0");
 }
 
 test "gft_value_negative_one" {
     let result = gft_value(86016);
-    assert!((result - (-1.0)).abs() < 1e-6, "gft_value(86016) should return -1.0");
+    assert((result - (-1.0)).abs() < 1e-6, "gft_value(86016) should return -1.0");
 }
 
 test "gft_value_two" {
     let result = gft_value(20992);
-    assert!((result - 2.0).abs() < 1e-6, "gft_value(20992) should return 2.0");
+    assert((result - 2.0).abs() < 1e-6, "gft_value(20992) should return 2.0");
 }
 
 test "f2gft_zero" {
     let result = f2gft(0.0);
-    assert!(result == 0, "f2gft(0.0) should return 0");
+    assert(result == 0, "f2gft(0.0) should return 0");
 }
 
 test "f2gft_one" {
     let result = f2gft(1.0);
-    assert!(result == 20480, "f2gft(1.0) should return 20480");
+    assert(result == 20480, "f2gft(1.0) should return 20480");
 }
 
 test "f2gft_negative_one" {
     let result = f2gft(-1.0);
-    assert!(result == 86016, "f2gft(-1.0) should return 86016");
+    assert(result == 86016, "f2gft(-1.0) should return 86016");
 }
 
 test "f2gft_two" {
     let result = f2gft(2.0);
-    assert!(result == 20992, "f2gft(2.0) should return 20992");
+    assert(result == 20992, "f2gft(2.0) should return 20992");
 }
 
 test "magadd_zero_zero" {
     let result = magadd(0, 0);
-    assert!(result == 512, "magadd(0,0) should return 512");
+    assert(result == 512, "magadd(0,0) should return 512");
 }
 
 test "magadd_zero_512" {
     let result = magadd(0, 512);
-    assert!(result == 768, "magadd(0,512) should return 768");
+    assert(result == 768, "magadd(0,512) should return 768");
 }
 
 test "magadd_512_512" {
     let result = magadd(512, 512);
-    assert!(result == 1024, "magadd(512,512) should return 1024");
+    assert(result == 1024, "magadd(512,512) should return 1024");
 }
 
 test "magadd_zero_one" {
     let result = magadd(0, 1);
-    assert!(result == 512, "magadd(0,1) should return 512");
+    assert(result == 512, "magadd(0,1) should return 512");
 }
 
 test "magadd_512_one" {
     let result = magadd(512, 1);
-    assert!(result == 768, "magadd(512,1) should return 768");
+    assert(result == 768, "magadd(512,1) should return 768");
 }
 
 test "magadd_one_512" {
     let result = magadd(1, 512);
-    assert!(result == 768, "magadd(1,512) should return 768");
+    assert(result == 768, "magadd(1,512) should return 768");
 }
 
 test "magadd_one_one" {
     let result = magadd(1, 1);
-    assert!(result == 513, "magadd(1,1) should return 513");
+    assert(result == 513, "magadd(1,1) should return 513");
 }
 
 test "magadd_512_zero" {
     let result = magadd(512, 0);
-    assert!(result == 768, "magadd(512,0) should return 768");
+    assert(result == 768, "magadd(512,0) should return 768");
 }
 
 test "magsub_512_zero" {
     let result = magsub(512, 0);
-    assert!(result == -256, "magsub(512,0) should return -256");
+    assert(result == -256, "magsub(512,0) should return -256");
 }
 
 test "magsub_zero_512" {
     let result = magsub(0, 512);
-    assert!(result == 0, "magsub(0,512) should return 0");
+    assert(result == 0, "magsub(0,512) should return 0");
 }
 
 test "magsub_512_512" {
     let result = magsub(512, 512);
-    assert!(result == 0, "magsub(512,512) should return 0");
+    assert(result == 0, "magsub(512,512) should return 0");
 }
 
 test "magsub_1024_512" {
     let result = magsub(1024, 512);
-    assert!(result == 512, "magsub(1024,512) should return 512");
+    assert(result == 512, "magsub(1024,512) should return 512");
 }
 
 test "magsub_512_1024" {
     let result = magsub(512, 1024);
-    assert!(result == 0, "magsub(512,1024) should return 0");
+    assert(result == 0, "magsub(512,1024) should return 0");
 }
 
 test "sadd_one_one" {
@@ -380,7 +380,7 @@ test "sadd_one_one" {
     let b = f2gft(1.0);
     let result = sadd(a, b);
     let expected = f2gft(2.0);
-    assert!(result == expected, "sadd(f2gft(1.0), f2gft(1.0)) should return f2gft(2.0)");
+    assert(result == expected, "sadd(f2gft(1.0), f2gft(1.0)) should return f2gft(2.0)");
 }
 
 test "sadd_one_neg_one" {
@@ -388,7 +388,7 @@ test "sadd_one_neg_one" {
     let b = f2gft(-1.0);
     let result = sadd(a, b);
     let expected = 0;
-    assert!(result == expected, "sadd(f2gft(1.0), f2gft(-1.0)) should return 0");
+    assert(result == expected, "sadd(f2gft(1.0), f2gft(-1.0)) should return 0");
 }
 
 test "sadd_two_three" {
@@ -396,46 +396,46 @@ test "sadd_two_three" {
     let b = f2gft(3.0);
     let result = sadd(a, b);
     let expected = f2gft(5.0);
-    assert!(result == expected, "sadd(f2gft(2.0), f2gft(3.0)) should return f2gft(5.0)");
+    assert(result == expected, "sadd(f2gft(2.0), f2gft(3.0)) should return f2gft(5.0)");
 }
 
 test "neg_zero" {
     let result = neg(0);
-    assert!(result == 0, "neg(0) should return 0");
+    assert(result == 0, "neg(0) should return 0");
 }
 
 test "neg_one" {
     let a = f2gft(1.0);
     let result = neg(a);
     let expected = f2gft(-1.0);
-    assert!(result == expected, "neg(f2gft(1.0)) should return f2gft(-1.0)");
+    assert(result == expected, "neg(f2gft(1.0)) should return f2gft(-1.0)");
 }
 
 test "neg_neg_one" {
     let a = f2gft(-1.0);
     let result = neg(a);
     let expected = f2gft(1.0);
-    assert!(result == expected, "neg(f2gft(-1.0)) should return f2gft(1.0)");
+    assert(result == expected, "neg(f2gft(-1.0)) should return f2gft(1.0)");
 }
 
 test "magmul_512_512" {
     let result = magmul(512, 512);
-    assert!(result == 0, "magmul(512,512) should return 0");
+    assert(result == 0, "magmul(512,512) should return 0");
 }
 
 test "magmul_512_zero" {
     let result = magmul(512, 0);
-    assert!(result == 0, "magmul(512,0) should return 0");
+    assert(result == 0, "magmul(512,0) should return 0");
 }
 
 test "magmul_zero_512" {
     let result = magmul(0, 512);
-    assert!(result == 0, "magmul(0,512) should return 0");
+    assert(result == 0, "magmul(0,512) should return 0");
 }
 
 test "magmul_768_768" {
     let result = magmul(768, 768);
-    assert!(result == 64, "magmul(768,768) should return 64");
+    assert(result == 64, "magmul(768,768) should return 64");
 }
 
 test "smul_one_one" {
@@ -443,7 +443,7 @@ test "smul_one_one" {
     let b = f2gft(1.0);
     let result = smul(a, b);
     let expected = f2gft(1.0);
-    assert!(result == expected, "smul(f2gft(1.0), f2gft(1.0)) should return f2gft(1.0)");
+    assert(result == expected, "smul(f2gft(1.0), f2gft(1.0)) should return f2gft(1.0)");
 }
 
 test "smul_one_neg_one" {
@@ -451,5 +451,5 @@ test "smul_one_neg_one" {
     let b = f2gft(-1.0);
     let result = smul(a, b);
     let expected = f2gft(-1.0);
-    assert!(result == expected, "smul(f2gft(1.0), f2gft(-1.0)) should return f2gft(-1.0)");
+    assert(result == expected, "smul(f2gft(1.0), f2gft(-1.0)) should return f2gft(-1.0)");
 }

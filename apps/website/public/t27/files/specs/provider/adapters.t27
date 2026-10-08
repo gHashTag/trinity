@@ -9,10 +9,9 @@ module provider-adapters;
 // Imports
 // ============================================================================
 
-use tritype-base::usize;
-use provider-schema::ProviderType;
-use provider-schema::RequestParams;
-use provider-schema::Response;
+use provider::schema::ProviderType;
+use provider::schema::RequestParams;
+use provider::schema::Response;
 
 // ============================================================================
 // Constants

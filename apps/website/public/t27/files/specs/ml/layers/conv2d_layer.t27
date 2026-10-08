@@ -28,13 +28,11 @@ module Conv2d;
         has_bias : bool,
     };
 
-    pub const PaddingMode = struct {
-        enum_type : "enum",
-        values : ,
-        Zeros : Auto,
-        Reflect : Auto,
-        Replicate : Auto,
-        Circular : Auto,
+    pub const PaddingMode = enum(u8) {
+        Zeros,
+        Reflect,
+        Replicate,
+        Circular,
     };
 
     // ═══════════════════════════════════════════════════════════
@@ -45,9 +43,9 @@ module Conv2d;
     fn forward(input: []const f32, weights: []const f32, bias: []const f32, output: []f32, config: Conv2DConfig) -> void {
         // Simple 2D convolution implementation
         var i: u32 = 0;
-        while (i < config.kernel_size * config.kernel_size) {
+        while (i < config.kernel_size) {
             var j: u32 = 0;
-            while (j < config.kernel_size * config.kernel_size) {
+            while (j < config.kernel_size) {
                 output[i * config.kernel_size + j] = input[i * config.kernel_size + j] * weights[i * config.kernel_size + j];
                 j = j + 1;
             }
@@ -68,9 +66,9 @@ module Conv2d;
     fn backward(grad_output: []const f32, input: []const f32, weights: []const f32, grad_input: []f32, grad_weights: []f32, grad_bias: []f32, config: Conv2DConfig) -> void {
         // Simple backward pass implementation
         var i: u32 = 0;
-        while (i < config.kernel_size * config.kernel_size) {
+        while (i < config.kernel_size) {
             var j: u32 = 0;
-            while (j < config.kernel_size * config.kernel_size) {
+            while (j < config.kernel_size) {
                 // Gradient w.r.t input
                 grad_input[i * config.kernel_size + j] = grad_output[i * config.kernel_size + j] * weights[i * config.kernel_size + j];
                 
@@ -128,6 +126,11 @@ module Conv2d;
         return [0.0]; // 1x1 gradient bias
     }
 
+    // The input the invariants below are stated over.
+    fn valid_input() -> Conv2DConfig {
+        return default_config();
+    }
+
     fn default_config() -> Conv2DConfig {
         return Conv2DConfig {
             in_channels: 1,
@@ -145,15 +148,34 @@ module Conv2d;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test forward_basic_case
-        given input = default_input(), weights = default_weights(), bias = default_bias(), output = default_output(), config = default_config()
-        when result = forward(input, weights, bias, output, config)
-        then result != undefined
+    // The two tests below used `given output = default_output()`, which hands
+    // forward() a constant buffer to write into, and `then result != undefined`
+    // on a void call. Neither could pass once the spec compiled (#6446), so they
+    // write into local buffers and check the values the kernel produces.
+    test forward_basic_case {
+        var output: [4]f32 = [0.0, 0.0, 0.0, 0.0];
+        forward(default_input(), default_weights(), default_bias(), &output, default_config());
+        // 2x2 elementwise product plus bias[0]: 1.0 * 1.0 + 0.1 and 4.0 * 0.1 + 0.1
+        assert(output[0] > 1.09);
+        assert(output[0] < 1.11);
+        assert(output[3] > 0.49);
+        assert(output[3] < 0.51);
+    }
 
-    test backward_basic_case
-        given grad_output = default_grad_output(), input = default_input(), weights = default_weights(), grad_input = default_grad_input(), grad_weights = default_grad_weights(), grad_bias = default_grad_bias(), config = default_config()
-        when result = backward(grad_output, input, weights, grad_input, grad_weights, grad_bias, config)
-        then result != undefined
+    test backward_basic_case {
+        var grad_input: [4]f32 = [0.0, 0.0, 0.0, 0.0];
+        var grad_weights: [4]f32 = [0.0, 0.0, 0.0, 0.0];
+        var grad_bias: [1]f32 = [0.0];
+        backward(default_grad_output(), default_input(), default_weights(), &grad_input, &grad_weights, &grad_bias, default_config());
+        // grad_output is all ones: grad_input = weights, grad_weights = input,
+        // grad_bias = the sum of the four ones.
+        assert(grad_input[1] > 0.49);
+        assert(grad_input[1] < 0.51);
+        assert(grad_weights[2] > 2.99);
+        assert(grad_weights[2] < 3.01);
+        assert(grad_bias[0] > 3.99);
+        assert(grad_bias[0] < 4.01);
+    }
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Invariants (from .tri constraints)

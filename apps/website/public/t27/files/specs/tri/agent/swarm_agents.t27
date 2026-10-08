@@ -10,12 +10,21 @@ module SwarmAgents;
     // 2. Types
     // ═══════════════════════════════════════════════════════════
 
-    pub const AgentType = struct {
-        variants : ,
+    pub const AgentType = enum(u8) {
+        architect,
+        codex,
+        evolver,
+        oracle,
+        guardian,
+        herald,
     };
 
-    pub const AgentStatus = struct {
-        variants : ,
+    pub const AgentStatus = enum(u8) {
+        idle,
+        active,
+        thinking,
+        waiting_consensus,
+        blocked,
     };
 
     pub const Agent = struct {
@@ -31,30 +40,38 @@ module SwarmAgents;
 
     pub const Task = struct {
         task_id : String,
-        priority : Float              # φ-weighted 0-1,
+        priority : Float,              // phi-weighted 0-1
         assigned_to : Option<AgentType>,
         status : TaskStatus,
         result : Option<String>,
         sacred_formula : Option<String>,
     };
 
-    pub const TaskStatus = struct {
-        variants : ,
+    pub const TaskStatus = enum(u8) {
+        pending,
+        assigned,
+        in_progress,
+        completed,
+        failed,
+        awaiting_consensus,
     };
 
     pub const SwarmState = struct {
         agents : List<Agent>,
         coordination_mode : CoordinationMode,
-        phi_harmony_score : Float       # 0-1, target ≥0.95,
-        consensus_threshold : Float     # Default 0.95,
+        phi_harmony_score : Float,       // 0-1, target >=0.95
+        consensus_threshold : Float,     // Default 0.95
         active_tasks : List<Task>,
         completed_tasks : List<Task>,
         iteration_count : Int,
         sacred_bond : Float,
     };
 
-    pub const CoordinationMode = struct {
-        variants : ,
+    pub const CoordinationMode = enum(u8) {
+        parallel,
+        consensus,
+        hierarchical,
+        sacred_circle,
     };
 
     pub const ConsensusProposal = struct {
@@ -75,16 +92,19 @@ module SwarmAgents;
         rationale : String,
     };
 
-    pub const ConsensusStatus = struct {
-        variants : ,
+    pub const ConsensusStatus = enum(u8) {
+        pending,
+        approved,
+        rejected,
+        tie,
     };
 
     pub const SwarmHarmonyMetrics = struct {
-        cosine_similarity : Float       # VSA cosine similarity,
-        consensus_rate : Float          # Approved / Total,
-        task_success_rate : Float       # Completed / Total,
-        phi_alignment : Float           # How aligned with sacred math,
-        overall_harmony : Float         # Combined score 0-1,
+        cosine_similarity : Float,       // VSA cosine similarity
+        consensus_rate : Float,          // Approved / Total
+        task_success_rate : Float,       // Completed / Total
+        phi_alignment : Float,           // How aligned with sacred math
+        overall_harmony : Float,         // Combined score 0-1
     };
 
     pub const AgentCommunication = struct {
@@ -96,8 +116,13 @@ module SwarmAgents;
         timestamp : Int,
     };
 
-    pub const MessageType = struct {
-        variants : ,
+    pub const MessageType = enum(u8) {
+        task_request,
+        task_result,
+        consensus_request,
+        consensus_vote,
+        broadcast,
+        alert,
     };
 
     pub const SacredPattern = struct {
@@ -117,9 +142,8 @@ module SwarmAgents;
         phi_score : Float,
     };
 
-    pub const SacredFormula = struct {
-        module : Math.sacredFormula,
-    };
+    // Depends on math.sacred_formula (computeSacredFormula, fitSacredFormula,
+    // formatFormulaString) -- a module dependency in the .tri source, not a type.
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Tests (from .tri behaviors)

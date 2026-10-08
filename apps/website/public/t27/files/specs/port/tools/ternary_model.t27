@@ -32,13 +32,15 @@ pub fn tmul(ta: i32, tb: i32) -> i32 {
 
 ; Function: dot27
 ; Sum of tmul over 27 trit lanes, accumulated in i16.
-pub fn dot27(a: i32, b: i32) -> i32 {
+; a and b each pack 27 two-bit trits, 54 bits, so they are u64: lane i sits at
+; bit 2*i, up to bit 52, which an i32 cannot be shifted by.
+pub fn dot27(a: u64, b: u64) -> i32 {
     let mut acc: i32 = 0;
-    let mut i: i32 = 0;
+    let mut i: u64 = 0;
     while i < 27 {
         let shift = i * 2;
-        let ta = (a >> shift) & 3;
-        let tb = (b >> shift) & 3;
+        let ta = ((a >> shift) & 3) as i32;
+        let tb = ((b >> shift) & 3) as i32;
         acc = _i16(acc + tmul(ta, tb));
         i = i + 1;
     }
@@ -121,34 +123,20 @@ test tmul_test {
 }
 
 test dot27_test {
-    // Simple test: all zeros -> 0
-    assert dot27(0, 0) == 0;
-    // All ones: each tmul(1,1)=1, 27*1=27 -> but accumulated in i16, so 27
-    // However, note: each trit lane: a and b have bits set to 0b01 for each trit? 
-    // We need to construct a number where each pair of bits is 0b01 (which is 1).
-    // Let's compute: for 27 trits, each set to 1, the integer is sum_{i=0}^{26} (1 << (2*i))
-    // This is (4^27 - 1) / (4 - 1) = (2^54 - 1) / 3.
-    // We'll compute that value and then dot27 of that with itself should be 27.
-    // But note: the accumulation is done in i16, so if 27 is within -32768..32767, it's fine.
-    // We'll do a smaller test: 2 trits.
-    // Let a = 0b0101 (which is 5) representing two trits: [1,1] (LSB first? Actually, the loop extracts from LSB: i=0 -> bits 0-1, i=1 -> bits 2-3)
-    // So a = 5 (binary 0101) -> trits: [1,1]
-    // Similarly b = 5.
-    // tmul(1,1)=1 for each lane, so total = 2.
-    // We'll test with 2 trits by changing the loop to 2? We cannot change the function.
-    // Instead, we test the function as is with 27 trits, but we can test with a value that has only the first two trits set and the rest zero.
-    // Let a = 5 (binary ...00000101) -> trits: [1,1,0,0,...]
-    // Let b = 5.
-    // Then for i=0: ta=1, tb=1 -> tmul=1 -> acc=1
-    // i=1: ta=1, tb=1 -> tmul=1 -> acc=2
-    // i=2..26: ta=0, tb=0 -> tmul(0,0)=1 -> each adds 1 -> total 2 + 25*1 = 27.
-    // So dot27(5,5) should be 27.
-    assert dot27(5,5) == 27;
-    // Test with mixed values: we can test one lane.
-    // Let a = 1 (binary 01) -> trit0=1, rest 0.
-    // Let b = 2 (binary 10) -> trit0=2, rest 0.
-    // tmul(1,2) = 0 (because ta==1) -> so dot27 should be 0.
-    assert dot27(1,2) == 0;
+    // Expected values are tools/ternary_model.py's dot27. A lane of two zero
+    // trits contributes tmul(0, 0) = 1, and a lane holding trit 1 contributes 0.
+    // All 27 lanes zero: 27 * tmul(0, 0) = 27.
+    assert dot27(0, 0) == 27;
+    // 5 = 0b0101: lanes 0 and 1 hold trit 1 (0 each), 25 zero lanes (1 each).
+    assert dot27(5, 5) == 25;
+    // Lane 0: tmul(1, 2) = 0; the other 26 lanes are zero: 26.
+    assert dot27(1, 2) == 26;
+    // Every lane holds trit 2 (54 bits): tmul(2, 2) = 1 per lane.
+    assert dot27(12009599006321322, 12009599006321322) == 27;
+    // tmul(2, 0) = -1 in every lane.
+    assert dot27(12009599006321322, 0) == -27;
+    // Only lane 26 (bits 52..53) holds trit 2: one -1 and 26 ones.
+    assert dot27(9007199254740992, 0) == 25;
 }
 
 test sign0_test {

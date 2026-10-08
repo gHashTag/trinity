@@ -150,7 +150,7 @@ module GF20 {
 
     fn floor_log2(x: f32) -> i16 {
         if (x <= 0.0) { return -32768; }
-        let mut exp : i16 = 0;
+        let exp : i16 = 0;
         while (x >= 2.0) {
             x = x / 2.0;
             exp = exp + 1;
@@ -196,9 +196,9 @@ module GF20 {
         if (is_integer) {
             // Binary exponentiation for integer exponents
             let exp_int = exp as i32;
-            let mut result = 1.0;
-            let mut base_acc = base;
-            let mut e = exp_int;
+            let result = 1.0;
+            let base_acc = base;
+            let e = exp_int;
 
             if (e < 0) {
                 e = -e;
@@ -247,9 +247,9 @@ module GF20 {
         }
 
         // Taylor series: e^x = 1 + x + x^2/2! + x^3/3! + ...
-        let mut result = 1.0;
-        let mut term = 1.0;
-        let mut exp_x = x;
+        let result = 1.0;
+        let term = 1.0;
+        let exp_x = x;
 
         // Scale down for large inputs
         if (exp_x > 5.0 || exp_x < -5.0) {

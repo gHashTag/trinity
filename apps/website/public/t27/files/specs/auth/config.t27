@@ -209,13 +209,16 @@ module AuthConfig {
 
     // get_type extracts AuthType from Info
     fn get_type(info: Info) -> AuthType {
-        // Implementation: Extract type tag from Info
-        match info.type_tag {
+        // Implementation: Extract type tag from Info.
+        // A Rust `match` here lowered to an empty body in every backend (#5949).
+        // Its `_` arm panicked on a tag outside 0..2; the assert keeps that, and
+        // t27 has no `unreachable`, so the last arm carries the last value.
+        assert(info.type_tag <= 2);
+        return switch (info.type_tag) {
             0 => AuthType::Oauth,
             1 => AuthType::Api,
-            2 => AuthType::WellKnown,
-            _ => panic!("Invalid AuthType tag"),
-        }
+            else => AuthType::WellKnown,
+        };
     }
 
     // ════════════════════════════════════════════════════════════════════

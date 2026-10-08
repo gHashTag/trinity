@@ -21,7 +21,7 @@
 module hybrid_bigint;
 
 use numeric::gf16;
-use tritype::Trit;
+use base::types::Trit;
 use ternary::bigint;
 
 // ============================================================================

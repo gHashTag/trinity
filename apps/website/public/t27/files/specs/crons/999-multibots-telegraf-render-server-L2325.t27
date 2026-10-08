@@ -24,3 +24,10 @@ pub const ENABLED : bool = true;
 pub const NOTE : str = "Checks often and writes rarely: the cursor lives in the database, because this Railway project has no volume and a deploy wipes local state.";
 pub const ON_FAILURE : str = "log";
 pub const CONTROL : str = "code-only";
+
+test basic_constants {
+  assert KIND == "cron";
+  assert ENABLED == true;
+  assert INTERVAL_MS >= 600000;
+  assert HOST == "timer";
+}

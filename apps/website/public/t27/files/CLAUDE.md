@@ -69,6 +69,7 @@ Do **not** add parallel math/physics implementations in ad-hoc scripts when the 
 ## 2. Engineering workflow
 
 - **Bootstrap compiler:** from repo root, `cargo build --release -p t27c` (runs `build.rs` language checks). `bootstrap/` is a **workspace member**, so the binary lands at the workspace root: `./target/release/t27c` — *not* `./bootstrap/target/release/t27c`.
+- **Iterating on the compiler:** do not rebuild release after every edit. [CONTRIBUTING.md, Build speed](CONTRIBUTING.md#build-speed-the-t27c-inner-loop) covers the faster builds, pointing `./scripts/tri` at a debug binary, and moving the `compiler.rs` seal.
 - **Local sweep (CI-like):** from repo root, `./scripts/tri test` or `./target/release/t27c suite --repo-root .` (Rust runner; no shell test harness under `tests/`).
 - **Generated code:** under `gen/` — do not hand-edit for routine fixes; change specs and regenerate.
 - **Pull requests:** follow project Issue Gate and linking policy; **do not approve** PRs unless explicitly authorized.

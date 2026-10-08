@@ -161,11 +161,12 @@ test apply_w368_replacements_full_block {
     var k: usize = 0;
     while (k + 13 <= len) {
         if (input[k..k+13] == "Wave Loop 368") found_new_wave = true;
-        if (input[k..k+30] == "WAVE_LOOP_367_COOPERATION.md") found_new_coop = true;
+        if (input[k..k+28] == "WAVE_LOOP_367_COOPERATION.md") found_new_coop = true;
         if (input[k..k+22] == "W367 seal regeneration") found_new_seal = true;
         if (input[k..k+10] == "after W367") found_new_after = true;
         k += 1;
     }
+    k = 0;
     while (k + 5 <= len) {
         if (input[k..k+5] == "w368_") found_new_w368 = true;
         k += 1;
@@ -185,11 +186,12 @@ test apply_w368_replacements_full_block {
     k = 0;
     while (k + 13 <= len) {
         if (input[k..k+13] == "Wave Loop 367") found_old_wave = true;
-        if (input[k..k+30] == "WAVE_LOOP_366_COOPERATION.md") found_old_coop = true;
+        if (input[k..k+28] == "WAVE_LOOP_366_COOPERATION.md") found_old_coop = true;
         if (input[k..k+22] == "W366 seal regeneration") found_old_seal = true;
         if (input[k..k+10] == "after W366") found_old_after = true;
         k += 1;
     }
+    k = 0;
     while (k + 5 <= len) {
         if (input[k..k+5] == "w367_") found_old_w367 = true;
         k += 1;

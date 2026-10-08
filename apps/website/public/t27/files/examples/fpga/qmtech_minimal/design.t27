@@ -1,150 +1,87 @@
-# QMTECH XC7A100T Minimal Design
-# Trinity .t27 specification for minimal FPGA implementation
+// SPDX-License-Identifier: Apache-2.0
+// t27/examples/fpga/qmtech_minimal/design.t27
+// Minimal FPGA example: an 8-LED heartbeat that walks one lit LED back and
+// forth, plus a UART loopback that repeats a fixed message.
+//
+// This file used to be a block of `#`-commented key/value pairs that only
+// looked like t27; no parser accepted it, so nothing in it was ever checked.
+// It now carries the parts of that design a compiler can hold to account --
+// the LED pattern, the timing counts and the resource budget -- and nothing
+// else. Package pins and the board part are NOT restated here: they live in
+// specs/boards/xc7a100t_minimal.t27, and the board actually on the bench is
+// fixed by fpga/HARDWARE_SSOT.md. A second pin table in an example is a
+// second home for a fact that already has one.
+// phi^2 + 1/phi^2 = 3 | TRINITY
 
-import fpga.modules.heartbeat
-import fpga.modules.uart_loopback
+module QmtechMinimalDesign {
+    // Board clock the counts below are written against.
+    const CLOCK_HZ : u32 = 12_000_000;
 
-# Board configuration
-board: qmtech_xc7a100t_minimal {
-    # Clock configuration
-    clock: external_12mhz {
-        pin: E3
-        frequency: 12_000_000  # 12 MHz
-        io_standard: LVCMOS33
-        bank: 34
-    }
-    
-    # Reset (active low)
-    reset: active_low {
-        pin: C14
-        io_standard: LVCMOS33
-        bank: 34
-    }
-    
-    # UART communication
-    uart: uart_115200 {
-        tx_pin: T15
-        rx_pin: T14
-        baud_rate: 115200
-        io_standard: LVCMOS33
-        bank: 34
-    }
-    
-    # LED outputs (8-bit)
-    leds: led_array {
-        pins: [H17, K15, J13, N14, R18, U18, T13, T11]
-        io_standard: LVCMOS33
-        bank: 35
-    }
-}
+    // Heartbeat: one pattern step per HEARTBEAT_PERIOD clock cycles.
+    const HEARTBEAT_PERIOD : u32 = 1_000_000;
+    const NUM_LEDS : u8 = 8;
+    // 0x01 up to 0x80 and back down to 0x02: 8 + 6 steps, then it repeats.
+    const PATTERN_STEPS : u8 = 14;
 
-# Design instantiation
-design: minimal_heartbeat {
-    # Use heartbeat module for LED pattern
-    heartbeat: heartbeat_module {
-        clock: board.clock
-        reset: board.reset
-        output: board.leds
-        
-        # Heartbeat pattern parameters
-        period: 1_000_000  # 1 second at 12MHz
-        pattern: [0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02]
-    }
-    
-    # UART loopback for testing
-    uart: uart_loopback_module {
-        clock: board.clock
-        reset: board.reset
-        uart: board.uart
-        
-        # Test message: "HELLO\n"
-        test_message: "HELLO\n"
-        repeat_interval: 5_000_000  # 5 seconds
-    }
-}
+    // UART loopback: "HELLO\n" every UART_REPEAT clock cycles at UART_BAUD.
+    const UART_BAUD : u32 = 115_200;
+    const UART_MESSAGE_BYTES : u32 = 6;
+    const UART_REPEAT : u32 = 5_000_000;
 
-# Constraints
-constraints: xdc {
-    # Clock constraints
-    create_clock -name clk_12mhz -period 83.333 [get_ports clk]
-    
-    # IO constraints
-    set_io_standard LVCMOS33 [get_ports *]
-    
-    # False path for async reset (if needed)
-    set_false_path -from [get_ports rst_n]
-    
-    # Timing constraints for UART
-    set_max_delay -from [get_ports uart_tx] -to [get_ports uart_rx] -period 10
-}
+    // Resource budget the design must fit in.
+    const MAX_LUTS : u32 = 100;
+    const MAX_FFS : u32 = 50;
+    const MAX_BRAM : u32 = 0;
+    const MAX_DSP : u32 = 0;
 
-# Verification
-test: {
-    # Check that heartbeat pattern changes
-    test_heartbeat_pattern: {
-        description: "Verify LED heartbeat pattern cycles correctly"
-        setup: {
-            clock_cycles: 100_000
+    // LED byte shown at pattern step `step` (taken modulo PATTERN_STEPS).
+    pub fn heartbeat_led(step : u8) -> u8 {
+        let s : u8 = step % PATTERN_STEPS;
+        if s < NUM_LEDS {
+            return 1u8 << s;
         }
-        expect: {
-            led_values_change: true
-            pattern_matches: [0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80]
-        }
+        // Steps 8..13 walk back down: 0x40, 0x20, ... 0x02.
+        return 1u8 << (PATTERN_STEPS - s);
     }
-    
-    # UART communication test
-    test_uart_loopback: {
-        description: "Verify UART loopback transmits test message"
-        setup: {
-            baud_rate: 115200
-            message: "HELLO\n"
-        }
-        expect: {
-            bytes_transmitted: 6
-            received_matches_transmitted: true
-        }
+
+    // Clock cycles one bit lasts on the UART line, rounded down.
+    pub fn uart_cycles_per_bit() -> u32 {
+        return CLOCK_HZ / UART_BAUD;
     }
-}
 
-# Invariants
-invariant: {
-    # Resource usage constraints
-    max_luts: 100
-    max_ffs: 50
-    max_bram: 0
-    max_dsp: 0
-    
-    # Timing constraints
-    max_frequency: 12_000_000
-    
-    # IO bank usage
-    io_banks_used: [34, 35]
-    total_io_pins: 12  # 1 clk + 1 rst + 2 uart + 8 led
-}
+    test heartbeat_starts_at_led0
+        given led = heartbeat_led(0u8)
+        then led == 0x01u8
 
-# Benchmarks
-benchmark: {
-    # Timing analysis
-    setup_time: "2.0 ns"
-    hold_time: "0.5 ns"
-    clock_to_out: "5.0 ns"
-    
-    # Power estimation (approximate)
-    static_power: "50 mW"
-    dynamic_power: "100 mW @ 12MHz"
-}
+    test heartbeat_reaches_led7
+        given led = heartbeat_led(7u8)
+        then led == 0x80u8
 
-# Documentation
-documentation: {
-    title: "QMTECH XC7A100T Minimal Design"
-    description: "Heartbeat LED pattern + UART loopback using Trinity t27 toolchain"
-    target_device: "XC7A100T-1CSG324C"
-    toolchain: "Yosys + nextpnr-xilinx + prjxray"
-    vivado_dependency: "none"
-    
-    pinout_reference: "See specs/boards/qmtech_xc7a100t_minimal.t27"
-    generated_verilog: "build/fpga/generated/minimal_design.v"
-    final_bitstream: "build/fpga/bitstream.bit"
-}
+    test heartbeat_turns_back
+        given led = heartbeat_led(8u8)
+        then led == 0x40u8
 
-# IA^2 + 1/IA^2 = 3 | TRINITY
+    test heartbeat_last_step
+        given led = heartbeat_led(13u8)
+        then led == 0x02u8
+
+    test heartbeat_wraps
+        given led = heartbeat_led(14u8)
+        then led == 0x01u8
+
+    test uart_bit_is_104_cycles
+        given cycles = uart_cycles_per_bit()
+        then cycles == 104u32
+
+    invariant heartbeat_at_most_twelve_steps_per_second
+        assert CLOCK_HZ / HEARTBEAT_PERIOD <= 12u32
+
+    invariant uart_repeat_outlasts_the_message
+        // 10 bits per byte (start + 8 data + stop) must fit in one repeat window.
+        assert UART_MESSAGE_BYTES * 10u32 * uart_cycles_per_bit() < UART_REPEAT
+
+    invariant budget_uses_no_hard_blocks
+        assert MAX_BRAM == 0u32
+        assert MAX_DSP == 0u32
+        assert MAX_FFS <= MAX_LUTS
+}

@@ -20,6 +20,6 @@ pub const TZ : str = "UTC";
 pub const RUNS : [0]str = [];
 pub const RUNS_NOTE : str = "no skill invocation found in source";
 pub const ENABLED : bool = true;
-pub const NOTE : str = "GitHub Actions on this repository have not run since 2026-06-02 (billing); the schedule stands in the file but does not fire.";
+pub const NOTE : str = "Measured 2026-10-04: the workflow does fire, both from its schedule (02:00 UTC) and from the Queen's workflow_dispatch at the same minute, but GitHub refuses every job before it starts ('recent account payments have failed or your spending limit needs to be increased'); none of the last 300 runs succeeded. The fix is billing on the account, not the workflow.";
 pub const ON_FAILURE : str = "log";
 pub const CONTROL : str = "code-only";

@@ -29,9 +29,9 @@ module Int4 {
     fn encode(value: i8) -> Int4 {
         const clamped = if (value > 7) { 7 } else if (value < -8) { -8 } else { value };
         // Two's complement: negative values are stored as 2^4 + value
-        let raw = clamped as u4;
+        let raw = clamped as u8;  // was u4 (cast target unsupported); widened to u8
         if (clamped < 0) {
-            raw = (16 + clamped) as u4;
+            raw = (16 + clamped) as u8;  // was u4 (cast target unsupported); widened to u8
         }
         return Int4{ raw = raw };
     }
@@ -139,12 +139,12 @@ module Int4 {
     // TDD-Inside-Spec: Tests and Invariants for Int4
 
     test int4_decode_zero
-        given i = Int4{ raw = 0 }
+        const i = Int4{ raw = 0 };
         when value = decode(i)
         then value == 0
 
     test int4_encode_zero_roundtrip
-        given original = 0
+        const original = 0;
         and   encoded = encode(original)
         and   decoded = decode(encoded)
         then decoded == original
@@ -158,119 +158,119 @@ module Int4 {
         then decode(Int4{ raw = vals[i] }) == vals[i] for vals[i] in {0, 1, 2, 3, 4, 5, 6, 7}
 
     test int4_encode_negative_values
-        given vals = [-1, -2, -3, -4, -5, -6, -7, -8]
+        const vals = [-1, -2, -3, -4, -5, -6, -7, -8];
         then encode(vals[i]).raw == (16 + vals[i]) for vals[i] in vals
 
     test int4_decode_negative_values
-        given enc = [15, 14, 13, 12, 11, 10, 9, 8]
+        const enc = [15, 14, 13, 12, 11, 10, 9, 8];
         then decode(Int4{ raw = enc[i] }) == enc[i] - 16 for enc[i] in enc
 
     test int4_bits_constant
         then BITS == 4
 
     test int4_max_value
-        given max_val = max_value()
+        const max_val = max_value();
         then max_val == 7
 
     test int4_min_value
-        given min_val = min_value()
+        const min_val = min_value();
         then min_val == -8
 
     test int4_range
-        given range_val = range()
+        const range_val = range();
         then range_val == 15
 
     test int4_memory_ratio_vs_fp32
-        given ratio = MEMORY_RATIO_VS_FP32
+        const ratio = MEMORY_RATIO_VS_FP32;
         then abs(ratio - 0.125) < 0.01
 
     test int4_validate_format_success
-        given valid = validate_format()
+        const valid = validate_format();
         then valid == true
 
     test int4_add_positive
-        given a = Int4{ raw = 3 }
+        const a = Int4{ raw = 3 };
         and   b = Int4{ raw = 4 }
         and   result = add(a, b)
         then decode(result) == 7
 
     test int4_add_overflow
-        given a = Int4{ raw = 4 }
+        const a = Int4{ raw = 4 };
         and   b = Int4{ raw = 4 }
         and   result = add(a, b)
         then decode(result) == 7
 
     test int4_sub_positive
-        given a = Int4{ raw = 7 }
+        const a = Int4{ raw = 7 };
         and   b = Int4{ raw = 3 }
         and   result = sub(a, b)
         then decode(result) == 4
 
     test int4_sub_underflow
-        given a = Int4{ raw = 1 }
+        const a = Int4{ raw = 1 };
         and   b = Int4{ raw = 5 }
         and   result = sub(a, b)
         then decode(result) == -4
 
     test int4_mul_positive
-        given a = Int4{ raw = 2 }
+        const a = Int4{ raw = 2 };
         and   b = Int4{ raw = 3 }
         and   result = mul(a, b)
         then decode(result) == 6
 
     test int4_mul_negative
-        given a = Int4{ raw = 3 }
+        const a = Int4{ raw = 3 };
         and   b = encode(-2)
         and   result = mul(a, b)
         then decode(result) == -6
 
     test int4_neg_positive
-        given i = Int4{ raw = 5 }
+        const i = Int4{ raw = 5 };
         and   result = neg(i)
         then decode(result) == -5
 
     test int4_neg_negative
-        given i = encode(-3)
+        const i = encode(-3);
         and   result = neg(i)
         then decode(result) == 3
 
     test int4_abs_positive
-        given i = Int4{ raw = 5 }
+        const i = Int4{ raw = 5 };
         and   result = abs(i)
         then decode(result) == 5
 
     test int4_abs_negative
-        given i = encode(-3)
+        const i = encode(-3);
         and   result = abs(i)
         then decode(result) == 3
 
     test int4_eq_true
-        given a = Int4{ raw = 3 }
+        const a = Int4{ raw = 3 };
         and   b = Int4{ raw = 3 }
         then eq(a, b) == true
 
     test int4_eq_false
-        given a = Int4{ raw = 3 }
+        const a = Int4{ raw = 3 };
         and   b = Int4{ raw = 4 }
         then eq(a, b) == false
 
     test int4_lt_true
-        given a = Int4{ raw = 2 }
+        const a = Int4{ raw = 2 };
         and   b = Int4{ raw = 5 }
         then lt(a, b) == true
 
     test int4_lt_false
-        given a = Int4{ raw = 5 }
+        const a = Int4{ raw = 5 };
         and   b = Int4{ raw = 2 }
         then lt(a, b) == false
 
     test int4_encode_clamps_above_max
-        given original = 10
+        const original = 10;
         and   encoded = encode(original)
         then decode(encoded) == 7
 
     test int4_encode_clamps_below_min
-        given original = -10
+        const original = -10;
         and   encoded = encode(original)
         then decode(encoded) == -8
 
@@ -293,19 +293,19 @@ module Int4 {
         assert decode(Int4{raw = 0}) == 0
 
     invariant int4_add_is_commutative
-        given a = 3 and b = 2
+        const a = 3 and b = 2;
         then decode(add(encode(a), encode(b))) == decode(add(encode(b), encode(a)))
 
     invariant int4_zero_add_identity
-        given x = 5
+        const x = 5;
         then decode(add(encode(x), encode(0))) == x
 
     invariant int4_neg_neg_is_identity
-        given x = 5
+        const x = 5;
         then decode(neg(neg(encode(x)))) == x
 
     invariant int4_mul_by_neg_one_is_neg
-        given x = 5
+        const x = 5;
         then decode(mul(encode(x), encode(-1))) == -x
 
     invariant int4_abs_is_non_negative

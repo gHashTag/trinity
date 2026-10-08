@@ -24,7 +24,9 @@
 //       agent proposes runs only on the person's tap; since v5 the person's way to the
 //       Queen's move door (a keeper, through render, two taps), the thread live in an
 //       open sheet, and the one issue the nightly check keeps; since v6 what the sheet
-//       shows while the agent works (a kind and a tool's name, never its words). What it
+//       shows while the agent works (a kind and a tool's name, never its words); since
+//       v7 the bee's own log on a running card -- its commands and their outcome, live,
+//       read through render with the Queen's token. What it
 //       does NOT decide: what the
 //       agent does in the task (that is the agent's own loop), where a card's column
 //       goes (that is the Queen's verdict), or who may merge (that stays the owner's).
@@ -38,7 +40,7 @@ module automation::kanban_card_chat {
     pub const KIND : str = "automation";
     pub const ID : str = "kanban-card-chat";
     pub const REPO : str = "999-multibots-telegraf";
-    pub const VERSION : u8 = 6;
+    pub const VERSION : u8 = 7;
 
     // ---- The thread -----------------------------------------------------------------
     // One conversation per (person, task): "task:gHashTag/t27#3587". The person is
@@ -257,6 +259,50 @@ module automation::kanban_card_chat {
     pub const WORK_NAME_MAX : u8 = 64;
     pub const WORK_IDLE_S : u8 = 90;  // longer than a slow tool, shorter than a doubt
 
+    // ---- The bee's own log (v7, S20) ------------------------------------------------
+    // Owner, 2026-10-03: "tapping a card I want to see the agent working online -- its
+    // logs, its tool calls, the tri commands it runs". The v6 line shows the agent of
+    // the CHAT; the card's work is done by a Queen bee in another service, whose log
+    // the Queen keeps (BEE_SOURCE, Bearer token only, up to BEE_PAGE_MAX rows a read).
+    // Render reads it for a signed-in person and answers rows, never the token
+    // (BEE_TOKEN_TO_BROWSER false), never storing them (BEE_STORED false). One attempt
+    // at a time: the rows of the dispatch's own conversation, from the last seq on.
+    // A command is shown as written up to the first word that could carry a secret (an
+    // assignment, a quote, a `$`); the rest is cut. A result is ok or failed and its
+    // first line. The model's own words (BEE_PROSE) are the noisiest and the likeliest
+    // to repeat what it read, so only a keeper of the hive gets them, joined into one
+    // thought and capped. The sheet asks every BEE_POLL_S while the bee runs, every
+    // BEE_IDLE_POLL_S after, and keeps the last BEE_ROWS_MAX rows.
+    pub const BEE_DOOR : str = "/api/card-work";
+    pub const BEE_SOURCE : str = "/queen/feed/data";
+    pub const BEE_TOKEN_ENV : str = "TRIOS_API_TOKEN";
+    pub const BEE_TOKEN_TO_BROWSER : bool = false;
+    pub const BEE_STORED : bool = false;
+    pub const BEE_ONE_ATTEMPT : bool = true;
+    pub const BEE_PAGE_MAX : u16 = 500;
+    pub const BEE_ROWS_MAX : u16 = 300;
+    pub const BEE_POLL_S : u8 = 3;
+    pub const BEE_IDLE_POLL_S : u8 = 30;
+    pub const BEE_CACHE_S : u8 = 2;  // persons on one card share one read
+    pub const BEE_LINE_MAX : u8 = 180;
+    pub const BEE_THOUGHT_MAX : u16 = 400;
+    pub const BEE_SECRET_RUN : u8 = 24;  // a run of this many token characters is masked
+    pub const BEE_PROSE_KEEPER_ONLY : bool = true;
+    pub const BEE_ROW_TOOL : u8 = 1;
+    pub const BEE_ROW_RESULT : u8 = 2;
+    pub const BEE_ROW_THOUGHT : u8 = 3;
+    pub const BEE_ROW_USAGE : u8 = 4;
+    pub const BEE_ROW_ERROR : u8 = 5;
+    // The sheet has two faces, the chat and the bee. A card a bee is on opens on its
+    // bee until the person picks a face (BEE_FACE_FIRST_RUNNING), and the bee's face
+    // takes the sheet to BEE_FACE_DETENT: a phone at HALF showed two lines of the log
+    // (tri shot card-chat-bee, 2026-10-03). A message sent shows the chat, where its
+    // answer lands (SEND_SHOWS_CHAT).
+    pub const BEE_FACE_FIRST_RUNNING : bool = true;
+    pub const BEE_FACE_DETENT : str = "full";
+    pub const BEE_FACE_DETENT_RANK : u8 = 2;
+    pub const SEND_SHOWS_CHAT : bool = true;
+
     // ---- The nightly look (v5, S18) -------------------------------------------------
     // tri card-check compares the server's read of a card with the client's. Drift is
     // written into ONE issue under the EPIC and updated there, never a new issue a
@@ -279,6 +325,19 @@ module automation::kanban_card_chat {
     // The sheet shows the line for a running kind heard less than WORK_IDLE_S ago.
     fn work_shown(kind: u8, quiet_s: u16) -> bool {
         return kind != WORK_NONE && kind != WORK_DONE && quiet_s < WORK_IDLE_S;
+    }
+
+    // How often the sheet asks for the bee's log: often while it runs, rarely after.
+    fn bee_poll_s(running: bool) -> u8 {
+        if (running) {
+            return BEE_POLL_S;
+        }
+        return BEE_IDLE_POLL_S;
+    }
+
+    // A row of the model's own words reaches only a keeper.
+    fn bee_prose_sent(keeper: bool) -> bool {
+        return keeper || !BEE_PROSE_KEEPER_ONLY;
     }
 
     // An issue number the thread accepts.
@@ -663,6 +722,28 @@ module automation::kanban_card_chat {
         assert(!work_shown(WORK_NONE, 0));
     }
 
+    test "the bee's log reaches the sheet through render, without the token or its secrets" {
+        assert(!BEE_TOKEN_TO_BROWSER);
+        assert(!BEE_STORED);
+        assert(BEE_ONE_ATTEMPT);
+        assert(BEE_ROWS_MAX <= BEE_PAGE_MAX);
+        assert(BEE_CACHE_S < BEE_POLL_S);
+        assert(BEE_POLL_S < BEE_IDLE_POLL_S);
+        assert(BEE_IDLE_POLL_S < WORK_IDLE_S);
+        assert(bee_poll_s(true) == BEE_POLL_S);
+        assert(bee_poll_s(false) == BEE_IDLE_POLL_S);
+        assert(bee_prose_sent(true));
+        assert(!bee_prose_sent(false));
+        assert(BEE_SECRET_RUN >= 20);
+        assert(BEE_LINE_MAX < BEE_THOUGHT_MAX);
+        assert(BEE_ROW_TOOL != BEE_ROW_RESULT);
+        assert(BEE_ROW_THOUGHT < BEE_ROW_ERROR);
+        assert(BEE_FACE_FIRST_RUNNING);
+        assert(BEE_FACE_DETENT_RANK == DETENT_FULL_RANK);
+        assert(BEE_FACE_DETENT_RANK > OPEN_DETENT_RANK);
+        assert(SEND_SHOWS_CHAT);
+    }
+
     test "drift lives in one issue, updated, and closed by agreement" {
         assert(DRIFT_ONE_ISSUE);
         assert(drift_action(true, false) == DRIFT_OPEN);
@@ -673,7 +754,7 @@ module automation::kanban_card_chat {
 
     test "the card chat is designed, not yet live" {
         assert(!RUN_LIVE);
-        assert(VERSION == 6);
+        assert(VERSION == 7);
         assert(HISTORY_LIMIT == 100);
     }
 }

@@ -212,8 +212,12 @@ module TriPattern;
         then result == true
 
     test wildcard_match_no_match
+        // FALSE as stated: '*' matches any run, so "he*o" matches "hexxo"
+        // (tri lab-exec, 2026-10-05). The no-match case needs a text whose
+        // tail is not 'o'.
+        // original: given text = "hexxo"
         given pattern = "he*o"
-        given text = "hexxo"
+        given text = "hexxa"
         when result = wildcard_match(pattern, text)
         then result == false
 

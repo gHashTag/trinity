@@ -95,7 +95,9 @@ module TriBuilder;
         
         try std.testing.expectEqual(@as(usize, 0), builder.capacity);
         try std.testing.expectEqual(@as(usize, 0), builder.len);
-        try std.testing.expectEqual(@as([]T, &.{}), builder.items);
+        // (was `@as([]T, &.{})` compared with `items`; a slice type in `@as`
+        // is lost by every backend, #5968. Empty means a length of zero.)
+        try std.testing.expectEqual(@as(usize, 0), builder.items.len);
     }
 
     test "append_adds_item_to_builder" {

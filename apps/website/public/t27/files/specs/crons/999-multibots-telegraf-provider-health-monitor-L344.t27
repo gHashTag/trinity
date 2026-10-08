@@ -24,3 +24,11 @@ pub const ENABLED : bool = true;
 pub const NOTE : str = "Providers listed in HEALTH_SKIP_PROVIDERS are deliberately not watched and do not raise the alarm.";
 pub const ON_FAILURE : str = "log";
 pub const CONTROL : str = "code-only";
+
+test telegraf_provider_health_monitor_l344_constants {
+  assert KIND == "cron";
+  assert ENABLED == true;
+  assert TZ == "UTC";
+  assert INTERVAL_MS == 300000;
+  assert ON_FAILURE == "log";
+}
