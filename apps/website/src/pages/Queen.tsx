@@ -14,7 +14,32 @@ import { QueenAgents } from "../components/QueenAgents";
 import { SELECTION_KEY, isExplorerTab, leaveTabSelections } from "../lib/queenEmbed";
 import { specsChatSpec } from "../lib/queenSpecsChat";
 import { openCardInApp, openCardMessage } from "../lib/queenCardChat";
-import { hiveFeedHealth, hiveDisplayRecords, hiveSameRepositorySnapshot, placeHiveDisplays, type HiveDisplay } from "../components/queenHiveDisplay";
+import { hiveFeedHealth, hiveDisplayRecords, hiveSameRepositorySnapshot, placeHiveDisplays, type HiveDisplay, type HiveFeedHealth } from "../components/queenHiveDisplay";
+import type { HiveBee } from "../components/QueenCombBabylon";
+import {
+  EMPTY_TASK_FILTER,
+  TASK_FILTER_KEYS,
+  TASK_KINDS,
+  TASK_STATES,
+  beeBadge,
+  filterTasks,
+  loadTasksFeed,
+  observeRunning,
+  taskFilterFromParams,
+  taskFilterIsEmpty,
+  taskFilterKey,
+  tasksFromBoard,
+  withEarliestSince,
+  writeTaskFilter,
+  type ActivityLike,
+  type QueenBee,
+  type QueenTasksFeed,
+  type TaskFilter,
+  type TaskKind,
+  type TaskState,
+  type TasksScope,
+} from "../lib/queenTasks";
+import { cardLoaded, cardReady } from "../lib/queenTasksCard";
 import { QueenComb } from "../components/QueenComb";
 import { QueenCommandPanel, type CommandItem } from "../components/QueenCommand";
 import { QueenContext } from "../components/QueenContext";
@@ -148,6 +173,10 @@ const HIVE_BOARD_POLL_MS = 30_000;
 const FOUNDATION_POLL_MS = 60_000;
 const MODULES_POLL_MS = 15_000;
 const ACTIVITY_POLL_MS = 2_000;
+// The tasks route is asked as often as the board while it answers, and every
+// thirty seconds while it does not: a route that is still deploying is not a
+// reason to send a request every five seconds that is known to fail.
+const TASKS_RETRY_MS = 30_000;
 const PINNED_QUEEN_HARDWARE_PUBLIC_KEY =
   "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA5+HsGhhkVkICuwo5Qa2pWhfVhT3/wLOLWutK4VKYulw=\n-----END PUBLIC KEY-----\n";
 
@@ -625,6 +654,25 @@ const COPY = {
     // lib/queenDirection.ts, so a new direction cannot arrive without both.
     tasksDirection: "Direction",
     tasksDirectionAll: "All",
+    tasksFilterAria: "Filter the tasks",
+    tasksFilterToggle: "Filter",
+    tasksFind: "title or #number",
+    tasksKind: "Kind",
+    tasksKindAll: "all kinds",
+    tasksKindIssue: "issues",
+    tasksKindReview: "reviews",
+    tasksKindJob: "jobs",
+    tasksKindReviewOne: "review",
+    tasksKindJobOne: "job",
+    tasksState: "State",
+    tasksStateAll: "all states",
+    tasksStateFailed: "failed",
+    tasksRepo: "Repository",
+    tasksRepoAll: "all repositories",
+    tasksReset: "reset",
+    tasksFromBoard: "derived from the board: the tasks route is not answering",
+    tasksTruncated: "cut at the route's page limit",
+    tasksBeeTitle: "The bee on this task: its lane, working or quiet, how long it has had the task, and when it was last heard",
     laneClients: "CLIENTS",
     clientsLaneAria: "Clients board",
     clientsNarrow: "Narrow to",
@@ -1098,6 +1146,25 @@ const COPY = {
     // same entries as the rules, in lib/queenDirection.ts.
     tasksDirection: "Направление",
     tasksDirectionAll: "Все",
+    tasksFilterAria: "Фильтр задач",
+    tasksFilterToggle: "Фильтр",
+    tasksFind: "название или #номер",
+    tasksKind: "Вид",
+    tasksKindAll: "все виды",
+    tasksKindIssue: "задачи",
+    tasksKindReview: "ревью",
+    tasksKindJob: "работы",
+    tasksKindReviewOne: "ревью",
+    tasksKindJobOne: "работа",
+    tasksState: "Состояние",
+    tasksStateAll: "все состояния",
+    tasksStateFailed: "сбой",
+    tasksRepo: "Репозиторий",
+    tasksRepoAll: "все репозитории",
+    tasksReset: "сбросить",
+    tasksFromBoard: "выведено из доски: маршрут задач не отвечает",
+    tasksTruncated: "обрезано лимитом маршрута",
+    tasksBeeTitle: "Пчела на задаче: её линия, работает или молчит, сколько она на задаче и когда её слышали",
     laneClients: "КЛИЕНТЫ",
     clientsLaneAria: "Доска клиентов",
     clientsNarrow: "Сузить до",
@@ -1551,6 +1618,84 @@ function useQueenActivity(): {
   }, []);
 
   return { data, error };
+}
+
+/**
+ * One task view and its bees (gHashTag/t27 specs/queen/tasks.t27): the route
+ * when it answers, the public board and the activity feed when it does not.
+ *
+ * ONE LOOP, TWO SIZES. The game needs the bees and the running issues; the
+ * kanban needs every task. So the same loop asks for `state=running` (about
+ * 2 KB compressed; the bees come with any filter) unless the kanban is on
+ * screen, and for everything (about 55 KB) while it is. A kanban that opens
+ * before the full answer arrives is drawn from the board, never from the
+ * running-only answer, which would read as a board of twenty tasks.
+ *
+ * THE FALLBACK ADDS NO REQUEST. The board and the activity feed are polled by
+ * this page already; tasksFromBoard reshapes them, and the feed says
+ * `source: "board"` so the screen can say which it is drawing.
+ */
+function useQueenTasks(
+  full: boolean,
+  board: QueenBoard | null,
+  boardError: string | null,
+  events: readonly ActivityLike[],
+): { feed: QueenTasksFeed | null; health: HiveFeedHealth; error: string | null } {
+  const [wire, setWire] = useState<{ feed: QueenTasksFeed; scope: TasksScope } | null>(null);
+  const [wireError, setWireError] = useState<string | null>(null);
+  useEffect(() => {
+    let active = true;
+    let timer = 0;
+    let controller: AbortController | null = null;
+    const scope: TasksScope = full ? "all" : "running";
+    const read = async () => {
+      controller = new AbortController();
+      try {
+        // The card decides the filter and the bees' states; nothing is shown
+        // before it is loaded, so nothing is ever decided without it.
+        const [feed] = await Promise.all([loadTasksFeed(QUEEN_API, scope, controller.signal), cardReady]);
+        if (!active) return;
+        setWire((previous) => ({ feed: withEarliestSince(previous?.feed ?? null, feed), scope }));
+        setWireError(null);
+        timer = window.setTimeout(read, LIVE_POLL_MS);
+      } catch (error) {
+        if (!active) return;
+        setWireError(error instanceof Error ? error.message : String(error));
+        timer = window.setTimeout(read, TASKS_RETRY_MS);
+      }
+    };
+    void read();
+    return () => {
+      active = false;
+      window.clearTimeout(timer);
+      controller?.abort();
+    };
+  }, [full]);
+  // When each running card was first seen running, for the derived bees' "since".
+  const running = useMemo(
+    () => (board?.cards ?? []).filter((card) => card.column === "running").map((card) => card.number),
+    [board],
+  );
+  const runningKey = running.join(",");
+  const [firstSeen, setFirstSeen] = useState<{ key: string; map: Map<number, string> }>({ key: "", map: new Map() });
+  if (firstSeen.key !== runningKey) {
+    setFirstSeen({ key: runningKey, map: observeRunning(firstSeen.map, running, new Date().toISOString()) });
+  }
+  const [cardOk, setCardOk] = useState(cardLoaded);
+  useEffect(() => {
+    let live = true;
+    cardReady.then(() => live && setCardOk(true)).catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, []);
+  const derived = useMemo(
+    () => (board && cardOk ? tasksFromBoard(board.repo, board.cards, events, firstSeen.map, Date.now()) : null),
+    [board, events, firstSeen, cardOk],
+  );
+  const wireUsable = wire !== null && wireError === null && (wire.scope === "all" || !full);
+  if (wireUsable) return { feed: wire.feed, health: "live", error: null };
+  return { feed: derived, health: derived ? hiveFeedHealth(true, boardError) : "unknown", error: wireError };
 }
 
 /**
@@ -2343,9 +2488,29 @@ function clientsReasonSentence(reason: HiveBoardReason | null, c: Copy): string 
 // than being handed 569 cards they did not ask for.
 const CARD_PAGE = 30;
 
+/**
+ * A card on the tasks lane: the task the feed sent, in the shape the board
+ * always drew (`column` is the task's state), plus what a task has that a board
+ * card never had -- its kind, its repository, its own address and its bee.
+ */
+type KanbanCard = QueenCard & {
+  key: string;
+  kind: TaskKind;
+  state: TaskState;
+  repo: string;
+  url: string | null;
+  bee: QueenBee | null;
+};
+
+/** The words for a kind, plural, as the filter offers them. */
+function kindWords(kind: TaskKind, c: Copy): string {
+  return kind === "issue" ? c.tasksKindIssue : kind === "review" ? c.tasksKindReview : c.tasksKindJob;
+}
+
 function KanbanView({
   columns,
   cards,
+  tasks,
   repo,
   error,
   loaded,
@@ -2358,10 +2523,13 @@ function KanbanView({
   onSearch,
 }: {
   columns: QueenColumn[];
+  /** The public board's cards: only for what a task does not carry yet (a review card's queue). */
   cards: QueenCard[];
+  /** Every task and its bees (lib/queenTasks.ts); null until the first answer. */
+  tasks: QueenTasksFeed | null;
   repo: string | null;
   error: string | null;
-  /** false until /queen/public-board has answered once: counts read a dash, not 0 */
+  /** false until the feed has answered once: counts read a dash, not 0 */
   loaded: boolean;
   c: Copy;
   lang: string;
@@ -2383,14 +2551,106 @@ function KanbanView({
   // not of the URL, and above all not of the request — lib/queenDirection.ts
   // says why a chip that can only hide is a chip that cannot be made to ask.
   const [directions, setDirections] = useState<DirectionKey[]>([]);
+  // THE TASKS, AS CARDS. A review card's queue still comes from the board,
+  // matched by number in the board's repository, because the task feed does not
+  // carry it; everything else is the task's own.
+  const allCards = useMemo<KanbanCard[]>(() => {
+    if (!tasks) return [];
+    const boardCard = new Map(cards.map((card) => [card.number, card]));
+    const bees = new Map(tasks.bees.map((bee) => [bee.id, bee]));
+    return tasks.tasks.map((task) => {
+      const own = task.number !== null && repo !== null && task.repo.toLowerCase() === repo.toLowerCase() && task.kind === "issue" ? boardCard.get(task.number) : undefined;
+      return {
+        key: task.key,
+        kind: task.kind,
+        state: task.state,
+        repo: task.repo,
+        url: task.url,
+        bee: task.bee ? bees.get(task.bee) ?? null : null,
+        number: task.number ?? 0,
+        title: task.title,
+        // A failed job or review has a state no board column ever had, and the
+        // board's DROPPED column already reads "failed or cancelled". It stands
+        // there, tagged, rather than in a seventh column: the grid is six wide,
+        // and a seventh wrapped below and halved every column's height.
+        column: task.state === "failed" ? "dropped" : task.state,
+        criteria: task.criteria ?? undefined,
+        needs: task.needs,
+        reviewState: own?.reviewState,
+      };
+    });
+  }, [tasks, cards, repo]);
+  // THE FILTER IS THE ADDRESS (owner, 2026-10-08: a filtered view is a link you
+  // can send). Kind, state, repository and text ride in the board's address --
+  // `#/queen?tab=kanban&kinds=job&states=failed` -- and only there: they narrow
+  // what already arrived and are never an argument to the route, the same rule
+  // the direction chips keep. The screen holds its own copy so a keystroke is
+  // drawn at once, and an address changed from outside (Back, a pasted link) is
+  // adopted; an address this board wrote itself is recognised and not adopted
+  // again, so a write that lands late cannot undo the keystroke after it.
+  const [hashParams, setHashParams] = useSearchParams();
+  const addressFilter = useMemo(() => taskFilterFromParams(hashParams), [hashParams]);
+  const addressKey = taskFilterKey(addressFilter);
+  const [filter, setFilterState] = useState<TaskFilter>(addressFilter);
+  const [seenAddress, setSeenAddress] = useState(addressKey);
+  // THE ROW IS FOLDED UNTIL ASKED FOR. The board is measured at 1280x600 and
+  // 390x560 to still show a whole card in every column (check:queen-viewport),
+  // and a fourth row of chrome above the columns took that card away. So the
+  // filter opens from a chip at the end of the direction row, and opens by
+  // itself when the address already carries a filter: a shared link shows what
+  // it narrowed. Folded with a filter on, the chip says how many are applied.
+  const [filterOpen, setFilterOpen] = useState(() => !taskFilterIsEmpty(addressFilter));
+  const written = useRef(new Set<string>());
+  if (seenAddress !== addressKey) {
+    setSeenAddress(addressKey);
+    if (written.current.has(addressKey)) written.current.delete(addressKey);
+    else {
+      setFilterState(addressFilter);
+      if (!taskFilterIsEmpty(addressFilter)) setFilterOpen(true);
+    }
+  }
+  const setFilter = useCallback(
+    (next: TaskFilter) => {
+      setFilterState(next);
+      written.current.add(taskFilterKey(next));
+      setHashParams(() => writeTaskFilter(hashParamsOf(window.location.hash), next), { replace: true });
+    },
+    [setHashParams],
+  );
+  const filtered = useMemo(() => filterTasks(allCards, filter), [allCards, filter]);
+  // The options count the WHOLE feed, as the direction chips count the whole
+  // board, so a number does not change because the reader picked something.
+  const options = useMemo(() => {
+    const kinds = new Map<string, number>(), states = new Map<string, number>(), repos = new Map<string, number>();
+    for (const card of allCards) {
+      kinds.set(card.kind, (kinds.get(card.kind) ?? 0) + 1);
+      states.set(card.state, (states.get(card.state) ?? 0) + 1);
+      repos.set(card.repo, (repos.get(card.repo) ?? 0) + 1);
+    }
+    return { kinds, states, repos: [...repos].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])) };
+  }, [allCards]);
   // The chips count the WHOLE board, not the narrowed one, so the numbers stay
   // still while the reader clicks. A count that changed on every click would be
   // counting the click rather than the work.
-  const tally = useMemo(() => directionCounts(cards), [cards]);
+  const tally = useMemo(() => directionCounts(allCards), [allCards]);
   const shownCards = useMemo(
-    () => narrowByDirection(cards, directions),
-    [cards, directions],
+    () => narrowByDirection(filtered, directions),
+    [filtered, directions],
   );
+  const stateTitle = (state: TaskState) =>
+    columns.find((column) => column.key === state)?.title ?? (state === "failed" ? c.tasksStateFailed : state);
+  // How old a bee is, by the feed's own clock: badges move with each answer, and
+  // the board is not re-drawn every second to count them.
+  const feedNow = tasks?.at ? Date.parse(tasks.at) || Date.now() : Date.now();
+  const filterActive = !taskFilterIsEmpty(filter);
+  const filterCount =
+    (filter.kinds.length > 0 ? 1 : 0) + (filter.states.length > 0 ? 1 : 0) + (filter.repos.length > 0 ? 1 : 0) + (filter.q.trim() ? 1 : 0);
+  // A repository named in the address is matched without regard to case, so a
+  // link that says ghashtag/t27 selects the gHashTag/t27 the feed spells.
+  const repoValue =
+    filter.repos.length === 1
+      ? (options.repos.find(([name]) => name.toLowerCase() === filter.repos[0].toLowerCase())?.[0] ?? filter.repos[0])
+      : filter.repos.join(",");
   const toggleDirection = useCallback((key: DirectionKey) => {
     setDirections((current) =>
       current.includes(key)
@@ -2516,6 +2776,77 @@ function KanbanView({
       )}
       {showTasks && (
       <>
+      {/* THE TASK FILTER: one row, four controls. Selects rather than chips:
+          three kinds and seven states as chips would be two more rows of
+          chrome on a phone, where the board is already short of height. Each
+          option carries its count over the whole feed. The address can name
+          several kinds or states at once (a link somebody built); the select
+          then shows that list as its one chosen option. */}
+      {/* With no direction row to carry the chip (every card one direction),
+          the row stays open, once there is a board to filter: before the
+          first answer there is nothing to narrow and no height to spend. */}
+      {(filterOpen || (loaded && tally.length <= 1)) && (
+      <div className="queen27-task-filter" id="queen27-task-filter" role="group" aria-label={c.tasksFilterAria}>
+        <input
+          className="queen27-lane-search"
+          type="search"
+          value={filter.q}
+          placeholder={c.tasksFind}
+          aria-label={c.tasksFind}
+          onChange={(event) => setFilter({ ...filter, q: event.target.value })}
+        />
+        <select
+          aria-label={c.tasksKind}
+          value={filter.kinds.join(",")}
+          onChange={(event) => setFilter({ ...filter, kinds: event.target.value ? (event.target.value.split(",") as TaskKind[]) : [] })}
+        >
+          <option value="">{c.tasksKindAll} · {loaded ? allCards.length : "—"}</option>
+          {filter.kinds.length > 1 && <option value={filter.kinds.join(",")}>{filter.kinds.map((kind) => kindWords(kind, c)).join(", ")}</option>}
+          {TASK_KINDS.map((kind) => (
+            <option key={kind} value={kind}>
+              {kindWords(kind, c)} · {options.kinds.get(kind) ?? 0}
+            </option>
+          ))}
+        </select>
+        <select
+          aria-label={c.tasksState}
+          value={filter.states.join(",")}
+          onChange={(event) => setFilter({ ...filter, states: event.target.value ? (event.target.value.split(",") as TaskState[]) : [] })}
+        >
+          <option value="">{c.tasksStateAll} · {loaded ? allCards.length : "—"}</option>
+          {filter.states.length > 1 && <option value={filter.states.join(",")}>{filter.states.map(stateTitle).join(", ")}</option>}
+          {TASK_STATES.map((state) => (
+            <option key={state} value={state}>
+              {stateTitle(state)} · {options.states.get(state) ?? 0}
+            </option>
+          ))}
+        </select>
+        <select
+          aria-label={c.tasksRepo}
+          value={repoValue}
+          onChange={(event) => setFilter({ ...filter, repos: event.target.value ? event.target.value.split(",") : [] })}
+        >
+          <option value="">{c.tasksRepoAll}</option>
+          {repoValue && !options.repos.some(([name]) => name === repoValue) && <option value={repoValue}>{filter.repos.join(", ")}</option>}
+          {options.repos.map(([name, total]) => (
+            <option key={name} value={name}>
+              {name} · {total}
+            </option>
+          ))}
+        </select>
+        {filterActive && (
+          <button type="button" className="queen27-chip" onClick={() => setFilter(EMPTY_TASK_FILTER)}>
+            {c.tasksReset}
+          </button>
+        )}
+        {/* What is on screen, out of what arrived, and where it came from. */}
+        <small data-tasks-source={tasks?.source ?? "none"}>
+          {loaded ? `${shownCards.length} / ${allCards.length}` : "—"}
+          {tasks?.source === "board" ? ` · ${c.tasksFromBoard}` : ""}
+          {tasks?.truncated ? ` · ${c.tasksTruncated}` : ""}
+        </small>
+      </div>
+      )}
       {tally.length > 1 && (
         // The direction chips, and unlike the clients lane they are here for
         // EVERYONE — signed in or not. Nothing about them describes a person:
@@ -2548,7 +2879,7 @@ function KanbanView({
             aria-pressed={directions.length === 0}
             onClick={() => setDirections([])}
           >
-            {c.tasksDirectionAll} <small>{cards.length}</small>
+            {c.tasksDirectionAll} <small>{allCards.length}</small>
           </button>
           {tally.map(({ key, count }) => (
             <button
@@ -2563,6 +2894,21 @@ function KanbanView({
               {directionLabel(key, lang)} <small>{count}</small>
             </button>
           ))}
+          {/* Opens the task filter row. Folded, it still says that a filter is
+              applied and how many parts, and its tooltip says when the board is
+              derived because the tasks route is not answering. */}
+          <button
+            type="button"
+            className="queen27-chip queen27-task-filter-toggle"
+            aria-expanded={filterOpen}
+            aria-controls={filterOpen ? "queen27-task-filter" : undefined}
+            data-tasks-source={tasks?.source ?? "none"}
+            title={tasks?.source === "board" ? c.tasksFromBoard : c.tasksFilterAria}
+            onClick={() => setFilterOpen((open) => !open)}
+          >
+            {c.tasksFilterToggle}
+            {filterCount > 0 && <small>{filterCount}</small>}
+          </button>
         </div>
       )}
       <motion.div
@@ -2612,9 +2958,11 @@ function KanbanView({
             <div className="queen27-cards">
               {drawn.map((card) => {
                 const direction = directionOf(card.title);
+                const issue = card.kind === "issue" && card.number > 0;
                 return (
                 <motion.a
                   className="queen27-card"
+                  data-kind={card.kind}
                   // The colour rides on an attribute and a custom property, and
                   // the left border is deliberately untouched: that border
                   // already says which column the card is in, and two meanings
@@ -2622,14 +2970,15 @@ function KanbanView({
                   // the right-hand rule and the dot — its own channel.
                   data-dir={direction}
                   style={{ "--queen-dir": directionColor(direction) } as CSSProperties}
-                  href={`https://github.com/${repo}/issues/${card.number}`}
+                  href={card.url ?? `https://github.com/${card.repo}/issues/${card.number}`}
                   target="_blank"
                   rel="noreferrer"
                   // Framed by the app on its own origin, the tap opens the
                   // card's conversation with the agent there; anywhere else,
-                  // and on cmd-click, the issue opens as before.
+                  // and on cmd-click, the issue opens as before. A review or a
+                  // job is not an issue conversation, so it opens its link.
                   onClick={(event) => {
-                    if (repo) openCardInApp(event, openCardMessage(repo, card.number, publicIssueTitle(card.title, card.number, lang), column.key));
+                    if (issue) openCardInApp(event, openCardMessage(card.repo, card.number, publicIssueTitle(card.title, card.number, lang), column.key));
                   }}
                   // The title is clamped to three lines in a 126px column —
                   // measured, one card's title was nine lines and 147px of a
@@ -2638,9 +2987,9 @@ function KanbanView({
                   // still one hover away, and the link behind it was always the
                   // full answer.
                   title={publicIssueTitle(card.title, card.number, lang)}
-                  key={card.number}
+                  key={card.key}
                   layout
-                  layoutId={`queen-card-${card.number}`}
+                  layoutId={`queen-card-${card.key}`}
                   transition={{
                     type: "spring",
                     stiffness: 320,
@@ -2648,7 +2997,10 @@ function KanbanView({
                   }}
                 >
                   <div className="queen27-card-topline">
-                    <b>#{card.number}</b>
+                    <b>{card.number > 0 ? `#${card.number}` : "—"}</b>
+                    {card.kind !== "issue" && <span className="queen27-card-kind">{card.kind === "review" ? c.tasksKindReviewOne : c.tasksKindJobOne}</span>}
+                    {card.state === "failed" && <span className="queen27-card-kind" data-state="failed">{c.tasksStateFailed}</span>}
+                    {repo !== null && card.repo.toLowerCase() !== repo.toLowerCase() && <span className="queen27-card-kind">{card.repo.split("/")[1]}</span>}
                     {/* The name in words, next to the dot, on every card. A
                         reader who cannot tell this orange from this red loses
                         nothing: the colour is a shortcut for people who have
@@ -2668,6 +3020,20 @@ function KanbanView({
                     )}
                   </div>
                   <strong>{publicIssueTitle(card.title, card.number, lang)}</strong>
+                  {card.bee && (
+                    // The bee on this task, as the route states it: its lane,
+                    // whether it is working or has gone quiet, how long it has
+                    // been on it and when it was last heard. Words, not only a
+                    // colour; a quiet bee is not drawn as busy.
+                    <span
+                      className="queen27-card-bee"
+                      data-bee-state={card.bee.state}
+                      title={c.tasksBeeTitle}
+                    >
+                      <i aria-hidden="true" />
+                      {beeBadge(card.bee, feedNow, lang === "ru" ? "ru" : "en")}
+                    </span>
+                  )}
                   {typeof card.criteria === "number" && (
                     <span>
                       {card.criteria} {c.criteria}
@@ -3164,6 +3530,8 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
         const leaving = (hashParamsOf(window.location.hash).get("tab") ?? "comb") !== next;
         const params = tabAddress(window.location.hash, next);
         if (leaving) leaveTabSelections(params);
+        // the board's filter is the board's: another tab is not narrowed by it
+        if (leaving && next !== "kanban") for (const key of TASK_FILTER_KEYS) params.delete(key);
         if (card && isExplorerTab(next)) params.set(SELECTION_KEY[next], card);
         return params;
       }, { replace: true });
@@ -3303,6 +3671,21 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
   }
   const events: HudEvent[] = activityState.data?.events ?? EMPTY_EVENTS;
   const boardColumns = board?.columns ?? FALLBACK_COLUMNS;
+  // Every task and its bees: the game's ships and the kanban's cards read this
+  // one feed. The kanban being on screen is what asks for all of it.
+  const tasksState = useQueenTasks(boardView === "kanban", board, boardState.error, events);
+  const catalogLive = useMemo(() => ({ feed: tasksState.feed, health: tasksState.health }), [tasksState.feed, tasksState.health]);
+  // The repository comb's bees, each over its own issue's cell by number in this
+  // board's repository. Undefined until the feed exists, so the slot motes keep
+  // the field until then rather than an empty sky.
+  const combBees = useMemo<HiveBee[] | undefined>(() => {
+    if (!tasksState.feed) return undefined;
+    const sameRepo = (other: string) => repo !== null && other.toLowerCase() === repo.toLowerCase();
+    return tasksState.feed.bees.map((bee) => {
+      const index = bee.number !== null && sameRepo(bee.repo) ? hiveCells.findIndex((row) => row?.number === bee.number) : -1;
+      return { id: bee.id, lane: bee.lane, state: bee.state, number: bee.number, since: bee.since, target: index >= 0 ? index : null };
+    });
+  }, [tasksState.feed, hiveCells, repo]);
   // The board's second lane. Asked for only while the kanban is on screen, and
   // answered only for somebody the hive has identified — `showing` carries both
   // of those facts, so the view has ONE thing to check rather than two it could
@@ -3987,7 +4370,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
   // own view, and a scene that took clicks under the board would be a scene in
   // the way.
   const hiveScene =
-            sharedCatalog ? <SceneBoundary lang={lang==='ru'?'ru':'en'}><Suspense fallback={<QueenLoading title={lang==='ru'?'Собираю карту':'Building the map'} facts={[`${sharedCatalog.specs.length} .t27`,`${sharedCatalog.worlds.length} ${lang==='ru'?'репозиториев':'repositories'}`,`${sharedCatalog.issues.length} ${lang==='ru'?'задач':'issues'}`]}/>}><QueenCatalogHive atlas={sharedCatalog} lang={lang==='ru'?'ru':'en'} handleRef={combRef} foundationVisible={layers.foundation} fitInset={contextOpen?(isPhone?.56:.46):0} onInspect={()=>setContextOpen(false)}/></Suspense></SceneBoundary> : ENGINE_FLAG !== "canvas" ? (
+            sharedCatalog ? <SceneBoundary lang={lang==='ru'?'ru':'en'}><Suspense fallback={<QueenLoading title={lang==='ru'?'Собираю карту':'Building the map'} facts={[`${sharedCatalog.specs.length} .t27`,`${sharedCatalog.worlds.length} ${lang==='ru'?'репозиториев':'repositories'}`,`${sharedCatalog.issues.length} ${lang==='ru'?'задач':'issues'}`]}/>}><QueenCatalogHive atlas={sharedCatalog} lang={lang==='ru'?'ru':'en'} handleRef={combRef} foundationVisible={layers.foundation} fitInset={contextOpen?(isPhone?.56:.46):0} onInspect={()=>setContextOpen(false)} live={catalogLive}/></Suspense></SceneBoundary> : ENGINE_FLAG !== "canvas" ? (
               <SceneBoundary lang={lang === 'ru' ? 'ru' : 'en'}>
               <Suspense fallback={<QueenLoading title={lang === 'ru' ? 'Собираю карту' : 'Building the map'} facts={[`${placedCards.length} ${lang === 'ru' ? 'карточек' : 'cards'}`, hiveFoundation ? `${hiveFoundation.closedIssues.length} ${lang === 'ru' ? 'закрытых' : 'closed'}` : null]}/>}>
                 <QueenCombBabylon
@@ -4002,6 +4385,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                   cards={placedCards}
                   modules={modulesById}
                   beeTargets={runningCards.map(card => { const index = hiveCells.findIndex(row => row?.number === card.number); return index >= 0 ? index : null; })}
+                  liveBees={combBees}
                   foundation={hiveFoundation ? { issues: hiveFoundation.closedIssues, generatedAt: hiveFoundation.generatedAt, source: hiveFoundation.source, rings: hiveFoundation.rings, epics: hiveFoundation.epics, releases: hiveFoundation.releases } : null}
                   layers={layers}
                   handleRef={combRef}
@@ -4261,9 +4645,10 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
               <KanbanView
                 columns={boardColumns}
                 cards={cards}
+                tasks={tasksState.feed}
                 repo={repo}
-                error={boardState.error}
-                loaded={board !== null}
+                error={tasksState.error ?? boardState.error}
+                loaded={tasksState.feed !== null}
                 c={c}
                 lang={lang}
                 clients={clientsPanel}

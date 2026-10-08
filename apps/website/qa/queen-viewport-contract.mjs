@@ -275,8 +275,10 @@ const CLIPPERS = [
   '.queen27-context-portrait', '.queen27-city-canvas', '.queen27-comb-field',
 ].join(', ');
 // The direction chips are one sideways row on a phone shorter than 600px
-// (queen-phone.css 9b), so the card box keeps the height of a card.
-const PHONE_DECLARED = '.queen27-hud-top, .queen27-dir-filter';
+// (queen-phone.css 9b), so the card box keeps the height of a card. The task
+// filter row (folded until asked for, Queen.css) is one sideways row on any
+// phone for the same reason: four controls never wrap into four rows.
+const PHONE_DECLARED = '.queen27-hud-top, .queen27-dir-filter, .queen27-task-filter';
 
 const PROBE = (phone) => `(() => {
   const de = document.documentElement;

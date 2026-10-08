@@ -1,6 +1,7 @@
 import {HEX_R,S_CELL,hexCellCount,hexRingStart,hexRingsFor,hexToWorld,spiralAxial,hexIndexAt} from './queenHud.ts';
 import {keyWorldAtlas,type UniverseAtlas} from '../lib/queenUniverseAtlas.ts';
 import type {WorldIssue} from './queenRepositoryWorld.ts';
+import type {QueenTasksFeed} from '../lib/queenTasks.ts';
 import {HIVE_ZOOM_CEILING,hiveFocusZoom,hiveMaxZoom} from './queenHiveDisplay.ts';
 
 export type CatalogCell = {kind:'spec';key:string;specId:string;placement:'core'|'source';sourceRepo?:string;title:string;sources:string[];count:1}
@@ -24,6 +25,41 @@ export function catalogIssueRows(atlas:UniverseAtlas,repo:string,observed:WorldI
   }));
   const updates=observed.filter(i=>i.repo===repo&&i.key===`${repo}#${i.number}`&&Number.isSafeInteger(i.number)&&i.number>0);
   return [...new Map([...rows,...updates].map(row=>[row.key,row])).values()].sort((a,b)=>a.number-b.number);
+}
+/**
+ * The issues the bees are on that the dated atlas has no cell for, as observed
+ * rows keyed the way the atlas keys its worlds, so each gets a cell to fly over.
+ *
+ * WHICH. An issue task that is running, or that a bee has claimed (working or
+ * quiet). A queued bee has not claimed anything yet; it waits at the hive's
+ * entrance and its issue gets no cell on its account.
+ *
+ * THE JOIN. The atlas spells `ghashtag/t27` and the supervisor `gHashTag/t27`,
+ * so it ignores case and writes the atlas's spelling. A repository that is not
+ * a world on this map (no .t27 bytes) has no region to hold the cell, and its
+ * bee waits at the entrance too. An issue the atlas already holds needs no row,
+ * and one GitHub was already read for is not overwritten.
+ *
+ * WHY `open`. Every issue cell on this map is the atlas's `open`: a goal whose
+ * end this page has not seen. A live cell says the same, and the bee over it is
+ * what says "being worked". Painting it blue while running would repaint it
+ * again when the work moves on, and a repaint is a rebuild of the whole scene;
+ * this way a cell is built once, when its issue first appears, and a bee
+ * coming, going or falling quiet changes no cell at all.
+ */
+export function liveIssueRows(atlas:UniverseAtlas,feed:QueenTasksFeed|null,observed:Readonly<Record<string,WorldIssue>>):WorldIssue[] {
+  if(!feed)return [];
+  const worlds=new Map(atlas.worlds.filter(w=>w.specCount>0).map(w=>[w.repo.toLowerCase(),w.repo]));
+  const held=new Set(atlas.issues.map(i=>i.key.toLowerCase()));
+  const claimed=new Set(feed.bees.filter(b=>b.state!=='queued').map(b=>b.task.toLowerCase()));
+  const rows=new Map<string,WorldIssue>();
+  for(const task of feed.tasks){
+    if(task.kind!=='issue'||task.number===null||(task.state!=='running'&&!claimed.has(task.key.toLowerCase())))continue;
+    const repo=worlds.get(task.repo.toLowerCase());if(!repo)continue;
+    const key=`${repo}#${task.number}`;if(observed[key]||held.has(key.toLowerCase()))continue;
+    rows.set(key,{key,repo,number:task.number,title:task.title,kind:'issue',state:'open',closedAt:null,updatedAt:null,children:[],coverage:'unknown'});
+  }
+  return [...rows.values()];
 }
 export type CatalogFocus={repo:string;number:number|null};
 export function catalogFocus(hash:string,atlas:UniverseAtlas):CatalogFocus|null {
