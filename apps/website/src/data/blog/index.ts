@@ -3,6 +3,39 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: "an-eye-on-the-board",
+    title: "An eye on the board: a camera found the wrong board, and a t27 spec put the right one on the network",
+    summary: "[one board on one desk; received over Wi-Fi; the beacon only transmits, no ARP or ping yet] A USB camera now watches our FPGA bench. Its first frame read \"ALINX\" off a board our notes had called a QMTech Wukong for months: the same chip in a different package, so every pin we had probed was the wrong pin. Rebuilt for the ALINX AX7203, a beacon written in t27 put the board on the network. A Mac received 2929 of 3168 of its UDP frames over seven minutes, at the 7.45 a second the spec's timing predicts, and the board's LEDs, which the spec drives, showed link, gigabit and a heartbeat.",
+    date: "2026-10-08",
+    readingMinutes: 5,
+    tags: ["t27", "FPGA", "Ethernet"],
+    receipts: [
+      { label: "t27#7802: the beacon, the sniffer and the board correction", href: "https://github.com/gHashTag/t27/pull/7802" },
+      { label: "t27#7788: the issue, with the evidence that the board is an AX7203", href: "https://github.com/gHashTag/t27/issues/7788" },
+      { label: "t27#7794: the owner-approved exception for the 40-line primitive wrapper", href: "https://github.com/gHashTag/t27/pull/7794" },
+      { label: "The AX7203 gf8 bitstream that answered 512/512 over UART", href: "https://github.com/gHashTag/trinity-fpga/blob/main/artifacts/bitstreams/gf8_clean_ax7203.bit" },
+      { label: "openXC7: the open toolchain (yosys, nextpnr-xilinx, prjxray)", href: "https://github.com/openXC7" },
+      { label: "trinity#1542: this post's issue", href: "https://github.com/gHashTag/trinity/issues/1542" },
+    ],
+    openQuestions: [
+      "Loss was measured to a Mac on Wi-Fi, where broadcast is never resent; a wired receiver has not been tried, so the 7.5% says nothing about the board yet.",
+      "The beacon only transmits. It does not answer ARP or ping.",
+      "The 90-degree transmit clock was checked on one board at room temperature, not across boards or temperature.",
+      "t27c silicon still builds for the Wukong's FGG676 package; the AX7203 flow was run by hand and needs to become a t27c option.",
+    ],
+    published: true,
+    ru: {
+      title: "Глаз на плате: камера нашла не ту плату, а спецификация на t27 вывела правильную в сеть",
+      summary: "[одна плата на одном столе; приём по Wi-Fi; маячок только передаёт, ARP и ping пока нет] Теперь за нашим стендом с ПЛИС следит USB-камера. На первом же кадре на плате читалось «ALINX», хотя наши записи несколько месяцев называли её QMTech Wukong: тот же кристалл в другом корпусе, так что все выводы, которые мы проверяли, были не те. Пересобранный под ALINX AX7203 маячок на t27 вывел плату в сеть. Mac за семь минут принял 2929 из 3168 её UDP-кадров, по 7.45 в секунду, как и предсказывает тайминг спецификации, а светодиоды платы, которыми управляет спецификация, показали линк, гигабит и пульс.",
+      openQuestions: [
+        "Потери измерены до Mac на Wi-Fi, где широковещательные кадры не пересылаются повторно; проводной приёмник не пробовали, так что 7.5% пока ничего не говорят о плате.",
+        "Маячок только передаёт. На ARP и ping он не отвечает.",
+        "Такт передачи со сдвигом 90 градусов проверен на одной плате при комнатной температуре, а не на разных платах и температурах.",
+        "t27c silicon всё ещё собирает под корпус FGG676 от Wukong; сборку для AX7203 запускали вручную, её нужно сделать опцией t27c.",
+      ],
+    },
+  },
+  {
     slug: "buses-and-peripherals",
     title: "Buses and peripherals with t27, in 27 lessons",
     summary: "Course 7 of the catalog: UART frame by frame, SPI mode by mode, the APB handshake, the five AXI4 channels, memory maps, the packet bridge, Ethernet frames and RGMII timing, and the bench IO discipline -- every lesson opens one widget and one t27 spec, and 31 of the widgets are new recordings of native t27c on a real machine.",
