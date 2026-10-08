@@ -26,6 +26,7 @@ import { memo, useMemo, useState } from 'react'
 import type { ReactElement } from 'react'
 import type { T27Node } from '../lib/t27Compiler'
 import { SpecSiliconHistory } from './SpecSiliconHistory'
+import { SpecSignedRuns } from './SpecSignedRuns'
 
 const C = {
   bg: '#0B0D0C',
@@ -379,6 +380,7 @@ function SpecChipViewImpl({ ast, specPath, copy }: Props) {
       {/* What the schematic above declares, set against what has actually been
           on the board. Renders a plain "no hardware run" for most specs. */}
       <SpecSiliconHistory specPath={specPath} />
+      <SpecSignedRuns specPath={specPath} />
 
       <style>{`.chip-paused animate { animation-play-state: paused }`}</style>
     </div>
