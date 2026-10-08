@@ -124,4 +124,16 @@ const dispatches=[...wf.matchAll(/gh workflow run\s+(\S+)/g)].map(m=>m[1]);
 assert.deepEqual(dispatches,ALLOWED,'the scan dispatches the work-report check and the website checks, nothing else');
 assert.match(wf,/gh workflow run website-checks\.yml --ref "\$BRANCH"/,'the website checks run on the refresh branch, not on main');
 for(const bad of ['gh workflow run deploy-site.yml','gh workflow run pr-blog-report.yml\n          gh workflow run deploy-site.yml'])assert.notDeepEqual([...wf.replace(/gh workflow run pr-blog-report\.yml[^\n]*/,bad).matchAll(/gh workflow run\s+(\S+)/g)].map(m=>m[1]),ALLOWED,'the dispatch check refuses a deploy');
+// The checks the scan dispatches decide for themselves whether the site is
+// touched, and one always-present job reports: `website gate` is what branch
+// protection requires. A path filter on the trigger made the check absent on
+// most PRs, and a `printf | grep -q` under pipefail read #1539's 1236-file
+// change as "no site" (grep stops at the first match, printf takes SIGPIPE).
+const wc=readFileSync('../../.github/workflows/website-checks.yml','utf8');
+const triggers=wc.slice(wc.indexOf('\non:'),wc.indexOf('\njobs:'));
+assert.doesNotMatch(triggers,/paths:/,'website-checks runs on every PR; scope decides, not a trigger path filter');
+assert.match(wc,/\n  gate:\n    name: website gate\n    needs: \[scope, checks\]\n    if: always\(\)/,'website gate always reports, after scope and checks');
+assert.match(wc,/if: needs\.scope\.outputs\.site == 'true'/,'the heavy checks run when scope says the site changed');
+assert.match(wc,/grep -Eq "\$SITE_PATHS" <<< "\$FILES"/,'scope reads the file list without a pipe into grep -q');
+assert.doesNotMatch(wc,/\| grep -Eq "\$SITE_PATHS"/,'no pipe into grep -q: SIGPIPE under pipefail reads a big change as none');
 console.log(`t27 world discovery: PASS (contract ${spec.tests.tests} tests / ${spec.tests.asserts} asserts, owners ${f.OWNERS.join(', ')}, ${manifest.repos.filter(r=>r.discoveredAt).length} scanned worlds in the catalog)`);

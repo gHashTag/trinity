@@ -32,7 +32,15 @@
 #                      the bundler succeeded, not that the page renders)
 name: Website checks
 
-# apps/queen-proxy/** is in the triggers because one of the gates below reads
+# The workflow runs on EVERY pull request and decides in `scope` whether the
+# site is touched; the heavy `checks` job runs only then, and `website gate`
+# always reports. A path filter on the trigger made the check absent on most
+# PRs, so it could not be required, and #1535 (a catalog refresh that deleted
+# 40 course lesson specs) merged 70 s after it opened with no site check at all.
+# `website gate` is the one name branch protection requires: green when the
+# checks passed, or when the change touches nothing they read.
+#
+# SITE_PATHS: apps/queen-proxy/** is in because one of the gates below reads
 # it. The proxy is the server half of the rule that only registered people
 # write to the Queen, and a proxy-only edit that removed the gate would
 # otherwise touch no watched path and run no check at all. The five src/tri and
@@ -40,14 +48,69 @@ name: Website checks
 # the dispatcher, and a new `tri` command must not land without its card.
 on:
   pull_request:
-    paths: ['apps/website/**', 'apps/queen-proxy/**', '.github/workflows/website-checks.yml', 'src/tri/main.zig', 'src/tri/tri_namespace.zig', 'src/tri/tri_utils.zig', 'src/registry/command_table.zig', 'src/tri/tri_register.zig']
   push:
     branches: [main]
-    paths: ['apps/website/**', 'apps/queen-proxy/**', 'src/tri/main.zig', 'src/tri/tri_namespace.zig', 'src/tri/tri_utils.zig', 'src/registry/command_table.zig', 'src/tri/tri_register.zig']
   workflow_dispatch:
 
 jobs:
+  scope:
+    runs-on: ubuntu-latest
+    outputs:
+      site: ${{ steps.diff.outputs.site }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: diff
+        env:
+          EVENT: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          SITE_PATHS: '^(apps/website/|apps/queen-proxy/|\.github/workflows/website-checks\.yml$|src/tri/main\.zig$|src/tri/tri_namespace\.zig$|src/tri/tri_utils\.zig$|src/registry/command_table\.zig$|src/tri/tri_register\.zig$)'
+        run: |
+          set -euo pipefail
+          case "$EVENT" in
+            pull_request) RANGE="$PR_BASE...$PR_HEAD" ;;
+            push) RANGE="$PUSH_BEFORE..$GITHUB_SHA" ;;
+            # The world scan dispatches this on its refresh branch: what that
+            # branch changes against main.
+            *) git fetch -q origin main; RANGE="$(git merge-base HEAD origin/main)..HEAD" ;;
+          esac
+          if ! FILES=$(git diff --name-only "$RANGE"); then
+            # A range git cannot read (a first push, a rewritten base) is not
+            # "nothing changed": run the checks.
+            echo "site=true" >> "$GITHUB_OUTPUT"; echo "range $RANGE unreadable, running the checks"; exit 0
+          fi
+          # A here-string, not a pipe: under pipefail `printf | grep -q` fails when
+          # grep stops at the first match and printf takes SIGPIPE -- measured on
+          # #1539's 1236 files, it read a site change as none.
+          if grep -Eq "$SITE_PATHS" <<< "$FILES"; then SITE=true; else SITE=false; fi
+          echo "site=$SITE" >> "$GITHUB_OUTPUT"
+          echo "range $RANGE: $(grep -c . <<< "$FILES" || true) file(s), site=$SITE"
+
+  gate:
+    name: website gate
+    needs: [scope, checks]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          SCOPE: ${{ needs.scope.result }}
+          SITE: ${{ needs.scope.outputs.site }}
+          CHECKS: ${{ needs.checks.result }}
+        run: |
+          echo "scope=$SCOPE site=$SITE checks=$CHECKS"
+          [ "$SCOPE" = success ] || { echo "the scope job did not finish"; exit 1; }
+          if [ "$SITE" = true ]; then
+            [ "$CHECKS" = success ] || { echo "the site changed and its checks did not pass"; exit 1; }
+          else
+            [ "$CHECKS" = skipped ] || { echo "the checks ran where nothing needed them: $CHECKS"; exit 1; }
+          fi
+
   checks:
+    needs: scope
+    if: needs.scope.outputs.site == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
