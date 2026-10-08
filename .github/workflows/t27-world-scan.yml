@@ -108,6 +108,12 @@ jobs:
           npm run check:onboarding
           # #1176 also vendored two gf16 ports that check:silicon requires to be classified.
           npm run check:silicon
+          # The publisher builds the courses and refuses a lesson whose spec is missing or
+          # not clean. #1535 deleted 33 lesson specs and swapped seven, nothing here ran
+          # the course check (a PR this workflow opens starts no other workflow), and
+          # t27.ai stopped publishing. The sync now keeps lesson specs
+          # (scripts/lesson-specs.mjs); this stops a refresh that breaks a course anyway.
+          npm run check:course
 
       # Ruleset 23148303 ("T27 mandatory work report") requires the status check
       # "T27 work report" on refs/heads/main and lists no bypass actors, so the

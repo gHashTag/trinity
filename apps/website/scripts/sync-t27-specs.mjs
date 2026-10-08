@@ -27,6 +27,7 @@ import { createHash } from 'node:crypto'
 // scripts/discover-t27-worlds.mjs adds the repositories a GitHub scan finds through the
 // same functions, so a spec means the same thing however it reached the catalog.
 import { corpusEntry, corpusAggregates, registerDescriptionExceptions } from './t27-corpus.mjs'
+import { lessonSpecPaths } from './lesson-specs.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const WEBSITE = join(HERE, '..')
@@ -294,6 +295,15 @@ const priorDiscovery = priorManifest?.discovery ?? null
 // at a pinned BrowserOS commit, a file nothing here reads. Wiping them made the world scan's catalog
 // commit delete 515 tool cards (check:tools caught it), so they are carried across the wipe.
 const KEPT = ['specs/tools/trinity/cli', 'specs/tools/trios/tri']
+// A course pins the bytes it teaches (scripts/lesson-specs.mjs): the 2026-10-08
+// scan (#1535) wiped 33 lesson specs that live nowhere else and swapped seven
+// for t27 master's, and the publisher's course check refused the site. They are
+// read now, before the wipe, and written back after the scan so the course wins.
+const pinned = new Map()
+for (const rel of lessonSpecPaths(join(WEBSITE, 'specs/course'))) {
+  const at = join(SPECS_OUT, rel)
+  if (existsSync(at)) pinned.set(rel, readFileSync(at, 'utf8'))
+}
 const keptDir = mkdtempSync(join(tmpdir(), 't27-kept-'))
 for (const d of KEPT) if (existsSync(join(SPECS_OUT, d))) cpSync(join(SPECS_OUT, d), join(keptDir, d), { recursive: true })
 rmSync(SPECS_OUT, { recursive: true, force: true })
@@ -352,6 +362,23 @@ for (const abs of src.files) {
   entries.push(corpusEntry(rel, src.repo, text, analyze))
 }
 }
+
+// The course's copy of each lesson spec wins over the scan's. A spec the scan
+// also carries gets its row rebuilt from the bytes on disk, so the manifest
+// never describes a file that is not there; a spec only a course has stays a
+// file, as it always was, with no row of its own.
+let pinnedOver = 0
+for (const [rel, text] of pinned) {
+  const dest = join(SPECS_OUT, rel)
+  const row = entries.findIndex((e) => e.path === rel)
+  if (row >= 0 && readFileSync(dest, 'utf8') !== text) {
+    entries[row] = corpusEntry(rel, entries[row].repo, text, analyze)
+    pinnedOver++
+  }
+  mkdirSync(dirname(dest), { recursive: true })
+  writeFileSync(dest, text)
+}
+console.log(`  lesson specs: ${pinned.size} kept for the courses, ${pinnedOver} over a newer scanned copy`)
 
 // The companions a spec cites.
 //
