@@ -9,14 +9,14 @@
     "specs/boards"
   ],
   "totals": {
-    "specs": 158,
-    "typecheckOk": 155,
-    "hirOk": 158,
-    "blocks": 1915,
-    "pass": 1390,
-    "fail": 18,
-    "skip": 507,
-    "clean": 92
+    "specs": 162,
+    "typecheckOk": 159,
+    "hirOk": 162,
+    "blocks": 2003,
+    "pass": 1474,
+    "fail": 19,
+    "skip": 510,
+    "clean": 95
   },
   "specs": {
     "specs/fpga/adapter.t27": {
@@ -108,6 +108,15 @@
       "f": 0,
       "s": 0,
       "g": "-"
+    },
+    "specs/fpga/coverage.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 30,
+      "p": 26,
+      "f": 1,
+      "s": 3,
+      "g": "not run: an array literal the compiler kept as text [x]"
     },
     "specs/fpga/crossopt.t27": {
       "t": 1,
@@ -217,6 +226,24 @@
       "s": 21,
       "g": "not run: a fill element this page cannot read [empty_mem_port()]"
     },
+    "specs/fpga/mmcm.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 20,
+      "p": 20,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/fpga/mtbf.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 19,
+      "p": 19,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
     "specs/fpga/partition.t27": {
       "t": 1,
       "h": 1,
@@ -252,6 +279,15 @@
       "f": 2,
       "s": 2,
       "g": "no assert to check"
+    },
+    "specs/fpga/reset_sync.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 19,
+      "p": 19,
+      "f": 0,
+      "s": 0,
+      "g": "-"
     },
     "specs/fpga/router.t27": {
       "t": 1,
