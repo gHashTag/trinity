@@ -74,14 +74,15 @@ jobs:
           # files agents are told to read) never left trinity through this job:
           # on 2026-10-01 t27.ai served llms.txt saying 1577 specs, measured
           # 2026-09-24, beside a /t27/manifest.json saying 1737, after this job
-          # had deployed the commit that corrected it. One exception: the apex's
-          # build-og.py redraws og-image.png after the publisher's rsync, so the
-          # file in dist/ is the older card and must not overwrite it.
+          # had deployed the commit that corrected it. og-image.png included:
+          # until 2026-10-04 the apex's build-og.py drew the blog's card over
+          # it, and this step skipped it for that reason; since then the home
+          # card is trinity's (the apex publisher fails if it is not), and
+          # index.html names it by its hash (scripts/og-image.mjs). Skipping it
+          # here would ship a new address over the old picture.
           for path in apps/website/dist/*; do
             [ -f "$path" ] || continue
-            name=$(basename "$path")
-            [ "$name" = og-image.png ] && continue   # owned by the apex's build-og.py
-            cp "$path" "ghio/$name"
+            cp "$path" "ghio/$(basename "$path")"
           done
           # The data the app fetches at runtime, not just the bundles that fetch
           # it. On 2026-09-09 the apex served this build with no

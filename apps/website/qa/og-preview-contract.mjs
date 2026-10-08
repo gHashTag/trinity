@@ -18,6 +18,7 @@
 //   node --experimental-strip-types qa/og-preview-contract.mjs
 
 import assert from 'node:assert/strict'
+import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { MOTTO, SITE_NAME } from '../src/lib/motto.ts'
 
@@ -71,8 +72,14 @@ assert.equal(meta('property', 'og:title'), CAPTION)
 assert.equal(meta('name', 'twitter:title'), CAPTION)
 for (const [attr, key] of [['name', 'description'], ['property', 'og:description'], ['name', 'twitter:description']])
   assert.equal(meta(attr, key), DESCRIPTION, key)
-assert.equal(meta('property', 'og:image'), 'https://t27.ai/og-image.png')
-assert.equal(meta('name', 'twitter:image'), 'https://t27.ai/og-image.png')
+// The picture's address carries its own hash (scripts/og-image.mjs): a card
+// cached by X or Telegram under the old address cannot outlive a new picture.
+const homeCard = `https://t27.ai/og-image.png?v=${createHash('sha256')
+  .update(readFileSync(new URL('../public/og-image.png', import.meta.url)))
+  .digest('hex')
+  .slice(0, 12)}`
+assert.equal(meta('property', 'og:image'), homeCard, 'og:image is the picture as it is now, by its hash')
+assert.equal(meta('name', 'twitter:image'), homeCard, 'twitter:image is the same picture')
 assert.equal(meta('name', 'twitter:card'), 'summary_large_image')
 assert.equal(meta('property', 'og:image:width'), '1200')
 assert.equal(meta('property', 'og:image:height'), '630')
@@ -102,5 +109,20 @@ const png = readFileSync(new URL('../public/og-image.png', import.meta.url))
 assert.equal(png.subarray(1, 4).toString(), 'PNG')
 assert.equal(png.readUInt32BE(16), 1200)
 assert.equal(png.readUInt32BE(20), 630)
+
+// 5. A course and a lesson share their own static page, at the top. A crawler
+//    drops what follows '#': t27.ai/#/t27-basics, copied from the address
+//    bar and posted to X on 2026-10-08, showed the home page's card. The
+//    right address is shareOf's, and it stands under the title, not only in
+//    the notes at the bottom.
+const course = read('src/pages/Course.tsx')
+const shareCode = course.slice(course.indexOf('function CourseShare('), course.indexOf('function CourseNotes('))
+assert.ok(shareCode.startsWith('function CourseShare('), 'Course.tsx has a CourseShare')
+assert.match(shareCode, /const path = shareOf\(C, lang, id\)/, 'the address is the static page')
+assert.doesNotMatch(shareCode, /location|#\//, 'never the address bar, never a hash route')
+for (const net of ['twitter.com/intent/tweet', 't.me/share/url', 'linkedin.com/sharing'])
+  assert.ok(shareCode.includes(net), `CourseShare offers ${net}`)
+assert.match(course, /<CourseShare C=\{C\} lang=\{lang\} say=\{say\} title=\{say\.TITLE\} \/>/, 'the course overview shares itself')
+assert.match(course, /<CourseShare C=\{C\} lang=\{lang\} say=\{say\} id=\{lesson\.id\} title=\{t\.title\} \/>\s*<\/header>/, 'a lesson shares itself, under its title')
 
 console.log(`og-preview contract: ok ("${SITE}" / "${CAPTION}" / "${DESCRIPTION}")`)

@@ -118,6 +118,7 @@ function Overview({ C, lang, say, done }: { C: CourseT; lang: Lang; say: Say; do
         </Link>
         <span className="course-progress">{fmt(say.PROGRESS, done.length, TOTAL)}</span>
       </div>
+      <CourseShare C={C} lang={lang} say={say} title={say.TITLE} />
       <div className="course-bar" aria-hidden="true" style={{ gridTemplateColumns: `repeat(${TOTAL}, 1fr)` }}>
         {LESSONS.map((l) => (
           <span key={l.id} className={done.includes(l.id) ? 'is-done' : ''} />
@@ -138,6 +139,54 @@ function Overview({ C, lang, say, done }: { C: CourseT; lang: Lang; say: Say; do
 
 /** The static page of a course or a lesson: the address to post, because a crawler drops the '#'. */
 const shareOf = (C: CourseT, lang: Lang, id?: string) => `${lang === 'ru' ? '/ru' : ''}/${id ? `learn/${id}/` : C.share}`
+
+/**
+ * SHARE, AT THE TOP, WITH THE PAGE THAT CARRIES THE CARD.
+ *
+ * Owner, 2026-10-08: course 0 posted to X as t27.ai/#/t27-basics showed the
+ * home page's card ("AGI game — play, direct, earn"). A crawler drops what
+ * follows '#', so every course and lesson link copied from the address bar
+ * is the home page to X, Telegram and LinkedIn. The right address existed --
+ * at the bottom of the notes. Here it is under the title, with the networks
+ * and a copy button, and every target is built from shareOf, never from the
+ * address bar (qa/og-preview-contract.mjs, section 5).
+ */
+function CourseShare({ C, lang, say, id, title }: { C: CourseT; lang: Lang; say: Say; id?: string; title: string }) {
+  const path = shareOf(C, lang, id)
+  const url = `https://t27.ai${path}`
+  const u = encodeURIComponent(url)
+  const text = encodeURIComponent(title)
+  const [copied, setCopied] = useState(false)
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(url)
+      setCopied(true)
+      window.setTimeout(() => setCopied(false), 1400)
+    } catch {
+      window.prompt(say.SHARE, url)
+    }
+  }
+  return (
+    <div className="course-share">
+      <span className="course-label">{say.SHARE}</span>
+      <a className="course-share-url" href={path}>
+        t27.ai{path}
+      </a>
+      <button type="button" className="course-share-pill" onClick={() => void copy()} title={say.SHARE} aria-label={say.SHARE}>
+        {copied ? '✓' : '⧉'}
+      </button>
+      <a className="course-share-pill" href={`https://twitter.com/intent/tweet?url=${u}&text=${text}`} target="_blank" rel="noopener noreferrer">
+        X
+      </a>
+      <a className="course-share-pill" href={`https://t.me/share/url?url=${u}&text=${text}`} target="_blank" rel="noopener noreferrer">
+        Telegram
+      </a>
+      <a className="course-share-pill" href={`https://www.linkedin.com/sharing/share-offsite/?url=${u}`} target="_blank" rel="noopener noreferrer">
+        LinkedIn
+      </a>
+    </div>
+  )
+}
 
 function CourseNotes({ C, lang, say, id }: { C: CourseT; lang: Lang; say: Say; id?: string }) {
   return (
@@ -219,6 +268,7 @@ function Lesson({ C, lesson, lang, say, done, toggle }: { C: CourseT; lesson: Co
           <span className="course-label">{say.GOAL}</span>
           {t.goal}
         </p>
+        <CourseShare C={C} lang={lang} say={say} id={lesson.id} title={t.title} />
       </header>
 
       <div className="course-lesson-grid">
