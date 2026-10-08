@@ -2,12 +2,12 @@
 // history, its lease, its attempts and, for a job, its effects, as
 // GET /queen/public-task answers them. The words come from the page's COPY,
 // so both languages are checked in one place (qa/queen-language-contract.mjs).
+// Its styles live in Queen.css, the sheet the contrast gate measures.
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { loadDrawer, type DrawerLoad } from "../lib/queenDrawer";
 import { ageWords, beeBadge, type QueenBee } from "../lib/queenTasks";
-import "./QueenTaskDrawer.css";
 
 export interface DrawerWords {
   drawerClose: string;
