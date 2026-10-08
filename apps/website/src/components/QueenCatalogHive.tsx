@@ -1,20 +1,28 @@
 import {useEffect,useMemo,useRef,useState,type Ref,type CSSProperties} from 'react';
 import {useSearchParams} from 'react-router-dom';
-import {QueenCombBabylon} from './QueenCombBabylon';
-import {catalogUniverse,catalogFocus,catalogFocusHash,catalogLabelField,catalogPortalSize,catalogSpecSelection,type CatalogController} from './queenCatalogData';
+import {QueenCombBabylon,type HiveBee} from './QueenCombBabylon';
+import {catalogUniverse,catalogFocus,catalogFocusHash,catalogLabelField,catalogPortalSize,catalogSpecSelection,liveIssueRows,type CatalogController} from './queenCatalogData';
 import {QueenCatalogSpec} from './QueenCatalogSpec';
 import {QueenEvidence} from './QueenEvidence';
 import QueenCellStage,{type CellSpecLink} from './QueenCellStage';
 import {SELECTION_KEY,validSelection} from '../lib/queenEmbed';
 import {atlasAgentPacket,type UniverseAtlas,type AtlasIssue} from '../lib/queenUniverseAtlas';
 import type {CombHandle} from './queenHud';
-import type {HiveDisplayProjection,HiveDisplay} from './queenHiveDisplay';
+import type {HiveDisplayProjection,HiveDisplay,HiveFeedHealth} from './queenHiveDisplay';
+import type {QueenTasksFeed} from '../lib/queenTasks';
 import {retainObservation,withdrawWorldProof,type WorldIssue} from './queenRepositoryWorld';
 import {applyWorldRead,readWorldPages} from './queenWorldPages';
 import {supportsIssueProof} from '../lib/queenIssueProof';
 import './QueenCatalogHive.css';
 
-export function QueenCatalogHive({atlas,lang,handleRef,foundationVisible=true,fitInset=0,onInspect}:{atlas:UniverseAtlas;lang:'ru'|'en';handleRef:Ref<CombHandle>;foundationVisible?:boolean;fitInset?:number;onInspect?:()=>void}) {
+/**
+ * The live half of the map (gHashTag/t27 specs/queen/tasks.t27): the tasks feed
+ * the page polls, and whether it is answering. The atlas stays a dated snapshot;
+ * what this adds is the running issues it does not hold yet and a bee over each.
+ */
+export interface CatalogLive {feed:QueenTasksFeed|null;health:HiveFeedHealth}
+
+export function QueenCatalogHive({atlas,lang,handleRef,foundationVisible=true,fitInset=0,onInspect,live}:{atlas:UniverseAtlas;lang:'ru'|'en';handleRef:Ref<CombHandle>;foundationVisible?:boolean;fitInset?:number;onInspect?:()=>void;live?:CatalogLive}) {
   const ru=lang==='ru';
   const [params,setParams]=useSearchParams(),focus=catalogFocus(`#/queen?${params}`,atlas),repo=focus?.repo??null;
   const [observed,setObserved]=useState<Record<string,WorldIssue>>({});
@@ -40,7 +48,27 @@ export function QueenCatalogHive({atlas,lang,handleRef,foundationVisible=true,fi
     });
     return()=>request.abort();
   },[repo]);
-  const world=useMemo(()=>catalogUniverse(atlas,Object.values(observed),completeWorlds),[atlas,observed,completeWorlds]),map=world.map;
+  // The issues the bees are on join the map as observed cells, and stay for as
+  // long as the page is open. Held by their keys, not by the poll: an answer
+  // every five seconds naming the same issues changes nothing. A new issue is
+  // appended after the ones already placed, so no cell moves under a bee, and an
+  // issue that is no longer worked keeps its cell rather than vanishing and
+  // shifting every cell placed after it (liveIssueRows says why they never
+  // repaint).
+  const feed=live?.feed??null;
+  const liveRowsNow=liveIssueRows(atlas,feed,observed),liveKey=liveRowsNow.map(r=>r.key).join(' ');
+  const [liveRows,setLiveRows]=useState<{key:string;rows:WorldIssue[]}>({key:'',rows:[]});
+  if(liveRows.key!==liveKey){
+    const added=liveRowsNow.filter(r=>!liveRows.rows.some(k=>k.key===r.key));
+    setLiveRows({key:liveKey,rows:added.length?[...liveRows.rows,...added]:liveRows.rows});
+  }
+  const world=useMemo(()=>catalogUniverse(atlas,[...Object.values(observed),...liveRows.rows.filter(r=>!observed[r.key])],completeWorlds),[atlas,observed,completeWorlds,liveRows.rows]),map=world.map;
+  // Each bee over the cell of the issue it works on, found by key; the scene
+  // reads them through a ref, so a bee's coming and going never rebuilds it.
+  const cellByKey=useMemo(()=>new Map(world.displays.flatMap((row,index)=>row?[[row.key.toLowerCase(),index] as const]:[])),[world]);
+  const liveBees=useMemo<HiveBee[]>(()=>(feed?.bees??[]).map(bee=>({id:bee.id,lane:bee.lane,state:bee.state,number:bee.number,since:bee.since,target:bee.number===null?null:cellByKey.get(`${bee.repo}#${bee.number}`.toLowerCase())??null})),[feed,cellByKey]);
+  const liveHealth=live?.health??'stale';
+  const beesWorking=feed?.bees.filter(b=>b.state==='working').length??0;
   const issueRows=world.displays.filter(row=>row?.repo===repo);
   const cards=useMemo(()=>world.displays.map(row=>row?{number:row.number,title:row.title,column:row.state}:null),[world]);
   const issueKey=focus?.number?`${repo}#${focus.number}`:null;
@@ -132,11 +160,16 @@ export function QueenCatalogHive({atlas,lang,handleRef,foundationVisible=true,fi
   async function copy(issue:AtlasIssue){const text=atlasAgentPacket(atlas,issue);setPacket(text);setCopied(false);try{await navigator.clipboard.writeText(text);setCopied(true);}catch{/* The same packet remains selectable locally. */}}
   function copyGameLink(){if(!focus)return;const text=new URL(catalogFocusHash(focus),location.href).href;setPacket(text);setCopied(false);void navigator.clipboard.writeText(text).then(()=>setCopied(true)).catch(()=>{});}
   return <div className="queen-catalog-layer" data-catalog-map="shared-universe" data-catalog-focus={repo??'shared-core'} onKeyDown={e=>{if(e.key==='Escape'){if(specPath)setSpecPath(null);else control.current?.overview();}}}>
-    <QueenCombBabylon sceneKey="shared-universe" cards={cards} workers={null} displays={world.displays} inspectIssueKey={issueKey} inspectCatalogKey={issueKey?null:repo} onDisplaySelect={openIssue} signalHealth={{board:'stale',activity:'unknown'}} catalogLayer={map} catalogControlRef={control} onCatalogPick={select} onCatalogProject={project} pickIndex={selected} handleRef={handleRef} fitInset={fitInset} lang={lang} layers={{foundation:foundationVisible,castle:false,code:false}}/>
+    <QueenCombBabylon sceneKey="shared-universe" cards={cards} workers={null} liveBees={liveBees} displays={world.displays} inspectIssueKey={issueKey} inspectCatalogKey={issueKey?null:repo} onDisplaySelect={openIssue} signalHealth={{board:liveHealth,activity:'unknown'}} catalogLayer={map} catalogControlRef={control} onCatalogPick={select} onCatalogProject={project} pickIndex={selected} handleRef={handleRef} fitInset={fitInset} lang={lang} layers={{foundation:foundationVisible,castle:false,code:false}}/>
     <div className={`queen-catalog-toolbar${toolsOpen?' is-search-open':''}`} ref={toolbar}>
     <div className="queen27-hive-law queen-catalog-law">
       <span>{repo??'TRI-27 · S³AI DNA'}</span><span>{repo?issueRows.length:world.displays.filter(Boolean).length} issues</span><span>{atlas.specs.length} .t27</span><span>{map.regions?.length} {ru?'репозиториев':'repositories'}</span>
-      <small>{ru?'Публичный снимок, не live · золото = спека, не закрытая issue':'Public snapshot, not live · gold = spec, not a resolved issue'}</small>
+      {/* Live is said only of what is live: the bees and the running cells. The
+          rest of the map is still the dated atlas, and says so. A feed derived
+          from the board, because the tasks route did not answer, says that too. */}
+      {liveHealth==='live'&&feed
+        ?<small data-live-bees={feed.bees.length} data-live-source={feed.source}>{ru?`Пчёлы live: ${feed.bees.length} · работают ${beesWorking}${feed.source==='board'?' · выведено из доски':''} · соты: снимок ${atlas.at.slice(0,10)} + задачи пчёл · золото = спека, не закрытая issue`:`Bees live: ${feed.bees.length} · ${beesWorking} working${feed.source==='board'?' · derived from the board':''} · cells: snapshot of ${atlas.at.slice(0,10)} + the bees' issues · gold = spec, not a resolved issue`}</small>
+        :<small>{ru?'Публичный снимок, не live · золото = спека, не закрытая issue':'Public snapshot, not live · gold = spec, not a resolved issue'}</small>}
     </div>
     <QueenEvidence lang={lang}/>
     <button className="queen-catalog-search-toggle" aria-controls="queen-catalog-search-controls" aria-expanded={toolsOpen} onClick={()=>setToolsOpen(v=>!v)}>{toolsOpen?(ru?'Скрыть поиск':'Hide search'):(ru?'Поиск сот':'Find cells')}</button>

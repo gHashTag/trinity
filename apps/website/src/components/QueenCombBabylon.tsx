@@ -19,9 +19,10 @@ import { Engine } from "@babylonjs/core/Engines/engine";
 import { Scene } from "@babylonjs/core/scene";
 import { ArcRotateCamera } from "@babylonjs/core/Cameras/arcRotateCamera";
 import { Camera } from "@babylonjs/core/Cameras/camera";
-import { Vector3, Matrix } from "@babylonjs/core/Maths/math.vector";
+import { Vector3, Matrix, Quaternion } from "@babylonjs/core/Maths/math.vector";
 import { Color3, Color4 } from "@babylonjs/core/Maths/math.color";
 import { Mesh } from "@babylonjs/core/Meshes/mesh";
+import { VertexData } from "@babylonjs/core/Meshes/mesh.vertexData";
 import { VertexBuffer } from "@babylonjs/core/Buffers/buffer";
 import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
 import { CreateLineSystem, CreateDashedLines } from "@babylonjs/core/Meshes/Builders/linesBuilder";
@@ -36,6 +37,8 @@ import type { LinesMesh } from "@babylonjs/core/Meshes/linesMesh";
 import { PointerEventTypes } from "@babylonjs/core/Events/pointerEvents";
 import { HivePointers } from './queenHivePointers';
 import { Ray } from "@babylonjs/core/Culling/ray";
+import { loadShipGeometry, shipTint } from './queenShipModel';
+import { beeLabel, type BeeState } from '../lib/queenTasks';
 import { S, EDGES } from "./QueenComb";
 import { eventTone, ringTone, type BeeLine, type HudEvent, type HudModule, type HudPick, type Tone , eventIdentity , hexCellSummaries, hexIndexAt, hexCornersAt, HEX_HOME, HEX_R, foundationCells, spiralAxial, S_CELL, type FoundationIssue,
  FIELD_LAYERS, type FieldLayer, type CombHandle,
@@ -52,6 +55,20 @@ interface SpikeCard {
 
 interface SpikeWorkers {
   slots: Array<{ slot: number; state: "busy" | "idle" }>;
+}
+
+/**
+ * A live bee as the scene draws it: one dispatch in flight
+ * (gHashTag/t27 specs/queen/tasks.t27), and the cell of the issue it works on,
+ * or null when that issue has no cell on this map.
+ */
+export interface HiveBee {
+  id: string;
+  lane: number | null;
+  state: BeeState;
+  number: number | null;
+  since: string | null;
+  target: number | null;
 }
 
 interface QueenCombBabylonProps {
@@ -80,6 +97,13 @@ interface QueenCombBabylonProps {
   modules?: ReadonlyMap<number, HudModule>;
   /** Per issue in progress: its exact issue display cell, or null (unmapped). */
   beeTargets?: ReadonlyArray<number | null>;
+  /**
+   * The live bees, each with its own cell. Read through a ref, never through
+   * the signature: a bee that is offered, starts, falls quiet or finishes moves
+   * a ship and never rebuilds the scene. Given at all (even empty), it replaces
+   * the slot motes that paired the k-th busy slot with the k-th running card.
+   */
+  liveBees?: readonly HiveBee[];
   /** The honeycomb foundation: the loop's snapshot of closed GitHub issues, one honey hex each. */
   foundation?: { issues: FoundationIssue[]; generatedAt: string; source: "wire" | "file"; rings?: string[]; epics?: EpicRecord[]; releases?: Array<{ tag: string; name: string; publishedAt: string | null; prerelease: boolean }> } | null;
   /** Which layers draw: FOUNDATION (tiles and honey), CASTLE (the rings' towers), CODE (the module buildings). Bees always. */
@@ -103,7 +127,7 @@ const RING_POOL = 24;
 const ALL_LAYERS: Record<FieldLayer, boolean> = { foundation: true, castle: true, code: true };
 const UNKNOWN_HEALTH: HiveSignalHealth = {board:'unknown',activity:'unknown'};
 
-export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fitInset = 0, events = EMPTY_EVENTS, modules, beeTargets, foundation = null, layers = ALL_LAYERS, handleRef, t27Coverage = null, law, displays, lang = 'en', onInspect, signalHealth = UNKNOWN_HEALTH, catalogLayer,catalogControlRef,onCatalogPick,onCatalogProject,sceneKey='default',inspectIssueKey,inspectCatalogKey,onDisplaySelect }: QueenCombBabylonProps) {
+export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fitInset = 0, events = EMPTY_EVENTS, modules, beeTargets, liveBees, foundation = null, layers = ALL_LAYERS, handleRef, t27Coverage = null, law, displays, lang = 'en', onInspect, signalHealth = UNKNOWN_HEALTH, catalogLayer,catalogControlRef,onCatalogPick,onCatalogProject,sceneKey='default',inspectIssueKey,inspectCatalogKey,onDisplaySelect }: QueenCombBabylonProps) {
   const catalogRef=useRef(catalogLayer),catalogPickRef=useRef(onCatalogPick),catalogProjectRef=useRef(onCatalogProject),catalogController=useRef<CatalogController|null>(null);
   useEffect(()=>{catalogRef.current=catalogLayer;catalogPickRef.current=onCatalogPick;catalogProjectRef.current=onCatalogProject;},[catalogLayer,onCatalogPick,onCatalogProject]);
   useImperativeHandle(catalogControlRef,()=>({inspect:(index,focus)=>catalogController.current?.inspect(index,focus),overview:()=>catalogController.current?.overview(),hover:index=>catalogController.current?.hover(index)}),[]);
@@ -154,7 +178,9 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
   const signature = JSON.stringify([
     catalogLayer?.signature??null,
     cards.map((c) => (c ? [c.number, c.column] : null)),
-    workers?.slots.map((s) => [s.slot, s.state]) ?? null,
+    // the slot motes are built per slot, so their busy/idle state is a rebuild;
+    // live bees are not built per bee, so only their presence is
+    liveBees ? "live-bees" : workers?.slots.map((s) => [s.slot, s.state]) ?? null,
     // a new snapshot of the foundation rebuilds the honey like a modules change rebuilds the city
     foundation ? [foundation.generatedAt, foundation.issues.length] : null,
     hiveDisplayPaintKey(displays),
@@ -166,6 +192,13 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
   const workersRef = useRef(workers);
   const modulesRef = useRef(modules);
   const targetsRef = useRef(beeTargets);
+  const liveBeesRef = useRef(liveBees);
+  // Where each ship is, by bee id, across scene rebuilds: a rebuild for a new
+  // cell must not send every ship back to the hive entrance.
+  const shipsRef = useRef(new Map<string, { x: number; z: number; heading: number; seed: number }>());
+  const beeLabelRef = useRef<HTMLDivElement>(null);
+  const buildsRef = useRef(0);
+  const langRef = useRef(lang);
   const foundationRef = useRef(foundation);
   const layersRef = useRef(layers);
   const coverageRef = useRef(t27Coverage);
@@ -176,11 +209,13 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     workersRef.current = workers;
     modulesRef.current = modules;
     targetsRef.current = beeTargets;
+    liveBeesRef.current = liveBees;
+    langRef.current = lang;
     foundationRef.current = foundation;
     layersRef.current = layers;
     coverageRef.current = t27Coverage;
     lawRef.current = law;
-  }, [cards, workers, modules, beeTargets, foundation, layers, t27Coverage, law]);
+  }, [cards, workers, modules, beeTargets, liveBees, lang, foundation, layers, t27Coverage, law]);
 
   useImperativeHandle(handleRef, () => ({
     zoomIn: () => cameraRef.current?.zoomIn(),
@@ -237,6 +272,9 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     if (!reused) engineRef.current = { engine, canvas };
     const cards = cardsRef.current;
     const workers = workersRef.current;
+    // counted so a gate can tell "the ships moved" from "the scene was rebuilt"
+    buildsRef.current += 1;
+    host.setAttribute("data-scene-builds", String(buildsRef.current));
     const viewKey=(index:number)=>displaysRef.current?.[index]?.key??catalogRef.current?.cells[index]?.key??null;
     const viewStore=savedViewsRef.current;
     savedViewRef.current=viewStore.get(sceneKey)??null;
@@ -459,6 +497,10 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     const onBlur=()=>pointers.cancel();
     const suppressDraggedClick=(e:MouseEvent)=>{if(mapTarget(e.target)&&e.detail!==0&&pointers.suppressClick){e.preventDefault();e.stopPropagation();}};
     gestureSurface.addEventListener('pointerdown',onDown as EventListener,true);
+    const onShipPointer=(e:PointerEvent)=>{if(e.pointerType!=='mouse'||!mapTarget(e.target)){return;}const r=canvas.getBoundingClientRect();pointerAt={x:e.clientX-r.left,y:e.clientY-r.top,at:performance.now()};};
+    const onShipLeave=()=>{pointerAt=null;};
+    gestureSurface.addEventListener('pointermove',onShipPointer as EventListener);
+    gestureSurface.addEventListener('pointerleave',onShipLeave);
     gestureSurface.addEventListener('click',suppressDraggedClick as EventListener,true);
     window.addEventListener('pointermove',onMove);
     window.addEventListener('pointerup',onUp);
@@ -599,7 +641,7 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     const moteMat = new StandardMaterial("mote", scene);
     moteMat.diffuseColor = new Color3(0.5, 0.4, 0.14); moteMat.emissiveColor = new Color3(0.95, 0.74, 0.28); moteMat.specularColor = Color3.Black();
     interface Bee { slot: number; busy: boolean; work: boolean; from: number; to: number; t: number; speed: number; hover: number; line: BeeLine; mote: Mesh }
-    const bees: Bee[] = (workers?.slots ?? []).map((slot, k) => {
+    const bees: Bee[] = (liveBeesRef.current ? [] : workers?.slots ?? []).map((slot, k) => {
       const mote = CreateCylinder(`bee-${slot.slot}`, { tessellation: 6, diameter: S * 0.2, height: 5 }, scene);
       mote.material = moteMat; mote.isPickable = false; mote.isVisible = false; mote.parent = fieldRoot;
       glow.referenceMeshToUseItsOwnMaterial(mote);
@@ -628,6 +670,155 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     aimBees();
     const beeAt = (index: number) => bees.find((b) => (b.t < 0.5 ? b.from : b.to) === index) ?? null;
     const flightLines = bees.map((b) => { const m = CreateDashedLines(`flight-${b.slot}`, { points: [new Vector3(0, 0, 0), new Vector3(1, 0, 1)], dashSize: 6, gapSize: 4, dashNb: 40, updatable: true }, scene); m.color = Color3.FromHexString(HIVE_TONES.awaiting); m.alpha = 0.55; m.isPickable = false; m.isVisible = false; m.parent = fieldRoot; return m; });
+
+    // ---- the live bees: a spaceship per dispatch in flight (owner, 2026-10-08) --
+    // Every bee is a thin instance of ONE mesh, so twenty ships are one draw
+    // call. Until the ship's file has been read (and for good, if it cannot be)
+    // the instances ride on a mote of the same gold the slot bees wore. Nothing
+    // here is rebuilt when a bee changes: the buffers are rewritten every frame
+    // from liveBeesRef, and grow (never shrink) when more bees arrive than fit.
+    const shipMat = new StandardMaterial("ship", scene);
+    shipMat.diffuseColor = Color3.White(); shipMat.specularColor = new Color3(0.2, 0.2, 0.24);
+    shipMat.emissiveColor = new Color3(0.16, 0.15, 0.12);
+    const shipMote = CreateCylinder("ship-mote", { tessellation: 3, diameter: 1, height: 0.35 }, scene);
+    shipMote.material = moteMat;
+    let shipMesh: Mesh = shipMote;
+    // length of the body along its flight axis, in model units (the mote's triangle is ~1);
+    // the craft's nose is +z once mirrored into Babylon's hand (its wings sit at -z)
+    let shipLength = 1;
+    let shipCapacity = 0;
+    let shipMatrices = new Float32Array(0), shipColors = new Float32Array(0);
+    const shipSlots: Array<{ id: string; x: number; y: number; z: number; size: number; bee: HiveBee }> = [];
+    const prepareShip = (mesh: Mesh) => { mesh.isPickable = false; mesh.parent = fieldRoot; mesh.alwaysSelectAsActiveMesh = true; mesh.isVisible = false; };
+    prepareShip(shipMote);
+    const fitShips = (n: number) => {
+      if (n <= shipCapacity && shipMatrices.length) return;
+      shipCapacity = Math.max(8, 2 ** Math.ceil(Math.log2(Math.max(1, n))));
+      shipMatrices = new Float32Array(16 * shipCapacity); shipColors = new Float32Array(4 * shipCapacity);
+      shipMesh.thinInstanceSetBuffer("matrix", shipMatrices, 16, false);
+      shipMesh.thinInstanceSetBuffer("color", shipColors, 4, false);
+    };
+    fitShips(liveBeesRef.current?.length ?? 0);
+    host.setAttribute("data-ship", "mote");
+    if (liveBeesRef.current) void loadShipGeometry().then((geometry) => {
+      if (!geometry || scene.isDisposed) { if (!scene.isDisposed) host.setAttribute("data-ship", "mote:unavailable"); return; }
+      const mesh = new Mesh("ships", scene);
+      const data = new VertexData();
+      data.positions = geometry.positions; data.normals = geometry.normals; data.colors = geometry.colors; data.indices = geometry.indices;
+      data.applyToMesh(mesh);
+      mesh.material = shipMat;
+      prepareShip(mesh);
+      shipLength = geometry.size.z || 1;
+      shipMote.dispose();
+      shipMesh = mesh; shipCapacity = 0;
+      fitShips(liveBeesRef.current?.length ?? 0);
+      host.setAttribute("data-ship", "craft_speederA");
+    });
+    const shipMatrix = new Matrix(), shipScale = new Vector3(), shipTurn = new Quaternion(), shipAt = new Vector3();
+    // The hive's entrance: just outside the Queen's own cell, where a bee waits
+    // before it is claimed and where a new bee first appears.
+    const entrance = { x: cells[home].x, z: cells[home].y + HEX_R * cellScale(home) * 1.7 };
+    let beeLabelPin: { id: string; until: number } | null = null;
+    let beeLabelFor = "";
+    let pointerAt: { x: number; y: number; at: number } | null = null;
+    const flyShips = (nowMs: number, dt: number) => {
+      const list = liveBeesRef.current;
+      if (!list) return;
+      const store = shipsRef.current;
+      const still = motionPreference.matches;
+      const stale = signalHealthRef.current.board !== "live";
+      // how many comb units one CSS pixel is, so a ship never shrinks below a readable size at overview
+      const unitsPerPx = (camera.orthoTop! - camera.orthoBottom!) / Math.max(1, host.clientHeight);
+      const ease = still ? 1 : 1 - Math.pow(2, -dt / 320);
+      const seen = new Set<string>();
+      let waiting = 0, working = 0, quiet = 0, queued = 0, targeted = 0;
+      const parked = list.filter((bee) => bee.state === "queued" || bee.target === null || !cells[bee.target]);
+      fitShips(list.length);
+      shipSlots.length = 0;
+      list.forEach((bee, i) => {
+        seen.add(bee.id);
+        let state = store.get(bee.id);
+        if (!state) { state = { x: entrance.x, z: entrance.z, heading: 0, seed: (i * 2.399) % (Math.PI * 2) }; store.set(bee.id, state); }
+        const target = bee.target !== null && cells[bee.target] ? bee.target : null;
+        const cellWidth = target !== null ? S_CELL * cellScale(target) : S_CELL;
+        const size = Math.max(cellWidth * 0.42, 18 * unitsPerPx);
+        let goalX: number, goalZ: number;
+        if (bee.state === "queued" || target === null) {
+          // parked in a row at the entrance, in arrival order
+          const k = parked.indexOf(bee), n = parked.length;
+          goalX = entrance.x + (k - (n - 1) / 2) * size * 1.25; goalZ = entrance.z + (still ? 0 : Math.sin(nowMs / 900 + state.seed) * size * 0.08);
+          waiting += 1;
+        } else if (bee.state === "working") {
+          // circling its issue along the rim: zoomed in, the cell's own card
+          // covers its middle, and a ship under a card is a ship nobody sees
+          const radius = Math.max(HEX_R * cellScale(target) * 0.92, 10 * unitsPerPx);
+          const angle = still ? state.seed : nowMs / 1400 + state.seed;
+          goalX = cells[target].x + Math.cos(angle) * radius; goalZ = cells[target].y + Math.sin(angle) * radius;
+        } else {
+          // quiet: hovering at its issue's rim, not working it
+          goalX = cells[target].x + Math.cos(state.seed) * HEX_R * cellScale(target) * 0.9;
+          goalZ = cells[target].y + Math.sin(state.seed) * HEX_R * cellScale(target) * 0.9 + (still ? 0 : Math.sin(nowMs / 1300 + state.seed) * size * 0.06);
+        }
+        if (target !== null) targeted += 1;
+        if (bee.state === "working") working += 1; else if (bee.state === "quiet") quiet += 1; else queued += 1;
+        const dx = goalX - state.x, dz = goalZ - state.z;
+        state.x += dx * ease; state.z += dz * ease;
+        // face where it is going; a ship that has arrived keeps its heading
+        if (Math.hypot(dx, dz) > size * 0.02) state.heading = Math.atan2(dx, dz);
+        const y = 24 + (still || bee.state !== "working" ? 0 : Math.sin(nowMs / 260 + state.seed) * 2);
+        const scale = size / shipLength;
+        shipScale.copyFromFloats(scale, scale, scale);
+        Quaternion.RotationYawPitchRollToRef(state.heading, 0, 0, shipTurn);
+        shipAt.copyFromFloats(state.x, y, state.z);
+        Matrix.ComposeToRef(shipScale, shipTurn, shipAt, shipMatrix);
+        shipMatrix.copyToArray(shipMatrices, i * 16);
+        const tint = shipTint(bee.lane, bee.state !== "working" || stale);
+        shipColors.set(tint, i * 4);
+        shipSlots.push({ id: bee.id, x: state.x, y, z: state.z, size, bee });
+      });
+      for (const id of store.keys()) if (!seen.has(id)) store.delete(id);
+      shipMesh.thinInstanceCount = list.length;
+      shipMesh.isVisible = list.length > 0;
+      if (list.length > 0) { shipMesh.thinInstanceBufferUpdated("matrix"); shipMesh.thinInstanceBufferUpdated("color"); }
+      const tally = `${list.length}:${working}:${quiet}:${queued}:${targeted}:${waiting}`;
+      if (host.getAttribute("data-bees") !== tally) host.setAttribute("data-bees", tally);
+      // the label: the ship under the pointer, or the one last tapped
+      const label = beeLabelRef.current;
+      if (!label) return;
+      let show: (typeof shipSlots)[number] | null = null, px = 0, py = 0;
+      const pinned = beeLabelPin && beeLabelPin.until > nowMs ? beeLabelPin.id : null;
+      const hoverLive = pointerAt && nowMs - pointerAt.at < 4000;
+      if (pinned || hoverLive) {
+        const world = fieldRoot.computeWorldMatrix(true), matrix = scene.getTransformMatrix();
+        const viewport = camera.viewport.toGlobal(host.clientWidth, host.clientHeight);
+        let best = Infinity;
+        for (const slot of shipSlots) {
+          const p = Vector3.Project(new Vector3(slot.x, slot.y, slot.z), world, matrix, viewport);
+          if (pinned) { if (slot.id === pinned) { show = slot; px = p.x; py = p.y; } continue; }
+          const reach = Math.max(16, slot.size / unitsPerPx * 0.7), d = Math.hypot(p.x - pointerAt!.x, p.y - pointerAt!.y);
+          if (d < reach && d < best) { best = d; show = slot; px = p.x; py = p.y; }
+        }
+      }
+      if (!show) { if (beeLabelFor) { beeLabelFor = ""; label.setAttribute("aria-hidden", "true"); label.textContent = ""; host.removeAttribute("data-bee-label"); } return; }
+      const words = beeLabel(show.bee, Date.now(), langRef.current);
+      if (label.textContent !== words) label.textContent = words;
+      if (beeLabelFor !== show.id) { beeLabelFor = show.id; label.setAttribute("aria-hidden", "false"); label.dataset.state = show.bee.state; host.setAttribute("data-bee-label", show.id); }
+      label.style.transform = `translate(${Math.round(px + 12)}px, ${Math.round(py - 30)}px)`;
+    };
+    // the ship nearest a tap, within reach of it, or null
+    const shipAtPoint = (x: number, y: number): string | null => {
+      if (!shipSlots.length) return null;
+      const world = fieldRoot.computeWorldMatrix(true), matrix = scene.getTransformMatrix();
+      const viewport = camera.viewport.toGlobal(host.clientWidth, host.clientHeight);
+      const unitsPerPx = (camera.orthoTop! - camera.orthoBottom!) / Math.max(1, host.clientHeight);
+      let best: string | null = null, bestD = Infinity;
+      for (const slot of shipSlots) {
+        const p = Vector3.Project(new Vector3(slot.x, slot.y, slot.z), world, matrix, viewport);
+        const d = Math.hypot(p.x - x, p.y - y), reach = Math.max(18, slot.size / unitsPerPx * 0.7);
+        if (d < reach && d < bestD) { bestD = d; best = slot.id; }
+      }
+      return best;
+    };
 
     // ---- the hive: everything is comb, nothing is a model --------------------
     // The user, 2026-09-06: "убери 3D объекты а то шума много", "замки не красиво
@@ -878,6 +1069,7 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     let workingSeen: readonly HudEvent[] | null = null;
     let workingBoardSeen: typeof displays = undefined;
     let workingHealthSeen = '';
+    let workingBeesSeen: readonly HiveBee[] | undefined = undefined;
     let workingCells: number[] = [];
     let workingAgeOf = new Map<number, number>();
     let workingRing: LinesMesh | null = null;
@@ -885,9 +1077,10 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
       const list = eventsRef.current;
       const issueRows = displaysRef.current;
       const boardHealth = signalHealthRef.current.board;
-      if (issueRows ? issueRows === workingBoardSeen && boardHealth === workingHealthSeen : list === workingSeen) return;
+      const liveList = liveBeesRef.current;
+      if (liveList ? liveList === workingBeesSeen && boardHealth === workingHealthSeen : issueRows ? issueRows === workingBoardSeen && boardHealth === workingHealthSeen : list === workingSeen) return;
       workingSeen = list;
-      workingBoardSeen = issueRows; workingHealthSeen = boardHealth;
+      workingBoardSeen = issueRows; workingHealthSeen = boardHealth; workingBeesSeen = liveList;
       // the last event of every issue, oldest first so the newest wins
       const last = new Map<number, { at: number; kind: string; title: string }>();
       for (const e of [...list].sort((a, b) => Date.parse(a.at) - Date.parse(b.at))) {
@@ -896,7 +1089,12 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
         if (Number.isFinite(at)) last.set(e.issue, { at, kind: e.kind, title: e.title });
       }
       const ageOf = new Map<number, number>();
-      if (issueRows) {
+      // with live bees, a cell is being worked when a WORKING bee is on it, as
+      // the route says, and only while the route is answering: a quiet bee's cell
+      // does not breathe, and neither does a cell on a feed that has gone stale
+      if (liveList) {
+        if (boardHealth === 'live') for (const bee of liveList) if (bee.state === 'working' && bee.target !== null && cells[bee.target]) ageOf.set(bee.target, 0);
+      } else if (issueRows) {
         for (const number of hiveRunningIssueNumbers(issueRows.filter((row): row is HiveDisplay=>row!==null),boardHealth==='live')) {
           const i=indexByNumber.get(number); if(i!==undefined) ageOf.set(i,0);
         }
@@ -961,6 +1159,9 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     const onCellClick = (e: MouseEvent) => {
       if (travelled > 6 || pointers.suppressClick) { travelled = 0; return; }
       const rect = canvas.getBoundingClientRect();
+      // a tap on a ship names its bee (a phone has no hover) and is not a tap on the cell under it
+      const tappedBee = shipAtPoint(e.clientX - rect.left, e.clientY - rect.top);
+      if (tappedBee) { beeLabelPin = { id: tappedBee, until: performance.now() + 4000 }; host.setAttribute("data-hit", "bee"); return; }
       const index = cellUnder(e.clientX - rect.left, e.clientY - rect.top);
       if (index < 0) { host.setAttribute("data-hit", "off"); return; }
       if(catalogRef.current){if(layersRef.current.foundation&&(catalogRef.current.cells[index]||displaysRef.current?.[index]))catalogController.current?.inspect(index);else if(index===home)catalogController.current?.overview();host.setAttribute('data-hit',displaysRef.current?.[index]?'display':'resource');return;}
@@ -1116,6 +1317,7 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
         if (b.busy && b.t < 1) { CreateDashedLines(`flight-${b.slot}`, { points: [new Vector3(A.x, 2, A.y), new Vector3(B.x, 2, B.y)], dashSize: 6, gapSize: 4, dashNb: 40, instance: line }, scene); line.isVisible = true; }
         else line.isVisible = false;
       });
+      flyShips(nowMs, dt);
       ingestEvents(nowMs);
       let write = 0;
       for (let i = 0; i < effects.length; i += 1) {
@@ -1200,6 +1402,9 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
       document.removeEventListener("fullscreenchange", onVisible);
       gestureSurface.removeEventListener("wheel", onWheel as EventListener);
       gestureSurface.removeEventListener('pointerdown',onDown as EventListener,true);
+      gestureSurface.removeEventListener('pointermove',onShipPointer as EventListener);
+      gestureSurface.removeEventListener('pointerleave',onShipLeave);
+      if (beeLabelRef.current) { beeLabelRef.current.textContent = ""; beeLabelRef.current.setAttribute("aria-hidden", "true"); }
       gestureSurface.removeEventListener('click',suppressDraggedClick as EventListener,true);
       window.removeEventListener('pointermove',onMove);
       window.removeEventListener('pointerup',onUp);
@@ -1243,6 +1448,7 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
         <div className="queen-hive-stage" ref={stageRef} aria-hidden="true" />
         <QueenStarfield lang={lang}/>
         <div className="queen27-hover-card" ref={cardRef} aria-hidden="true" />
+        {liveBees && <div className="queen-hive-bee-label" ref={beeLabelRef} aria-hidden="true" />}
         {displays && <QueenHiveDisplays rows={displays} projections={projections} selected={selectedDisplay} events={events} lang={lang} controls={!catalogLayer} showRepository={!!catalogLayer} onIssueOpen={onDisplaySelect} controller={{ inspect: index => displayControllerRef.current?.inspect(index), overview: () => displayControllerRef.current?.overview(), hover: index => displayControllerRef.current?.hover(index) }} />}
         {displays && !catalogLayer && <QueenHiveTaskLegend rows={displays} lang={lang} health={signalHealth}/>}
         {!displays && law && (
