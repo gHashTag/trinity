@@ -1,27 +1,32 @@
 #!/usr/bin/env node
-// course-from-spec.mjs -- the course at #/course from `specs/course/course.t27`.
+// course-from-spec.mjs -- the courses at #/course and #/ai-numbers from `specs/course/courses.t27`.
 //
-// Reads the course spec and its Russian contract (`specs/course/course-ru.t27`) through the real
-// compiler (`t27_compiler.wasm`), checks the constant schema, evaluates every `test` block against
-// the declared constants, then checks what the spec points at:
+// The catalog names the courses, in reading order; each course is its own spec with its own
+// Russian contract (`specs/course/<id>.t27`, `specs/course/<id>-ru.t27`). Every spec is read
+// through the real compiler (`t27_compiler.wasm`): the constant schema is checked and every
+// `test` block evaluated against the declared constants. Then what the specs point at:
 //
+//   - every course has the catalog's shape (27 lessons in 9 modules of 3) and the same page
+//     strings, so one page draws any of them;
+//   - lesson ids are unique across the courses (each has one static page under learn/) and no
+//     lesson id is a course's share directory;
 //   - every widget a lesson opens or offers is in the widget gallery (queenWidgets.generated.ts,
-//     itself generated from specs/widgets/gallery.t27), no two lessons open the same one, and
-//     every gallery widget is used by some lesson;
-//   - every lesson spec exists under public/t27/files/ and compiles clean, all seven backends;
-//   - the Russian bundle the contract names covers every field, carries no key the course does
-//     not have, keeps every number and {placeholder} of the English field, and neither language
-//     makes a superlative claim (the docs generator's FORBIDDEN_* lists).
+//     itself generated from specs/widgets/gallery.t27), no two lessons of any course open the
+//     same one, and every gallery widget is used by some lesson;
+//   - every lesson names a spec under public/t27/files/ that compiles clean, all seven backends;
+//   - each Russian bundle covers every field, carries no key its course does not have, keeps
+//     every number and {placeholder} of the English field, and neither language makes a
+//     superlative claim (the docs generator's FORBIDDEN_* lists).
 //
-// The course adds no words of its own: each one is in the spec or the bundle. Writes the files
+// The courses add no words of their own: each one is in a spec or a bundle. Writes the files
 // nobody edits by hand:
 //
-//   src/lib/course.generated.ts   what src/pages/Course.tsx draws
-//   public/learn/course.t27       the spec, byte for byte (the page links to it)
+//   src/lib/course.generated.ts   what src/pages/Course.tsx draws, every course
+//   public/learn/<id>.t27         each course spec, byte for byte (its pages link to it)
 //
 // Run:      node scripts/course-from-spec.mjs            (write)
 //           node scripts/course-from-spec.mjs --check    (fail if the committed files are stale)
-//           node scripts/course-from-spec.mjs --json     (print the course as JSON)
+//           node scripts/course-from-spec.mjs --json     (print the courses as JSON)
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -30,16 +35,25 @@ import { FORBIDDEN_EN, FORBIDDEN_RU } from './docs-from-specs.mjs'
 import { runSpecTests } from './viewport-from-spec.mjs'
 
 const WASM = 'public/t27/t27_compiler.wasm'
-export const COURSE_SPEC = 'specs/course/course.t27'
-export const RU_SPEC = 'specs/course/course-ru.t27'
+export const CATALOG_SPEC = 'specs/course/courses.t27'
 export const TS_OUT = 'src/lib/course.generated.ts'
-export const PUBLIC_SPEC_OUT = 'public/learn/course.t27'
 export const GALLERY_TS = 'src/lib/queenWidgets.generated.ts'
 export const LESSON_SPEC_ROOT = 'public/t27/files'
+export const SHARE_BASE = 'learn'
+/** Where a course's spec, its Russian contract and its published copy live, by course id. */
+export const courseSpecOf = (id) => `specs/course/${id}.t27`
+export const ruSpecOf = (id) => `specs/course/${id}-ru.t27`
+export const publicSpecOf = (id) => `public/${SHARE_BASE}/${id}.t27`
+/** A t27 module name has no '-': ai-numbers is module ai_numbers, its contract ai_numbers_ru. */
+const moduleOf = (id) => id.replace(/-/g, '_')
 const BACKENDS = ['c', 'js', 'rust', 'ts', 'verilog', 'verilog_hir', 'zig']
 
+const CATALOG_REQUIRED = {
+  KIND: 'str', SCHEMA_VERSION: 'u8', GENERATED: 'arr', COURSE_COUNT: 'u8', COURSE_IDS: 'arr', COURSE_SPECS: 'arr',
+  LESSONS_PER_COURSE: 'u8', MODULES_PER_COURSE: 'u8', LESSONS_PER_MODULE: 'u8', PROGRESS_KEY: 'str', SHARE_BASE: 'str',
+}
 const REQUIRED = {
-  KIND: 'str', ID: 'str', SCHEMA_VERSION: 'u8', GENERATED: 'arr', ROUTE: 'str', GALLERY: 'str', LOCALES: 'arr', RU_CONTRACT: 'str',
+  KIND: 'str', ID: 'str', SCHEMA_VERSION: 'u8', GENERATED: 'arr', ROUTE: 'str', SHARE_PATH: 'str', GALLERY: 'str', LOCALES: 'arr', RU_CONTRACT: 'str',
   PROGRESS_KEY: 'str', SENDS_NOTHING: 'bool', COHORT_ROUTE: 'str', TOOL_FRAME_HEIGHT: 'u16', PLAYER_FRAME_HEIGHT: 'u16', TITLE: 'str', DESCRIPTION: 'str',
   LESSONS_PER_MODULE: 'u8', MODULE_COUNT: 'u8', MODULE_IDS: 'arr', MODULE_TITLES: 'arr', MODULE_LINES: 'arr',
   LESSON_COUNT: 'u8', LESSON_IDS: 'arr', LESSON_MODULES: 'arr', LESSON_WIDGETS: 'arr', LESSON_ALSO: 'arr', LESSON_SPECS: 'arr',
@@ -77,21 +91,46 @@ export function readGallery(root = SITE) {
   return JSON.parse(body)
 }
 
-export function semanticProblems(f, file = COURSE_SPEC) {
+/** The catalog: which courses exist, in which order, and the shape every one of them has. */
+export function catalogProblems(c, file = CATALOG_SPEC) {
+  const p = []
+  if (c.KIND !== 'courses') p.push(`${file}: KIND must be "courses"`)
+  if (c.SCHEMA_VERSION !== 1) p.push(`${file}: SCHEMA_VERSION must be 1`)
+  if (!same(c.GENERATED, [TS_OUT])) p.push(`${file}: GENERATED must be ${JSON.stringify([TS_OUT])}`)
+  if (c.SHARE_BASE !== SHARE_BASE) p.push(`${file}: SHARE_BASE must be ${SHARE_BASE}`)
+  for (const name of ['COURSE_IDS', 'COURSE_SPECS']) if (c[name].length !== c.COURSE_COUNT) p.push(`${file}: ${name}.length ${c[name].length} != COURSE_COUNT ${c.COURSE_COUNT}`)
+  if (!uniq(c.COURSE_IDS)) p.push(`${file}: COURSE_IDS must be unique`)
+  c.COURSE_IDS.forEach((id, i) => {
+    if (!ID_RE.test(id)) p.push(`${file}: COURSE_IDS entry ${JSON.stringify(id)} is not a lower-case slug`)
+    if (c.COURSE_SPECS[i] !== courseSpecOf(id)) p.push(`${file}: COURSE_SPECS[${i}] must be ${courseSpecOf(id)}`)
+  })
+  if (c.MODULES_PER_COURSE * c.LESSONS_PER_MODULE !== c.LESSONS_PER_COURSE) p.push(`${file}: MODULES_PER_COURSE * LESSONS_PER_MODULE != LESSONS_PER_COURSE`)
+  return p
+}
+
+export function semanticProblems(f, catalog, id, file = courseSpecOf(id)) {
   const p = []
   if (f.KIND !== 'course') p.push(`${file}: KIND must be "course"`)
+  if (f.ID !== id) p.push(`${file}: ID must be ${id}, its name in ${CATALOG_SPEC}`)
   if (f.SCHEMA_VERSION !== 1) p.push(`${file}: SCHEMA_VERSION must be 1`)
-  if (!same(f.GENERATED, [TS_OUT, PUBLIC_SPEC_OUT])) p.push(`${file}: GENERATED must be ${JSON.stringify([TS_OUT, PUBLIC_SPEC_OUT])}`)
-  if (f.RU_CONTRACT !== RU_SPEC) p.push(`${file}: RU_CONTRACT must be ${RU_SPEC}`)
+  if (!same(f.GENERATED, [TS_OUT, publicSpecOf(id)])) p.push(`${file}: GENERATED must be ${JSON.stringify([TS_OUT, publicSpecOf(id)])}`)
+  if (f.RU_CONTRACT !== ruSpecOf(id)) p.push(`${file}: RU_CONTRACT must be ${ruSpecOf(id)}`)
+  // The first course's pages are the learn/ index every older link points at; the next ones get a directory of their own.
+  const share = id === catalog.COURSE_IDS[0] ? `${SHARE_BASE}/` : `${SHARE_BASE}/${id}/`
+  if (f.SHARE_PATH !== share) p.push(`${file}: SHARE_PATH must be ${share}`)
+  if (f.PROGRESS_KEY !== catalog.PROGRESS_KEY) p.push(`${file}: PROGRESS_KEY must be ${catalog.PROGRESS_KEY}, the catalog's; one key keeps a reader's marks across the courses`)
   if (f.SENDS_NOTHING !== true) p.push(`${file}: SENDS_NOTHING must be true; progress stays in the reader's browser`)
   if (f.LOCALES[0] !== 'en') p.push(`${file}: LOCALES must start with "en", the language of the spec`)
   for (const [countName, arrays] of Object.entries(PARALLEL)) {
     for (const name of arrays) if (f[name].length !== f[countName]) p.push(`${file}: ${name}.length ${f[name].length} != ${countName} ${f[countName]}`)
   }
+  if (f.LESSON_COUNT !== catalog.LESSONS_PER_COURSE) p.push(`${file}: LESSON_COUNT ${f.LESSON_COUNT} != ${catalog.LESSONS_PER_COURSE}; every course has ${catalog.LESSONS_PER_COURSE} lessons`)
+  if (f.MODULE_COUNT !== catalog.MODULES_PER_COURSE) p.push(`${file}: MODULE_COUNT ${f.MODULE_COUNT} != ${catalog.MODULES_PER_COURSE}`)
+  if (f.LESSONS_PER_MODULE !== catalog.LESSONS_PER_MODULE) p.push(`${file}: LESSONS_PER_MODULE ${f.LESSONS_PER_MODULE} != ${catalog.LESSONS_PER_MODULE}`)
   if (f.MODULE_COUNT * f.LESSONS_PER_MODULE !== f.LESSON_COUNT) p.push(`${file}: MODULE_COUNT * LESSONS_PER_MODULE != LESSON_COUNT`)
   for (const ids of ['MODULE_IDS', 'LESSON_IDS']) {
     if (!uniq(f[ids])) p.push(`${file}: ${ids} must be unique`)
-    f[ids].forEach((id) => { if (!ID_RE.test(id)) p.push(`${file}: ${ids} entry ${JSON.stringify(id)} is not a lower-case slug`) })
+    f[ids].forEach((x) => { if (!ID_RE.test(x)) p.push(`${file}: ${ids} entry ${JSON.stringify(x)} is not a lower-case slug`) })
   }
   // Modules run in order, LESSONS_PER_MODULE lessons each.
   f.LESSON_MODULES.forEach((m, i) => {
@@ -110,33 +149,47 @@ export function semanticProblems(f, file = COURSE_SPEC) {
   return p
 }
 
-/** Every widget named exists; main widgets are distinct and framable; every gallery widget is used. */
-export function widgetProblems(f, gallery, file = COURSE_SPEC) {
+/** Every widget named exists; main widgets are framable. */
+export function widgetProblems(f, gallery, file) {
   const p = []
   const byId = new Map(gallery.widgets.map((w) => [w.id, w]))
-  if (!uniq(f.LESSON_WIDGETS)) p.push(`${file}: LESSON_WIDGETS must be unique; every lesson opens its own widget`)
-  const used = new Set()
   f.LESSON_IDS.forEach((id, i) => {
     const main = f.LESSON_WIDGETS[i]
     const w = byId.get(main)
     if (!w) p.push(`${file}: lesson ${id} opens ${main}, which ${f.GALLERY} does not have`)
     else if (!w.preview) p.push(`${file}: lesson ${id} opens ${main}, a ${w.kind} with no framable page; offer it under LESSON_ALSO`)
-    used.add(main)
     for (const also of listOf(f.LESSON_ALSO[i])) {
       if (!byId.has(also)) p.push(`${file}: lesson ${id} offers ${also}, which ${f.GALLERY} does not have`)
       if (also === main) p.push(`${file}: lesson ${id} offers its own widget ${also} again`)
-      used.add(also)
     }
   })
-  for (const w of gallery.widgets) if (!used.has(w.id)) p.push(`${file}: gallery widget ${w.id} is in no lesson; the course covers the whole gallery`)
   return p
 }
 
-/** Every lesson spec compiles clean on every backend. */
-export function lessonSpecProblems(f, analyze, root = SITE, file = COURSE_SPEC) {
+/** Across the courses: a lesson id names one page, a widget opens in one lesson, the gallery is covered. */
+export function acrossProblems(courses, gallery) {
+  const p = []
+  const lessonIds = courses.flatMap((c) => c.f.LESSON_IDS)
+  const dupes = (xs) => [...new Set(xs.filter((x, i) => xs.indexOf(x) !== i))]
+  for (const id of dupes(lessonIds)) p.push(`${CATALOG_SPEC}: lesson ${id} is in two courses; its page learn/${id}/ can show one`)
+  for (const c of courses) {
+    const dir = c.f.SHARE_PATH.split('/').filter(Boolean).at(-1)
+    if (dir !== SHARE_BASE && lessonIds.includes(dir)) p.push(`${c.file}: lesson id ${dir} is also the course's share directory`)
+  }
+  const mains = courses.flatMap((c) => c.f.LESSON_WIDGETS)
+  for (const w of dupes(mains)) p.push(`${CATALOG_SPEC}: LESSON_WIDGETS must be unique; ${w} is opened by two lessons, every lesson opens its own widget`)
+  const used = new Set(courses.flatMap((c) => [...c.f.LESSON_WIDGETS, ...c.f.LESSON_ALSO.flatMap(listOf)]))
+  for (const w of gallery.widgets) if (!used.has(w.id)) p.push(`${CATALOG_SPEC}: gallery widget ${w.id} is in no lesson; the courses cover the whole gallery`)
+  const says = (c) => JSON.stringify(sayNames(c.f))
+  for (const c of courses.slice(1)) if (says(c) !== says(courses[0])) p.push(`${c.file}: page strings ${sayNames(c.f).join(',')} differ from ${courses[0].file}; one page draws every course`)
+  return p
+}
+
+/** Every lesson names a spec, and it compiles clean on every backend. */
+export function lessonSpecProblems(f, analyze, root = SITE, file) {
   const p = []
   f.LESSON_SPECS.forEach((path, i) => {
-    if (!path) return
+    if (!path) { p.push(`${file}: lesson ${f.LESSON_IDS[i]} names no spec; every lesson shows the t27 behind it`); return }
     const at = join(root, LESSON_SPEC_ROOT, path)
     if (!/^specs\/[A-Za-z0-9_\-/.]+\.t27$/.test(path)) { p.push(`${file}: LESSON_SPECS[${i}] ${path} is not specs/<path>.t27`); return }
     if (!existsSync(at)) { p.push(`${file}: LESSON_SPECS[${i}] ${LESSON_SPEC_ROOT}/${path} is missing`); return }
@@ -148,8 +201,8 @@ export function lessonSpecProblems(f, analyze, root = SITE, file = COURSE_SPEC) 
   return p
 }
 
-/** The Russian bundle against its contract and the English fields. */
-export function bundleProblems(f, ru, bundle, bundlePath) {
+/** A Russian bundle against its contract and the English fields. */
+export function bundleProblems(f, ru, bundle, bundlePath, ruSpec = ruSpecOf(f.ID)) {
   const p = []
   const strict = ru.COVERAGE_REQUIRED
   const check = (where, en, tr) => {
@@ -159,7 +212,7 @@ export function bundleProblems(f, ru, bundle, bundlePath) {
     if (!same(placeholdersOf(en), placeholdersOf(tr))) p.push(`${bundlePath}: ${where} placeholders ${placeholdersOf(tr).join(' ')} != English ${placeholdersOf(en).join(' ')}`)
     for (const hit of forbidden(tr, FORBIDDEN_RU)) p.push(`${bundlePath}: ${where} superlative ${JSON.stringify(hit)}`)
   }
-  if (bundle.$spec !== RU_SPEC) p.push(`${bundlePath}: $spec must be ${RU_SPEC}`)
+  if (bundle.$spec !== ruSpec) p.push(`${bundlePath}: $spec must be ${ruSpec}`)
   if (bundle.locale !== ru.LOCALE) p.push(`${bundlePath}: locale ${bundle.locale} != contract ${ru.LOCALE}`)
   const ui = bundle[ru.UI_KEY] ?? {}
   const modules = bundle.modules ?? {}
@@ -193,14 +246,16 @@ const frameOf = (w, f) => ({
 export function courseOf(f, ru, bundle, gallery, specSha, playerBuild) {
   const byId = new Map(gallery.widgets.map((w) => [w.id, w]))
   const say = (locale) => Object.fromEntries(sayNames(f).map((k) => [k, locale === 'en' ? sayOf(f, k) : bundle[ru.UI_KEY][k]]))
-  const specFrame = (path) => (path ? {
+  const specFrame = (path) => ({
     path, source: `t27/files/${path}`,
     preview: `play/embed.html?spec=${encodeURIComponent(path)}&tab=term${playerBuild ? `&v=${playerBuild}` : ''}`,
     height: f.PLAYER_FRAME_HEIGHT,
-  } : null)
+  })
   return {
-    source: { spec: COURSE_SPEC, publicSpec: PUBLIC_SPEC_OUT, ruContract: RU_SPEC, ruBundle: ru.BUNDLE_PATH, sha256: specSha, schemaVersion: f.SCHEMA_VERSION, gallery: f.GALLERY },
+    id: f.ID,
+    source: { spec: courseSpecOf(f.ID), publicSpec: publicSpecOf(f.ID), ruContract: ruSpecOf(f.ID), ruBundle: ru.BUNDLE_PATH, sha256: specSha, schemaVersion: f.SCHEMA_VERSION, gallery: f.GALLERY },
     route: f.ROUTE,
+    share: f.SHARE_PATH,
     cohortRoute: f.COHORT_ROUTE,
     progressKey: f.PROGRESS_KEY,
     sendsNothing: f.SENDS_NOTHING,
@@ -223,7 +278,13 @@ export function courseOf(f, ru, bundle, gallery, specSha, playerBuild) {
   }
 }
 
-export const renderTs = (course) => `// GENERATED by scripts/course-from-spec.mjs from ${COURSE_SPEC} and ${course.source.ruBundle}\n// spec sha256 ${course.source.sha256}\n// Do not edit: change the .t27 source (or the Russian bundle) and regenerate.\n\nexport const COURSE = ${JSON.stringify(course, null, 2)} as const\n\nexport type Course = typeof COURSE\nexport type CourseLesson = Course['lessons'][number]\nexport type CourseFrame = CourseLesson['widget']\n`
+/** The neighbour a course hands its reader to, or comes from: enough to draw the link. */
+const linkOf = (c) => (c ? { id: c.id, route: c.route, share: c.share, first: c.lessons[0].id, last: c.lessons.at(-1).id, title: { en: c.say.en.TITLE, ru: c.say.ru.TITLE } } : null)
+
+/** The courses in catalog order, each knowing the one before and the one after it. */
+export const chainOf = (courses) => courses.map((c, i) => ({ ...c, prev: linkOf(courses[i - 1]), next: linkOf(courses[i + 1]) }))
+
+export const renderTs = (courses) => `// GENERATED by scripts/course-from-spec.mjs from ${CATALOG_SPEC}, ${courses.map((c) => c.source.spec).join(', ')} and their Russian bundles\n// spec sha256 ${courses.map((c) => `${c.id} ${c.source.sha256}`).join(', ')}\n// Do not edit: change the .t27 source (or a Russian bundle) and regenerate.\n\nexport const COURSES = ${JSON.stringify(courses, null, 2)} as const\n\n/** The course every older link means: the first in the catalog. */\nexport const COURSE = COURSES[0]\n\nexport type Course = (typeof COURSES)[number]\nexport type CourseLesson = Course['lessons'][number]\nexport type CourseFrame = CourseLesson['widget']\n`
 
 function readSpec(name, text, analyze, required) {
   const problems = []
@@ -248,43 +309,64 @@ function readSpec(name, text, analyze, required) {
   return { analysis, fields, tests, problems }
 }
 
-export async function buildCourse({ specText, ruText, bundleText, analyze, gallery, root = SITE }) {
-  const course = readSpec(COURSE_SPEC, specText, analyze, REQUIRED)
-  const ru = readSpec(RU_SPEC, ruText, analyze, RU_REQUIRED)
+/** One course: its spec, its contract and its bundle, each against the catalog. */
+function readCourse(id, { specText, ruText, bundleText }, catalog, analyze, gallery, root) {
+  const file = courseSpecOf(id)
+  const ruFile = ruSpecOf(id)
+  const course = readSpec(file, specText, analyze, REQUIRED)
+  const ru = readSpec(ruFile, ruText, analyze, RU_REQUIRED)
   const problems = [...course.problems, ...ru.problems]
-  if (course.analysis.ast?.name !== 'course') problems.push(`${COURSE_SPEC}: module must be course`)
-  if (ru.analysis.ast?.name !== 'course_ru') problems.push(`${RU_SPEC}: module must be course_ru`)
+  if (course.analysis.ast?.name !== moduleOf(id)) problems.push(`${file}: module must be ${moduleOf(id)}`)
+  if (ru.analysis.ast?.name !== `${moduleOf(id)}_ru`) problems.push(`${ruFile}: module must be ${moduleOf(id)}_ru`)
   const f = course.fields
   const r = ru.fields
   let bundle = null
   if (problems.length === 0) {
-    problems.push(...semanticProblems(f))
-    if (r.SOURCE_SPEC !== COURSE_SPEC) problems.push(`${RU_SPEC}: SOURCE_SPEC must be ${COURSE_SPEC}`)
-    if (!f.LOCALES.includes(r.LOCALE)) problems.push(`${RU_SPEC}: LOCALE ${r.LOCALE} is not in the course's LOCALES`)
-    if (!r.BUNDLE_PATH.startsWith('apps/website/')) problems.push(`${RU_SPEC}: BUNDLE_PATH must be under apps/website/`)
+    problems.push(...semanticProblems(f, catalog, id, file))
+    if (r.SOURCE_SPEC !== file) problems.push(`${ruFile}: SOURCE_SPEC must be ${file}`)
+    if (!f.LOCALES.includes(r.LOCALE)) problems.push(`${ruFile}: LOCALE ${r.LOCALE} is not in the course's LOCALES`)
+    if (!r.BUNDLE_PATH.startsWith('apps/website/')) problems.push(`${ruFile}: BUNDLE_PATH must be under apps/website/`)
     try { bundle = JSON.parse(bundleText) } catch (e) { problems.push(`${r.BUNDLE_PATH}: not JSON (${e.message})`) }
-    if (bundle) problems.push(...bundleProblems(f, r, bundle, r.BUNDLE_PATH))
-    problems.push(...widgetProblems(f, gallery))
-    problems.push(...lessonSpecProblems(f, analyze, root))
+    if (bundle) problems.push(...bundleProblems(f, r, bundle, r.BUNDLE_PATH, ruFile))
+    problems.push(...widgetProblems(f, gallery, file))
+    problems.push(...lessonSpecProblems(f, analyze, root, file))
   }
-  const specSha = sha256(Buffer.from(specText, 'utf8'))
+  return { id, file, f, r, bundle, problems, specSha: sha256(Buffer.from(specText, 'utf8')), tests: [course.tests, ru.tests] }
+}
+
+export async function buildCourses({ catalogText, courses: inputs, analyze, gallery, root = SITE }) {
+  const catalog = readSpec(CATALOG_SPEC, catalogText, analyze, CATALOG_REQUIRED)
+  const problems = [...catalog.problems]
+  if (catalog.analysis.ast?.name !== 'courses') problems.push(`${CATALOG_SPEC}: module must be courses`)
+  const c = catalog.fields
+  if (problems.length) return { problems, courses: null, ts: null, publicSpecs: null, tests: catalog.tests }
+  problems.push(...catalogProblems(c))
+  if (inputs.length !== c.COURSE_IDS.length) problems.push(`${CATALOG_SPEC}: ${c.COURSE_IDS.length} courses named, ${inputs.length} read`)
+  const read = c.COURSE_IDS.map((id, i) => readCourse(id, inputs[i] ?? {}, c, analyze, gallery, root))
+  for (const x of read) problems.push(...x.problems)
+  if (problems.length === 0) problems.push(...acrossProblems(read, gallery))
   const playerBuild = gallery.widgets.find((w) => w.kind === 'player')?.preview?.match(/[?&]v=([A-Za-z0-9]+)/)?.[1] ?? ''
-  const out = problems.length ? null : courseOf(f, r, bundle, gallery, specSha, playerBuild)
+  const out = problems.length ? null : chainOf(read.map((x) => courseOf(x.f, x.r, x.bundle, gallery, x.specSha, playerBuild)))
+  const all = [catalog.tests, ...read.flatMap((x) => x.tests)]
   return {
-    problems, fields: f, specSha, course: out,
-    tests: { tests: course.tests.tests + ru.tests.tests, asserts: course.tests.asserts + ru.tests.asserts },
-    ts: out ? renderTs(out) : null, publicSpec: out ? specText : null,
+    problems, courses: out,
+    tests: { tests: all.reduce((s, t) => s + t.tests, 0), asserts: all.reduce((s, t) => s + t.asserts, 0) },
+    ts: out ? renderTs(out) : null,
+    publicSpecs: out ? c.COURSE_IDS.map((id, i) => [publicSpecOf(id), inputs[i].specText]) : null,
   }
 }
 
 export async function readInputs(root = SITE) {
-  const ruText = readFileSync(join(root, RU_SPEC), 'utf8')
-  const bundleRel = ruText.match(/pub const BUNDLE_PATH : str = "([^"]+)";/)?.[1] ?? ''
-  const bundleAt = join(root, bundleRel.replace(/^apps\/website\//, ''))
+  const catalogText = readFileSync(join(root, CATALOG_SPEC), 'utf8')
+  const ids = JSON.parse(catalogText.match(/pub const COURSE_IDS : \[\d+\]str = (\[[^\]]*\]);/)?.[1] ?? '[]')
+  const read = (rel) => (existsSync(join(root, rel)) ? readFileSync(join(root, rel), 'utf8') : '')
   return {
-    specText: readFileSync(join(root, COURSE_SPEC), 'utf8'),
-    ruText,
-    bundleText: existsSync(bundleAt) ? readFileSync(bundleAt, 'utf8') : '',
+    catalogText,
+    courses: ids.map((id) => {
+      const ruText = read(ruSpecOf(id))
+      const bundleRel = ruText.match(/pub const BUNDLE_PATH : str = "([^"]+)";/)?.[1] ?? ''
+      return { specText: read(courseSpecOf(id)), ruText, bundleText: bundleRel ? read(bundleRel.replace(/^apps\/website\//, '')) : '' }
+    }),
     gallery: readGallery(root),
   }
 }
@@ -293,14 +375,14 @@ async function main() {
   const check = process.argv.includes('--check')
   const json = process.argv.includes('--json')
   const analyze = await loadCompiler(readFileSync(join(SITE, WASM)))
-  const out = await buildCourse({ ...(await readInputs()), analyze })
+  const out = await buildCourses({ ...(await readInputs()), analyze })
   if (out.problems.length) {
     console.error(`course-from-spec: ${out.problems.length} problem(s)`)
     for (const p of out.problems) console.error('  ' + p)
     process.exit(1)
   }
-  if (json) { process.stdout.write(JSON.stringify(out.course, null, 2) + '\n'); return }
-  const targets = [[TS_OUT, out.ts], [PUBLIC_SPEC_OUT, out.publicSpec]]
+  if (json) { process.stdout.write(JSON.stringify(out.courses, null, 2) + '\n'); return }
+  const targets = [[TS_OUT, out.ts], ...out.publicSpecs]
   if (check) {
     const stale = targets.filter(([rel, text]) => !existsSync(join(SITE, rel)) || readFileSync(join(SITE, rel), 'utf8') !== text)
     if (stale.length) {
@@ -313,9 +395,10 @@ async function main() {
       writeFileSync(join(SITE, rel), text)
     }
   }
-  const c = out.course
-  const widgets = new Set(c.lessons.flatMap((l) => [l.widget.id, ...l.also.map((a) => a.id)]))
-  console.log(`course-from-spec: ${check ? 'up to date' : 'wrote'} ${targets.map(([r]) => r).join(', ')}; spec ${out.specSha.slice(0, 16)}; ${c.lessons.length} lessons in ${c.modules.length} modules, ${widgets.size} widgets, ${c.lessons.filter((l) => l.spec).length} lesson specs compile clean; locales ${c.locales.join(', ')}; spec tests ${out.tests.tests}, asserts ${out.tests.asserts}, all hold`)
+  const cs = out.courses
+  const widgets = new Set(cs.flatMap((c) => c.lessons.flatMap((l) => [l.widget.id, ...l.also.map((a) => a.id)])))
+  const shape = cs.map((c) => `${c.id} ${c.lessons.length} lessons in ${c.modules.length} modules`).join('; ')
+  console.log(`course-from-spec: ${check ? 'up to date' : 'wrote'} ${targets.map(([r]) => r).join(', ')}; ${shape}; ${widgets.size} widgets, ${cs.reduce((s, c) => s + c.lessons.length, 0)} lesson specs compile clean; spec tests ${out.tests.tests}, asserts ${out.tests.asserts}, all hold`)
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {

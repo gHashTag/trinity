@@ -1,0 +1,12 @@
+{
+  "id": "t27c-gft-exp2",
+  "title": "gft_exp2.t27: recording pending",
+  "desc": "Recording pending: waits on tri test and tri mutate plant from gHashTag/t27#7400. Until then this page is a placeholder and shows no run.",
+  "url": "https://t27.ai/term/t27c-gft-exp2/",
+  "gif": null,
+  "post": null,
+  "recorded": null,
+  "commands": [],
+  "exit_codes": [],
+  "pending": "gHashTag/t27#7400"
+}

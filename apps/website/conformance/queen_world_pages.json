@@ -1,0 +1,136 @@
+{
+  "spec_path": "specs/queen/world_pages.t27",
+  "spec_hash": "01b5c90cac982090d342b2497cdec7064a601476114f5a92666a57087b910b4b",
+  "vectors": [
+    {
+      "table": "NEXT",
+      "mask": 0,
+      "expected": 0
+    },
+    {
+      "table": "NEXT",
+      "mask": 1,
+      "expected": 0
+    },
+    {
+      "table": "NEXT",
+      "mask": 2,
+      "expected": 0
+    },
+    {
+      "table": "NEXT",
+      "mask": 3,
+      "expected": 0
+    },
+    {
+      "table": "NEXT",
+      "mask": 4,
+      "expected": 0
+    },
+    {
+      "table": "NEXT",
+      "mask": 5,
+      "expected": 0
+    },
+    {
+      "table": "NEXT",
+      "mask": 6,
+      "expected": 0
+    },
+    {
+      "table": "NEXT",
+      "mask": 7,
+      "expected": 0
+    },
+    {
+      "table": "NEXT",
+      "mask": 8,
+      "expected": 0
+    },
+    {
+      "table": "NEXT",
+      "mask": 9,
+      "expected": 0
+    },
+    {
+      "table": "NEXT",
+      "mask": 10,
+      "expected": 0
+    },
+    {
+      "table": "NEXT",
+      "mask": 11,
+      "expected": 0
+    },
+    {
+      "table": "NEXT",
+      "mask": 12,
+      "expected": 0
+    },
+    {
+      "table": "NEXT",
+      "mask": 13,
+      "expected": 0
+    },
+    {
+      "table": "NEXT",
+      "mask": 14,
+      "expected": 0
+    },
+    {
+      "table": "NEXT",
+      "mask": 15,
+      "expected": 1
+    },
+    {
+      "table": "COMPLETE",
+      "mask": 0,
+      "expected": 0
+    },
+    {
+      "table": "COMPLETE",
+      "mask": 1,
+      "expected": 0
+    },
+    {
+      "table": "COMPLETE",
+      "mask": 2,
+      "expected": 0
+    },
+    {
+      "table": "COMPLETE",
+      "mask": 3,
+      "expected": 0
+    },
+    {
+      "table": "COMPLETE",
+      "mask": 4,
+      "expected": 0
+    },
+    {
+      "table": "COMPLETE",
+      "mask": 5,
+      "expected": 0
+    },
+    {
+      "table": "COMPLETE",
+      "mask": 6,
+      "expected": 0
+    },
+    {
+      "table": "COMPLETE",
+      "mask": 7,
+      "expected": 1
+    },
+    {
+      "table": "DROP_UNSEEN",
+      "mask": 0,
+      "expected": 0
+    },
+    {
+      "table": "DROP_UNSEEN",
+      "mask": 1,
+      "expected": 1
+    }
+  ]
+}

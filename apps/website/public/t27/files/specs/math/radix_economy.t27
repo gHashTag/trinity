@@ -5,7 +5,6 @@
 // E(3)/E(e) >= 99.5%, E(3)/E(2) = 1.054 (5.4% advantage)
 
 module RadixEconomy {
-    use Constants;
 
     // ═══════════════════════════════════════════════════════════════════════════
     // 1. Radix Economy Constants
@@ -74,13 +73,20 @@ module RadixEconomy {
             return 0.0;
         }
         // Series: ln(x) = 2 * sum_{k=0..inf} (1/(2k+1)) * ((x-1)/(x+1))^(2k+1)
+        // Sixty terms, not five: five left ln(3) off by about 1.1e-4 and
+        // ln(8) by about 2.4e-2, far outside the 1e-5 and 1e-6 the tests ask.
+        // At x = 8, t = 7/9 and the tail after 60 terms is below 1e-12.
         let t = (x - 1.0) / (x + 1.0);
         let t2 = t * t;
-        let t3 = t2 * t;
-        let t5 = t3 * t2;
-        let t7 = t5 * t2;
-        let t9 = t7 * t2;
-        return 2.0 * (t + t3 / 3.0 + t5 / 5.0 + t7 / 7.0 + t9 / 9.0);
+        let mut power = t;
+        let mut sum = 0.0;
+        let mut k = 0;
+        while k < 60 {
+            sum = sum + power / ((2 * k + 1) as f64);
+            power = power * t2;
+            k = k + 1;
+        }
+        return 2.0 * sum;
     }
 
     // Base-2 logarithm: log2(x) = ln(x) / ln(2)
@@ -191,20 +197,25 @@ module RadixEconomy {
         then  abs(log3_2 - reciprocal) < 1e-6
 
     test ternary_vs_binary_range_27trit
+        // (3^27 - 1)/2 = 3812798742493 lies between 2^41 - 1 = 2199023255551
+        // and 2^42 - 1 = 4398046511103: 27 balanced trits need 42 bits.
+        // (This test claimed 43; the balanced range is half of 3^27.)
         given trit_range = ternary_range(27)
+        and   bit_range_41 = binary_range(41)
         and   bit_range_42 = binary_range(42)
-        and   bit_range_43 = binary_range(43)
         when  trit_range
-        then  trit_range > bit_range_42
-        and   trit_range <= bit_range_43
+        then  trit_range > bit_range_41
+        and   trit_range <= bit_range_42
 
     test ternary_vs_binary_range_18trit
+        // (3^18 - 1)/2 = 193710244 lies between 2^27 - 1 = 134217727 and
+        // 2^28 - 1 = 268435455: 18 balanced trits need 28 bits, not 29.
         given trit_range = ternary_range(18)
+        and   bit_range_27 = binary_range(27)
         and   bit_range_28 = binary_range(28)
-        and   bit_range_29 = binary_range(29)
         when  trit_range
-        then  trit_range > bit_range_28
-        and   trit_range <= bit_range_29
+        then  trit_range > bit_range_27
+        and   trit_range <= bit_range_28
 
     test radix_economy_function_correctness
         given e2_computed = radix_economy(2.0)
@@ -231,7 +242,7 @@ module RadixEconomy {
         then  abs(density - LOG2_3) < 1e-6
 
     test ln_function_accuracy
-        given ln_e = ln(E)
+        given ln_e = ln(2.718281828459045)
         when  ln_e
         then  abs(ln_e - 1.0) < 1e-6
 
@@ -279,30 +290,33 @@ module RadixEconomy {
         // Rationale: A trit contains more information than a bit (1.58 > 1), less than 2 bits
 
     invariant radix_economy_monotonic_increase_to_e
-        assert for b in [2, 3], E(b) <= E(b+1) when b < e
-        // Rationale: E(b) = ln(b)/b increases for b < e, decreases for b > e
+        assert E_BASE2 < E_OPTIMAL and E_BASE3 < E_OPTIMAL
+        // Rationale: E(b) = ln(b)/b increases for b < e, decreases for b > e,
+        // so both integer neighbours of e sit below the peak 1/e.
 
     invariant optimal_base_is_e
-        assert E_OPTIMAL = 1/e
+        assert abs(E_OPTIMAL - 1.0 / 2.718281828459045) < 1e-15
         // Rationale: Maximizing ln(b)/b gives b = e by calculus
 
     invariant ternary_range_balanced
-        assert ternary_range(n) = (3^n - 1) / 2 for all positive integer n
+        // For every positive n; checked at n = 1, 2, 3.
+        assert ternary_range(1) == 1 and ternary_range(2) == 4 and ternary_range(3) == 13
         // Rationale: Balanced ternary represents integers from -(3^n-1)/2 to (3^n-1)/2
 
     invariant binary_range_standard
-        assert binary_range(n) = 2^n - 1 for all positive integer n
+        // For every positive n; checked at n = 1, 8, 16.
+        assert binary_range(1) == 1 and binary_range(8) == 255 and binary_range(16) == 65535
         // Rationale: Unsigned binary represents integers from 0 to 2^n - 1
 
-    invariant range_equivalence_27trit_43bit
-        assert ternary_range(27) <= binary_range(43)
-        and   ternary_range(27) > binary_range(42)
-        // Rationale: (3^27-1)/2 ≈ 3.8e12, 2^42 ≈ 4.4e12, 2^43 ≈ 8.8e12
+    invariant range_equivalence_27trit_42bit
+        assert ternary_range(27) <= binary_range(42)
+        and   ternary_range(27) > binary_range(41)
+        // Rationale: (3^27-1)/2 ≈ 3.81e12, 2^41 ≈ 2.20e12, 2^42 ≈ 4.40e12
 
-    invariant range_equivalence_18trit_29bit
-        assert ternary_range(18) <= binary_range(29)
-        and   ternary_range(18) > binary_range(28)
-        // Rationale: 3^18 ≈ 3.9e8, 2^28 ≈ 2.7e8, 2^29 ≈ 5.4e8
+    invariant range_equivalence_18trit_28bit
+        assert ternary_range(18) <= binary_range(28)
+        and   ternary_range(18) > binary_range(27)
+        // Rationale: (3^18-1)/2 ≈ 1.94e8, 2^27 ≈ 1.34e8, 2^28 ≈ 2.68e8
 
     invariant log_reciprocal_identity
         assert abs(LOG3_2 * LOG2_3 - 1.0) < 1e-6

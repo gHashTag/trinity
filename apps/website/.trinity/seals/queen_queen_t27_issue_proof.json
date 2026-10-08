@@ -1,0 +1,20 @@
+{
+  "built_by": "t27c-bootstrap@0.5.0+1120d30ae",
+  "gen_hash_c": "sha256:cd06fac4b2d72df95ff824158f29b395073a646aa1e7e76bb128808fb9dfbcdf",
+  "gen_hash_rust": "sha256:9cc1cbfd812e278a3484673463b41e40f02663d87da7e2168500cfffd40036a6",
+  "gen_hash_verilog": "sha256:a68dacf60826cfd79c09ba13cf7f4363fcf8dfaf46493ab6ac55251a9e73a02c",
+  "gen_hash_zig": "sha256:ed4a8b607213f5a6861ace901e0d6f45d6aa18bee6ff17a236beabf9bc41d1a0",
+  "module": "queen_t27_issue_proof",
+  "ring": 12,
+  "sealed_at": "2026-10-07T23:35:57Z",
+  "sealed_by": "t27c-bootstrap@0.5.0",
+  "spec_hash": "sha256:9e07263c890de601ef82820f1801f3f2707fea32695077a7962c0dcc2679a1e2",
+  "spec_path": "specs/queen/t27_issue_proof.t27",
+  "tests": {
+    "failed": 0,
+    "failing": [],
+    "forced": false,
+    "passed": 2,
+    "total": 2
+  }
+}

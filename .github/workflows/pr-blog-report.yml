@@ -45,9 +45,10 @@ jobs:
       - name: Load changed files and commits as data
         run: |
           set -euo pipefail
-          # Only used for the Dependabot dependency-bump exemption; see scripts/pr_blog_report.py.
+          # Used for the Dependabot dependency-bump exemption and the course-post rule
+          # (apps/website/specs/policy/course_post.t27); see scripts/pr_blog_report.py.
           gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files?per_page=100" \
-            --jq '.[] | {filename, status}' > /tmp/pr-files.jsonl
+            --jq '.[] | {filename, status, previous_filename}' > /tmp/pr-files.jsonl
           gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/commits?per_page=100" \
             --jq '.[] | {sha, author: .author.login, committer: .committer.login, verified: .commit.verification.verified}' > /tmp/pr-commits.jsonl
       - name: Validate mandatory report and generate blog draft

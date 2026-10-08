@@ -379,14 +379,15 @@ jobs:
       - name: Widget tool pages
         run: npm run check:widget-pages && npm run test:widget-pages
 
-      # The course at #/course: specs/course/course.t27 orders 30 lessons (27 and a lab of 3) over
-      # the gallery's widgets; the generator refuses a lesson whose widget is
-      # gone, a gallery widget no lesson uses, a lesson spec that does not
-      # compile clean, and a Russian field (i18n/course.ru.json, contract
-      # specs/course/course-ru.t27) that is missing or changes a number.
-      # A crawler drops the '#', so every lesson also has a static page with
-      # its own preview card at /learn/<id>/ and /ru/learn/<id>/; the check
-      # refuses a page, card or learn/sitemap.xml that lags the spec.
+      # The courses: specs/course/courses.t27 names them in order (FPGA at
+      # #/course, AI numbers at #/ai-numbers), 27 lessons each over the gallery's
+      # widgets; the generator refuses a lesson whose widget is gone, a gallery
+      # widget no lesson uses, a lesson spec that does not compile clean, and a
+      # Russian field (i18n/<id>.ru.json, contract specs/course/<id>-ru.t27)
+      # that is missing or changes a number. A crawler drops the '#', so every
+      # lesson also has a static page with its own preview card at /learn/<id>/
+      # and /ru/learn/<id>/, and every course a landing at its share path; the
+      # check refuses a page, card or learn/sitemap.xml that lags the specs.
       - name: Course
         run: npm run check:course && npm run test:course && npm run check:course-pages
 
