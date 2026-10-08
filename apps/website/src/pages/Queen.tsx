@@ -44,6 +44,9 @@ import { ageBees, loadBusPage, patchFeed, planPage, touchBees, type SeenEvent } 
 import { READ_PAUSE_MS, SNAPSHOT_EVERY_SECONDS, WAIT_MAX_SECONDS } from "../lib/queenEvents.generated";
 import { eventsCardReady } from "../lib/queenEventsCard";
 import { CELL_NONE, CELL_PLACED } from "../lib/queenHive.generated";
+import { IV_CLAIMED, IV_EMPTY, IV_FILES, IV_FULL, IV_PACING, IV_SHAPE, LANE_KIND, LANE_NAMES, LANE_NONE, LANE_REPO, TONE_ACT, TONE_OK, TONE_WARN, VERDICT_NAMES } from "../lib/queenDashboard.generated";
+import { dashboardCardLoaded, dashboardCardReady, dashFreeLanes, dashIdleVerdict, dashLaneShown, dashVerdictTone } from "../lib/queenDashboardCard";
+import { QueenTaskDrawer, type DrawerWords } from "../components/QueenTaskDrawer";
 import { QueenComb } from "../components/QueenComb";
 import { QueenCommandPanel, type CommandItem } from "../components/QueenCommand";
 import { QueenContext } from "../components/QueenContext";
@@ -681,6 +684,49 @@ const COPY = {
     tasksFromBoard: "derived from the board: the tasks route is not answering",
     tasksTruncated: "cut at the route's page limit",
     tasksBeeTitle: "The bee on this task: its lane, working or quiet, how long it has had the task, and when it was last heard",
+    // Why lanes are idle, the lanes, and one task opened (gHashTag/t27
+    // specs/queen/dashboard.t27). {free}, {count}, {waiting} and {n} are filled in.
+    healthFull: "all {n} lanes busy",
+    healthPacing: "{free} lanes free · {waiting} ready issues wait their turn",
+    healthFiles: "{free} lanes free · {count} issues wait for files another bee holds",
+    healthShape: "{free} lanes free · {count} issues have no Boundary yet",
+    healthClaimed: "{free} lanes free · every open issue is already taken ({count})",
+    healthEmpty: "{free} lanes free · no open work",
+    healthTitle: "Why lanes are idle, from the Queen's last round",
+    lanesLabel: "Lanes",
+    lanesNone: "no lanes",
+    lanesRepo: "by repository",
+    lanesKind: "by kind",
+    lanesOther: "other",
+    drawerOpen: "Details",
+    drawerClose: "Close",
+    drawerTimeline: "History",
+    drawerLease: "Lease",
+    drawerLeaseNone: "no lease",
+    drawerLeaseLive: "held, fence {fence}, expires in {left}",
+    drawerLeaseExpired: "expired {left} ago, fence {fence}: waiting to be taken back",
+    drawerAttempts: "Attempts",
+    drawerSendBacks: "send-backs",
+    drawerFreeAttempts: "free attempts",
+    drawerCeilingReleases: "ceiling releases",
+    drawerReviewerMisses: "reviewer misses",
+    drawerReview: "review",
+    drawerStarted: "started",
+    drawerFinished: "finished",
+    drawerEffects: "Effects",
+    drawerEffectStep: "step",
+    drawerEffectRuns: "runs",
+    drawerEmpty: "nothing recorded yet",
+    drawerMissing: "this server does not answer the task drawer yet",
+    drawerLoading: "reading…",
+    drawerOnGithub: "Open on GitHub",
+    evCreated: "a bee started it",
+    evEnded: "the bee finished",
+    evLeaseLost: "the lease expired and the task was taken back",
+    evEvidence: "the bee was working",
+    evReviewed: "reviewed",
+    evAssign: "a person assigned it",
+    evCancel: "a person cancelled it",
     laneClients: "CLIENTS",
     clientsLaneAria: "Clients board",
     clientsNarrow: "Narrow to",
@@ -1173,6 +1219,47 @@ const COPY = {
     tasksFromBoard: "выведено из доски: маршрут задач не отвечает",
     tasksTruncated: "обрезано лимитом маршрута",
     tasksBeeTitle: "Пчела на задаче: её линия, работает или молчит, сколько она на задаче и когда её слышали",
+    healthFull: "все {n} линий заняты",
+    healthPacing: "свободно линий: {free} · готовых задач ждут очереди: {waiting}",
+    healthFiles: "свободно линий: {free} · задач ждут файлов, занятых другой пчелой: {count}",
+    healthShape: "свободно линий: {free} · задач без Boundary: {count}",
+    healthClaimed: "свободно линий: {free} · все открытые задачи уже взяты ({count})",
+    healthEmpty: "свободно линий: {free} · открытой работы нет",
+    healthTitle: "Почему линии простаивают, по последнему раунду Королевы",
+    lanesLabel: "Дорожки",
+    lanesNone: "без дорожек",
+    lanesRepo: "по репозиториям",
+    lanesKind: "по видам",
+    lanesOther: "прочее",
+    drawerOpen: "Подробно",
+    drawerClose: "Закрыть",
+    drawerTimeline: "История",
+    drawerLease: "Lease",
+    drawerLeaseNone: "lease нет",
+    drawerLeaseLive: "держится, fence {fence}, истекает через {left}",
+    drawerLeaseExpired: "истёк {left} назад, fence {fence}: задачу заберут обратно",
+    drawerAttempts: "Попытки",
+    drawerSendBacks: "возвратов",
+    drawerFreeAttempts: "бесплатных попыток",
+    drawerCeilingReleases: "сбросов потолка",
+    drawerReviewerMisses: "промахов ревьюера",
+    drawerReview: "ревью",
+    drawerStarted: "начата",
+    drawerFinished: "закончена",
+    drawerEffects: "Эффекты",
+    drawerEffectStep: "шаг",
+    drawerEffectRuns: "запусков",
+    drawerEmpty: "пока ничего не записано",
+    drawerMissing: "этот сервер пока не отвечает на карточку задачи",
+    drawerLoading: "читаю…",
+    drawerOnGithub: "Открыть на GitHub",
+    evCreated: "пчела взяла задачу",
+    evEnded: "пчела закончила",
+    evLeaseLost: "lease истёк, задачу забрали обратно",
+    evEvidence: "пчела работала",
+    evReviewed: "проверена",
+    evAssign: "человек назначил задачу",
+    evCancel: "человек отменил задачу",
     laneClients: "КЛИЕНТЫ",
     clientsLaneAria: "Доска клиентов",
     clientsNarrow: "Сузить до",
@@ -2569,6 +2656,11 @@ type KanbanCard = QueenCard & {
   bee: QueenBee | null;
 };
 
+/** `{name}` in a template, filled from `values`. */
+function fillWords(template: string, values: Record<string, string | number>): string {
+  return template.replace(/\{(\w+)\}/g, (_, name: string) => String(values[name] ?? ""));
+}
+
 /** The words for a kind, plural, as the filter offers them. */
 function kindWords(kind: TaskKind, c: Copy): string {
   return kind === "issue" ? c.tasksKindIssue : kind === "review" ? c.tasksKindReview : c.tasksKindJob;
@@ -2588,6 +2680,7 @@ function KanbanView({
   onNarrow,
   search,
   onSearch,
+  status,
 }: {
   columns: QueenColumn[];
   /** The public board's cards: only for what a task does not carry yet (a review card's queue). */
@@ -2612,6 +2705,8 @@ function KanbanView({
   /** What has been typed into the find box. Also never leaves this page. */
   search: string;
   onSearch: (text: string) => void;
+  /** The Queen's own status (GET /queen/status): her lanes and her last round's skips. */
+  status: QueenStatus | null;
 }) {
   // Which directions the reader is looking at, empty for all of them. It lives
   // here and nowhere else: it is a property of this screen, not of the visitor,
@@ -2685,6 +2780,87 @@ function KanbanView({
     [setHashParams],
   );
   const filtered = useMemo(() => filterTasks(allCards, filter), [allCards, filter]);
+  // THE DASHBOARD CARD (gHashTag/t27 specs/queen/dashboard.t27, epic #7718
+  // slice 5): why the free lanes are idle, the lanes across the columns, and
+  // one task opened. Nothing of it is drawn before the card is loaded.
+  const [dashOk, setDashOk] = useState(dashboardCardLoaded);
+  useEffect(() => {
+    let live = true;
+    dashboardCardReady.then(() => live && setDashOk(true)).catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, []);
+  // WHY THE LANES ARE IDLE, from the Queen's own last round: the verdict is
+  // the card's idle_verdict, the numbers are the round's skip counts.
+  const health = useMemo(() => {
+    if (!dashOk || !status?.workers) return null;
+    const skip = (name: string) => {
+      const value = status.lastTick?.skipSummary?.[name];
+      return typeof value === "number" ? value : value?.count ?? 0;
+    };
+    const { capacity, active } = status.workers;
+    const verdict = dashIdleVerdict(Boolean(status.lastTick), capacity, active, skip("notFirst"), skip("missingBoundary"), skip("fileConflict"), skip("claimed"));
+    const template =
+      verdict === IV_FULL ? c.healthFull
+      : verdict === IV_PACING ? c.healthPacing
+      : verdict === IV_FILES ? c.healthFiles
+      : verdict === IV_SHAPE ? c.healthShape
+      : verdict === IV_CLAIMED ? c.healthClaimed
+      : verdict === IV_EMPTY ? c.healthEmpty
+      : null;
+    if (!template) return null;
+    const count = verdict === IV_FILES ? skip("fileConflict") : verdict === IV_SHAPE ? skip("missingBoundary") : verdict === IV_CLAIMED ? skip("claimed") : 0;
+    const tone = dashVerdictTone(verdict);
+    return {
+      name: VERDICT_NAMES[verdict] ?? "unknown",
+      tone: tone === TONE_OK ? "ok" : tone === TONE_WARN ? "warn" : tone === TONE_ACT ? "act" : "none",
+      text: fillWords(template, { n: capacity, free: dashFreeLanes(capacity, active), waiting: skip("notFirst"), count }),
+    };
+  }, [dashOk, status, c]);
+  // LANES: one per repository or per kind across the columns, in the address
+  // (`lanes=repo`) like the filter. Ranked by size; past the card's LANES_MAX
+  // the rest share one lane, so a column never becomes a list of headings.
+  const lanesMode = Math.max(0, (LANE_NAMES as readonly string[]).indexOf(hashParams.get("lanes") ?? "none"));
+  const setLanes = useCallback(
+    (mode: number) =>
+      setHashParams(
+        () => {
+          const next = hashParamsOf(window.location.hash);
+          if (mode === LANE_NONE) next.delete("lanes");
+          else next.set("lanes", LANE_NAMES[mode]);
+          return next;
+        },
+        { replace: true },
+      ),
+    [setHashParams],
+  );
+  // ONE TASK OPENED, by its key in the address (`open=gHashTag/t27#7804`), so
+  // an opened task is a link too.
+  const openKey = hashParams.get("open");
+  const setOpen = useCallback(
+    (key: string | null) =>
+      setHashParams(
+        () => {
+          const next = hashParamsOf(window.location.hash);
+          if (key) next.set("open", key);
+          else next.delete("open");
+          return next;
+        },
+        { replace: true },
+      ),
+    [setHashParams],
+  );
+  const drawerWords: DrawerWords = {
+    drawerClose: c.drawerClose, drawerTimeline: c.drawerTimeline, drawerLease: c.drawerLease, drawerLeaseNone: c.drawerLeaseNone,
+    drawerLeaseLive: c.drawerLeaseLive, drawerLeaseExpired: c.drawerLeaseExpired, drawerAttempts: c.drawerAttempts,
+    drawerSendBacks: c.drawerSendBacks, drawerFreeAttempts: c.drawerFreeAttempts, drawerCeilingReleases: c.drawerCeilingReleases,
+    drawerReviewerMisses: c.drawerReviewerMisses, drawerReview: c.drawerReview, drawerStarted: c.drawerStarted,
+    drawerFinished: c.drawerFinished, drawerEffects: c.drawerEffects, drawerEffectStep: c.drawerEffectStep,
+    drawerEffectRuns: c.drawerEffectRuns, drawerEmpty: c.drawerEmpty, drawerMissing: c.drawerMissing,
+    drawerLoading: c.drawerLoading, drawerOnGithub: c.drawerOnGithub, evCreated: c.evCreated, evEnded: c.evEnded,
+    evLeaseLost: c.evLeaseLost, evEvidence: c.evEvidence, evReviewed: c.evReviewed, evAssign: c.evAssign, evCancel: c.evCancel,
+  };
   // The options count the WHOLE feed, as the direction chips count the whole
   // board, so a number does not change because the reader picked something.
   const options = useMemo(() => {
@@ -2704,6 +2880,23 @@ function KanbanView({
     () => narrowByDirection(filtered, directions),
     [filtered, directions],
   );
+  const lanes = useMemo(() => {
+    if (lanesMode === LANE_NONE || !dashOk) return null;
+    const keyOf = (card: KanbanCard) => (lanesMode === LANE_REPO ? card.repo : card.kind);
+    const sizes = new Map<string, number>();
+    for (const card of shownCards) sizes.set(keyOf(card), (sizes.get(keyOf(card)) ?? 0) + 1);
+    const ranked = [...sizes].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([key]) => key);
+    const rankOf = new Map(ranked.map((key, rank) => [key, dashLaneShown(rank) ? rank : ranked.length]));
+    return {
+      rank: (card: KanbanCard) => rankOf.get(keyOf(card)) ?? ranked.length,
+      label: (card: KanbanCard) =>
+        (rankOf.get(keyOf(card)) ?? ranked.length) === ranked.length
+          ? c.lanesOther
+          : lanesMode === LANE_KIND
+            ? kindWords(card.kind, c)
+            : card.repo,
+    };
+  }, [lanesMode, dashOk, shownCards, c]);
   const stateTitle = (state: TaskState) =>
     columns.find((column) => column.key === state)?.title ?? (state === "failed" ? c.tasksStateFailed : state);
   // How old a bee is, by the feed's own clock: badges move with each answer, and
@@ -2901,6 +3094,13 @@ function KanbanView({
             </option>
           ))}
         </select>
+        {dashOk && (
+          <select aria-label={c.lanesLabel} value={LANE_NAMES[lanesMode]} onChange={(event) => setLanes(Math.max(0, (LANE_NAMES as readonly string[]).indexOf(event.target.value)))}>
+            <option value={LANE_NAMES[LANE_NONE]}>{c.lanesNone}</option>
+            <option value={LANE_NAMES[LANE_REPO]}>{c.lanesRepo}</option>
+            <option value={LANE_NAMES[LANE_KIND]}>{c.lanesKind}</option>
+          </select>
+        )}
         {filterActive && (
           <button type="button" className="queen27-chip" onClick={() => setFilter(EMPTY_TASK_FILTER)}>
             {c.tasksReset}
@@ -2961,6 +3161,12 @@ function KanbanView({
               {directionLabel(key, lang)} <small>{count}</small>
             </button>
           ))}
+          {health && (
+            <span className="queen27-health" data-verdict={health.name} data-tone={health.tone} title={c.healthTitle}>
+              <i aria-hidden="true" />
+              {health.text}
+            </span>
+          )}
           {/* Opens the task filter row. Folded, it still says that a filter is
               applied and how many parts, and its tooltip says when the board is
               derived because the tasks route is not answering. */}
@@ -2989,9 +3195,12 @@ function KanbanView({
       {columns.map((column) => {
         // Narrowed first, then split by column, so a column header counts what
         // is under it rather than what would have been there without the chips.
-        const columnCards = shownCards.filter(
+        const inColumn = shownCards.filter(
           (card) => card.column === column.key,
         );
+        // With lanes on, the column's cards come lane by lane (a stable sort,
+        // so each lane keeps the order the feed gave it).
+        const columnCards = lanes ? [...inColumn].sort((a, b) => lanes.rank(a) - lanes.rank(b)) : inColumn;
         // AND THEN ONLY THE TOP OF IT IS DRAWN.
         //
         // Measured on the live board at 1512x949: BACKLOG holds 569 cards and
@@ -3023,10 +3232,14 @@ function KanbanView({
             </header>
             <small>{column.blurb}</small>
             <div className="queen27-cards">
-              {drawn.map((card) => {
+              {drawn.map((card, index) => {
                 const direction = directionOf(card.title);
                 const issue = card.kind === "issue" && card.number > 0;
+                const lane = lanes ? lanes.label(card) : null;
+                const laneHead = lane !== null && (index === 0 || lanes?.label(drawn[index - 1]) !== lane);
                 return (
+                <div className="queen27-card-slot" key={card.key}>
+                {laneHead && <small className="queen27-swimlane">{lane}</small>}
                 <motion.a
                   className="queen27-card"
                   data-kind={card.kind}
@@ -3054,7 +3267,6 @@ function KanbanView({
                   // still one hover away, and the link behind it was always the
                   // full answer.
                   title={publicIssueTitle(card.title, card.number, lang)}
-                  key={card.key}
                   layout
                   layoutId={`queen-card-${card.key}`}
                   transition={{
@@ -3113,6 +3325,15 @@ function KanbanView({
                     </span>
                   )}
                 </motion.a>
+                {/* The task opened in the drawer: a sibling of the card's link,
+                    never inside it, so the card's own click still opens the
+                    issue or its conversation. A review has no drawer. */}
+                {card.kind !== "review" && (
+                  <button type="button" className="queen27-card-open" aria-label={`${c.drawerOpen} ${card.number > 0 ? `#${card.number}` : card.key}`} title={c.drawerOpen} onClick={() => setOpen(card.key)}>
+                    ⋯
+                  </button>
+                )}
+                </div>
                 );
               })}
               {rest > 0 && (
@@ -3141,6 +3362,18 @@ function KanbanView({
         );
       })}
       </motion.div>
+      {openKey && (() => {
+        const card = allCards.find((one) => one.key === openKey);
+        return card ? (
+          <QueenTaskDrawer
+            api={QUEEN_API}
+            card={{ key: card.key, kind: card.kind, number: card.number, title: publicIssueTitle(card.title, card.number, lang), state: stateTitle(card.state), url: card.url, bee: card.bee }}
+            words={drawerWords}
+            lang={lang === "ru" ? "ru" : "en"}
+            onClose={() => setOpen(null)}
+          />
+        ) : null;
+      })()}
       </>
       )}
       {clients && board === "clients" && (
@@ -4724,6 +4957,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                 onNarrow={setClientsNarrow}
                 search={clientsSearch}
                 onSearch={setClientsSearch}
+                status={data ?? null}
               />
             </div>
           ) : boardView === "map" ? (

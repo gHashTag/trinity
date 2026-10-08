@@ -8111,3 +8111,78 @@ body.queen-shell .queen-starfield-source {
 .vibee-board-more {
   display: none !important;
 }
+
+/* Why the free lanes are idle (gHashTag/t27 specs/queen/dashboard.t27
+   idle_verdict), in the direction row so it costs the board no height. The
+   tone is the card's verdict_tone: ok, warn, act. */
+.queen27-health {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.15rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.68rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 34rem;
+}
+.queen27-health i {
+  flex: none;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: #8a8a8a;
+}
+.queen27-health[data-tone="ok"] i {
+  background: #00ff88;
+}
+.queen27-health[data-tone="warn"] i {
+  background: #ffc24d;
+}
+.queen27-health[data-tone="act"] {
+  color: #ffd45a;
+}
+.queen27-health[data-tone="act"] i {
+  background: #ff4d5e;
+}
+
+/* A card and, beside its link, the button that opens it in the drawer: the
+   slot is the grid item, the card fills it exactly as before. */
+.queen27-card-slot {
+  position: relative;
+  display: grid;
+  gap: 0.3rem;
+}
+.queen27-card-open {
+  position: absolute;
+  right: 0.2rem;
+  bottom: 0.2rem;
+  width: 1.4rem;
+  height: 1.2rem;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 0.3rem;
+  background: rgba(8, 10, 12, 0.85);
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.queen27-card-open:hover,
+.queen27-card-open:focus-visible {
+  color: var(--text);
+  border-color: #64dcff;
+}
+
+/* A lane's name above its first card in a column (dashboard.t27 lanes). */
+.queen27-swimlane {
+  color: var(--muted);
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.14);
+  padding-bottom: 0.15rem;
+}
