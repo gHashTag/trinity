@@ -406,3 +406,15 @@ documents addressed to other people's agents, the six negative controls, and the
 `;`-alone-on-a-line trap that silently discards a `module` declaration. This
 section is a pointer, not a copy -- the recorded defect in this codebase family
 is the hand-copied rule that only two of its three homes knew about.
+
+## Actors, not threads (owner rule, 2026-10-08)
+
+The Queen and the swarm move to the actor model.
+
+- Everything that runs at the same time is an actor. That covers a round, a reviewer, a poller and a runner lane. Each one has a pid, a bounded mailbox and a supervisor.
+- Queen or swarm work gets no new `setInterval` loop, thread pool or worker counter.
+- An existing loop is replaced only after an MVP, its tests, and a benchmark against the current loop on the same input. The numbers are posted on gHashTag/t27#7851.
+
+The Queen server lives in gHashTag/trios, on branches `queen` and `queen-runners`. The gHashTag/BrowserOS fork holds the browser extension and nothing else.
+
+The full rule is in [gHashTag/t27 `AGENTS.md`, "Actors, not threads"](https://github.com/gHashTag/t27/blob/master/AGENTS.md#actors-not-threads-owner-rule-2026-10-08). This section points to it; it is not a copy.
