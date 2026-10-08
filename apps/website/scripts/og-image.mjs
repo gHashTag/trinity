@@ -9,7 +9,8 @@
 // the size of the PNG; it does not render, so CI needs no browser.
 
 import { spawn } from 'node:child_process'
-import { existsSync, mkdtempSync, readFileSync, rmSync, statSync } from 'node:fs'
+import { createHash } from 'node:crypto'
+import { existsSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -58,3 +59,18 @@ const out = readFileSync(png)
 if (out.readUInt32BE(16) !== 1200 || out.readUInt32BE(20) !== 630 || statSync(png).mtimeMs <= before)
   throw new Error('og-image: no 1200x630 picture was written')
 console.log(`og-image: ${path.relative(process.cwd(), png)} (1200x630, ${out.length} bytes) from ${path.basename(chrome)}`)
+
+// THE PICTURE'S ADDRESS CHANGES WITH THE PICTURE. X, Telegram and LinkedIn
+// keep a card's image by its URL: from 2026-09-16 to 2026-10-04 a second
+// writer drew the blog's card over og-image.png, and on 2026-10-08 X still
+// showed that card under t27.ai, days after the right one was back, because
+// the address had never changed. The version is the picture's own hash, so a
+// new picture is a new address and an unchanged one keeps its cache
+// (qa/og-preview-contract.mjs holds the two equal).
+const version = createHash('sha256').update(out).digest('hex').slice(0, 12)
+const index = path.resolve(here, '../index.html')
+const head = readFileSync(index, 'utf8')
+const next = head.replace(/https:\/\/t27\.ai\/og-image\.png(\?v=[0-9a-f]+)?"/g, `https://t27.ai/og-image.png?v=${version}"`)
+if (next !== head) writeFileSync(index, next)
+console.log(`og-image: index.html points at og-image.png?v=${version}`)
+
