@@ -1,0 +1,36 @@
+{
+  "spec_path": "specs/queen/proof_commit.t27",
+  "spec_hash": "70057967ba5e8f76b0c694ca7d73715f88d3c1d30e77c8f5777166e13633b873",
+  "vectors": [
+    {
+      "table": "WALK",
+      "mask": 0,
+      "expected": 2
+    },
+    {
+      "table": "WALK",
+      "mask": 1,
+      "expected": 0
+    },
+    {
+      "table": "WALK",
+      "mask": 2,
+      "expected": 1
+    },
+    {
+      "table": "WALK",
+      "mask": 3,
+      "expected": 1
+    },
+    {
+      "table": "WALK",
+      "mask": 4,
+      "expected": 2
+    },
+    {
+      "table": "WALK",
+      "mask": 5,
+      "expected": 2
+    }
+  ]
+}
