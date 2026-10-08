@@ -2,6 +2,7 @@ import {issueProofPolicy as policy} from './queenIssueProof.generated.ts';
 import {memoryIssueProofPolicy} from './queenMemoryIssueProof.generated.ts';
 import {t27IssueProofPolicy} from './queenT27IssueProof.generated.ts';
 import {issueProofRefreshPolicy as refresh} from './queenIssueProofRefresh.generated.ts';
+import {proofCommitPolicy as walkPolicy} from './queenProofCommit.generated.ts';
 
 export type IssueProof = {commit:string;specUrl:string;specUrls?:string[];ciUrl:string;gdsUrl?:string;evidenceUrl?:string;observedAt:number};
 type Row = {repo:string;number:number;state:string;coverage:'unknown'|'t27';proof?:IssueProof};
@@ -26,6 +27,57 @@ function acceptedRun(raw:unknown,repo:string,commit:string,path:string):Run|null
   const latest=relevant.sort((a,b)=>b.id!-a.id!)[0];
   if(latest?.status!=='completed'||latest.conclusion!=='success'||latest.html_url?.toLowerCase()!==`https://github.com/${repo}/actions/runs/${latest.id}`)return null;
   return latest;
+}
+
+/**
+ * specs/queen/proof_commit.t27 (issue #1563). The state of the canonical push CI at one commit:
+ * 1 when every named workflow's newest run there succeeded, 2 when one of them failed, and 0
+ * (pending) otherwise -- queued, running, cancelled, absent, or not recognisable as ours.
+ */
+function ciState(raw:unknown,repo:string,commit:string,paths:readonly string[]):0|1|2{
+  if(paths.every(path=>acceptedRun(raw,repo,commit,path)))return 1;
+  const runs=(raw as {workflow_runs?:Run[]})?.workflow_runs;
+  if(!Array.isArray(runs))return 0;
+  for(const path of paths){
+    const latest=runs.filter(r=>r&&r.head_sha===commit&&r.event==='push'&&r.path===path&&r.repository?.full_name?.toLowerCase()===repo&&Number.isSafeInteger(r.id)).sort((a,b)=>b.id!-a.id!)[0];
+    if(latest?.status==='completed'&&['failure','timed_out','startup_failure'].includes(latest.conclusion??''))return 2;
+  }
+  return 0;
+}
+type Candidate={sha:string;date:number|null};
+type CommitJson={sha?:string;commit?:{committer?:{date?:string}}};
+const isSha=(v:unknown):v is string=>typeof v==='string'&&/^[a-f0-9]{40}$/.test(v);
+const candidateOf=(c:CommitJson):Candidate|null=>{
+  if(!isSha(c?.sha))return null;
+  const t=Date.parse(c.commit?.committer?.date??'');
+  return {sha:c.sha,date:Number.isFinite(t)?t:null};
+};
+/**
+ * Walks back from the default-branch HEAD to the commit whose canonical push CI the proof may cite.
+ * What to do with each commit is the WALK table of the spec: select a success, stop at a failure,
+ * skip a pending commit only while it is young and within MAX_BEHIND of HEAD. An unknown commit
+ * date is not young. The normal case (HEAD is green) costs the same two requests as before.
+ */
+async function selectProofCommit(api:string,repo:string,head:Candidate,paths:readonly string[],signal:AbortSignal,fetcher:Fetcher):Promise<{commit:string;runs:unknown}>{
+  const now=Date.now();
+  let list:Candidate[]=[head];
+  for(let i=0;i<=walkPolicy.MAX_BEHIND;i++){
+    const c=list[i];
+    if(!c)break;
+    const runs=await (await read(`${api}/actions/runs?head_sha=${c.sha}&event=push&per_page=100`,signal,fetcher)).json();
+    const state=ciState(runs,repo,c.sha,paths);
+    const young=c.date!==null&&now-c.date<=walkPolicy.PENDING_GRACE_MS&&i<walkPolicy.MAX_BEHIND;
+    const action=walkPolicy.WALK[state*2+Number(young)];
+    if(action===1)return {commit:c.sha,runs};
+    if(action!==0)break;
+    if(list.length===1){
+      // Only now are the older commits needed: the newest MAX_BEHIND + 1 of this branch, HEAD first.
+      const older=await (await read(`${api}/commits?sha=${head.sha}&per_page=${walkPolicy.MAX_BEHIND+1}`,signal,fetcher)).json() as CommitJson[];
+      if(!Array.isArray(older)||older[0]?.sha!==head.sha)break;
+      list=older.map(candidateOf).filter((x):x is Candidate=>x!==null);
+    }
+  }
+  throw new Error('canonical required CI is not successful at current HEAD');
 }
 
 /** Policy comes from the checked-in spec; never from a URL or API response. */
@@ -60,25 +112,30 @@ async function repositoryProof(repo:string,signal:AbortSignal,fetcher:Fetcher):P
 }
 async function verify(repo:string,signal:AbortSignal,fetcher:Fetcher):Promise<IssueProof>{
   const api=`https://api.github.com/repos/${repo}`;
-  const head=await (await read(`${api}/commits/HEAD`,signal,fetcher)).json() as {sha?:string};
-  const commit=head.sha;
-  if(!commit||!/^[a-f0-9]{40}$/.test(commit))throw new Error('proof commit identity');
+  const head=candidateOf(await (await read(`${api}/commits/HEAD`,signal,fetcher)).json() as CommitJson);
+  if(!head)throw new Error('proof commit identity');
+  // The commit whose CI the proof cites: HEAD, or while HEAD's CI is still running the newest older one that passed (specs/queen/proof_commit.t27).
+  const {commit,runs}=await selectProofCommit(api,repo,head,[policy.WORKFLOW,...(policy.GDS_WORKFLOW?[policy.GDS_WORKFLOW]:[])],signal,fetcher);
   const paths=[policy.SPEC,policy.SEAL,policy.VECTORS,policy.VERIFIER,policy.WORKFLOW,policy.MAKEFILE];
   const hashes=[policy.SPEC_HASH,policy.SEAL_HASH,policy.VECTORS_HASH,policy.VERIFIER_HASH,policy.WORKFLOW_HASH,policy.MAKEFILE_HASH];
   if(policy.GDS_WORKFLOW){paths.push(policy.GDS_WORKFLOW);hashes.push(policy.GDS_WORKFLOW_HASH!);}
   paths.push(...(policy.EXTRA_PATHS??[]));hashes.push(...(policy.EXTRA_HASHES??[]));
   if(paths.length!==hashes.length)throw new Error('incomplete proof policy');
-  const files=await Promise.all(paths.map(async(path,i)=>{
-    const bytes=await (await read(`https://raw.githubusercontent.com/${repo}/${commit}/${path}`,signal,fetcher)).arrayBuffer();
-    if(await hex(bytes)!==hashes[i])throw new Error(`proof hash mismatch: ${path}`);
-    return new TextDecoder().decode(bytes);
-  }));
-  const seal=JSON.parse(files[1]),vectors=JSON.parse(files[2]);
-  if(seal.spec_path!==policy.SPEC||seal.spec_hash!==`sha256:${policy.SPEC_HASH}`||seal.tests?.blocked||
-     vectors.spec_path!==policy.SPEC||vectors.spec_hash!==seal.spec_hash||vectors.vectors?.length!==policy.VECTOR_COUNT||
-     !['zig','rust','c','verilog'].every(b=>/^sha256:[a-f0-9]{64}$/.test(seal[`gen_hash_${b}`]??'')))throw new Error('incomplete native evidence');
-  for(const n of policy.ISSUES)if(!new RegExp(`https://github.com/${repo}/issues/${n}(?![0-9])`,'i').test(files[0]))throw new Error('issue not bound to spec');
-  const runs=await (await read(`${api}/actions/runs?head_sha=${commit}&event=push&per_page=100`,signal,fetcher)).json();
+  const evidenceAt=async(at:string)=>{
+    const files=await Promise.all(paths.map(async(path,i)=>{
+      const bytes=await (await read(`https://raw.githubusercontent.com/${repo}/${at}/${path}`,signal,fetcher)).arrayBuffer();
+      if(await hex(bytes)!==hashes[i])throw new Error(`proof hash mismatch: ${path}`);
+      return new TextDecoder().decode(bytes);
+    }));
+    const seal=JSON.parse(files[1]),vectors=JSON.parse(files[2]);
+    if(seal.spec_path!==policy.SPEC||seal.spec_hash!==`sha256:${policy.SPEC_HASH}`||seal.tests?.blocked||
+       vectors.spec_path!==policy.SPEC||vectors.spec_hash!==seal.spec_hash||vectors.vectors?.length!==policy.VECTOR_COUNT||
+       !['zig','rust','c','verilog'].every(b=>/^sha256:[a-f0-9]{64}$/.test(seal[`gen_hash_${b}`]??'')))throw new Error('incomplete native evidence');
+    for(const n of policy.ISSUES)if(!new RegExp(`https://github.com/${repo}/issues/${n}(?![0-9])`,'i').test(files[0]))throw new Error('issue not bound to spec');
+  };
+  // The pinned evidence must be the pinned bytes at the cited commit and, when HEAD is ahead of it, at HEAD too:
+  // a changed evidence file is unknown at once, with or without CI.
+  await Promise.all(commit===head.sha?[evidenceAt(commit)]:[evidenceAt(commit),evidenceAt(head.sha)]);
   const ci=acceptedRun(runs,repo,commit,policy.WORKFLOW),gds=policy.GDS_WORKFLOW?acceptedRun(runs,repo,commit,policy.GDS_WORKFLOW):null;
   if(!ci||(policy.GDS_WORKFLOW&&!gds))throw new Error('canonical required CI is not successful at current HEAD');
   const proof={commit,specUrl:`https://github.com/${repo}/blob/${commit}/${policy.SPEC}`,ciUrl:ci.html_url!,...(gds?{gdsUrl:gds.html_url!}:{}),...(policy.EVIDENCE_PATH?{evidenceUrl:`https://github.com/${repo}/blob/${commit}/${policy.EVIDENCE_PATH}`} : {}),observedAt:Date.now()};
@@ -123,11 +180,12 @@ const exact=async(repo:string,commit:string,path:string,expected:string,signal:A
   if(await hex(bytes)!==expected)throw new Error(`proof hash mismatch: ${path}`);
   return new TextDecoder().decode(bytes);
 };
-async function verifyGroup(g:number,repo:string,commit:string,runs:unknown,signal:AbortSignal,fetcher:Fetcher):Promise<GroupProof|null>{
+async function verifyGroup(g:number,repo:string,commit:string,runs:unknown,signal:AbortSignal,fetcher:Fetcher,filesOnly=false):Promise<GroupProof|null>{
   try{
-    // A group with its own workflow (the evidence replay) also needs that workflow green at this head.
-    const own=policy.GROUP_WORKFLOW[g]?acceptedRun(runs,repo,commit,policy.GROUP_WORKFLOW[g]):null;
-    if(policy.GROUP_WORKFLOW[g]&&!own)return null;
+    // A group with its own workflow (the evidence replay) also needs that workflow green at the cited commit.
+    // filesOnly is the check at a HEAD that is ahead of that commit: its pinned bytes only, CI is not read there.
+    const own=!filesOnly&&policy.GROUP_WORKFLOW[g]?acceptedRun(runs,repo,commit,policy.GROUP_WORKFLOW[g]):null;
+    if(!filesOnly&&policy.GROUP_WORKFLOW[g]&&!own)return null;
     const spec=policy.GROUP_SPEC[g],extras=policy.GROUP_PATHS.map((path,i)=>({path,hash:policy.GROUP_PATH_HASHES[i],owner:policy.GROUP_PATH_OWNER[i]})).filter(e=>e.owner===g);
     const [text,seal,vectors]=await Promise.all([
       exact(repo,commit,spec,policy.GROUP_SPEC_HASH[g],signal,fetcher),
@@ -145,16 +203,22 @@ async function verifyGroup(g:number,repo:string,commit:string,runs:unknown,signa
 }
 async function verify(repo:string,signal:AbortSignal,fetcher:Fetcher):Promise<RepoProof>{
   const api=`https://api.github.com/repos/${repo}`;
-  const head=await (await read(`${api}/commits/HEAD`,signal,fetcher)).json() as {sha?:string};
-  const commit=head.sha;
-  if(!commit||!/^[a-f0-9]{40}$/.test(commit))throw new Error('proof commit identity');
+  const head=candidateOf(await (await read(`${api}/commits/HEAD`,signal,fetcher)).json() as CommitJson);
+  if(!head)throw new Error('proof commit identity');
+  // The commit whose CI the proof cites: HEAD, or while HEAD's CI is still running the newest older one that passed (specs/queen/proof_commit.t27).
+  const {commit,runs}=await selectProofCommit(api,repo,head,[policy.WORKFLOW],signal,fetcher);
   const shared=[[policy.MAKEFILE,policy.MAKEFILE_HASH],[policy.WORKFLOW,policy.WORKFLOW_HASH],...policy.GLOBAL_PATHS.map((p,i)=>[p,policy.GLOBAL_HASHES[i]])];
   if(policy.GLOBAL_PATHS.length!==policy.GLOBAL_HASHES.length||policy.GROUP_PATHS.length!==policy.GROUP_PATH_HASHES.length||policy.GROUP_PATHS.length!==policy.GROUP_PATH_OWNER.length||policy.ISSUE_NUMBERS.length!==policy.ISSUE_GROUPS.length||policy.GROUP_WORKFLOW.length!==policy.GROUP_SPEC.length)throw new Error('incomplete proof policy');
-  await Promise.all(shared.map(([path,hash])=>exact(repo,commit,path,hash,signal,fetcher)));
-  const runs=await (await read(`${api}/actions/runs?head_sha=${commit}&event=push&per_page=100`,signal,fetcher)).json();
+  // Pinned bytes must hold at the cited commit and, when HEAD is ahead of it, at HEAD too: changed evidence is unknown at once.
+  const heads=commit===head.sha?[]:[head.sha];
+  await Promise.all([commit,...heads].flatMap(at=>shared.map(([path,hash])=>exact(repo,at,path,hash,signal,fetcher))));
   const ci=acceptedRun(runs,repo,commit,policy.WORKFLOW);
   if(!ci)throw new Error('canonical required CI is not successful at current HEAD');
-  const groups=await Promise.all(policy.GROUP_SPEC.map((_,g)=>verifyGroup(g,repo,commit,runs,signal,fetcher)));
+  const [cited,ahead]=await Promise.all([
+    Promise.all(policy.GROUP_SPEC.map((_,g)=>verifyGroup(g,repo,commit,runs,signal,fetcher))),
+    Promise.all(policy.GROUP_SPEC.map((_,g)=>heads.length?verifyGroup(g,repo,head.sha,runs,signal,fetcher,true):Promise.resolve({specUrl:''}))),
+  ]);
+  const groups=cited.map((x,g)=>ahead[g]?x:null);
   return {commit,ciUrl:ci.html_url!,observedAt:Date.now(),groups};
 }
 async function repositoryProof(repo:string,signal:AbortSignal,fetcher:Fetcher):Promise<RepoProof|null>{
