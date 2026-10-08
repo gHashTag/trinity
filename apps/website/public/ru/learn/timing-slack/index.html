@@ -27,7 +27,7 @@
 <meta name="twitter:image" content="https://t27.ai/ru/learn/timing-slack/card.png?v=5e2d5ebf158e">
 <meta name="twitter:image:alt" content="Курс, Урок 21 из 27: Тайминг и запас. Что такое slack и как читать отчёт о тайминге путь за путём.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","name":"Тайминг и запас","description":"Что такое slack и как читать отчёт о тайминге путь за путём.","url":"https://t27.ai/ru/learn/timing-slack/","inLanguage":"ru","learningResourceType":"lesson","position":21,"isAccessibleForFree":true,"isPartOf":{"@type":"Course","name":"С нуля до чипа: программирование FPGA на t27","description":"27 уроков, в каждом рабочий виджет и спека t27: что такое FPGA, как числа становятся битами, ваша спека на t27, как её компилирует t27c и как она превращается в битстрим на настоящей плате.","url":"https://t27.ai/ru/learn/course/","inLanguage":"ru","isAccessibleForFree":true,"educationalLevel":"Beginner","provider":{"@type":"Organization","name":"TRINITY S³AI","url":"https://t27.ai/"}}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","name":"Тайминг и запас","description":"Что такое slack и как читать отчёт о тайминге путь за путём.","url":"https://t27.ai/ru/learn/timing-slack/","inLanguage":"ru","learningResourceType":"lesson","position":21,"isAccessibleForFree":true,"isPartOf":{"@type":"Course","name":"С нуля до чипа: программирование FPGA на t27","description":"27 уроков, в каждом рабочий виджет и спека t27: что такое FPGA, как числа становятся битами, тактируемая логика и её доказательство и как спека превращается в битстрим на настоящей плате. Начинается там, где кончается курс основ t27.","url":"https://t27.ai/ru/learn/course/","inLanguage":"ru","isAccessibleForFree":true,"educationalLevel":"Beginner","provider":{"@type":"Organization","name":"TRINITY S³AI","url":"https://t27.ai/"}}}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"t27.ai","item":"https://t27.ai/ru/"},{"@type":"ListItem","position":2,"name":"С нуля до чипа: программирование FPGA на t27","item":"https://t27.ai/ru/learn/course/"},{"@type":"ListItem","position":3,"name":"Тайминг и запас","item":"https://t27.ai/ru/learn/timing-slack/"}]}</script>
 <style>
 @font-face { font-family: 'Outfit'; font-weight: 400 800; font-display: swap; src: url(/fonts/outfit-latin.woff2) format('woff2'); }
@@ -60,238 +60,392 @@ pre { overflow-x: auto; background: #0b0f0e; border: 1px solid #1e2624; border-r
 <nav class="crumbs"><a href="/ru/learn/course/">Все уроки</a><span>Модуль 7 · Размещение, трассировка, тайминг</span><span>Урок 21 из 27</span></nav>
 <h1>Тайминг и запас</h1>
 <section><h2>Вы узнаете</h2><p class="goal">Что такое slack и как читать отчёт о тайминге путь за путём.</p></section>
-<p>Slack — сколько времени остаётся на пути, когда кончается период такта. Положительный запас: путь достаточно быстрый. Отрицательный: на этой частоте дизайн не работает. Каждая полоса здесь — настоящий путь оттрассированного дизайна на 50 МГц, разбитый на логику и трассировку, худшие сверху. Найдите, куда уходит время на худшем пути.</p>
-<section><h2>Попробуйте</h2><p>Нажмите на худший путь и сравните время логики со временем трассировки. В спеке у каждого clock_tree перекос 100 пс: найдите тест, где бюджет 50 пс не выдерживается, и тот, где 200 пс проходит.</p></section>
+<p>Slack — сколько времени остаётся на пути, когда кончается период такта. Положительный запас: путь достаточно быстрый. Отрицательный: на этой частоте дизайн не работает. Каждая полоса здесь — настоящий путь оттрассированного дизайна на 50 МГц, разбитый на логику и трассировку, худшие сверху. Найдите, куда уходит время на худшем пути. Спека в плеере — тайминг как арифметика: дуги с задержками, путь с запасом, вердикт «пройден» или «нарушен».</p>
+<section><h2>Попробуйте</h2><p>Нажмите на худший путь и сравните время логики со временем трассировки. В спеке найдите timing_path с вердиктами is_met и is_violated, затем path_delay и lut_delay_ps: сколько добавляют три дуги LUT?</p></section>
 <p><a class="cta" href="/#/course/timing-slack">Открыть интерактивный урок →</a></p>
 <figure><a href="/widgets/slack-waterfall/"><img src="/widgets/slack-waterfall/card.png" width="600" height="315" alt="Slack waterfall: every timing path of a routed design, worst first" loading="lazy"><figcaption>Slack waterfall: every timing path of a routed design, worst first ↗</figcaption></a></figure>
 <p class="about" lang="en">159 endpoints of a real nextpnr-xilinx run at 50 MHz as logic and routing waterfalls, checked bin by bin against nextpnr's log. Drop a --report JSON for yours.</p>
-<section><h2>specs/fpga/cts.t27</h2><pre lang="en"><code>// SPDX-License-Identifier: Apache-2.0
-// t27/specs/fpga/cts.t27
-// T27 Clock Tree Synthesis Specification
-// PLL configuration, clock buffer trees, skew estimation
-// Artix-7: BUFH=0.05ns, BUFG=0.1ns, PLL jitter=50ps, max skew=100ps
+<section><h2>specs/fpga/timing.t27</h2><pre lang="en"><code>// SPDX-License-Identifier: Apache-2.0
+// t27/specs/fpga/timing.t27
+// T27 Static Timing Analysis Specification
+// Estimates critical path, slack, and Fmax from HIR module structure
+// Artix-7 timing model: LUT=0.1ns, BRAM=2.0ns, DSP=2.5ns, routing=0.3ns
 // Uses flat arrays + count fields (parser-compatible)
 // phi^2 + 1/phi^2 = 3 | TRINITY
 
-module CTS {
+module Timing {
 
-    pub struct PllConfig {
-        name : &amp;str,
-        input_mhz : u32,
-        output_mhz : u32,
-        multiply : u32,
-        divide : u32,
-        jitter_ps : u32,
+    // === Timing arc kind ===
+
+    pub const ArcKind = enum(i8) {
+        comb = 0,
+        reg_to_reg = 1,
+        reg_to_output = 2,
+        input_to_reg = 3,
+        input_to_output = 4,
     }
 
-    fn pll_config(name: &amp;str, input_mhz: u32, output_mhz: u32) -&gt; PllConfig {
-        var m : u32 = 1;
-        var d : u32 = 1;
-        if input_mhz &gt; 0 {
-            d = input_mhz;
-            m = output_mhz;
-        }
-        return PllConfig{
-            .name = name,
-            .input_mhz = input_mhz,
-            .output_mhz = output_mhz,
-            .multiply = m,
-            .divide = d,
-            .jitter_ps = 50,
-        };
-    }
+    // === Timing arc ===
 
-    fn pll_period_ps(pll: PllConfig) -&gt; u32 {
-        if pll.output_mhz == 0 {
-            return 0;
-        }
-        return 1000000000 / pll.output_mhz;
-    }
-
-    pub struct ClockBuffer {
-        name : &amp;str,
+    pub struct TimingArc {
+        source : &amp;str,
+        sink : &amp;str,
         delay_ps : u32,
-        fanout : u32,
+        kind : i8,
     }
 
-    fn bufg(name: &amp;str) -&gt; ClockBuffer {
-        return ClockBuffer{ .name = name, .delay_ps = 100, .fanout = 32 };
-    }
-
-    fn bufh(name: &amp;str) -&gt; ClockBuffer {
-        return ClockBuffer{ .name = name, .delay_ps = 50, .fanout = 16 };
-    }
-
-    fn bufg_has_higher_fanout(b: ClockBuffer) -&gt; bool {
-        return b.fanout &gt;= 32;
-    }
-
-    pub struct ClockTree {
-        root : &amp;str,
-        num_levels : u32,
-        total_buffers : u32,
-        max_skew_ps : u32,
-    }
-
-    fn clock_tree(root: &amp;str, levels: u32, bufs: u32) -&gt; ClockTree {
-        return ClockTree{
-            .root = root,
-            .num_levels = levels,
-            .total_buffers = bufs,
-            .max_skew_ps = 100,
+    fn comb_arc(source: &amp;str, sink: &amp;str, delay_ps: u32) -&gt; TimingArc {
+        return TimingArc{
+            .source = source,
+            .sink = sink,
+            .delay_ps = delay_ps,
+            .kind = 0,
         };
     }
 
-    fn tree_delay_ps(tree: ClockTree, buf_delay: u32) -&gt; u32 {
-        return tree.num_levels * buf_delay;
+    fn reg_to_reg(source: &amp;str, sink: &amp;str, delay_ps: u32) -&gt; TimingArc {
+        return TimingArc{
+            .source = source,
+            .sink = sink,
+            .delay_ps = delay_ps,
+            .kind = 1,
+        };
     }
 
-    fn skew_ok(tree: ClockTree, max_allowed_ps: u32) -&gt; bool {
-        return tree.max_skew_ps &lt;= max_allowed_ps;
+    fn input_to_reg(source: &amp;str, sink: &amp;str, delay_ps: u32) -&gt; TimingArc {
+        return TimingArc{
+            .source = source,
+            .sink = sink,
+            .delay_ps = delay_ps,
+            .kind = 3,
+        };
     }
 
-    pub struct CtsReport {
-        num_clocks : u32,
-        num_plls : u32,
-        total_buffers : u32,
-        worst_skew_ps : u32,
-        worst_latency_ps : u32,
+    // === Timing path ===
+
+    pub struct TimingPath {
+        startpoint : &amp;str,
+        endpoint : &amp;str,
+        total_delay_ps : u32,
+        slack_ps : i64,
+        num_arcs : u32,
+    }
+
+    fn timing_path(start: &amp;str, end: &amp;str, delay: u32, slack: i64) -&gt; TimingPath {
+        return TimingPath{
+            .startpoint = start,
+            .endpoint = end,
+            .total_delay_ps = delay,
+            .slack_ps = slack,
+            .num_arcs = 1,
+        };
+    }
+
+    fn is_met(path: TimingPath) -&gt; bool {
+        return path.slack_ps &gt;= 0;
+    }
+
+    fn is_violated(path: TimingPath) -&gt; bool {
+        return path.slack_ps &lt; 0;
+    }
+
+    // === Timing constraint ===
+
+    pub struct TimingConstraint {
+        name : &amp;str,
+        period_ps : u32,
+        clock_name : &amp;str,
+    }
+
+    fn clock_constraint(name: &amp;str, period_ps: u32) -&gt; TimingConstraint {
+        return TimingConstraint{
+            .name = name,
+            .period_ps = period_ps,
+            .clock_name = &quot;clk&quot;,
+        };
+    }
+
+    fn clock_mhz(name: &amp;str, mhz: u32) -&gt; TimingConstraint {
+        if mhz == 0 {
+            return clock_constraint(name, 10000);
+        }
+        return TimingConstraint{
+            .name = name,
+            .period_ps = 1000000000 / mhz,
+            .clock_name = &quot;clk&quot;,
+        };
+    }
+
+    // === Timing report ===
+
+    pub struct TimingReport {
+        total_paths : u32,
+        met_paths : u32,
+        violated_paths : u32,
+        worst_slack_ps : i64,
+        critical_path_ps : u32,
+        fmax_mhz : u32,
         has_violations : bool,
     }
 
-    fn cts_ok(clocks: u32, plls: u32, bufs: u32, skew: u32, latency: u32) -&gt; CtsReport {
-        return CtsReport{
-            .num_clocks = clocks,
-            .num_plls = plls,
-            .total_buffers = bufs,
-            .worst_skew_ps = skew,
-            .worst_latency_ps = latency,
+    fn timing_ok(critical_ps: u32, fmax: u32) -&gt; TimingReport {
+        return TimingReport{
+            .total_paths = 1,
+            .met_paths = 1,
+            .violated_paths = 0,
+            .worst_slack_ps = 5000,
+            .critical_path_ps = critical_ps,
+            .fmax_mhz = fmax,
             .has_violations = false,
         };
     }
 
-    fn passed(r: CtsReport) -&gt; bool {
-        return r.has_violations == false;
+    fn timing_fail(critical_ps: u32) -&gt; TimingReport {
+        return TimingReport{
+            .total_paths = 1,
+            .met_paths = 0,
+            .violated_paths = 1,
+            .worst_slack_ps = -1000,
+            .critical_path_ps = critical_ps,
+            .fmax_mhz = 0,
+            .has_violations = true,
+        };
     }
 
-    // === Auto tree estimation ===
-
-    fn est_buffers_needed(num_sinks: u32) -&gt; u32 {
-        if num_sinks &lt;= 16 {
-            return 1;
-        }
-        return num_sinks / 16 + 1;
+    fn passed(report: TimingReport) -&gt; bool {
+        return report.has_violations == false;
     }
 
-    fn est_tree_levels(num_sinks: u32) -&gt; u32 {
-        if num_sinks &lt;= 16 {
-            return 1;
+    // === Timing model constants ===
+
+    fn lut_delay_ps() -&gt; u32 {
+        return 100;
+    }
+
+    fn bram_delay_ps() -&gt; u32 {
+        return 2000;
+    }
+
+    fn dsp_delay_ps() -&gt; u32 {
+        return 2500;
+    }
+
+    fn routing_delay_ps() -&gt; u32 {
+        return 300;
+    }
+
+    fn setup_time_ps() -&gt; u32 {
+        return 200;
+    }
+
+    fn hold_time_ps() -&gt; u32 {
+        return 50;
+    }
+
+    // === Query functions ===
+
+    fn path_delay(arcs: [TimingArc], count: u32) -&gt; u32 {
+        var total : u32 = 0;
+        var i : u32 = 0;
+        while i &lt; count {
+            total = total + arcs[i].delay_ps;
+            i = i + 1;
         }
-        if num_sinks &lt;= 256 {
-            return 2;
+        return total;
+    }
+
+    fn slack(delay_ps: u32, constraint_ps: u32) -&gt; i64 {
+        return constraint_ps as i64 - delay_ps as i64;
+    }
+
+    fn fmax_from_delay(delay_ps: u32) -&gt; u32 {
+        if delay_ps == 0 {
+            return 0;
         }
-        return 3;
+        return 1000000000 / delay_ps;
+    }
+
+    fn est_comb_delay(num_luts: u32) -&gt; u32 {
+        return num_luts * lut_delay_ps() + routing_delay_ps();
+    }
+
+    fn est_reg_to_reg_delay(num_luts: u32) -&gt; u32 {
+        return num_luts * lut_delay_ps() + routing_delay_ps() + setup_time_ps();
+    }
+
+    fn worst_path(paths: [TimingPath], count: u32) -&gt; u32 {
+        if count == 0 {
+            return 0;
+        }
+        var worst : u32 = paths[0].total_delay_ps;
+        var i : u32 = 1;
+        while i &lt; count {
+            if paths[i].total_delay_ps &gt; worst {
+                worst = paths[i].total_delay_ps;
+            }
+            i = i + 1;
+        }
+        return worst;
     }
 
     // === Validation ===
 
-    fn validate_pll(pll: PllConfig) -&gt; u32 {
+    fn validate_constraint(tc: TimingConstraint) -&gt; u32 {
         var errors : u32 = 0;
-        if pll.name == &quot;&quot; { errors = errors + 1; }
-        if pll.output_mhz == 0 { errors = errors + 1; }
+        if tc.name == &quot;&quot; {
+            errors = errors + 1;
+        }
+        if tc.period_ps == 0 {
+            errors = errors + 1;
+        }
+        return errors;
+    }
+
+    fn validate_arc(arc: TimingArc) -&gt; u32 {
+        var errors : u32 = 0;
+        if arc.source == &quot;&quot; {
+            errors = errors + 1;
+        }
+        if arc.sink == &quot;&quot; {
+            errors = errors + 1;
+        }
         return errors;
     }
 
     // === Tests ===
 
-    test pll_config_creation
-        given p = pll_config(&quot;sys_pll&quot;, 100, 200)
-        then p.input_mhz == 100
-        and p.output_mhz == 200
-        and pll_period_ps(p) == 5000000
+    test comb_arc_creation
+        given a = comb_arc(&quot;a&quot;, &quot;b&quot;, 500)
+        then a.source == &quot;a&quot;
+        and a.sink == &quot;b&quot;
+        and a.delay_ps == 500
+        and a.kind == 0
 
-    test bufg_creation
-        given b = bufg(&quot;clk_buf&quot;)
-        then b.delay_ps == 100
-        and b.fanout == 32
-        and bufg_has_higher_fanout(b) == true
+    test reg_to_reg_creation
+        given a = reg_to_reg(&quot;r1&quot;, &quot;r2&quot;, 800)
+        then a.kind == 1
 
-    test bufh_creation
-        given b = bufh(&quot;clk_h&quot;)
-        then b.delay_ps == 50
-        and b.fanout == 16
-        and bufg_has_higher_fanout(b) == false
+    test input_to_reg_creation
+        given a = input_to_reg(&quot;din&quot;, &quot;r1&quot;, 400)
+        then a.kind == 3
 
-    test clock_tree_creation
-        given t = clock_tree(&quot;clk&quot;, 2, 5)
-        then t.root == &quot;clk&quot;
-        and t.num_levels == 2
-        and t.total_buffers == 5
-        and t.max_skew_ps == 100
+    test timing_path_met
+        given p = timing_path(&quot;r1&quot;, &quot;r2&quot;, 5000, 5000)
+        then is_met(p) == true
+        and is_violated(p) == false
 
-    test tree_delay
-        given t = clock_tree(&quot;clk&quot;, 3, 8)
-        then tree_delay_ps(t, 100) == 300
+    test timing_path_violated
+        given p = timing_path(&quot;r1&quot;, &quot;r2&quot;, 12000, -2000)
+        then is_met(p) == false
+        and is_violated(p) == true
 
-    test skew_ok_yes
-        given t = clock_tree(&quot;clk&quot;, 2, 5)
-        then skew_ok(t, 200) == true
+    test clock_constraint_creation
+        given c = clock_constraint(&quot;clk_fast&quot;, 5000)
+        then c.period_ps == 5000
+        and c.clock_name == &quot;clk&quot;
 
-    test skew_ok_no
-        given t = clock_tree(&quot;clk&quot;, 2, 5)
-        then skew_ok(t, 50) == false
+    test clock_mhz_creation
+        given c = clock_mhz(&quot;clk_100&quot;, 100)
+        then c.period_ps == 10000000
+        and c.name == &quot;clk_100&quot;
 
-    test cts_report_ok
-        given r = cts_ok(2, 1, 10, 80, 300)
-        then passed(r) == true
-        and r.has_violations == false
+    test clock_mhz_zero
+        given c = clock_mhz(&quot;bad&quot;, 0)
+        then c.period_ps == 10000
 
-    test est_buffers_one
-        then est_buffers_needed(10) == 1
+    test timing_ok_report
+        given r = timing_ok(5000, 200)
+        then r.critical_path_ps == 5000
+        and r.fmax_mhz == 200
+        and passed(r) == true
 
-    test est_buffers_many
-        then est_buffers_needed(100) == 7
+    test timing_fail_report
+        given r = timing_fail(15000)
+        then r.has_violations == true
+        and passed(r) == false
 
-    test est_tree_levels_one
-        then est_tree_levels(10) == 1
+    test path_delay_calc
+        given a1 = comb_arc(&quot;a&quot;, &quot;b&quot;, 100)
+        and a2 = comb_arc(&quot;b&quot;, &quot;c&quot;, 200)
+        and a3 = comb_arc(&quot;c&quot;, &quot;d&quot;, 300)
+        then path_delay([a1, a2, a3], 3) == 600
 
-    test est_tree_levels_two
-        then est_tree_levels(100) == 2
+    test slack_positive
+        then slack(5000, 10000) == 5000
 
-    test est_tree_levels_three
-        then est_tree_levels(500) == 3
+    test slack_negative
+        then slack(15000, 10000) == -5000
 
-    test validate_pll_ok
-        given p = pll_config(&quot;ok&quot;, 100, 200)
-        then validate_pll(p) == 0
+    test fmax_from_delay
+        then fmax_from_delay(5000) == 200000
 
-    test validate_pll_empty
-        given p = PllConfig{.name = &quot;&quot;, .input_mhz = 100, .output_mhz = 0, .multiply = 1, .divide = 1, .jitter_ps = 50}
-        then validate_pll(p) &gt; 0
+    test fmax_zero_delay
+        then fmax_from_delay(0) == 0
+
+    test est_comb_delay
+        then est_comb_delay(3) == 600
+
+    test est_reg_to_reg_delay
+        then est_reg_to_reg_delay(3) == 800
+
+    test worst_path
+        given p1 = timing_path(&quot;a&quot;, &quot;b&quot;, 500, 0)
+        and p2 = timing_path(&quot;c&quot;, &quot;d&quot;, 1200, 0)
+        and p3 = timing_path(&quot;e&quot;, &quot;f&quot;, 800, 0)
+        then worst_path([p1, p2, p3], 3) == 1200
+
+    test worst_path_empty
+        then worst_path([], 0) == 0
+
+    test validate_constraint_ok
+        given c = clock_constraint(&quot;clk&quot;, 10000)
+        then validate_constraint(c) == 0
+
+    test validate_constraint_empty_name
+        given c = TimingConstraint{.name = &quot;&quot;, .period_ps = 10000, .clock_name = &quot;clk&quot;}
+        then validate_constraint(c) &gt; 0
+
+    test validate_arc_ok
+        given a = comb_arc(&quot;a&quot;, &quot;b&quot;, 100)
+        then validate_arc(a) == 0
+
+    test validate_arc_empty_source
+        given a = TimingArc{.source = &quot;&quot;, .sink = &quot;b&quot;, .delay_ps = 100, .kind = 0}
+        then validate_arc(a) &gt; 0
+
+    test timing_model_constants
+        then lut_delay_ps() == 100
+        and bram_delay_ps() == 2000
+        and dsp_delay_ps() == 2500
+        and routing_delay_ps() == 300
+        and setup_time_ps() == 200
+
+    test hold_time_ps
+        then hold_time_ps() == 50
 
     // === Invariants ===
 
-    invariant bufg_delay_positive
-        given b = bufg(&quot;inv&quot;)
-        assert b.delay_ps &gt; 0
+    invariant slack_consistent_with_fmax
+        given d = 5000
+        and s = slack(d, 10000)
+        assert s &gt;= 0
 
-    invariant skew_non_negative
-        given t = clock_tree(&quot;inv&quot;, 2, 5)
-        assert t.max_skew_ps &gt;= 0
+    invariant timing_constants_positive
+        assert lut_delay_ps() &gt; 0
+        and bram_delay_ps() &gt; lut_delay_ps()
+        and dsp_delay_ps() &gt; lut_delay_ps()
 
-    bench buffer_estimation_latency
-        measure: nanoseconds to est_buffers_needed(50)
-        target: &lt; 50ns
+    // === Benchmarks ===
 
-    bench tree_level_estimation_latency
-        measure: nanoseconds to est_tree_levels(200)
+    bench timing_analysis
+        measure: nanoseconds for est_reg_to_reg_delay(10)
         target: &lt; 50ns
 }
 
 // phi^2 + 1/phi^2 = 3 | TRINITY
-</code></pre><p><a href="/play/embed.html?spec=specs%2Ffpga%2Fcts.t27&amp;tab=term&amp;v=7cbe9ab0c960">Открыть спеку урока в плеере ↗</a></p></section>
+</code></pre><p><a href="/play/embed.html?spec=specs%2Ffpga%2Ftiming.t27&amp;tab=term&amp;v=7cbe9ab0c960">Открыть спеку урока в плеере ↗</a></p></section>
 <nav class="pager"><a href="/ru/learn/logic-depth/">← Глубина логики</a><a href="/ru/learn/fasm-to-frames/">От FASM к фреймам →</a></nav>
-<section><h2>Все уроки</h2><ul class="outline"><li><h3>Модуль 1 · Чип</h3><p>Что такое FPGA, какой чип у нас и как его выводы встречаются с платой.</p><ol><li><a href="/ru/learn/fpga-is-a-grid/">01 FPGA — это сетка, которую вы настраиваете</a></li><li><a href="/ru/learn/which-chip/">02 Какой это чип?</a></li><li><a href="/ru/learn/pins-and-package/">03 Выводы, шарики и корпус</a></li></ol></li><li><h3>Модуль 2 · Числа в железе</h3><p>Биты, триты и форматы чисел, и сколько стоит арифметика в логике.</p><ol><li><a href="/ru/learn/bits-and-trits/">04 Биты, триты и GF16</a></li><li><a href="/ru/learn/what-arithmetic-costs/">05 Сколько стоит арифметика</a></li><li><a href="/ru/learn/how-much-fits/">06 Сколько помещается на чип</a></li></ol></li><li><h3>Модуль 3 · Ваша программа на t27</h3><p>Напишите спеку, проверьте её и увидьте, почему «компилируется» не значит «верно».</p><ol><li><a href="/ru/learn/hello-t27/">07 Привет, t27</a></li><li><a href="/ru/learn/tests-are-the-spec/">08 Тесты — часть спеки</a></li><li><a href="/ru/learn/compiles-is-not-correct/">09 Компилируется — не значит верно</a></li></ol></li><li><h3>Модуль 4 · Внутри t27c</h3><p>Как компилятор читает спеку и что он пишет, включая нативный t27b.</p><ol><li><a href="/ru/learn/compiler-stages/">10 Стадии t27c</a></li><li><a href="/ru/learn/t27c-on-a-real-machine/">11 t27c на настоящей машине</a></li><li><a href="/ru/learn/seven-backends-and-t27b/">12 Семь бэкендов и t27b</a></li></ol></li><li><h3>Модуль 5 · От спеки к железу</h3><p>Verilog, который пишет t27c, ячейки, в которые он превращается, и что делает одна LUT.</p><ol><li><a href="/ru/learn/spec-to-verilog/">13 От спеки к Verilog</a></li><li><a href="/ru/learn/count-the-cells/">14 Посчитайте ячейки</a></li><li><a href="/ru/learn/one-lut-up-close/">15 Одна LUT вблизи</a></li></ol></li><li><h3>Модуль 6 · Читаем синтез</h3><p>Что yosys сообщает о вашем дизайне и какие предупреждения важны.</p><ol><li><a href="/ru/learn/synthesis-warnings/">16 Важные предупреждения синтеза</a></li><li><a href="/ru/learn/state-machines/">17 Конечные автоматы</a></li><li><a href="/ru/learn/where-the-luts-go/">18 Куда уходят LUT</a></li></ol></li><li><h3>Модуль 7 · Размещение, трассировка, тайминг</h3><p>Где ячейки оказываются на кристалле и успевает ли тактовая частота.</p><ol><li><a href="/ru/learn/placement/">19 Размещение: где оказываются ячейки</a></li><li><a href="/ru/learn/logic-depth/">20 Глубина логики</a></li><li class="on" aria-current="page"><a href="/ru/learn/timing-slack/">21 Тайминг и запас</a></li></ol></li><li><h3>Модуль 8 · Битстрим</h3><p>Как оттрассированный дизайн становится битами, которые загружает чип, без Vivado.</p><ol><li><a href="/ru/learn/fasm-to-frames/">22 От FASM к фреймам</a></li><li><a href="/ru/learn/a-build-receipt/">23 Сборка по пунктам</a></li><li><a href="/ru/learn/read-a-bitstream/">24 Читаем битстрим</a></li></ol></li><li><h3>Модуль 9 · На плате</h3><p>Спросите чип, кто он, загрузите биты и проверьте их.</p><ol><li><a href="/ru/learn/jtag-asks-the-chip/">25 JTAG спрашивает чип</a></li><li><a href="/ru/learn/same-bits-on-the-board/">26 Те же биты — на плате</a></li><li><a href="/ru/learn/capstone/">27 Итог: переугадайте yosys</a></li></ol></li></ul></section>
+<section><h2>Все уроки</h2><ul class="outline"><li><h3>Модуль 1 · Чип</h3><p>Что такое FPGA, какой чип у нас и как его выводы встречаются с платой.</p><ol><li><a href="/ru/learn/fpga-is-a-grid/">01 FPGA — это сетка, которую вы настраиваете</a></li><li><a href="/ru/learn/which-chip/">02 Какой это чип?</a></li><li><a href="/ru/learn/pins-and-package/">03 Выводы, шарики и корпус</a></li></ol></li><li><h3>Модуль 2 · Числа в железе</h3><p>Биты, триты и форматы чисел, и сколько стоит арифметика в логике.</p><ol><li><a href="/ru/learn/bits-and-trits/">04 Биты, триты и GF16</a></li><li><a href="/ru/learn/what-arithmetic-costs/">05 Сколько стоит арифметика</a></li><li><a href="/ru/learn/how-much-fits/">06 Сколько помещается на чип</a></li></ol></li><li><h3>Модуль 3 · Тактируемая логика</h3><p>Провода считают, регистры помнят: что меняется по фронту такта, а что нет.</p><ol><li><a href="/ru/learn/wires-and-registers/">07 Провода считают, регистры помнят</a></li><li><a href="/ru/learn/ready-and-valid/">08 Ready и valid</a></li><li><a href="/ru/learn/the-design-in-one-spec/">09 Весь дизайн в одной спеке</a></li></ol></li><li><h3>Модуль 4 · Доказательство в спеке</h3><p>Тестбенчи, волны и подсаженные баги: аппаратная спека несёт своё доказательство.</p><ol><li><a href="/ru/learn/a-testbench-is-a-spec/">10 Тестбенч — это спека</a></li><li><a href="/ru/learn/watch-it-in-waves/">11 Посмотрите на волнах</a></li><li><a href="/ru/learn/compiles-is-not-correct/">12 «Компилируется» — не значит «верно»</a></li></ol></li><li><h3>Модуль 5 · От спеки к железу</h3><p>Verilog, который пишет t27c, ячейки, в которые он превращается, и что делает одна LUT.</p><ol><li><a href="/ru/learn/spec-to-verilog/">13 От спеки к Verilog</a></li><li><a href="/ru/learn/count-the-cells/">14 Посчитайте ячейки</a></li><li><a href="/ru/learn/one-lut-up-close/">15 Одна LUT вблизи</a></li></ol></li><li><h3>Модуль 6 · Читаем синтез</h3><p>Что yosys сообщает о вашем дизайне и какие предупреждения важны.</p><ol><li><a href="/ru/learn/synthesis-warnings/">16 Важные предупреждения синтеза</a></li><li><a href="/ru/learn/state-machines/">17 Конечные автоматы</a></li><li><a href="/ru/learn/where-the-luts-go/">18 Куда уходят LUT</a></li></ol></li><li><h3>Модуль 7 · Размещение, трассировка, тайминг</h3><p>Где ячейки оказываются на кристалле и успевает ли тактовая частота.</p><ol><li><a href="/ru/learn/placement/">19 Размещение: где оказываются ячейки</a></li><li><a href="/ru/learn/logic-depth/">20 Глубина логики</a></li><li class="on" aria-current="page"><a href="/ru/learn/timing-slack/">21 Тайминг и запас</a></li></ol></li><li><h3>Модуль 8 · Битстрим</h3><p>Как оттрассированный дизайн становится битами, которые загружает чип, без Vivado.</p><ol><li><a href="/ru/learn/fasm-to-frames/">22 От FASM к фреймам</a></li><li><a href="/ru/learn/a-build-receipt/">23 Сборка по пунктам</a></li><li><a href="/ru/learn/read-a-bitstream/">24 Читаем битстрим</a></li></ol></li><li><h3>Модуль 9 · На плате</h3><p>Спросите чип, кто он, загрузите биты и проверьте их.</p><ol><li><a href="/ru/learn/jtag-asks-the-chip/">25 JTAG спрашивает чип</a></li><li><a href="/ru/learn/same-bits-on-the-board/">26 Те же биты — на плате</a></li><li><a href="/ru/learn/capstone/">27 Итог: переугадайте yosys</a></li></ol></li></ul></section>
 <footer><p><a href="/learn/course.t27">Этот курс сам является спекой t27: прочитайте её</a></p><p>Виджеты говорят по-английски: их слова живут в их собственных спеках t27.</p></footer>
 </main>
 </body>

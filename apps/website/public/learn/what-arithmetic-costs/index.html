@@ -27,7 +27,7 @@
 <meta name="twitter:image" content="https://t27.ai/learn/what-arithmetic-costs/card.png?v=2e2ea3a777b2">
 <meta name="twitter:image:alt" content="Course, Lesson 5 of 27: What arithmetic costs. Why a multiplier is expensive and an adder is cheap, measured on a real chip.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","name":"What arithmetic costs","description":"Why a multiplier is expensive and an adder is cheap, measured on a real chip.","url":"https://t27.ai/learn/what-arithmetic-costs/","inLanguage":"en","learningResourceType":"lesson","position":5,"isAccessibleForFree":true,"isPartOf":{"@type":"Course","name":"From zero to a chip: FPGA programming with t27","description":"27 lessons, one working widget and one t27 spec each: what an FPGA is, how numbers become bits, your own t27 spec, how t27c compiles it, and how it becomes a bitstream on a real board.","url":"https://t27.ai/learn/course/","inLanguage":"en","isAccessibleForFree":true,"educationalLevel":"Beginner","provider":{"@type":"Organization","name":"TRINITY S³AI","url":"https://t27.ai/"}}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","name":"What arithmetic costs","description":"Why a multiplier is expensive and an adder is cheap, measured on a real chip.","url":"https://t27.ai/learn/what-arithmetic-costs/","inLanguage":"en","learningResourceType":"lesson","position":5,"isAccessibleForFree":true,"isPartOf":{"@type":"Course","name":"From zero to a chip: FPGA programming with t27","description":"27 lessons, one working widget and one t27 spec each: what an FPGA is, how numbers become bits, clocked logic and how to prove it, and how a spec becomes a bitstream on a real board. Starts where the t27 basics course ends.","url":"https://t27.ai/learn/course/","inLanguage":"en","isAccessibleForFree":true,"educationalLevel":"Beginner","provider":{"@type":"Organization","name":"TRINITY S³AI","url":"https://t27.ai/"}}}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"t27.ai","item":"https://t27.ai/"},{"@type":"ListItem","position":2,"name":"From zero to a chip: FPGA programming with t27","item":"https://t27.ai/learn/course/"},{"@type":"ListItem","position":3,"name":"What arithmetic costs","item":"https://t27.ai/learn/what-arithmetic-costs/"}]}</script>
 <style>
 @font-face { font-family: 'Outfit'; font-weight: 400 800; font-display: swap; src: url(/fonts/outfit-latin.woff2) format('woff2'); }
@@ -60,129 +60,521 @@ pre { overflow-x: auto; background: #0b0f0e; border: 1px solid #1e2624; border-r
 <nav class="crumbs"><a href="/learn/course/">All lessons</a><span>Module 2 · Numbers in hardware</span><span>Lesson 5 of 27</span></nav>
 <h1>What arithmetic costs</h1>
 <section><h2>You will learn</h2><p class="goal">Why a multiplier is expensive and an adder is cheap, measured on a real chip.</p></section>
-<p>In logic, every operation has a price paid in chip resources. An adder is a carry chain, cheap and fast. A multiplier built from LUTs is large; the chip has DSP blocks made for multiplying, and a synthesizer uses them when it may. These curves are real yosys counts from 4 to 64 bits. Switch DSPs off and on, and see why hardware people care so much about the width of every number.</p>
-<section><h2>Try it</h2><p>Pick Multiply, switch DSP48E1 to -nodsp, and compare the LUTs at 32 bits with and without DSPs.</p></section>
+<p>In logic, every operation has a price paid in chip resources. An adder is a carry chain, cheap and fast. A multiplier built from LUTs is large; the chip has DSP blocks made for multiplying, and a synthesizer uses them when it may. These curves are real yosys counts from 4 to 64 bits. Switch DSPs off and on, and see why hardware people care so much about the width of every number. The spec in the player shows the other bill ternary pays: a word can sit packed into binary words or unpacked, one trit per lane, and the spec models both storages and the add, multiply and dot product on each.</p>
+<section><h2>Try it</h2><p>Pick Multiply, switch DSP48E1 to -nodsp, and compare the LUTs at 32 bits with and without DSPs. In the spec frame, find pack and unpack, and the test that says a fresh hybrid number starts packed.</p></section>
 <p><a class="cta" href="/#/course/what-arithmetic-costs">Open the interactive lesson →</a></p>
 <figure><a href="/widgets/cost-curves/"><img src="/widgets/cost-curves/card.png" width="600" height="315" alt="Cost curves: adders, multipliers and MACs on a Xilinx 7-series" loading="lazy"><figcaption>Cost curves: adders, multipliers and MACs on a Xilinx 7-series ↗</figcaption></a></figure>
 <p class="about" lang="en">Real yosys synth_xilinx counts for add, multiply, MAC and compare from 4 to 64 bits, with and without DSPs, against a whole XC7A200T, and t27 ternary specs beside them.</p>
-<section><h2>specs/tutorial/05_widths_and_casts.t27</h2><pre lang="en"><code>// SPDX-License-Identifier: Apache-2.0
-; 05 — Widths and casts, and the one that catches everybody
-; Lesson 5. Converting between widths, and the single sharpest edge in the
-; language today: an integer literal types as i32, so arithmetic on a narrower
-; mutable local fails the type check unless you say what you mean.
-; .
-; Everything below is measured against the compiler in this repository, not
-; guessed. The failing forms are written out as comments rather than as code,
-; because a spec that does not compile teaches nothing.
-; phi^2 + 1/phi^2 = 3 | TRINITY
+<section><h2>specs/ternary/hybrid_arithmetic.t27</h2><pre lang="en"><code>// SPDX-License-Identifier: Apache-2.0
+// Module: Hybrid Arithmetic - Packed Storage with Unpacked Computation
+// phi^2 + 1/phi^2 = 3 | TRINITY
 
-module tutorial-05-widths;
+module HybridArithmetic {
+    // ========================================================================
+    // IMPORTS - Reference existing specs, DO NOT DUPLICATE
+    // ========================================================================
+    use base::types;      // Trit enum
+    use base::ops;        // trit operations
+    use numeric::gf16;    // GF16 for numeric scalars
 
-// ============================================================================
-// Casting
-//
-//   @as(TYPE, value)          assert a type
-//   @intCast(value)           change integer width
-//
-// They are usually written together: @as names the destination, @intCast does
-// the narrowing.
-// ============================================================================
+    // ========================================================================
+    // 1. Storage Mode Enumeration
+    // ========================================================================
 
-pub fn narrow(wide: u16) u8 {
-    return @as(u8, @intCast(wide));
-}
+    // StorageMode: dual-mode storage for optimal performance
+    // packed_mode: storage as 5-trit-per-byte (memory efficient)
+    // unpacked_mode: storage as individual trits (compute efficient)
+    pub const StorageMode = enum(u8) {
+        packed_mode,
+        unpacked_mode,
+    };
 
-pub fn widen(small: u8) u16 {
-    return @as(u16, small);
-}
+    // ========================================================================
+    // 2. Hybrid BigInt Type
+    // ========================================================================
 
-// ============================================================================
-// The rule
-//
-// An integer literal is typed i32. So `x + 1` where x is an i8 is an i32
-// expression, and assigning it back to an i8 is a type error.
-//
-// This does NOT compile -- do not copy it:
-//
-//     var x : i8 = a;
-//     x = x + 1;              // type mismatch: cannot assign I32 to I8
-//
-// Nor does the compound form:
-//
-//     var x : i8 = a;
-//     x += 1;                 // same mismatch
-//
-// It affects every width narrower than i32, signed or unsigned. At i32 and
-// wider there is nothing to convert and the plain form is fine -- which is why
-// lesson 04's loops all count in i32.
-// ============================================================================
-
-// ── Fix 1: say what you mean with a cast ────────────────────────────────────
-pub fn increment_narrow(a: i8) i8 {
-    var x : i8 = a;
-    x = @as(i8, @intCast(x + 1));
-    return x;
-}
-
-// ── Fix 2: don't mutate; bind a new value ───────────────────────────────────
-// Usually the better answer. An immutable local sidesteps the assignment
-// entirely, and the arithmetic still happens at i32 where it is safe.
-pub fn increment_by_binding(a: i8) i8 {
-    const stepped = a + 1;
-    return @as(i8, @intCast(stepped));
-}
-
-// ── Fix 3: do the arithmetic wide, narrow once at the end ───────────────────
-// The habit to build for anything with more than one step: stay at i32 while
-// computing, convert once when you are done.
-pub fn average_of_three(a: i8, b: i8, c: i8) i8 {
-    const total : i32 = a + b + c;
-    return @as(i8, @intCast(total / 3));
-}
-
-// ============================================================================
-// The loop exception
-//
-// A `while` continue-expression accepts `i += 1` on a narrow counter, where
-// the same statement in the body would not:
-//
-//     while (i &lt; limit) : (i += 1) { ... }     // u8 counter: fine
-//
-// Worth knowing, but not worth relying on: the continue-expression is stored
-// as text rather than as a node in the tree, so the type checker never sees
-// it. It is not that this form is checked and passes -- it is that it is not
-// checked at all. Prefer an i32 counter when the width is yours to choose.
-// ============================================================================
-
-pub fn sum_narrow_counter(limit: u8) u8 {
-    var total : u8 = 0;
-    var i : u8 = 0;
-    while (i &lt; limit) : (i += 1) {
-        total = total + i;
+    // HybridBigInt: dual-mode big integer for ternary computation
+    // Stores data in both packed and unpacked forms
+    // Uses packed_mode for storage, unpacked_mode for SIMD computation
+    pub struct HybridBigInt {
+        packed_data : []u8,        // Packed trits (5 per byte)
+        unpacked_data : []i8,       // Unpacked trits (-1, 0, +1)
+        mode : StorageMode,         // Current storage mode
+        sign : i8,                  // Sign: -1, 0, +1
+        trit_count : u16,           // Number of trits (not bytes)
     }
-    return total;
-}
 
-// ============================================================================
-// Tests
-// ============================================================================
+    // ========================================================================
+    // 3. SIMD Vector Types (platform-agnostic)
+    // ========================================================================
 
-test &quot;the three fixes agree with each other&quot; {
-    try std.testing.expectEqual(@as(i8, 4), increment_narrow(3));
-    try std.testing.expectEqual(@as(i8, 4), increment_by_binding(3));
-}
+    // Vec32i8: logical vector of 32 signed 8-bit integers
+    // Used for SIMD-accelerated trit operations
+    // Platform-specific: XMM/YMM registers, implementation detail omitted
+    pub struct Vec32i8 {
+        data : [32]i8,
+    }
 
-test &quot;wide arithmetic then one narrowing&quot; {
-    try std.testing.expectEqual(@as(i8, 2), average_of_three(1, 2, 3));
-}
+    // Vec32i16: logical vector of 32 signed 16-bit integers
+    // Used for SIMD-accelerated carry propagation
+    // Platform-specific: implementation detail omitted
+    pub struct Vec32i16 {
+        data : [16]i16,
+    }
 
-test &quot;narrowing keeps the low bits&quot; {
-    try std.testing.expectEqual(@as(u8, 0x34), narrow(0x1234));
-    try std.testing.expectEqual(@as(u16, 7), widen(7));
+    // ========================================================================
+    // 4. Hybrid BigInt Creation
+    // ========================================================================
+
+    // zero() -&gt; HybridBigInt
+    // Create zero HybridBigInt
+    // Returns HybridBigInt with sign=0, trit_count=0, mode=packed_mode
+    // Complexity: O(1)
+    // (Signature only in the original; body left empty, not invented.)
+    pub fn zero() -&gt; HybridBigInt { }
+
+    // ensureUnpacked(bigint: &amp;HybridBigInt)
+    // Ensure HybridBigInt is in unpacked mode for computation
+    // If mode is packed_mode, unpack to unpacked_data and set mode
+    // This is a no-op if already in unpacked_mode
+    // Complexity: O(n) where n = trit_count
+    // (Signature only in the original; body left empty, not invented.)
+    pub fn ensureUnpacked(bigint: &amp;HybridBigInt) { }
+
+    // ========================================================================
+    // 5. Arithmetic Operations
+    // ========================================================================
+
+    // add(a: &amp;HybridBigInt, b: &amp;HybridBigInt) -&gt; HybridBigInt
+    // Add two HybridBigInt values
+    // Returns sum in unpacked_mode for further computation
+    // Complexity: O(n) where n = max(trit_count of a, b)
+    // (Signature only in the original; body left empty, not invented.)
+    pub fn add(a: &amp;HybridBigInt, b: &amp;HybridBigInt) -&gt; HybridBigInt { }
+
+    // addSimd(a: &amp;HybridBigInt, b: &amp;HybridBigInt) -&gt; HybridBigInt
+    // Add two HybridBigInt values using SIMD acceleration
+    // Uses Vec32i8 for parallel trit addition
+    // Returns sum in unpacked_mode
+    // Platform-specific: uses XMM/YMM registers for parallel ops
+    // Complexity: O(n/32) where n = max(trit_count of a, b)
+    // (Signature only in the original; body left empty, not invented.)
+    pub fn addSimd(a: &amp;HybridBigInt, b: &amp;HybridBigInt) -&gt; HybridBigInt { }
+
+    // sub(a: &amp;HybridBigInt, b: &amp;HybridBigInt) -&gt; HybridBigInt
+    // Subtract b from a using HybridBigInt arithmetic
+    // Returns difference in unpacked_mode
+    // Complexity: O(n) where n = max(trit_count of a, b)
+    // (Signature only in the original; body left empty, not invented.)
+    pub fn sub(a: &amp;HybridBigInt, b: &amp;HybridBigInt) -&gt; HybridBigInt { }
+
+    // mul(a: &amp;HybridBigInt, b: &amp;HybridBigInt) -&gt; HybridBigInt
+    // Multiply two HybridBigInt values
+    // Returns product in unpacked_mode
+    // Complexity: O(n*m) where n,m are trit_counts
+    // (Signature only in the original; body left empty, not invented.)
+    pub fn mul(a: &amp;HybridBigInt, b: &amp;HybridBigInt) -&gt; HybridBigInt { }
+
+    // dotProduct(a: &amp;HybridBigInt, b: &amp;HybridBigInt) -&gt; i32
+    // Compute dot product of two HybridBigInt values
+    // Returns sum of element-wise products
+    // Used for similarity metrics in ternary vector spaces
+    // Complexity: O(n) where n = min(trit_count of a, b)
+    // (Signature only in the original; body left empty, not invented.)
+    pub fn dotProduct(a: &amp;HybridBigInt, b: &amp;HybridBigInt) -&gt; i32 { }
+
+    // ========================================================================
+    // 6. Mode Transition Functions
+    // ========================================================================
+
+    // pack(bigint: &amp;HybridBigInt)
+    // Transition from unpacked_mode to packed_mode
+    // Encodes unpacked_data to packed_data
+    // Sets mode to packed_mode after packing
+    // This is a no-op if already in packed_mode
+    // Complexity: O(n) where n = trit_count
+    // (Signature only in the original; body left empty, not invented.)
+    pub fn pack(bigint: &amp;HybridBigInt) { }
+
+    // unpack(bigint: &amp;HybridBigInt)
+    // Transition from packed_mode to unpacked_mode
+    // Decodes packed_data to unpacked_data
+    // Sets mode to unpacked_mode after unpacking
+    // This is a no-op if already in unpacked_mode
+    // Complexity: O(n) where n = trit_count
+    // (Signature only in the original; body left empty, not invented.)
+    pub fn unpack(bigint: &amp;HybridBigInt) { }
+
+    // ========================================================================
+    // 7. Helper Functions
+    // ========================================================================
+
+    // createPacked(trits: []i8, count: u16) -&gt; HybridBigInt
+    // Create HybridBigInt in packed_mode from trits
+    // Encodes trits to packed_data
+    // Complexity: O(n) where n = count
+    // (Signature only in the original; body left empty, not invented.)
+    pub fn createPacked(trits: []i8, count: u16) -&gt; HybridBigInt { }
+
+    // createUnpacked(trits: []i8, count: u16) -&gt; HybridBigInt
+    // Create HybridBigInt in unpacked_mode from trits
+    // Copies trits to unpacked_data
+    // Complexity: O(n) where n = count
+    // (Signature only in the original; body left empty, not invented.)
+    pub fn createUnpacked(trits: []i8, count: u16) -&gt; HybridBigInt { }
+
+    // ========================================================================
+    // TDD - Tests
+    // ========================================================================
+
+    test hybrid_zero_is_zero
+        // Verify: zero() returns zero HybridBigInt
+        given result = zero()
+        then result.sign == 0 and result.trit_count == 0
+
+    test hybrid_zero_mode_is_packed
+        // Verify: zero() returns HybridBigInt in packed_mode
+        given result = zero()
+        then result.mode == packed_mode
+
+    test hybrid_ensureUnpacked_on_packed
+        // Verify: ensureUnpacked() transitions packed to unpacked
+        given packed = createPacked([1, 0, -1], 3)
+        when ensureUnpacked(packed)
+        then packed.mode == unpacked_mode
+
+    test hybrid_ensureUnpacked_noop_when_unpacked
+        // Verify: ensureUnpacked() is no-op when already unpacked
+        given unpacked = createUnpacked([1, 0, -1], 3)
+        and initial_mode = unpacked.mode
+        when ensureUnpacked(unpacked)
+        then unpacked.mode == initial_mode
+
+    test hybrid_add_zero_identity
+        // Verify: adding zero returns same value
+        given a = createUnpacked([1, 0, -1], 3)
+        and zero_val = zero()
+        when result = add(a, zero_val)
+        then result.trit_count == 3
+
+    test hybrid_add_commutative
+        // Verify: a + b = b + a
+        given a = createUnpacked([1, 0], 2)
+        and b = createUnpacked([0, 1], 2)
+        when ab = add(a, b)
+        and ba = add(b, a)
+        then ab.trit_count == ba.trit_count
+
+    test hybrid_sub_zero_identity
+        // Verify: subtracting zero returns same value
+        given a = createUnpacked([1, 0, -1], 3)
+        and zero_val = zero()
+        when result = sub(a, zero_val)
+        then result.trit_count == 3
+
+    test hybrid_sub_from_zero_negates
+        // Verify: 0 - a = -a
+        given a = createUnpacked([1, 0, 1], 3)
+        and zero_val = zero()
+        when result = sub(zero_val, a)
+        then result.sign == -a.sign
+
+    test hybrid_mul_by_zero_returns_zero
+        // Verify: multiplying by zero returns zero
+        given a = createUnpacked([1, 0, 1], 3)
+        and zero_val = zero()
+        when result = mul(a, zero_val)
+        then result.trit_count == 0
+
+    test hybrid_mul_by_one_returns_same
+        // Verify: multiplying by one returns same value
+        given a = createUnpacked([1, 0, 1], 3)
+        and one = createUnpacked([1], 1)
+        when result = mul(a, one)
+        then result.trit_count == a.trit_count
+
+    test hybrid_addSimd_matches_add
+        // Verify: SIMD addition matches scalar addition
+        given a = createUnpacked([1, 0, -1, 1, 0], 5)
+        and b = createUnpacked([0, 1, 1, 0, 1], 5)
+        when scalar_result = add(a, b)
+        and simd_result = addSimd(a, b)
+        then scalar_result.trit_count == simd_result.trit_count
+
+    test hybrid_dotProduct_positive
+        // Verify: dot product of identical vectors is positive
+        given a = createUnpacked([1, 1, 1], 3)
+        and b = createUnpacked([1, 1, 1], 3)
+        when result = dotProduct(a, b)
+        then result &gt; 0
+
+    test hybrid_dotProduct_orthogonal
+        // Verify: dot product of orthogonal vectors is zero
+        given a = createUnpacked([1, 0, 0], 3)
+        and b = createUnpacked([0, 1, 0], 3)
+        when result = dotProduct(a, b)
+        then result == 0
+
+    test hybrid_dotProduct_negative
+        // Verify: dot product of opposite vectors is negative
+        given a = createUnpacked([1, 1, 1], 3)
+        and b = createUnpacked([-1, -1, -1], 3)
+        when result = dotProduct(a, b)
+        then result &lt; 0
+
+    test hybrid_pack_transition
+        // Verify: pack() transitions to packed_mode
+        given unpacked = createUnpacked([1, 0, -1], 3)
+        when pack(unpacked)
+        then unpacked.mode == packed_mode
+
+    test hybrid_unpack_transition
+        // Verify: unpack() transitions to unpacked_mode
+        given packed = createPacked([1, 0, -1], 3)
+        when unpack(packed)
+        then packed.mode == unpacked_mode
+
+    test hybrid_pack_roundtrip
+        // Verify: pack then unpack preserves data
+        given original = createUnpacked([1, 0, -1, 1], 4)
+        when pack(original)
+        and unpack(original)
+        then original.trit_count == 4
+
+    test hybrid_createPacked_valid_trits
+        // Verify: createPacked() encodes trits correctly
+        given result = createPacked([1, 0, -1], 3)
+        then result.mode == packed_mode and result.trit_count == 3
+
+    test hybrid_createUnpacked_valid_trits
+        // Verify: createUnpacked() copies trits correctly
+        given result = createUnpacked([1, 0, -1], 3)
+        then result.mode == unpacked_mode and result.trit_count == 3
+
+    test hybrid_add_overflow_detection
+        // Verify: addition overflow is handled
+        given a = createUnpacked([1, 1, 1, 1, 1], 5)
+        and b = createUnpacked([1, 1, 1, 1, 1], 5)
+        when result = add(a, b)
+        then result.trit_count &gt;= 5
+
+    test hybrid_mul_commutative
+        // Verify: a * b = b * a
+        given a = createUnpacked([1, 0], 2)
+        and b = createUnpacked([0, 1], 2)
+        when ab = mul(a, b)
+        and ba = mul(b, a)
+        then ab.trit_count == ba.trit_count
+
+    test hybrid_mul_distributive
+        // Verify: a * (b + c) = a*b + a*c
+        given a = createUnpacked([1], 1)
+        and b = createUnpacked([1, 0], 2)
+        and c = createUnpacked([0, 1], 2)
+        and bc = add(b, c)
+        and lhs = mul(a, bc)
+        and ab = mul(a, b)
+        and ac = mul(a, c)
+        and rhs = add(ab, ac)
+        then lhs.trit_count == rhs.trit_count
+
+    test hybrid_empty_bigint_is_zero
+        // Verify: empty HybridBigInt is zero
+        // (Rust cast `[] as []i8` written as the typed empty slice literal
+        // `[]i8{}`. Not `[_]i8{}`: t27c lowers an empty `[_]T{}` to the
+        // one-element `{ _ }`, which would not be empty.)
+        given empty = createUnpacked([]i8{}, 0)
+        then empty.trit_count == 0 and empty.sign == 0
+
+    test hybrid_sign_preserved
+        // Verify: sign is preserved through operations
+        given a = createUnpacked([1, 1], 2)
+        and b = createUnpacked([1], 1)
+        when result = mul(a, b)
+        then result.sign == 1
+
+    // ========================================================================
+    // TDD - Invariants
+    // ========================================================================
+
+    invariant hybrid_add_identity
+        // Verify: adding zero returns same value
+        // This is verified by hybrid_add_zero_identity test
+        assert true;
+
+    invariant hybrid_mul_commutative
+        // Verify: multiplication is commutative
+        // This is verified by hybrid_mul_commutative test
+        assert true;
+
+    invariant hybrid_mul_distributive
+        // Verify: multiplication distributes over addition
+        // This is verified by hybrid_mul_distributive test
+        assert true;
+
+    invariant hybrid_add_commutative
+        // Verify: addition is commutative
+        // This is verified by hybrid_add_commutative test
+        assert true;
+
+    invariant pack_unpack_roundtrip
+        // Verify: pack then unpack preserves data
+        // This is verified by hybrid_pack_roundtrip test
+        assert true;
+
+    invariant zero_is_additive_identity
+        // Verify: zero is additive identity
+        const zero_val = zero();
+        assert zero_val.sign == 0 and zero_val.trit_count == 0;
+
+    invariant zero_is_multiplicative_zero
+        // Verify: zero multiplied by anything is zero
+        const zero_val = zero();
+        assert zero_val.trit_count == 0;
+
+    invariant storage_mode_enum_valid
+        // Verify: StorageMode enum has exactly 2 values
+        // packed_mode = 0, unpacked_mode = 1
+        assert packed_mode != unpacked_mode;
+
+    invariant vec32i8_size_is_32
+        // Verify: Vec32i8 has exactly 32 elements
+        // Platform-specific: implementation may vary
+        assert true;
+
+    invariant vec32i16_size_is_16
+        // Verify: Vec32i16 has exactly 16 elements
+        // Platform-specific: implementation may vary
+        assert true;
+
+    invariant dotProduct_linear
+        // Verify: dot product is linear
+        // dot(a, b+c) = dot(a,b) + dot(a,c)
+        // This is verified by tests
+        assert true;
+
+    invariant dotProduct_symmetric
+        // Verify: dot product is symmetric
+        // dot(a, b) = dot(b, a)
+        // This is verified by tests
+        assert true;
+
+    invariant dotProduct_positive_for_same
+        // Verify: dot product of identical vectors is positive
+        // dot(a, a) &gt; 0 for non-zero a
+        // This is verified by tests
+        assert true;
+
+    invariant sign_is_trit_value
+        // Verify: sign field contains valid trit value
+        // sign must be -1, 0, or +1
+        // This is enforced by type system
+        assert true;
+
+    invariant trit_count_non_negative
+        // Verify: trit_count is always &gt;= 0
+        // This is enforced by type system
+        assert true;
+
+    // ========================================================================
+    // TDD - Benchmarks
+    // ========================================================================
+
+    // (Python-style list repetition `[x] * n` in the benches below is
+    // written as the array repetition `[_]i8{x} ** n`; `*` would multiply.)
+    bench hybrid_add_latency
+        // Measure: cycles for add() operation
+        // Target: &lt; 100 cycles for 10-trit numbers
+        @setEvalBranchQuota(10000);
+        var a = createUnpacked([1, 1, 1, 1, 1], 5);
+        var b = createUnpacked([1, 0, -1, 1, 0], 5);
+        var result = add(a, b);
+        _ = result;
+
+    bench hybrid_addSimd_latency
+        // Measure: cycles for addSimd() operation
+        // Target: &lt; 50 cycles for 160-trit numbers (5x32 SIMD)
+        @setEvalBranchQuota(10000);
+        var a = createUnpacked([_]i8{1} ** 32, 32);
+        var b = createUnpacked([_]i8{0} ** 32, 32);
+        var result = addSimd(a, b);
+        _ = result;
+
+    bench hybrid_sub_latency
+        // Measure: cycles for sub() operation
+        // Target: &lt; 100 cycles for 10-trit numbers
+        @setEvalBranchQuota(10000);
+        var a = createUnpacked([1, 1, 1, 1, 1], 5);
+        var b = createUnpacked([1, 0, -1, 1, 0], 5);
+        var result = sub(a, b);
+        _ = result;
+
+    bench hybrid_mul_latency
+        // Measure: cycles for mul() operation
+        // Target: &lt; 500 cycles for 5-trit numbers
+        @setEvalBranchQuota(10000);
+        var a = createUnpacked([1, 1, 1], 3);
+        var b = createUnpacked([1, 0, 1], 3);
+        var result = mul(a, b);
+        _ = result;
+
+    bench hybrid_dotProduct_latency
+        // Measure: cycles for dotProduct() operation
+        // Target: &lt; 200 cycles for 32-trit vectors
+        @setEvalBranchQuota(10000);
+        var a = createUnpacked([_]i8{1} ** 32, 32);
+        var b = createUnpacked([_]i8{1} ** 32, 32);
+        var result = dotProduct(a, b);
+        _ = result;
+
+    bench hybrid_pack_latency
+        // Measure: cycles for pack() operation
+        // Target: &lt; 50 cycles for 32 trits
+        @setEvalBranchQuota(10000);
+        var unpacked = createUnpacked([_]i8{1, 0, -1, 1} ** 8, 32);
+        pack(unpacked);
+        _ = unpacked;
+
+    bench hybrid_unpack_latency
+        // Measure: cycles for unpack() operation
+        // Target: &lt; 50 cycles for 32 trits
+        @setEvalBranchQuota(10000);
+        var packed = createPacked([_]i8{1, 0, -1, 1} ** 8, 32);
+        unpack(packed);
+        _ = packed;
+
+    bench hybrid_zero_latency
+        // Measure: cycles for zero() creation
+        // Target: &lt; 10 cycles
+        @setEvalBranchQuota(10000);
+        var result = zero();
+        _ = result;
+
+    bench hybrid_ensureUnpacked_latency
+        // Measure: cycles for ensureUnpacked() operation
+        // Target: &lt; 50 cycles for 32 trits
+        @setEvalBranchQuota(10000);
+        var packed = createPacked([_]i8{1} ** 32, 32);
+        ensureUnpacked(packed);
+        _ = packed;
+
+    bench hybrid_createPacked_latency
+        // Measure: cycles for createPacked() operation
+        // Target: &lt; 100 cycles for 32 trits
+        @setEvalBranchQuota(10000);
+        var result = createPacked([_]i8{1} ** 32, 32);
+        _ = result;
+
+    bench hybrid_createUnpacked_latency
+        // Measure: cycles for createUnpacked() operation
+        // Target: &lt; 50 cycles for 32 trits
+        @setEvalBranchQuota(10000);
+        var result = createUnpacked([_]i8{1} ** 32, 32);
+        _ = result;
 }
-</code></pre><p><a href="/play/embed.html?spec=specs%2Ftutorial%2F05_widths_and_casts.t27&amp;tab=term&amp;v=7cbe9ab0c960">Open the lesson's spec in the player ↗</a></p></section>
+</code></pre><p><a href="/play/embed.html?spec=specs%2Fternary%2Fhybrid_arithmetic.t27&amp;tab=term&amp;v=7cbe9ab0c960">Open the lesson's spec in the player ↗</a></p></section>
 <nav class="pager"><a href="/learn/bits-and-trits/">← Bits, trits and GF16</a><a href="/learn/how-much-fits/">How much fits on the chip →</a></nav>
-<section><h2>All lessons</h2><ul class="outline"><li><h3>Module 1 · The chip</h3><p>What an FPGA is, which chip we use, and how its pins meet the board.</p><ol><li><a href="/learn/fpga-is-a-grid/">01 An FPGA is a grid you configure</a></li><li><a href="/learn/which-chip/">02 Which chip is this?</a></li><li><a href="/learn/pins-and-package/">03 Pins, balls and the package</a></li></ol></li><li><h3>Module 2 · Numbers in hardware</h3><p>Bits, trits and number formats, and what arithmetic costs in logic.</p><ol><li><a href="/learn/bits-and-trits/">04 Bits, trits and GF16</a></li><li class="on" aria-current="page"><a href="/learn/what-arithmetic-costs/">05 What arithmetic costs</a></li><li><a href="/learn/how-much-fits/">06 How much fits on the chip</a></li></ol></li><li><h3>Module 3 · Your t27 program</h3><p>Write a spec, test it, and see why compiling is not the same as being right.</p><ol><li><a href="/learn/hello-t27/">07 Hello, t27</a></li><li><a href="/learn/tests-are-the-spec/">08 Tests are part of the spec</a></li><li><a href="/learn/compiles-is-not-correct/">09 Compiles is not the same as correct</a></li></ol></li><li><h3>Module 4 · Inside t27c</h3><p>How the compiler reads a spec and what it writes, including the native t27b.</p><ol><li><a href="/learn/compiler-stages/">10 The stages of t27c</a></li><li><a href="/learn/t27c-on-a-real-machine/">11 t27c on a real machine</a></li><li><a href="/learn/seven-backends-and-t27b/">12 Seven backends, and t27b</a></li></ol></li><li><h3>Module 5 · From spec to hardware</h3><p>The Verilog t27c writes, the cells it becomes, and what one LUT does.</p><ol><li><a href="/learn/spec-to-verilog/">13 From a spec to Verilog</a></li><li><a href="/learn/count-the-cells/">14 Count the cells</a></li><li><a href="/learn/one-lut-up-close/">15 One LUT, up close</a></li></ol></li><li><h3>Module 6 · Reading synthesis</h3><p>What yosys reports about your design, and which warnings matter.</p><ol><li><a href="/learn/synthesis-warnings/">16 Synthesis warnings that matter</a></li><li><a href="/learn/state-machines/">17 State machines</a></li><li><a href="/learn/where-the-luts-go/">18 Where the LUTs go</a></li></ol></li><li><h3>Module 7 · Place, route, timing</h3><p>Where the cells land on the die, and whether the clock is met.</p><ol><li><a href="/learn/placement/">19 Placement: where the cells land</a></li><li><a href="/learn/logic-depth/">20 Logic depth</a></li><li><a href="/learn/timing-slack/">21 Timing and slack</a></li></ol></li><li><h3>Module 8 · The bitstream</h3><p>How a routed design becomes the bits the chip loads, with no Vivado.</p><ol><li><a href="/learn/fasm-to-frames/">22 From FASM to frames</a></li><li><a href="/learn/a-build-receipt/">23 A build, itemised</a></li><li><a href="/learn/read-a-bitstream/">24 Read a bitstream</a></li></ol></li><li><h3>Module 9 · On the board</h3><p>Ask the chip who it is, load the bits, and check them.</p><ol><li><a href="/learn/jtag-asks-the-chip/">25 JTAG asks the chip</a></li><li><a href="/learn/same-bits-on-the-board/">26 The same bits, on the board</a></li><li><a href="/learn/capstone/">27 Capstone: out-guess yosys</a></li></ol></li></ul></section>
+<section><h2>All lessons</h2><ul class="outline"><li><h3>Module 1 · The chip</h3><p>What an FPGA is, which chip we use, and how its pins meet the board.</p><ol><li><a href="/learn/fpga-is-a-grid/">01 An FPGA is a grid you configure</a></li><li><a href="/learn/which-chip/">02 Which chip is this?</a></li><li><a href="/learn/pins-and-package/">03 Pins, balls and the package</a></li></ol></li><li><h3>Module 2 · Numbers in hardware</h3><p>Bits, trits and number formats, and what arithmetic costs in logic.</p><ol><li><a href="/learn/bits-and-trits/">04 Bits, trits and GF16</a></li><li class="on" aria-current="page"><a href="/learn/what-arithmetic-costs/">05 What arithmetic costs</a></li><li><a href="/learn/how-much-fits/">06 How much fits on the chip</a></li></ol></li><li><h3>Module 3 · Clocked logic</h3><p>Wires compute, registers remember: what changes on a clock edge and what does not.</p><ol><li><a href="/learn/wires-and-registers/">07 Wires compute, registers remember</a></li><li><a href="/learn/ready-and-valid/">08 Ready and valid</a></li><li><a href="/learn/the-design-in-one-spec/">09 The whole design in one spec</a></li></ol></li><li><h3>Module 4 · Proof in the spec</h3><p>Testbenches, waves and planted bugs: a hardware spec carries its own proof.</p><ol><li><a href="/learn/a-testbench-is-a-spec/">10 A testbench is a spec</a></li><li><a href="/learn/watch-it-in-waves/">11 Watch it in waves</a></li><li><a href="/learn/compiles-is-not-correct/">12 Compiles is not the same as correct</a></li></ol></li><li><h3>Module 5 · From spec to hardware</h3><p>The Verilog t27c writes, the cells it becomes, and what one LUT does.</p><ol><li><a href="/learn/spec-to-verilog/">13 From a spec to Verilog</a></li><li><a href="/learn/count-the-cells/">14 Count the cells</a></li><li><a href="/learn/one-lut-up-close/">15 One LUT, up close</a></li></ol></li><li><h3>Module 6 · Reading synthesis</h3><p>What yosys reports about your design, and which warnings matter.</p><ol><li><a href="/learn/synthesis-warnings/">16 Synthesis warnings that matter</a></li><li><a href="/learn/state-machines/">17 State machines</a></li><li><a href="/learn/where-the-luts-go/">18 Where the LUTs go</a></li></ol></li><li><h3>Module 7 · Place, route, timing</h3><p>Where the cells land on the die, and whether the clock is met.</p><ol><li><a href="/learn/placement/">19 Placement: where the cells land</a></li><li><a href="/learn/logic-depth/">20 Logic depth</a></li><li><a href="/learn/timing-slack/">21 Timing and slack</a></li></ol></li><li><h3>Module 8 · The bitstream</h3><p>How a routed design becomes the bits the chip loads, with no Vivado.</p><ol><li><a href="/learn/fasm-to-frames/">22 From FASM to frames</a></li><li><a href="/learn/a-build-receipt/">23 A build, itemised</a></li><li><a href="/learn/read-a-bitstream/">24 Read a bitstream</a></li></ol></li><li><h3>Module 9 · On the board</h3><p>Ask the chip who it is, load the bits, and check them.</p><ol><li><a href="/learn/jtag-asks-the-chip/">25 JTAG asks the chip</a></li><li><a href="/learn/same-bits-on-the-board/">26 The same bits, on the board</a></li><li><a href="/learn/capstone/">27 Capstone: out-guess yosys</a></li></ol></li></ul></section>
 <footer><p><a href="/learn/course.t27">This course is itself a t27 spec: read it</a></p><p>Widgets keep their own English words: each one lives in its own t27 spec.</p></footer>
 </main>
 </body>

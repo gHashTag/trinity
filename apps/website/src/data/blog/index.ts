@@ -3,6 +3,33 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: "course-one-hardware-focus",
+    title: "Course 1 finds its own subject: hardware",
+    summary: "[the browser runner cannot execute hardware spec tests, trinity#1477; lesson specs live in the site's spec tree] Course 1 re-taught course 0 in its middle: eleven lessons opened specs/tutorial files and two modules were named program and compiler. The dedup is done -- every lesson opens hardware, the modules are Clocked logic and Proof in the spec, six lessons are new, each re-pointed spec path is pinned by a test, and the courses that go deeper are named as the way on.",
+    date: "2026-10-08",
+    readingMinutes: 4,
+    tags: ["t27", "Course", "FPGA"],
+    receipts: [
+      { label: "Course 1, From spec to chip", href: "https://t27.ai/learn/course/" },
+      { label: "The course spec, specs/course/course.t27", href: "https://t27.ai/learn/course.t27" },
+      { label: "trinity#1478: the issue this dedup answers", href: "https://github.com/gHashTag/trinity/issues/1478" },
+      { label: "trinity#1476: the course epic this belongs to", href: "https://github.com/gHashTag/trinity/issues/1476" },
+    ],
+    openQuestions: [
+      "The in-browser runner cannot execute hardware spec tests (trinity#1477); lessons show recorded t27c runs.",
+      "The lesson specs live in the site's copy of the spec tree and are not yet in gHashTag/t27.",
+    ],
+    published: true,
+    ru: {
+      title: "Курс 1 нашёл свою тему: железо",
+      summary: "[раннер в браузере не исполняет тесты аппаратных спек, trinity#1477; спеки уроков лежат в копии дерева спек на сайте] Курс 1 пересказывал курс 0 в своей середине: одиннадцать уроков открывали файлы specs/tutorial, а два модуля назывались program и compiler. Дубль убран -- каждый урок открывает железо, модули называются «Тактовая логика» и «Доказательство в спеке», шесть уроков новые, каждый переназначенный путь спеки закреплён тестом, а курсы, что идут глубже, названы как продолжение.",
+      openQuestions: [
+        "Раннер в браузере не исполняет тесты аппаратных спек (trinity#1477); уроки показывают записанные прогоны t27c.",
+        "Спеки уроков лежат в копии дерева спек на сайте, в gHashTag/t27 их пока нет.",
+      ],
+    },
+  },
+  {
     slug: "buses-and-peripherals",
     title: "Buses and peripherals with t27, in 27 lessons",
     summary: "Course 7 of the catalog: UART frame by frame, SPI mode by mode, the APB handshake, the five AXI4 channels, memory maps, the packet bridge, Ethernet frames and RGMII timing, and the bench IO discipline -- every lesson opens one widget and one t27 spec, and 31 of the widgets are new recordings of native t27c on a real machine.",

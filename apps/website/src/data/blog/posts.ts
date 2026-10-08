@@ -100,8 +100,10 @@ import { body as body_clocks_resets_and_cdc, ruBody as ruBody_clocks_resets_and_
 import { body as body_real_value_in_integer_container, ruBody as ruBody_real_value_in_integer_container } from './bodies/real-value-in-integer-container'
 import { body as body_features_that_change_no_bits, ruBody as ruBody_features_that_change_no_bits } from './bodies/features-that-change-no-bits'
 import { body as body_one_commit_nine_workflow_outcomes, ruBody as ruBody_one_commit_nine_workflow_outcomes } from './bodies/one-commit-nine-workflow-outcomes'
+import { body as body_course_one_hardware_focus, ruBody as ruBody_course_one_hardware_focus } from './bodies/course-one-hardware-focus'
 
 const bodies: Record<string, PostBody> = {
+  'course-one-hardware-focus': { body: body_course_one_hardware_focus, ruBody: ruBody_course_one_hardware_focus },
   'buses-and-peripherals': { body: body_course_buses_and_peripherals, ruBody: ruBody_course_buses_and_peripherals },
   'clocks-resets-and-cdc': { body: body_clocks_resets_and_cdc, ruBody: ruBody_clocks_resets_and_cdc },
   'course-three-verifying-hardware': { body: body_course_three_verifying_hardware, ruBody: ruBody_course_three_verifying_hardware },
