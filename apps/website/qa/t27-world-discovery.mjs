@@ -130,7 +130,10 @@ for(const bad of ['gh workflow run deploy-site.yml','gh workflow run pr-blog-rep
 // most PRs, and a `printf | grep -q` under pipefail read #1539's 1236-file
 // change as "no site" (grep stops at the first match, printf takes SIGPIPE).
 const wc=readFileSync('../../.github/workflows/website-checks.yml','utf8');
-const triggers=wc.slice(wc.indexOf('\non:'),wc.indexOf('\njobs:'));
+const onAt=wc.indexOf('\non:'),jobsAt=wc.indexOf('\njobs:');
+assert.ok(onAt>-1&&jobsAt>onAt,'website-checks has a top-level on: before jobs: (else the trigger check below reads nothing)');
+const triggers=wc.slice(onAt,jobsAt);
+assert.match(triggers,/pull_request:/,'the trigger block is the one read');
 assert.doesNotMatch(triggers,/paths:/,'website-checks runs on every PR; scope decides, not a trigger path filter');
 assert.match(wc,/\n  gate:\n    name: website gate\n    needs: \[scope, checks\]\n    if: always\(\)/,'website gate always reports, after scope and checks');
 assert.match(wc,/if: needs\.scope\.outputs\.site == 'true'/,'the heavy checks run when scope says the site changed');
