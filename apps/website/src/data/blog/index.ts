@@ -3,6 +3,64 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: "buses-and-peripherals",
+    title: "Buses and peripherals with t27, in 27 lessons",
+    summary: "Course 7 of the catalog: UART frame by frame, SPI mode by mode, the APB handshake, the five AXI4 channels, memory maps, the packet bridge, Ethernet frames and RGMII timing, and the bench IO discipline -- every lesson opens one widget and one t27 spec, and 31 of the widgets are new recordings of native t27c on a real machine.",
+    date: "2026-10-08",
+    readingMinutes: 4,
+    tags: ["t27", "Course", "FPGA"],
+    receipts: [
+      { label: "Course, Buses and peripherals with t27", href: "https://t27.ai/learn/buses-and-peripherals/" },
+      { label: "The course spec, specs/course/buses-and-peripherals.t27", href: "https://t27.ai/learn/buses-and-peripherals.t27" },
+      { label: "trinity#1484: the issue this course answers", href: "https://github.com/gHashTag/trinity/issues/1484" },
+      { label: "gHashTag/t27#7626: the two Ethernet specs, landed in the compiler repo first", href: "https://github.com/gHashTag/t27/pull/7626" },
+    ],
+    openQuestions: [
+      "The in-browser runner still skips test and invariant blocks (trinity#1477, fix open as PR 1495); lessons show recorded t27c output.",
+      "Six of the seven bus specs are BLOCKED in the native runner for comptime resolution; their recordings show check, gen-verilog and debug-hir, never a claimed test run.",
+      "The RGMII and CRC constants that are not from IEEE 802.3 are labelled assumptions in the spec headers, not board measurements.",
+    ],
+    published: true,
+    ru: {
+      title: "Шины и периферия на t27 за 27 уроков",
+      summary: "Курс 7 из каталога: UART покадрово, SPI по режимам, рукопожатие APB, пять каналов AXI4, карты памяти, пакетный мост, кадры Ethernet и тайминг RGMII, дисциплина IO на стенде -- в каждом уроке открывается один виджет и одна спека t27, а 31 виджет -- новые записи нативного t27c на настоящей машине.",
+      openQuestions: [
+        "Раннер в браузере по-прежнему пропускает блоки test и invariant (trinity#1477, исправление открыто как PR 1495); уроки показывают записанный вывод t27c.",
+        "Шесть из семи спек шин BLOCKED в нативном раннере по comptime-разрешению; их записи показывают check, gen-verilog и debug-hir, но не заявленный прогон тестов.",
+        "Константы RGMII и CRC, взятые не из IEEE 802.3, помечены как допущения в шапках спек, а не измерения на плате.",
+      ],
+    },
+  },
+  {
+    slug: "clocks-resets-and-cdc",
+    title: "Clocks, resets and clock-domain crossings, in 27 lessons",
+    summary: "The clocks course teaches clock trees, reset strategy and crossing clock domains in 27 lessons, and every lesson opens a widget no other lesson uses, three of them minted for this course. The post body has sat unregistered in the tree since the course PR; this entry wires it up.",
+    date: "2026-10-08",
+    readingMinutes: 4,
+    tags: ["t27", "Course", "FPGA"],
+    receipts: [
+      { label: "Course, Clocking, resets and CDC", href: "https://t27.ai/learn/clocks-and-cdc/" },
+      { label: "The course spec, specs/course/clocks-and-cdc.t27", href: "https://t27.ai/learn/clocks-and-cdc.t27" },
+      { label: "trinity#1482: the issue this course answers", href: "https://github.com/gHashTag/trinity/issues/1482" },
+      { label: "trinity#1498: the course PR that committed this body", href: "https://github.com/gHashTag/trinity/pull/1498" },
+    ],
+    openQuestions: [
+      "The in-browser runner compiles lesson specs but cannot execute test blocks yet (trinity#1477); lessons show recorded t27c output.",
+      "The E3 timing numbers are a model over the SDF nextpnr writes for the routed design, not measurements on the AX7203 board.",
+      "This post was committed with the course body but never registered in postsIndex; it publishes with the buses course PR (Refs #1482).",
+    ],
+    published: true,
+    ru: {
+      title: "Тактирование, сброс и пересечения тактовых доменов за 27 уроков",
+      summary: "Курс о тактах учит деревьям тактового сигнала, стратегии сбросов и пересечениям тактовых доменов в 27 уроках, и каждый урок открывает виджет, который не открывает ни один другой урок; три из них отчеканены для этого курса. Тело поста лежало в дереве незарегистрированным со времён PR курса; эта запись его подключает.",
+      openQuestions: [
+        "Раннер в браузере компилирует спеки уроков, но пока не исполняет тест-блоки (trinity#1477); уроки показывают записанный вывод t27c.",
+        "Числа тайминга E3 -- модель по SDF nextpnr о разведённом дизайне, а не измерения на плате AX7203.",
+        "Этот пост был закоммичен вместе с телом курса, но не зарегистрирован в postsIndex; публикуется с PR курса шин (Refs #1482).",
+      ],
+    },
+  },
+  {
     slug: "course-three-verifying-hardware",
     title: "Course 3: verifying hardware with t27, in 27 lessons",
     summary: "[the browser runner cannot execute testbench test blocks yet (trinity#1477); three lesson specs were swapped for clean siblings; specs/fpga/coverage.t27 lands in gHashTag/t27 separately] The fourth t27 course answers the question the other three left open: how do you know the design works? 27 lessons in 9 modules of 3 -- testbenches, waveforms, vectors, cosimulation, coverage, formal, mutation, sign-off -- each opening one working widget and one t27 spec, with every number on the page measured by the widget it sits beside.",
