@@ -188,8 +188,8 @@ module ZeroDSP_UART {
         then uart_state.bit_counter == 0
 
     test uart_statement_body_with_given
-        tmp = 1
-        given y = 2
+        given tmp = 1
+        and   y = 2
         then tmp == y
 
     invariant uart_status_valid

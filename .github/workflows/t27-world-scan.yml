@@ -82,6 +82,10 @@ jobs:
           # into it, dated today, and regenerate /agents.t27 and /llms.txt from it, so the gate
           # below compares a published document with the manifest it is published beside.
           node scripts/onboarding-from-spec.mjs --sync
+          # A lesson page prints its spec. When the scan brings t27's newer clean copy of
+          # one, its static page under learn/ is redrawn here, or check:course-pages below
+          # refuses the refresh (#1535 left 126 pages behind their specs).
+          node scripts/course-pages.mjs
           node -e "const r=require('$RUNNER_TEMP/discovery.json');console.log('worlds: '+r.worlds.join(', ')+'; founding: '+r.founding.length+'; code search: '+r.codeSearch.status)" >> "$GITHUB_STEP_SUMMARY"
 
       # The same gates a PR runs on the catalog, against the tree about to be committed.
@@ -108,6 +112,13 @@ jobs:
           npm run check:onboarding
           # #1176 also vendored two gf16 ports that check:silicon requires to be classified.
           npm run check:silicon
+          # The publisher builds the courses and refuses a lesson whose spec is missing or
+          # not clean. #1535 deleted 33 lesson specs and swapped seven, nothing here ran
+          # the course check (a PR this workflow opens starts no other workflow), and
+          # t27.ai stopped publishing. The sync now keeps lesson specs
+          # (scripts/lesson-specs.mjs); this stops a refresh that breaks a course anyway.
+          npm run check:course
+          npm run check:course-pages
 
       # Ruleset 23148303 ("T27 mandatory work report") requires the status check
       # "T27 work report" on refs/heads/main and lists no bypass actors, so the
@@ -124,7 +135,7 @@ jobs:
           set -euo pipefail
           git config user.name  't27 world scan'
           git config user.email 'admin@t27.ai'
-          git add public/t27 public/skills public/crons public/agents public/tools public/functions public/docs qa/language-exceptions.json specs/catalog/onboarding.t27 public/agents.t27 public/llms.txt
+          git add public/t27 public/skills public/crons public/agents public/tools public/functions public/docs public/learn public/ru/learn qa/language-exceptions.json specs/catalog/onboarding.t27 public/agents.t27 public/llms.txt
           if git diff --cached --quiet; then
             echo "- no change" >> "$GITHUB_STEP_SUMMARY"
             exit 0
@@ -164,6 +175,13 @@ jobs:
           # against the head it reads from the API, as it would for a person.
           gh workflow run pr-blog-report.yml --ref main -f pr="$PR"
           echo "- started the work-report check for PR #$PR" >> "$GITHUB_STEP_SUMMARY"
+          # The site's own checks never ran on #1535 for the same reason: it was
+          # merged 70 s after it opened with no website-checks run on it at all,
+          # its course specs deleted, and the publisher then refused t27.ai.
+          # Dispatched on the branch, the run lands on the head commit, so whoever
+          # reviews the refresh sees course, course-pages and the rest red or green.
+          gh workflow run website-checks.yml --ref "$BRANCH"
+          echo "- started website-checks on $BRANCH for PR #$PR" >> "$GITHUB_STEP_SUMMARY"
           # NO SELF-ARMED MERGE. Owner's rule, 2026-10-02: "the Queen must not
           # merge by herself!! the Queen only manages!" -- no automation merges
           # on its own verdict. This job used to arm `gh pr merge --squash
