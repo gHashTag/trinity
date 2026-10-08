@@ -39,6 +39,7 @@ import {
   type TaskState,
   type TasksScope,
 } from "../lib/queenTasks";
+import { cardLoaded, cardReady } from "../lib/queenTasksCard";
 import { QueenComb } from "../components/QueenComb";
 import { QueenCommandPanel, type CommandItem } from "../components/QueenCommand";
 import { QueenContext } from "../components/QueenContext";
@@ -654,6 +655,7 @@ const COPY = {
     tasksDirection: "Direction",
     tasksDirectionAll: "All",
     tasksFilterAria: "Filter the tasks",
+    tasksFilterToggle: "Filter",
     tasksFind: "title or #number",
     tasksKind: "Kind",
     tasksKindAll: "all kinds",
@@ -665,7 +667,6 @@ const COPY = {
     tasksState: "State",
     tasksStateAll: "all states",
     tasksStateFailed: "failed",
-    tasksFailedBlurb: "a job or a review that failed",
     tasksRepo: "Repository",
     tasksRepoAll: "all repositories",
     tasksReset: "reset",
@@ -1146,6 +1147,7 @@ const COPY = {
     tasksDirection: "Направление",
     tasksDirectionAll: "Все",
     tasksFilterAria: "Фильтр задач",
+    tasksFilterToggle: "Фильтр",
     tasksFind: "название или #номер",
     tasksKind: "Вид",
     tasksKindAll: "все виды",
@@ -1157,7 +1159,6 @@ const COPY = {
     tasksState: "Состояние",
     tasksStateAll: "все состояния",
     tasksStateFailed: "сбой",
-    tasksFailedBlurb: "работа или ревью завершились сбоем",
     tasksRepo: "Репозиторий",
     tasksRepoAll: "все репозитории",
     tasksReset: "сбросить",
@@ -1650,7 +1651,9 @@ function useQueenTasks(
     const read = async () => {
       controller = new AbortController();
       try {
-        const feed = await loadTasksFeed(QUEEN_API, scope, controller.signal);
+        // The card decides the filter and the bees' states; nothing is shown
+        // before it is loaded, so nothing is ever decided without it.
+        const [feed] = await Promise.all([loadTasksFeed(QUEEN_API, scope, controller.signal), cardReady]);
         if (!active) return;
         setWire((previous) => ({ feed: withEarliestSince(previous?.feed ?? null, feed), scope }));
         setWireError(null);
@@ -1678,9 +1681,17 @@ function useQueenTasks(
   if (firstSeen.key !== runningKey) {
     setFirstSeen({ key: runningKey, map: observeRunning(firstSeen.map, running, new Date().toISOString()) });
   }
+  const [cardOk, setCardOk] = useState(cardLoaded);
+  useEffect(() => {
+    let live = true;
+    cardReady.then(() => live && setCardOk(true)).catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, []);
   const derived = useMemo(
-    () => (board ? tasksFromBoard(board.repo, board.cards, events, firstSeen.map, Date.now()) : null),
-    [board, events, firstSeen],
+    () => (board && cardOk ? tasksFromBoard(board.repo, board.cards, events, firstSeen.map, Date.now()) : null),
+    [board, events, firstSeen, cardOk],
   );
   const wireUsable = wire !== null && wireError === null && (wire.scope === "all" || !full);
   if (wireUsable) return { feed: wire.feed, health: "live", error: null };
@@ -2558,7 +2569,11 @@ function KanbanView({
         bee: task.bee ? bees.get(task.bee) ?? null : null,
         number: task.number ?? 0,
         title: task.title,
-        column: task.state,
+        // A failed job or review has a state no board column ever had, and the
+        // board's DROPPED column already reads "failed or cancelled". It stands
+        // there, tagged, rather than in a seventh column: the grid is six wide,
+        // and a seventh wrapped below and halved every column's height.
+        column: task.state === "failed" ? "dropped" : task.state,
         criteria: task.criteria ?? undefined,
         needs: task.needs,
         reviewState: own?.reviewState,
@@ -2578,11 +2593,21 @@ function KanbanView({
   const addressKey = taskFilterKey(addressFilter);
   const [filter, setFilterState] = useState<TaskFilter>(addressFilter);
   const [seenAddress, setSeenAddress] = useState(addressKey);
+  // THE ROW IS FOLDED UNTIL ASKED FOR. The board is measured at 1280x600 and
+  // 390x560 to still show a whole card in every column (check:queen-viewport),
+  // and a fourth row of chrome above the columns took that card away. So the
+  // filter opens from a chip at the end of the direction row, and opens by
+  // itself when the address already carries a filter: a shared link shows what
+  // it narrowed. Folded with a filter on, the chip says how many are applied.
+  const [filterOpen, setFilterOpen] = useState(() => !taskFilterIsEmpty(addressFilter));
   const written = useRef(new Set<string>());
   if (seenAddress !== addressKey) {
     setSeenAddress(addressKey);
     if (written.current.has(addressKey)) written.current.delete(addressKey);
-    else setFilterState(addressFilter);
+    else {
+      setFilterState(addressFilter);
+      if (!taskFilterIsEmpty(addressFilter)) setFilterOpen(true);
+    }
   }
   const setFilter = useCallback(
     (next: TaskFilter) => {
@@ -2612,22 +2637,14 @@ function KanbanView({
     () => narrowByDirection(filtered, directions),
     [filtered, directions],
   );
-  // A failed job or review has a state no board column ever had. Its column is
-  // drawn when there is something in it, or when the reader asked for it.
-  const laneColumns = useMemo<QueenColumn[]>(
-    () =>
-      columns.some((column) => column.key === "failed") ||
-      !(filtered.some((card) => card.state === "failed") || filter.states.includes("failed"))
-        ? columns
-        : [...columns, { key: "failed", title: c.tasksStateFailed, blurb: c.tasksFailedBlurb }],
-    [columns, filtered, filter.states, c],
-  );
   const stateTitle = (state: TaskState) =>
-    laneColumns.find((column) => column.key === state)?.title ?? (state === "failed" ? c.tasksStateFailed : state);
+    columns.find((column) => column.key === state)?.title ?? (state === "failed" ? c.tasksStateFailed : state);
   // How old a bee is, by the feed's own clock: badges move with each answer, and
   // the board is not re-drawn every second to count them.
   const feedNow = tasks?.at ? Date.parse(tasks.at) || Date.now() : Date.now();
   const filterActive = !taskFilterIsEmpty(filter);
+  const filterCount =
+    (filter.kinds.length > 0 ? 1 : 0) + (filter.states.length > 0 ? 1 : 0) + (filter.repos.length > 0 ? 1 : 0) + (filter.q.trim() ? 1 : 0);
   // A repository named in the address is matched without regard to case, so a
   // link that says ghashtag/t27 selects the gHashTag/t27 the feed spells.
   const repoValue =
@@ -2765,7 +2782,11 @@ function KanbanView({
           option carries its count over the whole feed. The address can name
           several kinds or states at once (a link somebody built); the select
           then shows that list as its one chosen option. */}
-      <div className="queen27-task-filter" role="group" aria-label={c.tasksFilterAria}>
+      {/* With no direction row to carry the chip (every card one direction),
+          the row stays open, once there is a board to filter: before the
+          first answer there is nothing to narrow and no height to spend. */}
+      {(filterOpen || (loaded && tally.length <= 1)) && (
+      <div className="queen27-task-filter" id="queen27-task-filter" role="group" aria-label={c.tasksFilterAria}>
         <input
           className="queen27-lane-search"
           type="search"
@@ -2825,6 +2846,7 @@ function KanbanView({
           {tasks?.truncated ? ` · ${c.tasksTruncated}` : ""}
         </small>
       </div>
+      )}
       {tally.length > 1 && (
         // The direction chips, and unlike the clients lane they are here for
         // EVERYONE — signed in or not. Nothing about them describes a person:
@@ -2872,6 +2894,21 @@ function KanbanView({
               {directionLabel(key, lang)} <small>{count}</small>
             </button>
           ))}
+          {/* Opens the task filter row. Folded, it still says that a filter is
+              applied and how many parts, and its tooltip says when the board is
+              derived because the tasks route is not answering. */}
+          <button
+            type="button"
+            className="queen27-chip queen27-task-filter-toggle"
+            aria-expanded={filterOpen}
+            aria-controls={filterOpen ? "queen27-task-filter" : undefined}
+            data-tasks-source={tasks?.source ?? "none"}
+            title={tasks?.source === "board" ? c.tasksFromBoard : c.tasksFilterAria}
+            onClick={() => setFilterOpen((open) => !open)}
+          >
+            {c.tasksFilterToggle}
+            {filterCount > 0 && <small>{filterCount}</small>}
+          </button>
         </div>
       )}
       <motion.div
@@ -2882,7 +2919,7 @@ function KanbanView({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
       >
-      {laneColumns.map((column) => {
+      {columns.map((column) => {
         // Narrowed first, then split by column, so a column header counts what
         // is under it rather than what would have been there without the chips.
         const columnCards = shownCards.filter(
@@ -2962,6 +2999,7 @@ function KanbanView({
                   <div className="queen27-card-topline">
                     <b>{card.number > 0 ? `#${card.number}` : "—"}</b>
                     {card.kind !== "issue" && <span className="queen27-card-kind">{card.kind === "review" ? c.tasksKindReviewOne : c.tasksKindJobOne}</span>}
+                    {card.state === "failed" && <span className="queen27-card-kind" data-state="failed">{c.tasksStateFailed}</span>}
                     {repo !== null && card.repo.toLowerCase() !== repo.toLowerCase() && <span className="queen27-card-kind">{card.repo.split("/")[1]}</span>}
                     {/* The name in words, next to the dot, on every card. A
                         reader who cannot tell this orange from this red loses

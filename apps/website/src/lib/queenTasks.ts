@@ -6,9 +6,10 @@
 // gHashTag/t27 specs/queen/tasks.t27 (epic gHashTag/t27#7718, slice 1) defines
 // the view: the kinds, the seven states, what a bee is, and the filter that the
 // supervisor's route, the board and the game all apply. The supervisor serves it
-// at GET /queen/public-tasks. The constants and `taskMatches` below MIRROR that
-// spec; qa/queen-tasks-contract.mjs runs the spec's own test vectors against
-// them, so the day the two disagree the gate is red rather than the board.
+// at GET /queen/public-tasks. Nothing here restates it: the names come from
+// queenTasks.generated.ts (`t27c gen-js` of the card), and task_matches and
+// bee_state run as the card itself, compiled to wasm (queenTasksCard.ts). The
+// card's own tests are the gate.
 //
 // WHY THERE IS A FALLBACK, AND WHY IT SAYS SO
 //
@@ -19,37 +20,30 @@
 // running card. That bee is DERIVED -- the board names no bee -- so the feed
 // carries `source: "board"` and the screen says which of the two it is drawing.
 // A fallback indistinguishable from the real answer would be a claim.
-//
-// Nothing in this module fetches on import or reads the build environment: the
-// gate imports it under plain node.
 
-/** KIND_NAMES; the index is the spec's (TK_ISSUE 0, TK_REVIEW 1, TK_JOB 2). */
-export const TASK_KINDS = ["issue", "review", "job"] as const;
-/** STATE_NAMES; TS_BACKLOG 0 .. TS_FAILED 6. An issue's board column IS its state. */
-export const TASK_STATES = ["backlog", "blocked", "running", "review", "done", "dropped", "failed"] as const;
-/** BEE_STATE_NAMES: offered and not claimed, heard recently, silent longer. */
-export const BEE_STATES = ["queued", "working", "quiet"] as const;
-/** BEE_QUIET_SECONDS: a bee heard within this many seconds is working. */
-export const BEE_QUIET_SECONDS = 180;
-/** TASK_PAGE_MAX: the most tasks one answer carries. */
-export const TASK_PAGE_MAX = 2000;
+import {
+  BEE_QUIET_SECONDS,
+  BEE_STATE_NAMES,
+  KIND_NAMES,
+  STATE_NAMES,
+  TASK_PAGE_MAX,
+} from "./queenTasks.generated";
+import { cardBeeState, cardTaskMatches } from "./queenTasksCard";
 
-export type TaskKind = (typeof TASK_KINDS)[number];
-export type TaskState = (typeof TASK_STATES)[number];
-export type BeeState = (typeof BEE_STATES)[number];
+export const TASK_KINDS: readonly string[] = KIND_NAMES;
+export const TASK_STATES: readonly string[] = STATE_NAMES;
+export const BEE_STATES: readonly string[] = BEE_STATE_NAMES;
+export { BEE_QUIET_SECONDS, TASK_PAGE_MAX };
 
-/**
- * task_matches, line for line: an index out of range matches nothing, even with
- * no filter; a mask of 0 means "any"; otherwise the index's bit must be set.
- * The spec's indices are u8, so a negative or fractional index (what indexOf
- * returns for a name this build has not met) is out of range here as well.
- */
+// Names from the card; a name this build has not met indexes to -1, which the
+// card matches with nothing.
+export type TaskKind = string;
+export type TaskState = string;
+export type BeeState = string;
+
+/** task_matches, run as the card (queenTasksCard.ts). */
 export function taskMatches(kindMask: number, stateMask: number, kind: number, state: number): boolean {
-  if (!Number.isInteger(kind) || !Number.isInteger(state)) return false;
-  if (kind < 0 || state < 0 || kind >= TASK_KINDS.length || state >= TASK_STATES.length) return false;
-  if (kindMask !== 0 && (kindMask & (1 << kind)) === 0) return false;
-  if (stateMask !== 0 && (stateMask & (1 << state)) === 0) return false;
-  return true;
+  return cardTaskMatches(kindMask, stateMask, kind, state);
 }
 
 export function kindIndex(kind: string): number {
@@ -293,7 +287,10 @@ export function tasksFromBoard(
     });
     if (!running) continue;
     const heard = lastHeard.get(card.number);
-    const quiet = heard === undefined || (nowMs - heard) / 1000 > BEE_QUIET_SECONDS;
+    // bee_state, run as the card: a card in RUNNING has been taken (claimed),
+    // and one never heard is as old as the feed knows it to be.
+    const silent = heard === undefined ? Number.MAX_SAFE_INTEGER : (nowMs - heard) / 1000;
+    const quiet = BEE_STATE_NAMES[cardBeeState(true, silent)] !== "working";
     bees.push({
       id,
       lane: null,
@@ -420,7 +417,8 @@ export function ageWords(iso: string | null, nowMs: number, lang: "en" | "ru"): 
 }
 
 export function beeStateWord(state: BeeState, lang: "en" | "ru"): string {
-  return BEE_WORDS[lang][state];
+  const words: Record<string, string> = BEE_WORDS[lang];
+  return words[state] ?? state;
 }
 
 /** The game's label over a bee: "#7513 · working · 12 min". */

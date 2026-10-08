@@ -942,6 +942,12 @@
   }
 }
 
+/* The chip that unfolds the row above: drawn like the others, and outlined in
+   the pressed gold while the row is open. */
+.queen27-dir-filter .queen27-task-filter-toggle[aria-expanded="true"] {
+  border-color: var(--gold, #d9a441);
+}
+
 /* A review or a job says what it is, and a task of another repository says
    which, in words beside the number. */
 .queen27-card-kind {
@@ -951,6 +957,11 @@
   color: var(--muted);
   font-size: 0.55rem;
   text-transform: uppercase;
+}
+
+.queen27-card-kind[data-state="failed"] {
+  border-color: rgba(255, 95, 86, 0.6);
+  color: #ff8a80;
 }
 
 /* The bee on a card: lane, state, how long, last heard. Working is the board's
