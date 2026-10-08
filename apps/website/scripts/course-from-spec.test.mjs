@@ -89,11 +89,11 @@ test('two lessons opening the same widget fail the build, inside a course or acr
 })
 
 test('a lesson with no spec fails the build', async () => {
-  await fails(spec(1, '"specs/tutorial/04_control_flow.t27"', '""'), 'names no spec')
+  await fails(spec(1, '"specs/fpga/stdlib.t27"', '""'), 'names no spec')
 })
 
 test('a lesson spec that does not compile clean fails the build', async () => {
-  await fails(spec(1, '"specs/tutorial/04_control_flow.t27"', '"specs/no/such.t27"'), 'specs/no/such.t27')
+  await fails(spec(1, '"specs/fpga/stdlib.t27"', '"specs/no/such.t27"'), 'specs/no/such.t27')
 })
 
 test('a course that is not 27 lessons fails the build', async () => {
@@ -135,8 +135,8 @@ test('Cyrillic in a spec fails the build; Russian lives in the bundle', async ()
 
 test('a Russian field that changes a number fails the build', async () => {
   const b = bundle(1)
-  b.lessons['seven-backends-and-t27b'].TEXT = replaced(b.lessons['seven-backends-and-t27b'].TEXT, '307', '308')
-  await fails(withBundle(1, b), 'lessons.seven-backends-and-t27b.TEXT numbers')
+  b.lessons['ready-and-valid'].TASK = replaced(b.lessons['ready-and-valid'].TASK, '32', '33')
+  await fails(withBundle(1, b), 'lessons.ready-and-valid.TASK numbers')
 })
 
 test('a Russian field that drops a placeholder fails the build', async () => {

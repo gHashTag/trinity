@@ -27,7 +27,7 @@
 <meta name="twitter:image" content="https://t27.ai/learn/a-build-receipt/card.png?v=6f187b29dbb6">
 <meta name="twitter:image:alt" content="Course, Lesson 23 of 27: A build, itemised. Every stage from a spec to a bitstream, with its time, tool and hash.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","name":"A build, itemised","description":"Every stage from a spec to a bitstream, with its time, tool and hash.","url":"https://t27.ai/learn/a-build-receipt/","inLanguage":"en","learningResourceType":"lesson","position":23,"isAccessibleForFree":true,"isPartOf":{"@type":"Course","name":"From zero to a chip: FPGA programming with t27","description":"27 lessons, one working widget and one t27 spec each: what an FPGA is, how numbers become bits, your own t27 spec, how t27c compiles it, and how it becomes a bitstream on a real board.","url":"https://t27.ai/learn/course/","inLanguage":"en","isAccessibleForFree":true,"educationalLevel":"Beginner","provider":{"@type":"Organization","name":"TRINITY S³AI","url":"https://t27.ai/"}}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","name":"A build, itemised","description":"Every stage from a spec to a bitstream, with its time, tool and hash.","url":"https://t27.ai/learn/a-build-receipt/","inLanguage":"en","learningResourceType":"lesson","position":23,"isAccessibleForFree":true,"isPartOf":{"@type":"Course","name":"From zero to a chip: FPGA programming with t27","description":"27 lessons, one working widget and one t27 spec each: what an FPGA is, how numbers become bits, clocked logic and how to prove it, and how a spec becomes a bitstream on a real board. Starts where the t27 basics course ends.","url":"https://t27.ai/learn/course/","inLanguage":"en","isAccessibleForFree":true,"educationalLevel":"Beginner","provider":{"@type":"Organization","name":"TRINITY S³AI","url":"https://t27.ai/"}}}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"t27.ai","item":"https://t27.ai/"},{"@type":"ListItem","position":2,"name":"From zero to a chip: FPGA programming with t27","item":"https://t27.ai/learn/course/"},{"@type":"ListItem","position":3,"name":"A build, itemised","item":"https://t27.ai/learn/a-build-receipt/"}]}</script>
 <style>
 @font-face { font-family: 'Outfit'; font-weight: 400 800; font-display: swap; src: url(/fonts/outfit-latin.woff2) format('woff2'); }
@@ -60,114 +60,54 @@ pre { overflow-x: auto; background: #0b0f0e; border: 1px solid #1e2624; border-r
 <nav class="crumbs"><a href="/learn/course/">All lessons</a><span>Module 8 · The bitstream</span><span>Lesson 23 of 27</span></nav>
 <h1>A build, itemised</h1>
 <section><h2>You will learn</h2><p class="goal">Every stage from a spec to a bitstream, with its time, tool and hash.</p></section>
-<p>A whole build from a t27 spec to an Artix-7 bitstream, written out like a shop receipt: each stage, the tool and its version, the time it took, and the sha256 of what it wrote. No Vivado anywhere. When a number on a receipt can be checked, anyone can rebuild it and compare the hash.</p>
-<section><h2>Try it</h2><p>Read the receipt: which stage took the longest, and which tool ran it? In the spec frame, RECEIPT_KINDS names two kinds of receipt: which one is the build alone, and which entry in ERRORS catches it posing as the other?</p></section>
+<p>A whole build from a t27 spec to an Artix-7 bitstream, written out like a shop receipt: each stage, the tool and its version, the time it took, and the sha256 of what it wrote. No Vivado anywhere. When a number on a receipt can be checked, anyone can rebuild it and compare the hash. The spec in the player is the command that re-runs the bench: what it execs, at which commit, with no help text of its own -- a tool card that says so plainly.</p>
+<section><h2>Try it</h2><p>Read the receipt: which stage took the longest, and which tool ran it? In the spec frame, read HELP_LINE and ARGS: what one optional argument does tri x7-bench take, and what does DISPATCH say it actually execs?</p></section>
 <p><a class="cta" href="/#/course/a-build-receipt">Open the interactive lesson →</a></p>
 <figure><a href="/widgets/build-receipt/"><img src="/widgets/build-receipt/card.png" width="600" height="315" alt="Build receipt: t27 spec to XC7A200T bitstream, no Vivado" loading="lazy"><figcaption>Build receipt: t27 spec to XC7A200T bitstream, no Vivado ↗</figcaption></a></figure>
 <p class="about" lang="en">One real open-flow build itemised like a shop receipt: each stage from a t27 spec to an Artix-7 200T bitstream with its time, tool version, output size and sha256.</p>
-<section><h2>specs/fpga/adapter.t27</h2><pre lang="en"><code>// SPDX-License-Identifier: Apache-2.0
-; specs/fpga/adapter.t27 -- the FPGA adapter contract: how a bitstream travels from a
-; build record to a device run and back as a receipt. S11 of gHashTag/trinity#988
-; (gHashTag/t27#3573, dmitrii-f-t27/trinity-memory#66). Two laws from #3573 hold the
-; whole contract: no hardware run may be inferred from synthesis, and physical
-; acceptance is tied to a recorded device and transcript. The tool that enforces it
-; is tools/trinity_fpga_adapter.py (check / --self-check); the receipts it checks
-; live in conformance/trinity/fpga_adapter.json. ASCII only (L3), English only (LANG-EN).
-; phi^2 + 1/phi^2 = 3 | TRINITY
+<section><h2>specs/tools/trios/tri/x7-bench.t27</h2><pre lang="en"><code>// SPDX-License-Identifier: Apache-2.0
+; specs/tools/trios/tri/x7-bench.t27 -- tool gHashTag/BrowserOS:tri/x7-bench, the `tri x7-bench` command of the trios loop CLI
+; Generated by apps/website/scripts/tools-from-trios-tri.mjs from gHashTag/BrowserOS:trios/bin/tri at 7366096248df; do not edit.
+; The CLI the loop timers run (`tri drift` holds ~/.local/bin/tri to the tracked copy). It is another program than
+; the Rust tri of gHashTag/t27 and the Zig tri of gHashTag/trinity, so the ID is repository-qualified.
+; A card is data and carries no test block. ASCII only (L3). phi^2 + 1/phi^2 = 3 | TRINITY
 
-module trinity_fpga_adapter;
+module tool_trios_tri_x7_bench;
 
-pub const KIND : str = &quot;spec&quot;;
-pub const VERSION : str = &quot;1&quot;;
-; The receipt schema this contract version emits and accepts.
-pub const RECEIPT_SCHEMA : str = &quot;trinity.fpga-receipt.v1&quot;;
-; A receipt is exactly one of: a build-only record (nothing touched a device) or a
-; device record (a board ran and a transcript exists). No third kind, no defaults.
-pub const RECEIPT_KINDS : [2]str = [&quot;dry_run&quot;, &quot;device&quot;];
-
-; ---- Inputs (what a caller must bring) -------------------------------------
-; bitstream_path: a file path. bitstream_sha256: the hex sha256 of that file's
-; bytes, checked before anything else. provenance: the build record -- commit,
-; tool versions (yosys, nextpnr-xilinx, prjxray image), the routed Fmax verdict.
-; board identity: the device's IDCODE under the rule below, DNA when read.
-; The IDCODE rule: the full 32-bit value, high nibble included (0x13636093 for the
-; Artix-7 XC7A200T of the AX7203 bench). openFPGALoader prints it without the
-; revision nibble (0x3636093); a receipt records BOTH forms once, and every later
-; comparison uses the full value, so a masked match can never pass for identity.
-pub const IDCODE_FULL : str = &quot;0x13636093&quot;;
-pub const IDCODE_PRINTED : str = &quot;0x3636093&quot;;
-pub const BOARD : str = &quot;alinx_ax7203&quot;;
-pub const PART : str = &quot;xc7a200tfbg484-2&quot;;
-
-; ---- Configuration ---------------------------------------------------------
-; flasher: the program that writes the device. The bench's is openFPGALoader
-; (-c digilent_hs2, SRAM by default); trinity-fpga's openocd path is a legal
-; second value once a receipt exercises it. cable: the JTAG adapter. target:
-; &quot;sram&quot; (volatile, the bench default) or &quot;flash&quot; (persistent).
-pub const FLASHERS : [2]str = [&quot;openFPGALoader&quot;, &quot;openocd&quot;];
-pub const CABLE : str = &quot;digilent_hs2&quot;;
-pub const TARGETS : [2]str = [&quot;sram&quot;, &quot;flash&quot;];
-
-; ---- Errors (distinct, one status each; no error is a prefix of another) ----
-pub const ERRORS : [8]str = [&quot;wrong_version&quot;, &quot;hash_mismatch&quot;, &quot;bitstream_absent&quot;,
-                             &quot;bitstream_empty&quot;, &quot;placeholder_command&quot;, &quot;idcode_mismatch&quot;,
-                             &quot;transcript_missing&quot;, &quot;dry_run_as_device&quot;];
-; wrong_version       the receipt's schema is not RECEIPT_SCHEMA of contract VERSION
-; hash_mismatch       the bitstream's sha256 is not the provenance's
-; bitstream_absent    the bitstream path names no file
-; bitstream_empty     the file exists and holds zero bytes
-; placeholder_command the flasher line is a placeholder (&quot;&quot; or &quot;TBD&quot; or &quot;&lt;...&gt;&quot;)
-; idcode_mismatch     the device's full IDCODE is not the receipt's recorded one
-; transcript_missing  a device receipt with no transcript hash / empty transcript
-; dry_run_as_device   a build-only record carrying a hardware result line
-
-; ---- Receipt ---------------------------------------------------------------
-; Every device receipt carries: the bitstream sha256, the full IDCODE, DNA when
-; read, the transcript sha256, the result line (&quot;HW RESULT: N/M bit-exact&quot; for
-; exact comparisons; counters for measurements), the captured UTC time and the
-; tool versions. A dry_run receipt carries the build half and an explicit
-; &quot;hardware&quot;: false; it must NOT contain a hardware result line. The receipt is
-; the only currency of evidence: a claim without one is a plan, not a result.
-
-; ---- Device results of this stage (the receipts' sources) ------------------
-; dmitrii-f-t27/trinity-memory: reports/fpga/matvec-capture-2026-09-27-m6d5-golden.json
-; (dense5, 320/320 bit-exact), ...-golden-b2.json (baseline2, 320/320),
-; ddr3-matvec-measure-2026-09-27-{d5,b2}.json (12 runs each), and the #61 pattern
-; capture. conformance/trinity/fpga_adapter.json embeds them; the tool checks.
-
-fn error_count() -&gt; u32 {
-    return 8;
-}
-
-test error_codes_are_distinct {
-    // The eight statuses are pairwise distinct strings by construction of the
-    // ERRORS table; the count is what the tool's self-check plants one by one.
-    assert_eq(error_count(), 8);
-}
-
-// The printed form is the full form without its revision nibble; a receipt
-// that recorded only the printed form could pass a masked comparison. The
-// rule is arithmetic, not stringly: full == printed + 0x10000000.
-fn idcode_full_of(printed: u32) -&gt; u32 {
-    return printed + 268435456;
-}
-
-test idcode_rule_records_both_forms {
-    assert_eq(idcode_full_of(0x3636093), 0x13636093);
-    assert_eq(idcode_full_of(0x3636093) &amp; 0xF0000000, 0x10000000);
-}
-
-fn receipt_kind_count() -&gt; u32 {
-    return 2;
-}
-
-test receipt_kinds_exhaustive {
-    assert_eq(receipt_kind_count(), 2);
-}
-endmodule
-</code></pre><p><a href="/play/embed.html?spec=specs%2Ffpga%2Fadapter.t27&amp;tab=term&amp;v=7cbe9ab0c960">Open the lesson's spec in the player ↗</a></p></section>
+pub const KIND : str = &quot;tool&quot;;
+pub const FAMILY : str = &quot;tri-cli&quot;;
+pub const ID : str = &quot;gHashTag/BrowserOS:tri/x7-bench&quot;;
+pub const REPO : str = &quot;gHashTag/BrowserOS&quot;;
+pub const QUALIFIED_ID : str = &quot;gHashTag/BrowserOS:tri/x7-bench&quot;;
+pub const SCHEMA : u32 = 2;
+pub const COMMAND : str = &quot;tri x7-bench&quot;;
+; The case arm of the dispatcher and the first line of it that does the work.
+pub const VARIANT : str = &quot;case arm `x7-bench)`, line 1899&quot;;
+pub const SOURCE : str = &quot;trios/bin/tri&quot;;
+pub const ENTRY : str = &quot;trios/bin/tri&quot;;
+pub const SOURCE_COMMIT : str = &quot;7366096248dfb09893e9a7d1a0f1c56ced13d16e&quot;;
+pub const ROUTED : bool = true;
+pub const DISPATCH : str = &quot;exec python3 \&quot;$HOME/skills/xilinx7-bitstream-loop/scripts/x7.py\&quot; bench \&quot;$@\&quot;&quot;;
+pub const DOCUMENTED : bool = true;
+pub const HELP_LINE : str = &quot;tri x7-status / x7-next / x7-task ID [--status S] [--note N] / x7-lesson \&quot;H\&quot; \&quot;B\&quot; / x7-bench [N] / x7-refs&quot;;
+pub const CATEGORY : str = &quot;xilinx7 MVP loop (bitstream back half as .t27, skill xilinx7-bitstream-loop)&quot;;
+pub const ABOUT : str = &quot;no help text in gHashTag/BrowserOS:trios/bin/tri@7366096248df: `tri help` names it without a description and its case arm carries no comment&quot;;
+pub const ABOUT_SOURCE : str = &quot;`tri help` (the heredoc under the help arm of trios/bin/tri), which names it without a description&quot;;
+pub const ACTIONS : [0]str = [];
+pub const ACTIONS_ABOUT : [0]str = [];
+pub const ARGS : [1]str = [&quot;[N]&quot;];
+pub const AGENTS : [0]str = [];
+pub const AGENTS_NOTE : str = &quot;No source binds an agent letter to this command: the trios CLI is not named by docs/agents/AGENTS_ALPHABET.md or .claude/agents/*.md of gHashTag/t27.&quot;;
+pub const WHEN_TO_USE : str = &quot;no help text in gHashTag/BrowserOS:trios/bin/tri@7366096248df: `tri help` names it without a description and its case arm carries no comment&quot;;
+; public/term/tri-x7-refs/meta.json lists 1 run(s) of `tri x7-bench`; recorded with the live ~/.local/bin/tri,
+; not a build of SOURCE_COMMIT. The site plays it at the end of this card.
+pub const CAST : str = &quot;term/tri-x7-refs/session.cast&quot;;
+pub const WITNESS : str = &quot;source-parse&quot;;
+pub const WITNESS_SOURCE : str = &quot;gHashTag/BrowserOS:trios/bin/tri at 7366096248dfb09893e9a7d1a0f1c56ced13d16e, read as text (the help heredoc and the top-level case arms); the CLI was not run&quot;;
+pub const ENABLED : bool = true;
+</code></pre><p><a href="/play/embed.html?spec=specs%2Ftools%2Ftrios%2Ftri%2Fx7-bench.t27&amp;tab=term&amp;v=7cbe9ab0c960">Open the lesson's spec in the player ↗</a></p></section>
 <nav class="pager"><a href="/learn/fasm-to-frames/">← From FASM to frames</a><a href="/learn/read-a-bitstream/">Read a bitstream →</a></nav>
-<section><h2>All lessons</h2><ul class="outline"><li><h3>Module 1 · The chip</h3><p>What an FPGA is, which chip we use, and how its pins meet the board.</p><ol><li><a href="/learn/fpga-is-a-grid/">01 An FPGA is a grid you configure</a></li><li><a href="/learn/which-chip/">02 Which chip is this?</a></li><li><a href="/learn/pins-and-package/">03 Pins, balls and the package</a></li></ol></li><li><h3>Module 2 · Numbers in hardware</h3><p>Bits, trits and number formats, and what arithmetic costs in logic.</p><ol><li><a href="/learn/bits-and-trits/">04 Bits, trits and GF16</a></li><li><a href="/learn/what-arithmetic-costs/">05 What arithmetic costs</a></li><li><a href="/learn/how-much-fits/">06 How much fits on the chip</a></li></ol></li><li><h3>Module 3 · Your t27 program</h3><p>Write a spec, test it, and see why compiling is not the same as being right.</p><ol><li><a href="/learn/hello-t27/">07 Hello, t27</a></li><li><a href="/learn/tests-are-the-spec/">08 Tests are part of the spec</a></li><li><a href="/learn/compiles-is-not-correct/">09 Compiles is not the same as correct</a></li></ol></li><li><h3>Module 4 · Inside t27c</h3><p>How the compiler reads a spec and what it writes, including the native t27b.</p><ol><li><a href="/learn/compiler-stages/">10 The stages of t27c</a></li><li><a href="/learn/t27c-on-a-real-machine/">11 t27c on a real machine</a></li><li><a href="/learn/seven-backends-and-t27b/">12 Seven backends, and t27b</a></li></ol></li><li><h3>Module 5 · From spec to hardware</h3><p>The Verilog t27c writes, the cells it becomes, and what one LUT does.</p><ol><li><a href="/learn/spec-to-verilog/">13 From a spec to Verilog</a></li><li><a href="/learn/count-the-cells/">14 Count the cells</a></li><li><a href="/learn/one-lut-up-close/">15 One LUT, up close</a></li></ol></li><li><h3>Module 6 · Reading synthesis</h3><p>What yosys reports about your design, and which warnings matter.</p><ol><li><a href="/learn/synthesis-warnings/">16 Synthesis warnings that matter</a></li><li><a href="/learn/state-machines/">17 State machines</a></li><li><a href="/learn/where-the-luts-go/">18 Where the LUTs go</a></li></ol></li><li><h3>Module 7 · Place, route, timing</h3><p>Where the cells land on the die, and whether the clock is met.</p><ol><li><a href="/learn/placement/">19 Placement: where the cells land</a></li><li><a href="/learn/logic-depth/">20 Logic depth</a></li><li><a href="/learn/timing-slack/">21 Timing and slack</a></li></ol></li><li><h3>Module 8 · The bitstream</h3><p>How a routed design becomes the bits the chip loads, with no Vivado.</p><ol><li><a href="/learn/fasm-to-frames/">22 From FASM to frames</a></li><li class="on" aria-current="page"><a href="/learn/a-build-receipt/">23 A build, itemised</a></li><li><a href="/learn/read-a-bitstream/">24 Read a bitstream</a></li></ol></li><li><h3>Module 9 · On the board</h3><p>Ask the chip who it is, load the bits, and check them.</p><ol><li><a href="/learn/jtag-asks-the-chip/">25 JTAG asks the chip</a></li><li><a href="/learn/same-bits-on-the-board/">26 The same bits, on the board</a></li><li><a href="/learn/capstone/">27 Capstone: out-guess yosys</a></li></ol></li></ul></section>
+<section><h2>All lessons</h2><ul class="outline"><li><h3>Module 1 · The chip</h3><p>What an FPGA is, which chip we use, and how its pins meet the board.</p><ol><li><a href="/learn/fpga-is-a-grid/">01 An FPGA is a grid you configure</a></li><li><a href="/learn/which-chip/">02 Which chip is this?</a></li><li><a href="/learn/pins-and-package/">03 Pins, balls and the package</a></li></ol></li><li><h3>Module 2 · Numbers in hardware</h3><p>Bits, trits and number formats, and what arithmetic costs in logic.</p><ol><li><a href="/learn/bits-and-trits/">04 Bits, trits and GF16</a></li><li><a href="/learn/what-arithmetic-costs/">05 What arithmetic costs</a></li><li><a href="/learn/how-much-fits/">06 How much fits on the chip</a></li></ol></li><li><h3>Module 3 · Clocked logic</h3><p>Wires compute, registers remember: what changes on a clock edge and what does not.</p><ol><li><a href="/learn/wires-and-registers/">07 Wires compute, registers remember</a></li><li><a href="/learn/ready-and-valid/">08 Ready and valid</a></li><li><a href="/learn/the-design-in-one-spec/">09 The whole design in one spec</a></li></ol></li><li><h3>Module 4 · Proof in the spec</h3><p>Testbenches, waves and planted bugs: a hardware spec carries its own proof.</p><ol><li><a href="/learn/a-testbench-is-a-spec/">10 A testbench is a spec</a></li><li><a href="/learn/watch-it-in-waves/">11 Watch it in waves</a></li><li><a href="/learn/compiles-is-not-correct/">12 Compiles is not the same as correct</a></li></ol></li><li><h3>Module 5 · From spec to hardware</h3><p>The Verilog t27c writes, the cells it becomes, and what one LUT does.</p><ol><li><a href="/learn/spec-to-verilog/">13 From a spec to Verilog</a></li><li><a href="/learn/count-the-cells/">14 Count the cells</a></li><li><a href="/learn/one-lut-up-close/">15 One LUT, up close</a></li></ol></li><li><h3>Module 6 · Reading synthesis</h3><p>What yosys reports about your design, and which warnings matter.</p><ol><li><a href="/learn/synthesis-warnings/">16 Synthesis warnings that matter</a></li><li><a href="/learn/state-machines/">17 State machines</a></li><li><a href="/learn/where-the-luts-go/">18 Where the LUTs go</a></li></ol></li><li><h3>Module 7 · Place, route, timing</h3><p>Where the cells land on the die, and whether the clock is met.</p><ol><li><a href="/learn/placement/">19 Placement: where the cells land</a></li><li><a href="/learn/logic-depth/">20 Logic depth</a></li><li><a href="/learn/timing-slack/">21 Timing and slack</a></li></ol></li><li><h3>Module 8 · The bitstream</h3><p>How a routed design becomes the bits the chip loads, with no Vivado.</p><ol><li><a href="/learn/fasm-to-frames/">22 From FASM to frames</a></li><li class="on" aria-current="page"><a href="/learn/a-build-receipt/">23 A build, itemised</a></li><li><a href="/learn/read-a-bitstream/">24 Read a bitstream</a></li></ol></li><li><h3>Module 9 · On the board</h3><p>Ask the chip who it is, load the bits, and check them.</p><ol><li><a href="/learn/jtag-asks-the-chip/">25 JTAG asks the chip</a></li><li><a href="/learn/same-bits-on-the-board/">26 The same bits, on the board</a></li><li><a href="/learn/capstone/">27 Capstone: out-guess yosys</a></li></ol></li></ul></section>
 <footer><p><a href="/learn/course.t27">This course is itself a t27 spec: read it</a></p><p>Widgets keep their own English words: each one lives in its own t27 spec.</p></footer>
 </main>
 </body>
