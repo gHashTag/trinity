@@ -30,7 +30,7 @@ function fixture(over={}){
     }
     if(url===`https://raw.githubusercontent.com/${production.INDEX_REPO}/${production.INDEX_REF}/${production.INDEX_PATH}`)return Response.json(f.index);
     const prefix=`https://raw.githubusercontent.com/${repo}/${commit}/`;
-    assert.ok(url.startsWith(prefix),url);const body=f.files.get(url.slice(prefix.length));
+    assert.ok(url.toLowerCase().startsWith(prefix.toLowerCase()),url);const body=f.files.get(url.slice(prefix.length));
     return new Response(body??'missing',{status:body===undefined?404:200});
   };
   f.reader=createMergedPrSpecReader(production);
@@ -40,6 +40,11 @@ function fixture(over={}){
 let cases=0;
 async function status(f,n,state='closed',r=repo){cases++;return (await f.reader.proveWorldIssues([row(n,state,r)],r,signal,f.fetcher))[0];}
 assert.equal(supportsIssueProof(repo),true);assert.equal(supportsIssueProof('another/repo'),false);
+// The world selector passes the repository lower-cased: the same repository, same verdicts, one cache.
+{const f=fixture(),lower=repo.toLowerCase();assert.equal(supportsIssueProof(lower),true);cases++;
+ const r=(await f.reader.proveWorldIssues([row(7001,'closed',lower)],lower,signal,f.fetcher))[0];assert.equal(r.coverage,'t27','lower-case repository is proven');
+ const before=f.apiReads;await f.reader.proveWorldIssues([row(7001,'closed',repo)],repo,signal,f.fetcher);assert.equal(f.apiReads,before,'both spellings share the cache');
+ f.reader.invalidateIssueProof(repo);const again=await f.reader.proveWorldIssues([row(7001,'closed',lower)],lower,signal,f.fetcher);assert.equal(again[0].coverage,'t27');assert.ok(f.apiReads>before,'invalidate by either spelling forces a fresh read');}
 // Accepted: merged PR with Closes, current seal with tests, required checks green.
 {const f=fixture(),r=await status(f,7001);
  assert.equal(r.coverage,'t27');assert.equal(r.proof.commit,commit);assert.match(r.proof.specUrl,/blob\/e{40}\/specs\/port\/m\.t27$/);assert.match(r.proof.ciUrl,/\/pull\/900\/checks$/);
