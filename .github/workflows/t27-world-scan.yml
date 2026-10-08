@@ -175,6 +175,13 @@ jobs:
           # against the head it reads from the API, as it would for a person.
           gh workflow run pr-blog-report.yml --ref main -f pr="$PR"
           echo "- started the work-report check for PR #$PR" >> "$GITHUB_STEP_SUMMARY"
+          # The site's own checks never ran on #1535 for the same reason: it was
+          # merged 70 s after it opened with no website-checks run on it at all,
+          # its course specs deleted, and the publisher then refused t27.ai.
+          # Dispatched on the branch, the run lands on the head commit, so whoever
+          # reviews the refresh sees course, course-pages and the rest red or green.
+          gh workflow run website-checks.yml --ref "$BRANCH"
+          echo "- started website-checks on $BRANCH for PR #$PR" >> "$GITHUB_STEP_SUMMARY"
           # NO SELF-ARMED MERGE. Owner's rule, 2026-10-02: "the Queen must not
           # merge by herself!! the Queen only manages!" -- no automation merges
           # on its own verdict. This job used to arm `gh pr merge --squash
