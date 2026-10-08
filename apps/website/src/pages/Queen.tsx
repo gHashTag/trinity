@@ -40,9 +40,10 @@ import {
   type TasksScope,
 } from "../lib/queenTasks";
 import { cardLoaded, cardReady } from "../lib/queenTasksCard";
-import { ageBees, loadBusPage, patchFeed, planPage, touchBees } from "../lib/queenBus";
+import { ageBees, loadBusPage, patchFeed, planPage, touchBees, type SeenEvent } from "../lib/queenBus";
 import { READ_PAUSE_MS, SNAPSHOT_EVERY_SECONDS, WAIT_MAX_SECONDS } from "../lib/queenEvents.generated";
 import { eventsCardReady } from "../lib/queenEventsCard";
+import { CELL_NONE, CELL_PLACED } from "../lib/queenHive.generated";
 import { QueenComb } from "../components/QueenComb";
 import { QueenCommandPanel, type CommandItem } from "../components/QueenCommand";
 import { QueenContext } from "../components/QueenContext";
@@ -180,6 +181,10 @@ const ACTIVITY_POLL_MS = 2_000;
 // thirty seconds while it does not: a route that is still deploying is not a
 // reason to send a request every five seconds that is known to fail.
 const TASKS_RETRY_MS = 30_000;
+const EMPTY_SEEN: readonly SeenEvent[] = [];
+// How many recent bus events the page keeps for the game: more than a page of
+// one burst, few enough that a flash never outlives its list.
+const SEEN_EVENTS = 64;
 const PINNED_QUEEN_HARDWARE_PUBLIC_KEY =
   "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA5+HsGhhkVkICuwo5Qa2pWhfVhT3/wLOLWutK4VKYulw=\n-----END PUBLIC KEY-----\n";
 
@@ -1643,9 +1648,13 @@ function useQueenTasks(
   board: QueenBoard | null,
   boardError: string | null,
   events: readonly ActivityLike[],
-): { feed: QueenTasksFeed | null; health: HiveFeedHealth; error: string | null } {
+): { feed: QueenTasksFeed | null; health: HiveFeedHealth; error: string | null; events: readonly SeenEvent[] } {
   const [wire, setWire] = useState<{ feed: QueenTasksFeed; scope: TasksScope } | null>(null);
   const [wireError, setWireError] = useState<string | null>(null);
+  // The events the bus delivered lately, newest last, for the game to draw
+  // (gHashTag/t27 specs/queen/hive.t27 cell_effect). A short tail: a flash
+  // lasts under two seconds, and a page that was away has nothing to replay.
+  const [seen, setSeen] = useState<readonly SeenEvent[]>(EMPTY_SEEN);
   // THE BUS (gHashTag/t27 specs/queen/events.t27). One snapshot, which carries
   // the cursor it was read at; then only the events past it, each decided by the
   // card: a bee heard is touched where it is, a task that moved is read again
@@ -1705,6 +1714,10 @@ function useQueenTasks(
         cursor = plan.cursor;
         show(next);
         setWireError(null);
+        if (plan.applied.length > 0) {
+          const seenAt = Date.now();
+          setSeen((previous) => [...previous, ...plan.applied.map((event) => ({ ...event, seenAt }))].slice(-SEEN_EVENTS));
+        }
         timer = window.setTimeout(follow, READ_PAUSE_MS);
       } catch (error) {
         if (!active) return;
@@ -1748,8 +1761,8 @@ function useQueenTasks(
     [board, events, firstSeen, cardOk],
   );
   const wireUsable = wire !== null && wireError === null && (wire.scope === "all" || !full);
-  if (wireUsable) return { feed: wire.feed, health: "live", error: null };
-  return { feed: derived, health: derived ? hiveFeedHealth(true, boardError) : "unknown", error: wireError };
+  if (wireUsable) return { feed: wire.feed, health: "live", error: null, events: seen };
+  return { feed: derived, health: derived ? hiveFeedHealth(true, boardError) : "unknown", error: wireError, events: EMPTY_SEEN };
 }
 
 /**
@@ -3728,7 +3741,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
   // Every task and its bees: the game's ships and the kanban's cards read this
   // one feed. The kanban being on screen is what asks for all of it.
   const tasksState = useQueenTasks(boardView === "kanban", board, boardState.error, events);
-  const catalogLive = useMemo(() => ({ feed: tasksState.feed, health: tasksState.health }), [tasksState.feed, tasksState.health]);
+  const catalogLive = useMemo(() => ({ feed: tasksState.feed, health: tasksState.health, events: tasksState.events }), [tasksState.feed, tasksState.health, tasksState.events]);
   // The repository comb's bees, each over its own issue's cell by number in this
   // board's repository. Undefined until the feed exists, so the slot motes keep
   // the field until then rather than an empty sky.
@@ -3737,7 +3750,8 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
     const sameRepo = (other: string) => repo !== null && other.toLowerCase() === repo.toLowerCase();
     return tasksState.feed.bees.map((bee) => {
       const index = bee.number !== null && sameRepo(bee.repo) ? hiveCells.findIndex((row) => row?.number === bee.number) : -1;
-      return { id: bee.id, lane: bee.lane, state: bee.state, number: bee.number, since: bee.since, target: index >= 0 ? index : null };
+      // this comb draws every card of its board at once, so a cell is placed or there is none
+      return { id: bee.id, lane: bee.lane, state: bee.state, number: bee.number, since: bee.since, target: index >= 0 ? index : null, cell: index >= 0 ? CELL_PLACED : CELL_NONE, portal: null };
     });
   }, [tasksState.feed, hiveCells, repo]);
   // The board's second lane. Asked for only while the kanban is on screen, and
