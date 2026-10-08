@@ -9,14 +9,14 @@
     "specs/boards"
   ],
   "totals": {
-    "specs": 162,
-    "typecheckOk": 159,
-    "hirOk": 162,
-    "blocks": 2003,
-    "pass": 1474,
-    "fail": 19,
-    "skip": 510,
-    "clean": 95
+    "specs": 164,
+    "typecheckOk": 162,
+    "hirOk": 164,
+    "blocks": 2051,
+    "pass": 1520,
+    "fail": 23,
+    "skip": 508,
+    "clean": 97
   },
   "specs": {
     "specs/fpga/adapter.t27": {
@@ -92,13 +92,13 @@
       "g": "not run: assignment to tx_cur_byte, which is not a local"
     },
     "specs/fpga/bridge.t27": {
-      "t": 0,
+      "t": 1,
       "h": 1,
-      "b": 0,
-      "p": 0,
-      "f": 0,
-      "s": 0,
-      "g": "typecheck: error: cannot assign to immutable array element 'tx_buffer[...]':239"
+      "b": 31,
+      "p": 24,
+      "f": 2,
+      "s": 5,
+      "g": "not run: a call to .handle_config on Bridge_Unit{ state: 0, rx_head: 0, rx_tail: 0, tx_head: 0, tx_tail: 0, tx_bytes: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], packet_len: 0, packet_type: 0, timeout_cnt: 0, spi_enabled: true, mac_enabled: true }"
     },
     "specs/fpga/clock_domain.t27": {
       "t": 1,
@@ -150,6 +150,15 @@
       "h": 1,
       "b": 19,
       "p": 19,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
+    "specs/fpga/eth_crc.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 9,
+      "p": 9,
       "f": 0,
       "s": 0,
       "g": "-"
@@ -289,6 +298,15 @@
       "s": 0,
       "g": "-"
     },
+    "specs/fpga/rgmii.t27": {
+      "t": 1,
+      "h": 1,
+      "b": 8,
+      "p": 8,
+      "f": 0,
+      "s": 0,
+      "g": "-"
+    },
     "specs/fpga/router.t27": {
       "t": 1,
       "h": 1,
@@ -311,10 +329,10 @@
       "t": 1,
       "h": 1,
       "b": 29,
-      "p": 22,
-      "f": 4,
-      "s": 3,
-      "g": "not run: the compiler parsed this block only in part"
+      "p": 24,
+      "f": 5,
+      "s": 0,
+      "g": "-"
     },
     "specs/fpga/stdlib.t27": {
       "t": 1,
@@ -635,9 +653,9 @@
       "t": 1,
       "h": 1,
       "b": 22,
-      "p": 11,
+      "p": 14,
       "f": 0,
-      "s": 11,
+      "s": 8,
       "g": "not run: assignment to mac_result, which is not a local"
     },
     "specs/fpga/uart.t27": {
@@ -645,9 +663,9 @@
       "h": 1,
       "b": 18,
       "p": 17,
-      "f": 0,
-      "s": 1,
-      "g": "no assert to check"
+      "f": 1,
+      "s": 0,
+      "g": "-"
     },
     "specs/fpga/vcd_conformance_compare.t27": {
       "t": 1,

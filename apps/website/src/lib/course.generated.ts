@@ -7759,7 +7759,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/fpga/uart.t27",
           "source": "t27/files/specs/fpga/uart.t27",
-          "preview": "play/embed.html?spec=specs%2Ffpga%2Fuart.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ffpga%2Fuart.t27&tab=term&v=65d8702610c1",
           "height": 480
         },
         "en": {
@@ -7791,7 +7791,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/fpga/spi.t27",
           "source": "t27/files/specs/fpga/spi.t27",
-          "preview": "play/embed.html?spec=specs%2Ffpga%2Fspi.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ffpga%2Fspi.t27&tab=term&v=65d8702610c1",
           "height": 480
         },
         "en": {
@@ -7823,7 +7823,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/fpga/apb_bridge.t27",
           "source": "t27/files/specs/fpga/apb_bridge.t27",
-          "preview": "play/embed.html?spec=specs%2Ffpga%2Fapb_bridge.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ffpga%2Fapb_bridge.t27&tab=term&v=65d8702610c1",
           "height": 480
         },
         "en": {
@@ -7864,7 +7864,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/fpga/uart.t27",
           "source": "t27/files/specs/fpga/uart.t27",
-          "preview": "play/embed.html?spec=specs%2Ffpga%2Fuart.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ffpga%2Fuart.t27&tab=term&v=65d8702610c1",
           "height": 480
         },
         "en": {
@@ -7905,7 +7905,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/fpga/uart.t27",
           "source": "t27/files/specs/fpga/uart.t27",
-          "preview": "play/embed.html?spec=specs%2Ffpga%2Fuart.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ffpga%2Fuart.t27&tab=term&v=65d8702610c1",
           "height": 480
         },
         "en": {
@@ -7937,7 +7937,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/fpga/testbench/uart_tb.t27",
           "source": "t27/files/specs/fpga/testbench/uart_tb.t27",
-          "preview": "play/embed.html?spec=specs%2Ffpga%2Ftestbench%2Fuart_tb.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ffpga%2Ftestbench%2Fuart_tb.t27&tab=term&v=65d8702610c1",
           "height": 480
         },
         "en": {
@@ -7978,7 +7978,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/fpga/spi.t27",
           "source": "t27/files/specs/fpga/spi.t27",
-          "preview": "play/embed.html?spec=specs%2Ffpga%2Fspi.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ffpga%2Fspi.t27&tab=term&v=65d8702610c1",
           "height": 480
         },
         "en": {
@@ -8019,7 +8019,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/fpga/testbench/spi_tb.t27",
           "source": "t27/files/specs/fpga/testbench/spi_tb.t27",
-          "preview": "play/embed.html?spec=specs%2Ffpga%2Ftestbench%2Fspi_tb.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ffpga%2Ftestbench%2Fspi_tb.t27&tab=term&v=65d8702610c1",
           "height": 480
         },
         "en": {
@@ -8051,7 +8051,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/fpga/testbench/spi_tb.t27",
           "source": "t27/files/specs/fpga/testbench/spi_tb.t27",
-          "preview": "play/embed.html?spec=specs%2Ffpga%2Ftestbench%2Fspi_tb.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ffpga%2Ftestbench%2Fspi_tb.t27&tab=term&v=65d8702610c1",
           "height": 480
         },
         "en": {
@@ -8092,7 +8092,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/fpga/apb_bridge.t27",
           "source": "t27/files/specs/fpga/apb_bridge.t27",
-          "preview": "play/embed.html?spec=specs%2Ffpga%2Fapb_bridge.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ffpga%2Fapb_bridge.t27&tab=term&v=65d8702610c1",
           "height": 480
         },
         "en": {
@@ -8133,7 +8133,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/fpga/apb_bridge.t27",
           "source": "t27/files/specs/fpga/apb_bridge.t27",
-          "preview": "play/embed.html?spec=specs%2Ffpga%2Fapb_bridge.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ffpga%2Fapb_bridge.t27&tab=term&v=65d8702610c1",
           "height": 480
         },
         "en": {
@@ -8165,7 +8165,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/fpga/testbench/apb_bridge_tb.t27",
           "source": "t27/files/specs/fpga/testbench/apb_bridge_tb.t27",
-          "preview": "play/embed.html?spec=specs%2Ffpga%2Ftestbench%2Fapb_bridge_tb.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ffpga%2Ftestbench%2Fapb_bridge_tb.t27&tab=term&v=65d8702610c1",
           "height": 480
         },
         "en": {
@@ -8214,7 +8214,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/fpga/axi4.t27",
           "source": "t27/files/specs/fpga/axi4.t27",
-          "preview": "play/embed.html?spec=specs%2Ffpga%2Faxi4.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ffpga%2Faxi4.t27&tab=term&v=65d8702610c1",
           "height": 480
         },
         "en": {
@@ -8255,7 +8255,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/fpga/axi4.t27",
           "source": "t27/files/specs/fpga/axi4.t27",
-          "preview": "play/embed.html?spec=specs%2Ffpga%2Faxi4.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ffpga%2Faxi4.t27&tab=term&v=65d8702610c1",
           "height": 480
         },
         "en": {
@@ -8287,7 +8287,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/fpga/testbench/axi4_tb.t27",
           "source": "t27/files/specs/fpga/testbench/axi4_tb.t27",
-          "preview": "play/embed.html?spec=specs%2Ffpga%2Ftestbench%2Faxi4_tb.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ffpga%2Ftestbench%2Faxi4_tb.t27&tab=term&v=65d8702610c1",
           "height": 480
         },
         "en": {
@@ -8328,7 +8328,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/fpga/memory.t27",
           "source": "t27/files/specs/fpga/memory.t27",
-          "preview": "play/embed.html?spec=specs%2Ffpga%2Fmemory.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ffpga%2Fmemory.t27&tab=term&v=65d8702610c1",
           "height": 480
         },
         "en": {
@@ -8360,7 +8360,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/fpga/memory.t27",
           "source": "t27/files/specs/fpga/memory.t27",
-          "preview": "play/embed.html?spec=specs%2Ffpga%2Fmemory.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ffpga%2Fmemory.t27&tab=term&v=65d8702610c1",
           "height": 480
         },
         "en": {
@@ -8392,7 +8392,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/fpga/testbench/memory_tb.t27",
           "source": "t27/files/specs/fpga/testbench/memory_tb.t27",
-          "preview": "play/embed.html?spec=specs%2Ffpga%2Ftestbench%2Fmemory_tb.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ffpga%2Ftestbench%2Fmemory_tb.t27&tab=term&v=65d8702610c1",
           "height": 480
         },
         "en": {
@@ -8433,7 +8433,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/fpga/bridge.t27",
           "source": "t27/files/specs/fpga/bridge.t27",
-          "preview": "play/embed.html?spec=specs%2Ffpga%2Fbridge.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ffpga%2Fbridge.t27&tab=term&v=65d8702610c1",
           "height": 480
         },
         "en": {
@@ -8465,7 +8465,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/fpga/bridge.t27",
           "source": "t27/files/specs/fpga/bridge.t27",
-          "preview": "play/embed.html?spec=specs%2Ffpga%2Fbridge.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ffpga%2Fbridge.t27&tab=term&v=65d8702610c1",
           "height": 480
         },
         "en": {
@@ -8497,7 +8497,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/fpga/testbench/integration_tb.t27",
           "source": "t27/files/specs/fpga/testbench/integration_tb.t27",
-          "preview": "play/embed.html?spec=specs%2Ffpga%2Ftestbench%2Fintegration_tb.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ffpga%2Ftestbench%2Fintegration_tb.t27&tab=term&v=65d8702610c1",
           "height": 480
         },
         "en": {
@@ -8538,7 +8538,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/fpga/eth_crc.t27",
           "source": "t27/files/specs/fpga/eth_crc.t27",
-          "preview": "play/embed.html?spec=specs%2Ffpga%2Feth_crc.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ffpga%2Feth_crc.t27&tab=term&v=65d8702610c1",
           "height": 480
         },
         "en": {
@@ -8579,7 +8579,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/fpga/rgmii.t27",
           "source": "t27/files/specs/fpga/rgmii.t27",
-          "preview": "play/embed.html?spec=specs%2Ffpga%2Frgmii.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ffpga%2Frgmii.t27&tab=term&v=65d8702610c1",
           "height": 480
         },
         "en": {
@@ -8620,7 +8620,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/tools/trios/tri/fpga-steps.t27",
           "source": "t27/files/specs/tools/trios/tri/fpga-steps.t27",
-          "preview": "play/embed.html?spec=specs%2Ftools%2Ftrios%2Ftri%2Ffpga-steps.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ftools%2Ftrios%2Ftri%2Ffpga-steps.t27&tab=term&v=65d8702610c1",
           "height": 480
         },
         "en": {
@@ -8652,7 +8652,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/tools/trios/tri/fpga-ioclients.t27",
           "source": "t27/files/specs/tools/trios/tri/fpga-ioclients.t27",
-          "preview": "play/embed.html?spec=specs%2Ftools%2Ftrios%2Ftri%2Ffpga-ioclients.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ftools%2Ftrios%2Ftri%2Ffpga-ioclients.t27&tab=term&v=65d8702610c1",
           "height": 480
         },
         "en": {
@@ -8693,7 +8693,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/tools/trios/tri/fpga-claim.t27",
           "source": "t27/files/specs/tools/trios/tri/fpga-claim.t27",
-          "preview": "play/embed.html?spec=specs%2Ftools%2Ftrios%2Ftri%2Ffpga-claim.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ftools%2Ftrios%2Ftri%2Ffpga-claim.t27&tab=term&v=65d8702610c1",
           "height": 480
         },
         "en": {
@@ -8742,7 +8742,7 @@ export const COURSES = [
         "spec": {
           "path": "specs/fpga/top_level.t27",
           "source": "t27/files/specs/fpga/top_level.t27",
-          "preview": "play/embed.html?spec=specs%2Ffpga%2Ftop_level.t27&tab=term&v=7cbe9ab0c960",
+          "preview": "play/embed.html?spec=specs%2Ffpga%2Ftop_level.t27&tab=term&v=65d8702610c1",
           "height": 480
         },
         "en": {
