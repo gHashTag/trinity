@@ -1,3 +1,9 @@
+import { body as body_course_three_goldenfloat, ruBody as ruBody_course_three_goldenfloat } from './bodies/course-three-goldenfloat'
+import { body as body_nine_modules_of_three_again, ruBody as ruBody_nine_modules_of_three_again } from './bodies/nine-modules-of-three-again'
+import { body as body_course_three_verifying_hardware, ruBody as ruBody_course_three_verifying_hardware } from './bodies/course-three-verifying-hardware'
+import { body as body_course_zero_t27_basics, ruBody as ruBody_course_zero_t27_basics } from './bodies/course-zero-t27-basics'
+import { body as body_tri_test_now_runs_the_tests, ruBody as ruBody_tri_test_now_runs_the_tests } from './bodies/tri-test-now-runs-the-tests'
+import { body as body_two_courses_twenty_seven_lessons_each, ruBody as ruBody_two_courses_twenty_seven_lessons_each } from './bodies/two-courses-twenty-seven-lessons-each'
 import { body as body_a_recipe_step_cannot_be_dropped_silently, ruBody as ruBody_a_recipe_step_cannot_be_dropped_silently } from './bodies/a-recipe-step-cannot-be-dropped-silently'
 import { body as body_the_queen_knows_how_to_build_a_course, ruBody as ruBody_the_queen_knows_how_to_build_a_course } from './bodies/the-queen-knows-how-to-build-a-course'
 import { body as body_a_course_pr_carries_its_post, ruBody as ruBody_a_course_pr_carries_its_post } from './bodies/a-course-pr-carries-its-post'
@@ -91,11 +97,21 @@ import { body as body_the_control_that_could_not_fail, ruBody as ruBody_the_cont
 import { body as body_the_scanner_scored_what_it_could_not_see, ruBody as ruBody_the_scanner_scored_what_it_could_not_see } from './bodies/the-scanner-scored-what-it-could-not-see'
 
 import { body as body_i_wrote_the_post_then_did_the_thing, ruBody as ruBody_i_wrote_the_post_then_did_the_thing } from './bodies/i-wrote-the-post-then-did-the-thing'
+import { body as body_course_buses_and_peripherals, ruBody as ruBody_course_buses_and_peripherals } from './bodies/course-buses-and-peripherals'
+import { body as body_clocks_resets_and_cdc, ruBody as ruBody_clocks_resets_and_cdc } from './bodies/course-3-clocks-resets-and-cdc'
 import { body as body_real_value_in_integer_container, ruBody as ruBody_real_value_in_integer_container } from './bodies/real-value-in-integer-container'
 import { body as body_features_that_change_no_bits, ruBody as ruBody_features_that_change_no_bits } from './bodies/features-that-change-no-bits'
 import { body as body_one_commit_nine_workflow_outcomes, ruBody as ruBody_one_commit_nine_workflow_outcomes } from './bodies/one-commit-nine-workflow-outcomes'
 
 const bodies: Record<string, PostBody> = {
+  'buses-and-peripherals': { body: body_course_buses_and_peripherals, ruBody: ruBody_course_buses_and_peripherals },
+  'clocks-resets-and-cdc': { body: body_clocks_resets_and_cdc, ruBody: ruBody_clocks_resets_and_cdc },
+  'course-three-verifying-hardware': { body: body_course_three_verifying_hardware, ruBody: ruBody_course_three_verifying_hardware },
+  'course-three-goldenfloat': { body: body_course_three_goldenfloat, ruBody: ruBody_course_three_goldenfloat },
+  'nine-modules-of-three-again': { body: body_nine_modules_of_three_again, ruBody: ruBody_nine_modules_of_three_again },
+  'course-zero-t27-basics': { body: body_course_zero_t27_basics, ruBody: ruBody_course_zero_t27_basics },
+  'tri-test-now-runs-the-tests': { body: body_tri_test_now_runs_the_tests, ruBody: ruBody_tri_test_now_runs_the_tests },
+  'two-courses-twenty-seven-lessons-each': { body: body_two_courses_twenty_seven_lessons_each, ruBody: ruBody_two_courses_twenty_seven_lessons_each },
   'a-recipe-step-cannot-be-dropped-silently': { body: body_a_recipe_step_cannot_be_dropped_silently, ruBody: ruBody_a_recipe_step_cannot_be_dropped_silently },
   'the-queen-knows-how-to-build-a-course': { body: body_the_queen_knows_how_to_build_a_course, ruBody: ruBody_the_queen_knows_how_to_build_a_course },
   'a-course-pr-carries-its-post': { body: body_a_course_pr_carries_its_post, ruBody: ruBody_a_course_pr_carries_its_post },

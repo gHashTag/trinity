@@ -1,0 +1,51 @@
+name: t27 coverage index
+
+# Rebuilds the issue to PR to spec index the Queen reads for gHashTag/t27
+# (specs/queen/t27_issue_proof.t27). The index is a hint on its own branch; the
+# browser reader re-reads every claim from GitHub before it paints a cell.
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: t27-coverage-index
+  cancel-in-progress: false
+
+jobs:
+  index:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: scripts/t27-coverage-index.mjs
+          sparse-checkout-cone-mode: false
+      - uses: actions/checkout@v4
+        with:
+          repository: gHashTag/t27
+          path: t27
+          sparse-checkout: .trinity/seals
+          sparse-checkout-cone-mode: false
+      - uses: actions/checkout@v4
+        with:
+          ref: queen-t27-coverage-index
+          path: index
+      - name: Rebuild the index
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/t27-coverage-index.mjs --seals t27/.trinity/seals --prev index/issues.json --out index/issues.json
+      - name: Publish when it changed
+        working-directory: index
+        run: |
+          if git diff --quiet -- issues.json; then echo 'index unchanged'; exit 0; fi
+          # generated_at moves on every run; publish only when the claims changed.
+          if [ "$(git show HEAD:issues.json | grep -v '"generated_at"')" = "$(grep -v '"generated_at"' issues.json)" ]; then echo 'claims unchanged'; git checkout -- issues.json; exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add issues.json
+          git commit -m 'index: rebuild t27 coverage index'
+          git push origin HEAD:queen-t27-coverage-index
