@@ -243,6 +243,13 @@ export const EXCLUDED: Record<string, string> = {
   'dmitrii-f-t27/trinity-memory/t27/rtl/gf16_ffn.t27': 'an FFN controller that computes in GF16, not a declaration of the format',
   'dmitrii-f-t27/trinity-memory/t27/rtl/gf16_scalar.t27': 'clocked scalar arithmetic on GF16 operands, not a declaration of the format',
   'dmitrii-f-t27/trinity-memory/t27/rtl/gf16_wide_norm.t27': 'a wide product and normalization unit over GF16, not a declaration of the format',
+  // Brought in by the 2026-10-08 world scan (trinity#1529); each header says what it is.
+  'specs/port/fpga/vivado/gf16_matmul4x4.t27': 'a 4x4 matrix multiply over 16-bit operands, not a declaration of the format',
+  'specs/port/fpga/vivado/gf16_top.t27': 'a board top ported from fpga/vivado/gf16_top.v, not a declaration of the format',
+  'specs/port/fpga/vivado/gf16_uart_sim_bench.t27': 'a UART simulation bench for the GF16 matrix multiply, not a declaration of the format',
+  'specs/tri/t27b/conformance/scoped_gf16.t27': 'a t27b conformance file for the scoped type name gf16::GF16, not a declaration of the format',
+  'dmitrii-f-t27/trinity-memory/specs/memory/gf16_ffn_board_evidence.t27': 'retained AX7203 captures of the GF16 FFN replayed offline (Memory #127), not a declaration of the format',
+  'dmitrii-f-t27/trinity-memory/specs/memory/gf16_ffn_performance_evidence.t27': 'retained GF16 FFN performance captures replayed offline (Memory #127), not a declaration of the format',
 }
 
 /**

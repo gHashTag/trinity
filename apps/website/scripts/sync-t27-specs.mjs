@@ -289,9 +289,18 @@ const priorDiscovery = priorManifest?.discovery ?? null
 // universe-atlas.json (1.1 MB, `npm run atlas`). Nothing warned, and nothing in
 // package.json chains the three, so a refresh left the Queen's shared-core and
 // universe pages pointing at files that were no longer there.
+// Two card directories inside files/ are not this script's either: tools-from-trinity-tri.mjs writes
+// specs/tools/trinity/cli, and tools-from-trios-tri.mjs writes specs/tools/trios/tri from trios/bin/tri
+// at a pinned BrowserOS commit, a file nothing here reads. Wiping them made the world scan's catalog
+// commit delete 515 tool cards (check:tools caught it), so they are carried across the wipe.
+const KEPT = ['specs/tools/trinity/cli', 'specs/tools/trios/tri']
+const keptDir = mkdtempSync(join(tmpdir(), 't27-kept-'))
+for (const d of KEPT) if (existsSync(join(SPECS_OUT, d))) cpSync(join(SPECS_OUT, d), join(keptDir, d), { recursive: true })
 rmSync(SPECS_OUT, { recursive: true, force: true })
 rmSync(join(OUT_DIR, 'manifest.json'), { force: true })
 mkdirSync(SPECS_OUT, { recursive: true })
+for (const d of KEPT) if (existsSync(join(keptDir, d))) cpSync(join(keptDir, d), join(SPECS_OUT, d), { recursive: true })
+rmSync(keptDir, { recursive: true, force: true })
 
 // Run the same wasm the browser runs, here, over the whole corpus. Health has
 // to be known before a row is drawn -- the alternative is compiling 667 specs
