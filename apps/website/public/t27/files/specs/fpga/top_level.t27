@@ -207,26 +207,24 @@ module ZeroDSP_TopLevel {
     invariant system_ready_when_not_processing
         given busy = system_busy()
         and   ready = system_ready()
-        assert busy == false implies ready == true
+        assert busy == true or ready == true
 
     invariant system_error_implies_not_busy
         given error = system_error()
         and   busy = system_busy()
-        assert error == true implies busy == false
+        assert error == false or busy == false
 
     invariant system_ready_implies_mac_uart_ready
         given ready = system_ready()
-        assert ready == true implies system_state.mac_ready == true
+        assert ready == false or system_state.mac_ready == true
 
+    // Implementation: call the function to measure its latency
     bench system_ready_latency
         measure: nanoseconds to system_ready()
         target: < 20ns
-        // Implementation: call the function to measure its latency
-        system_ready()
 
+    // Implementation: call the function to measure its latency
     bench system_reset_latency
         measure: nanoseconds to system_reset()
         target: < 100ns
-        // Implementation: call the function to measure its latency
-        system_reset()
 }

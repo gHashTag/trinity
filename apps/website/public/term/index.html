@@ -12,9 +12,9 @@
 <meta property="og:title" content="Recordings · Trinity S³AI">
 <meta property="og:description" content="Terminal sessions recorded from real commands: the output is what the commands printed.">
 <meta property="og:url" content="https://t27.ai/term/">
-<meta property="og:image" content="https://t27.ai/term/t27c-verilog-spi-tb/card.png">
+<meta property="og:image" content="https://t27.ai/term/t27c-rgmii/card.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://t27.ai/term/t27c-verilog-spi-tb/card.png">
+<meta name="twitter:image" content="https://t27.ai/term/t27c-rgmii/card.png">
 <style>@font-face{font-family:Outfit;src:url(../fonts/outfit-latin.woff2) format('woff2');font-weight:100 900;font-display:swap}
 *{box-sizing:border-box}html,body{margin:0;background:#000;color:#ebebeb}
 body{font:16px/1.6 Outfit,system-ui,sans-serif;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:40px 40px}
@@ -44,8 +44,10 @@ h1{font-size:clamp(26px,4.4vw,42px);line-height:1.15;margin:0 0 10px;color:#fff}
 <main>
 <div class="top"><a class="brand" href="../"><img src="../favicon.svg" alt="">Trinity S³AI</a></div>
 <h1>Recordings</h1>
-<p class="lede">Terminal sessions recorded from real commands: the output is what the commands printed. 102 so far.</p>
+<p class="lede">Terminal sessions recorded from real commands: the output is what the commands printed. 104 so far.</p>
 <div class="grid">
+<a href="t27c-rgmii/"><img src="t27c-rgmii/card.png" alt="" loading="lazy"><div><b>t27c on rgmii.t27 -- RGMII timing, native</b><small>2026-10-08 01:27 UTC · 9.2 s real</small></div></a>
+<a href="t27c-eth-crc/"><img src="t27c-eth-crc/card.png" alt="" loading="lazy"><div><b>t27c on eth_crc.t27 -- the FCS, native</b><small>2026-10-08 01:27 UTC · 9.7 s real</small></div></a>
 <a href="t27c-verilog-spi-tb/"><img src="t27c-verilog-spi-tb/card.png" alt="" loading="lazy"><div><b>t27c gen-verilog on spi_tb.t27 -- the testbench as RTL</b><small>2026-10-08 00:23 UTC · 3.8 s real</small></div></a>
 <a href="t27c-check-memory/"><img src="t27c-check-memory/card.png" alt="" loading="lazy"><div><b>t27c check on memory.t27 -- the spec compiles</b><small>2026-10-08 00:23 UTC · 3.2 s real</small></div></a>
 <a href="t27c-hir-uart/"><img src="t27c-hir-uart/card.png" alt="" loading="lazy"><div><b>t27c debug-hir on uart.t27 -- the bus as the compiler sees it</b><small>2026-10-08 00:22 UTC · 3.2 s real</small></div></a>
