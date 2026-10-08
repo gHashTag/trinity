@@ -32,6 +32,8 @@ pub const ARGS : [0]str = [];
 pub const AGENTS : [0]str = [];
 pub const AGENTS_NOTE : str = "No source binds an agent letter to this command: the trios CLI is not named by docs/agents/AGENTS_ALPHABET.md or .claude/agents/*.md of gHashTag/t27.";
 pub const WHEN_TO_USE : str = "who holds IOKit user clients on the CP2102N (pid, count, alive) and which driver is bound (AppleUSBSLCOM or a vendor one); every fpga-run header gets \"# usb clients\" and \"# usb driver\" lines";
+; public/term/tri-fpga-ioclients/meta.json lists 1 run(s) of `tri fpga-ioclients`, exit 0. The site plays it at the end of this card.
+pub const CAST : str = "term/tri-fpga-ioclients/session.cast";
 pub const WITNESS : str = "source-parse";
 pub const WITNESS_SOURCE : str = "gHashTag/BrowserOS:trios/bin/tri at 7366096248dfb09893e9a7d1a0f1c56ced13d16e, read as text (the help heredoc and the top-level case arms); the CLI was not run";
 pub const ENABLED : bool = true;

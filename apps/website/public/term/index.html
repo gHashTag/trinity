@@ -12,9 +12,9 @@
 <meta property="og:title" content="Recordings · Trinity S³AI">
 <meta property="og:description" content="Terminal sessions recorded from real commands: the output is what the commands printed.">
 <meta property="og:url" content="https://t27.ai/term/">
-<meta property="og:image" content="https://t27.ai/term/tri-fpga-rxer/card.png">
+<meta property="og:image" content="https://t27.ai/term/t27c-rgmii/card.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://t27.ai/term/tri-fpga-rxer/card.png">
+<meta name="twitter:image" content="https://t27.ai/term/t27c-rgmii/card.png">
 <style>@font-face{font-family:Outfit;src:url(../fonts/outfit-latin.woff2) format('woff2');font-weight:100 900;font-display:swap}
 *{box-sizing:border-box}html,body{margin:0;background:#000;color:#ebebeb}
 body{font:16px/1.6 Outfit,system-ui,sans-serif;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:40px 40px}
@@ -44,8 +44,39 @@ h1{font-size:clamp(26px,4.4vw,42px);line-height:1.15;margin:0 0 10px;color:#fff}
 <main>
 <div class="top"><a class="brand" href="../"><img src="../favicon.svg" alt="">Trinity S³AI</a></div>
 <h1>Recordings</h1>
-<p class="lede">Terminal sessions recorded from real commands: the output is what the commands printed. 73 so far.</p>
+<p class="lede">Terminal sessions recorded from real commands: the output is what the commands printed. 104 so far.</p>
 <div class="grid">
+<a href="t27c-rgmii/"><img src="t27c-rgmii/card.png" alt="" loading="lazy"><div><b>t27c on rgmii.t27 -- RGMII timing, native</b><small>2026-10-08 01:27 UTC · 9.2 s real</small></div></a>
+<a href="t27c-eth-crc/"><img src="t27c-eth-crc/card.png" alt="" loading="lazy"><div><b>t27c on eth_crc.t27 -- the FCS, native</b><small>2026-10-08 01:27 UTC · 9.7 s real</small></div></a>
+<a href="t27c-verilog-spi-tb/"><img src="t27c-verilog-spi-tb/card.png" alt="" loading="lazy"><div><b>t27c gen-verilog on spi_tb.t27 -- the testbench as RTL</b><small>2026-10-08 00:23 UTC · 3.8 s real</small></div></a>
+<a href="t27c-check-memory/"><img src="t27c-check-memory/card.png" alt="" loading="lazy"><div><b>t27c check on memory.t27 -- the spec compiles</b><small>2026-10-08 00:23 UTC · 3.2 s real</small></div></a>
+<a href="t27c-hir-uart/"><img src="t27c-hir-uart/card.png" alt="" loading="lazy"><div><b>t27c debug-hir on uart.t27 -- the bus as the compiler sees it</b><small>2026-10-08 00:22 UTC · 3.2 s real</small></div></a>
+<a href="t27c-hir-axi4/"><img src="t27c-hir-axi4/card.png" alt="" loading="lazy"><div><b>t27c debug-hir on axi4.t27 -- five channels as IR</b><small>2026-10-08 00:22 UTC · 3.2 s real</small></div></a>
+<a href="t27c-hir-apb/"><img src="t27c-hir-apb/card.png" alt="" loading="lazy"><div><b>t27c debug-hir on apb_bridge.t27 -- the handshake as IR</b><small>2026-10-08 00:22 UTC · 3.5 s real</small></div></a>
+<a href="t27c-verilog-top-tb/"><img src="t27c-verilog-top-tb/card.png" alt="" loading="lazy"><div><b>t27c gen-verilog on top_tb.t27 -- the top bench</b><small>2026-10-08 00:16 UTC · 3.8 s real</small></div></a>
+<a href="t27c-verilog-mem-tb/"><img src="t27c-verilog-mem-tb/card.png" alt="" loading="lazy"><div><b>t27c gen-verilog on memory_tb.t27 -- the testbench as RTL</b><small>2026-10-08 00:16 UTC · 3.9 s real</small></div></a>
+<a href="t27c-verilog-integration-tb/"><img src="t27c-verilog-integration-tb/card.png" alt="" loading="lazy"><div><b>t27c gen-verilog on integration_tb.t27 -- the integration bench</b><small>2026-10-08 00:16 UTC · 4.2 s real</small></div></a>
+<a href="t27c-verilog-axi-tb/"><img src="t27c-verilog-axi-tb/card.png" alt="" loading="lazy"><div><b>t27c gen-verilog on axi4_tb.t27 -- the testbench as RTL</b><small>2026-10-08 00:16 UTC · 3.9 s real</small></div></a>
+<a href="t27c-verilog-apb-tb/"><img src="t27c-verilog-apb-tb/card.png" alt="" loading="lazy"><div><b>t27c gen-verilog on apb_bridge_tb.t27 -- the testbench as RTL</b><small>2026-10-08 00:16 UTC · 4.1 s real</small></div></a>
+<a href="t27c-verilog-uart-tb/"><img src="t27c-verilog-uart-tb/card.png" alt="" loading="lazy"><div><b>t27c gen-verilog on uart_tb.t27 -- the testbench as RTL</b><small>2026-10-08 00:15 UTC · 3.8 s real</small></div></a>
+<a href="t27c-check-uart/"><img src="t27c-check-uart/card.png" alt="" loading="lazy"><div><b>t27c check on uart.t27 -- the spec compiles</b><small>2026-10-08 00:15 UTC · 3.0 s real</small></div></a>
+<a href="t27c-check-spi/"><img src="t27c-check-spi/card.png" alt="" loading="lazy"><div><b>t27c check on spi.t27 -- the spec compiles</b><small>2026-10-08 00:15 UTC · 3.1 s real</small></div></a>
+<a href="t27c-check-bridge/"><img src="t27c-check-bridge/card.png" alt="" loading="lazy"><div><b>t27c check on bridge.t27 -- the spec compiles</b><small>2026-10-08 00:15 UTC · 3.1 s real</small></div></a>
+<a href="t27c-check-axi4/"><img src="t27c-check-axi4/card.png" alt="" loading="lazy"><div><b>t27c check on axi4.t27 -- the spec compiles</b><small>2026-10-08 00:15 UTC · 3.0 s real</small></div></a>
+<a href="t27c-check-apb/"><img src="t27c-check-apb/card.png" alt="" loading="lazy"><div><b>t27c check on apb_bridge.t27 -- the spec compiles</b><small>2026-10-08 00:15 UTC · 3.3 s real</small></div></a>
+<a href="t27c-spi-tb/"><img src="t27c-spi-tb/card.png" alt="" loading="lazy"><div><b>t27c on spi_tb.t27 -- simulating the SPI testbench</b><small>2026-10-08 00:13 UTC · 9.0 s real</small></div></a>
+<a href="tri-fpga-release/"><img src="tri-fpga-release/card.png" alt="" loading="lazy"><div><b>tri fpga-release -- giving the bench lock back</b><small>2026-10-08 00:12 UTC · 2.6 s real</small></div></a>
+<a href="tri-fpga-next/"><img src="tri-fpga-next/card.png" alt="" loading="lazy"><div><b>tri fpga-next -- what the bench wants next</b><small>2026-10-08 00:12 UTC · 2.4 s real</small></div></a>
+<a href="tri-fpga-ioclients/"><img src="tri-fpga-ioclients/card.png" alt="" loading="lazy"><div><b>tri fpga-ioclients -- who holds the bench IO</b><small>2026-10-08 00:12 UTC · 2.7 s real</small></div></a>
+<a href="tri-fpga-claim/"><img src="tri-fpga-claim/card.png" alt="" loading="lazy"><div><b>tri fpga-claim -- taking the bench lock</b><small>2026-10-08 00:12 UTC · 2.5 s real</small></div></a>
+<a href="t27c-verilog-top/"><img src="t27c-verilog-top/card.png" alt="" loading="lazy"><div><b>t27c gen-verilog on top_level.t27 -- spec to RTL</b><small>2026-10-08 00:12 UTC · 3.5 s real</small></div></a>
+<a href="t27c-verilog-spi/"><img src="t27c-verilog-spi/card.png" alt="" loading="lazy"><div><b>t27c gen-verilog on spi.t27 -- spec to RTL</b><small>2026-10-08 00:12 UTC · 3.3 s real</small></div></a>
+<a href="t27c-verilog-bridge/"><img src="t27c-verilog-bridge/card.png" alt="" loading="lazy"><div><b>t27c gen-verilog on bridge.t27 -- spec to RTL</b><small>2026-10-08 00:12 UTC · 3.4 s real</small></div></a>
+<a href="t27c-verilog-axi4/"><img src="t27c-verilog-axi4/card.png" alt="" loading="lazy"><div><b>t27c gen-verilog on axi4.t27 -- spec to RTL</b><small>2026-10-08 00:12 UTC · 3.3 s real</small></div></a>
+<a href="t27c-verilog-apb/"><img src="t27c-verilog-apb/card.png" alt="" loading="lazy"><div><b>t27c gen-verilog on apb_bridge.t27 -- spec to RTL</b><small>2026-10-08 00:12 UTC · 3.6 s real</small></div></a>
+<a href="t27c-verilog-uart/"><img src="t27c-verilog-uart/card.png" alt="" loading="lazy"><div><b>t27c gen-verilog on uart.t27 -- spec to RTL</b><small>2026-10-08 00:11 UTC · 3.3 s real</small></div></a>
+<a href="t27c-memory/"><img src="t27c-memory/card.png" alt="" loading="lazy"><div><b>t27c on memory.t27 -- the memory map, native</b><small>2026-10-08 00:11 UTC · 7.1 s real</small></div></a>
+<a href="tri-fpga-steps/"><img src="tri-fpga-steps/card.png" alt="" loading="lazy"><div><b>tri fpga-steps E3</b><small>2026-10-07 23:27 UTC · 2.6 s real</small></div></a>
 <a href="tri-fpga-rxer/"><img src="tri-fpga-rxer/card.png" alt="" loading="lazy"><div><b>tri fpga-rxer</b><small>2026-10-07 20:12 UTC · 20.1 s real</small></div></a>
 <a href="tri-fpga-rxcap/"><img src="tri-fpga-rxcap/card.png" alt="" loading="lazy"><div><b>tri fpga-rxcap</b><small>2026-10-07 20:12 UTC · 2.4 s real</small></div></a>
 <a href="tri-fpga-txhold/"><img src="tri-fpga-txhold/card.png" alt="" loading="lazy"><div><b>tri fpga-txhold: setup and hold from the routed SDF</b><small>2026-10-07 19:59 UTC · 2.4 s real</small></div></a>
