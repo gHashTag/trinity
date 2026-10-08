@@ -8,7 +8,7 @@ import type { Block } from '../types'
 // and are vendored here. The native status of every spec (clean, blocked) was
 // screened by reading the run text, because t27c test-report exits 0 on a blocked
 // spec (t27#7370). The four gherkin specs (uart, spi, bridge, top_level) parse to the
-// end after gHashTag/t27 PR 7656. Read on 2026-10-08.
+// end after gHashTag/t27 PR 7659. Read on 2026-10-08.
 
 export const body: Block[] = [
   {
@@ -48,7 +48,7 @@ export const body: Block[] = [
   { kind: 'h', text: 'Four specs that only looked compiled' },
   {
     kind: 'p',
-    text: 'The last gate the course runs counts discarded tokens, and four lesson specs failed it while reporting that they compiled: uart, spi, bridge and top_level carried test and invariant bodies the parser silently threw away -- a bare statement where a clause was expected, implies conditions in assert bodies, a call to a method that does not exist, comments inside clauses. The compiler said these files were fine; a reader was never told their tests were not even being read (the defect is filed as gHashTag/t27#2474, and the parser repair is stage0-frozen, so the specs were rewritten into the subset the parser already consumes -- gHashTag/t27 PR 7656, with the wasm/native divergence on bridge array writes recorded in it). Every lesson that says here is the spec and it compiles now points at a spec that parses to the end.',
+    text: 'The last gate the course runs counts discarded tokens, and four lesson specs failed it while reporting that they compiled: uart, spi, bridge and top_level carried test and invariant bodies the parser silently threw away -- a bare statement where a clause was expected, implies conditions in assert bodies, a call to a method that does not exist, comments inside clauses. The compiler said these files were fine; a reader was never told their tests were not even being read (the defect is filed as gHashTag/t27#2474, and the parser repair is stage0-frozen, so the specs were rewritten into the subset the parser already consumes -- gHashTag/t27 PR 7659, with the wasm/native divergence on bridge array writes recorded in it). Every lesson that says here is the spec and it compiles now points at a spec that parses to the end.',
   },
   { kind: 'h', text: 'What this does not show' },
   {
@@ -112,7 +112,7 @@ export const ruBody: Block[] = [
   { kind: 'h', text: 'Четыре спеки, которые только выглядели компилирующимися' },
   {
     kind: 'p',
-    text: 'Последний гейт, который прогоняет курс, считает выброшенные токены, и четыре спеки уроков его не прошли, хотя отчитались, что компилируются: uart, spi, bridge и top_level несли тела тестов и инвариантов, которые парсер молча выбрасывал, -- голый оператор там, где ждали клаузу, условие implies в assert-телах, вызов несуществующего метода, комментарии внутри клауз. Компилятор говорил, что с файлами всё в порядке; читателю никто не сообщал, что его тесты даже не читались (дефект заведён как gHashTag/t27#2474, починка парсера заморожена стадией stage0, поэтому спеки переписаны в подмножество, которое парсер уже потребляет, -- gHashTag/t27 PR 7656, там же записана дивергенция wasm и нативного компилятора на записи в массив bridge). Каждый урок, который говорит вот спека, и она компилируется, теперь указывает на спеку, которая парсится до конца.',
+    text: 'Последний гейт, который прогоняет курс, считает выброшенные токены, и четыре спеки уроков его не прошли, хотя отчитались, что компилируются: uart, spi, bridge и top_level несли тела тестов и инвариантов, которые парсер молча выбрасывал, -- голый оператор там, где ждали клаузу, условие implies в assert-телах, вызов несуществующего метода, комментарии внутри клауз. Компилятор говорил, что с файлами всё в порядке; читателю никто не сообщал, что его тесты даже не читались (дефект заведён как gHashTag/t27#2474, починка парсера заморожена стадией stage0, поэтому спеки переписаны в подмножество, которое парсер уже потребляет, -- gHashTag/t27 PR 7659, там же записана дивергенция wasm и нативного компилятора на записи в массив bridge). Каждый урок, который говорит вот спека, и она компилируется, теперь указывает на спеку, которая парсится до конца.',
   },
   { kind: 'h', text: 'Чего это не показывает' },
   {
