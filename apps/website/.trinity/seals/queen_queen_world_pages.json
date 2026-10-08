@@ -1,0 +1,20 @@
+{
+  "built_by": "t27c-bootstrap@0.5.0+6fba037d1",
+  "gen_hash_c": "sha256:4084c06c7d17718c1b7fe6937c6d0ef19ead8b58c7db56caa45b9338c84f4721",
+  "gen_hash_rust": "sha256:61f05fe8e8175b05f2ae38cc12c9a0a11ef310a16a3a46eb7fae65eca09a43bd",
+  "gen_hash_verilog": "sha256:c406ea909c3c1681b9a1ea52de783d27e0db08eced3eae353878c81fbae91e4d",
+  "gen_hash_zig": "sha256:eb8b5a718595f98418a7faca3c0cbfaf10b759cd87862b948a929d947e48261f",
+  "module": "queen_world_pages",
+  "ring": 12,
+  "sealed_at": "2026-10-08T01:40:23Z",
+  "sealed_by": "t27c-bootstrap@0.5.0",
+  "spec_hash": "sha256:01b5c90cac982090d342b2497cdec7064a601476114f5a92666a57087b910b4b",
+  "spec_path": "specs/queen/world_pages.t27",
+  "tests": {
+    "failed": 0,
+    "failing": [],
+    "forced": false,
+    "passed": 2,
+    "total": 2
+  }
+}
