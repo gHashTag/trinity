@@ -114,10 +114,14 @@ assert.equal(empty.repos.length,2,'a world without new bytes leaves no record');
 const wf=readFileSync('../../.github/workflows/t27-world-scan.yml','utf8');
 for(const step of ['discover -- scan','discover -- vendor','core -- index','atlas -- scan --discovery','atlas -- build','check:discovery','check:spec-catalog','check:queen-catalog','git push'])assert.ok(wf.includes(step),`workflow runs ${step}`);
 assert.doesNotMatch(wf,/GHIO_TOKEN|ghashtag\.github\.io|uses: \.\/\.github\/workflows\/deploy/,'the scan never publishes; deploy-site.yml stays manual');
-// The one workflow it may start is the work-report check on the pull request it
-// opened: the token's own events start nothing, so without this the refresh sat
-// BLOCKED with no required check (PR #1176). Any other dispatch is refused.
+// The workflows it may start are two checks on the pull request it opened: the
+// token's own events start nothing, so without them the refresh sat BLOCKED with
+// no required check (PR #1176), and #1535 merged with no website check at all --
+// its course specs deleted, the publisher refusing t27.ai. Any other dispatch, a
+// deploy above all, is refused; the website checks run on the refresh branch.
+const ALLOWED=['pr-blog-report.yml','website-checks.yml'];
 const dispatches=[...wf.matchAll(/gh workflow run\s+(\S+)/g)].map(m=>m[1]);
-assert.deepEqual(dispatches,['pr-blog-report.yml'],'the scan dispatches the work-report check and nothing else');
-for(const bad of ['gh workflow run deploy-site.yml','gh workflow run pr-blog-report.yml\n          gh workflow run deploy-site.yml'])assert.notDeepEqual([...wf.replace(/gh workflow run pr-blog-report\.yml[^\n]*/,bad).matchAll(/gh workflow run\s+(\S+)/g)].map(m=>m[1]),['pr-blog-report.yml'],'the dispatch check refuses a deploy');
+assert.deepEqual(dispatches,ALLOWED,'the scan dispatches the work-report check and the website checks, nothing else');
+assert.match(wf,/gh workflow run website-checks\.yml --ref "\$BRANCH"/,'the website checks run on the refresh branch, not on main');
+for(const bad of ['gh workflow run deploy-site.yml','gh workflow run pr-blog-report.yml\n          gh workflow run deploy-site.yml'])assert.notDeepEqual([...wf.replace(/gh workflow run pr-blog-report\.yml[^\n]*/,bad).matchAll(/gh workflow run\s+(\S+)/g)].map(m=>m[1]),ALLOWED,'the dispatch check refuses a deploy');
 console.log(`t27 world discovery: PASS (contract ${spec.tests.tests} tests / ${spec.tests.asserts} asserts, owners ${f.OWNERS.join(', ')}, ${manifest.repos.filter(r=>r.discoveredAt).length} scanned worlds in the catalog)`);
