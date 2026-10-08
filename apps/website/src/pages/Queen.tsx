@@ -40,6 +40,9 @@ import {
   type TasksScope,
 } from "../lib/queenTasks";
 import { cardLoaded, cardReady } from "../lib/queenTasksCard";
+import { ageBees, loadBusPage, patchFeed, planPage, touchBees } from "../lib/queenBus";
+import { READ_PAUSE_MS, SNAPSHOT_EVERY_SECONDS, WAIT_MAX_SECONDS } from "../lib/queenEvents.generated";
+import { eventsCardReady } from "../lib/queenEventsCard";
 import { QueenComb } from "../components/QueenComb";
 import { QueenCommandPanel, type CommandItem } from "../components/QueenCommand";
 import { QueenContext } from "../components/QueenContext";
@@ -1643,31 +1646,82 @@ function useQueenTasks(
 ): { feed: QueenTasksFeed | null; health: HiveFeedHealth; error: string | null } {
   const [wire, setWire] = useState<{ feed: QueenTasksFeed; scope: TasksScope } | null>(null);
   const [wireError, setWireError] = useState<string | null>(null);
+  // THE BUS (gHashTag/t27 specs/queen/events.t27). One snapshot, which carries
+  // the cursor it was read at; then only the events past it, each decided by the
+  // card: a bee heard is touched where it is, a task that moved is read again
+  // alone, and a gap or a pruned cursor is one more snapshot. A route without a
+  // cursor (a server before the bus) is polled as before. A whole snapshot still
+  // comes every SNAPSHOT_EVERY_SECONDS, for what GitHub changed and no event says.
   useEffect(() => {
     let active = true;
     let timer = 0;
     let controller: AbortController | null = null;
     const scope: TasksScope = full ? "all" : "running";
-    const read = async () => {
+    let feed: QueenTasksFeed | null = null;
+    let cursor: number | null = null;
+    let snapshotAt = 0;
+    let busOk = true;
+    const show = (next: QueenTasksFeed) => {
+      if (next === feed) return;
+      feed = withEarliestSince(feed, next);
+      setWire({ feed, scope });
+    };
+    const snapshot = async () => {
       controller = new AbortController();
       try {
-        // The card decides the filter and the bees' states; nothing is shown
-        // before it is loaded, so nothing is ever decided without it.
-        const [feed] = await Promise.all([loadTasksFeed(QUEEN_API, scope, controller.signal), cardReady]);
+        // The cards decide the filter, the bees' states and every event; nothing
+        // is shown before they are loaded, so nothing is decided without them.
+        const [next] = await Promise.all([loadTasksFeed(QUEEN_API, scope, controller.signal), cardReady]);
         if (!active) return;
-        setWire((previous) => ({ feed: withEarliestSince(previous?.feed ?? null, feed), scope }));
+        await eventsCardReady.catch(() => (busOk = false));
+        if (!active) return;
+        show(next);
         setWireError(null);
-        timer = window.setTimeout(read, LIVE_POLL_MS);
+        snapshotAt = Date.now();
+        cursor = next.cursor;
+        if (cursor !== null && busOk) void follow();
+        else timer = window.setTimeout(snapshot, LIVE_POLL_MS);
       } catch (error) {
         if (!active) return;
         setWireError(error instanceof Error ? error.message : String(error));
-        timer = window.setTimeout(read, TASKS_RETRY_MS);
+        timer = window.setTimeout(snapshot, TASKS_RETRY_MS);
       }
     };
-    void read();
+    const follow = async () => {
+      if (!feed || cursor === null) return void snapshot();
+      if (Date.now() - snapshotAt >= SNAPSHOT_EVERY_SECONDS * 1000) return void snapshot();
+      controller = new AbortController();
+      try {
+        const page = await loadBusPage(QUEEN_API, cursor, WAIT_MAX_SECONDS, controller.signal);
+        if (!active || !feed) return;
+        const plan = planPage(cursor, page);
+        if (plan.snapshot) return void snapshot();
+        let next = touchBees(ageBees(feed, Date.now()), plan.touched, Date.now());
+        if (plan.refresh.length > 0 && plan.repo) {
+          const fresh = await loadTasksFeed(QUEEN_API, scope, controller.signal, plan.refresh);
+          if (!active) return;
+          next = patchFeed(next, fresh, plan.repo, plan.refresh);
+        }
+        cursor = plan.cursor;
+        show(next);
+        setWireError(null);
+        timer = window.setTimeout(follow, READ_PAUSE_MS);
+      } catch (error) {
+        if (!active) return;
+        // A server without the bus answers 404: poll snapshots, as before it.
+        if ((error as { status?: number }).status === 404) busOk = false;
+        timer = window.setTimeout(snapshot, LIVE_POLL_MS);
+      }
+    };
+    void snapshot();
+    // A bee nobody hears from turns quiet with no event to say so.
+    const aging = window.setInterval(() => {
+      if (active && feed) show(ageBees(feed, Date.now()));
+    }, READ_PAUSE_MS * 5);
     return () => {
       active = false;
       window.clearTimeout(timer);
+      window.clearInterval(aging);
       controller?.abort();
     };
   }, [full]);
