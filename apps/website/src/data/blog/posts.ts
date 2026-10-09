@@ -12,6 +12,7 @@ import { body as body_t27c_compile_time_and_a_backend_without_llvm, ruBody as ru
 import { body as body_three_bits_each_necessary, ruBody as ruBody_three_bits_each_necessary } from './bodies/three-bits-each-necessary'
 import { body as body_tri_cast_from_command_to_card, ruBody as ruBody_tri_cast_from_command_to_card } from './bodies/tri-cast-from-command-to-card'
 import { body as body_the_fpga_flow_layer_by_layer, ruBody as ruBody_the_fpga_flow_layer_by_layer } from './bodies/the-fpga-flow-layer-by-layer'
+import { body as body_bypass_or_a_broken_shift, ruBody as ruBody_bypass_or_a_broken_shift } from './bodies/bypass-or-a-broken-shift'
 import { body as body_the_back_half_of_openxc7_from_a_spec, ruBody as ruBody_the_back_half_of_openxc7_from_a_spec } from './bodies/the-back-half-of-openxc7-from-a-spec'
 import { body as body_how_to_join_the_swarm, ruBody as ruBody_how_to_join_the_swarm } from './bodies/how-to-join-the-swarm'
 import { postsIndex } from './index'
@@ -119,6 +120,7 @@ const bodies: Record<string, PostBody> = {
   'three-bits-each-necessary': { body: body_three_bits_each_necessary, ruBody: ruBody_three_bits_each_necessary },
   'tri-cast-from-command-to-card': { body: body_tri_cast_from_command_to_card, ruBody: ruBody_tri_cast_from_command_to_card },
   'the-fpga-flow-layer-by-layer': { body: body_the_fpga_flow_layer_by_layer, ruBody: ruBody_the_fpga_flow_layer_by_layer },
+  'bypass-or-a-broken-shift': { body: body_bypass_or_a_broken_shift, ruBody: ruBody_bypass_or_a_broken_shift },
   'the-back-half-of-openxc7-from-a-spec': { body: body_the_back_half_of_openxc7_from_a_spec, ruBody: ruBody_the_back_half_of_openxc7_from_a_spec },
   'tri-mined-not-sold': { body: body_tri_mined_not_sold, ruBody: ruBody_tri_mined_not_sold },
   'how-to-join-the-swarm': { body: body_how_to_join_the_swarm, ruBody: ruBody_how_to_join_the_swarm },
