@@ -1,7 +1,7 @@
 {
  "repo": "gHashTag/t27",
- "generated_at": "2026-10-09T16:28:58.463Z",
- "watermark": "2026-10-09T16:23:25Z",
+ "generated_at": "2026-10-09T21:16:34.760Z",
+ "watermark": "2026-10-09T21:16:17Z",
  "issues": {
   "2279": [
    {
@@ -2921,6 +2921,31 @@
     ]
    }
   ],
+  "7812": [
+   {
+    "pr": 8027,
+    "sha": "da448260f31061e5e1251f8ad545ab3c100d3b84",
+    "touched": [
+     "specs/tri/t27b/arith_op.t27",
+     "specs/tri/t27b/conformance/const_division.t27",
+     "specs/tri/t27b/const_div_plan.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/arith_op.t27",
+      "seal": ".trinity/seals/t27b_T27bArithOp.json"
+     },
+     {
+      "path": "specs/tri/t27b/conformance/const_division.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceConstDivision.json"
+     },
+     {
+      "path": "specs/tri/t27b/const_div_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bConstDivPlan.json"
+     }
+    ]
+   }
+  ],
   "7815": [
    {
     "pr": 7816,
@@ -3272,6 +3297,31 @@
     "specs": []
    }
   ],
+  "7876": [
+   {
+    "pr": 8028,
+    "sha": "c6237a71b71d6344903d6c68c0851d9e7dbc6c20",
+    "touched": [
+     "specs/tri/t27b/any_param_plan.t27",
+     "specs/tri/t27b/cmp_op.t27",
+     "specs/tri/t27b/conformance/unread_anytype.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/any_param_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bAnyParamPlan.json"
+     },
+     {
+      "path": "specs/tri/t27b/cmp_op.t27",
+      "seal": ".trinity/seals/t27b_T27bCmpOp.json"
+     },
+     {
+      "path": "specs/tri/t27b/conformance/unread_anytype.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceUnreadAnytype.json"
+     }
+    ]
+   }
+  ],
   "7879": [
    {
     "pr": 7880,
@@ -3604,6 +3654,16 @@
     "specs": []
    }
   ],
+  "7945": [
+   {
+    "pr": 7969,
+    "sha": "cfe753c9c49fad46f2fca916b1fc9899ace7e7a6",
+    "touched": [
+     "specs/port/trios/crates/trios-chat/rings/CR-CHAT-07/src/cover_decoy_ratio_governor.t27"
+    ],
+    "specs": []
+   }
+  ],
   "7948": [
    {
     "pr": 7949,
@@ -3914,6 +3974,26 @@
     "specs": []
    }
   ],
+  "8022": [
+   {
+    "pr": 8023,
+    "sha": "d2b5fc1291fcbac6f8f4c27fb040342fdf5380ef",
+    "touched": [
+     "specs/functions/content-scripts-generate.t27",
+     "specs/functions/reels-loop-generate.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/functions/content-scripts-generate.t27",
+      "seal": ".trinity/seals/functions_fn_content_scripts_generate.json"
+     },
+     {
+      "path": "specs/functions/reels-loop-generate.t27",
+      "seal": ".trinity/seals/functions_fn_reels_loop_generate.json"
+     }
+    ]
+   }
+  ],
   "8024": [
    {
     "pr": 8025,
@@ -3988,6 +4068,26 @@
      {
       "path": "specs/automation/bot-office-crm.t27",
       "seal": ".trinity/seals/automation_automation::bot_office_crm.json"
+     }
+    ]
+   }
+  ],
+  "8050": [
+   {
+    "pr": 8055,
+    "sha": "b9e62161d47505d574fee4a6d7f33b35ac3077fc",
+    "touched": [
+     "specs/tri/t27b/conformance/tuple_local_index.t27",
+     "specs/tri/t27b/tuple_local_plan.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/conformance/tuple_local_index.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceTupleLocalIndex.json"
+     },
+     {
+      "path": "specs/tri/t27b/tuple_local_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bTupleLocalPlan.json"
      }
     ]
    }
@@ -4351,6 +4451,14 @@
     ]
    }
   ],
+  "8116": [
+   {
+    "pr": 8232,
+    "sha": "1ab051fe8ebce2cce224e4e375dfdb249cd1f582",
+    "touched": [],
+    "specs": []
+   }
+  ],
   "8118": [
    {
     "pr": 8119,
@@ -4580,6 +4688,16 @@
     "sha": "15a5c25d899fbeaf11592f6605e2bb15cb5038e2",
     "touched": [
      "specs/port/scripts/gen_w662.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "8163": [
+   {
+    "pr": 8187,
+    "sha": "8f9f1702d6f5c1c56bbac373ecc2d491ba29b05e",
+    "touched": [
+     "specs/port/trios/crates/trios-chat/rings/CR-CHAT-01/src/key_package_expiry_guard.t27"
     ],
     "specs": []
    }
@@ -4845,6 +4963,61 @@
     "specs": []
    }
   ],
+  "8242": [
+   {
+    "pr": 8243,
+    "sha": "ab27a9e47d7b75e5dfa7f54b976da7f16c7b19aa",
+    "touched": [
+     "specs/functions/analytics-sales-advise.t27",
+     "specs/functions/analytics-skills-detect.t27",
+     "specs/functions/broadcast-message-send.t27",
+     "specs/functions/client-telemetry-daily.t27",
+     "specs/functions/club-invoice-abandoned-watch.t27",
+     "specs/functions/content-detailed-script-generate.t27",
+     "specs/functions/content-scenario-clips-generate.t27",
+     "specs/functions/content-scripts-generate.t27",
+     "specs/functions/crm-proactive-sweep.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/functions/analytics-sales-advise.t27",
+      "seal": ".trinity/seals/functions_fn_analytics_sales_advise.json"
+     },
+     {
+      "path": "specs/functions/analytics-skills-detect.t27",
+      "seal": ".trinity/seals/functions_fn_analytics_skills_detect.json"
+     },
+     {
+      "path": "specs/functions/broadcast-message-send.t27",
+      "seal": ".trinity/seals/functions_fn_broadcast_message_send.json"
+     },
+     {
+      "path": "specs/functions/client-telemetry-daily.t27",
+      "seal": ".trinity/seals/functions_fn_client_telemetry_daily.json"
+     },
+     {
+      "path": "specs/functions/club-invoice-abandoned-watch.t27",
+      "seal": ".trinity/seals/functions_fn_club_invoice_abandoned_watch.json"
+     },
+     {
+      "path": "specs/functions/content-detailed-script-generate.t27",
+      "seal": ".trinity/seals/functions_fn_content_detailed_script_generate.json"
+     },
+     {
+      "path": "specs/functions/content-scenario-clips-generate.t27",
+      "seal": ".trinity/seals/functions_fn_content_scenario_clips_generate.json"
+     },
+     {
+      "path": "specs/functions/content-scripts-generate.t27",
+      "seal": ".trinity/seals/functions_fn_content_scripts_generate.json"
+     },
+     {
+      "path": "specs/functions/crm-proactive-sweep.t27",
+      "seal": ".trinity/seals/functions_fn_crm_proactive_sweep.json"
+     }
+    ]
+   }
+  ],
   "8244": [
    {
     "pr": 8247,
@@ -4871,6 +5044,511 @@
      {
       "path": "specs/automation/crm-story-reel.t27",
       "seal": ".trinity/seals/automation_automation::crm_story_reel.json"
+     }
+    ]
+   }
+  ],
+  "8248": [
+   {
+    "pr": 8252,
+    "sha": "3ac8bef8745acb751fbbae7d2ebbfc9d7952f842",
+    "touched": [
+     "specs/tri/t27b/source_text.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/source_text.t27",
+      "seal": ".trinity/seals/t27b_T27bSourceText.json"
+     }
+    ]
+   }
+  ],
+  "8249": [
+   {
+    "pr": 8258,
+    "sha": "ab5b3b7e18477d4a621ba8e5235665d6edc167df",
+    "touched": [
+     "specs/tri/t27b/ast_walk.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/ast_walk.t27",
+      "seal": ".trinity/seals/t27b_T27bAstWalk.json"
+     }
+    ]
+   }
+  ],
+  "8267": [
+   {
+    "pr": 8268,
+    "sha": "0f66f5d80672cf8d1a6bb305162d0e95347514cb",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "8269": [
+   {
+    "pr": 8277,
+    "sha": "e68497036165088bce167e63ad492d4c059776ca",
+    "touched": [
+     "specs/tri/t27b/comptime_float.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/comptime_float.t27",
+      "seal": ".trinity/seals/t27b_T27bComptimeFloat.json"
+     }
+    ]
+   }
+  ],
+  "8270": [
+   {
+    "pr": 8272,
+    "sha": "f0ce3fcb3e77c962e2e80ddf23069c6bb92396d1",
+    "touched": [
+     "specs/queen/waits.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/queen/waits.t27",
+      "seal": ".trinity/seals/queen_QueenWaits.json"
+     }
+    ]
+   }
+  ],
+  "8271": [
+   {
+    "pr": 8286,
+    "sha": "b96ae1f968ffef315123dec5158e277a1558aaf9",
+    "touched": [
+     "specs/queen/keyed.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/queen/keyed.t27",
+      "seal": ".trinity/seals/queen_QueenKeyed.json"
+     }
+    ]
+   }
+  ],
+  "8273": [
+   {
+    "pr": 8275,
+    "sha": "262ae92089f211aefe577c951869a024a6add9db",
+    "touched": [
+     "specs/queen/reviewer_sizing.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/queen/reviewer_sizing.t27",
+      "seal": ".trinity/seals/queen_QueenReviewerSizing.json"
+     }
+    ]
+   }
+  ],
+  "8274": [
+   {
+    "pr": 8281,
+    "sha": "a73ec3b98c7047d04d03e6d1b778c9a7c2958156",
+    "touched": [
+     "specs/queen/turn_stop.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/queen/turn_stop.t27",
+      "seal": ".trinity/seals/queen_QueenTurnStop.json"
+     }
+    ]
+   }
+  ],
+  "8276": [
+   {
+    "pr": 8278,
+    "sha": "2ae4fc9c2a38593370e78ef62d73fa37c559227d",
+    "touched": [
+     "specs/queen/netlink.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/queen/netlink.t27",
+      "seal": ".trinity/seals/queen_QueenNetlink.json"
+     }
+    ]
+   }
+  ],
+  "8279": [
+   {
+    "pr": 8292,
+    "sha": "b9d22d0f47ca18fe37ef531fa7f25b44fb940275",
+    "touched": [
+     "specs/queen/simulation.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/queen/simulation.t27",
+      "seal": ".trinity/seals/queen_QueenSimulation.json"
+     }
+    ]
+   }
+  ],
+  "8280": [
+   {
+    "pr": 8282,
+    "sha": "aeb0397f933b5adc3bd8d5e95c5cf4ef71d7350d",
+    "touched": [
+     "specs/queen/waits.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/queen/waits.t27",
+      "seal": ".trinity/seals/queen_QueenWaits.json"
+     }
+    ]
+   }
+  ],
+  "8283": [
+   {
+    "pr": 8288,
+    "sha": "b30972dc767606b05fe07c980d351b9e1096c17c",
+    "touched": [
+     "specs/functions/morph-images-generate.t27",
+     "specs/functions/neuro-image-generate.t27",
+     "specs/functions/payment-ai-server-process.t27",
+     "specs/functions/reels-ai-callback.t27",
+     "specs/functions/reels-ai-generate.t27",
+     "specs/functions/reels-loop-generate.t27",
+     "specs/functions/render-avatar-video-run.t27",
+     "specs/functions/robokassa-unclaimed-watch.t27",
+     "specs/functions/ton-pending-watch.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/functions/morph-images-generate.t27",
+      "seal": ".trinity/seals/functions_fn_morph_images_generate.json"
+     },
+     {
+      "path": "specs/functions/neuro-image-generate.t27",
+      "seal": ".trinity/seals/functions_fn_neuro_image_generate.json"
+     },
+     {
+      "path": "specs/functions/payment-ai-server-process.t27",
+      "seal": ".trinity/seals/functions_fn_payment_ai_server_process.json"
+     },
+     {
+      "path": "specs/functions/reels-ai-callback.t27",
+      "seal": ".trinity/seals/functions_fn_reels_ai_callback.json"
+     },
+     {
+      "path": "specs/functions/reels-ai-generate.t27",
+      "seal": ".trinity/seals/functions_fn_reels_ai_generate.json"
+     },
+     {
+      "path": "specs/functions/reels-loop-generate.t27",
+      "seal": ".trinity/seals/functions_fn_reels_loop_generate.json"
+     },
+     {
+      "path": "specs/functions/render-avatar-video-run.t27",
+      "seal": ".trinity/seals/functions_fn_render_avatar_video_run.json"
+     },
+     {
+      "path": "specs/functions/robokassa-unclaimed-watch.t27",
+      "seal": ".trinity/seals/functions_fn_robokassa_unclaimed_watch.json"
+     },
+     {
+      "path": "specs/functions/ton-pending-watch.t27",
+      "seal": ".trinity/seals/functions_fn_ton_pending_watch.json"
+     }
+    ]
+   }
+  ],
+  "8284": [
+   {
+    "pr": 8285,
+    "sha": "cde548ecd5a7470eb6bf8189fdd9e7014148aa27",
+    "touched": [
+     "specs/queen/telemetry.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/queen/telemetry.t27",
+      "seal": ".trinity/seals/queen_QueenTelemetry.json"
+     }
+    ]
+   }
+  ],
+  "8287": [
+   {
+    "pr": 8289,
+    "sha": "d3be0cd049489c415b1c772a46163e224248e581",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "8290": [
+   {
+    "pr": 8291,
+    "sha": "66a28fc172558d4da43f342fb83b14088cda1a51",
+    "touched": [
+     "specs/verified/bitstream_reuse.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/verified/bitstream_reuse.t27",
+      "seal": ".trinity/seals/verified_VerifiedBitstreamReuse.json"
+     }
+    ]
+   }
+  ],
+  "8293": [
+   {
+    "pr": 8294,
+    "sha": "abdc482a04c62d160bcb7e19a1d252c9d7360f2d",
+    "touched": [
+     "specs/automation/tri-wallet-chains.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/automation/tri-wallet-chains.t27",
+      "seal": ".trinity/seals/automation_automation::tri_wallet_chains.json"
+     }
+    ]
+   }
+  ],
+  "8295": [
+   {
+    "pr": 8296,
+    "sha": "2ba048e64058db285c4f0b660e45a39080b3ddf8",
+    "touched": [
+     "specs/verified/bitstream_reuse.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/verified/bitstream_reuse.t27",
+      "seal": ".trinity/seals/verified_VerifiedBitstreamReuse.json"
+     }
+    ]
+   }
+  ],
+  "8299": [
+   {
+    "pr": 8300,
+    "sha": "95ae4bcd66b86f656a5eb8f85bff4532a63c9129",
+    "touched": [
+     "specs/automation/ci-bridge.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/automation/ci-bridge.t27",
+      "seal": ".trinity/seals/automation_automation::ci_bridge.json"
+     }
+    ]
+   }
+  ],
+  "8301": [
+   {
+    "pr": 8209,
+    "sha": "c250e5991a4c080f81e7a04015a9359922a96905",
+    "touched": [
+     "specs/math/constants.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/math/constants.t27",
+      "seal": ".trinity/seals/Constants.json"
+     }
+    ]
+   }
+  ],
+  "8302": [
+   {
+    "pr": 8304,
+    "sha": "325b0b18ac6149cfce37c59a27787969e646ff3f",
+    "touched": [
+     "specs/trinet/tri-bridge.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/trinet/tri-bridge.t27",
+      "seal": ".trinity/seals/trinet_trinet::tri_bridge.json"
+     }
+    ]
+   }
+  ],
+  "8303": [
+   {
+    "pr": 8177,
+    "sha": "b813cca07316b6ea7ed359677b826c5b5b2cfd53",
+    "touched": [
+     "specs/base/types.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/base/types.t27",
+      "seal": ".trinity/seals/BaseTypes.json"
+     }
+    ]
+   }
+  ],
+  "8305": [
+   {
+    "pr": 8306,
+    "sha": "22cce21d86bc0f3885ed70f48772ea66e2bfcc73",
+    "touched": [
+     "specs/queen/simulation.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/queen/simulation.t27",
+      "seal": ".trinity/seals/queen_QueenSimulation.json"
+     }
+    ]
+   }
+  ],
+  "8309": [
+   {
+    "pr": 8310,
+    "sha": "0045bca61d44deddb7e8c3a019fcf9fbba04bcf2",
+    "touched": [
+     "specs/automation/ci-bridge.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/automation/ci-bridge.t27",
+      "seal": ".trinity/seals/automation_automation::ci_bridge.json"
+     }
+    ]
+   }
+  ],
+  "8311": [
+   {
+    "pr": 8312,
+    "sha": "734d64846da07e419d6ddd58d722a8b392d6fe98",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "8315": [
+   {
+    "pr": 8316,
+    "sha": "272ae1759a363a1c40b5c64e8c4ed727290fe988",
+    "touched": [
+     "specs/automation/tri-wallet-chains.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/automation/tri-wallet-chains.t27",
+      "seal": ".trinity/seals/automation_automation::tri_wallet_chains.json"
+     }
+    ]
+   }
+  ],
+  "8320": [
+   {
+    "pr": 8329,
+    "sha": "8f2c8da6eb68aa52abca3047884c1aebb3598926",
+    "touched": [
+     "specs/verified/corpus_receipt.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/verified/corpus_receipt.t27",
+      "seal": ".trinity/seals/verified_VerifiedCorpusReceipt.json"
+     }
+    ]
+   }
+  ],
+  "8331": [
+   {
+    "pr": 8332,
+    "sha": "65c41e857c9a428e9fb3ff1e95e7fbd6a9893b4d",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "8336": [
+   {
+    "pr": 8353,
+    "sha": "d2d1112321964458a0e5b2abea73812fa82e24d1",
+    "touched": [
+     "specs/queen/actors_hw.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/queen/actors_hw.t27",
+      "seal": ".trinity/seals/queen_QueenActorsHw.json"
+     }
+    ]
+   }
+  ],
+  "8345": [
+   {
+    "pr": 8355,
+    "sha": "88813772c69601fcab3a206c2f9295c57e60a3aa",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "8347": [
+   {
+    "pr": 8350,
+    "sha": "e4338f46e7f08d7fec0e2d40f62156db5219c83d",
+    "touched": [
+     "specs/automation/tri-claim-batch.t27",
+     "specs/tri/crypto/ed25519.t27",
+     "specs/tri/t27b/arith_op.t27",
+     "specs/tri/t27b/ast_scan.t27",
+     "specs/tri/t27b/conformance/const_division.t27",
+     "specs/tri/t27b/const_div_plan.t27",
+     "specs/verified/bitstream_reuse.t27",
+     "specs/verified/corpus_receipt.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/automation/tri-claim-batch.t27",
+      "seal": ".trinity/seals/automation_automation::tri_claim_batch.json"
+     },
+     {
+      "path": "specs/tri/crypto/ed25519.t27",
+      "seal": ".trinity/seals/crypto_TriEd25519.json"
+     },
+     {
+      "path": "specs/tri/t27b/arith_op.t27",
+      "seal": ".trinity/seals/t27b_T27bArithOp.json"
+     },
+     {
+      "path": "specs/tri/t27b/ast_scan.t27",
+      "seal": ".trinity/seals/t27b_T27bAstScan.json"
+     },
+     {
+      "path": "specs/tri/t27b/conformance/const_division.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceConstDivision.json"
+     },
+     {
+      "path": "specs/tri/t27b/const_div_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bConstDivPlan.json"
+     },
+     {
+      "path": "specs/verified/bitstream_reuse.t27",
+      "seal": ".trinity/seals/verified_VerifiedBitstreamReuse.json"
+     },
+     {
+      "path": "specs/verified/corpus_receipt.t27",
+      "seal": ".trinity/seals/verified_VerifiedCorpusReceipt.json"
+     }
+    ]
+   }
+  ],
+  "8348": [
+   {
+    "pr": 8349,
+    "sha": "54f3c140cec50e0d60c3e3afdea519a5456473b7",
+    "touched": [
+     "specs/automation/tri-claim-batch.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/automation/tri-claim-batch.t27",
+      "seal": ".trinity/seals/automation_automation::tri_claim_batch.json"
      }
     ]
    }
