@@ -20,7 +20,6 @@ export const postsIndex: PostMeta[] = [
     openQuestions: [
       "No IR capture was read from our board in this session; 0x35 is an example of the 7-series XXXX01 shape, and its upper four bits are status that the check ignores.",
       "The bench command tri fpga-jtag lives in a local tools folder; only the spec and the widget are public.",
-      "t27#8032 was still open when this was written, waiting on a required check.",
     ],
     published: true,
     ru: {
@@ -29,7 +28,41 @@ export const postsIndex: PostMeta[] = [
       openQuestions: [
         "В этой сессии захват IR с нашей платы не читали; 0x35 — пример формы XXXX01 у 7-й серии, а её старшие четыре бита — статус, который проверка не смотрит.",
         "Команда стенда tri fpga-jtag лежит в локальной папке инструментов; публичны только спецификация и виджет.",
-        "Когда это писалось, t27#8032 ещё был открыт и ждал обязательной проверки.",
+      ],
+    },
+  },
+  {
+    slug: "three-dies-one-verdict",
+    title: "Three dies, one verdict: a silicon check you run once",
+    summary: "[one spec so far; two of the three receipts share an operator; CI does not yet skip silicon checks by receipt] One t27 spec, ternary_link, was checked on three different FPGA chips on three machines, one of them driven from 410 ms away, and the answers agree. Each chip is named by its device DNA and signed its answer to one challenge; run-record calls the run citable (INDEP_DIES). A second chip found a bug the first could not. The point: with a citable hardware verdict, the rule in reuse.t27 lets a silicon check run once per spec version and toolchain, and everyone else check the receipts in seconds.",
+    date: "2026-10-09",
+    readingMinutes: 5,
+    tags: ["t27", "FPGA", "Verification"],
+    receipts: [
+      { label: "t27#7669: R3-3, the run and its run-record summary", href: "https://github.com/gHashTag/t27/issues/7669" },
+      { label: "t27#7816: receipt from die A 050d58218fd9854", href: "https://github.com/gHashTag/t27/pull/7816" },
+      { label: "t27#7759: receipt from die B 0389c0c2d85e85c", href: "https://github.com/gHashTag/t27/pull/7759" },
+      { label: "t27#7906: receipt from die C 050a5824d85e85c, run over USB/IP", href: "https://github.com/gHashTag/t27/pull/7906" },
+      { label: "t27#7761: the DNA tail differs per die, found by die B", href: "https://github.com/gHashTag/t27/pull/7761" },
+      { label: "specs/verified/reuse.t27: when an artifact is reused instead of rebuilt", href: "https://github.com/gHashTag/t27/blob/master/specs/verified/reuse.t27" },
+      { label: "specs/fpga/ternary_link.t27: the spec that ran", href: "https://github.com/gHashTag/t27/blob/master/specs/fpga/ternary_link.t27" },
+      { label: "trinity#1568: this post's issue", href: "https://github.com/gHashTag/trinity/issues/1568" },
+    ],
+    openQuestions: [
+      "One spec has a three-die run so far; the speed-up grows only as more specs get one.",
+      "CI does not yet skip a silicon check by citing a receipt; wiring reuse.t27 into the pipeline is the next step.",
+      "Dies B and C were signed with keys from one operator's machines, so the run is INDEP_DIES, not INDEP_OPERATORS.",
+      "A device DNA is a name, not a secret, so no receipt is rooted in the device itself.",
+    ],
+    published: true,
+    ru: {
+      title: "Три кристалла, один вердикт: проверка на кремнии, которую прогоняют один раз",
+      summary: "[пока одна спецификация; две квитанции из трёх у одного оператора; CI ещё не пропускает проверку на кремнии по квитанции] Одна спецификация t27, ternary_link, проверена на трёх разных кристаллах ПЛИС на трёх машинах, одной из них управляли за 410 мс, и ответы совпали. Каждый кристалл назван своим DNA и подписал ответ на один запрос; run-record признаёт прогон пригодным для ссылок (INDEP_DIES). Второй кристалл нашёл ошибку, которую первый найти не мог. Главное: когда на вердикт на железе можно сослаться, правило из reuse.t27 позволяет прогнать проверку один раз на версию спецификации и инструментов, а остальным проверить квитанции за секунды.",
+      openQuestions: [
+        "Пока прогон на трёх кристаллах есть у одной спецификации; ускорение растёт, только когда такие прогоны появятся у других.",
+        "CI ещё не пропускает проверку на кремнии по ссылке на квитанцию; подключить reuse.t27 к конвейеру — следующий шаг.",
+        "Кристаллы B и C подписаны ключами с машин одного оператора, поэтому прогон INDEP_DIES, а не INDEP_OPERATORS.",
+        "DNA кристалла — имя, а не секрет, поэтому ни одна квитанция не опирается на сам кристалл как на корень доверия.",
       ],
     },
   },
