@@ -2,7 +2,7 @@ import type { Block } from '../types'
 
 // Numbers here come from the benchmark comments on gHashTag/t27#7851 (2026-10-08 and 2026-10-09), the merged
 // runtime PRs gHashTag/trios#1698, #1702, #1716, #1720, #1722, #1723, #1724, #1725 and the merged spec PRs
-// gHashTag/t27#8272, #8275, #8278, #8281, #8282, #8285, #8286, #8292. The FPGA figures are yosys 0.63 synthesis
+// gHashTag/t27#8272, #8275, #8278, #8281, #8282, #8285, #8286, #8292, #8306, and gHashTag/trios#1726 (the simulation gate). The FPGA figures are yosys 0.63 synthesis
 // of specs/queen/actors.t27 at t27 b9e62161d4; their provenance is in gHashTag/trinity#1582. The recording
 // public/term/t27c-queen-netlink-fence/ was made on 2026-10-09 with t27c 0.5.0 against t27 c6237a7.
 
@@ -14,7 +14,7 @@ const CAST = {
 export const body: Block[] = [
   {
     kind: 'p',
-    text: 'On one seeded input, the Queen\'s actor runtime beats the old polling loop where work goes wrong: the worst recovery after a crash or a hang falls from 1181 s to 27 s, and under overload it finishes 18.7% more reviews. It does not beat the loop everywhere. On 2026-10-09 seven changes from a competitor study landed on the integration branch `actors-next`, each with a t27 spec, tests and a benchmark against the code it would replace. Two of them lose in cases we can name, one gives back throughput on purpose, and most of the dispatcher\'s gain turned out to come from a plain time limit, not from actors. Everything new sits behind a flag. None of it runs in production yet.',
+    text: 'On one seeded input, the Queen\'s actor runtime beats the old polling loop where work goes wrong: the worst recovery after a crash or a hang falls from 1181 s to 27 s, and under overload it finishes 18.7% more reviews. It does not beat the loop everywhere. On 2026-10-09 seven changes from a competitor study landed on the integration branch `actors-next`, each with a t27 spec, tests and a benchmark against the code it would replace. Two of them lose in cases we can name, one gives back throughput on purpose, and most of the dispatcher\'s gain turned out to come from a plain time limit, not from actors. The new simulation gate found a real runtime bug on its first runs. Each new behaviour sits behind a flag that is off by default, and the bug fixes need none. None of it runs in production yet.',
   },
   {
     kind: 'p',
@@ -56,7 +56,7 @@ export const body: Block[] = [
       ['2', 'Turns that really stop (t27#8281, trios#1720, `TRIOS_QUEEN_TURN_STOP=on`)', 'reviews at once during stalls: up to 7-10, now at most 4; grandchild processes alive after a kill: 10 of 10, now 0', 'simulated; process test measured'],
       ['3', 'Concurrency read from the backlog (t27#8275, trios#1716, `TRIOS_QUEEN_REVIEWER_ADAPTIVE=1`)', 'overload: 565 of 660 rows at 80.7/h, now 660 of 660 at 94.3/h', 'simulated'],
       ['4', 'Long waits as rows (t27#8272, t27#8282, trios#1722, `TRIOS_QUEEN_WAITS=rows`)', 'one 90-minute CI wait: 180 GitHub reads, now 24; 180 job-log entries, now 0', 'measured on PostgreSQL 16, virtual clock'],
-      ['5', 'Seeded simulation as a CI gate (t27#8292, trios#1721)', 'spec merged: 16 seeds a run, each run twice and the logs compared; harness numbers not posted yet', 'spec tests only'],
+      ['5', 'Seeded simulation as a CI gate (t27#8292, t27#8306, trios#1726)', '18 cases of 10,000 steps, each run twice, in 33.5 s on CI with 0 divergences; 4 re-created defects caught, and one real bug found first', 'measured (the gate\'s own runs)'],
       ['6', 'Node link fencing and incarnations (t27#8278, trios#1724, no caller yet)', 'mail lost: 21, now 0; pids reused: 5 of 5, now 0; messages from a frozen node: 40, now 0', 'measured on PostgreSQL 16, OS processes'],
       ['7', 'Keyed actors and the bee dispatcher (t27#8286, trios#1723, `TRIOS_QUEEN_DISPATCH=actors`)', 'crash recovery p50 with 6-minute rounds: 701 s, now 149 s; duplicate claims on two nodes: 0', 'simulated'],
     ],
@@ -105,10 +105,32 @@ export const body: Block[] = [
     kind: 'p',
     text: 'Over that wait, against PostgreSQL 16 on the virtual clock, GitHub reads fall from 180 to 24 and job-log entries from 180 to 0. No wait is lost across a forced restart in either version. Noticing that the CI run has ended now takes 83 s instead of 23 s, with a bound of 240 s instead of 30 s, because a 15 s poll replaces the round. Process time without GitHub latency rises from 1108 ms to 1463 ms, about half of it that shared poll. Counting GitHub\'s measured 51 ms a read, the old way spent 9.2 s waiting on GitHub and the new one 1.2 s. A webhook would close the detection gap; none is wired. [measured]',
   },
-  { kind: 'h', text: 'Proving: a simulation gate, numbers pending' },
+  { kind: 'h', text: 'Proving: a simulation gate that found a real bug' },
   {
     kind: 'p',
-    text: 'Item 5 turns the virtual clock into a CI gate. `simulation.t27` fixes 16 seeds per CI run and 10,000 steps per seed. Each seed runs twice, and the two logs must be identical. The spec also fixes a fault mix (node loss, hung turn, mailbox overflow, unreadable row, provider 429, stale lease, review crash) and seven rare states that every run must reach. The spec passes its 10 tests, and all 21 deliberately broken variants are caught (t27#8292). The harness and its numbers (trios#1721) are not posted yet.',
+    text: 'Item 5 turns the virtual clock into a CI gate (`simulation.t27`, t27#8292 and t27#8306; harness trios#1726). It drives the real runtime on three nodes: the reviewer actors, remote children, the in-memory net, and on two seeds the real Postgres link over a simulated store. The card picks the seeds and the fault mix: node loss, hung turn, mailbox overflow, unreadable row, provider 429, stale lease, review crash. There are 18 cases, 16 on the memory net and 2 on the store, of 10,000 steps each. Every case runs twice and the two logs must agree, and the cases together must reach the eight rare states the card requires. On CI the gate takes 33.5 s, and the whole job 52 s. Four gate runs in a row on the final code gave 0 runs that logged differently. [measured]',
+  },
+  {
+    kind: 'p',
+    text: 'To check that it catches what it should, each known defect was put back into the real source and the gate run again:',
+  },
+  {
+    kind: 'table',
+    head: ['Defect put back', 'Cases failed', 'First failure'],
+    rows: [
+      ['No wait backoff (the go-live hot loop)', '18 of 18', 'seed 3600507402, step 421: one row visited 5 times in a virtual minute'],
+      ['The node link acknowledges mail before handling it', '2 of 2 store cases', 'seed 3600507402, step 2637'],
+      ['Pids without the incarnation', '18 of 18', 'seed 3600507402, step 2543'],
+      ['A turn runs after its process stopped', '2 of 18', 'seed 3600507402, step 7690'],
+    ],
+  },
+  {
+    kind: 'p',
+    text: 'The last row was not planted. On its first runs the gate failed 5 of 64 seeds with a turn that ran for a process that had already exited: the runtime takes a message and runs the turn a microtask later, and in between a supervisor can stop the process. `queen-actors.ts` now runs a turn only while its process is current, with a regression test. On a loaded Mac the check cost nothing above the noise (median 11.4 us per message with it, 11.65 us without). And on the code before item 6, the simulated store reproduced both node-link defects with no change to the source.',
+  },
+  {
+    kind: 'p',
+    text: 'The gate has two limits. Keyed actors and the adaptive reviewer pool are not in its simulated world yet. And nothing runs it nightly, because GitHub runs scheduled workflows only on the default branch, where the Queen\'s code does not live.',
   },
   { kind: 'h', text: 'Fencing: the node link, made safe before its first caller' },
   {
@@ -166,10 +188,10 @@ export const body: Block[] = [
   {
     kind: 'ul',
     items: [
-      'Nothing here runs in production. `actors-next` merges into the production branch once, with the owner\'s OK; until then every number comes from a benchmark.',
+      'Nothing here runs in production. `actors-next` merges into the production branch once, with the owner\'s OK; that pull request, trios#1730, is open, with every new behaviour behind an off flag. Until it merges, every number comes from a benchmark.',
       'The reviewer, concurrency, turn-stop and dispatcher numbers are simulations with assumed fault rates and lengths. The loop side of the dispatcher benchmark is a model of `runRound`, not the function itself.',
       'Telemetry\'s cost per message is an estimate from parts; an A/B on a quiet host is still owed.',
-      'The simulation gate\'s own numbers are not posted yet.',
+      'The simulation gate does not yet simulate keyed actors or the adaptive reviewer pool, and nothing runs it nightly.',
       'The FPGA figures are synthesis estimates with an assumed actor record. No design was placed, timed or run on silicon. DSP blocks were left out, because on the open flow they computed wrong results with live operands (t27 docs/reports/TRINET-DSP-DEFECT-W723.md).',
       'The competitor figures are the vendors\' documented defaults, not our measurements.',
     ],
@@ -179,7 +201,7 @@ export const body: Block[] = [
 export const ruBody: Block[] = [
   {
     kind: 'p',
-    text: 'На одном и том же входе с фиксированным зерном рантайм акторов Queen обходит старый цикл опроса там, где работа ломается: худшее восстановление после падения или зависания сокращается с 1181 с до 27 с, а при перегрузке рецензий выходит на 18.7% больше. Обходит не везде. 2026-10-09 на интеграционную ветку `actors-next` легли семь изменений по итогам изучения конкурентов, у каждого — спецификация на t27, тесты и бенчмарк против кода, который оно должно заменить. Два из них проигрывают в случаях, которые мы можем назвать, одно сознательно отдаёт пропускную способность, а большая часть выигрыша диспетчера оказалась заслугой простого лимита времени, а не акторов. Всё новое стоит за флагами. В production пока ничего из этого не работает.',
+    text: 'На одном и том же входе с фиксированным зерном рантайм акторов Queen обходит старый цикл опроса там, где работа ломается: худшее восстановление после падения или зависания сокращается с 1181 с до 27 с, а при перегрузке рецензий выходит на 18.7% больше. Обходит не везде. 2026-10-09 на интеграционную ветку `actors-next` легли семь изменений по итогам изучения конкурентов, у каждого — спецификация на t27, тесты и бенчмарк против кода, который оно должно заменить. Два из них проигрывают в случаях, которые мы можем назвать, одно сознательно отдаёт пропускную способность, а большая часть выигрыша диспетчера оказалась заслугой простого лимита времени, а не акторов. Новый шлюз симуляции на первых же прогонах нашёл настоящую ошибку рантайма. Каждое новое поведение стоит за флагом, выключенным по умолчанию, а исправлениям ошибок флаг не нужен. В production пока ничего из этого не работает.',
   },
   {
     kind: 'p',
@@ -221,7 +243,7 @@ export const ruBody: Block[] = [
       ['2', 'Ходы, которые действительно останавливаются (t27#8281, trios#1720, `TRIOS_QUEEN_TURN_STOP=on`)', 'одновременных рецензий во время зависаний: до 7-10, теперь не больше 4; живых процессов-внуков после kill: 10 из 10, теперь 0', 'симуляция; тест процессов — замер'],
       ['3', 'Параллелизм по очереди (t27#8275, trios#1716, `TRIOS_QUEEN_REVIEWER_ADAPTIVE=1`)', 'перегрузка: 565 из 660 строк при 80.7/ч, теперь 660 из 660 при 94.3/ч', 'симуляция'],
       ['4', 'Долгие ожидания как строки (t27#8272, t27#8282, trios#1722, `TRIOS_QUEEN_WAITS=rows`)', 'одно 90-минутное ожидание CI: 180 чтений GitHub, теперь 24; 180 записей в журнал задания, теперь 0', 'замер на PostgreSQL 16, виртуальные часы'],
-      ['5', 'Симуляция с зерном как шлюз CI (t27#8292, trios#1721)', 'спецификация влита: 16 зёрен на прогон, каждое дважды со сверкой логов; чисел харнесса ещё нет', 'только тесты спецификации'],
+      ['5', 'Симуляция с зерном как шлюз CI (t27#8292, t27#8306, trios#1726)', '18 случаев по 10 000 шагов, каждый дважды, за 33.5 с в CI и с 0 расхождений; 4 воссозданных дефекта пойманы, и одна настоящая ошибка найдена первой', 'замер (собственные прогоны шлюза)'],
       ['6', 'Фенсинг связи узлов и инкарнации (t27#8278, trios#1724, вызывающих пока нет)', 'потеряно писем: 21, теперь 0; pid переиспользован: 5 из 5, теперь 0; писем от замёрзшего узла: 40, теперь 0', 'замер на PostgreSQL 16, процессы ОС'],
       ['7', 'Ключевые акторы и диспетчер пчёл (t27#8286, trios#1723, `TRIOS_QUEEN_DISPATCH=actors`)', 'восстановление после падения, p50 при 6-минутных раундах: 701 с, теперь 149 с; двойных захватов на двух узлах: 0', 'симуляция'],
     ],
@@ -270,10 +292,32 @@ export const ruBody: Block[] = [
     kind: 'p',
     text: 'За это ожидание, на PostgreSQL 16 и виртуальных часах, чтений GitHub становится 24 вместо 180, а записей в журнал задания — 0 вместо 180. Ни одно ожидание не теряется при принудительном рестарте ни в старой, ни в новой версии. Заметить, что прогон CI закончился, теперь занимает 83 с вместо 23 с при границе 240 с вместо 30 с, потому что раунд заменён опросом раз в 15 с. Время процесса без задержки GitHub растёт с 1108 мс до 1463 мс, около половины — этот общий опрос. С учётом измеренных 51 мс на чтение GitHub старый способ ждал GitHub 9.2 с, а новый — 1.2 с. Разрыв в обнаружении закрыл бы вебхук; он не подключён. [замер]',
   },
-  { kind: 'h', text: 'Доказывать: шлюз симуляции, числа ещё впереди' },
+  { kind: 'h', text: 'Доказывать: шлюз симуляции, который нашёл настоящую ошибку' },
   {
     kind: 'p',
-    text: 'Пункт 5 превращает виртуальные часы в шлюз CI. `simulation.t27` фиксирует 16 зёрен на прогон CI и 10 000 шагов на зерно. Каждое зерно прогоняется дважды, и два лога обязаны совпасть. Спецификация задаёт и смесь сбоев (потеря узла, зависший ход, переполнение ящика, нечитаемая строка, 429 от провайдера, устаревшая аренда, падение рецензии), и семь редких состояний, которых обязан достичь каждый прогон. Спецификация проходит свои 10 тестов, и все 21 намеренно сломанных варианта пойманы (t27#8292). Харнесс и его числа (trios#1721) ещё не опубликованы.',
+    text: 'Пункт 5 превращает виртуальные часы в шлюз CI (`simulation.t27`, t27#8292 и t27#8306; харнесс trios#1726). Он гоняет настоящий рантайм на трёх узлах: акторы ревьюера, удалённых детей, сеть в памяти, а на двух зёрнах — настоящую связь через Postgres поверх симулированного хранилища. Зёрна и смесь сбоев выбирает карта: потеря узла, зависший ход, переполнение ящика, нечитаемая строка, 429 от провайдера, устаревшая аренда, падение рецензии. Случаев 18: 16 в сети в памяти и 2 на хранилище, по 10 000 шагов каждый. Каждый случай прогоняется дважды, два лога обязаны совпасть, а все случаи вместе обязаны достичь восьми редких состояний, которых требует карта. В CI шлюз занимает 33.5 с, всё задание — 52 с. Четыре прогона шлюза подряд на итоговом коде дали 0 прогонов с разными логами. [замер]',
+  },
+  {
+    kind: 'p',
+    text: 'Чтобы проверить, что он ловит то, что должен, каждый известный дефект возвращали в настоящий исходный код и снова запускали шлюз:',
+  },
+  {
+    kind: 'table',
+    head: ['Возвращённый дефект', 'Провалено случаев', 'Первый провал'],
+    rows: [
+      ['Нет backoff ожидания (горячий цикл при запуске)', '18 из 18', 'зерно 3600507402, шаг 421: одну строку посетили 5 раз за виртуальную минуту'],
+      ['Связь узлов подтверждает письмо до его обработки', '2 из 2 случаев на хранилище', 'зерно 3600507402, шаг 2637'],
+      ['pid без инкарнации', '18 из 18', 'зерно 3600507402, шаг 2543'],
+      ['Ход выполняется после остановки своего процесса', '2 из 18', 'зерно 3600507402, шаг 7690'],
+    ],
+  },
+  {
+    kind: 'p',
+    text: 'Последняя строка не была подброшена. На первых прогонах шлюз провалил 5 из 64 зёрен: ход выполнялся для процесса, который уже завершился. Рантайм забирает письмо и выполняет ход на микрозадачу позже, а между этими моментами супервизор может остановить процесс. Теперь `queen-actors.ts` выполняет ход, только пока его процесс актуален, и на это есть регрессионный тест. На нагруженном Mac проверка ничего не стоила сверх шума (медиана 11.4 мкс на сообщение с ней и 11.65 мкс без неё). А на коде до пункта 6 симулированное хранилище воспроизвело оба дефекта связи узлов без единого изменения исходного кода.',
+  },
+  {
+    kind: 'p',
+    text: 'У шлюза два ограничения. Ключевых акторов и адаптивного пула ревьюеров в его симулированном мире пока нет. И каждую ночь его никто не запускает: GitHub выполняет расписания только на ветке по умолчанию, а кода Queen там нет.',
   },
   { kind: 'h', text: 'Фенсинг: связь узлов стала безопасной до первого вызывающего' },
   {
@@ -331,10 +375,10 @@ export const ruBody: Block[] = [
   {
     kind: 'ul',
     items: [
-      'Ничего из этого не работает в production. `actors-next` вольётся в production-ветку один раз, с согласия владельца; до тех пор каждое число получено из бенчмарка.',
+      'Ничего из этого не работает в production. `actors-next` вольётся в production-ветку один раз, с согласия владельца; эта pull request, trios#1730, открыта, и каждое новое поведение в ней стоит за выключенным флагом. Пока она не влита, каждое число получено из бенчмарка.',
       'Числа ревьюера, параллелизма, остановки ходов и диспетчера — симуляции с принятыми частотами сбоев и длительностями. Сторона цикла в бенчмарке диспетчера — модель `runRound`, а не сама функция.',
       'Цена телеметрии на сообщение — оценка по частям; A/B на спокойной машине ещё за нами.',
-      'Собственные числа шлюза симуляции ещё не опубликованы.',
+      'Шлюз симуляции пока не моделирует ключевых акторов и адаптивный пул ревьюеров, и каждую ночь его никто не запускает.',
       'Числа по ПЛИС — оценки синтеза с принятой записью актора. Ни один дизайн не размещён, не проверен по таймингу и не запущен на кремнии. Блоки DSP не использовались: в открытом маршруте они считали неверно на живых операндах (t27 docs/reports/TRINET-DSP-DEFECT-W723.md).',
       'Числа конкурентов — задокументированные значения по умолчанию самих вендоров, а не наши замеры.',
     ],
