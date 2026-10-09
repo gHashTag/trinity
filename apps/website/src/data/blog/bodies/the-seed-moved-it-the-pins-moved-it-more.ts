@@ -37,6 +37,13 @@ export const body: Block[] = [
     text: 'fpga-jtag reads IDCODEs and never programs. It handles two cable families. For a Xilinx Platform Cable USB II (or a DLC10 clone; USB VID 0x03fd), the cable comes up as 0x0013 with no firmware. With --load the command loads the firmware with fxload, without sudo, and waits for it to re-enumerate as 0x0008. It then runs xc3sprog and prints the firmware and CPLD versions and every device on the chain, by name and revision. For FTDI cables it asks openFPGALoader which probe is attached and runs --detect. --expect XC7A100T turns the result into an exit code: 0 for a match, 1 for no chain or a different chip, 2 for no cable.',
   },
   {
+    kind: 'terminal',
+    src: 'term/tri-fpga-jtag/session.cast',
+    share: 'https://t27.ai/term/tri-fpga-jtag/',
+    title: 'tri fpga-jtag · which chip answered the cable',
+    caption: 'tri fpga-jtag, offline: --decode names 0x03636093 an XC7A200T and 0x13631093 an XC7A100T, refuses an even code as no IDCODE at all, and --self-test passes 17 of 17. 13.5 s.',
+  },
+  {
     kind: 'p',
     text: 'On our bench that exit code did its job. The only cable attached today was the FTDI probe of the AX7203, and fpga-jtag --expect XC7A100T reported loc 0: 0x03636093 XC7A200T and exited 1. That is the right chip for that board and the wrong chip for the step we were about to take. It is a step we would rather have stopped at a mismatch than at a programming error.',
   },
@@ -53,6 +60,13 @@ export const body: Block[] = [
     kind: 'p',
     text: 'Each command carries a --self-test that runs its parsers on recorded output: 17 checks for jtag (IDCODE names, firmware lines, the stuck-high and stuck-low TDO verdicts, the openFPGALoader revision mask) and 11 for seeds (unfinished logs, multiple clocks, differing netlists). tri fpga-tools runs every board-loop self-test together; it reports 14 of 14. Re-parsing the logs behind the table above reproduces the hand-made CSVs value for value.',
   },
+  {
+    kind: 'terminal',
+    src: 'term/tri-fpga-tools/session.cast',
+    share: 'https://t27.ai/term/tri-fpga-tools/',
+    title: 'tri fpga-tools · 14 bench tools test themselves',
+    caption: 'tri fpga-tools runs every bench tool\'s own self-test in one sweep: 14 of 14 pass, jtag with its 17 checks and seeds with its 11 among them. 5.8 s.',
+  }
 ]
 
 export const ruBody: Block[] = [
@@ -92,6 +106,13 @@ export const ruBody: Block[] = [
     text: 'fpga-jtag читает IDCODE и никогда ничего не прошивает. Она работает с двумя семействами кабелей. Xilinx Platform Cable USB II (или клон DLC10; USB VID 0x03fd) поднимается как 0x0013 без прошивки. С --load команда загружает прошивку через fxload, без sudo, и ждёт, пока кабель переподключится как 0x0008. Затем она запускает xc3sprog и печатает версии прошивки и CPLD и каждое устройство в цепочке — по имени и ревизии. Для кабелей FTDI она спрашивает у openFPGALoader, какой зонд подключён, и запускает --detect. --expect XC7A100T превращает результат в код выхода: 0 при совпадении, 1 если цепочки нет или чип другой, 2 если нет кабеля.',
   },
   {
+    kind: 'terminal',
+    src: 'term/tri-fpga-jtag/session.cast',
+    share: 'https://t27.ai/term/tri-fpga-jtag/',
+    title: 'tri fpga-jtag · which chip answered the cable',
+    caption: 'tri fpga-jtag без обращения к кабелю: --decode называет 0x03636093 кристаллом XC7A200T, а 0x13631093 — XC7A100T, чётный код отвергает как вовсе не IDCODE, и --self-test проходит 17 из 17. 13,5 с.',
+  },
+  {
     kind: 'p',
     text: 'На нашем стенде этот код выхода сделал свою работу. Единственным подключённым сегодня кабелем был FTDI-зонд AX7203, и fpga-jtag --expect XC7A100T сообщила loc 0: 0x03636093 XC7A200T и вышла с кодом 1. Для этой платы это правильный чип, а для шага, который мы собирались сделать, — неправильный. Такой шаг лучше остановить на несовпадении, чем на ошибке прошивки.',
   },
@@ -108,4 +129,11 @@ export const ruBody: Block[] = [
     kind: 'p',
     text: 'У каждой команды есть --self-test, который гоняет её разборщики на записанном выводе: 17 проверок для jtag (имена IDCODE, строки прошивки, вердикты TDO «все единицы» и «все нули», маска ревизии openFPGALoader) и 11 для seeds (незаконченные логи, несколько клоков, разные нетлисты). tri fpga-tools запускает все самопроверки board-loop вместе и сообщает 14 из 14. Повторный разбор логов, стоящих за таблицей выше, воспроизводит составленные вручную CSV значение в значение.',
   },
+  {
+    kind: 'terminal',
+    src: 'term/tri-fpga-tools/session.cast',
+    share: 'https://t27.ai/term/tri-fpga-tools/',
+    title: 'tri fpga-tools · 14 bench tools test themselves',
+    caption: 'tri fpga-tools прогоняет самопроверки всех инструментов стенда за один проход: 14 из 14 проходят, среди них jtag со своими 17 проверками и seeds со своими 11. 5,8 с.',
+  }
 ]

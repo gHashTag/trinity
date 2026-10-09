@@ -16,6 +16,13 @@ export const body: Block[] = [
     text: 'The first frame read "ALINX" on the circuit board. Our hardware notes had called this board a QMTech Wukong for months, an XC7A200T chip in an FGG676 package. It is an ALINX AX7203: the same XC7A200T chip in an FBG484 package. Over JTAG the chip reports the same ID code, 0x3636093, in both packages, so no tool in the flow could tell them apart.',
   },
   {
+    kind: 'terminal',
+    src: 'term/tri-fpga-jtag/session.cast',
+    share: 'https://t27.ai/term/tri-fpga-jtag/',
+    title: 'tri fpga-jtag · which chip answered the cable',
+    caption: 'tri fpga-jtag names a die and a revision from an IDCODE, never a package: 0x03636093 decodes to an XC7A200T whether the chip sits in an FGG676 or an FBG484 package. Recorded on 3 October, five days before the camera\'s first frame; the self-test passes 17 of 17. 13.5 s.',
+  },
+  {
     kind: 'p',
     text: '[measured] A bitstream made earlier for the AX7203 settled it. Clocked from the AX7203\'s 200 MHz oscillator, it answered 512 of 512 additions bit-exact over the AX7203\'s serial port.',
   },
@@ -27,6 +34,13 @@ export const body: Block[] = [
   {
     kind: 'p',
     text: 'specs/fpga/eth_beacon.t27 builds one UDP broadcast frame, byte by byte: the preamble, the broadcast address, an IPv4 header with its checksum, a UDP header, a payload of "T27E" and a frame counter, and the Ethernet checksum (CRC-32). Its 9 tests pin the IPv4 checksum, the header bytes, the CRC of "123456789" and the last four bytes of frames 0 and 1. Those four bytes were first computed with zlib, before the spec was written.',
+  },
+  {
+    kind: 'terminal',
+    src: 'term/t27c-eth-crc/session.cast',
+    share: 'https://t27.ai/term/t27c-eth-crc/',
+    title: 't27c on eth_crc.t27 -- the FCS, native',
+    caption: 'Not the beacon spec itself but specs/fpga/eth_crc.t27, the Ethernet frame check sequence on its own: t27c test-report runs 8 of 8 tests natively, none vacuous, among them check_value_123456789 and receiver_residue_is_the_magic. Recorded on 8 October; 9.7 s.',
   },
   {
     kind: 'p',
@@ -77,6 +91,13 @@ export const ruBody: Block[] = [
     text: 'На первом кадре на плате читалось «ALINX». Наши записи о железе несколько месяцев называли эту плату QMTech Wukong, то есть кристалл XC7A200T в корпусе FGG676. На деле это ALINX AX7203: тот же кристалл XC7A200T, но в корпусе FBG484. По JTAG кристалл сообщает один и тот же код, 0x3636093, в обоих корпусах, поэтому ни один инструмент в цепочке не мог их различить.',
   },
   {
+    kind: 'terminal',
+    src: 'term/tri-fpga-jtag/session.cast',
+    share: 'https://t27.ai/term/tri-fpga-jtag/',
+    title: 'tri fpga-jtag · which chip answered the cable',
+    caption: 'tri fpga-jtag называет по IDCODE кристалл и ревизию, но не корпус: 0x03636093 расшифровывается как XC7A200T, в корпусе FGG676 или FBG484 — всё равно. Записано 3 октября, за пять дней до первого кадра камеры; самопроверка проходит 17 из 17. 13,5 с.',
+  },
+  {
     kind: 'p',
     text: '[измерено] Вопрос закрыл битстрим, собранный раньше для AX7203. От генератора 200 МГц этой платы он ответил по её последовательному порту 512 из 512 сложений, совпавших до бита.',
   },
@@ -88,6 +109,13 @@ export const ruBody: Block[] = [
   {
     kind: 'p',
     text: 'specs/fpga/eth_beacon.t27 собирает один широковещательный UDP-кадр байт за байтом: преамбулу, широковещательный адрес, заголовок IPv4 с контрольной суммой, заголовок UDP, полезную нагрузку «T27E» со счётчиком кадров и контрольную сумму Ethernet (CRC-32). Его 9 тестов закрепляют контрольную сумму IPv4, байты заголовка, CRC строки «123456789» и последние четыре байта кадров 0 и 1. Эти четыре байта сначала посчитали через zlib, ещё до того как спецификация была написана.',
+  },
+  {
+    kind: 'terminal',
+    src: 'term/t27c-eth-crc/session.cast',
+    share: 'https://t27.ai/term/t27c-eth-crc/',
+    title: 't27c on eth_crc.t27 -- the FCS, native',
+    caption: 'Это не сама спецификация маячка, а specs/fpga/eth_crc.t27 — контрольная сумма кадра Ethernet отдельно: t27c test-report нативно прогоняет 8 из 8 тестов, ни один не пустой, среди них check_value_123456789 и receiver_residue_is_the_magic. Записано 8 октября; 9,7 с.',
   },
   {
     kind: 'p',

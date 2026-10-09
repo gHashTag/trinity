@@ -572,5 +572,37 @@ class CoursePostTests(unittest.TestCase):
             self.assertTrue((Path(directory) / "out" / "report.json").exists())
 
 
+CAST, TEXT = "{ kind: 'terminal', src: 'term/x/session.cast' }", "{ \"kind\": \"p\", \"text\": \"kind: words\" }"
+
+
+class PostWidgetTests(unittest.TestCase):
+    def refusal(self, bodies, status="added", name="new-post.ts", posts=None):
+        with tempfile.TemporaryDirectory() as directory:
+            (Path(directory) / name).write_text("".join(f"export const {k}: Block[] = [{v}]\n" for k, v in bodies.items()))
+            files = [{"filename": "apps/website/src/data/blog/bodies/" + name, "status": status}]
+            return report.post_widget_refusal(files, Path(posts or directory), report.post_widget_policy())
+
+    def test_the_real_policy_spec_is_read_and_a_broken_one_fails_closed(self):
+        policy = report.post_widget_policy()
+        self.assertEqual((policy["kinds"], len(policy["old"])), (frozenset({"terminal", "figure"}), 72))
+        source = (Path(report.__file__).resolve().parent.parent / report.POST_WIDGET_REL).read_text(encoding="utf-8")
+        with tempfile.TemporaryDirectory() as directory:
+            (Path(directory) / "p.t27").write_text(source.replace("[2]str", "[3]str"), encoding="utf-8")
+            with self.assertRaisesRegex(report.ReportError, "declared length"):
+                report.post_widget_policy(Path(directory) / "p.t27")
+
+    def test_a_post_needs_a_widget_in_each_language(self):
+        self.assertIsNone(self.refusal({"body": CAST, "ruBody": CAST.replace("terminal", "figure")}))
+        self.assertIsNone(self.refusal({"body": CAST}, status="modified"))
+        self.assertIn("has none in body or ruBody (rule in", self.refusal({"body": TEXT, "ruBody": TEXT}))
+        self.assertIn("has none in ruBody (rule in", self.refusal({"ruBody": TEXT, "body": CAST}, status="renamed"))
+        self.assertIn("has none in body", self.refusal({}))
+
+    def test_grandfathered_removed_and_unsaved_bodies(self):
+        self.assertIsNone(self.refusal({"body": TEXT}, name="nobodys-example.ts"))
+        self.assertIsNone(self.refusal({"body": TEXT}, status="removed"))
+        self.assertIn("not saved as data", self.refusal({"body": CAST}, posts="/nonexistent"))
+
+
 if __name__ == "__main__":
     unittest.main()

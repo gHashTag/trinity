@@ -81,6 +81,13 @@ export const body: Block[] = [
   {
     "kind": "p",
     "text": "The course generator reads the catalog and refuses to build a course whose module count or lessons per module differ from it, or whose lesson does not sit in module floor(i / 3). Setting MODULES_PER_COURSE back to 27 turns the course check red; restoring the file turns it green again."
+  },
+  {
+    "kind": "terminal",
+    "src": "term/t27c-gft-xornet/session.cast",
+    "share": "https://t27.ai/term/t27c-gft-xornet/",
+    "title": "t27c on gft_xornet.t27 -- XOR needs a bend, native",
+    "caption": "The same move on a lesson spec: the recording of lesson 21 of course 2, xor-needs-a-bend, the last lesson of module 7. t27c test-report passes 4 of 4 on gft_xornet.t27, none vacuous; one sed removes relu from h1 and exactly one test, x00, fails; git checkout puts the line back and sha256sum prints the hash from before the edit. 27.5 s."
   }
 ]
 
@@ -162,5 +169,12 @@ export const ruBody: Block[] = [
   {
     "kind": "p",
     "text": "Генератор курса читает каталог и отказывается собирать курс, у которого число модулей или уроков в модуле расходится с каталогом или урок стоит не в модуле floor(i / 3). Если вернуть MODULES_PER_COURSE = 27, проверка курса краснеет; если вернуть файл, снова зеленеет."
+  },
+  {
+    "kind": "terminal",
+    "src": "term/t27c-gft-xornet/session.cast",
+    "share": "https://t27.ai/term/t27c-gft-xornet/",
+    "title": "t27c on gft_xornet.t27 -- XOR needs a bend, native",
+    "caption": "Тот же приём на спеке урока: запись урока 21 курса 2, xor-needs-a-bend, последнего урока модуля 7. t27c test-report проходит 4 из 4 на gft_xornet.t27, ни один не пустой; одна строка sed убирает relu из h1, и падает ровно один тест, x00; git checkout возвращает строку, и sha256sum печатает хеш, который был до правки. 27,5 с."
   }
 ]

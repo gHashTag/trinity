@@ -22,6 +22,13 @@ export const body: Block[] = [
     kind: 'p',
     text: 'In the PR\'s demo on the t27c lab, `gft_relu.t27` passes 4 of 4. A scratch copy with line 12 changed so that a negative input is returned instead of 0 gives 3 of 4, `negz` fails, and the command exits 1.',
   },
+  {
+    kind: 'terminal',
+    src: 'term/t27c-gft-relu/session.cast',
+    share: 'https://t27.ai/term/t27c-gft-relu/',
+    title: 't27c on gft_relu.t27 -- a bend at zero, native',
+    caption: 'The demo\'s bug, recorded later and without #7400: t27c test-report passes 4 of 4 on gft_relu.t27, none vacuous; one sed makes line 12 return x for a negative input, and exactly negz fails; git checkout restores the line and sha256sum prints the original hash. t27c 0.5.1; the verdict is read from the report text, since test-report still exits 0. 28.8 s.',
+  },
   { kind: 'h', text: 'tri mutate plant' },
   {
     kind: 'p',
@@ -75,6 +82,13 @@ export const ruBody: Block[] = [
   {
     kind: 'p',
     text: 'В демонстрации PR на лаборатории t27c `gft_relu.t27` проходит 4 из 4. Черновая копия, где строка 12 изменена так, что отрицательный вход возвращается вместо 0, даёт 3 из 4, падает `negz`, и команда возвращает 1.',
+  },
+  {
+    kind: 'terminal',
+    src: 'term/t27c-gft-relu/session.cast',
+    share: 'https://t27.ai/term/t27c-gft-relu/',
+    title: 't27c on gft_relu.t27 -- a bend at zero, native',
+    caption: 'Ошибка из демонстрации, записанная позже и без #7400: t27c test-report проходит 4 из 4 на gft_relu.t27, ни один не пустой; одна строка sed заставляет строку 12 возвращать x для отрицательного входа, и падает ровно negz; git checkout возвращает строку, а sha256sum печатает исходный хеш. t27c 0.5.1; вердикт читается из текста отчёта, потому что test-report по-прежнему возвращает 0. 28,8 с.',
   },
   { kind: 'h', text: 'tri mutate plant' },
   {
