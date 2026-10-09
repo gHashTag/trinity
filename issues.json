@@ -1,7 +1,7 @@
 {
  "repo": "gHashTag/t27",
- "generated_at": "2026-10-09T02:24:08.079Z",
- "watermark": "2026-10-09T02:22:18Z",
+ "generated_at": "2026-10-09T09:58:22.369Z",
+ "watermark": "2026-10-09T09:57:29Z",
  "issues": {
   "2279": [
    {
@@ -793,6 +793,16 @@
       "seal": ".trinity/seals/automation_automation::queen_contributor_keys.json"
      }
     ]
+   }
+  ],
+  "5479": [
+   {
+    "pr": 7991,
+    "sha": "f1b50f260da50d924ab437e936104ed21b99dd42",
+    "touched": [
+     "specs/port/trios/crates/trios-cli/src/cmd/gates.t27"
+    ],
+    "specs": []
    }
   ],
   "5549": [
@@ -1682,6 +1692,21 @@
     ]
    }
   ],
+  "7407": [
+   {
+    "pr": 8029,
+    "sha": "fe275c3b4ef3f6c1eba21588eecd710fb18e4df2",
+    "touched": [
+     "specs/queen/review_log.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/queen/review_log.t27",
+      "seal": ".trinity/seals/queen_QueenReviewLog.json"
+     }
+    ]
+   }
+  ],
   "7410": [
    {
     "pr": 7459,
@@ -1788,6 +1813,16 @@
     "touched": [
      "specs/tri/t27b/conformance/str_module_var.t27",
      "specs/tri/t27b/conformance/undefined_module_var.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "7472": [
+   {
+    "pr": 8042,
+    "sha": "8eb0ff41c4c7fcca75585d980eb27bb0dfd5dc9f",
+    "touched": [
+     "specs/tri/mutate/lab.t27"
     ],
     "specs": []
    }
@@ -2395,6 +2430,26 @@
     ]
    }
   ],
+  "7742": [
+   {
+    "pr": 7831,
+    "sha": "2dfe9786f3d8ce7fad71f65f910e5a6288c7e568",
+    "touched": [
+     "specs/tri/t27b/conformance/pointer_equality.t27",
+     "specs/tri/t27b/ptr_eq_plan.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/conformance/pointer_equality.t27",
+      "seal": ".trinity/seals/conformance_T27bConformancePointerEquality.json"
+     },
+     {
+      "path": "specs/tri/t27b/ptr_eq_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bPtrEqPlan.json"
+     }
+    ]
+   }
+  ],
   "7748": [
    {
     "pr": 7749,
@@ -2692,6 +2747,26 @@
     ]
    }
   ],
+  "7805": [
+   {
+    "pr": 7924,
+    "sha": "47014792a6bdf5c038c59784bca6e0d388c90519",
+    "touched": [
+     "specs/tri/t27b/conformance/float_call_cast.t27",
+     "specs/tri/t27b/float_as_plan.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/conformance/float_call_cast.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceFloatCallCast.json"
+     },
+     {
+      "path": "specs/tri/t27b/float_as_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bFloatAsPlan.json"
+     }
+    ]
+   }
+  ],
   "7810": [
    {
     "pr": 7853,
@@ -2773,6 +2848,31 @@
      "specs/queen/hive.t27"
     ],
     "specs": []
+   }
+  ],
+  "7822": [
+   {
+    "pr": 7918,
+    "sha": "fe9abb3d2de132ec967c8cf364e36fdb61e43da8",
+    "touched": [
+     "specs/tri/t27b/conformance/libm_logf.t27",
+     "specs/tri/t27b/libm.t27",
+     "specs/tri/t27b/libm_plan.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/conformance/libm_logf.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceLibmLogf.json"
+     },
+     {
+      "path": "specs/tri/t27b/libm.t27",
+      "seal": ".trinity/seals/t27b_T27bLibm.json"
+     },
+     {
+      "path": "specs/tri/t27b/libm_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bLibmPlan.json"
+     }
+    ]
    }
   ],
   "7824": [
@@ -3186,6 +3286,21 @@
     ]
    }
   ],
+  "7910": [
+   {
+    "pr": 7913,
+    "sha": "35e69962d11f5f90d89be982e7b60c81804e5866",
+    "touched": [
+     "specs/tri/t27b/conformance/optional_module_var.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/conformance/optional_module_var.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceOptionalModuleVar.json"
+     }
+    ]
+   }
+  ],
   "7914": [
    {
     "pr": 7916,
@@ -3275,6 +3390,16 @@
     "specs": []
    }
   ],
+  "7941": [
+   {
+    "pr": 7968,
+    "sha": "d27eb77d944a03593fe82f36d8aadfaefb3a9138",
+    "touched": [
+     "specs/port/trinity/fpga/openxc7-synth/dsp_mul.t27"
+    ],
+    "specs": []
+   }
+  ],
   "7948": [
    {
     "pr": 7949,
@@ -3286,6 +3411,66 @@
      {
       "path": "specs/automation/bot-neuro-office.t27",
       "seal": ".trinity/seals/automation_automation::bot_neuro_office.json"
+     }
+    ]
+   }
+  ],
+  "7951": [
+   {
+    "pr": 7958,
+    "sha": "6b6386e15b38ac20626866936a35295059b68865",
+    "touched": [
+     "specs/tools/tri/misread.t27",
+     "specs/tools/tri/mods.t27",
+     "specs/tools/tri/mutate.t27",
+     "specs/tools/tri/now.t27",
+     "specs/tools/tri/one-away.t27",
+     "specs/tools/tri/orphaned.t27",
+     "specs/tools/tri/pr.t27",
+     "specs/tools/tri/prose.t27",
+     "specs/tools/tri/quantifiers.t27",
+     "specs/tools/tri/red.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tools/tri/misread.t27",
+      "seal": ".trinity/seals/tri_tool_tri_misread.json"
+     },
+     {
+      "path": "specs/tools/tri/mods.t27",
+      "seal": ".trinity/seals/tri_tool_tri_mods.json"
+     },
+     {
+      "path": "specs/tools/tri/mutate.t27",
+      "seal": ".trinity/seals/tri_tool_tri_mutate.json"
+     },
+     {
+      "path": "specs/tools/tri/now.t27",
+      "seal": ".trinity/seals/tri_tool_tri_now.json"
+     },
+     {
+      "path": "specs/tools/tri/one-away.t27",
+      "seal": ".trinity/seals/tri_tool_tri_one_away.json"
+     },
+     {
+      "path": "specs/tools/tri/orphaned.t27",
+      "seal": ".trinity/seals/tri_tool_tri_orphaned.json"
+     },
+     {
+      "path": "specs/tools/tri/pr.t27",
+      "seal": ".trinity/seals/tri_tool_tri_pr.json"
+     },
+     {
+      "path": "specs/tools/tri/prose.t27",
+      "seal": ".trinity/seals/tri_tool_tri_prose.json"
+     },
+     {
+      "path": "specs/tools/tri/quantifiers.t27",
+      "seal": ".trinity/seals/tri_tool_tri_quantifiers.json"
+     },
+     {
+      "path": "specs/tools/tri/red.t27",
+      "seal": ".trinity/seals/tri_tool_tri_red.json"
      }
     ]
    }
@@ -3313,6 +3498,33 @@
     "specs": []
    }
   ],
+  "7962": [
+   {
+    "pr": 8000,
+    "sha": "321ced02ce1578749e559fe42df17646286a7603",
+    "touched": [
+     "bootstrap/tests/fixtures/core_selfhost/accept/struct_literal_field.t27",
+     "bootstrap/tests/fixtures/core_selfhost/accept/struct_one_line.t27",
+     "bootstrap/tests/fixtures/core_selfhost/accept/struct_values.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e12_struct_cycle.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e12_struct_empty.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e12_struct_field_default.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e12_struct_holds_itself.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e12_struct_literal_missing_field.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e12_struct_literal_repeated_field.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e2_for_end_field_assigned_in_body.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e2_struct_anonymous_literal.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e2_struct_field_of_unary.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_struct_literal_unknown_field.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_struct_named_gf16.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e9_struct_repeat_nonzero.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e9_struct_repeat_nonzero_local.t27",
+     "specs/compiler/core/t27core.t27",
+     "specs/compiler/core/t27core_ddc.t27"
+    ],
+    "specs": []
+   }
+  ],
   "7963": [
    {
     "pr": 7964,
@@ -3334,6 +3546,283 @@
     "sha": "8c1fa4876f574e0502285c4a4566b9e547b4c565",
     "touched": [],
     "specs": []
+   }
+  ],
+  "7998": [
+   {
+    "pr": 7999,
+    "sha": "43d221ea4303333346fc8e7f594397ffe932a111",
+    "touched": [
+     "specs/automation/bot-neuro-office.t27",
+     "specs/automation/bot-office-crm.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/automation/bot-neuro-office.t27",
+      "seal": ".trinity/seals/automation_automation::bot_neuro_office.json"
+     },
+     {
+      "path": "specs/automation/bot-office-crm.t27",
+      "seal": ".trinity/seals/automation_automation::bot_office_crm.json"
+     }
+    ]
+   }
+  ],
+  "8004": [
+   {
+    "pr": 8007,
+    "sha": "f2caa842a429f9fc823ec350776e70279c5803ae",
+    "touched": [
+     "bootstrap/tests/fixtures/core_selfhost/accept/enum_cast.t27",
+     "bootstrap/tests/fixtures/core_selfhost/accept/enum_values.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e13_enum_constants_collide.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e13_enum_empty.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e13_enum_member_case_dotted.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e13_enum_member_case_inferred.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e13_enum_member_no_single_owner.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e13_enum_value_expression.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e13_enum_value_separator.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e2_enum_switch_duplicate_label.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e2_enum_switch_not_exhaustive.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_enum_constant_spelled_by_param.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_enum_shadowed_by_local.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e7_enum_inferred_const.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e9_enum_repeat_inferred.t27",
+     "specs/compiler/core/t27core.t27",
+     "specs/compiler/core/t27core_ddc.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "8011": [
+   {
+    "pr": 8012,
+    "sha": "df0c185664b5997d4b0d9068bebfe65ff8a732fc",
+    "touched": [
+     "bootstrap/tests/fixtures/core_selfhost/accept/bench_blocks.t27",
+     "bootstrap/tests/fixtures/core_selfhost/accept/invariant_checks.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e14_invariant_call.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e14_invariant_char_literal.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e14_invariant_enum_member.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e14_invariant_hex_literal.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e14_invariant_statement.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e14_invariant_static_const.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e6_bench_unbound_assignment.t27",
+     "specs/compiler/core/t27core.t27",
+     "specs/compiler/core/t27core_ddc.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "8014": [
+   {
+    "pr": 8016,
+    "sha": "f97e761a4c49ca7fee795a2c37f95dbdb9f43b40",
+    "touched": [
+     "bootstrap/tests/fixtures/core_selfhost/accept/string_values.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e15_integer_passed_as_string.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e15_string_compared.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e15_string_compound_assign.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e15_string_condition.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e15_string_escape_carriage_return.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e15_string_len_on_module_const.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e15_string_len_on_str.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e15_string_passed_as_integer.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e15_string_returned_as_u8.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e15_string_switch_arm_integer.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e15_string_trigraph.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e3_slice_parameter.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_string_name_rebound.t27",
+     "specs/compiler/core/t27core.t27",
+     "specs/compiler/core/t27core_ddc.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "8017": [
+   {
+    "pr": 8020,
+    "sha": "884ccdeca41774fc20cd6131f6948833d9370eae",
+    "touched": [
+     "specs/compiler/core/t27core.t27",
+     "specs/compiler/core/t27core_ddc.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "8024": [
+   {
+    "pr": 8025,
+    "sha": "42707603a165e79697952aa2678e22ab498177a3",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "8030": [
+   {
+    "pr": 8032,
+    "sha": "4627980388a42fb2bc0c742f0d8c589c13462296",
+    "touched": [
+     "specs/port/tools/jtag/tdo_verdict.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "8038": [
+   {
+    "pr": 8039,
+    "sha": "09ffc2fc56dae4395b94a7b31a577f7c03532535",
+    "touched": [
+     "bootstrap/tests/fixtures/core_selfhost/accept/string_fields.t27",
+     "bootstrap/tests/fixtures/core_selfhost/accept/typecheck_accepts.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e12_nested_literal_in_module_var.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e15_integer_into_string_field.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e15_integer_string_element.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e15_string_element_compared.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e15_string_field_compared.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e15_string_field_len.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e16_assign_const_to_u8.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e16_assign_cross_sign.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e16_assign_in_nested_block.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e16_assign_narrowing.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e16_assign_u8_to_usize.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e16_compound_cross_sign.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e16_const_too_wide.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e16_const_too_wide_signed.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_const_too_wide_separated.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e4_arity_in_assignment.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e4_arity_in_cast.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e4_arity_in_condition.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e4_arity_in_test.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e4_arity_return.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_string_struct_name_rebound.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e9_string_repeat.t27",
+     "specs/compiler/core/t27core.t27",
+     "specs/compiler/core/t27core_ddc.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "8046": [
+   {
+    "pr": 8048,
+    "sha": "72f793357ff22c0b191237ca9c3e143ef9deacdc",
+    "touched": [
+     "specs/automation/bot-office-crm.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/automation/bot-office-crm.t27",
+      "seal": ".trinity/seals/automation_automation::bot_office_crm.json"
+     }
+    ]
+   }
+  ],
+  "8053": [
+   {
+    "pr": 8056,
+    "sha": "6cd8fba33e2d0b68978ece9edb3d28dfb308f42a",
+    "touched": [
+     "specs/tri/t27b/conformance/frame_address_caller_owned.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/conformance/frame_address_caller_owned.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceFrameAddressCallerOwned.json"
+     }
+    ]
+   }
+  ],
+  "8058": [
+   {
+    "pr": 8059,
+    "sha": "ce0d08fc5b151078adf19f219afc8844bf680416",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "8068": [
+   {
+    "pr": 8069,
+    "sha": "12ee225c584832c1c4f4369f77bf6883edf47ef4",
+    "touched": [
+     "specs/automation/agent-media-kie.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/automation/agent-media-kie.t27",
+      "seal": ".trinity/seals/automation_automation::agent_media_kie.json"
+     }
+    ]
+   }
+  ],
+  "8080": [
+   {
+    "pr": 8085,
+    "sha": "2e90d312c1b6165f67327e819ca87edc9b45802f",
+    "touched": [
+     "bootstrap/tests/fixtures/core_selfhost/accept/coercion_accepts.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_and_operand_not_bool.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_argument_narrowing.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_assert_not_bool.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_assign_cast_narrowing.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_assign_module_const.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_bool_arithmetic.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_bool_into_integer.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_cast_keeps_its_type.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_compare_literal_with_bool.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_compare_signed_unsigned.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_condition_not_bool.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_enum_into_integer.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_equal_bool_integer.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_field_narrowing.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_init_narrowing.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_integer_literal_into_bool.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_item_cross_sign.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_mixed_sign_arithmetic.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_module_bool_from_integer.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_negate_unsigned.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_not_on_integer.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_return_narrowing.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_signed_index.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_struct_for_another.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_typed_const_in_mixed_operation.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_usize_operand_widens.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_while_comptime_int.t27",
+     "specs/compiler/core/t27core.t27",
+     "specs/compiler/core/t27core_ddc.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "8081": [
+   {
+    "pr": 8082,
+    "sha": "75c14c275f7542d36b8e6b79cf2b8725ad39fee7",
+    "touched": [
+     "specs/automation/agent-claims-honest.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/automation/agent-claims-honest.t27",
+      "seal": ".trinity/seals/automation_automation::agent_claims_honest.json"
+     }
+    ]
+   }
+  ],
+  "8083": [
+   {
+    "pr": 8084,
+    "sha": "716a93d9f46d91b5b06d2fe322d935b166d36aaf",
+    "touched": [
+     "specs/automation/blog-share.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/automation/blog-share.t27",
+      "seal": ".trinity/seals/automation_automation::blog_share.json"
+     }
+    ]
    }
   ]
  }
