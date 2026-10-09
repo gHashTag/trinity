@@ -158,9 +158,11 @@ jobs:
       - name: Move closed issues to Done
         env:
           GH_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+          # The PR body is data: passed through the environment, never pasted into the script.
+          PR_BODY: ${{ github.event.pull_request.body }}
         run: |
           # Extract "Closes #N" references from PR body
-          BODY='${{ github.event.pull_request.body }}'
+          BODY="$PR_BODY"
           NUMBERS=$(echo "$BODY" | grep -oiE '(closes|fixes|resolves)\s+#[0-9]+' | grep -oE '[0-9]+' || true)
 
           for NUM in $NUMBERS; do
