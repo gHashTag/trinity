@@ -94,7 +94,7 @@ export const body: Block[] = [
   },
   {
     kind: 'p',
-    text: 'The order is the point. Stuck lines are tested first, because an all-ones word would otherwise pass the IR test by accident. The IR rule comes before bit 0, so an even word is only called BYPASS once the link has proved it can shift.',
+    text: 'The order is the point. Stuck lines are tested first because they are the narrower diagnosis: a TDO held high also reads the IR as 0x3F, which the IR test would only call a broken shift, without saying why. The IR rule comes before bit 0, so an even word is only called BYPASS once the link has proved it can shift.',
   },
   { kind: 'h', text: 'Where the rule lives' },
   {
@@ -152,7 +152,7 @@ export const ruBody: Block[] = [
   },
   {
     kind: 'p',
-    text: 'Весь смысл в порядке. Залипания проверяются первыми, иначе слово из одних единиц случайно прошло бы проверку IR. Правило IR стоит раньше бита 0, поэтому чётное слово называется BYPASS только после того, как линия доказала, что умеет сдвигать.',
+    text: 'Весь смысл в порядке. Залипания проверяются первыми, потому что это более точный диагноз: при TDO, залипшем в 1, IR тоже читается как 0x3F, и проверка IR назвала бы это просто сломанным сдвигом, не сказав почему. Правило IR стоит раньше бита 0, поэтому чётное слово называется BYPASS только после того, как линия доказала, что умеет сдвигать.',
   },
   { kind: 'h', text: 'Где живёт правило' },
   {
