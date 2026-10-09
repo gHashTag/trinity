@@ -1,7 +1,7 @@
 {
  "repo": "gHashTag/t27",
- "generated_at": "2026-10-09T09:58:22.369Z",
- "watermark": "2026-10-09T09:57:29Z",
+ "generated_at": "2026-10-09T16:28:58.463Z",
+ "watermark": "2026-10-09T16:23:25Z",
  "issues": {
   "2279": [
    {
@@ -1624,6 +1624,51 @@
     "specs": []
    }
   ],
+  "7369": [
+   {
+    "pr": 7400,
+    "sha": "808554793afa44f31d5c2ba5c3798349dc13a3ed",
+    "touched": [
+     "specs/tools/tri/mutate.t27",
+     "specs/tools/tri/test.t27",
+     "specs/tri/mutate/plant.t27",
+     "specs/tri/test/report.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tools/tri/mutate.t27",
+      "seal": ".trinity/seals/tri_tool_tri_mutate.json"
+     },
+     {
+      "path": "specs/tools/tri/test.t27",
+      "seal": ".trinity/seals/tri_tool_tri_test.json"
+     },
+     {
+      "path": "specs/tri/mutate/plant.t27",
+      "seal": ".trinity/seals/mutate_TriMutatePlant.json"
+     },
+     {
+      "path": "specs/tri/test/report.t27",
+      "seal": ".trinity/seals/test_TriTestReport.json"
+     }
+    ]
+   }
+  ],
+  "7370": [
+   {
+    "pr": 8152,
+    "sha": "ca9866b73e64d50a0d0a0489173d1f8dec8bed90",
+    "touched": [
+     "specs/compiler/test_report_exit.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/compiler/test_report_exit.t27",
+      "seal": ".trinity/seals/compiler_CompilerTestReportExit.json"
+     }
+    ]
+   }
+  ],
   "7391": [
    {
     "pr": 7645,
@@ -1817,6 +1862,14 @@
     "specs": []
    }
   ],
+  "7471": [
+   {
+    "pr": 8146,
+    "sha": "30c9755c720d4746c9d15058aed88e21603c27d8",
+    "touched": [],
+    "specs": []
+   }
+  ],
   "7472": [
    {
     "pr": 8042,
@@ -1945,6 +1998,36 @@
      {
       "path": "specs/fpga/reset_sync.t27",
       "seal": ".trinity/seals/fpga_ResetSync.json"
+     }
+    ]
+   }
+  ],
+  "7596": [
+   {
+    "pr": 8182,
+    "sha": "31b6106258844a505778447e135a2a7abbabc0dc",
+    "touched": [
+     "specs/compiler/theory/sieve.t27",
+     "specs/compiler/theory/speed_quality.t27",
+     "specs/compiler/theory/warmup.t27",
+     "specs/compiler/theory/warmup_t27b.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/compiler/theory/sieve.t27",
+      "seal": ".trinity/seals/theory_CompilerTheorySieve.json"
+     },
+     {
+      "path": "specs/compiler/theory/speed_quality.t27",
+      "seal": ".trinity/seals/theory_CompilerTheorySpeedQuality.json"
+     },
+     {
+      "path": "specs/compiler/theory/warmup.t27",
+      "seal": ".trinity/seals/theory_CompilerTheoryWarmup.json"
+     },
+     {
+      "path": "specs/compiler/theory/warmup_t27b.t27",
+      "seal": ".trinity/seals/theory_CompilerTheoryWarmupT27b.json"
      }
     ]
    }
@@ -2375,6 +2458,17 @@
     ]
    }
   ],
+  "7736": [
+   {
+    "pr": 8047,
+    "sha": "453cf46eff9b47ca27486344caf396bd4a492e06",
+    "touched": [
+     "specs/port/browseros/trios/agent-server/apps/server/src/tools/tool-registry.t27",
+     "specs/port/trinity/src/tri/gen_lockfree_stack.t27"
+    ],
+    "specs": []
+   }
+  ],
   "7737": [
    {
     "pr": 7744,
@@ -2767,6 +2861,26 @@
     ]
    }
   ],
+  "7809": [
+   {
+    "pr": 8078,
+    "sha": "95a68bf37a3511ad3b3dca750a090d4eef91d139",
+    "touched": [
+     "specs/tri/t27b/conformance/negative_float_literal.t27",
+     "specs/tri/t27b/literal_plan.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/conformance/negative_float_literal.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceNegativeFloatLiteral.json"
+     },
+     {
+      "path": "specs/tri/t27b/literal_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bLiteralPlan.json"
+     }
+    ]
+   }
+  ],
   "7810": [
    {
     "pr": 7853,
@@ -2875,6 +2989,31 @@
     ]
    }
   ],
+  "7823": [
+   {
+    "pr": 8167,
+    "sha": "9abff10ec5211ac45ec871ed81a11946d633229e",
+    "touched": [
+     "specs/tri/t27b/conformance/libm_powf.t27",
+     "specs/tri/t27b/libm.t27",
+     "specs/tri/t27b/libm_plan.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/conformance/libm_powf.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceLibmPowf.json"
+     },
+     {
+      "path": "specs/tri/t27b/libm.t27",
+      "seal": ".trinity/seals/t27b_T27bLibm.json"
+     },
+     {
+      "path": "specs/tri/t27b/libm_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bLibmPlan.json"
+     }
+    ]
+   }
+  ],
   "7824": [
    {
     "pr": 7825,
@@ -2926,6 +3065,26 @@
      {
       "path": "specs/memory/graph/types.t27",
       "seal": ".trinity/seals/graph_MemoryGraphTypes.json"
+     }
+    ]
+   }
+  ],
+  "7833": [
+   {
+    "pr": 8174,
+    "sha": "a561d6d13a0fa0948611066a7ecc9d74bfa30f1c",
+    "touched": [
+     "specs/tri/t27b/conformance/string_slice_literal.t27",
+     "specs/tri/t27b/slice_lit_plan.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/conformance/string_slice_literal.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceStringSliceLiteral.json"
+     },
+     {
+      "path": "specs/tri/t27b/slice_lit_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bSliceLitPlan.json"
      }
     ]
    }
@@ -3193,6 +3352,16 @@
     ]
    }
   ],
+  "7897": [
+   {
+    "pr": 7926,
+    "sha": "b3d27db77de64d76df3c7de3d0c6afb41f278be1",
+    "touched": [
+     "specs/port/trinity/fpga/rtl/fpga_test_reporter.t27"
+    ],
+    "specs": []
+   }
+  ],
   "7898": [
    {
     "pr": 7899,
@@ -3324,6 +3493,31 @@
     ]
    }
   ],
+  "7923": [
+   {
+    "pr": 7925,
+    "sha": "4d6cf7f6050a89bbc6797f375726c7da2e6be434",
+    "touched": [
+     "specs/tri/t27b/conformance/libm_std_math.t27",
+     "specs/tri/t27b/libm.t27",
+     "specs/tri/t27b/libm_plan.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/conformance/libm_std_math.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceLibmStdMath.json"
+     },
+     {
+      "path": "specs/tri/t27b/libm.t27",
+      "seal": ".trinity/seals/t27b_T27bLibm.json"
+     },
+     {
+      "path": "specs/tri/t27b/libm_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bLibmPlan.json"
+     }
+    ]
+   }
+  ],
   "7929": [
    {
     "pr": 7931,
@@ -3400,6 +3594,16 @@
     "specs": []
    }
   ],
+  "7942": [
+   {
+    "pr": 7970,
+    "sha": "f266fa32cacd314101ba5d3cde2f46c163179c06",
+    "touched": [
+     "specs/port/trinity/fpga/openxc7-synth/DSP48E1_mock.t27"
+    ],
+    "specs": []
+   }
+  ],
   "7948": [
    {
     "pr": 7949,
@@ -3471,6 +3675,66 @@
      {
       "path": "specs/tools/tri/red.t27",
       "seal": ".trinity/seals/tri_tool_tri_red.json"
+     }
+    ]
+   }
+  ],
+  "7952": [
+   {
+    "pr": 8045,
+    "sha": "3f4b590a3b1829890b620d9f9c7eae78d2ae341d",
+    "touched": [
+     "specs/tools/tri/reseal.t27",
+     "specs/tools/tri/rtl.t27",
+     "specs/tools/tri/seals.t27",
+     "specs/tools/tri/serve.t27",
+     "specs/tools/tri/skill.t27",
+     "specs/tools/tri/status.t27",
+     "specs/tools/tri/sweep.t27",
+     "specs/tools/tri/vsim.t27",
+     "specs/tools/tri/window.t27",
+     "specs/tools/tri/worktrees.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tools/tri/reseal.t27",
+      "seal": ".trinity/seals/tri_tool_tri_reseal.json"
+     },
+     {
+      "path": "specs/tools/tri/rtl.t27",
+      "seal": ".trinity/seals/tri_tool_tri_rtl.json"
+     },
+     {
+      "path": "specs/tools/tri/seals.t27",
+      "seal": ".trinity/seals/tri_tool_tri_seals.json"
+     },
+     {
+      "path": "specs/tools/tri/serve.t27",
+      "seal": ".trinity/seals/tri_tool_tri_serve.json"
+     },
+     {
+      "path": "specs/tools/tri/skill.t27",
+      "seal": ".trinity/seals/tri_tool_tri_skill.json"
+     },
+     {
+      "path": "specs/tools/tri/status.t27",
+      "seal": ".trinity/seals/tri_tool_tri_status.json"
+     },
+     {
+      "path": "specs/tools/tri/sweep.t27",
+      "seal": ".trinity/seals/tri_tool_tri_sweep.json"
+     },
+     {
+      "path": "specs/tools/tri/vsim.t27",
+      "seal": ".trinity/seals/tri_tool_tri_vsim.json"
+     },
+     {
+      "path": "specs/tools/tri/window.t27",
+      "seal": ".trinity/seals/tri_tool_tri_window.json"
+     },
+     {
+      "path": "specs/tools/tri/worktrees.t27",
+      "seal": ".trinity/seals/tri_tool_tri_worktrees.json"
      }
     ]
    }
@@ -3668,6 +3932,16 @@
     "specs": []
    }
   ],
+  "8037": [
+   {
+    "pr": 8137,
+    "sha": "facad0d9a80f1ab44453b5e00fbd41c4ce159784",
+    "touched": [
+     "specs/queen/actors.t27"
+    ],
+    "specs": []
+   }
+  ],
   "8038": [
    {
     "pr": 8039,
@@ -3718,6 +3992,29 @@
     ]
    }
   ],
+  "8051": [
+   {
+    "pr": 8145,
+    "sha": "450fae7536a269200de4483afaaee4292fe591b4",
+    "touched": [
+     "specs/ml/recurrent/self_attention.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/ml/recurrent/self_attention.t27",
+      "seal": ".trinity/seals/SelfAttention.json"
+     }
+    ]
+   }
+  ],
+  "8052": [
+   {
+    "pr": 8054,
+    "sha": "f06b1287574c0f3aaa8f7204df4aabff0c0c2a79",
+    "touched": [],
+    "specs": []
+   }
+  ],
   "8053": [
    {
     "pr": 8056,
@@ -3729,6 +4026,21 @@
      {
       "path": "specs/tri/t27b/conformance/frame_address_caller_owned.t27",
       "seal": ".trinity/seals/conformance_T27bConformanceFrameAddressCallerOwned.json"
+     }
+    ]
+   }
+  ],
+  "8057": [
+   {
+    "pr": 8086,
+    "sha": "8415b2c0dedbe83607296571f75a9aa59bc9a7a2",
+    "touched": [
+     "specs/tri/t27b/eval_arith.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/eval_arith.t27",
+      "seal": ".trinity/seals/t27b_T27bEvalArith.json"
      }
     ]
    }
@@ -3821,6 +4133,744 @@
      {
       "path": "specs/automation/blog-share.t27",
       "seal": ".trinity/seals/automation_automation::blog_share.json"
+     }
+    ]
+   }
+  ],
+  "8089": [
+   {
+    "pr": 8090,
+    "sha": "be9757784eb0b47f5fb5cb8950044d8dfbeb1681",
+    "touched": [
+     "specs/automation/agent-neuro-kie.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/automation/agent-neuro-kie.t27",
+      "seal": ".trinity/seals/automation_automation::agent_neuro_kie.json"
+     }
+    ]
+   }
+  ],
+  "8091": [
+   {
+    "pr": 8174,
+    "sha": "a561d6d13a0fa0948611066a7ecc9d74bfa30f1c",
+    "touched": [
+     "specs/tri/t27b/conformance/string_slice_literal.t27",
+     "specs/tri/t27b/slice_lit_plan.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/conformance/string_slice_literal.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceStringSliceLiteral.json"
+     },
+     {
+      "path": "specs/tri/t27b/slice_lit_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bSliceLitPlan.json"
+     }
+    ]
+   }
+  ],
+  "8092": [
+   {
+    "pr": 8129,
+    "sha": "a97cb9e551a100331b2618580f0198c7da01c7e6",
+    "touched": [
+     "bootstrap/tests/fixtures/core_selfhost/accept/names_accepts.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_assign_capture.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_assigned_const_is_runtime.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_bench_named_like_fn.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_call_of_shadowed_fn.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_capture_out_of_scope.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_capture_shadows_local.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_capture_shadows_module_name.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_duplicate_const.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_duplicate_fn.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_duplicate_local.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_duplicate_param.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_duplicate_test.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_field_of_integer.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_field_spelled_like_define.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_function_as_value.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_initializer_names_later_const.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_initializer_names_var.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_local_array_out_of_scope.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_local_out_of_scope.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_local_shadows_local.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_local_shadows_param.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_local_spelled_like_define.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_param_spelled_like_define.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_size_names_later_const.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_struct_as_value.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_test_named_like_fn.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_undeclared_assignment.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_undeclared_in_bench.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_undeclared_in_initializer.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_undeclared_in_module_const.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_undeclared_in_return.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_undeclared_in_test.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_undeclared_index.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_unknown_field.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_used_before_declared.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e5_var_and_fn_one_name.t27",
+     "specs/compiler/core/t27core.t27",
+     "specs/compiler/core/t27core_ddc.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "8093": [
+   {
+    "pr": 8131,
+    "sha": "cdf2f6dd297b27ff20e2c36bfdf66c72ecf6801a",
+    "touched": [
+     "specs/automation/course-outreach.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/automation/course-outreach.t27",
+      "seal": ".trinity/seals/automation_automation::course_outreach.json"
+     }
+    ]
+   }
+  ],
+  "8096": [
+   {
+    "pr": 8110,
+    "sha": "d30e5dbdf042646caf4cb6589859db744834272a",
+    "touched": [
+     "specs/verified/seal_identity.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/verified/seal_identity.t27",
+      "seal": ".trinity/seals/verified_VerifiedSealIdentity.json"
+     }
+    ]
+   }
+  ],
+  "8100": [
+   {
+    "pr": 8159,
+    "sha": "bcd734e8937ffa5ea13659660a24e9d901c82006",
+    "touched": [
+     "bootstrap/tests/fixtures/core_selfhost/accept/widths_accepts.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_argument_too_wide.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_c_int_overflow.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_cast_too_narrow.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_define_product_overflows.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_division_by_zero.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_hex_wraps_unsigned_int.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_index_past_array.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_initializer_too_wide.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_literal_shift_in_c_int.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_module_hex_too_wide.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_negative_arithmetic_unsigned.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_negative_compared_unsigned.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_negative_operand_unsigned.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_negative_return_unsigned.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_operand_too_wide.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_shift_past_width.t27",
+     "bootstrap/tests/fixtures/core_selfhost/refuse/e17_typed_const_underflows.t27",
+     "specs/compiler/core/t27core.t27",
+     "specs/compiler/core/t27core_ddc.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "8103": [
+   {
+    "pr": 8224,
+    "sha": "afc601f2c25e666f469b97cdea4288cad1a052bc",
+    "touched": [
+     "specs/compiler/core/t27core.t27",
+     "specs/compiler/core/t27core_ddc.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "8104": [
+   {
+    "pr": 8110,
+    "sha": "d30e5dbdf042646caf4cb6589859db744834272a",
+    "touched": [
+     "specs/verified/seal_identity.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/verified/seal_identity.t27",
+      "seal": ".trinity/seals/verified_VerifiedSealIdentity.json"
+     }
+    ]
+   }
+  ],
+  "8109": [
+   {
+    "pr": 8110,
+    "sha": "d30e5dbdf042646caf4cb6589859db744834272a",
+    "touched": [
+     "specs/verified/seal_identity.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/verified/seal_identity.t27",
+      "seal": ".trinity/seals/verified_VerifiedSealIdentity.json"
+     }
+    ]
+   }
+  ],
+  "8111": [
+   {
+    "pr": 8112,
+    "sha": "7a6703147269a9c0b07540272c943865c26c9417",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "8113": [
+   {
+    "pr": 8132,
+    "sha": "65e6b67bfdc41526cf18bb9ca1ad4a3a9ecd9a51",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "8114": [
+   {
+    "pr": 8115,
+    "sha": "ab7b9d585dc2ad3f5a15f4cd69d285ecbabf0613",
+    "touched": [
+     "specs/verified/silicon_runs.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/verified/silicon_runs.t27",
+      "seal": ".trinity/seals/verified_VerifiedSiliconRuns.json"
+     }
+    ]
+   }
+  ],
+  "8118": [
+   {
+    "pr": 8119,
+    "sha": "c14e7184d9f9b9b9584150eccb57033111f57a13",
+    "touched": [
+     "specs/automation/agent-neuro-kie.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/automation/agent-neuro-kie.t27",
+      "seal": ".trinity/seals/automation_automation::agent_neuro_kie.json"
+     }
+    ]
+   }
+  ],
+  "8120": [
+   {
+    "pr": 8121,
+    "sha": "6d20aef37bf592433ea8d8178e42a09d514b82f4",
+    "touched": [
+     "specs/verified/silicon_queue.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/verified/silicon_queue.t27",
+      "seal": ".trinity/seals/verified_VerifiedSiliconQueue.json"
+     }
+    ]
+   }
+  ],
+  "8133": [
+   {
+    "pr": 8136,
+    "sha": "e19b771c2a4c4dd776b123584769079e971383ee",
+    "touched": [
+     "specs/automation/agent-hive-group.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/automation/agent-hive-group.t27",
+      "seal": ".trinity/seals/automation_automation::agent_hive_group.json"
+     }
+    ]
+   }
+  ],
+  "8134": [
+   {
+    "pr": 8135,
+    "sha": "cd47f56cbb7cbacd5fd4f60add37b1ee5f24b1d4",
+    "touched": [
+     "specs/port/scripts/gen_w310.t27",
+     "specs/port/scripts/gen_w311.t27",
+     "specs/port/scripts/gen_w314.t27",
+     "specs/port/scripts/gen_w315.t27",
+     "specs/port/scripts/gen_w316.t27",
+     "specs/port/scripts/gen_w318.t27",
+     "specs/port/scripts/gen_w322.t27",
+     "specs/port/scripts/gen_w_blocks.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/port/scripts/gen_w310.t27",
+      "seal": ".trinity/seals/scripts_port::scripts::gen_w310.json"
+     },
+     {
+      "path": "specs/port/scripts/gen_w311.t27",
+      "seal": ".trinity/seals/scripts_port::scripts::gen_w311.json"
+     },
+     {
+      "path": "specs/port/scripts/gen_w314.t27",
+      "seal": ".trinity/seals/scripts_port::scripts::gen_w314.json"
+     },
+     {
+      "path": "specs/port/scripts/gen_w315.t27",
+      "seal": ".trinity/seals/scripts_port::scripts::gen_w315.json"
+     },
+     {
+      "path": "specs/port/scripts/gen_w316.t27",
+      "seal": ".trinity/seals/scripts_port::scripts::gen_w316.json"
+     },
+     {
+      "path": "specs/port/scripts/gen_w318.t27",
+      "seal": ".trinity/seals/scripts_port::scripts::gen_w318.json"
+     },
+     {
+      "path": "specs/port/scripts/gen_w322.t27",
+      "seal": ".trinity/seals/scripts_port::scripts::gen_w322.json"
+     },
+     {
+      "path": "specs/port/scripts/gen_w_blocks.t27",
+      "seal": ".trinity/seals/scripts_port::scripts::gen_w_blocks.json"
+     }
+    ]
+   }
+  ],
+  "8139": [
+   {
+    "pr": 8142,
+    "sha": "64085f1247645ad367119e1ec2cded1210507d96",
+    "touched": [
+     "specs/automation/bot-event-tabs.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/automation/bot-event-tabs.t27",
+      "seal": ".trinity/seals/automation_automation::bot_event_tabs.json"
+     }
+    ]
+   }
+  ],
+  "8147": [
+   {
+    "pr": 8183,
+    "sha": "5ba42472ffacc294808599374865855725b1f024",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "8151": [
+   {
+    "pr": 8154,
+    "sha": "441e42f3066196b3eeb21e5aa99c1303989ea718",
+    "touched": [
+     "specs/compiler/verilog_aos_memory.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/compiler/verilog_aos_memory.t27",
+      "seal": ".trinity/seals/compiler_VerilogAosMemory.json"
+     }
+    ]
+   }
+  ],
+  "8153": [
+   {
+    "pr": 8155,
+    "sha": "a63febf622714c2d0936b600adda8b85e4e68b4a",
+    "touched": [
+     "specs/verified/bench_agent.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/verified/bench_agent.t27",
+      "seal": ".trinity/seals/verified_VerifiedBenchAgent.json"
+     }
+    ]
+   }
+  ],
+  "8157": [
+   {
+    "pr": 8158,
+    "sha": "66c8097475fe1334913147a1bb79fc1ffcea0c0d",
+    "touched": [
+     "specs/crons/999-multibots-telegraf-agent-autopilot-L1118.t27",
+     "specs/crons/999-multibots-telegraf-bot-owner-billing-L474.t27",
+     "specs/crons/999-multibots-telegraf-check-stuck-trainings.t27",
+     "specs/crons/999-multibots-telegraf-ci.t27",
+     "specs/crons/999-multibots-telegraf-client-telemetry-daily.t27",
+     "specs/crons/999-multibots-telegraf-club-invoice-abandoned-watch.t27",
+     "specs/crons/999-multibots-telegraf-crm-proactive-sweep.t27",
+     "specs/crons/999-multibots-telegraf-crmProactive-L375.t27",
+     "specs/crons/999-multibots-telegraf-daily-sales-advisor.t27",
+     "specs/crons/999-multibots-telegraf-generate-jobs-L164.t27",
+     "specs/crons/999-multibots-telegraf-robokassa-unclaimed-watch.t27",
+     "specs/crons/999-multibots-telegraf-ton-pending-watch.t27",
+     "specs/crons/railway-jobsearch-cron.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/crons/999-multibots-telegraf-agent-autopilot-L1118.t27",
+      "seal": ".trinity/seals/crons_cron_999_multibots_telegraf_agent_autopilot_L1118.json"
+     },
+     {
+      "path": "specs/crons/999-multibots-telegraf-bot-owner-billing-L474.t27",
+      "seal": ".trinity/seals/crons_cron_999_multibots_telegraf_bot_owner_billing_L474.json"
+     },
+     {
+      "path": "specs/crons/999-multibots-telegraf-check-stuck-trainings.t27",
+      "seal": ".trinity/seals/crons_cron_999_multibots_telegraf_check_stuck_trainings.json"
+     },
+     {
+      "path": "specs/crons/999-multibots-telegraf-ci.t27",
+      "seal": ".trinity/seals/crons_cron_999_multibots_telegraf_ci.json"
+     },
+     {
+      "path": "specs/crons/999-multibots-telegraf-client-telemetry-daily.t27",
+      "seal": ".trinity/seals/crons_cron_999_multibots_telegraf_client_telemetry_daily.json"
+     },
+     {
+      "path": "specs/crons/999-multibots-telegraf-club-invoice-abandoned-watch.t27",
+      "seal": ".trinity/seals/crons_cron_999_multibots_telegraf_club_invoice_abandoned_watch.json"
+     },
+     {
+      "path": "specs/crons/999-multibots-telegraf-crm-proactive-sweep.t27",
+      "seal": ".trinity/seals/crons_cron_999_multibots_telegraf_crm_proactive_sweep.json"
+     },
+     {
+      "path": "specs/crons/999-multibots-telegraf-crmProactive-L375.t27",
+      "seal": ".trinity/seals/crons_cron_999_multibots_telegraf_crmProactive_L375.json"
+     },
+     {
+      "path": "specs/crons/999-multibots-telegraf-daily-sales-advisor.t27",
+      "seal": ".trinity/seals/crons_cron_999_multibots_telegraf_daily_sales_advisor.json"
+     },
+     {
+      "path": "specs/crons/999-multibots-telegraf-generate-jobs-L164.t27",
+      "seal": ".trinity/seals/crons_cron_999_multibots_telegraf_generate_jobs_L164.json"
+     },
+     {
+      "path": "specs/crons/999-multibots-telegraf-robokassa-unclaimed-watch.t27",
+      "seal": ".trinity/seals/crons_cron_999_multibots_telegraf_robokassa_unclaimed_watch.json"
+     },
+     {
+      "path": "specs/crons/999-multibots-telegraf-ton-pending-watch.t27",
+      "seal": ".trinity/seals/crons_cron_999_multibots_telegraf_ton_pending_watch.json"
+     },
+     {
+      "path": "specs/crons/railway-jobsearch-cron.t27",
+      "seal": ".trinity/seals/crons_cron_railway_jobsearch_cron.json"
+     }
+    ]
+   }
+  ],
+  "8160": [
+   {
+    "pr": 8169,
+    "sha": "15a5c25d899fbeaf11592f6605e2bb15cb5038e2",
+    "touched": [
+     "specs/port/scripts/gen_w662.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "8170": [
+   {
+    "pr": 8173,
+    "sha": "3d8b1826a62dc37e5945bcc0a1c8252f567156fb",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "8171": [
+   {
+    "pr": 8172,
+    "sha": "409b153d1af8b6c9801175b1d5dabcab9582d5c6",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "8176": [
+   {
+    "pr": 8208,
+    "sha": "2e83260a0bd278c7b8d905543a07c5d8c0ad6b00",
+    "touched": [
+     "specs/tri/t27b/verdict_key.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/verdict_key.t27",
+      "seal": ".trinity/seals/t27b_T27bVerdictKey.json"
+     }
+    ]
+   }
+  ],
+  "8179": [
+   {
+    "pr": 8180,
+    "sha": "3281618e28550d4df77fc0e736cafd73ca2e3d02",
+    "touched": [
+     "specs/automation/agent-provider-chain.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/automation/agent-provider-chain.t27",
+      "seal": ".trinity/seals/automation_automation::agent_provider_chain.json"
+     }
+    ]
+   }
+  ],
+  "8184": [
+   {
+    "pr": 8185,
+    "sha": "b9cf73e1bbf0d5b1e0e790aa6510aa06fc9ef4b2",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "8210": [
+   {
+    "pr": 8212,
+    "sha": "3d2ea886e86616906251d591d4b26af8281df70c",
+    "touched": [
+     "specs/queen/reviewer.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "8211": [
+   {
+    "pr": 8213,
+    "sha": "72a8532bf3d623a701b2f9e1d6c6d77f55e5bdc1",
+    "touched": [
+     "specs/queen/control.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "8215": [
+   {
+    "pr": 8219,
+    "sha": "8cc1ae236e854a37a5a4810018f47d606772fc9b",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "8220": [
+   {
+    "pr": 8221,
+    "sha": "94bae6961552078c8e9ebf85d585bf6aafa43e5d",
+    "touched": [
+     "specs/crons/mac-trios-cycle.t27",
+     "specs/crons/mac-trios-doctor.t27",
+     "specs/crons/mac-trios-feed.t27",
+     "specs/crons/mac-trios-heal.t27",
+     "specs/crons/t27-formal-mutation.t27",
+     "specs/crons/t27-pr-dashboard.t27",
+     "specs/crons/trinity-agent-cron-cleanup.t27",
+     "specs/crons/trinity-agent-queue-drain.t27",
+     "specs/crons/trinity-brain-ci.t27",
+     "specs/crons/trinity-codegen.t27",
+     "specs/crons/trinity-discover-callers.t27",
+     "specs/crons/trinity-pages-health-check.t27",
+     "specs/crons/trinity-signal-health-self.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/crons/mac-trios-cycle.t27",
+      "seal": ".trinity/seals/crons_cron_mac_trios_cycle.json"
+     },
+     {
+      "path": "specs/crons/mac-trios-doctor.t27",
+      "seal": ".trinity/seals/crons_cron_mac_trios_doctor.json"
+     },
+     {
+      "path": "specs/crons/mac-trios-feed.t27",
+      "seal": ".trinity/seals/crons_cron_mac_trios_feed.json"
+     },
+     {
+      "path": "specs/crons/mac-trios-heal.t27",
+      "seal": ".trinity/seals/crons_cron_mac_trios_heal.json"
+     },
+     {
+      "path": "specs/crons/t27-formal-mutation.t27",
+      "seal": ".trinity/seals/crons_cron_t27_formal_mutation.json"
+     },
+     {
+      "path": "specs/crons/t27-pr-dashboard.t27",
+      "seal": ".trinity/seals/crons_cron_t27_pr_dashboard.json"
+     },
+     {
+      "path": "specs/crons/trinity-agent-cron-cleanup.t27",
+      "seal": ".trinity/seals/crons_cron_trinity_agent_cron_cleanup.json"
+     },
+     {
+      "path": "specs/crons/trinity-agent-queue-drain.t27",
+      "seal": ".trinity/seals/crons_cron_trinity_agent_queue_drain.json"
+     },
+     {
+      "path": "specs/crons/trinity-brain-ci.t27",
+      "seal": ".trinity/seals/crons_cron_trinity_brain_ci.json"
+     },
+     {
+      "path": "specs/crons/trinity-codegen.t27",
+      "seal": ".trinity/seals/crons_cron_trinity_codegen.json"
+     },
+     {
+      "path": "specs/crons/trinity-discover-callers.t27",
+      "seal": ".trinity/seals/crons_cron_trinity_discover_callers.json"
+     },
+     {
+      "path": "specs/crons/trinity-pages-health-check.t27",
+      "seal": ".trinity/seals/crons_cron_trinity_pages_health_check.json"
+     },
+     {
+      "path": "specs/crons/trinity-signal-health-self.t27",
+      "seal": ".trinity/seals/crons_cron_trinity_signal_health_self.json"
+     }
+    ]
+   }
+  ],
+  "8222": [
+   {
+    "pr": 8223,
+    "sha": "89c3ddde1e6a9db79045410240a70177b1cd2aa1",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "8225": [
+   {
+    "pr": 8226,
+    "sha": "5315ee27f9d190757e83d1e0ca097a85dba55abf",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "8227": [
+   {
+    "pr": 8236,
+    "sha": "2d5fcc1837bdfb97f2be0d6b9ca0930e28425fb5",
+    "touched": [
+     "specs/policy/own_language.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "8229": [
+   {
+    "pr": 8235,
+    "sha": "f21a0b39c3ea154142fa688dfec5d967e9183147",
+    "touched": [
+     "specs/tri/t27b/type_text.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/type_text.t27",
+      "seal": ".trinity/seals/t27b_T27bTypeText.json"
+     }
+    ]
+   }
+  ],
+  "8230": [
+   {
+    "pr": 8231,
+    "sha": "e3b8c51c5822ba427a4db3ffdca4925eaf246719",
+    "touched": [
+     "specs/compiler/theory/warmup.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/compiler/theory/warmup.t27",
+      "seal": ".trinity/seals/theory_CompilerTheoryWarmup.json"
+     }
+    ]
+   }
+  ],
+  "8233": [
+   {
+    "pr": 8234,
+    "sha": "293f3a0dbbc5f4594db7e3ea320eb6cca4491d1e",
+    "touched": [
+     "specs/automation/agent-claims-honest.t27",
+     "specs/automation/crm-client-onboard.t27",
+     "specs/automation/photo-actions.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/automation/agent-claims-honest.t27",
+      "seal": ".trinity/seals/automation_automation::agent_claims_honest.json"
+     },
+     {
+      "path": "specs/automation/crm-client-onboard.t27",
+      "seal": ".trinity/seals/automation_automation::crm_client_onboard.json"
+     },
+     {
+      "path": "specs/automation/photo-actions.t27",
+      "seal": ".trinity/seals/automation_automation::photo_actions.json"
+     }
+    ]
+   }
+  ],
+  "8237": [
+   {
+    "pr": 8238,
+    "sha": "3df3d6cfd728c9388d4b1a5d19946b1de722d53c",
+    "touched": [
+     "specs/compiler/theory/warmup_t27b.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/compiler/theory/warmup_t27b.t27",
+      "seal": ".trinity/seals/theory_CompilerTheoryWarmupT27b.json"
+     }
+    ]
+   }
+  ],
+  "8240": [
+   {
+    "pr": 8241,
+    "sha": "831195634ead0182973946bad96cf28c1beccc2f",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "8244": [
+   {
+    "pr": 8247,
+    "sha": "0fca4bdfd7db2af9d767be43f545fcf9ef6f3717",
+    "touched": [
+     "specs/tri/t27b/comptime_float.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/comptime_float.t27",
+      "seal": ".trinity/seals/t27b_T27bComptimeFloat.json"
+     }
+    ]
+   }
+  ],
+  "8245": [
+   {
+    "pr": 8246,
+    "sha": "5036de2288c764a0414544d194ad746eaf7774bf",
+    "touched": [
+     "specs/automation/crm-story-reel.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/automation/crm-story-reel.t27",
+      "seal": ".trinity/seals/automation_automation::crm_story_reel.json"
      }
     ]
    }
