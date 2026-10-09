@@ -1,7 +1,7 @@
 {
  "repo": "gHashTag/t27",
- "generated_at": "2026-10-08T22:30:26.069Z",
- "watermark": "2026-10-08T22:28:12Z",
+ "generated_at": "2026-10-09T02:24:08.079Z",
+ "watermark": "2026-10-09T02:22:18Z",
  "issues": {
   "2279": [
    {
@@ -1914,6 +1914,26 @@
     ]
    }
   ],
+  "7625": [
+   {
+    "pr": 7626,
+    "sha": "43491e3c3ee92b4cf10ce22f28f9fc16751fd77f",
+    "touched": [
+     "specs/fpga/eth_crc.t27",
+     "specs/fpga/rgmii.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/fpga/eth_crc.t27",
+      "seal": ".trinity/seals/fpga_fpga_eth_crc.json"
+     },
+     {
+      "path": "specs/fpga/rgmii.t27",
+      "seal": ".trinity/seals/fpga_fpga_rgmii.json"
+     }
+    ]
+   }
+  ],
   "7628": [
    {
     "pr": 7629,
@@ -2938,6 +2958,36 @@
     ]
    }
   ],
+  "7857": [
+   {
+    "pr": 7875,
+    "sha": "80f50cc600e1d893f6cbc3a16448d7e67313f1c8",
+    "touched": [
+     "specs/tri/t27b/conformance/lazy_signature.t27",
+     "specs/tri/t27b/lazy_sig_plan.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/conformance/lazy_signature.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceLazySignature.json"
+     },
+     {
+      "path": "specs/tri/t27b/lazy_sig_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bLazySigPlan.json"
+     }
+    ]
+   }
+  ],
+  "7859": [
+   {
+    "pr": 7862,
+    "sha": "a40d891282e6d3250ebb3c42dc2d10256a9d2cbe",
+    "touched": [
+     "specs/tri/t27b/steward.t27"
+    ],
+    "specs": []
+   }
+  ],
   "7860": [
    {
     "pr": 7861,
@@ -3071,6 +3121,71 @@
     "specs": []
    }
   ],
+  "7903": [
+   {
+    "pr": 7904,
+    "sha": "4daabae705939d7a506dc4313c2aa386e2946331",
+    "touched": [
+     "specs/tools/tri/gen.t27",
+     "specs/tools/tri/harness.t27",
+     "specs/tools/tri/health.t27",
+     "specs/tools/tri/hooks.t27",
+     "specs/tools/tri/issues.t27",
+     "specs/tools/tri/jumps.t27",
+     "specs/tools/tri/kinds.t27",
+     "specs/tools/tri/lean.t27",
+     "specs/tools/tri/ledgers.t27",
+     "specs/tools/tri/loop.t27",
+     "specs/tools/tri/merging.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tools/tri/gen.t27",
+      "seal": ".trinity/seals/tri_tool_tri_gen.json"
+     },
+     {
+      "path": "specs/tools/tri/harness.t27",
+      "seal": ".trinity/seals/tri_tool_tri_harness.json"
+     },
+     {
+      "path": "specs/tools/tri/health.t27",
+      "seal": ".trinity/seals/tri_tool_tri_health.json"
+     },
+     {
+      "path": "specs/tools/tri/hooks.t27",
+      "seal": ".trinity/seals/tri_tool_tri_hooks.json"
+     },
+     {
+      "path": "specs/tools/tri/issues.t27",
+      "seal": ".trinity/seals/tri_tool_tri_issues.json"
+     },
+     {
+      "path": "specs/tools/tri/jumps.t27",
+      "seal": ".trinity/seals/tri_tool_tri_jumps.json"
+     },
+     {
+      "path": "specs/tools/tri/kinds.t27",
+      "seal": ".trinity/seals/tri_tool_tri_kinds.json"
+     },
+     {
+      "path": "specs/tools/tri/lean.t27",
+      "seal": ".trinity/seals/tri_tool_tri_lean.json"
+     },
+     {
+      "path": "specs/tools/tri/ledgers.t27",
+      "seal": ".trinity/seals/tri_tool_tri_ledgers.json"
+     },
+     {
+      "path": "specs/tools/tri/loop.t27",
+      "seal": ".trinity/seals/tri_tool_tri_loop.json"
+     },
+     {
+      "path": "specs/tools/tri/merging.t27",
+      "seal": ".trinity/seals/tri_tool_tri_merging.json"
+     }
+    ]
+   }
+  ],
   "7914": [
    {
     "pr": 7916,
@@ -3188,6 +3303,37 @@
       "seal": ".trinity/seals/automation_automation::bot_neuro_office.json"
      }
     ]
+   }
+  ],
+  "7955": [
+   {
+    "pr": 7956,
+    "sha": "e66473f6bba3a0184b7c83418de830b1a5fe8c1a",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "7963": [
+   {
+    "pr": 7964,
+    "sha": "dc1be3573f780309804b5484636a86446075be69",
+    "touched": [
+     "specs/automation/bot-neuro-office.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/automation/bot-neuro-office.t27",
+      "seal": ".trinity/seals/automation_automation::bot_neuro_office.json"
+     }
+    ]
+   }
+  ],
+  "7965": [
+   {
+    "pr": 7966,
+    "sha": "8c1fa4876f574e0502285c4a4566b9e547b4c565",
+    "touched": [],
+    "specs": []
    }
   ]
  }
