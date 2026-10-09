@@ -1,3 +1,4 @@
+import { body as body_three_dies_one_verdict, ruBody as ruBody_three_dies_one_verdict } from './bodies/three-dies-one-verdict'
 import { body as body_an_eye_on_the_board, ruBody as ruBody_an_eye_on_the_board } from './bodies/an-eye-on-the-board'
 import { body as body_course_three_goldenfloat, ruBody as ruBody_course_three_goldenfloat } from './bodies/course-three-goldenfloat'
 import { body as body_nine_modules_of_three_again, ruBody as ruBody_nine_modules_of_three_again } from './bodies/nine-modules-of-three-again'
@@ -103,6 +104,7 @@ import { body as body_features_that_change_no_bits, ruBody as ruBody_features_th
 import { body as body_one_commit_nine_workflow_outcomes, ruBody as ruBody_one_commit_nine_workflow_outcomes } from './bodies/one-commit-nine-workflow-outcomes'
 
 const bodies: Record<string, PostBody> = {
+  'three-dies-one-verdict': { body: body_three_dies_one_verdict, ruBody: ruBody_three_dies_one_verdict },
   'an-eye-on-the-board': { body: body_an_eye_on_the_board, ruBody: ruBody_an_eye_on_the_board },
   'buses-and-peripherals': { body: body_course_buses_and_peripherals, ruBody: ruBody_course_buses_and_peripherals },
   'clocks-resets-and-cdc': { body: body_clocks_resets_and_cdc, ruBody: ruBody_clocks_resets_and_cdc },
