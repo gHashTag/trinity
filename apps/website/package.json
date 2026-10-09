@@ -121,7 +121,7 @@
     "check:widgets": "node scripts/widgets-from-spec.mjs --check",
     "test:widgets-spec": "node --test scripts/widgets-from-spec.test.mjs",
     "check:course": "node scripts/course-from-spec.mjs --check",
-    "test:course": "node --test scripts/course-from-spec.test.mjs scripts/lesson-specs.test.mjs",
+    "test:course": "node --test scripts/course-from-spec.test.mjs scripts/lesson-specs.test.mjs scripts/t27c-mutation-casts.test.mjs",
     "gen:course-pages": "node scripts/course-pages.mjs",
     "check:course-pages": "node scripts/course-pages.mjs --check && node --test scripts/course-pages.test.mjs",
     "check:widget-pages": "node scripts/widget-pages-from-spec.mjs --check",
