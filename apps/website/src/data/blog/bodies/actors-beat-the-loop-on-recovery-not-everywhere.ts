@@ -126,7 +126,7 @@ export const body: Block[] = [
   },
   {
     kind: 'p',
-    text: 'The last row was not planted. On its first runs the gate failed 5 of 64 seeds with a turn that ran for a process that had already exited: the runtime takes a message and runs the turn a microtask later, and in between a supervisor can stop the process. `queen-actors.ts` now runs a turn only while its process is current, with a regression test. On a loaded Mac the check cost nothing above the noise (median 11.4 us per message with it, 11.65 us without). And on the code before item 6, the simulated store reproduced both node-link defects with no change to the source.',
+    text: 'The defect in the last row was not one we knew about: the gate found it. On its first runs the gate failed 5 of 64 seeds with a turn that ran for a process that had already exited: the runtime takes a message and runs the turn a microtask later, and in between a supervisor can stop the process. `queen-actors.ts` now runs a turn only while its process is current, with a regression test. On a loaded Mac the check cost nothing above the noise (median 11.4 us per message with it, 11.65 us without). And on the code before item 6, the simulated store reproduced both node-link defects with no change to the source.',
   },
   {
     kind: 'p',
@@ -313,7 +313,7 @@ export const ruBody: Block[] = [
   },
   {
     kind: 'p',
-    text: 'Последняя строка не была подброшена. На первых прогонах шлюз провалил 5 из 64 зёрен: ход выполнялся для процесса, который уже завершился. Рантайм забирает письмо и выполняет ход на микрозадачу позже, а между этими моментами супервизор может остановить процесс. Теперь `queen-actors.ts` выполняет ход, только пока его процесс актуален, и на это есть регрессионный тест. На нагруженном Mac проверка ничего не стоила сверх шума (медиана 11.4 мкс на сообщение с ней и 11.65 мкс без неё). А на коде до пункта 6 симулированное хранилище воспроизвело оба дефекта связи узлов без единого изменения исходного кода.',
+    text: 'О дефекте из последней строки мы не знали: его нашёл шлюз. На первых прогонах шлюз провалил 5 из 64 зёрен: ход выполнялся для процесса, который уже завершился. Рантайм забирает письмо и выполняет ход на микрозадачу позже, а между этими моментами супервизор может остановить процесс. Теперь `queen-actors.ts` выполняет ход, только пока его процесс актуален, и на это есть регрессионный тест. На нагруженном Mac проверка ничего не стоила сверх шума (медиана 11.4 мкс на сообщение с ней и 11.65 мкс без неё). А на коде до пункта 6 симулированное хранилище воспроизвело оба дефекта связи узлов без единого изменения исходного кода.',
   },
   {
     kind: 'p',
