@@ -383,6 +383,42 @@ def course_post_refusal(event: dict[str, Any], files: list[dict[str, Any]],
             f"under {policy['post_dir']} (rule in {COURSE_POST_REL})"), None
 
 
+# Every post carries a widget; the rule lives in a t27 spec. Bodies are text the workflow saved, never run.
+POST_WIDGET_REL = "apps/website/specs/policy/post_widget.t27"
+BLOCK_KIND, BODY_EXPORT = re.compile(r"""\bkind["']?\s*:\s*["']([a-z]+)["']"""), re.compile(r"\bexport const (body|ruBody)\b")
+
+
+def post_widget_policy(path: Path = COURSE_POST_SPEC.parent / "post_widget.t27") -> dict[str, Any]:
+    """Read the widget rule from its t27 spec. A missing or malformed spec fails closed."""
+    try:
+        source = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        fail(f"post-widget policy {path.name} is unreadable: {exc}")
+    strings = dict(STR_CONST.findall(source))
+    lists = {name: STR_ITEM.findall(items) for name, size, items in STR_LIST_CONST.findall(source)
+             if len(STR_ITEM.findall(items)) == int(size)}  # t27 does not check it (gHashTag/t27#7395)
+    if not (strings.get("RULE") and strings.get("POST_DIR", "").endswith("/") and "WIDGET_KINDS" in lists and "GRANDFATHERED" in lists):
+        fail(f"post-widget policy {path.name} needs RULE, POST_DIR ending with /, WIDGET_KINDS and GRANDFATHERED at their declared length")
+    return {"rule": strings["RULE"], "post_dir": strings["POST_DIR"], "kinds": frozenset(lists["WIDGET_KINDS"]), "old": frozenset(lists["GRANDFATHERED"])}
+
+
+def post_widget_refusal(files: list[dict[str, Any]], posts: Path, policy: dict[str, Any]) -> str | None:
+    """Why a post body this PR adds or changes has no widget; None when every one has."""
+    for item in files:
+        name, base = item.get("filename"), str(item.get("filename")).rsplit("/", 1)[-1]
+        if (item.get("status") == "removed" or not isinstance(name, str) or not name.startswith(policy["post_dir"])
+                or not base.endswith(".ts") or base[:-3] in policy["old"]):
+            continue
+        try:
+            parts = BODY_EXPORT.split((posts / base).read_text(encoding="utf-8"))
+        except (OSError, UnicodeError) as exc:
+            return f"{name}: the post body was not saved as data, so its widgets cannot be read ({exc})"
+        bare = [parts[i] for i in range(1, len(parts) - 1, 2) if not policy["kinds"] & set(BLOCK_KIND.findall(parts[i + 1]))]
+        if bare or "body" not in parts[1::2]:
+            return f"{policy['rule']} {name} has none in {' or '.join(bare) or 'body'} (rule in {POST_WIDGET_REL})"
+    return None
+
+
 def lifecycle(report: dict[str, Any]) -> str:
     if report["merged"]:
         return "Merged PR; unpublished blog draft"
@@ -573,6 +609,7 @@ def main(argv: list[str] | None = None) -> int:
     validate.add_argument("--files", type=Path, help="changed files as JSON lines {filename,status}")
     validate.add_argument("--commits", type=Path,
                           help="PR commits as JSON lines {sha,author,committer,verified}")
+    validate.add_argument("--posts", type=Path, help="directory of the changed post bodies, saved as text")
     args = parser.parse_args(argv)
     try:
         with args.event.open("rb") as stream:
@@ -603,6 +640,9 @@ def main(argv: list[str] | None = None) -> int:
                 print(notice, file=sys.stderr)
             if refusal:
                 fail(refusal)
+        refusal = post_widget_refusal(files, args.posts, post_widget_policy()) if files and args.posts else None
+        if refusal:
+            fail(refusal)
         write_artifacts(report, args.output)
         print(f"Validated {report['repository']}#{report['number']} at {report['head_sha']}: "
               f"{lifecycle(report)}; artifacts written to {args.output}")

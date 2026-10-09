@@ -51,12 +51,19 @@ jobs:
             --jq '.[] | {filename, status, previous_filename}' > /tmp/pr-files.jsonl
           gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/commits?per_page=100" \
             --jq '.[] | {sha, author: .author.login, committer: .committer.login, verified: .commit.verification.verified}' > /tmp/pr-commits.jsonl
+      - name: Load changed post bodies as text (apps/website/specs/policy/post_widget.t27)
+        run: |
+          set -euo pipefail
+          DIR=$(sed -n 's/^pub const POST_DIR : str = "\(.*\)";$/\1/p' apps/website/specs/policy/post_widget.t27)
+          SHA=$(jq -er '.head.sha' /tmp/pr.json); mkdir -p /tmp/pr-posts
+          jq -r --arg d "$DIR" 'select(.status != "removed" and (.filename | startswith($d) and endswith(".ts"))) | .filename' /tmp/pr-files.jsonl |
+            while read -r f; do gh api -H 'Accept: application/vnd.github.raw+json' "repos/$GITHUB_REPOSITORY/contents/$f?ref=$SHA" > "/tmp/pr-posts/${f##*/}"; done
       - name: Validate mandatory report and generate blog draft
         id: validate
         continue-on-error: true
         run: >-
           python3 scripts/pr_blog_report.py validate --event /tmp/event.json --output /tmp/pr-blog
-          --files /tmp/pr-files.jsonl --commits /tmp/pr-commits.jsonl
+          --files /tmp/pr-files.jsonl --commits /tmp/pr-commits.jsonl --posts /tmp/pr-posts
       - name: Bind the required status to the current PR head
         if: always()
         env:

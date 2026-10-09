@@ -198,6 +198,13 @@ export const body: Block[] = [
     ]
   },
   {
+    "kind": "terminal",
+    "src": "term/t27c-tnf17/session.cast",
+    "share": "https://t27.ai/term/t27c-tnf17/",
+    "title": "t27c on tnf17.t27 -- a 17-bit ternary-exponent float, native",
+    "caption": "Not a lesson of this course: tnf17.t27, from the AI numbers course. Its TNF17e also keeps the exponent in balanced trits, four of them where GF-T16 uses six. t27c runs 34 of 34 tests natively, none vacuous; XOR swapped for OR in tnf_negate fails exactly one, negate_is_an_involution; git restores the spec. 30.3 s."
+  },
+  {
     "kind": "h",
     "text": "What this course does not claim"
   },
@@ -400,6 +407,13 @@ export const ruBody: Block[] = [
         "таблица"
       ]
     ]
+  },
+  {
+    "kind": "terminal",
+    "src": "term/t27c-tnf17/session.cast",
+    "share": "https://t27.ai/term/t27c-tnf17/",
+    "title": "t27c on tnf17.t27 -- a 17-bit ternary-exponent float, native",
+    "caption": "Это не урок этого курса, а tnf17.t27 из курса «AI numbers». Его TNF17e тоже хранит порядок в сбалансированных тритах: их четыре там, где у GF-T16 шесть. t27c нативно прогоняет 34 из 34 тестов, ни один не пустой; замена XOR на OR в tnf_negate роняет ровно один тест, negate_is_an_involution; git возвращает спеку. 30,3 с."
   },
   {
     "kind": "h",

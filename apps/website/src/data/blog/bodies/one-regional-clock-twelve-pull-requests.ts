@@ -22,6 +22,13 @@ export const body: Block[] = [
     ],
   },
   {
+    kind: 'terminal',
+    src: 'term/perf2-knockouts/session.cast',
+    share: 'https://t27.ai/term/perf2-knockouts/',
+    title: 'Three PERF2 bits, and one knockout bitstream per bit',
+    caption: 'The bits behind prjxray-db#30, on the AX7203\'s xc7a200tfbg484-2: the BUFR design\'s frames differ in exactly 3 bits between the old and the new build, in CLK_PERF2 and PERFCLK2, rows that database commit c030ed6 has and master does not. Each knockout clears one bit, and xc7frames2bit turns it into a .bit 3 bytes away from the working one. 26.2 s.',
+  },
+  {
     kind: 'p',
     text: 'After #170 and #171 merged, cavearr ran their 23-design regression suite over both: no status, LUT/FF count or Fmax moved, and all 36 canonical FASM outputs were byte-identical.',
   },
@@ -96,6 +103,13 @@ export const ruBody: Block[] = [
       ['nextpnr-xilinx#205', 'Битстрим размещал BUFR, но не ставил его бит включения', 'Биты BUFRCLK теперь пишутся. Это ждало появления строк; cavearr нашёл, что они были только для artix7, и добавил остальные семейства в prjxray-db#22', 'смержен'],
       ['prjxray-db#30', 'Строки мультиплексоров `CLK_PERF` были неполными. При чтении битстрима (bit2fasm) одна строка ложно срабатывала в 204 случаях; при записи (fasm2frames) не ставился бит включения', 'Каждая строка теперь несёт свой бит включения и 2-битный код источника; добавлены строки HCLK для kintex7, spartan7 и zynq7. Проверено в обе стороны на всех 608 битстримах cavearr', 'открыт'],
     ],
+  },
+  {
+    kind: 'terminal',
+    src: 'term/perf2-knockouts/session.cast',
+    share: 'https://t27.ai/term/perf2-knockouts/',
+    title: 'Three PERF2 bits, and one knockout bitstream per bit',
+    caption: 'Биты за prjxray-db#30, на xc7a200tfbg484-2 платы AX7203: кадры дизайна с BUFR в старой и новой сборке различаются ровно в 3 битах, в CLK_PERF2 и PERFCLK2 — строках, которые есть в коммите базы c030ed6 и нет в master. Каждый нокаут сбрасывает один бит, и xc7frames2bit превращает его в .bit, отличающийся от рабочего на 3 байта. 26,2 с.',
   },
   {
     kind: 'p',

@@ -44,10 +44,24 @@ export const body: Block[] = [
       ['mtbf.t27', '15', '4', 'The WP323 form of the equation; tau 50 ps and W 10 ps are labelled assumptions, vendors publish flop parameters only partially.'],
     ],
   },
+  {
+    kind: 'terminal',
+    src: 'term/t27c-mtbf/session.cast',
+    share: 'https://t27.ai/term/t27c-mtbf/',
+    title: 't27c on mtbf.t27 -- MTBF in integer log2, native',
+    caption: 't27c 0.4.0 on a laptop: mtbf.t27 passes 15 of 15 tests natively, none vacuous, with 4 invariants proved at compile time; the grep shows the header lines that label the resolve time constant and the aperture as assumptions. 12.7 s.',
+  },
   { kind: 'h', text: 'What the recordings show' },
   {
     kind: 'p',
-    text: 'Sixteen new cast widgets join the gallery, one recording per recorded lesson, made with native t27c 0.4.0 on a laptop. A recording shows the run that matters and reads its verdict from the text. The MTBF lesson shows one flop leaving -200 ps of slack and a log2-MTBF of -19513 in Q10, and two flops leaving 9800 ps and 275887. The MMCM mutation recording widens the VCO window floor from 800000 to 400000 kHz with one sed line, and the one test that fails is the one that names the number it rejects. The FIFO mutation recording changes the head pointer increment from + 1 to + 3 and every test still passes, because the suite asserts fill counts and flags, never pointer values: the exact hole a torn multi-bit pointer would slip through.',
+    text: 'Sixteen new cast widgets join the gallery, one recording per recorded lesson, made with native t27c 0.4.0 on a laptop. A recording shows the run that matters and reads its verdict from the text. The MTBF lesson shows one flop leaving -200 ps of slack and a log2-MTBF of -19513 in Q10, and two flops leaving 9800 ps and 275887. The MMCM mutation recording widens the VCO window floor from 800000 to 400000 kHz with one sed line, and the two tests that fail are the two that check the 500 MHz configuration it now lets in. The FIFO mutation recording changes the head pointer increment from + 1 to + 3 and every test still passes, because the suite asserts fill counts and flags, never pointer values: the exact hole a torn multi-bit pointer would slip through.',
+  },
+  {
+    kind: 'terminal',
+    src: 'term/t27c-mmcm-mutate/session.cast',
+    share: 'https://t27.ai/term/t27c-mmcm-mutate/',
+    title: 't27c on mmcm.t27 -- widen the VCO window, two tests object',
+    caption: 'One sed lowers the VCO floor from 800000 to 400000 kHz: 14 of 16 tests still pass, and the two that fail, vco_below_the_window_is_rejected and vco_out_of_range_is_an_error, both check the 500 MHz configuration the wider window now admits; git restores the spec. 26.6 s.',
   },
   {
     kind: 'p',
@@ -112,10 +126,24 @@ export const ruBody: Block[] = [
       ['mtbf.t27', '15', '4', 'Форма уравнения из WP323; tau 50 пс и W 10 пс помечены как допущения — вендоры публикуют параметры триггеров лишь частично.'],
     ],
   },
+  {
+    kind: 'terminal',
+    src: 'term/t27c-mtbf/session.cast',
+    share: 'https://t27.ai/term/t27c-mtbf/',
+    title: 't27c on mtbf.t27 -- MTBF in integer log2, native',
+    caption: 't27c 0.4.0 на ноутбуке: mtbf.t27 нативно проходит 15 из 15 тестов, ни один не пустой, 4 инварианта доказаны при компиляции; grep показывает строки заголовка, где постоянная разрешения и апертура помечены как допущения. 12,7 с.',
+  },
   { kind: 'h', text: 'Что показывают записи' },
   {
     kind: 'p',
-    text: 'В галерее шестнадцать новых карточек-кастов, по одной записи на записанный урок, снятых нативным t27c 0.4.0 на ноутбуке. Запись показывает запуск, который важен, и читает вердикт из текста. Урок MTBF показывает, как одна ступень оставляет -200 пс запаса и log2-MTBF -19513 в Q10, а две ступени — 9800 пс и 275887. Запись мутации MMCM расширяет нижнюю границу окна VCO с 800000 до 400000 кГц одной строкой sed, и падает ровно тот тест, который называет число, что он отвергает. Запись мутации FIFO меняет инкремент указателя головы с + 1 на + 3, и все тесты по-прежнему проходят, потому что набор утверждает заполнение и флаги, но никогда значения указателей: та самая дыра, в которую проскользнул бы разорванный многобитный указатель.',
+    text: 'В галерее шестнадцать новых карточек-кастов, по одной записи на записанный урок, снятых нативным t27c 0.4.0 на ноутбуке. Запись показывает запуск, который важен, и читает вердикт из текста. Урок MTBF показывает, как одна ступень оставляет -200 пс запаса и log2-MTBF -19513 в Q10, а две ступени — 9800 пс и 275887. Запись мутации MMCM расширяет нижнюю границу окна VCO с 800000 до 400000 кГц одной строкой sed, и падают ровно два теста — те, что проверяют конфигурацию на 500 МГц, которую окно теперь пропускает. Запись мутации FIFO меняет инкремент указателя головы с + 1 на + 3, и все тесты по-прежнему проходят, потому что набор утверждает заполнение и флаги, но никогда значения указателей: та самая дыра, в которую проскользнул бы разорванный многобитный указатель.',
+  },
+  {
+    kind: 'terminal',
+    src: 'term/t27c-mmcm-mutate/session.cast',
+    share: 'https://t27.ai/term/t27c-mmcm-mutate/',
+    title: 't27c on mmcm.t27 -- widen the VCO window, two tests object',
+    caption: 'Одна строка sed опускает нижнюю границу VCO с 800000 до 400000 кГц: 14 из 16 тестов по-прежнему проходят, а два упавших, vco_below_the_window_is_rejected и vco_out_of_range_is_an_error, оба проверяют конфигурацию на 500 МГц, которую более широкое окно теперь пропускает; git возвращает спеку. 26,6 с.',
   },
   {
     kind: 'p',
