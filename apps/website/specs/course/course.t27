@@ -159,7 +159,7 @@ pub const LESSON_ALSO : [27]str = [
     "", "", "",
     "resource-bars", "", "tri-fpga-rgmii",
     "", "perf2-loop,devkit-flow", "perf2-knockouts",
-    "idcode", "bit-diff", "race-the-bee,wars,tri-game-tick,tri-game-vault"
+    "idcode,jtag-verdict", "bit-diff", "race-the-bee,wars,tri-game-tick,tri-game-vault"
 ];
 pub const LESSON_SPECS : [27]str = [
     "specs/boards/wukong_v1.t27", "specs/tools/tri/fpga.t27", "specs/boards/xc7a100t_minimal.t27",
