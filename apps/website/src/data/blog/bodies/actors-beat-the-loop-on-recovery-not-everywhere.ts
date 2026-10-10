@@ -2,7 +2,7 @@ import type { Block } from '../types'
 
 // Numbers here come from the benchmark comments on gHashTag/t27#7851 (2026-10-08 and 2026-10-09), the merged
 // runtime PRs gHashTag/trios#1698, #1702, #1716, #1720, #1722, #1723, #1724, #1725 and the merged spec PRs
-// gHashTag/t27#8272, #8275, #8278, #8281, #8282, #8285, #8286, #8292, #8306, gHashTag/trios#1726 (the simulation gate) and #1730 (the merge into production). The FPGA figures are yosys 0.63 synthesis
+// gHashTag/t27#8272, #8275, #8278, #8281, #8282, #8285, #8286, #8292, #8306, gHashTag/trios#1726 (the simulation gate) #1730 (the merge into production) and #1746 (the cost profile). The FPGA figures are yosys 0.63 synthesis
 // of specs/queen/actors.t27 at t27 b9e62161d4; their provenance is in gHashTag/trinity#1582. The recording
 // public/term/t27c-queen-netlink-fence/ was made on 2026-10-09 with t27c 0.5.0 against t27 c6237a7.
 
@@ -72,7 +72,7 @@ export const body: Block[] = [
   },
   {
     kind: 'p',
-    text: 'On a quiet host (load about 4; 1000 actors passing 100 000 messages, 21 rounds) telemetry adds +3.3% CPU per message, the median, with +1.6 to +5.2% between p25 and p75. That is inside the +10% target. The same run found a cost we did not want: with telemetry off, a message now costs 4.5 us against the 3.7 us published before the seven lanes, about 20% more. The likely cause is the hooks lanes 2, 6 and 7 added to the hot path; trios#1743 measures it. There is no production reading yet, so the question of 23% busy against 11 reviews an hour is still open.',
+    text: 'On a quiet host (load about 4; 1000 actors passing 100 000 messages, 21 rounds) telemetry adds +3.3% CPU per message, the median, with +1.6 to +5.2% between p25 and p75. That is inside the +10% target. The same run found a cost we did not want: with telemetry off, a message cost 4.5 us against the 3.7 us published before the seven lanes. A profile (trios#1746) showed the cost was older than the lanes: 44% of the time went to looking a card up again on every call, by a key of 100-odd characters, and a slot known since spawn was asked for three times a message. With both fixed, a message costs 1.55 us, 2.4 times below the old base; the fix rides the next batch. Telemetry costs the same in absolute terms, so on the cheaper base it adds 8 to 13%, at the edge of its +10% target, and a lane is bringing it back under. There is no production reading yet, so the question of 23% busy against 11 reviews an hour is still open.',
   },
   { kind: 'h', text: 'Stopping: a killed turn that ends, and the throughput it gives back' },
   {
@@ -259,7 +259,7 @@ export const ruBody: Block[] = [
   },
   {
     kind: 'p',
-    text: 'На спокойной машине (нагрузка около 4; 1000 акторов передают 100 000 сообщений, 21 прогон) телеметрия добавляет +3.3% CPU на сообщение по медиане, от +1.6 до +5.2% между p25 и p75. Это в пределах цели +10%. Тот же прогон нашёл цену, которой мы не хотели: без телеметрии сообщение теперь стоит 4.5 мкс против 3.7 мкс, опубликованных до семи лейнов, — примерно на 20% больше. Вероятная причина — хуки, которые лейны 2, 6 и 7 добавили на горячий путь; это измеряет trios#1743. Production-замера ещё нет, поэтому вопрос «23% занятости против 11 рецензий в час» остаётся открытым.',
+    text: 'На спокойной машине (нагрузка около 4; 1000 акторов передают 100 000 сообщений, 21 прогон) телеметрия добавляет +3.3% CPU на сообщение по медиане, от +1.6 до +5.2% между p25 и p75. Это в пределах цели +10%. Тот же прогон нашёл цену, которой мы не хотели: без телеметрии сообщение стоило 4.5 мкс против 3.7 мкс, опубликованных до семи лейнов. Профиль (trios#1746) показал, что эта цена старше лейнов: 44% времени уходило на повторный поиск карты при каждом вызове по ключу длиной больше 100 символов, а слот, известный с момента запуска, запрашивался трижды на сообщение. После обоих исправлений сообщение стоит 1.55 мкс — в 2.4 раза меньше прежней базы; исправление едет в следующей партии. Телеметрия стоит столько же в абсолютных числах, поэтому на подешевевшей базе добавляет 8–13% — на границе цели +10%, и отдельный лейн возвращает её в цель. Production-замера ещё нет, поэтому вопрос «23% занятости против 11 рецензий в час» остаётся открытым.',
   },
   { kind: 'h', text: 'Останавливать: убитый ход заканчивается, и пропускная способность отдаётся' },
   {
