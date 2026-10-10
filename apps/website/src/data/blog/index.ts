@@ -3,6 +3,35 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: "bypass-or-a-broken-shift",
+    title: "BYPASS or a broken shift: two bits of the JTAG IR capture decide",
+    summary: "[one rule from IEEE 1149.1; the IR value in the recording is typed, not read off a cable] Our JTAG decoder called every even data word BYPASS, whatever had happened on the wire. The standard already gave a way to tell: on Capture-IR every compliant chip loads 01 into the two lowest instruction-register cells. tdo_verdict.t27 now checks those two bits before it looks at bit 0 of the data word, with 8 tests and a mutant that fails 6 of them. A new widget runs the same five checks on any reading you type.",
+    date: "2026-10-09",
+    readingMinutes: 4,
+    tags: ["t27", "FPGA", "JTAG"],
+    receipts: [
+      { label: "t27#8032: the IR-capture check in tdo_verdict.t27, 8 tests", href: "https://github.com/gHashTag/t27/pull/8032" },
+      { label: "The recording: seven commands, the mutant fails 6 checks", href: "https://t27.ai/term/tri-fpga-jtag-ir/" },
+      { label: "The JTAG verdict widget", href: "https://t27.ai/widgets/jtag-verdict/" },
+      { label: "The IDCODE decoder widget, for a word that passes", href: "https://t27.ai/widgets/idcode/" },
+      { label: "The question on X that prompted this", href: "https://x.com/pratiksharda2/status/2108421182601240809" },
+      { label: "trinity#1566: this post's issue", href: "https://github.com/gHashTag/trinity/issues/1566" },
+    ],
+    openQuestions: [
+      "No IR capture was read from our board in this session; 0x35 is an example of the 7-series XXXX01 shape, and its upper four bits are status that the check ignores.",
+      "The bench command tri fpga-jtag lives in a local tools folder; only the spec and the widget are public.",
+    ],
+    published: true,
+    ru: {
+      title: "BYPASS или сломанный сдвиг: решают два бита захвата IR в JTAG",
+      summary: "[одно правило из IEEE 1149.1; значение IR в записи введено руками, а не прочитано с кабеля] Наш декодер JTAG называл BYPASS любое чётное слово данных, что бы ни происходило на проводе. Способ различить уже был в стандарте: при Capture-IR каждая совместимая микросхема загружает 01 в две младшие ячейки регистра инструкций. Теперь tdo_verdict.t27 проверяет эти два бита раньше, чем смотрит на бит 0 слова данных, — 8 тестов и мутант, проваливающий 6 из них. Новый виджет выполняет те же пять проверок на любом введённом чтении.",
+      openQuestions: [
+        "В этой сессии захват IR с нашей платы не читали; 0x35 — пример формы XXXX01 у 7-й серии, а её старшие четыре бита — статус, который проверка не смотрит.",
+        "Команда стенда tri fpga-jtag лежит в локальной папке инструментов; публичны только спецификация и виджет.",
+      ],
+    },
+  },
+  {
     slug: "three-dies-one-verdict",
     title: "Three dies, one verdict: a silicon check you run once",
     summary: "[one spec so far; two of the three receipts share an operator; CI does not yet skip silicon checks by receipt] One t27 spec, ternary_link, was checked on three different FPGA chips on three machines, one of them driven from 410 ms away, and the answers agree. Each chip is named by its device DNA and signed its answer to one challenge; run-record calls the run citable (INDEP_DIES). A second chip found a bug the first could not. The point: with a citable hardware verdict, the rule in reuse.t27 lets a silicon check run once per spec version and toolchain, and everyone else check the receipts in seconds.",

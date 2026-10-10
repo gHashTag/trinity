@@ -18,6 +18,13 @@ export const body: Block[] = [
     "text": "Every lesson opens one infographic and one spec. The infographic is a black-and-white table, and in 11 of the 27 lessons also a flow diagram; its words and rows live in a .t27 widget spec (specs/widgets/basics-<lesson>.t27), and a widget spec test checks that the table has whole rows. The lesson spec lives under specs/basics/ and compiles clean on all 7 backends in the browser, with its tests passing; the course generator refuses to build if one of them does not."
   },
   {
+    "kind": "terminal",
+    "src": "term/t27c-hello-world/session.cast",
+    "share": "https://t27.ai/term/t27c-hello-world/",
+    "title": "t27c on hello_world.t27",
+    "caption": "The step after this course, as course 1 records it in lesson 11: native t27c 0.4.0 on specs/demos/hello_world.t27 prints spec-status IMPLEMENTED, the two tests and two invariants the Zig backend emits, and a Verilog module that says it has no data ports. 13.7 s."
+  },
+  {
     "kind": "p",
     "text": "The tables are real HTML tables with a caption and header cells, and the diagrams are SVG with a title, so a screen reader reads both. On a phone the table turns into one card per row."
   },
@@ -209,6 +216,13 @@ export const ruBody: Block[] = [
   {
     "kind": "p",
     "text": "Каждый урок открывает одну инфографику и одну спеку. Инфографика — чёрно-белая таблица, а в 11 из 27 уроков ещё и схема; её слова и строки живут в спеке виджета .t27 (specs/widgets/basics-<урок>.t27), и тест спеки проверяет, что строки таблицы целые. Спека урока лежит в specs/basics/ и чисто собирается всеми 7 бэкендами прямо в браузере, а её тесты проходят; генератор курса отказывается собирать курс, если хоть одна не собирается."
+  },
+  {
+    "kind": "terminal",
+    "src": "term/t27c-hello-world/session.cast",
+    "share": "https://t27.ai/term/t27c-hello-world/",
+    "title": "t27c on hello_world.t27",
+    "caption": "Шаг после этого курса, как его записывает курс 1 в уроке 11: нативный t27c 0.4.0 на specs/demos/hello_world.t27 печатает spec-status IMPLEMENTED, два теста и два инварианта, которые выдаёт бэкенд Zig, и модуль Verilog, который сам говорит, что у него нет портов данных. 13,7 с."
   },
   {
     "kind": "p",

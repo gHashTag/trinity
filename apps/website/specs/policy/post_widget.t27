@@ -1,0 +1,143 @@
+// SPDX-License-Identifier: Apache-2.0
+; specs/policy/post_widget.t27 -- every blog post carries a widget
+; Source of truth for scripts/pr_blog_report.py (gHashTag/trinity, repository root), which
+; reads the str constants below when it validates a PR's work report with --posts. A post
+; body under POST_DIR that the PR adds, modifies or renames must hold at least one block
+; whose kind is in WIDGET_KINDS, in its English body and, when it has one, in its Russian
+; ruBody, or the "T27 work report" status turns red with RULE as the reason. The rule's
+; words live here and nowhere else.
+; ASCII only (L3), English only (LANG-EN).
+
+; WHY: the owner's rule of 2026-10-09. A post shows the reader the real command running:
+; a tri or t27c terminal cast (a recording under public/term/<id>/, replayed in the page by
+; public/term/player.js) or a figure drawn from the post's own numbers. From 2026-10-07 to
+; 2026-10-09 eleven posts in a row shipped as text only, because the rule was said once
+; and written nowhere. A rule nobody wrote down is a rule nobody checks.
+
+; WHAT COUNTS: a block is a widget when its kind is one of WIDGET_KINDS ("terminal" is a
+; recorded session, "figure" an SVG with a caption; see src/data/blog/types.ts). The check
+; reads the body file as text and never runs it. A body that exports body and ruBody needs a
+; widget in each; a body with no ruBody needs one in body. A removed body is not checked.
+
+; GRANDFATHERED: the posts dated before WIDGET_SINCE that carried no widget on the day this
+; rule was written, by body file name without .ts. They may be edited without adding one.
+; The list only shrinks: a post that gains a widget may leave it, and no post joins it.
+; WIDGET_SINCE is the owner's cutoff: every post dated on or after it carries a widget from
+; the change that adds this file on, so none of them is listed.
+
+; LIMIT: the workflow never checks out the PR (pull_request_target), so the check cannot
+; see whether a terminal block's recording exists under public/term/; the site build and
+; its player do. A kind is matched by its text, kind: 'terminal' or "kind": "terminal".
+; phi^2 + 1/phi^2 = 3 | TRINITY
+
+module post_widget_policy;
+
+pub const KIND : str = "policy";
+pub const SCHEMA_VERSION : u8 = 1;
+pub const RULE_ID : str = "widget-per-post";
+pub const RULE : str = "A blog post carries at least one widget, a terminal cast or a figure, in its English body and in its Russian ruBody.";
+pub const POST_DIR : str = "apps/website/src/data/blog/bodies/";
+pub const WIDGET_KIND_COUNT : u8 = 2;
+pub const WIDGET_KINDS : [2]str = ["terminal", "figure"];
+pub const WIDGET_SINCE : str = "2026-09-27";
+pub const GRANDFATHERED_COUNT : u8 = 72;
+pub const GRANDFATHERED : [72]str = [
+    "a-broken-reference-looks-exactly-like-broken-code",
+    "a-clean-merge-is-not-a-semantic-no-op",
+    "a-correct-gate-with-a-manual-remedy",
+    "a-gate-that-rejected-its-own-users",
+    "a-health-snapshot-changed-its-denominator",
+    "a-linux-target-with-no-abi-is-musl",
+    "a-measurement-number-needs-a-passport",
+    "a-multiplicity-correction-changed-the-deployment-reading",
+    "a-partial-module-needs-its-own-verdict",
+    "a-red-gate-was-missing-its-input",
+    "a-repair-reaches-only-the-copy-it-lands-in",
+    "a-small-agent-needs-an-exact-judge",
+    "a-suite-that-runs-nothing-exits-zero",
+    "an-inert-filter-is-safest-until-it-works",
+    "an-invitation-in-the-language-it-describes",
+    "clara-proposal-submitted-not-reviewed",
+    "context-length-resonance-not-power-law",
+    "each-half-imported-the-other",
+    "eight-theorems-audited",
+    "eleven-verdicts-were-windows-not-checkpoints",
+    "energy-asymmetry-activations",
+    "equal-stored-width-removed-an-accuracy-lead",
+    "features-that-change-no-bits",
+    "fifteen-merged-nine-credited",
+    "five-reasons-the-build-was-red",
+    "formal-was-green-and-had-never-run-a-solver",
+    "four-hundred-and-twelve-tests-that-were-sentences",
+    "four-languages-one-tri-extension",
+    "fourteen-rows-agreed-one-did-not",
+    "frame-length-margin-law",
+    "green-ci-does-not-mean-usable",
+    "how-to-join-the-swarm",
+    "i-wrote-the-post-then-did-the-thing",
+    "merge-diff-ci-boundaries",
+    "ninety-tests-were-unreachable",
+    "nobodys-example",
+    "one-commit-nine-workflow-outcomes",
+    "one-more-reading-then-it-cleared",
+    "one-saturation-rule-five-artefacts",
+    "open-gigabit-ethernet-artix7",
+    "phi-identity-machine-checked",
+    "physical-width-changed-the-question",
+    "queen-browser-actions-you-can-follow",
+    "queen-foundation-snapshot-contract",
+    "queen-phone-orientation-gate",
+    "queen-review-lifecycle-queues",
+    "readout-that-cannot-be-misread",
+    "real-value-in-integer-container",
+    "scale-field-width-already-published",
+    "signal-health-self-run32",
+    "six-and-a-half-years-in-a-discarded-return-value",
+    "ternary-won-the-wire-not-the-gate",
+    "the-auditor-made-the-mistake-it-audits",
+    "the-control-that-could-not-fail",
+    "the-experiment-that-could-not-answer",
+    "the-fpga-row-was-corrected",
+    "the-full-adder-made-the-cost-claim-comparable",
+    "the-gate-was-right-and-nothing-stopped",
+    "the-generated-file-was-three-years-old",
+    "the-only-stable-speed-belonged-to-the-tool",
+    "the-ratchet-counted-a-total-as-an-error",
+    "the-required-check-was-an-echo",
+    "the-scanner-scored-what-it-could-not-see",
+    "the-search-space-erased-a-significance-claim",
+    "the-silence-was-a-saturated-readout",
+    "the-tail-that-had-never-run",
+    "thirty-epochs-exposed-a-failure-rate-blind-spot",
+    "tri-claw-an-agent-you-can-audit",
+    "tri-mined-not-sold",
+    "twenty-merged-in-three-days",
+    "twenty-three-reference-models",
+    "two-bitstreams-one-bit-apart"
+];
+
+test the_rule_is_named_like_the_course_rule {
+    assert RULE_ID == "widget-per-post";
+    assert KIND == "policy";
+    assert SCHEMA_VERSION == 1;
+}
+
+test a_widget_is_a_cast_or_a_figure {
+    assert WIDGET_KIND_COUNT == 2;
+    assert WIDGET_KINDS[0] == "terminal";
+    assert WIDGET_KINDS[1] == "figure";
+}
+
+test posts_live_where_the_course_rule_looks {
+    assert POST_DIR == "apps/website/src/data/blog/bodies/";
+}
+
+test the_cutoff_date_is_pinned {
+    assert WIDGET_SINCE == "2026-09-27";
+}
+
+test the_grandfathered_list_is_closed {
+    assert GRANDFATHERED_COUNT == 72;
+    assert GRANDFATHERED[0] == "a-broken-reference-looks-exactly-like-broken-code";
+    assert GRANDFATHERED[71] == "two-bitstreams-one-bit-apart";
+}

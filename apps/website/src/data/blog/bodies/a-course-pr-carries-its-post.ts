@@ -9,6 +9,13 @@ export const body: Block[] = [
     kind: 'p',
     text: 'Every trinity PR already carries a work report, and a merged PR later becomes a blog draft. A course change could still land with no post at all, so a reader could meet a new lesson before anything explained it. trinity#1461 closes that gap: a PR that changes a course now has to carry its blog post, English body and Russian ruBody, in the same PR, or the "T27 work report" status turns red. The PR is open and not merged yet.',
   },
+  {
+    kind: 'terminal',
+    src: 'term/tri-blog-list/session.cast',
+    share: 'https://t27.ai/term/tri-blog-list/',
+    title: 'tri blog list: every t27.ai post and its receipt state',
+    caption: 'tri blog list, recorded on 3 October: 73 published posts, newest first, each with its date, its language and its revision. Under this rule a course change and the post that explains it reach this list together. 2.4 s.',
+  },
   { kind: 'h', text: 'The rule lives in a t27 spec' },
   {
     kind: 'p',
@@ -56,6 +63,13 @@ export const ruBody: Block[] = [
   {
     kind: 'p',
     text: 'У каждого PR в trinity уже есть отчёт о работе, а влитый PR потом становится черновиком поста в блоге. Но изменение курса всё ещё могло попасть в main совсем без поста, и читатель встречал новый урок раньше, чем что-нибудь его объясняло. trinity#1461 закрывает эту дыру: PR, который меняет курс, обязан нести свой пост — английское body и русское ruBody — в том же PR, иначе статус «T27 work report» краснеет. PR открыт и ещё не влит.',
+  },
+  {
+    kind: 'terminal',
+    src: 'term/tri-blog-list/session.cast',
+    share: 'https://t27.ai/term/tri-blog-list/',
+    title: 'tri blog list: every t27.ai post and its receipt state',
+    caption: 'tri blog list, записано 3 октября: 73 опубликованных поста, сначала новые, у каждого дата, язык и ревизия. По этому правилу изменение курса и пост, который его объясняет, попадают в этот список вместе. 2,4 с.',
   },
   { kind: 'h', text: 'Правило живёт в спеке t27' },
   {

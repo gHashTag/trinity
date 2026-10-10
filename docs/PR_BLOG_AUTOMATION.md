@@ -82,6 +82,17 @@ merge. The rule, the course directory and the post directory live in one place,
 reads that spec and turns `T27 work report` red when a course file changed and no post
 body was added or modified. This note points at the spec and does not restate it.
 
+## Every post carries a widget
+
+A post body that a PR adds, modifies or renames holds at least one widget block, a
+`terminal` cast or a `figure`, in its English body and in its Russian ruBody. The rule,
+the widget kinds and the grandfathered older posts live in
+`apps/website/specs/policy/post_widget.t27`. The workflow saves each changed body as text
+from the PR head, and `scripts/pr_blog_report.py validate --posts` turns `T27 work report`
+red when one has no widget. The workflow never runs that text. Pick a recording under
+`apps/website/public/term/<id>/` that shows the command the post discusses, or record one
+with `tri cast`.
+
 ## Automation and safety
 
 `pr-blog-report.yml` uses `pull_request_target` and checks out only trusted

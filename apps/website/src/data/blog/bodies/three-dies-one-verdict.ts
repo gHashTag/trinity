@@ -25,6 +25,13 @@ export const body: Block[] = [
     kind: 'p',
     text: 'Phil\'s board sits on a Windows PC with no FPGA toolchain. Instead of building one there, operator B\'s Linux lab borrowed only his JTAG cable, over USB/IP inside a private Tailscale network. Phil, his own Claude and the owner all agreed to this in the open first (t27#7669). The bitstream took about 70 minutes to load at a 410 ms round trip, and the whole run took about 2.5 hours. The first attempt found an empty JTAG chain: the board had USB power but not its 12 V supply.',
   },
+  {
+    kind: 'terminal',
+    src: 'term/tri-fpga-jtag/session.cast',
+    share: 'https://t27.ai/term/tri-fpga-jtag/',
+    title: 'tri fpga-jtag · which chip answered the cable',
+    caption: 'tri fpga-jtag, recorded on our bench on 3 October, before this run: it decodes IDCODEs offline (0x03636093 is an XC7A200T, an even code is no IDCODE at all), and its self-test passes 17 of 17, the empty-chain check among them. 13.5 s; it loads no bitstream.',
+  },
   { kind: 'h', text: 'A second die found a bug the first one could not' },
   {
     kind: 'p',
@@ -68,6 +75,13 @@ export const ruBody: Block[] = [
   {
     kind: 'p',
     text: 'Плата Фила стоит на ПК с Windows без инструментов для ПЛИС. Вместо того чтобы ставить их там, Linux-лаборатория оператора B взяла только его JTAG-кабель, по USB/IP внутри закрытой сети Tailscale. Сначала на это открыто согласились Фил, его собственный Claude и владелец (t27#7669). При задержке 410 мс загрузка битстрима шла около 70 минут, весь прогон — около 2,5 часа. Первая попытка увидела пустую JTAG-цепочку: плата была подключена по USB, но без блока питания на 12 В.',
+  },
+  {
+    kind: 'terminal',
+    src: 'term/tri-fpga-jtag/session.cast',
+    share: 'https://t27.ai/term/tri-fpga-jtag/',
+    title: 'tri fpga-jtag · which chip answered the cable',
+    caption: 'tri fpga-jtag, записано на нашем стенде 3 октября, до этого прогона: команда расшифровывает IDCODE без платы (0x03636093 — это XC7A200T, чётный код — вовсе не IDCODE), и её самопроверка проходит 17 из 17, среди них проверка пустой цепочки. 13,5 с; битстрим она не загружает.',
   },
   { kind: 'h', text: 'Второй кристалл нашёл ошибку, которую первый найти не мог' },
   {

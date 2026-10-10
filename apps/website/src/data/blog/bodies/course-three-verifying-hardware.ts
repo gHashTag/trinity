@@ -43,6 +43,20 @@ export const body: Block[] = [
     "text": "The widgets are recordings of real tool runs, and the lesson texts use only numbers those recordings or the named spec show. The UART link that asked for 115,200 baud and got 115,385 on the wire -- a +0.16 % divider error invisible in code and obvious in the capture, while 3,000,000 divides exactly and the wire agrees. The 31 of 1,428 merged specs whose seals record no output, on 16 specs, 3 of them unnamed by the ledger that owes them a name. The 367 pull requests that arrived in 14 days, 11 of which deleted tests or asserts, one deleting all 26 tests in its file with nothing failing. A course about verification does not get to cite numbers it cannot show."
   },
   {
+    "kind": "terminal",
+    "src": "term/tri-fpga-wire/session.cast",
+    "share": "https://t27.ai/term/tri-fpga-wire/",
+    "title": "tri fpga-wire · the baud rate actually on the wire",
+    "caption": "tri fpga-wire on the bench's CP2102N, plugged in with no hub: 115,200 requested puts 115,385 on the wire (+0.16 %), 921,600 puts 923,077, and 3,000,000 is exact. 6.5 s."
+  },
+  {
+    "kind": "terminal",
+    "src": "term/t27-tri-seals/session.cast",
+    "share": "https://t27.ai/term/t27-tri-seals/",
+    "title": "tri seals: hollow seals that pass every check",
+    "caption": "tri seals hollow on the t27 tree: 31 of 1,428 seals record no generated output, on 16 distinct specs, and 3 of those are missing from the ledger that records the debt. 4.9 s."
+  },
+  {
     "kind": "h",
     "text": "A new spec: coverage.t27"
   },
@@ -119,6 +133,20 @@ export const ruBody: Block[] = [
   {
     "kind": "p",
     "text": "Виджеты -- это записи настоящих прогонов инструментов, а тексты уроков используют только числа, которые показывают эти записи или названный в них spec. Линк UART, запросивший 115,200 бод и получивший на проводе 115,385 -- ошибку делителя +0.16 %, невидимую в коде и очевидную в захвате; 3,000,000 делится нацело, и провод согласен. 31 из 1,428 слитых spec, чьи печати не записывают вывода, на 16 spec, и 3 из них не названы журналом, который им это имя должен. 367 pull request'ов, пришедших за 14 дней, из которых 11 удалили тесты или ассерты, а один удалил все 26 тестов своего файла -- и ничего не упало. Курс о проверке не имеет права цитировать числа, которые не может показать."
+  },
+  {
+    "kind": "terminal",
+    "src": "term/tri-fpga-wire/session.cast",
+    "share": "https://t27.ai/term/tri-fpga-wire/",
+    "title": "tri fpga-wire · the baud rate actually on the wire",
+    "caption": "tri fpga-wire на CP2102N стенда, подключённом без хаба: запрос 115,200 даёт на проводе 115,385 (+0.16 %), 921,600 даёт 923,077, а 3,000,000 — ровно. 6,5 с."
+  },
+  {
+    "kind": "terminal",
+    "src": "term/t27-tri-seals/session.cast",
+    "share": "https://t27.ai/term/t27-tri-seals/",
+    "title": "tri seals: hollow seals that pass every check",
+    "caption": "tri seals hollow на дереве t27: 31 печать из 1,428 не записывает сгенерированный вывод, за ними 16 разных спек, и 3 из них нет в реестре, где записан этот долг. 4,9 с."
   },
   {
     "kind": "h",

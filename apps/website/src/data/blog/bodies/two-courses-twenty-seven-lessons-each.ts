@@ -49,6 +49,17 @@ export const body: Block[] = [
     text: 'Recordings pending for lessons 13 to 21. Their nine specs (gft_smul, gft_sadd, gft_signed_mac, gft_relu, gft_exp2, gft_argmax4, gft_nll, gft_sgd_step and gft_xornet) are recorded with tri test and tri mutate plant from t27#7400, which is not merged yet. Until it is, each of those lessons opens a placeholder page that says the recording is pending and shows no run; the lesson text says so too. Lessons 22 to 27 open their recordings now.',
   },
   {
+    kind: 'terminal',
+    src: 'term/t27c-bitnet-mlp/session.cast',
+    share: 'https://t27.ai/term/t27c-bitnet-mlp/',
+    title: 't27c on bitnet_mlp.t27 -- A whole ternary network, native',
+    caption: 'Lesson 27\'s recording, the small network that closes course 2: bitnet_mlp.t27 passes 4 of 4 tests natively on the t27c lab; one sed writes pack3\'s third trit one bit low, exactly pack3_zzz fails, and git restores the spec. 32.0 s.',
+  },
+  {
+    kind: 'p',
+    text: 'Update, 9 October 2026: the nine recordings exist now, without #7400, which is still not merged. Each one runs t27c test-report on its spec, where every test passes and none is vacuous, then one sed line that plants the bug in the table below, then t27c test-report again, where exactly the named test fails, and finally git checkout, after which sha256sum prints the hash the spec had before the edit. They were recorded with t27c 0.5.1 and zig 0.16.0 in a Claude Code cloud container, on t27 at 72f793357, and every one of the nine failed the test this table names. t27c test-report still exits 0 when a test fails (t27#7370), so the verdict in each recording is read from the report text.',
+  },
+  {
     kind: 'table',
     head: ['Lesson', 'Spec', 'Tests', 'The planted bug', 'The one test that fails'],
     rows: [
@@ -68,6 +79,13 @@ export const body: Block[] = [
       ['26 Add it up on every clock', 'stream_ternary_mac.t27', '4', 'a P in a reads as N', 'dot_all_p_x_all_p'],
       ['27 A whole network', 'bitnet_mlp.t27', '4', 'the third hidden trit lands on the wrong bit', 'pack3_zzz'],
     ],
+  },
+  {
+    kind: 'terminal',
+    src: 'term/t27c-gft-smul/session.cast',
+    share: 'https://t27.ai/term/t27c-gft-smul/',
+    title: 't27c on gft_smul.t27 -- a sign is one bit, native',
+    caption: 'One of the nine, lesson 13: gft_smul.t27 passes 3 of 3, none vacuous; a sed that makes the sign always 0 fails exactly m2, which multiplies 1.0 by -1.0; git checkout restores the spec and sha256sum prints the same hash. t27c 0.5.1 and zig 0.16.0, t27 at 72f793357. 35.4 s.',
   },
   {
     kind: 'p',
@@ -198,6 +216,17 @@ export const ruBody: Block[] = [
     text: 'Записи уроков с 13 по 21 ещё не готовы. Их девяти спекам (gft_smul, gft_sadd, gft_signed_mac, gft_relu, gft_exp2, gft_argmax4, gft_nll, gft_sgd_step и gft_xornet) нужны команды tri test и tri mutate plant из t27#7400, который ещё не смержен. До тех пор каждый из этих уроков открывает страницу-заглушку, где сказано, что запись ещё не готова, и нет никакого запуска; текст урока говорит то же. Уроки с 22 по 27 открывают свои записи уже сейчас.',
   },
   {
+    kind: 'terminal',
+    src: 'term/t27c-bitnet-mlp/session.cast',
+    share: 'https://t27.ai/term/t27c-bitnet-mlp/',
+    title: 't27c on bitnet_mlp.t27 -- A whole ternary network, native',
+    caption: 'Запись урока 27, маленькой сети, которой заканчивается курс 2: bitnet_mlp.t27 нативно проходит 4 из 4 тестов на лаборатории t27c; одна строка sed пишет третий трит pack3 на бит ниже, падает ровно pack3_zzz, и git возвращает спеку. 32,0 с.',
+  },
+  {
+    kind: 'p',
+    text: 'Обновление от 9 октября 2026: девять записей теперь есть, без #7400, который так и не смержен. Каждая запускает t27c test-report на своей спеке, где все тесты проходят и ни один не пустой, затем одну строку sed, которая сажает ошибку из таблицы ниже, затем снова t27c test-report, где падает ровно названный тест, и в конце git checkout, после которого sha256sum печатает тот же хеш, что был у спеки до правки. Записи сделаны с t27c 0.5.1 и zig 0.16.0 в облачном контейнере Claude Code, на t27 в 72f793357, и в каждой из девяти упал именно тот тест, который называет таблица. t27c test-report по-прежнему выходит с кодом 0, когда тест падает (t27#7370), поэтому вердикт в каждой записи читается из текста отчёта.',
+  },
+  {
     kind: 'table',
     head: ['Урок', 'Спека', 'Тесты', 'Подложенная ошибка', 'Единственный упавший тест'],
     rows: [
@@ -217,6 +246,13 @@ export const ruBody: Block[] = [
       ['26 Складывать на каждом такте', 'stream_ternary_mac.t27', '4', 'P в a читается как N', 'dot_all_p_x_all_p'],
       ['27 Целая сеть', 'bitnet_mlp.t27', '4', 'третий скрытый трит попадает не в тот бит', 'pack3_zzz'],
     ],
+  },
+  {
+    kind: 'terminal',
+    src: 'term/t27c-gft-smul/session.cast',
+    share: 'https://t27.ai/term/t27c-gft-smul/',
+    title: 't27c on gft_smul.t27 -- a sign is one bit, native',
+    caption: 'Одна из девяти, урок 13: gft_smul.t27 проходит 3 из 3, ни один не пустой; sed, после которого знак всегда 0, роняет ровно m2, где 1.0 умножается на -1.0; git checkout возвращает спеку, и sha256sum печатает тот же хеш. t27c 0.5.1 и zig 0.16.0, t27 на 72f793357. 35,4 с.',
   },
   {
     kind: 'p',
