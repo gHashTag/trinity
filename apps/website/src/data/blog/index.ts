@@ -3,6 +3,42 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: "two-keys-one-verdict",
+    title: "Two keys, one verdict: a second lab signed the same t27 run",
+    summary: "[two keys and two machines under one operator; the 3-of-4 rule exists only in the MVP model] Two t27b labs ran the same t27 commit, a16231329d13, and signed it with different registered Ed25519 keys. The input, verdict and output roots of the two receipts are byte-identical, and t27c corpus-receipt compare judged the pair EQUIVALENT, exit 0. Until today one lab signed every receipt, so in practice it was a chief validator; this is the first real 2-of-2.",
+    date: "2026-10-10",
+    readingMinutes: 3,
+    tags: ["t27", "Verification", "Receipts"],
+    receipts: [
+      { label: "t27#8606: the record of the 2-of-2 run, comment of 2026-10-10 · OPEN", href: "https://github.com/gHashTag/t27/issues/8606#issuecomment-6099696509" },
+      { label: "Receipt from t27b-lab, key a05db80f53c317f6", href: "https://t27b-lab-production.up.railway.app/runs/a16231329d134aaaf8922cd7b65ef8890084ac77.receipt.json" },
+      { label: "Receipt from t27b-lab-2, key fed03daa6459a7fa", href: "https://t27b-lab-2-production.up.railway.app/runs/a16231329d134aaaf8922cd7b65ef8890084ac77.receipt.json" },
+      { label: "The recording: compare prints EQUIVALENT, exit 0", href: "https://t27.ai/term/t27c-receipt-compare-two-labs/" },
+      { label: "t27#8626: register the second lab signer, key fed03daa6459a7fa · MERGED 2026-10-10", href: "https://github.com/gHashTag/t27/pull/8626" },
+      { label: "t27#8638: the network MVP, specs/network/mvp.t27 · MERGED 2026-10-10", href: "https://github.com/gHashTag/t27/pull/8638" },
+      { label: "golden-chain-international#140: the white paper v0.9, rule S1 · MERGED 2026-10-10", href: "https://github.com/gHashTag/golden-chain-international/pull/140" },
+      { label: "The commit both labs ran, a16231329d13", href: "https://github.com/gHashTag/t27/commit/a16231329d134aaaf8922cd7b65ef8890084ac77" },
+      { label: "contrib/railway/t27b-lab: the lab image an outside operator would run", href: "https://github.com/gHashTag/t27/tree/master/contrib/railway/t27b-lab" },
+    ],
+    openQuestions: [
+      "Both labs run under one Railway account and one operator: two keys and two machines, not two operators.",
+      "Both labs ran the same t27b and t27c builds, so the agreement shows the run reproduces, not that the tools are right.",
+      "The lab-2 receipt carries no challenge nonce, so it shows what was signed, not when.",
+      "The k-of-n rule is modelled in specs/network/mvp.t27 but not yet checked on real receipts, and receipt digests are not yet anchored in a transparency log (Rekor).",
+    ],
+    published: true,
+    ru: {
+      title: "Два ключа, один вердикт: вторая лаборатория подписала тот же прогон t27",
+      summary: "[два ключа и две машины у одного оператора; правило 3 из 4 пока есть только в модели MVP] Две лаборатории t27b прогнали один и тот же коммит t27, a16231329d13, и подписали его разными зарегистрированными Ed25519-ключами. Корни входов, вердиктов и выходов двух квитанций совпадают байт в байт, и t27c corpus-receipt compare признал пару равнозначной: EQUIVALENT, код выхода 0. До сегодняшнего дня все квитанции подписывала одна лаборатория, то есть по сути она была главным валидатором; это первое настоящее совпадение 2 из 2.",
+      openQuestions: [
+        "Обе лаборатории работают под одним аккаунтом Railway и у одного оператора: два ключа и две машины, а не два оператора.",
+        "Обе лаборатории прогоняли одни и те же сборки t27b и t27c, поэтому совпадение показывает, что прогон воспроизводится, а не что инструменты правы.",
+        "В квитанции второй лаборатории нет одноразового запроса (nonce), поэтому она показывает, что было подписано, но не когда.",
+        "Правило k из n описано в specs/network/mvp.t27, но ещё не проверяется на настоящих квитанциях, а дайджесты квитанций ещё не привязаны к журналу прозрачности (Rekor).",
+      ],
+    },
+  },
+  {
     slug: "bypass-or-a-broken-shift",
     title: "BYPASS or a broken shift: two bits of the JTAG IR capture decide",
     summary: "[one rule from IEEE 1149.1; the IR value in the recording is typed, not read off a cable] Our JTAG decoder called every even data word BYPASS, whatever had happened on the wire. The standard already gave a way to tell: on Capture-IR every compliant chip loads 01 into the two lowest instruction-register cells. tdo_verdict.t27 now checks those two bits before it looks at bit 0 of the data word, with 8 tests and a mutant that fails 6 of them. A new widget runs the same five checks on any reading you type.",
