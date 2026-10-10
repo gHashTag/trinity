@@ -225,7 +225,6 @@ pub const Command = enum {
     garden,
     kaggle,
     zenodo,
-    clara, // DARPA CLARA TA1 (PA-25-07-02)
     ourob,
     hslm,
     verif,

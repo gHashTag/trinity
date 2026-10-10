@@ -19,29 +19,24 @@
 | 7 | trios-gb           | `📦`    | lib          | ✅   | N/A | ✅   | GREEN                                         | `specs/trios/gitbutler.t27`         | P1 ✅     |
 | 8 | trios-server       | `⬡`    | bin (MCP/REST) | ✅ | N/A | N/A  | GREEN                                         | `specs/trios/server.t27`            | P1 ✅     |
 | 9 | trios-kg           | `◉`    | lib (KG)     | ✅   | N/A | ✅   | GREEN                                         | `specs/trios/kg.t27`                | P1 ✅     |
-|10 | trios-agents       | `⚡`    | lib          | ✅   | N/A | ✅   | GREEN                                         | `specs/trios/agents.t27`            | P1 ✅     |
-|11 | trios-training     | `⊕`    | lib          | ✅   | N/A | ✅   | GREEN                                         | `specs/trios/training.t27`          | P1 ✅     |
-|12 | trios-crypto       | `🔒`    | FFI wrapper  | ✅   | ✅  | ❌   | 🟡 UPDATED — Zig files in src/          | `specs/crypto/mining.t27`           | P1 блокер |
-|13 | trios-golden-float | `φ`     | FFI wrapper  | ✅   | ❌  | ❌   | FAIL — missing `_gf16_compress_weights*`      | `specs/golden-float/gf16.t27`       | P1 FFI debt |
-|14 | trios-hdc          | `⬛`    | FFI wrapper  | ✅   | ❌  | ❌   | FAIL — vendor submodule missing               | `specs/hdc/core.t27`                | P1 FFI debt |
-|15 | trios-physics      | `Ψ`    | FFI wrapper  | ✅   | ❌  | ❌   | FAIL — vendor submodule missing               | `specs/physics/constants.t27`       | P1 FFI debt |
-|16 | trios-sacred       | `✦`    | FFI wrapper  | ✅   | 📋   | ✅   | 🟡 UPDATED — Zig files in src/          | `specs/sacred-geometry/phi.t27`     | P1 ✅     |
-|17 | trios-ternary     | `∓`    | lib          | ✅   | 📋   | ✅   | 🟡 UPDATED — Zig files in src/          | `specs/ternary/core.t27`            | P1 ✅     |
-|18 | trios-clara (planned) | —     | lib       | 📋   | —   | —    | PLANNED — MCP bridge for CLARA / ParameterGolf | `specs/clara/parameter-golf.t27`    | P2        |
-|19 | trios-zig-agents   | `⚙△`   | FFI wrapper  | ✅   | ✅  | ✅   | GREEN (separate vendor, not submodule)       | `specs/agents/zig.t27`              | P1 ✅     |
-|20 | trios-hdc-bridge (planned) | —     | lib  | 📋   | —   | —    | PLANNED — HDC→CLARA bridge                    | `specs/clara/hdc-bridge.t27`        | P3 D2–3   |
-|21 | trios-phi-quant (planned) | —     | lib   | 📋   | —   | —    | PLANNED — φ‑quantization                      | `specs/clara/phi-quant.t27`         | P3 D4–5   |
-|22 | trios-fibonacci-attn (planned) | `φ²`   | lib | 📋   | — | —    | PLANNED — Fibonacci attention                  | `specs/clara/fib-attention.t27`     | P3 D6–7   |
-|23 | trios-ensemble (planned) | —     | lib    | 📋   | —   | —    | PLANNED — ensemble orchestrator                | `specs/clara/ensemble.t27`          | P3 D8–9   |
-|24 | trios-agi-bench (planned) | —     | lib   | 📋   | —   | —    | PLANNED — 5 AGI tracks wrapper                 | `specs/agi/tracks.t27`              | P3 parallel |
-|25 | trinity-brain             | `🧠`   | FFI wrapper | ✅  | 📋   | ❌   | 🟡 UPDATED — Zig files in src/          | `specs/brain/architecture.t27`      | P1 ✅     |
-|26 | trios-route (planned)  | `⇌`    | lib          | 📋   | —   | —    | PLANNED — GF16↔Ternary policy engine           | `specs/trios/route.t27`             | P1 Φ1     |
-|27 | trios-attn (planned)   | `φ²`    | lib          | 📋   | —   | —    | PLANNED — φ-Sparse Attention                    | `specs/trios/phi-attn.t27`         | P2 Φ5     |
-|28 | trios-hw (planned)     | `⬛`    | lib          | 📋   | —   | —    | PLANNED — DSP/FPGA scheduler                  | `specs/trios/hardware.t27`         | P1 Φ4     |
-|29 | trios-ffi (planned)    | `↯`    | FFI wrapper  | 📋   | —   | —    | PLANNED — FFI bridge for training              | `specs/trios/ffi.t27`              | P2        |
-|30 | trios-llm (planned)    | `∞`    | lib          | ✅   | 📋   | ✅   | 🟡 INITIAL — LLM inference path           | `specs/trios/llm.t27`              | P2        |
+|1 | trios-agents       | `⚡`    | lib          | ✅   | N/A | ✅   | GREEN                                         | `specs/trios/agents.t27`            | P1 ✅     |
+|2 | trios-training     | `⊕`    | lib          | ✅   | N/A | ✅   | GREEN                                         | `specs/trios/training.t27`          | P1 ✅     |
+|3 | trios-crypto       | `🔒`    | FFI wrapper  | ✅   | ✅  | ❌   | 🟡 UPDATED — Zig files in src/          | `specs/crypto/mining.t27`           | P1 блокер |
+|4 | trios-golden-float | `φ`     | FFI wrapper  | ✅   | ❌  | ❌   | FAIL — missing `_gf16_compress_weights*`      | `specs/golden-float/gf16.t27`       | P1 FFI debt |
+|5 | trios-hdc          | `⬛`    | FFI wrapper  | ✅   | ❌  | ❌   | FAIL — vendor submodule missing               | `specs/hdc/core.t27`                | P1 FFI debt |
+|6 | trios-physics      | `Ψ`    | FFI wrapper  | ✅   | ❌  | ❌   | FAIL — vendor submodule missing               | `specs/physics/constants.t27`       | P1 FFI debt |
+|7 | trios-sacred       | `✦`    | FFI wrapper  | ✅   | 📋   | ✅   | 🟡 UPDATED — Zig files in src/          | `specs/sacred-geometry/phi.t27`     | P1 ✅     |
+|8 | trios-ternary     | `∓`    | lib          | ✅   | 📋   | ✅   | 🟡 UPDATED — Zig files in src/          | `specs/ternary/core.t27`            | P1 ✅     |
+|9 | trios-zig-agents   | `⚙△`   | FFI wrapper  | ✅   | ✅  | ✅   | GREEN (separate vendor, not submodule)       | `specs/agents/zig.t27`              | P1 ✅     |
+|10 | trios-agi-bench (planned) | —     | lib   | 📋   | —   | —    | PLANNED — 5 AGI tracks wrapper                 | `specs/agi/tracks.t27`              | P3 parallel |
+|11 | trinity-brain             | `🧠`   | FFI wrapper | ✅  | 📋   | ❌   | 🟡 UPDATED — Zig files in src/          | `specs/brain/architecture.t27`      | P1 ✅     |
+|12 | trios-route (planned)  | `⇌`    | lib          | 📋   | —   | —    | PLANNED — GF16↔Ternary policy engine           | `specs/trios/route.t27`             | P1 Φ1     |
+|13 | trios-attn (planned)   | `φ²`    | lib          | 📋   | —   | —    | PLANNED — φ-Sparse Attention                    | `specs/trios/phi-attn.t27`         | P2 Φ5     |
+|14 | trios-hw (planned)     | `⬛`    | lib          | 📋   | —   | —    | PLANNED — DSP/FPGA scheduler                  | `specs/trios/hardware.t27`         | P1 Φ4     |
+|15 | trios-ffi (planned)    | `↯`    | FFI wrapper  | 📋   | —   | —    | PLANNED — FFI bridge for training              | `specs/trios/ffi.t27`              | P2        |
+|16 | trios-llm (planned)    | `∞`    | lib          | ✅   | 📋   | ✅   | 🟡 INITIAL — LLM inference path           | `specs/trios/llm.t27`              | P2        |
 
-**TRIOS Summary**: 30 modules (26 existing + 4 planned), 8 green, 5 FFI modules require sync with Zig‑vendors, 5 newly migrated with Zig source files.
+**TRIOS Summary**: 25 modules (19 existing + 6 planned), 8 green, 5 FFI modules require sync with Zig‑vendors, 5 newly migrated with Zig source files.
 
 ---
 
@@ -58,8 +53,8 @@
 | 7 | trinity-brain       | —          | —     | —                    | 🟡 vendor/trinity-brain | 🟡 INITIAL (Rust crate ready) |
 | 8 | zig-kg (verify/plan) | —        | —     | 📋 Step 2            | —                    | TBD                          |
 | 9 | zig-training (planned) | —       | —     | —                    | —                    | PLANNED                      |
-|10 | zig-ensemble (planned) | —       | —     | —                    | —                    | PLANNED                      |
-|11 | zig-agi-eval (planned) | —       | —     | —                    | —                    | PLANNED                      |
+|1 | zig-ensemble (planned) | —       | —     | —                    | —                    | PLANNED                      |
+|2 | zig-agi-eval (planned) | —       | —     | —                    | —                    | PLANNED                      |
 
 ---
 
@@ -76,46 +71,18 @@
 | 7 | `specs/crypto/*.t27`            | spec          | 🟡 partial             | P1       |
 | 8 | `specs/agents/*.t27`            | spec          | 🟡 partial             | P2       |
 | 9 | `specs/brain/*.t27`             | spec          | 📋 planned            | P1 NEW   |
-|10 | `specs/trios/*.t27`             | spec          | 📋 planned            | P2       |
-|11 | `specs/clara/*.t27`             | spec          | 📋 planned            | P3       |
-|12 | `specs/agi/*.t27`               | spec          | 📋 planned            | P3       |
-|13 | TS codegen (PR #529)            | tooling       | 🟡 PR pending          | CI queue |
-|14 | bootstrap (PR #524)             | tooling       | 🟡 PR pending          | CI queue |
-|15 | GF16 backend (PR #521)          | tooling       | 🟡 PR pending          | CI queue |
-|16 | All backends (PR #532)          | tooling       | 🟡 PR pending          | CI queue |
-|17 | TECH_DEBT.md                    | docs          | 📋 create              | NOW      |
-|18 | Coq formal verification        | research      | 📋 planned            | long‑term|
+|1 | `specs/trios/*.t27`             | spec          | 📋 planned            | P2       |
+|2 | `specs/agi/*.t27`               | spec          | 📋 planned            | P3       |
+|3 | TS codegen (PR #529)            | tooling       | 🟡 PR pending          | CI queue |
+|4 | bootstrap (PR #524)             | tooling       | 🟡 PR pending          | CI queue |
+|5 | GF16 backend (PR #521)          | tooling       | 🟡 PR pending          | CI queue |
+|6 | All backends (PR #532)          | tooling       | 🟡 PR pending          | CI queue |
+|7 | TECH_DEBT.md                    | docs          | 📋 create              | NOW      |
+|8 | Coq formal verification        | research      | 📋 planned            | long‑term|
 
 ---
 
-## 4. `trinity-claraParameter` — Parameter Golf
-
-| # | Module                                | Type        | Status   | Priority |
-|---|---------------------------------------|------------|----------|----------|
-| 1 | Mini‑baseline (3L/4H/256d, 11.08MB)    | model      | ✅       | P2 D1    |
-| 2 | wikitext‑2 data loader                 | Rust       | ✅       | P2 D1    |
-| 3 | Tokenizer (50257)                      | Rust       | ✅       | P2 D1    |
-| 4 | BPB tracking loop                      | Rust       | ✅       | P2 D1    |
-| 5 | Hyperparameter search (27 configs)     | Rust       | ✅       | P2 D1    |
-| 6 | Training pipeline + checkpointing      | Rust       | ✅       | P2 D1    |
-| 7 | Chunked HTTP downloader                | Rust       | ✅       | P2 D1    |
-| 8 | Runpod grant application               | docs       | 🟡 DRAFT  | P2       |
-| 9 | README Trinity Cognitive Stack         | docs       | 📋       | P2 D2    |
-|10 | HDC→ParameterGolf bridge               | Rust+Zig   | 📋       | P3 D2–3  |
-|11 | φ‑quantization module (GF16)           | Rust+Zig   | 📋       | P3 D2–3  |
-|12 | Compression ratio benchmark            | Rust       | 📋       | P3 D3    |
-|13 | Semantic indexing (HDC)                | Rust       | 📋       | P3 D3    |
-|14 | BitNet b1.58 ternary quant             | Rust       | 📋       | P3 D4–5  |
-|15 | Fibonacci attention heads              | Rust       | 📋       | P3 D6–7  |
-|16 | Sacred bottleneck (hidden_dim=377)     | Rust+Zig   | 📋       | P3 D6–7  |
-|17 | Ensemble orchestration                 | Rust       | 📋       | P3 D8–9  |
-|18 | Final submission pipeline              | Rust       | 📋       | P3 D8    |
-|19 | Competitors analysis (LoRA/QLoRA/…)    | docs       | 🟡 partial | P2      |
-|20 | 5‑track AGI validation layer           | Rust       | 📋       | P3 parallel |
-
----
-
-## 5. `trinity-brain` — Neuroanatomical Brain Architecture (NEW)
+## 4. `trinity-brain` — Neuroanatomical Brain Architecture (NEW)
 
 | # | Module                          | Type        | Status   | Priority |
 |---|---------------------------------|------------|----------|----------|
@@ -128,13 +95,13 @@
 | 7 | ACC (conflict detection)       | module     | 🟡 Zig   | P1       |
 | 8 | SafetyVerdict enum             | type       | ✅       | P1 ✅    |
 | 9 | FFI functions (7)              | API        | ✅       | P1 ✅    |
-|10 | Zig integration                | bridge     | 📋       | P2       |
-|11 | Tests                          | test       | ✅       | P1 ✅    |
-|12 | C header generation            | build      | 📋       | P2       |
+|1 | Zig integration                | bridge     | 📋       | P2       |
+|2 | Tests                          | test       | ✅       | P1 ✅    |
+|3 | C header generation            | build      | 📋       | P2       |
 
 ---
 
-## 6. IGLA-GF16 — Intelligent Golden-ratio Language Architecture
+## 5. IGLA-GF16 — Intelligent Golden-ratio Language Architecture
 
 ### GF16 Format (sign:exp:mantissa = 1:6:9)
 
@@ -236,7 +203,7 @@ t=1000: 0.014421  ██
 
 ---
 
-## 7. `trinity-training`
+## 6. `trinity-training`
 
 | # | Component                | Status           | Priority |
 |---|--------------------------|------------------|----------|
@@ -247,7 +214,7 @@ t=1000: 0.014421  ██
 
 ---
 
-## 8. `agi-hackathon`
+## 7. `agi-hackathon`
 
 | # | Track              | Status | Priority |
 |---|--------------------|--------|----------|
@@ -268,19 +235,12 @@ t=1000: 0.014421  ██
 │                                                                         │
 │  ┌─────────────┐       ┌──────────────┐       ┌─────────────────┐      │
 │  │   TRIOS     │───────│  Zig Vendors │───────│      T27        │      │
-│  │ (26 modules)│  FFI   │  (11 repos)  │  specs│  (SSOT language)│      │
+│  │ (25 modules)│  FFI   │  (11 repos)  │  specs│  (SSOT language)│      │
 │  │  Brand Kit: │       │              │       │                 │      │
 │  │  φ △ ∓ ⇌   │       │              │       │                 │      │
-│  └──────┬──────┘       └──────┬───────┘       └─────────────────┘      │
-│         │                     │                                          │
-│         │ MCP                 │                                          │
-│         ▼                     │                                          │
-│  ┌─────────────┐              │                                          │
-│  │ ClaraParam  │◄─────────────┘                                          │
-│  │ (20 modules)│                                                        │
-│  └──────┬──────┘                                                        │
+│  └──────┬──────┘       └──────────────┘       └─────────────────┘      │
 │         │                                                               │
-│         │ validation                                                     │
+│         │ MCP                                                           │
 │         ▼                                                               │
 │  ┌─────────────┐                                                        │
 │  │ AGI Tracks  │                                                        │
@@ -313,7 +273,6 @@ t=1000: 0.014421  ██
 | TRIOS      | 8     | 5       | 8       | 0   | 5          | 26    |
 | Zig vendors| 1     | 4       | 4       | 1   | 0          | 11    |
 | T27        | 2     | 4       | 4       | 1   | 0          | 18    |
-| ClaraParam | 7     | 0       | 13      | 0   | 0          | 20    |
 | IGLA-GF16  | 4     | 0       | 4       | 0   | 0          | 8     |
 | Brain      | 9     | 0       | 3       | —   | 1          | 12    |
 | Training   | 0     | 0       | 4       | 0   | 0          | 4     |

@@ -80,7 +80,7 @@ MAJOR.MINOR.PATCH
 | New command, backward compatible | MINOR | 5.1.0 → 5.2.0 |
 | Breaking API change | MAJOR | 5.1.0 → 6.0.0 |
 
-**Current:** `5.1.0 "HEARTBEAT"` — Sacred mathematics framework, CLARA proposal
+**Current:** `5.1.0 "HEARTBEAT"` — Sacred mathematics framework
 
 ### Which Version to Reference
 
@@ -157,7 +157,7 @@ See [Homebrew Distribution Guide](https://justin.searls.co/posts/how-to-distribu
 
 | Version | Codename | Date | Key Features |
 |---------|----------|------|--------------|
-| 5.1.0 | HEARTBEAT | 2026-03-28 | Sacred math, CLARA proposal, 3000+ tests |
+| 5.1.0 | HEARTBEAT | 2026-03-28 | Sacred math, 3000+ tests |
 | 5.0.0 | HEARTBEAT | 2026-03-27 | Major framework update |
 | ... | ... | ... | ... |
 

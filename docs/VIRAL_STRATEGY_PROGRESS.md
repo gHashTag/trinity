@@ -103,7 +103,6 @@ npm install -g @playra/tri
 tri --version
 tri constants
 tri phi 2
-tri clara demo
 ```
 
 #### GitHub Topics

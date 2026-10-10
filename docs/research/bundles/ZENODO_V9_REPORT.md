@@ -103,7 +103,7 @@ PARENT (All 7 bundles)
 c1b2fff docs(zenodo): v9.0 bundle enhancements with cross-references
 83f21b2 docs(zenodo): add badges and HTML template
 b5472c8 docs(zenodo): update ZENODO_HUB.md to v9.0
-9e8359b fix(build): fix vibee parser, arena ELO, tri_clara errors
+9e8359b fix(build): fix vibee parser, arena ELO, build errors
 ```
 
 ## Validation

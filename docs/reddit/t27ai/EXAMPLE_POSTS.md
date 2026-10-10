@@ -396,64 +396,7 @@ tri run program.tbc
 
 ---
 
-### Post 7: "DARPA CLARA: Polynomial-time guarantees in Trinity"
-
-**Flair:** 🔬 `[Research]`
-
----
-
-## DARPA CLARA Proposal
-
-Trinity has been submitted for DARPA CLARA (Cognitive Learning for Adaptive Reasoning Architecture).
-
-## Polynomial-Time Guarantees
-
-### Theorem 1: VSA Bind/Unbind
-```
-Time(bind(x, y)) = O(d)
-Space(bind(x, y)) = O(d)
-where d = dimension of hypervectors
-```
-
-### Theorem 2: Similarity Search
-```
-Time(search(q, D)) = O(|D| × d)
-where D = database, q = query
-```
-
-### Theorem 3: TRI-27 Execution
-```
-Time(execute(p)) = O(|p|)
-where p = program length in opcodes
-```
-
-### Theorem 4: HSLM Inference
-```
-Time(infer(x)) = O(L × d)
-where L = layers, d = hidden dimension
-Space(infer(x)) = O(d²)
-```
-
-## Experimental Results
-
-| Model | Params | Size | tok/s ~~@ 1W~~ (power not measured) |
-|-------|--------|------|------------|
-| HSLM-1B | 1.95M | 385 KB | ~~63~~ (withdrawn: the FPGA figure was a projection and power was not measured, none is on record; see the FPGA table in the root README.md) |
-| BitNet-3B | 3.1B | 1.2 GB | 12 |
-
-## Why polynomial time matters
-
-- **Predictable latency** — no exponential blowup
-- **Bounded memory** — O(d) not O(2^d)
-- **Formal verification** — provable correctness
-
----
-
-**Proposal:** `docs/proposals/DARPA_CLARA_PROPOSAL.md`
-
----
-
-### Post 8: "Comparing Trinity with other VSA implementations"
+### Post 7: "Comparing Trinity with other VSA implementations"
 
 **Flair:** 📊 `[Results]`
 
@@ -514,7 +457,7 @@ similarity = hd.cosine_similarity(bound, c)
 
 ---
 
-### Post 9: "Release v1.0: Trinity is now available on npm!"
+### Post 8: "Release v1.0: Trinity is now available on npm!"
 
 **Flair:** 📢 `[News]`
 
@@ -575,7 +518,7 @@ tri --help
 
 ---
 
-### Post 10: "New scientific publications on Zenodo!"
+### Post 9: "New scientific publications on Zenodo!"
 
 **Flair:** 📢 `[News]`
 

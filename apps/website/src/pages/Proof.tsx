@@ -71,7 +71,7 @@ const METHOD = [
 ]
 
 const NOT_CLAIMS = [
-  'Competition entries are entries. A DARPA CLARA submission and an OpenAI Parameter Golf entry are exactly that — submitted work, not awarded contracts or won prizes.',
+  'Competition entries are entries. The OpenAI Parameter Golf entry is exactly that — submitted work, not an awarded contract or a won prize.',
   'Measurements come from one device family, a Xilinx Artix-7. They are not multi-corner characterisation and do not claim to be.',
   'The on-chip training result is a proven primitive at small scale — a real network learning on a real Artix-7 FPGA, not a production training accelerator.',
   'The scale result above is not a claim that we beat MXFP4 overall. A block format has two fields, and the scale is the one we win. On the element field we lose, measured: at 4 bits MXFP4 reaches 21.9397 perplexity against 36.7214 for our TNF4, and at 6 bits MXFP6 reaches 14.7269 against 18.0275. And the element axis is more contested than we used to say: NF4, the 4-bit NormalFloat published with QLoRA in 2023, beats MXFP4 in our own harness by 6.50% pooled across three models it was never fitted to (95% CI [−7.30, −5.70], p = 2e-28). We had never run it. A codebook of ours fitted against three models at once also beats MXFP4, by 1.31% on a fourth family it never saw — real, and five times smaller than the 2023 baseline. All of these statements are about the same format and belong together.',
@@ -115,7 +115,7 @@ const RU = {
   ],
   notTitle: 'Чем эти результаты не являются',
   not: [
-    'Заявка на конкурс — это заявка. Подача в DARPA CLARA и участие в OpenAI Parameter Golf — именно это: отправленная работа, а не выигранные контракты или взятые призы.',
+    'Заявка на конкурс — это заявка. Участие в OpenAI Parameter Golf — именно это: отправленная работа, а не выигранный контракт или взятый приз.',
     'Измерения сняты на одном семействе устройств, Xilinx Artix-7. Это не многоугловая характеризация и не претендует ею быть.',
     'Обучение на кристалле — доказанный примитив малого масштаба: настоящая сеть, обучающаяся на настоящей FPGA Artix-7, а не продакшн-ускоритель обучения.',
     'Результат про масштаб выше — не заявление, что мы обходим MXFP4 в целом. У блочного формата два поля, и масштаб — то, где мы выигрываем. На поле элемента мы проигрываем, и это измерено: при 4 битах MXFP4 даёт перплексию 21.9397 против 36.7214 у нашего TNF4, при 6 битах MXFP6 — 14.7269 против 18.0275. И элементная ось оспаривается сильнее, чем мы говорили раньше: NF4, четырёхбитный NormalFloat, опубликованный вместе с QLoRA в 2023 году, обходит MXFP4 в нашей же обвязке на 6.50% в пуле по трём моделям, под которые он не подбирался (95% ДИ [−7.30, −5.70], p = 2e-28). Мы его ни разу не запускали. Наша книга, подобранная сразу под три модели, тоже обходит MXFP4 — на 1.31% на четвёртом, невиданном семействе: результат настоящий и впятеро меньше опубликованной в 2023-м полки. Все эти утверждения об одном формате и идут вместе.',

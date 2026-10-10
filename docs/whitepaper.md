@@ -211,5 +211,4 @@ This ensures attention patterns follow golden ratio spacing, optimizing for both
 ## References
 
 - IGLA/GF16: https://arxiv.org/abs/2206.02428
-- Parameter Golf: https://github.com/gHashTag/trinity-claraParameter
 - T27 specs: https://github.com/gHashTag/t27

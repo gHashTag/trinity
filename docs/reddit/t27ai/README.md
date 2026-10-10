@@ -176,7 +176,6 @@ Add to relevant multireddits:
 - Trinity Identity: φ² + 1/φ² = 3
 - Connection to constants: G, α, N_gen = 3
 - Sacred mathematics: 75+ constants
-- DARPA CLARA: polynomial-time guarantees
 
 ### AI/ML Research
 - BitNet LLM: CPU inference without GPU

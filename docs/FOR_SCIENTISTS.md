@@ -61,8 +61,6 @@ tri constants
 tri formula $(tri phi 2 | awk '{print $3}')
 # Output: φ² + φ⁻² = 3.00...
 
-# Run CLARA verification (4 theorems)
-tri clara demo
 ```
 
 ## Contact

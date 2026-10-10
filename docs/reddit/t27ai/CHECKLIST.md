@@ -63,7 +63,6 @@
 - [ ] Day 5: "How to compile from source" `[Code]`
 - [ ] Day 7: "VSA semantic search example" `[Code]`
 - [ ] Day 8: "TRI-27 first program" `[Code]`
-- [ ] Day 10: "DARPA CLARA guarantees" `[Research]`
 - [ ] Day 11: "VSA implementations comparison" `[Results]`
 - [ ] Day 12: "Release announcement" (when ready) `[News]`
 - [ ] Day 14: "Zenodo publications" `[News]`

@@ -7,7 +7,6 @@ import { body as body_signal_health_self_run32, ruBody as ruBody_signal_health_s
 import { body as body_queen_phone_orientation_gate, ruBody as ruBody_queen_phone_orientation_gate } from './bodies/queen-phone-orientation-gate'
 import { body as body_merge_diff_ci_boundaries, ruBody as ruBody_merge_diff_ci_boundaries } from './bodies/merge-diff-ci-boundaries'
 import { body as body_queen_foundation_snapshot_contract, ruBody as ruBody_queen_foundation_snapshot_contract } from './bodies/queen-foundation-snapshot-contract'
-import { body as body_clara_proposal_submitted_not_reviewed, ruBody as ruBody_clara_proposal_submitted_not_reviewed } from './bodies/clara-proposal-submitted-not-reviewed'
 import { body as body_tri_claw_an_agent_you_can_audit, ruBody as ruBody_tri_claw_an_agent_you_can_audit } from './bodies/tri-claw-an-agent-you-can-audit'
 import { body as body_a_health_snapshot_changed_its_denominator, ruBody as ruBody_a_health_snapshot_changed_its_denominator } from './bodies/a-health-snapshot-changed-its-denominator'
 import { body as body_one_saturation_rule_five_artefacts, ruBody as ruBody_one_saturation_rule_five_artefacts } from './bodies/one-saturation-rule-five-artefacts'
@@ -92,7 +91,6 @@ const bodies: Record<string, PostBody> = {
   'ninety-tests-were-unreachable': { body: body_ninety_tests_were_unreachable, ruBody: ruBody_ninety_tests_were_unreachable },
   'one-saturation-rule-five-artefacts': { body: body_one_saturation_rule_five_artefacts, ruBody: ruBody_one_saturation_rule_five_artefacts },
   'queen-foundation-snapshot-contract': { body: body_queen_foundation_snapshot_contract, ruBody: ruBody_queen_foundation_snapshot_contract },
-  'clara-proposal-submitted-not-reviewed': { body: body_clara_proposal_submitted_not_reviewed, ruBody: ruBody_clara_proposal_submitted_not_reviewed },
   'queen-review-lifecycle-queues': { body: body_queen_review_lifecycle_queues, ruBody: ruBody_queen_review_lifecycle_queues },
   'one-commit-nine-workflow-outcomes': { body: body_one_commit_nine_workflow_outcomes, ruBody: ruBody_one_commit_nine_workflow_outcomes },
   'real-value-in-integer-container': { body: body_real_value_in_integer_container, ruBody: ruBody_real_value_in_integer_container },

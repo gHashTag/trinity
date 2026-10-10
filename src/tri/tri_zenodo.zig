@@ -38,9 +38,6 @@ const zenodo_v21_broader_impact = @import("zenodo_v21_broader_impact.zig");
 // V22 Reproducibility Checklist
 const zenodo_v22_reproducibility = @import("zenodo_v22_reproducibility.zig");
 
-// V18 CLARA-Specific Metadata
-const zenodo_v18_clara = @import("zenodo_v18_clara.zig");
-
 const RESET = "\x1b[0m";
 const BOLD = "\x1b[1m";
 const GREEN = "\x1b[32m";
@@ -115,12 +112,6 @@ pub fn runZenodoCommand(allocator: std.mem.Allocator, args: []const []const u8) 
     } else if (std.mem.eql(u8, subcmd, "v22")) {
         // V22 Reproducibility Checklist
         try runV22Command(allocator, sub_args);
-    } else if (std.mem.eql(u8, subcmd, "v18") or std.mem.eql(u8, subcmd, "clara-metadata")) {
-        // V18 CLARA-Specific Metadata
-        try runV18Command(allocator, sub_args);
-    } else if (std.mem.eql(u8, subcmd, "clara")) {
-        // CLARA shortcut commands
-        try runClaraCommand(allocator, sub_args);
     } else if (std.mem.eql(u8, subcmd, "community")) {
         // Community curation
         try runCommunityCommand(allocator, sub_args);
@@ -965,133 +956,6 @@ fn printV22Help() void {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// V18 CLARA-SPECIFIC METADATA
-// ═══════════════════════════════════════════════════════════════════════════════
-
-fn runV18Command(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    if (args.len < 1) {
-        printV18Help();
-        return;
-    }
-
-    const v18_subcmd = args[0];
-    const v18_args = args[1..];
-
-    if (std.mem.eql(u8, v18_subcmd, "metadata")) {
-        if (v18_args.len < 1) {
-            print("{s}Usage: tri zenodo v18 metadata <bundle>{s}\n", .{ RED, RESET });
-            print("  Bundles: A-H, PARENT, or B001-B008\n", .{});
-            return;
-        }
-        const bundle = v18_args[0];
-        const json = try zenodo_v18_clara.generateClaraMetadata(allocator, bundle);
-        defer allocator.free(json);
-
-        print("\n{s}{s}CLARA Metadata for {s}{s}\n", .{ CYAN, BOLD, bundle, RESET });
-        print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
-        print("{s}\n", .{json});
-        print("{s}✅ Metadata generated!{s}\n\n", .{ GREEN, RESET });
-    } else if (std.mem.eql(u8, v18_subcmd, "validate")) {
-        if (v18_args.len < 1) {
-            print("{s}Usage: tri zenodo v18 validate <json-file>{s}\n", .{ RED, RESET });
-            return;
-        }
-        const file_path = v18_args[0];
-        const content = try std.fs.cwd().readFileAlloc(allocator, file_path, 1_000_000);
-        defer allocator.free(content);
-
-        const is_valid = try zenodo_v18_clara.validateClaraMetadata(allocator, content);
-        if (is_valid) {
-            print("{s}✅ CLARA metadata is valid!{s}\n", .{ GREEN, RESET });
-        } else {
-            print("{s}❌ CLARA metadata validation failed!{s}\n", .{ RED, RESET });
-        }
-    } else if (std.mem.eql(u8, v18_subcmd, "list")) {
-        zenodo_v18_clara.listClaraBundles();
-    } else if (std.mem.eql(u8, v18_subcmd, "discovery")) {
-        const discovery = try zenodo_v18_clara.getClaraDiscovery();
-        const output = try discovery.formatDiscovery(allocator);
-        defer allocator.free(output);
-        print("{s}\n", .{output});
-        print("{s}✅ Discovery record generated!{s}\n\n", .{ GREEN, RESET });
-    } else {
-        print("{s}Unknown V18 subcommand: {s}{s}\n", .{ RED, v18_subcmd, RESET });
-        printV18Help();
-    }
-}
-
-fn printV18Help() void {
-    print("\n{s}{s}ZENODO V18 — CLARA-Specific Metadata Generator{s}\n\n", .{ GOLDEN, BOLD, RESET });
-    print("  tri zenodo v18 metadata <bundle>     Generate CLARA metadata JSON\n", .{});
-    print("  tri zenodo v18 validate <file>       Validate CLARA metadata\n", .{});
-    print("  tri zenodo v18 list                  List all CLARA bundles\n", .{});
-    print("  tri zenodo v18 discovery             Generate discovery record\n\n", .{});
-    print("  Bundles: A-H, PARENT, B001-B008\n", .{});
-    print("  Aliases: A=B001, B=B002, C=B003, D=B004, E=B005, F=B006, G=B007, H=B008\n\n", .{});
-    print("  Shortcut: tri zenodo clara-metadata <bundle>\n\n", .{});
-}
-
-fn runClaraCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    if (args.len < 1) {
-        printClaraHelp();
-        return;
-    }
-
-    const clara_subcmd = args[0];
-    const clara_args = args[1..];
-
-    if (std.mem.eql(u8, clara_subcmd, "metadata")) {
-        // Delegate to V18
-        var all_args = try std.ArrayList([]const u8).initCapacity(allocator, clara_args.len + 1);
-        defer all_args.deinit(allocator);
-        try all_args.append(allocator, "metadata");
-        try all_args.appendSlice(allocator, clara_args);
-        try runV18Command(allocator, all_args.items);
-    } else if (std.mem.eql(u8, clara_subcmd, "demo")) {
-        print("\n{s}{s}CLARA Demo Pipeline{s}\n", .{ CYAN, BOLD, RESET });
-        print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
-        print("This will run the full CLARA verification demo:\n", .{});
-        print("  1. VSA O(n) complexity test\n", .{});
-        print("  2. FPGA synthesis verification\n", .{});
-        print("  3. NN+VSA composition test\n", .{});
-        print("  4. Formal proof verification\n\n", .{});
-        print("{s}Usage:{s} tri clara demo\n\n", .{ YELLOW, RESET });
-        print("{s}Note: Run 'zig build' first to ensure all tests compile.{s}\n\n", .{ YELLOW, RESET });
-    } else if (std.mem.eql(u8, clara_subcmd, "verify")) {
-        print("\n{s}{s}CLARA Verification Suite{s}\n", .{ CYAN, BOLD, RESET });
-        print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
-        print("Running CLARA verification tests...\n\n", .{});
-        print("{s}zig test src/vsa.zig --test-filter CLARA{s}\n\n", .{ YELLOW, RESET });
-        print("{s}Note: Implement src/tri/clara/verification.zig first.{s}\n\n", .{ YELLOW, RESET });
-    } else if (std.mem.eql(u8, clara_subcmd, "bench")) {
-        print("\n{s}{s}CLARA Benchmark Suite{s}\n", .{ CYAN, BOLD, RESET });
-        print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
-        print("Running complexity benchmarks...\n\n", .{});
-        if (clara_args.len > 0 and std.mem.eql(u8, clara_args[0], "--polynomial-time")) {
-            print("Benchmarking polynomial-time complexity:\n", .{});
-            print("  - VSA bind/unbind: O(n)\n", .{});
-            print("  - VSA bundle3: O(n)\n", .{});
-            print("  - Ternary MAC: O(1)\n\n", .{});
-            print("{s}Note: Implement benchmark suite first.{s}\n\n", .{ YELLOW, RESET });
-        } else {
-            print("{s}Usage:{s} tri clara bench [--polynomial-time]\n\n", .{ YELLOW, RESET });
-        }
-    } else {
-        print("{s}Unknown CLARA subcommand: {s}{s}\n", .{ RED, clara_subcmd, RESET });
-        printClaraHelp();
-    }
-}
-
-fn printClaraHelp() void {
-    print("\n{s}{s}CLARA TA1 Commands{s}\n\n", .{ GOLDEN, BOLD, RESET });
-    print("  tri clara metadata <bundle>      Generate CLARA metadata (same as zenodo v18)\n", .{});
-    print("  tri clara demo                   Run full CLARA verification demo\n", .{});
-    print("  tri clara verify                 Run CLARA verification test suite\n", .{});
-    print("  tri clara bench [--poly-time]    Run complexity benchmarks\n\n", .{});
-    print("  Shortcut: tri zenodo clara-metadata <bundle>\n\n", .{});
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
 // COMMUNITY — Link deposits to Zenodo communities
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -1772,9 +1636,7 @@ fn printHelp() void {
     print("  tri zenodo v20                   Statistical significance module\n", .{});
     print("  tri zenodo v21                   Broader impact statement (NeurIPS/ICLR)\n", .{});
     print("  tri zenodo v22                   Reproducibility checklist (NeurIPS/ICLR)\n", .{});
-    print("  tri zenodo v18                   CLARA-specific metadata (TA1)\n", .{});
     print("  tri zenodo community            Community curation (link deposits)\n", .{});
-    print("  tri clara <cmd>                 CLARA verification shortcuts\n\n", .{});
     print("    tri zenodo v16 model-card <name>      Generate ICLR/NeurIPS model card\n", .{});
     print("    tri zenodo v16 dataset-card <name>    Generate NeurIPS dataset card\n", .{});
     print("    tri zenodo v16 stats                  Statistical rigor demo\n", .{});
@@ -1802,20 +1664,9 @@ fn printHelp() void {
     print("    tri zenodo v22 neurips                 Generate NeurIPS reproducibility checklist\n", .{});
     print("    tri zenodo v22 iclr                   Generate ICLR reproducibility criteria\n", .{});
     print("    tri zenodo v22 completion             Show overall completion percentage\n\n", .{});
-    print("  V18 Commands (CLARA TA1):\n", .{});
-    print("    tri zenodo v18 metadata <bundle>      Generate CLARA metadata JSON\n", .{});
-    print("    tri zenodo v18 validate <file>        Validate CLARA metadata\n", .{});
-    print("    tri zenodo v18 list                   List all CLARA bundles (A-H, PARENT)\n", .{});
-    print("    tri zenodo v18 discovery              Generate discovery record\n\n", .{});
-    print("  Community Commands:\n", .{});
     print("    tri zenodo community list             List available communities\n", .{});
     print("    tri zenodo community link <id> <comm>  Link record to community\n", .{});
     print("    tri zenodo community status <id>       Show community links for record\n\n", .{});
-    print("  CLARA Shortcuts:\n", .{});
-    print("    tri clara metadata <bundle>           Same as zenodo v18 metadata\n", .{});
-    print("    tri clara demo                        Run full verification demo\n", .{});
-    print("    tri clara verify                      Run CLARA test suite\n", .{});
-    print("    tri clara bench [--poly-time]         Run complexity benchmarks\n\n", .{});
     print("  Bundle aliases:\n", .{});
     print("    A = B001: HSLM-1.95M Ternary Neural Networks\n", .{});
     print("    B = B002: Zero-DSP FPGA Accelerator\n", .{});

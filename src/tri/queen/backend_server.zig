@@ -6,7 +6,7 @@
 // φ² + 1/φ² = 3 = TRINITY
 //
 // ============================================================================
-// FIXME: resurrect trinity_workspace when queen backend is implemented for CLARA
+// FIXME: resurrect trinity_workspace when queen backend is implemented
 //
 // Import existing queen modules
 const episodes = @import("episodes.zig");

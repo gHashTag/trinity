@@ -22,12 +22,10 @@
 | 11 | trios-physics         | FFI       | ✅   | ❌   | 🔴   | core, sacred             | Physical constants     | P1 🔴     |
 | 12 | trios-sacred          | FFI       | ✅   | ❌   | 🔴   | core, sacred-geometry     | Golden sequence math    | P1 🔴     |
 | 13 | trios-zig-agents      | FFI       | ✅   | ✅   | ✅   | core, zig-agents        | Zig agent runtime       | P1 ✅     |
-| 14 | trios-clara (planned) | lib       | 📋   | —   | —    | —                       | MCP bridge CLARA/ParamGolf | P2        |
-| 15 | trios-hdc-bridge (planned) | lib  | 📋   | —   | —    | —                       | HDC→CLARA bridge      | P3 D2–3   |
-| 16 | trios-phi-quant (planned) | lib   | 📋   | —   | —    | —                       | φ‑quantization          | P3 D4–5   |
-| 17 | trios-fibonacci-attn (planned) | lib | 📋   | —   | —    | —                       | Fibonacci attention    | P3 D6–7   |
-| 18 | trios-ensemble (planned) | lib    | 📋   | —   | —    | —                       | Ensemble orchestrator | P3 D8–9   |
-| 19 | trios-agi-bench (planned) | lib   | 📋   | —   | —    | —                       | 5 AGI tracks wrapper  | P3 parallel |
+| 14 | trios-phi-quant (planned) | lib   | 📋   | —   | —    | —                       | φ‑quantization          | P3 D4–5   |
+| 15 | trios-fibonacci-attn (planned) | lib | 📋   | —   | —    | —                       | Fibonacci attention    | P3 D6–7   |
+| 16 | trios-ensemble (planned) | lib    | 📋   | —   | —    | —                       | Ensemble orchestrator | P3 D8–9   |
+| 17 | trios-agi-bench (planned) | lib   | 📋   | —   | —    | —                       | 5 AGI tracks wrapper  | P3 parallel |
 
 ---
 

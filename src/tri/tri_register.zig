@@ -36,7 +36,6 @@ const sacred_v2 = @import("tri_sacred_v2.zig");
 const sacred_fpga = @import("tri_sacred_fpga.zig");
 const tri_train = @import("metabolism.zig");
 const tri_zenodo = @import("tri_zenodo.zig");
-const tri_clara = @import("tri_clara.zig");
 const tri_cloud = @import("tri_cloud.zig");
 const tri_farm = @import("tri_farm.zig");
 const dev_workflow = @import("dev_commands.zig");
@@ -1041,12 +1040,6 @@ const execute_map = [_]ExecuteEntry{
         }
     }.f },
 
-    // ── CLARA (DARPA PA-25-07-02) ──
-    .{ .name = "clara", .execute = struct {
-        fn f(a: std.mem.Allocator, args: []const []const u8) !void {
-            return tri_clara.main(a, args);
-        }
-    }.f },
     .{ .name = "railway", .execute = struct {
         fn f(a: std.mem.Allocator, args: []const []const u8) !void {
             return railway_build.runRailwayBuildCommand(a, args);

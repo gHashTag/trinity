@@ -50,10 +50,6 @@ export const BLOG_COVER_VERSIONS: Record<string, { en: string; ru: string }> = {
     "en": "45292d6ce630",
     "ru": "45292d6ce630"
   },
-  "clara-proposal-submitted-not-reviewed": {
-    "en": "f22cae30e264",
-    "ru": "f22cae30e264"
-  },
   "context-length-resonance-not-power-law": {
     "en": "5f9a09f37406",
     "ru": "5f9a09f37406"
@@ -467,22 +463,6 @@ export const BLOG_COVER_CAPTIONS: Record<string, Partial<Record<'en' | 'ru', Blo
       {
         "heading": "THE OWNER",
         "caption": "An invitation, not an instruction."
-      }
-    ]
-  },
-  "clara-proposal-submitted-not-reviewed": {
-    "en": [
-      {
-        "heading": "THE SUBMISSION",
-        "caption": "The README records a submission."
-      },
-      {
-        "heading": "THE PAPERWORK",
-        "caption": "Required forms were missing."
-      },
-      {
-        "heading": "THE LIMIT",
-        "caption": "No merits review or funding."
       }
     ]
   },

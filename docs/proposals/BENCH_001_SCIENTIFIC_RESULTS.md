@@ -9,7 +9,7 @@
 > *trained* MNIST-MLP check shows GF16 at 97.67% (0.00% gap vs f32).
 
 
-## DARPA CLARA Proposal — Scientific Appendix
+## Scientific Appendix
 
 **Experiment**: BENCH-001 (Ternary vs FP16/BF16/GF16 on MNIST)
 **Date**: April 2, 2026
@@ -20,7 +20,7 @@
 
 ## Executive Summary
 
-BENCH-001 provides **experimental validation** that GF16 (9-bit mantissa) achieves **perfect accuracy parity with FP32** while using **50% less memory**. This scientific result directly supports Trinity's hardware efficiency claims in the CLARA proposal.
+BENCH-001 provides **experimental validation** that GF16 (9-bit mantissa) achieves **perfect accuracy parity with FP32** while using **50% less memory**.
 
 ### Key Finding
 
@@ -125,7 +125,7 @@ Ternary: -0.60 pct  ⚠️  ACCURACY LOSS
 
 ---
 
-## CLARA Proposal Impact
+## Benchmark Impact
 
 ### Updated Claims
 
@@ -230,5 +230,4 @@ Ternary: -0.60 pct  ⚠️  ACCURACY LOSS
 
 **φ² + 1/φ² = 3 | TRINITY**
 
-**Contact**: CLARA@darpa.mil
 **GitHub**: https://github.com/gHashTag/trinity

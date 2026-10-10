@@ -7,10 +7,9 @@ This document outlines the comprehensive research agenda for Trinity S³AI (Scal
 2. NeurIPS 2025, ICLR 2025, MLSys 2025 requirements
 3. FAIR Principles compliance
 4. OpenAlex indexing requirements
-5. DARPA CLARA proposal alignment
 
 **Research Timeline**: 12 months (2025-04 to 2026-04)
-**Core Publication Strategy**: 3 papers + 1 DARPA proposal
+**Core Publication Strategy**: 3 papers
 
 ---
 
@@ -135,7 +134,7 @@ pub fn classify(spec: *const VibeecSpec) OpenAlexWorkType {
 
 ---
 
-## Phase 3: DARPA CLARA Polynomial-Time Verification (Month 5-6)
+## Phase 3: Polynomial-Time Verification (Month 5-6)
 
 ### 3.1 Complexity Analysis
 
@@ -362,11 +361,9 @@ documentation:
 | BRAM | 144 | 890 | 16.2% |
 | Power | 1.2W | - | - |
 
-### 6.4 DARPA CLARA Proposal
+### 6.4 Polynomial-Time Verification Summary
 
-**Program**: DARPA CLARA (Collaborative Learning and Reasoning Architecture)
-
-**Topic**: TA1 Software Package — NN + VSA Composition
+**Method**: NN + VSA composition
 
 **Heilmeier Questions**:
 1. **What are you trying to do?** Develop polynomial-time verifiable neural-symbolic AI
@@ -382,7 +379,6 @@ documentation:
 ### Publication Metrics
 - [ ] 3 papers submitted to top-tier venues
 - [ ] 2 papers accepted
-- [ ] 1 DARPA proposal funded
 
 ### Citation Metrics
 - [ ] 10+ citations on core paper within 1 year
@@ -405,7 +401,6 @@ documentation:
 5. CFF 1.2.0: https://citation-file-format.github.io/1.2.0/
 6. ORCID: https://info.orcid.org/
 7. OpenAlex: https://openalex.org/
-8. DARPA CLARA: https://www.darpa.mil/program/clara
 
 ---
 

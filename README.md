@@ -206,8 +206,6 @@ tri phi 2
 tri formula 2.618033988749895
 # Shows φ² + φ⁻² = 3 (exact)
 
-# 5. Run CLARA demo (4 theorems verified)
-tri clara demo
 ```
 
 **What you just saw:**
@@ -244,57 +242,6 @@ Each branch produces testable predictions; some confirmed (G: 0.09%), some rejec
 | **[README for Scientists](docs/papers/README_FOR_SCIENTISTS.md)** | Mathematical framework without marketing terminology |
 | **[DELTA-001 Final Report](docs/docs/research/delta_001_final_report.md)** | Why γ ≠ φ⁻³: Honest negative result on Barbero-Immirzi parameter |
 | **[LISA Prediction Roadmap](docs/papers/LISA_PREDICTION_ROADMAP_2035.md)** | 12 testable predictions for gravitational wave observations (2035+) |
-
----
-
-## CLARA-style assurance modules
-
-The public DARPA CLARA solicitation (PA-25-07-02, Compositional Learning-And-Reasoning for AI Complex Systems Engineering) describes ten assurance requirements for compositional learning-and-reasoning systems. We used that public document as a **specification target** for our own reasoning pipeline, because it is the most precise published statement of what auditable AI reasoning has to do.
-
-A proposal based on this work was submitted in May 2026 through a partner organization (Wisdom Traditions Center LLC) and was ruled non-conforming on administrative grounds (missing required cost and current-and-pending forms); it was not reviewed, endorsed, or funded. Trinity has no DARPA award, no DARPA funding and no ongoing engagement with DARPA.
-
-### CLARA Alignment
-
-| CLARA Requirement | Trinity Implementation |
-|-------------------|----------------------|
-| **Neural Networks** | HSLM (BitNet LLM, 1.95M params, 385 KB) |
-| **Logic Programs** | VSA (Vector Symbolic Architecture, O(n) ops) |
-| **Classical Logic** | TRI-27 (27 registers, O(1) dispatch) |
-| **Bayesian** | GF16 (integer-backed 16-bit float, DLFloat 6:9 layout 1/6/9) |
-| **Reinforcement Learning** | Queen Lotus (lotus-cycle, RL agents) |
-
-### Polynomial-Time Guarantees
-
-Trinity provides **formal verification** of polynomial-time complexity:
-
-| Theorem | Claim | Status |
-|---------|-------|--------|
-| **Theorem 1** | VSA operations are O(n) | ✅ Verified |
-| **Theorem 2** | Ternary MAC needs no DSP multipliers | ✅ Synthesis shows 0 DSP (BENCH-005); constant-time behaviour is not claimed |
-| **Theorem 3** | TRI-27 VM has O(1) opcode dispatch | ✅ Verified |
-| **Theorem 4** | Trinity Identity φ² + φ⁻² = 3 | ✅ Verified |
-
-### One-Command Demo
-
-Run the full CLARA verification pipeline:
-
-```bash
-tri clara demo
-```
-
-This demonstrates:
-- VSA O(n) scaling with actual timing measurements
-- FPGA synthesis results (0 DSP blocks used)
-- TRI-27 O(1) opcode dispatch
-- Golden ratio verification (φ² + φ⁻² = 3)
-- NN+VSA polynomial-time composition
-
-**Resources:**
-- [CLARA proposal (submitted May 2026; ruled non-conforming, not reviewed)](docs/proposals/DARPA_CLARA_PROPOSAL.md)
-- [Complexity Analysis](docs/proposals/CLARA_COMPLEXITY_ANALYSIS.md)
-- [Verification Tests](src/tri/clara/verification.zig)
-
----
 
 - ✅ **Smoking Guns (4):** G (0.09%), N_gen = 3, t_present (382 ms), T_cycles (~97 min)
 - ✅ **Consistent (3):** C, Ω_Λ, Ω_DM
