@@ -2,7 +2,7 @@ import type { Block } from '../types'
 
 // Numbers here come from the benchmark comments on gHashTag/t27#7851 (2026-10-08 and 2026-10-09), the merged
 // runtime PRs gHashTag/trios#1698, #1702, #1716, #1720, #1722, #1723, #1724, #1725 and the merged spec PRs
-// gHashTag/t27#8272, #8275, #8278, #8281, #8282, #8285, #8286, #8292, #8306, and gHashTag/trios#1726 (the simulation gate). The FPGA figures are yosys 0.63 synthesis
+// gHashTag/t27#8272, #8275, #8278, #8281, #8282, #8285, #8286, #8292, #8306, gHashTag/trios#1726 (the simulation gate) and #1730 (the merge into production). The FPGA figures are yosys 0.63 synthesis
 // of specs/queen/actors.t27 at t27 b9e62161d4; their provenance is in gHashTag/trinity#1582. The recording
 // public/term/t27c-queen-netlink-fence/ was made on 2026-10-09 with t27c 0.5.0 against t27 c6237a7.
 
@@ -72,7 +72,7 @@ export const body: Block[] = [
   },
   {
     kind: 'p',
-    text: 'The cost per message is not settled. On a host at load 15 to 45 the on/off noise was wider than the +10% target, so the A/B neither confirms nor refutes it. Summing the parts measured alone gives an estimate of +4 to +7% of 3.7 us. There is no production reading yet, so the question of 23% busy against 11 reviews an hour is still open.',
+    text: 'On a quiet host (load about 4; 1000 actors passing 100 000 messages, 21 rounds) telemetry adds +3.3% CPU per message, the median, with +1.6 to +5.2% between p25 and p75. That is inside the +10% target. The same run found a cost we did not want: with telemetry off, a message now costs 4.5 us against the 3.7 us published before the seven lanes, about 20% more. The likely cause is the hooks lanes 2, 6 and 7 added to the hot path; trios#1743 measures it. There is no production reading yet, so the question of 23% busy against 11 reviews an hour is still open.',
   },
   { kind: 'h', text: 'Stopping: a killed turn that ends, and the throughput it gives back' },
   {
@@ -188,9 +188,9 @@ export const body: Block[] = [
   {
     kind: 'ul',
     items: [
-      'Nothing here runs in production. `actors-next` merges into the production branch once, with the owner\'s OK; that pull request, trios#1730, is open, with every new behaviour behind an off flag. Until it merges, every number comes from a benchmark.',
+      'Nothing here is switched on in production yet. `actors-next` merged into the production branch once, with the owner\'s OK: trios#1730, on 2026-10-10 at 13:38Z. Every new behaviour in it is behind a flag that is off, so production behaves as before until the flags are switched on one at a time, by data. Until then, every number here comes from a benchmark.',
       'The reviewer, concurrency, turn-stop and dispatcher numbers are simulations with assumed fault rates and lengths. The loop side of the dispatcher benchmark is a model of `runRound`, not the function itself.',
-      'Telemetry\'s cost per message is an estimate from parts; an A/B on a quiet host is still owed.',
+      'Telemetry\'s cost per message is measured on a quiet host only; there is no production reading yet.',
       'The simulation gate does not yet simulate keyed actors or the adaptive reviewer pool, and nothing runs it nightly.',
       'The FPGA figures are synthesis estimates with an assumed actor record. No design was placed, timed or run on silicon. DSP blocks were left out, because on the open flow they computed wrong results with live operands (t27 docs/reports/TRINET-DSP-DEFECT-W723.md).',
       'The competitor figures are the vendors\' documented defaults, not our measurements.',
@@ -259,7 +259,7 @@ export const ruBody: Block[] = [
   },
   {
     kind: 'p',
-    text: 'Цена на сообщение пока не определена. На машине с нагрузкой от 15 до 45 шум между прогонами «вкл/выкл» оказался шире цели +10%, так что A/B её ни подтверждает, ни опровергает. Сумма частей, измеренных по отдельности, даёт оценку от +4 до +7% к 3.7 мкс. Production-замера ещё нет, поэтому вопрос «23% занятости против 11 рецензий в час» остаётся открытым.',
+    text: 'На спокойной машине (нагрузка около 4; 1000 акторов передают 100 000 сообщений, 21 прогон) телеметрия добавляет +3.3% CPU на сообщение по медиане, от +1.6 до +5.2% между p25 и p75. Это в пределах цели +10%. Тот же прогон нашёл цену, которой мы не хотели: без телеметрии сообщение теперь стоит 4.5 мкс против 3.7 мкс, опубликованных до семи лейнов, — примерно на 20% больше. Вероятная причина — хуки, которые лейны 2, 6 и 7 добавили на горячий путь; это измеряет trios#1743. Production-замера ещё нет, поэтому вопрос «23% занятости против 11 рецензий в час» остаётся открытым.',
   },
   { kind: 'h', text: 'Останавливать: убитый ход заканчивается, и пропускная способность отдаётся' },
   {
@@ -375,9 +375,9 @@ export const ruBody: Block[] = [
   {
     kind: 'ul',
     items: [
-      'Ничего из этого не работает в production. `actors-next` вольётся в production-ветку один раз, с согласия владельца; эта pull request, trios#1730, открыта, и каждое новое поведение в ней стоит за выключенным флагом. Пока она не влита, каждое число получено из бенчмарка.',
+      'В production пока ничего из этого не включено. `actors-next` влита в production-ветку один раз, с согласия владельца: trios#1730, 2026-10-10 в 13:38Z. Каждое новое поведение в ней стоит за выключенным флагом, поэтому production ведёт себя как прежде, пока флаги не включат по одному, по данным. До тех пор каждое число здесь получено из бенчмарка.',
       'Числа ревьюера, параллелизма, остановки ходов и диспетчера — симуляции с принятыми частотами сбоев и длительностями. Сторона цикла в бенчмарке диспетчера — модель `runRound`, а не сама функция.',
-      'Цена телеметрии на сообщение — оценка по частям; A/B на спокойной машине ещё за нами.',
+      'Цена телеметрии на сообщение измерена только на спокойной машине; production-замера ещё нет.',
       'Шлюз симуляции пока не моделирует ключевых акторов и адаптивный пул ревьюеров, и каждую ночь его никто не запускает.',
       'Числа по ПЛИС — оценки синтеза с принятой записью актора. Ни один дизайн не размещён, не проверен по таймингу и не запущен на кремнии. Блоки DSP не использовались: в открытом маршруте они считали неверно на живых операндах (t27 docs/reports/TRINET-DSP-DEFECT-W723.md).',
       'Числа конкурентов — задокументированные значения по умолчанию самих вендоров, а не наши замеры.',
