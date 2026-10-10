@@ -3,7 +3,6 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
-<<<<<<< HEAD
     slug: "actors-beat-the-loop-on-recovery-not-everywhere",
     title: "Actors beat the loop on recovery, not everywhere: seven measured changes to the Queen runtime",
     summary: "[simulated: reviewer, concurrency, turn stop, dispatcher; measured: node-link chaos and waits on PostgreSQL 16, decision replay, the simulation gate; FPGA: synthesis only; nothing in production] On one seeded input the Queen's actor runtime cuts the worst recovery from 1181 s to 27 s and finishes 18.7% more reviews under overload, but it does not win everywhere. Seven changes from a competitor study landed behind flags on 2026-10-09, each with a t27 spec and a benchmark against the code it would replace: a decision log that replays 73,435 decisions with 0 mismatches, turns that really stop, waits as Postgres rows (GitHub reads 180 to 24), a fenced node link (lost mail 21 to 0), and a seeded simulation gate that runs in 33.5 s and found a real runtime bug first. Most of the dispatcher's gain came from a 60-minute turn bound, not from actors, and adaptive concurrency loses with 3 lanes. On an XC7A200T the card as written costs 26,737 LUT and 13 functions do not synthesize; memory, not logic, caps it at about 37,000 actors a board.",
@@ -38,13 +37,15 @@ export const postsIndex: PostMeta[] = [
       { label: "Erlang kernel: net_ticktime", href: "https://www.erlang.org/doc/apps/kernel/kernel_app.html" },
       { label: "Akka split-brain resolver", href: "https://doc.akka.io/libraries/akka-core/current/split-brain-resolver.html" },
       { label: "Orleans migration guide", href: "https://learn.microsoft.com/en-us/dotnet/orleans/migration-guide" },
-      { label: "trios#1730: actors-next into the production branch, every new behaviour behind an off flag · OPEN", href: "https://github.com/gHashTag/trios/pull/1730" },
+      { label: "trios#1730: actors-next into the production branch, every new behaviour behind an off flag · MERGED 2026-10-10", href: "https://github.com/gHashTag/trios/pull/1730" },
+      { label: "trios#1754: the second batch into production, flags still off · MERGED 2026-10-10", href: "https://github.com/gHashTag/trios/pull/1754" },
+      { label: "trios#1746: where the per-message cost went, 4.47 to 1.55 us · MERGED 2026-10-10", href: "https://github.com/gHashTag/trios/pull/1746" },
       { label: "trinity#1582: this post's issue, with the FPGA provenance", href: "https://github.com/gHashTag/trinity/issues/1582" },
     ],
     openQuestions: [
-      "Nothing here runs in production: actors-next has not been merged into the production branch.",
+      "Every change is in production behind a flag that is off (trios#1730, trios#1754). No flag has been switched on, so every number here is still a benchmark.",
       "The reviewer, concurrency, turn-stop and dispatcher numbers are simulations with assumed fault rates and lengths.",
-      "Telemetry's cost per message is an estimate from parts (+4 to +7% of 3.7 us); the A/B on a loaded host was inconclusive.",
+      "Telemetry cost +3.3% CPU per message on a quiet host; after the cost fix (1.55 us a message) it is +8 to 13%, and the ratio after trios#1755 has not been measured on a quiet host.",
       "The simulation gate does not yet model keyed actors or the adaptive reviewer pool, and nothing runs it nightly.",
       "The FPGA figures are yosys synthesis with an assumed 333-bit actor record: no place-and-route, no clock rate, nothing run on the board.",
       "Which reviewer reading is right, 23% busy or 11 reviews an hour against 58 finishes, needs telemetry on in production.",
@@ -54,13 +55,16 @@ export const postsIndex: PostMeta[] = [
       title: "Акторы обходят цикл в восстановлении, но не везде: семь измеренных изменений рантайма Queen",
       summary: "[симуляция: ревьюер, параллелизм, остановка ходов, диспетчер; замер: хаос связи узлов и ожидания на PostgreSQL 16, повтор решений, шлюз симуляции; ПЛИС: только синтез; в production ничего нет] На одном входе с фиксированным зерном рантайм акторов Queen сокращает худшее восстановление с 1181 с до 27 с и при перегрузке завершает на 18.7% больше рецензий, но выигрывает не везде. 2026-10-09 за флагами легли семь изменений по итогам изучения конкурентов, у каждого спецификация на t27 и бенчмарк против кода, который оно заменяет: журнал, повторяющий 73 435 решений с 0 расхождений, ходы, которые действительно останавливаются, ожидания как строки Postgres (чтений GitHub 24 вместо 180), связь узлов с фенсингом (потерянных писем 0 вместо 21) и шлюз симуляции с зерном, который проходит за 33.5 с и первым нашёл настоящую ошибку рантайма. Большую часть выигрыша диспетчера дала 60-минутная граница хода, а не акторы, а адаптивный параллелизм проигрывает при 3 полосах. На XC7A200T карта как она написана стоит 26 737 LUT, и 13 функций не синтезируются; предел около 37 000 акторов на плату ставит память, а не логика.",
       openQuestions: [
-        "Ничего из этого не работает в production: actors-next не влит в production-ветку.",
+        "Все изменения уже в production за выключенными флагами (trios#1730, trios#1754). Ни один флаг не включён, поэтому каждое число здесь пока из бенчмарка.",
         "Числа ревьюера, параллелизма, остановки ходов и диспетчера — симуляции с принятыми частотами сбоев и длительностями.",
-        "Цена телеметрии на сообщение — оценка по частям (от +4 до +7% к 3.7 мкс); A/B на нагруженной машине ничего не решил.",
+        "Телеметрия стоила +3.3% CPU на сообщение на спокойной машине; после исправления цены (1.55 мкс на сообщение) это +8–13%, а отношение после trios#1755 на спокойной машине ещё не измерено.",
         "Шлюз симуляции пока не моделирует ключевых акторов и адаптивный пул ревьюеров, и каждую ночь его никто не запускает.",
         "Числа по ПЛИС — синтез yosys с принятой записью актора в 333 бита: без размещения и трассировки, без тактовой частоты, на плате ничего не запускалось.",
         "Какой замер ревьюера верен — 23% занятости или 11 рецензий в час против 58 завершений, — покажет только телеметрия, включённая в production.",
-=======
+      ],
+    },
+  },
+  {
     slug: "two-keys-one-verdict",
     title: "Two keys, one verdict: a second lab signed the same t27 run",
     summary: "[two keys and two machines under one operator; the 3-of-4 rule exists only in the MVP model] Two t27b labs ran the same t27 commit, a16231329d13, and signed it with different registered Ed25519 keys. The input, verdict and output roots of the two receipts are byte-identical, and t27c corpus-receipt compare judged the pair EQUIVALENT, exit 0. Until today one lab signed every receipt, so in practice it was a chief validator; this is the first real 2-of-2.",
@@ -93,7 +97,6 @@ export const postsIndex: PostMeta[] = [
         "Обе лаборатории прогоняли одни и те же сборки t27b и t27c, поэтому совпадение показывает, что прогон воспроизводится, а не что инструменты правы.",
         "В квитанции второй лаборатории нет одноразового запроса (nonce), поэтому она показывает, что было подписано, но не когда.",
         "Правило k из n описано в specs/network/mvp.t27, но ещё не проверяется на настоящих квитанциях, а дайджесты квитанций ещё не привязаны к журналу прозрачности (Rekor).",
->>>>>>> origin/main
       ],
     },
   },
