@@ -1044,6 +1044,10 @@
 .queen27-card-topline > b {
   flex: 0 0 auto;
   white-space: nowrap;
+  /* The number's own line, not the monospace face's 1.5: 3px off every card,
+     which on a 390x560 phone is most of what lies between a 101px column box
+     and the tallest card the fixture can send (trinity#1588). */
+  line-height: 1.2;
 }
 
 /* `margin-right: auto` and not a third slot in the topline's space-between: the
@@ -1132,6 +1136,84 @@
   color: var(--muted);
   font-size: 0.66rem;
   line-height: 1.35;
+}
+
+/* A CARD HAS A HEIGHT THE DATA CANNOT CHANGE (trinity#1588).
+   It had three parts that grew with what the board sent: a topline that
+   wrapped onto a third line when a card carried a kind, a repository and a
+   signal; a title; and one line each for the bee, the criteria and the needs.
+   On live data that was a 174px card in a 156px column box at 1280x600 and a
+   109px card in 101px at 390x560, and qa/queen-viewport-contract.mjs went red
+   or green with whichever card came first. Now the topline is the number and
+   the direction only (two items, two lines at most in a 126px column), the
+   title keeps its clamp, and every chip is on this ONE line: the first two
+   drawn, each cut to its share with an ellipsis, the rest counted as +N.
+   The right margin keeps the +N out from under the drawer's button, which sits
+   over the card's bottom-right corner. */
+.queen27-card-foot {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+  margin-right: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.queen27-card-foot > * {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.queen27-card .queen27-card-foot > .queen27-card-more {
+  flex: none;
+  padding: 0 0.25rem;
+  font-size: 0.55rem;
+  line-height: 1.15;
+}
+
+/* Two chips in a 97px line are two slivers, "●" and "WORK…". So a card whose
+   inside is narrower than 12rem -- every column beside the Queen's panel --
+   draws the first chip and the count from the second; a phone card (284px
+   inside) draws two. Queen.tsx renders both counts and this picks one, so the
+   number on screen is always the number not drawn. */
+.queen27-card {
+  container: queen-card / inline-size;
+}
+
+.queen27-card-more[data-more="narrow"] {
+  display: none;
+}
+
+@container queen-card (max-width: 12rem) {
+  /* !important because the signal and the bee are display: flex !important
+     where they are defined; among important rules this one is the more
+     specific. */
+  .queen27-card-foot > :not(:first-child):not(.queen27-card-more),
+  .queen27-card-more[data-more="wide"] {
+    display: none !important;
+  }
+
+  .queen27-card-more[data-more="narrow"] {
+    display: block;
+  }
+}
+
+/* The signal and the bee are flex rows elsewhere, and a flex row cannot put an
+   ellipsis on its own text: the words would be cut mid-letter. On the chip line
+   they are blocks, and the dot rides inline in front of the words. */
+.queen27-card-foot > :is(.queen27-card-signal, .queen27-card-bee) {
+  display: block !important;
+}
+
+.queen27-card-foot > :is(.queen27-card-signal, .queen27-card-bee) > i {
+  display: inline-block;
+  margin-right: 0.35rem;
+  vertical-align: middle;
 }
 
 .queen27-mission-map {
@@ -7260,6 +7342,14 @@ body.queen-shell .phi-starfield {
   white-space: nowrap;
 }
 
+/* That span is the chip line now (trinity#1588), and the criteria and the needs
+   inside it are plain words: they take the line's ink and size, not the 0.66rem
+   and the site grey every span on a card gets from `.queen27-card span`. */
+.queen27-page.is-shell .queen27-card-foot > .queen27-card-fact {
+  color: inherit;
+  font-size: inherit;
+}
+
 /* A card is as wide as its column, not as its longest word. The list's implicit
    column was max-content, so a card ran 207px inside 176 and every title was
    cut at the column's edge with the rest reachable only by a sideways scroll
@@ -7328,6 +7418,19 @@ body.queen-shell .queen-starfield-source {
   font-size: 0.66rem;
   letter-spacing: 0.02em;
   line-height: 1.55;
+}
+
+/* TWO LINES OF TITLE ON A SHORT SCREEN (trinity#1588). At 1280x600 the column
+   box is what the chrome above it leaves, and the direction row there wraps
+   with the live counts: three rows and a 156px box on 2026-10-10, two rows
+   (183px) with one-digit counts, and a fourth row as the counts grow would
+   leave about 129px. A three-line card in a 126px column is up to about
+   141px; a two-line one about 125px, which still fits a box one chip row
+   shorter than today's. */
+@media (max-height: 640px) {
+  .queen27-page.is-shell .queen27-card > strong {
+    -webkit-line-clamp: 2;
+  }
 }
 
 /* The specs view is not the map, and the map's controls do not act on it:
