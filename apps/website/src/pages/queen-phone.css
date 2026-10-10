@@ -344,7 +344,9 @@
 
   /* The foot ("0 criteria", "needs: ...") is ONE line: the first item at its
      size, the last one taking the rest and ending in an ellipsis. Two lines
-     of 12px each were a sixth of a card. */
+     of 12px each were a sixth of a card. Since trinity#1588 the card has one
+     span, .queen27-card-foot, which holds every chip; it is the last child
+     and takes the whole line. */
   .queen27-page.is-shell .queen27-card > span {
     flex: 1 1 0;
     min-width: 0;

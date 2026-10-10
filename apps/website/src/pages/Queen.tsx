@@ -1,4 +1,5 @@
 import {
+  Fragment,
   useCallback,
   useEffect,
   useMemo,
@@ -6,6 +7,7 @@ import {
   useState,
   useSyncExternalStore,
   type CSSProperties,
+  type ReactNode,
   type RefObject, lazy, Suspense } from "react";
 import { motion } from "framer-motion";
 import { Link, useSearchParams } from "react-router-dom";
@@ -2642,6 +2644,17 @@ function clientsReasonSentence(reason: HiveBoardReason | null, c: Copy): string 
 // than being handed 569 cards they did not ask for.
 const CARD_PAGE = 30;
 
+// HOW MANY CHIPS A CARD DRAWS (trinity#1588). The chips are one line under the
+// title: two of them on a card as wide as a phone's, the rest counted as +N
+// with their words on hover, and the drawer has all of them. A card narrower
+// than 12rem inside (every column beside the Queen's panel) draws only the
+// first, by a container query in Queen.css: two chips in 97px are two slivers.
+// One line is what keeps every card shorter than the smallest column box the
+// viewport contract measures, whatever the board sends: the contract draws the
+// kanban from a fixture whose first card in every column is the worst the data
+// can be (qa/queen-viewport-contract.mjs, FIXTURE_ROWS).
+const CARD_CHIPS_SHOWN = 2;
+
 /**
  * A card on the tasks lane: the task the feed sent, in the shape the board
  * always drew (`column` is the task's state), plus what a task has that a board
@@ -3237,10 +3250,84 @@ function KanbanView({
                 const issue = card.kind === "issue" && card.number > 0;
                 const lane = lanes ? lanes.label(card) : null;
                 const laneHead = lane !== null && (index === 0 || lanes?.label(drawn[index - 1]) !== lane);
+                // EVERY CHIP ON A CARD IS IN THIS LIST, AND THE LIST IS ONE LINE
+                // (trinity#1588). The kind, the state, the repository and the
+                // signal sat in the topline and wrapped it onto a second and a
+                // third line; the bee, the criteria and the needs each took a
+                // line of their own. So a card was as tall as the data made it,
+                // and on live data that was taller than a column box: 174px in
+                // a 156px box at 1280x600, 109px in 101px at 390x560. Now the
+                // chips are one line under the title, the first
+                // CARD_CHIPS_SHOWN of them drawn and the rest counted as +N
+                // with their words on hover, so a card has a height the data
+                // cannot change. A chip added to cards later goes into this
+                // list, never back into the topline.
+                const chips: { key: string; text: string; node: ReactNode }[] = [];
+                if (card.state === "failed") {
+                  chips.push({ key: "failed", text: c.tasksStateFailed, node: <span className="queen27-card-kind" data-state="failed">{c.tasksStateFailed}</span> });
+                }
+                if (card.bee) {
+                  // Before the signal: on a running card the bee says more than
+                  // "executing now", and a narrow card draws one chip.
+                  // The bee on this task, as the route states it: its lane,
+                  // whether it is working or has gone quiet, how long it has
+                  // been on it and when it was last heard. Words, not only a
+                  // colour; a quiet bee is not drawn as busy.
+                  const badge = beeBadge(card.bee, feedNow, lang === "ru" ? "ru" : "en");
+                  chips.push({
+                    key: "bee",
+                    text: badge,
+                    node: (
+                      <span className="queen27-card-bee" data-bee-state={card.bee.state} title={c.tasksBeeTitle}>
+                        <i aria-hidden="true" />
+                        {badge}
+                      </span>
+                    ),
+                  });
+                }
+                if (column.key === "running" || column.key === "review") {
+                  const signal = column.key === "running" ? c.executing : reviewSignalLabel(reviewStateOf(card), c);
+                  chips.push({ key: "signal", text: signal, node: <span className="queen27-card-signal"><i />{signal}</span> });
+                }
+                if (card.kind !== "issue") {
+                  const kind = card.kind === "review" ? c.tasksKindReviewOne : c.tasksKindJobOne;
+                  chips.push({ key: "kind", text: kind, node: <span className="queen27-card-kind">{kind}</span> });
+                }
+                if (repo !== null && card.repo.toLowerCase() !== repo.toLowerCase()) {
+                  const name = card.repo.split("/")[1] ?? card.repo;
+                  chips.push({ key: "repo", text: name, node: <span className="queen27-card-kind">{name}</span> });
+                }
+                if (typeof card.criteria === "number") {
+                  const criteria = `${card.criteria} ${c.criteria}`;
+                  chips.push({ key: "criteria", text: criteria, node: <span className="queen27-card-fact">{criteria}</span> });
+                }
+                if (card.needs && card.needs.length > 0) {
+                  // Cut to its share of the line; the whole list is here.
+                  const needs = `${c.missing}: ${card.needs.join(", ")}`;
+                  chips.push({ key: "needs", text: needs, node: <span className="queen27-card-fact" title={needs}>{needs}</span> });
+                }
+                const hiddenChips = chips.slice(CARD_CHIPS_SHOWN);
                 return (
-                <div className="queen27-card-slot" key={card.key}>
+                // The slot is what moves. It was the card inside it, and a card
+                // sliding to its new place, or growing from its old size, was
+                // drawn outside a slot that had already arrived: 162x200 in
+                // 162x124 at 1920x1080 (trinity#1588). The slot is the grid
+                // item, so the move happens inside the card box, which is the
+                // scroller declared for it; and only the position animates, so
+                // a card is never drawn at a size it does not have.
+                <motion.div
+                  className="queen27-card-slot"
+                  key={card.key}
+                  layout="position"
+                  layoutId={`queen-card-${card.key}`}
+                  transition={{
+                    type: "spring",
+                    stiffness: 320,
+                    damping: 30,
+                  }}
+                >
                 {laneHead && <small className="queen27-swimlane">{lane}</small>}
-                <motion.a
+                <a
                   className="queen27-card"
                   data-kind={card.kind}
                   // The colour rides on an attribute and a custom property, and
@@ -3267,19 +3354,11 @@ function KanbanView({
                   // still one hover away, and the link behind it was always the
                   // full answer.
                   title={publicIssueTitle(card.title, card.number, lang)}
-                  layout
-                  layoutId={`queen-card-${card.key}`}
-                  transition={{
-                    type: "spring",
-                    stiffness: 320,
-                    damping: 30,
-                  }}
                 >
+                  {/* The number and the direction, and nothing else: two
+                      items, so at most two lines in the narrowest column. */}
                   <div className="queen27-card-topline">
                     <b>{card.number > 0 ? `#${card.number}` : "—"}</b>
-                    {card.kind !== "issue" && <span className="queen27-card-kind">{card.kind === "review" ? c.tasksKindReviewOne : c.tasksKindJobOne}</span>}
-                    {card.state === "failed" && <span className="queen27-card-kind" data-state="failed">{c.tasksStateFailed}</span>}
-                    {repo !== null && card.repo.toLowerCase() !== repo.toLowerCase() && <span className="queen27-card-kind">{card.repo.split("/")[1]}</span>}
                     {/* The name in words, next to the dot, on every card. A
                         reader who cannot tell this orange from this red loses
                         nothing: the colour is a shortcut for people who have
@@ -3288,43 +3367,29 @@ function KanbanView({
                       <i aria-hidden="true" />
                       {directionLabel(direction, lang)}
                     </span>
-                    {(column.key === "running" ||
-                      column.key === "review") && (
-                      <span className="queen27-card-signal">
-                        <i />
-                        {column.key === "running"
-                          ? c.executing
-                          : reviewSignalLabel(reviewStateOf(card), c)}
-                      </span>
-                    )}
                   </div>
                   <strong>{publicIssueTitle(card.title, card.number, lang)}</strong>
-                  {card.bee && (
-                    // The bee on this task, as the route states it: its lane,
-                    // whether it is working or has gone quiet, how long it has
-                    // been on it and when it was last heard. Words, not only a
-                    // colour; a quiet bee is not drawn as busy.
-                    <span
-                      className="queen27-card-bee"
-                      data-bee-state={card.bee.state}
-                      title={c.tasksBeeTitle}
-                    >
-                      <i aria-hidden="true" />
-                      {beeBadge(card.bee, feedNow, lang === "ru" ? "ru" : "en")}
+                  {chips.length > 0 && (
+                    // Two counts, one drawn: a card too narrow for two chips
+                    // (the 126px column) shows the first and counts the rest
+                    // from the second, by the container query in Queen.css.
+                    <span className="queen27-card-foot">
+                      {chips.slice(0, CARD_CHIPS_SHOWN).map((chip) => (
+                        <Fragment key={chip.key}>{chip.node}</Fragment>
+                      ))}
+                      {hiddenChips.length > 0 && (
+                        <span className="queen27-card-kind queen27-card-more" data-more="wide" title={hiddenChips.map((chip) => chip.text).join(" · ")}>
+                          +{hiddenChips.length}
+                        </span>
+                      )}
+                      {chips.length > 1 && (
+                        <span className="queen27-card-kind queen27-card-more" data-more="narrow" title={chips.slice(1).map((chip) => chip.text).join(" · ")}>
+                          +{chips.length - 1}
+                        </span>
+                      )}
                     </span>
                   )}
-                  {typeof card.criteria === "number" && (
-                    <span>
-                      {card.criteria} {c.criteria}
-                    </span>
-                  )}
-                  {card.needs && card.needs.length > 0 && (
-                    // Cut to one line by the shell; the whole list is here.
-                    <span title={`${c.missing}: ${card.needs.join(", ")}`}>
-                      {c.missing}: {card.needs.join(", ")}
-                    </span>
-                  )}
-                </motion.a>
+                </a>
                 {/* The task opened in the drawer: a sibling of the card's link,
                     never inside it, so the card's own click still opens the
                     issue or its conversation. A review has no drawer. */}
@@ -3333,7 +3398,7 @@ function KanbanView({
                     ⋯
                   </button>
                 )}
-                </div>
+                </motion.div>
                 );
               })}
               {rest > 0 && (
