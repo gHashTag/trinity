@@ -1,7 +1,7 @@
 {
  "repo": "gHashTag/t27",
- "generated_at": "2026-10-09T21:16:34.760Z",
- "watermark": "2026-10-09T21:16:17Z",
+ "generated_at": "2026-10-10T02:19:24.236Z",
+ "watermark": "2026-10-10T02:02:39Z",
  "issues": {
   "2279": [
    {
@@ -21,6 +21,14 @@
    {
     "pr": 3562,
     "sha": "28652b31d165017c7720db0c607895cd19753a4d",
+    "touched": [
+     "specs/memory/tmem/bridge.t27",
+     "specs/memory/tmem/conformance.t27",
+     "specs/memory/tmem/edge_demo.t27",
+     "specs/memory/tmem/stream_compute.t27",
+     "specs/memory/tmem/tensorpack.t27",
+     "specs/memory/tmem/types.t27"
+    ],
     "specs": [
      {
       "path": "specs/memory/tmem/bridge.t27",
@@ -53,6 +61,60 @@
    {
     "pr": 3577,
     "sha": "de032752a8ffddb4bf1ab42008e9656a50797815",
+    "touched": [
+     "specs/catalog/discovery.t27",
+     "specs/trinity/capabilities/abi.c-api.t27",
+     "specs/trinity/capabilities/agent.daemons.t27",
+     "specs/trinity/capabilities/agent.phi-loop.t27",
+     "specs/trinity/capabilities/agent.tri-api.t27",
+     "specs/trinity/capabilities/api.http-server.t27",
+     "specs/trinity/capabilities/archive.legacy.t27",
+     "specs/trinity/capabilities/bench.suite.t27",
+     "specs/trinity/capabilities/bot.tri-bot.t27",
+     "specs/trinity/capabilities/catalog.spec-mirror.t27",
+     "specs/trinity/capabilities/catalog.world-scan.t27",
+     "specs/trinity/capabilities/cli.tri.t27",
+     "specs/trinity/capabilities/convert.b2t.t27",
+     "specs/trinity/capabilities/examples.zig.t27",
+     "specs/trinity/capabilities/ext.vscode-swe.t27",
+     "specs/trinity/capabilities/fpga.in-repo.t27",
+     "specs/trinity/capabilities/lib.trinity.t27",
+     "specs/trinity/capabilities/llm.firebird.t27",
+     "specs/trinity/capabilities/llm.igla-chat.t27",
+     "specs/trinity/capabilities/mcp.needle-mcp.t27",
+     "specs/trinity/capabilities/mcp.trinity-mcp.t27",
+     "specs/trinity/capabilities/native.canvas.t27",
+     "specs/trinity/capabilities/native.node-gui.t27",
+     "specs/trinity/capabilities/native.queen-app.t27",
+     "specs/trinity/capabilities/node.trinity-node.t27",
+     "specs/trinity/capabilities/numeric.golden-float.t27",
+     "specs/trinity/capabilities/ops.deploy-infra.t27",
+     "specs/trinity/capabilities/ops.railway-cli.t27",
+     "specs/trinity/capabilities/pkg.vendored-cache.t27",
+     "specs/trinity/capabilities/queen.lib.t27",
+     "specs/trinity/capabilities/registry.commands.t27",
+     "specs/trinity/capabilities/release.packaging.t27",
+     "specs/trinity/capabilities/research.nexus-docs.t27",
+     "specs/trinity/capabilities/research.programs.t27",
+     "specs/trinity/capabilities/research.unreferenced-sources.t27",
+     "specs/trinity/capabilities/search.vsa-index.t27",
+     "specs/trinity/capabilities/specs.t27-vendored-compiler.t27",
+     "specs/trinity/capabilities/specs.tri-corpus.t27",
+     "specs/trinity/capabilities/specs.vibee-corpus.t27",
+     "specs/trinity/capabilities/state.trinity-dir.t27",
+     "specs/trinity/capabilities/test.graph.t27",
+     "specs/trinity/capabilities/tools.scripts.t27",
+     "specs/trinity/capabilities/train.hslm.t27",
+     "specs/trinity/capabilities/training.targets.t27",
+     "specs/trinity/capabilities/tri27.programs.t27",
+     "specs/trinity/capabilities/tri27.toolchain.t27",
+     "specs/trinity/capabilities/vibee.compiler.t27",
+     "specs/trinity/capabilities/vsa.zig-hdc.t27",
+     "specs/trinity/capabilities/web.docsite.t27",
+     "specs/trinity/capabilities/web.queen-web.t27",
+     "specs/trinity/capabilities/web.site.t27",
+     "specs/trinity/project.t27"
+    ],
     "specs": [
      {
       "path": "specs/catalog/discovery.t27",
@@ -269,6 +331,79 @@
    {
     "pr": 3578,
     "sha": "de032752a8ffddb4bf1ab42008e9656a50797815",
+    "touched": [
+     "bootstrap/tests/fixtures/trinity_matrix/adapters_declared.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/arrays.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/clocked_state.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/control_flow.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/enums.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/errors.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/functions.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/imports.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/invariants.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/module_state.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/neg_bodyless_fn.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/neg_dropped_module.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/neg_false_assert.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/neg_invalid_annotation.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/neg_unresolved_import.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/scalars.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/strings.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/structs.t27",
+     "specs/catalog/discovery.t27",
+     "specs/trinity/capabilities/abi.c-api.t27",
+     "specs/trinity/capabilities/agent.daemons.t27",
+     "specs/trinity/capabilities/agent.phi-loop.t27",
+     "specs/trinity/capabilities/agent.tri-api.t27",
+     "specs/trinity/capabilities/api.http-server.t27",
+     "specs/trinity/capabilities/archive.legacy.t27",
+     "specs/trinity/capabilities/bench.suite.t27",
+     "specs/trinity/capabilities/bot.tri-bot.t27",
+     "specs/trinity/capabilities/catalog.spec-mirror.t27",
+     "specs/trinity/capabilities/catalog.world-scan.t27",
+     "specs/trinity/capabilities/cli.tri.t27",
+     "specs/trinity/capabilities/convert.b2t.t27",
+     "specs/trinity/capabilities/examples.zig.t27",
+     "specs/trinity/capabilities/ext.vscode-swe.t27",
+     "specs/trinity/capabilities/fpga.in-repo.t27",
+     "specs/trinity/capabilities/lib.trinity.t27",
+     "specs/trinity/capabilities/llm.firebird.t27",
+     "specs/trinity/capabilities/llm.igla-chat.t27",
+     "specs/trinity/capabilities/mcp.needle-mcp.t27",
+     "specs/trinity/capabilities/mcp.trinity-mcp.t27",
+     "specs/trinity/capabilities/native.canvas.t27",
+     "specs/trinity/capabilities/native.node-gui.t27",
+     "specs/trinity/capabilities/native.queen-app.t27",
+     "specs/trinity/capabilities/node.trinity-node.t27",
+     "specs/trinity/capabilities/numeric.golden-float.t27",
+     "specs/trinity/capabilities/ops.deploy-infra.t27",
+     "specs/trinity/capabilities/ops.railway-cli.t27",
+     "specs/trinity/capabilities/pkg.vendored-cache.t27",
+     "specs/trinity/capabilities/queen.lib.t27",
+     "specs/trinity/capabilities/registry.commands.t27",
+     "specs/trinity/capabilities/release.packaging.t27",
+     "specs/trinity/capabilities/research.nexus-docs.t27",
+     "specs/trinity/capabilities/research.programs.t27",
+     "specs/trinity/capabilities/research.unreferenced-sources.t27",
+     "specs/trinity/capabilities/search.vsa-index.t27",
+     "specs/trinity/capabilities/specs.t27-vendored-compiler.t27",
+     "specs/trinity/capabilities/specs.tri-corpus.t27",
+     "specs/trinity/capabilities/specs.vibee-corpus.t27",
+     "specs/trinity/capabilities/state.trinity-dir.t27",
+     "specs/trinity/capabilities/test.graph.t27",
+     "specs/trinity/capabilities/tools.scripts.t27",
+     "specs/trinity/capabilities/train.hslm.t27",
+     "specs/trinity/capabilities/training.targets.t27",
+     "specs/trinity/capabilities/tri27.programs.t27",
+     "specs/trinity/capabilities/tri27.toolchain.t27",
+     "specs/trinity/capabilities/vibee.compiler.t27",
+     "specs/trinity/capabilities/vsa.zig-hdc.t27",
+     "specs/trinity/capabilities/web.docsite.t27",
+     "specs/trinity/capabilities/web.queen-web.t27",
+     "specs/trinity/capabilities/web.site.t27",
+     "specs/trinity/compiler_matrix.t27",
+     "specs/trinity/project.t27"
+    ],
     "specs": []
    }
   ],
@@ -276,6 +411,80 @@
    {
     "pr": 3579,
     "sha": "42ca28e605bca4401eeff1958a87645e85a05bff",
+    "touched": [
+     "bootstrap/tests/fixtures/trinity_matrix/adapters_declared.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/arrays.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/clocked_state.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/control_flow.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/enums.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/errors.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/functions.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/imports.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/invariants.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/module_state.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/neg_bodyless_fn.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/neg_dropped_module.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/neg_false_assert.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/neg_invalid_annotation.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/neg_unresolved_import.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/scalars.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/strings.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/structs.t27",
+     "specs/catalog/discovery.t27",
+     "specs/trinity/build_graph.t27",
+     "specs/trinity/capabilities/abi.c-api.t27",
+     "specs/trinity/capabilities/agent.daemons.t27",
+     "specs/trinity/capabilities/agent.phi-loop.t27",
+     "specs/trinity/capabilities/agent.tri-api.t27",
+     "specs/trinity/capabilities/api.http-server.t27",
+     "specs/trinity/capabilities/archive.legacy.t27",
+     "specs/trinity/capabilities/bench.suite.t27",
+     "specs/trinity/capabilities/bot.tri-bot.t27",
+     "specs/trinity/capabilities/catalog.spec-mirror.t27",
+     "specs/trinity/capabilities/catalog.world-scan.t27",
+     "specs/trinity/capabilities/cli.tri.t27",
+     "specs/trinity/capabilities/convert.b2t.t27",
+     "specs/trinity/capabilities/examples.zig.t27",
+     "specs/trinity/capabilities/ext.vscode-swe.t27",
+     "specs/trinity/capabilities/fpga.in-repo.t27",
+     "specs/trinity/capabilities/lib.trinity.t27",
+     "specs/trinity/capabilities/llm.firebird.t27",
+     "specs/trinity/capabilities/llm.igla-chat.t27",
+     "specs/trinity/capabilities/mcp.needle-mcp.t27",
+     "specs/trinity/capabilities/mcp.trinity-mcp.t27",
+     "specs/trinity/capabilities/native.canvas.t27",
+     "specs/trinity/capabilities/native.node-gui.t27",
+     "specs/trinity/capabilities/native.queen-app.t27",
+     "specs/trinity/capabilities/node.trinity-node.t27",
+     "specs/trinity/capabilities/numeric.golden-float.t27",
+     "specs/trinity/capabilities/ops.deploy-infra.t27",
+     "specs/trinity/capabilities/ops.railway-cli.t27",
+     "specs/trinity/capabilities/pkg.vendored-cache.t27",
+     "specs/trinity/capabilities/queen.lib.t27",
+     "specs/trinity/capabilities/registry.commands.t27",
+     "specs/trinity/capabilities/release.packaging.t27",
+     "specs/trinity/capabilities/research.nexus-docs.t27",
+     "specs/trinity/capabilities/research.programs.t27",
+     "specs/trinity/capabilities/research.unreferenced-sources.t27",
+     "specs/trinity/capabilities/search.vsa-index.t27",
+     "specs/trinity/capabilities/specs.t27-vendored-compiler.t27",
+     "specs/trinity/capabilities/specs.tri-corpus.t27",
+     "specs/trinity/capabilities/specs.vibee-corpus.t27",
+     "specs/trinity/capabilities/state.trinity-dir.t27",
+     "specs/trinity/capabilities/test.graph.t27",
+     "specs/trinity/capabilities/tools.scripts.t27",
+     "specs/trinity/capabilities/train.hslm.t27",
+     "specs/trinity/capabilities/training.targets.t27",
+     "specs/trinity/capabilities/tri27.programs.t27",
+     "specs/trinity/capabilities/tri27.toolchain.t27",
+     "specs/trinity/capabilities/vibee.compiler.t27",
+     "specs/trinity/capabilities/vsa.zig-hdc.t27",
+     "specs/trinity/capabilities/web.docsite.t27",
+     "specs/trinity/capabilities/web.queen-web.t27",
+     "specs/trinity/capabilities/web.site.t27",
+     "specs/trinity/compiler_matrix.t27",
+     "specs/trinity/project.t27"
+    ],
     "specs": []
    }
   ],
@@ -283,6 +492,81 @@
    {
     "pr": 3580,
     "sha": "6bc47070538a4b968fe764431eb9231048f26716",
+    "touched": [
+     "bootstrap/tests/fixtures/trinity_matrix/adapters_declared.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/arrays.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/clocked_state.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/control_flow.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/enums.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/errors.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/functions.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/imports.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/invariants.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/module_state.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/neg_bodyless_fn.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/neg_dropped_module.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/neg_false_assert.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/neg_invalid_annotation.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/neg_unresolved_import.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/scalars.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/strings.t27",
+     "bootstrap/tests/fixtures/trinity_matrix/structs.t27",
+     "specs/catalog/discovery.t27",
+     "specs/trinity/build_graph.t27",
+     "specs/trinity/capabilities/abi.c-api.t27",
+     "specs/trinity/capabilities/agent.daemons.t27",
+     "specs/trinity/capabilities/agent.phi-loop.t27",
+     "specs/trinity/capabilities/agent.tri-api.t27",
+     "specs/trinity/capabilities/api.http-server.t27",
+     "specs/trinity/capabilities/archive.legacy.t27",
+     "specs/trinity/capabilities/bench.suite.t27",
+     "specs/trinity/capabilities/bot.tri-bot.t27",
+     "specs/trinity/capabilities/catalog.spec-mirror.t27",
+     "specs/trinity/capabilities/catalog.world-scan.t27",
+     "specs/trinity/capabilities/cli.tri.t27",
+     "specs/trinity/capabilities/convert.b2t.t27",
+     "specs/trinity/capabilities/examples.zig.t27",
+     "specs/trinity/capabilities/ext.vscode-swe.t27",
+     "specs/trinity/capabilities/fpga.in-repo.t27",
+     "specs/trinity/capabilities/lib.trinity.t27",
+     "specs/trinity/capabilities/llm.firebird.t27",
+     "specs/trinity/capabilities/llm.igla-chat.t27",
+     "specs/trinity/capabilities/mcp.needle-mcp.t27",
+     "specs/trinity/capabilities/mcp.trinity-mcp.t27",
+     "specs/trinity/capabilities/native.canvas.t27",
+     "specs/trinity/capabilities/native.node-gui.t27",
+     "specs/trinity/capabilities/native.queen-app.t27",
+     "specs/trinity/capabilities/node.trinity-node.t27",
+     "specs/trinity/capabilities/numeric.golden-float.t27",
+     "specs/trinity/capabilities/ops.deploy-infra.t27",
+     "specs/trinity/capabilities/ops.railway-cli.t27",
+     "specs/trinity/capabilities/pkg.vendored-cache.t27",
+     "specs/trinity/capabilities/queen.lib.t27",
+     "specs/trinity/capabilities/registry.commands.t27",
+     "specs/trinity/capabilities/release.packaging.t27",
+     "specs/trinity/capabilities/research.nexus-docs.t27",
+     "specs/trinity/capabilities/research.programs.t27",
+     "specs/trinity/capabilities/research.unreferenced-sources.t27",
+     "specs/trinity/capabilities/search.vsa-index.t27",
+     "specs/trinity/capabilities/specs.t27-vendored-compiler.t27",
+     "specs/trinity/capabilities/specs.tri-corpus.t27",
+     "specs/trinity/capabilities/specs.vibee-corpus.t27",
+     "specs/trinity/capabilities/state.trinity-dir.t27",
+     "specs/trinity/capabilities/test.graph.t27",
+     "specs/trinity/capabilities/tools.scripts.t27",
+     "specs/trinity/capabilities/train.hslm.t27",
+     "specs/trinity/capabilities/training.targets.t27",
+     "specs/trinity/capabilities/tri27.programs.t27",
+     "specs/trinity/capabilities/tri27.toolchain.t27",
+     "specs/trinity/capabilities/vibee.compiler.t27",
+     "specs/trinity/capabilities/vsa.zig-hdc.t27",
+     "specs/trinity/capabilities/web.docsite.t27",
+     "specs/trinity/capabilities/web.queen-web.t27",
+     "specs/trinity/capabilities/web.site.t27",
+     "specs/trinity/compiler_matrix.t27",
+     "specs/trinity/project.t27",
+     "specs/vsa/trinity_compat.t27"
+    ],
     "specs": []
    }
   ],
@@ -290,6 +574,16 @@
    {
     "pr": 3581,
     "sha": "e4b76329c2e72807a3a2573697db7f9d8af4437a",
+    "touched": [
+     "specs/api/c_abi.t27",
+     "specs/isa/ternary_encoding.t27",
+     "specs/isa/tri27_bytecode.t27",
+     "specs/isa/tri27_machine.t27",
+     "specs/trinity/capabilities/abi.c-api.t27",
+     "specs/trinity/capabilities/lib.trinity.t27",
+     "specs/trinity/capabilities/tri27.toolchain.t27",
+     "specs/vm/trinity_vm.t27"
+    ],
     "specs": [
      {
       "path": "specs/api/c_abi.t27",
@@ -330,6 +624,104 @@
    {
     "pr": 3592,
     "sha": "157711c3f5b78cd1612a3a9e1225c2ad374f07fb",
+    "touched": [
+     "specs/tools/catalog.t27",
+     "specs/tools/mcp/gitbutler.t27",
+     "specs/tools/mcp/needle.t27",
+     "specs/tools/mcp/neon.t27",
+     "specs/tools/mcp/notebooklm.t27",
+     "specs/tools/mcp/railway-mcp-server.t27",
+     "specs/tools/mcp/t27-traceability.t27",
+     "specs/tools/mcp/tri-mcp.t27",
+     "specs/tools/mcp/tri-ssot.t27",
+     "specs/tools/mcp/trinity.t27",
+     "specs/tools/mcp/zig-docs.t27",
+     "specs/tools/mcp_protocol.t27",
+     "specs/tools/tri/abandoned.t27",
+     "specs/tools/tri/cell.t27",
+     "specs/tools/tri/census.t27",
+     "specs/tools/tri/ci.t27",
+     "specs/tools/tri/competitors.t27",
+     "specs/tools/tri/discard.t27",
+     "specs/tools/tri/doctor.t27",
+     "specs/tools/tri/elab.t27",
+     "specs/tools/tri/emit.t27",
+     "specs/tools/tri/experience.t27",
+     "specs/tools/tri/fleet.t27",
+     "specs/tools/tri/fmt.t27",
+     "specs/tools/tri/fpga.t27",
+     "specs/tools/tri/gates.t27",
+     "specs/tools/tri/gen.t27",
+     "specs/tools/tri/harness.t27",
+     "specs/tools/tri/health.t27",
+     "specs/tools/tri/hooks.t27",
+     "specs/tools/tri/issues.t27",
+     "specs/tools/tri/jumps.t27",
+     "specs/tools/tri/kinds.t27",
+     "specs/tools/tri/lean.t27",
+     "specs/tools/tri/ledgers.t27",
+     "specs/tools/tri/loop.t27",
+     "specs/tools/tri/merging.t27",
+     "specs/tools/tri/misread.t27",
+     "specs/tools/tri/mods.t27",
+     "specs/tools/tri/mutate.t27",
+     "specs/tools/tri/now.t27",
+     "specs/tools/tri/one-away.t27",
+     "specs/tools/tri/orphaned.t27",
+     "specs/tools/tri/pr.t27",
+     "specs/tools/tri/prose.t27",
+     "specs/tools/tri/quantifiers.t27",
+     "specs/tools/tri/red.t27",
+     "specs/tools/tri/reseal.t27",
+     "specs/tools/tri/rtl.t27",
+     "specs/tools/tri/seals.t27",
+     "specs/tools/tri/serve.t27",
+     "specs/tools/tri/skill.t27",
+     "specs/tools/tri/status.t27",
+     "specs/tools/tri/sweep.t27",
+     "specs/tools/tri/synth.t27",
+     "specs/tools/tri/test.t27",
+     "specs/tools/tri/topic.t27",
+     "specs/tools/tri/types.t27",
+     "specs/tools/tri/unparsed.t27",
+     "specs/tools/tri/vectors.t27",
+     "specs/tools/tri/verdict.t27",
+     "specs/tools/tri/vsim.t27",
+     "specs/tools/tri/window.t27",
+     "specs/tools/tri/worktrees.t27",
+     "specs/tools/trinity/tri/bench.t27",
+     "specs/tools/trinity/tri/bio.t27",
+     "specs/tools/trinity/tri/blindspots.t27",
+     "specs/tools/trinity/tri/conscious.t27",
+     "specs/tools/trinity/tri/constants.t27",
+     "specs/tools/trinity/tri/cosmos.t27",
+     "specs/tools/trinity/tri/dashboard.t27",
+     "specs/tools/trinity/tri/fib.t27",
+     "specs/tools/trinity/tri/fpga.t27",
+     "specs/tools/trinity/tri/gematria.t27",
+     "specs/tools/trinity/tri/govern.t27",
+     "specs/tools/trinity/tri/hardware.t27",
+     "specs/tools/trinity/tri/identity.t27",
+     "specs/tools/trinity/tri/lucas.t27",
+     "specs/tools/trinity/tri/mesh.t27",
+     "specs/tools/trinity/tri/needle-check.t27",
+     "specs/tools/trinity/tri/needle-search.t27",
+     "specs/tools/trinity/tri/needle.t27",
+     "specs/tools/trinity/tri/omega.t27",
+     "specs/tools/trinity/tri/particles.t27",
+     "specs/tools/trinity/tri/phi.t27",
+     "specs/tools/trinity/tri/quantum.t27",
+     "specs/tools/trinity/tri/reputation.t27",
+     "specs/tools/trinity/tri/sacred-const.t27",
+     "specs/tools/trinity/tri/spiral.t27",
+     "specs/tools/trinity/tri/swarm.t27",
+     "specs/tools/trinity/tri/test.t27",
+     "specs/tools/trinity/tri/vsa.t27",
+     "specs/tools/trinity/tri/wallet.t27",
+     "specs/trinity/capabilities/cli.tri.t27",
+     "specs/trinity/capabilities/mcp.trinity-mcp.t27",
+     "specs/trinity/capabilities/registry.commands.t27"
+    ],
     "specs": []
    }
   ],
@@ -337,6 +729,12 @@
    {
     "pr": 5323,
     "sha": "235f6ab7173ebfa245911ed14d6632db1ef781c8",
+    "touched": [
+     "specs/api/tri_api_context.t27",
+     "specs/api/tri_api_loop.t27",
+     "specs/api/tri_api_permissions.t27",
+     "specs/trinity/capabilities/agent.tri-api.t27"
+    ],
     "specs": [
      {
       "path": "specs/api/tri_api_context.t27",
@@ -361,6 +759,70 @@
    {
     "pr": 4794,
     "sha": "8265ff01607c4b6f625f8a6c6619717dfece81fb",
+    "touched": [
+     "bootstrap/src/codegen_python.t27",
+     "compiler/cli/git.t27",
+     "compiler/cli/spec.t27",
+     "compiler/codegen/testgen.t27",
+     "compiler/codegen/verilog/fpga_emission.t27",
+     "compiler/parser/parser.t27",
+     "compiler/runtime/commands.t27",
+     "compiler/runtime/runtime.t27",
+     "compiler/runtime/validation.t27",
+     "compiler/skill/registry.t27",
+     "contrib/backend/zig/legacy/main_zig_handwritten.t27",
+     "specs/account/auth.t27",
+     "specs/account/schema.t27",
+     "specs/compiler/parser.t27",
+     "specs/config/load.t27",
+     "specs/config/migrate.t27",
+     "specs/depin/prove.t27",
+     "specs/enrichment/audio_overview.t27",
+     "specs/enrichment/youtube_transcript.t27",
+     "specs/file/operations.t27",
+     "specs/igla/coder/benchmark.t27",
+     "specs/interop/gf_cross_language.t27",
+     "specs/math/gf_competitive.t27",
+     "specs/ml/optimizer/adamw.t27",
+     "specs/neural/forward_pass.t27",
+     "specs/nn/phi_rope.t27",
+     "specs/nn/sacred_attention.t27",
+     "specs/numeric/formats.t27",
+     "specs/numeric/goldenfloat_family.t27",
+     "specs/physics/formula_discovery.t27",
+     "specs/physics/p2_brain_physics.t27",
+     "specs/pins/parser.t27",
+     "specs/port/tools/_prereq.t27",
+     "specs/port/tools/builtin_parity_table.t27",
+     "specs/port/tools/check_damage_negatives.t27",
+     "specs/port/tools/published_figures.t27",
+     "specs/port/tools/wp18_gate_selfconsistent_selftest.t27",
+     "specs/portable/relay_observer.t27",
+     "specs/provider/adapters.t27",
+     "specs/provider/schema.t27",
+     "specs/runtime/execute.t27",
+     "specs/sandbox/health.t27",
+     "specs/sandbox/https_enforce.t27",
+     "specs/sandbox/modules.t27",
+     "specs/sandbox/orphan_detection.t27",
+     "specs/sandbox/session_timeout.t27",
+     "specs/server/provider.t27",
+     "specs/server/router.t27",
+     "specs/server/vm.t27",
+     "specs/shell/process.t27",
+     "specs/shell/schema.t27",
+     "specs/sync/index.t27",
+     "specs/ternary/hybrid_arithmetic.t27",
+     "specs/ternary/hybrid_bigint.t27",
+     "specs/test_framework/core.t27",
+     "specs/test_framework/property_test_template.t27",
+     "specs/test_framework/runner.t27",
+     "specs/tools/registry.t27",
+     "specs/tools/schema.t27",
+     "specs/tri/collections/maybe.t27",
+     "specs/tri/graph/graph_bfs.t27",
+     "specs/tri/search/aho_corasick.t27"
+    ],
     "specs": [
      {
       "path": "bootstrap/src/codegen_python.t27",
@@ -617,6 +1079,11 @@
    {
     "pr": 5352,
     "sha": "c8afd3ab8ee4070eb0de0a2207063e20f5dacd59",
+    "touched": [
+     "specs/api/tri_api_session.t27",
+     "specs/memory/tmem/session.t27",
+     "specs/trinity/capabilities/state.trinity-dir.t27"
+    ],
     "specs": [
      {
       "path": "specs/api/tri_api_session.t27",
@@ -637,6 +1104,13 @@
    {
     "pr": 5360,
     "sha": "20fe650d44bdbad166b087e9a2f2e6de103f327e",
+    "touched": [
+     "specs/queen/dispatch.t27",
+     "specs/queen/lotus.t27",
+     "specs/queen/task_analysis.t27",
+     "specs/trinity/capabilities/agent.phi-loop.t27",
+     "specs/trinity/capabilities/queen.lib.t27"
+    ],
     "specs": [
      {
       "path": "specs/queen/dispatch.t27",
@@ -665,6 +1139,15 @@
    {
     "pr": 5361,
     "sha": "50bf0eeff50c8403aa41e37f38c223120cf325ae",
+    "touched": [
+     "specs/queen/views.t27",
+     "specs/trinity/capabilities/catalog.spec-mirror.t27",
+     "specs/trinity/capabilities/fpga.adapter.t27",
+     "specs/trinity/capabilities/native.queen-app.t27",
+     "specs/trinity/capabilities/web.site.t27",
+     "specs/trinity/project.t27",
+     "specs/ui/queen_evidence.t27"
+    ],
     "specs": [
      {
       "path": "specs/queen/views.t27",
@@ -704,13 +1187,21 @@
     "touched": [
      "specs/port/fpga/bscan_spi_qmtech/bscan_spi_qmtech.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/port/fpga/bscan_spi_qmtech/bscan_spi_qmtech.t27",
+      "seal": ".trinity/seals/bscan_spi_qmtech_bscan_spi_qmtech.json"
+     }
+    ]
    }
   ],
   "5217": [
    {
     "pr": 6277,
     "sha": "c96a596ccf12d9c8b3227119f43bf216732fd48d",
+    "touched": [
+     "specs/port/scripts/gen_w381.t27"
+    ],
     "specs": [
      {
       "path": "specs/port/scripts/gen_w381.t27",
@@ -723,6 +1214,9 @@
    {
     "pr": 6278,
     "sha": "e54337decd4b1b750f5a89f017da64a92039a152",
+    "touched": [
+     "specs/port/scripts/gen_w382.t27"
+    ],
     "specs": [
      {
       "path": "specs/port/scripts/gen_w382.t27",
@@ -735,6 +1229,9 @@
    {
     "pr": 6279,
     "sha": "f2033d3dd38a96ae44ae2350fe8af57c7296076d",
+    "touched": [
+     "specs/port/scripts/gen_w384.t27"
+    ],
     "specs": [
      {
       "path": "specs/port/scripts/gen_w384.t27",
@@ -747,6 +1244,9 @@
    {
     "pr": 6280,
     "sha": "c7e9dd00e0758ad471922d8b28e91225aa1159f9",
+    "touched": [
+     "specs/port/scripts/gen_w385.t27"
+    ],
     "specs": [
      {
       "path": "specs/port/scripts/gen_w385.t27",
@@ -759,6 +1259,9 @@
    {
     "pr": 6281,
     "sha": "9a6ab97dfa12138751aa1140817762417f61ad3c",
+    "touched": [
+     "specs/port/scripts/gen_w386.t27"
+    ],
     "specs": [
      {
       "path": "specs/port/scripts/gen_w386.t27",
@@ -771,6 +1274,9 @@
    {
     "pr": 6282,
     "sha": "4b431edca8fc653d270ef5d60ba4966151adb771",
+    "touched": [
+     "specs/port/scripts/gen_w387.t27"
+    ],
     "specs": [
      {
       "path": "specs/port/scripts/gen_w387.t27",
@@ -802,7 +1308,12 @@
     "touched": [
      "specs/port/trios/crates/trios-cli/src/cmd/gates.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/port/trios/crates/trios-cli/src/cmd/gates.t27",
+      "seal": ".trinity/seals/cmd_port::trios::cli::cmd::gates.json"
+     }
+    ]
    }
   ],
   "5549": [
@@ -898,6 +1409,9 @@
    {
     "pr": 6283,
     "sha": "9ab8c32af53e7d2542bd6f3a1862c6232c8127b1",
+    "touched": [
+     "specs/port/scripts/verify_precision.t27"
+    ],
     "specs": [
      {
       "path": "specs/port/scripts/verify_precision.t27",
@@ -910,6 +1424,10 @@
    {
     "pr": 5634,
     "sha": "f88f759faa12a83014745335b8c6177a0cb771fe",
+    "touched": [
+     "specs/automation/hive-contributor-keys.t27",
+     "specs/automation/queen-contributor-keys.t27"
+    ],
     "specs": [
      {
       "path": "specs/automation/hive-contributor-keys.t27",
@@ -926,12 +1444,25 @@
    {
     "pr": 6581,
     "sha": "6119bfa4394d453dc6b03a1fe9ccf100c10dee45",
+    "touched": [
+     "specs/port/scripts/generate_episodes.t27"
+    ],
     "specs": [
      {
       "path": "specs/port/scripts/generate_episodes.t27",
       "seal": ".trinity/seals/scripts_generate_episodes.json"
      }
     ]
+   }
+  ],
+  "5669": [
+   {
+    "pr": 7082,
+    "sha": "d9d1f1d3f98170190c71236bf558699ab849a8ff",
+    "touched": [
+     "specs/port/trinity/fpga/openxc7-synth/blink_r23.t27"
+    ],
+    "specs": []
    }
   ],
   "5674": [
@@ -945,6 +1476,12 @@
    {
     "pr": 5702,
     "sha": "146321ca69e00186a4d6b84da25a4a53f55a090c",
+    "touched": [
+     "specs/numeric/gf20.t27",
+     "specs/numeric/gf24.t27",
+     "specs/numeric/gf32.t27",
+     "specs/numeric/gf8.t27"
+    ],
     "specs": [
      {
       "path": "specs/numeric/gf20.t27",
@@ -981,6 +1518,9 @@
    {
     "pr": 5724,
     "sha": "9ba24bd93244b5a9e6800b0a23e7bb178180f7d9",
+    "touched": [
+     "specs/numeric/gf12.t27"
+    ],
     "specs": [
      {
       "path": "specs/numeric/gf12.t27",
@@ -993,6 +1533,9 @@
    {
     "pr": 5727,
     "sha": "d36d51752a2034da00c222a46ebcf6398707ad24",
+    "touched": [
+     "specs/math/sacred_physics.t27"
+    ],
     "specs": [
      {
       "path": "specs/math/sacred_physics.t27",
@@ -1005,6 +1548,12 @@
    {
     "pr": 5729,
     "sha": "19ba36f824f393a7b1fab7bb412cdd235aaa5ba1",
+    "touched": [
+     "specs/port/fpga/verilog/e8m0_jtag.t27",
+     "specs/port/fpga/verilog/link_node.t27",
+     "specs/port/fpga/verilog/ternary_mac_demo_top.t27",
+     "specs/port/fpga/vivado/uart_echo_top.t27"
+    ],
     "specs": [
      {
       "path": "specs/port/fpga/verilog/e8m0_jtag.t27",
@@ -1029,6 +1578,10 @@
    {
     "pr": 5731,
     "sha": "e7ed3790b7063e1fc4868da5e756e26125dce0a0",
+    "touched": [
+     "specs/fpga/power_analysis.t27",
+     "specs/fpga/vcd_conformance_compare.t27"
+    ],
     "specs": [
      {
       "path": "specs/fpga/power_analysis.t27",
@@ -1045,6 +1598,10 @@
    {
     "pr": 5734,
     "sha": "dfcfeae8c5b9c3bc790f97a018a0d42b1d9e6038",
+    "touched": [
+     "specs/demos/jones_topology_decision_gate.t27",
+     "specs/demos/jones_topology_filter.t27"
+    ],
     "specs": [
      {
       "path": "specs/demos/jones_topology_decision_gate.t27",
@@ -1061,6 +1618,11 @@
    {
     "pr": 5736,
     "sha": "1b12580ce699c1b5634b769247688bba622f046c",
+    "touched": [
+     "specs/port/tools/check_conflict_markers.t27",
+     "specs/port/tools/jtag/read_user1.t27",
+     "specs/port/tools/jtag/read_verdict.t27"
+    ],
     "specs": []
    }
   ],
@@ -1068,6 +1630,10 @@
    {
     "pr": 5739,
     "sha": "96b021605b2f3507cbc56bfe554d3fb8eba7e7b7",
+    "touched": [
+     "specs/vsa/packed_vsa.t27",
+     "specs/vsa/sdk.t27"
+    ],
     "specs": [
      {
       "path": "specs/vsa/packed_vsa.t27",
@@ -1084,6 +1650,9 @@
    {
     "pr": 5741,
     "sha": "2f5d03f32ee0f3d13675c8d849534ccb4e0ab22d",
+    "touched": [
+     "specs/ml/optimizer/race_config.t27"
+    ],
     "specs": [
      {
       "path": "specs/ml/optimizer/race_config.t27",
@@ -1096,6 +1665,9 @@
    {
     "pr": 5743,
     "sha": "971d7e908f68bf73670611dfd4290e4aa60463a9",
+    "touched": [
+     "specs/ternary/bigint.t27"
+    ],
     "specs": [
      {
       "path": "specs/ternary/bigint.t27",
@@ -1108,6 +1680,27 @@
    {
     "pr": 5745,
     "sha": "6f9976e3538a1a123ae451dc5c81c1c351a490e2",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "5764": [
+   {
+    "pr": 7080,
+    "sha": "b4caa7030745fb355820a0d8fbbbc22cee29035e",
+    "touched": [
+     "specs/port/trinity/fpga/openxc7-synth/d_multi_led.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "5803": [
+   {
+    "pr": 7064,
+    "sha": "39e34d7d1329f1192319f215396fde1984719f6f",
+    "touched": [
+     "specs/port/trinity/fpga/openxc7-synth/blink_fast.t27"
+    ],
     "specs": []
    }
   ],
@@ -1141,6 +1734,9 @@
    {
     "pr": 6578,
     "sha": "597216da47963c76347f08a218711e41bf91beae",
+    "touched": [
+     "specs/port/scripts/fpga-build.t27"
+    ],
     "specs": [
      {
       "path": "specs/port/scripts/fpga-build.t27",
@@ -1167,6 +1763,9 @@
    {
     "pr": 6582,
     "sha": "9c59c5124b4a5426c8bd7e680a77ac56bec9fa42",
+    "touched": [
+     "specs/port/scripts/aggregate-experience.t27"
+    ],
     "specs": [
      {
       "path": "specs/port/scripts/aggregate-experience.t27",
@@ -1199,6 +1798,9 @@
    {
     "pr": 6428,
     "sha": "03362c1da31527bdc47351943b8dfad3a6a066a3",
+    "touched": [
+     "specs/port/scripts/reseal-check.t27"
+    ],
     "specs": [
      {
       "path": "specs/port/scripts/reseal-check.t27",
@@ -1337,6 +1939,9 @@
    {
     "pr": 6072,
     "sha": "e0f894fdb16e3ab557938d06da33aca6d68113e7",
+    "touched": [
+     "specs/xilinx7/flow.t27"
+    ],
     "specs": [
      {
       "path": "specs/xilinx7/flow.t27",
@@ -1349,6 +1954,9 @@
    {
     "pr": 6646,
     "sha": "099ac2224267d28839ae880bda839e6d1dd5b0a4",
+    "touched": [
+     "specs/port/scripts/tri-sync.t27"
+    ],
     "specs": [
      {
       "path": "specs/port/scripts/tri-sync.t27",
@@ -1361,6 +1969,9 @@
    {
     "pr": 6251,
     "sha": "82d87952ceee6e5d5c933ea60c9baeaf83fb37a6",
+    "touched": [
+     "specs/port/scripts/gen_w388_lean.t27"
+    ],
     "specs": [
      {
       "path": "specs/port/scripts/gen_w388_lean.t27",
@@ -1373,6 +1984,9 @@
    {
     "pr": 6240,
     "sha": "8698ebcbf885b89b2886208b2a1315472ddf5fca",
+    "touched": [
+     "specs/port/trinity/src/cli/railway_null_startcmd.t27"
+    ],
     "specs": [
      {
       "path": "specs/port/trinity/src/cli/railway_null_startcmd.t27",
@@ -1385,6 +1999,9 @@
    {
     "pr": 6243,
     "sha": "77e5c44c5da601c57a694e2da62e2cbf35de1539",
+    "touched": [
+     "specs/port/trinity/fpga/openxc7-synth/multi_led_test.t27"
+    ],
     "specs": [
      {
       "path": "specs/port/trinity/fpga/openxc7-synth/multi_led_test.t27",
@@ -1397,6 +2014,9 @@
    {
     "pr": 6267,
     "sha": "56b9f24c5190d58d32e77cb4e1eb7630f3c217bb",
+    "touched": [
+     "specs/port/scripts/gen_w391_lean.t27"
+    ],
     "specs": [
      {
       "path": "specs/port/scripts/gen_w391_lean.t27",
@@ -1409,6 +2029,9 @@
    {
     "pr": 6304,
     "sha": "10bc08ff693e41c99685446ced34e97bb00dc60b",
+    "touched": [
+     "specs/port/scripts/gen_w631.t27"
+    ],
     "specs": [
      {
       "path": "specs/port/scripts/gen_w631.t27",
@@ -1421,6 +2044,15 @@
    {
     "pr": 7246,
     "sha": "6cc3497bc118e8864f4f537072bb11cfa81f7d7c",
+    "touched": [
+     "specs/isa/tri27_machine.t27",
+     "specs/port/scripts/gen_w381.t27",
+     "specs/port/scripts/gen_w382.t27",
+     "specs/port/scripts/gen_w384.t27",
+     "specs/port/scripts/gen_w385.t27",
+     "specs/port/scripts/gen_w386.t27",
+     "specs/port/scripts/gen_w387.t27"
+    ],
     "specs": [
      {
       "path": "specs/isa/tri27_machine.t27",
@@ -1457,6 +2089,9 @@
    {
     "pr": 6743,
     "sha": "5bad20521ebb22474b9ba6ed57784de23e16aba6",
+    "touched": [
+     "specs/port/scripts/reseal-apply.t27"
+    ],
     "specs": [
      {
       "path": "specs/port/scripts/reseal-apply.t27",
@@ -1469,6 +2104,9 @@
    {
     "pr": 7172,
     "sha": "f130f4074c78c651b56dfedcddf7e53e204b6e89",
+    "touched": [
+     "specs/port/scripts/gen_w632.t27"
+    ],
     "specs": [
      {
       "path": "specs/port/scripts/gen_w632.t27",
@@ -1481,6 +2119,9 @@
    {
     "pr": 6997,
     "sha": "f4608716136b70a836d9e1206770e07d1dea57ef",
+    "touched": [
+     "specs/port/scripts/gen_w633.t27"
+    ],
     "specs": [
      {
       "path": "specs/port/scripts/gen_w633.t27",
@@ -1493,6 +2134,9 @@
    {
     "pr": 7493,
     "sha": "bb24bf8382b51d3b9c62a50f2ba73b79ecebbbe3",
+    "touched": [
+     "specs/port/scripts/gen_w634.t27"
+    ],
     "specs": [
      {
       "path": "specs/port/scripts/gen_w634.t27",
@@ -1505,6 +2149,9 @@
    {
     "pr": 7574,
     "sha": "65b4b46a6659bbdfb063aaeeb201ac288eb636e4",
+    "touched": [
+     "specs/port/scripts/gen_w635.t27"
+    ],
     "specs": [
      {
       "path": "specs/port/scripts/gen_w635.t27",
@@ -1517,7 +2164,15 @@
    {
     "pr": 7630,
     "sha": "6fba037d17eb3c6f2dcd9eb09e5689486c33a8b8",
-    "specs": []
+    "touched": [
+     "specs/port/scripts/gen_w636.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/port/scripts/gen_w636.t27",
+      "seal": ".trinity/seals/scripts_gen_w636.json"
+     }
+    ]
    }
   ],
   "7133": [
@@ -1527,7 +2182,12 @@
     "touched": [
      "specs/port/scripts/gen_w637.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/port/scripts/gen_w637.t27",
+      "seal": ".trinity/seals/scripts_gen_w637.json"
+     }
+    ]
    }
   ],
   "7217": [
@@ -1557,13 +2217,27 @@
     "touched": [
      "specs/port/scripts/gen_w638.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/port/scripts/gen_w638.t27",
+      "seal": ".trinity/seals/scripts_gen_w638.json"
+     }
+    ]
    }
   ],
   "7225": [
    {
     "pr": 7246,
     "sha": "6cc3497bc118e8864f4f537072bb11cfa81f7d7c",
+    "touched": [
+     "specs/isa/tri27_machine.t27",
+     "specs/port/scripts/gen_w381.t27",
+     "specs/port/scripts/gen_w382.t27",
+     "specs/port/scripts/gen_w384.t27",
+     "specs/port/scripts/gen_w385.t27",
+     "specs/port/scripts/gen_w386.t27",
+     "specs/port/scripts/gen_w387.t27"
+    ],
     "specs": [
      {
       "path": "specs/isa/tri27_machine.t27",
@@ -1759,7 +2433,12 @@
     "touched": [
      "specs/tri/t27b/conformance/eval_branch_quota.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/tri/t27b/conformance/eval_branch_quota.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceEvalBranchQuota.json"
+     }
+    ]
    }
   ],
   "7413": [
@@ -1769,7 +2448,12 @@
     "touched": [
      "specs/port/trios/crates/trios-mesh/src/packet.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/port/trios/crates/trios-mesh/src/packet.t27",
+      "seal": ".trinity/seals/src_port::trios::mesh::src::packet.json"
+     }
+    ]
    }
   ],
   "7422": [
@@ -1780,7 +2464,16 @@
      "specs/tri/t27b/conformance/module_var_in_test.t27",
      "specs/tri/t27b/conformance/test_local_write.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/tri/t27b/conformance/module_var_in_test.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceModuleVarInTest.json"
+     },
+     {
+      "path": "specs/tri/t27b/conformance/test_local_write.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceTestLocalWrite.json"
+     }
+    ]
    }
   ],
   "7423": [
@@ -1859,7 +2552,16 @@
      "specs/tri/t27b/conformance/str_module_var.t27",
      "specs/tri/t27b/conformance/undefined_module_var.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/tri/t27b/conformance/str_module_var.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceStrModuleVar.json"
+     },
+     {
+      "path": "specs/tri/t27b/conformance/undefined_module_var.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceUndefinedModuleVar.json"
+     }
+    ]
    }
   ],
   "7471": [
@@ -1877,7 +2579,12 @@
     "touched": [
      "specs/tri/mutate/lab.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/tri/mutate/lab.t27",
+      "seal": ".trinity/seals/mutate_TriMutateLab.json"
+     }
+    ]
    }
   ],
   "7485": [
@@ -1891,7 +2598,28 @@
      "specs/port/bootstrap/src/compiler/HwType_hw_width.t27",
      "specs/port/bootstrap/src/compiler/LinkSection_text.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/port/bootstrap/src/compiler/AsmRelocEntry_new.t27",
+      "seal": ".trinity/seals/compiler_port::bootstrap::src::compiler::AsmRelocEntry_new.json"
+     },
+     {
+      "path": "specs/port/bootstrap/src/compiler/AssembledInstr_r_type.t27",
+      "seal": ".trinity/seals/compiler_port::bootstrap::src::compiler::AssembledInstr_r_type.json"
+     },
+     {
+      "path": "specs/port/bootstrap/src/compiler/HirIpCatalog_new.t27",
+      "seal": ".trinity/seals/compiler_HirIpCatalog_new.json"
+     },
+     {
+      "path": "specs/port/bootstrap/src/compiler/HwType_hw_width.t27",
+      "seal": ".trinity/seals/compiler_port::bootstrap::src::compiler::HwType_hw_width.json"
+     },
+     {
+      "path": "specs/port/bootstrap/src/compiler/LinkSection_text.t27",
+      "seal": ".trinity/seals/compiler_LinkSection_text.json"
+     }
+    ]
    }
   ],
   "7486": [
@@ -1910,7 +2638,48 @@
      "specs/port/trios/crates/trios-server/src/tools/git.t27",
      "specs/port/trios/crates/trios-trainer/src/train_loop.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/port/browseros/trios/agent-server/apps/server/src/lib/identity.t27",
+      "seal": ".trinity/seals/lib_port::browseros::trios::agent_server::apps::server::lib::identity.json"
+     },
+     {
+      "path": "specs/port/browseros/trios/agent-server/apps/server/src/tools/filesystem/ls.t27",
+      "seal": ".trinity/seals/filesystem_ls.json"
+     },
+     {
+      "path": "specs/port/browseros/trios/agent-server/apps/server/src/tools/tool-registry.t27",
+      "seal": ".trinity/seals/tools_port::browseros::trios::agent_server::apps::server::src::tools::tool_registry.json"
+     },
+     {
+      "path": "specs/port/trios/apps/trios-macos/rings/RUST-04/clade-improve/src/oversight.t27",
+      "seal": ".trinity/seals/src_port::trios::apps::trios-macos::rings::RUST-04::clade-improve::oversight.json"
+     },
+     {
+      "path": "specs/port/trios/crates/trios-cli/src/cmd/report.t27",
+      "seal": ".trinity/seals/cmd_port::report.json"
+     },
+     {
+      "path": "specs/port/trios/crates/trios-git/src/status.t27",
+      "seal": ".trinity/seals/src_port::trios::crates::trios_git::src::status.json"
+     },
+     {
+      "path": "specs/port/trios/crates/trios-igla-race/src/main.t27",
+      "seal": ".trinity/seals/src_port::trios::crates::trios_igla_race::src::main.json"
+     },
+     {
+      "path": "specs/port/trios/crates/trios-server/src/mcp_endpoints/tasks.t27",
+      "seal": ".trinity/seals/mcp_endpoints_port::tasks.json"
+     },
+     {
+      "path": "specs/port/trios/crates/trios-server/src/tools/git.t27",
+      "seal": ".trinity/seals/tools_port::git.json"
+     },
+     {
+      "path": "specs/port/trios/crates/trios-trainer/src/train_loop.t27",
+      "seal": ".trinity/seals/src_port::trios::crates::trios_trainer::src::train_loop.json"
+     }
+    ]
    }
   ],
   "7524": [
@@ -1920,7 +2689,12 @@
     "touched": [
      "specs/tri/t27b/lencall.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/tri/t27b/lencall.t27",
+      "seal": ".trinity/seals/t27b_T27bLenCall.json"
+     }
+    ]
    }
   ],
   "7550": [
@@ -1950,6 +2724,10 @@
    {
     "pr": 7583,
     "sha": "f751d7551252a72cc33030f925911523fb146f3d",
+    "touched": [
+     "specs/fpga/assembler.t27",
+     "specs/ternary/gft_mlp2.t27"
+    ],
     "specs": [
      {
       "path": "specs/fpga/assembler.t27",
@@ -2056,6 +2834,7 @@
    {
     "pr": 7629,
     "sha": "b1c7d2cbbd007e4937b6af7f05e2bd9cafc459c4",
+    "touched": [],
     "specs": []
    }
   ],
@@ -2081,7 +2860,12 @@
     "touched": [
      "specs/port/trios/crates/trios-chat/rings/CR-CHAT-02/src/epoch_rollover_wraparound_guard.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/port/trios/crates/trios-chat/rings/CR-CHAT-02/src/epoch_rollover_wraparound_guard.t27",
+      "seal": ".trinity/seals/src_port::epoch_rollover_wraparound_guard.json"
+     }
+    ]
    }
   ],
   "7658": [
@@ -2091,7 +2875,12 @@
     "touched": [
      "specs/port/trinity/src/tri/gen_canvas.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/port/trinity/src/tri/gen_canvas.t27",
+      "seal": ".trinity/seals/tri_tri::gen_canvas.json"
+     }
+    ]
    }
   ],
   "7666": [
@@ -2101,7 +2890,12 @@
     "touched": [
      "specs/port/trios/crates/trios-scarab-types/rings/SR-00/src/lib.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/port/trios/crates/trios-scarab-types/rings/SR-00/src/lib.t27",
+      "seal": ".trinity/seals/src_port::trios::crates::trios_scarab_types::rings::SR_00.json"
+     }
+    ]
    }
   ],
   "7668": [
@@ -2112,7 +2906,16 @@
      "specs/tri/t27b/conformance/module_var_in_test.t27",
      "specs/tri/t27b/conformance/shadow_module_var.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/tri/t27b/conformance/module_var_in_test.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceModuleVarInTest.json"
+     },
+     {
+      "path": "specs/tri/t27b/conformance/shadow_module_var.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceShadowModuleVar.json"
+     }
+    ]
    }
   ],
   "7672": [
@@ -2153,7 +2956,16 @@
      "specs/queen/control.t27",
      "specs/queen/domains.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/queen/control.t27",
+      "seal": ".trinity/seals/queen_QueenControl.json"
+     },
+     {
+      "path": "specs/queen/domains.t27",
+      "seal": ".trinity/seals/queen_QueenDomains.json"
+     }
+    ]
    }
   ],
   "7676": [
@@ -2164,7 +2976,16 @@
      "specs/jobs/release_t27c.t27",
      "specs/queen/jobs.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/jobs/release_t27c.t27",
+      "seal": ".trinity/seals/jobs_JobReleaseT27c.json"
+     },
+     {
+      "path": "specs/queen/jobs.t27",
+      "seal": ".trinity/seals/queen_QueenJobs.json"
+     }
+    ]
    }
   ],
   "7680": [
@@ -2392,7 +3213,12 @@
     "touched": [
      "specs/queen/shaping.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/queen/shaping.t27",
+      "seal": ".trinity/seals/queen_QueenShaping.json"
+     }
+    ]
    }
   ],
   "7716": [
@@ -2417,7 +3243,12 @@
     "touched": [
      "specs/queen/tasks.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/queen/tasks.t27",
+      "seal": ".trinity/seals/queen_QueenTasks.json"
+     }
+    ]
    }
   ],
   "7723": [
@@ -2466,7 +3297,16 @@
      "specs/port/browseros/trios/agent-server/apps/server/src/tools/tool-registry.t27",
      "specs/port/trinity/src/tri/gen_lockfree_stack.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/port/browseros/trios/agent-server/apps/server/src/tools/tool-registry.t27",
+      "seal": ".trinity/seals/tools_port::browseros::trios::agent_server::apps::server::src::tools::tool_registry.json"
+     },
+     {
+      "path": "specs/port/trinity/src/tri/gen_lockfree_stack.t27",
+      "seal": ".trinity/seals/tri_port::tri::gen_lockfree_stack.json"
+     }
+    ]
    }
   ],
   "7737": [
@@ -2566,7 +3406,12 @@
     "touched": [
      "specs/port/trios/crates/trinity_loss/src/lib.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/port/trios/crates/trinity_loss/src/lib.t27",
+      "seal": ".trinity/seals/src_port::trinity_loss.json"
+     }
+    ]
    }
   ],
   "7758": [
@@ -2624,7 +3469,12 @@
     "touched": [
      "specs/port/trinity/src/tri/gen_geo_hash2d.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/port/trinity/src/tri/gen_geo_hash2d.t27",
+      "seal": ".trinity/seals/tri_port::trinity::src::tri::gen_geo_hash2d.json"
+     }
+    ]
    }
   ],
   "7788": [
@@ -2654,7 +3504,12 @@
     "touched": [
      "specs/queen/events.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/queen/events.t27",
+      "seal": ".trinity/seals/queen_QueenEvents.json"
+     }
+    ]
    }
   ],
   "7790": [
@@ -2748,7 +3603,116 @@
      "specs/basics/26_a_small_program.t27",
      "specs/basics/27_where_next.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/basics/01_what_a_spec_is.t27",
+      "seal": ".trinity/seals/basics_basics_01_what_a_spec_is.json"
+     },
+     {
+      "path": "specs/basics/02_the_module_line.t27",
+      "seal": ".trinity/seals/basics_basics_02_the_module_line.json"
+     },
+     {
+      "path": "specs/basics/03_comments_and_prose.t27",
+      "seal": ".trinity/seals/basics_basics_03_comments_and_prose.json"
+     },
+     {
+      "path": "specs/basics/04_constants.t27",
+      "seal": ".trinity/seals/basics_basics_04_constants.json"
+     },
+     {
+      "path": "specs/basics/05_whole_numbers.t27",
+      "seal": ".trinity/seals/basics_basics_05_whole_numbers.json"
+     },
+     {
+      "path": "specs/basics/06_true_false_and_text.t27",
+      "seal": ".trinity/seals/basics_basics_06_true_false_and_text.json"
+     },
+     {
+      "path": "specs/basics/07_arrays.t27",
+      "seal": ".trinity/seals/basics_basics_07_arrays.json"
+     },
+     {
+      "path": "specs/basics/08_trits.t27",
+      "seal": ".trinity/seals/basics_basics_08_trits.json"
+     },
+     {
+      "path": "specs/basics/09_expressions.t27",
+      "seal": ".trinity/seals/basics_basics_09_expressions.json"
+     },
+     {
+      "path": "specs/basics/10_a_test_block.t27",
+      "seal": ".trinity/seals/basics_basics_10_a_test_block.json"
+     },
+     {
+      "path": "specs/basics/11_many_tests.t27",
+      "seal": ".trinity/seals/basics_basics_11_many_tests.json"
+     },
+     {
+      "path": "specs/basics/12_functions.t27",
+      "seal": ".trinity/seals/basics_basics_12_functions.json"
+     },
+     {
+      "path": "specs/basics/13_local_names.t27",
+      "seal": ".trinity/seals/basics_basics_13_local_names.json"
+     },
+     {
+      "path": "specs/basics/14_if_and_else.t27",
+      "seal": ".trinity/seals/basics_basics_14_if_and_else.json"
+     },
+     {
+      "path": "specs/basics/15_loops.t27",
+      "seal": ".trinity/seals/basics_basics_15_loops.json"
+     },
+     {
+      "path": "specs/basics/16_pub_or_private.t27",
+      "seal": ".trinity/seals/basics_basics_16_pub_or_private.json"
+     },
+     {
+      "path": "specs/basics/17_structs.t27",
+      "seal": ".trinity/seals/basics_basics_17_structs.json"
+     },
+     {
+      "path": "specs/basics/18_enums.t27",
+      "seal": ".trinity/seals/basics_basics_18_enums.json"
+     },
+     {
+      "path": "specs/basics/19_use_other_modules.t27",
+      "seal": ".trinity/seals/basics_basics_19_use_other_modules.json"
+     },
+     {
+      "path": "specs/basics/20_invariants.t27",
+      "seal": ".trinity/seals/basics_basics_20_invariants.json"
+     },
+     {
+      "path": "specs/basics/21_gen_ts.t27",
+      "seal": ".trinity/seals/basics_basics_21_gen_ts.json"
+     },
+     {
+      "path": "specs/basics/22_seven_backends.t27",
+      "seal": ".trinity/seals/basics_basics_22_seven_backends.json"
+     },
+     {
+      "path": "specs/basics/23_stages_of_t27c.t27",
+      "seal": ".trinity/seals/basics_basics_23_stages_of_t27c.json"
+     },
+     {
+      "path": "specs/basics/24_tri_commands.t27",
+      "seal": ".trinity/seals/basics_basics_24_tri_commands.json"
+     },
+     {
+      "path": "specs/basics/25_reading_errors.t27",
+      "seal": ".trinity/seals/basics_basics_25_reading_errors.json"
+     },
+     {
+      "path": "specs/basics/26_a_small_program.t27",
+      "seal": ".trinity/seals/basics_basics_26_a_small_program.json"
+     },
+     {
+      "path": "specs/basics/27_where_next.t27",
+      "seal": ".trinity/seals/basics_basics_27_where_next.json"
+     }
+    ]
    }
   ],
   "7796": [
@@ -2986,7 +3950,12 @@
     "touched": [
      "specs/queen/hive.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/queen/hive.t27",
+      "seal": ".trinity/seals/queen_QueenHive.json"
+     }
+    ]
    }
   ],
   "7822": [
@@ -3071,7 +4040,12 @@
     "touched": [
      "specs/queen/dashboard.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/queen/dashboard.t27",
+      "seal": ".trinity/seals/queen_QueenDashboard.json"
+     }
+    ]
    }
   ],
   "7829": [
@@ -3156,7 +4130,12 @@
     "touched": [
      "specs/queen/holds.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/queen/holds.t27",
+      "seal": ".trinity/seals/queen_QueenHolds.json"
+     }
+    ]
    }
   ],
   "7840": [
@@ -3166,7 +4145,12 @@
     "touched": [
      "specs/queen/reviewer.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/queen/reviewer.t27",
+      "seal": ".trinity/seals/queen_QueenReviewer.json"
+     }
+    ]
    }
   ],
   "7848": [
@@ -3176,7 +4160,12 @@
     "touched": [
      "specs/port/trinity/fpga/openxc7-synth/singularity_d6_top.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/port/trinity/fpga/openxc7-synth/singularity_d6_top.t27",
+      "seal": ".trinity/seals/openxc7-synth_singularity_d6_top.json"
+     }
+    ]
    }
   ],
   "7849": [
@@ -3269,7 +4258,12 @@
     "touched": [
      "specs/tri/t27b/steward.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/tri/t27b/steward.t27",
+      "seal": ".trinity/seals/t27b_T27bSteward.json"
+     }
+    ]
    }
   ],
   "7860": [
@@ -3294,7 +4288,12 @@
     "touched": [
      "specs/queen/actors.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/queen/actors.t27",
+      "seal": ".trinity/seals/queen_QueenActors.json"
+     }
+    ]
    }
   ],
   "7876": [
@@ -3409,7 +4408,12 @@
     "touched": [
      "specs/port/trinity/fpga/rtl/fpga_test_reporter.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/port/trinity/fpga/rtl/fpga_test_reporter.t27",
+      "seal": ".trinity/seals/rtl_fpga_test_reporter.json"
+     }
+    ]
    }
   ],
   "7898": [
@@ -3419,7 +4423,12 @@
     "touched": [
      "specs/queen/reviewer.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/queen/reviewer.t27",
+      "seal": ".trinity/seals/queen_QueenReviewer.json"
+     }
+    ]
    }
   ],
   "7900": [
@@ -3429,13 +4438,35 @@
     "touched": [
      "specs/queen/actors.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/queen/actors.t27",
+      "seal": ".trinity/seals/queen_QueenActors.json"
+     }
+    ]
    },
    {
     "pr": 7901,
     "sha": "47a00d1100b4f785354ee8c5a0844f88ecaa4a02",
     "touched": [
      "specs/queen/actors.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/queen/actors.t27",
+      "seal": ".trinity/seals/queen_QueenActors.json"
+     }
+    ]
+   }
+  ],
+  "7902": [
+   {
+    "pr": 7905,
+    "sha": "6a03402c52b9a3b1a019e68f929bc324790bf11a",
+    "touched": [
+     "cli/t27b/tests/int_cast_traps.t27",
+     "specs/tri/t27b/conformance/int_cast_index.t27",
+     "specs/tri/t27b/int_cast_plan.t27"
     ],
     "specs": []
    }
@@ -3501,6 +4532,21 @@
      {
       "path": "specs/tools/tri/merging.t27",
       "seal": ".trinity/seals/tri_tool_tri_merging.json"
+     }
+    ]
+   }
+  ],
+  "7909": [
+   {
+    "pr": 7912,
+    "sha": "dfcf30c4a773605dcf361f913a1bbf7b2143612d",
+    "touched": [
+     "specs/tri/t27b/conformance/repeat_local.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/conformance/repeat_local.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceRepeatLocal.json"
      }
     ]
    }
@@ -3641,7 +4687,12 @@
     "touched": [
      "specs/port/trinity/fpga/openxc7-synth/dsp_mul.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/port/trinity/fpga/openxc7-synth/dsp_mul.t27",
+      "seal": ".trinity/seals/openxc7-synth_dsp_mul.json"
+     }
+    ]
    }
   ],
   "7942": [
@@ -3651,7 +4702,12 @@
     "touched": [
      "specs/port/trinity/fpga/openxc7-synth/DSP48E1_mock.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/port/trinity/fpga/openxc7-synth/DSP48E1_mock.t27",
+      "seal": ".trinity/seals/openxc7-synth_DSP48E1.json"
+     }
+    ]
    }
   ],
   "7945": [
@@ -3661,7 +4717,12 @@
     "touched": [
      "specs/port/trios/crates/trios-chat/rings/CR-CHAT-07/src/cover_decoy_ratio_governor.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/port/trios/crates/trios-chat/rings/CR-CHAT-07/src/cover_decoy_ratio_governor.t27",
+      "seal": ".trinity/seals/src_port::cover_decoy_ratio_governor.json"
+     }
+    ]
    }
   ],
   "7948": [
@@ -3971,7 +5032,16 @@
      "specs/compiler/core/t27core.t27",
      "specs/compiler/core/t27core_ddc.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/compiler/core/t27core.t27",
+      "seal": ".trinity/seals/core_t27core.json"
+     },
+     {
+      "path": "specs/compiler/core/t27core_ddc.t27",
+      "seal": ".trinity/seals/core_t27core_ddc.json"
+     }
+    ]
    }
   ],
   "8022": [
@@ -4009,7 +5079,12 @@
     "touched": [
      "specs/port/tools/jtag/tdo_verdict.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/port/tools/jtag/tdo_verdict.t27",
+      "seal": ".trinity/seals/jtag_jtag_tdo_verdict.json"
+     }
+    ]
    }
   ],
   "8037": [
@@ -4019,7 +5094,12 @@
     "touched": [
      "specs/queen/actors.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/queen/actors.t27",
+      "seal": ".trinity/seals/queen_QueenActors.json"
+     }
+    ]
    }
   ],
   "8038": [
@@ -4387,7 +5467,16 @@
      "specs/compiler/core/t27core.t27",
      "specs/compiler/core/t27core_ddc.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/compiler/core/t27core.t27",
+      "seal": ".trinity/seals/core_t27core.json"
+     },
+     {
+      "path": "specs/compiler/core/t27core_ddc.t27",
+      "seal": ".trinity/seals/core_t27core_ddc.json"
+     }
+    ]
    }
   ],
   "8104": [
@@ -4689,7 +5778,12 @@
     "touched": [
      "specs/port/scripts/gen_w662.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/port/scripts/gen_w662.t27",
+      "seal": ".trinity/seals/scripts_gen_w662.json"
+     }
+    ]
    }
   ],
   "8163": [
@@ -4699,7 +5793,12 @@
     "touched": [
      "specs/port/trios/crates/trios-chat/rings/CR-CHAT-01/src/key_package_expiry_guard.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/port/trios/crates/trios-chat/rings/CR-CHAT-01/src/key_package_expiry_guard.t27",
+      "seal": ".trinity/seals/src_port::trios::crates::trios-chat::rings::CR-CHAT-01::src::key_package_expiry_guard.json"
+     }
+    ]
    }
   ],
   "8170": [
@@ -4763,7 +5862,12 @@
     "touched": [
      "specs/queen/reviewer.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/queen/reviewer.t27",
+      "seal": ".trinity/seals/queen_QueenReviewer.json"
+     }
+    ]
    }
   ],
   "8211": [
@@ -4773,7 +5877,12 @@
     "touched": [
      "specs/queen/control.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/queen/control.t27",
+      "seal": ".trinity/seals/queen_QueenControl.json"
+     }
+    ]
    }
   ],
   "8215": [
@@ -4882,7 +5991,12 @@
     "touched": [
      "specs/policy/own_language.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/policy/own_language.t27",
+      "seal": ".trinity/seals/policy_PolicyOwnLanguage.json"
+     }
+    ]
    }
   ],
   "8229": [
@@ -5427,6 +6541,31 @@
     "specs": []
    }
   ],
+  "8313": [
+   {
+    "pr": 8317,
+    "sha": "151075b8de6f7378718e054b47371a7c7aa14ed9",
+    "touched": [
+     "specs/queen/replay/actors_decisions.t27",
+     "specs/queen/replay/reviewer_decisions.t27",
+     "specs/queen/replay/telemetry_decisions.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/queen/replay/actors_decisions.t27",
+      "seal": ".trinity/seals/replay_QueenReplayActorsDecisions.json"
+     },
+     {
+      "path": "specs/queen/replay/reviewer_decisions.t27",
+      "seal": ".trinity/seals/replay_QueenReplayReviewerDecisions.json"
+     },
+     {
+      "path": "specs/queen/replay/telemetry_decisions.t27",
+      "seal": ".trinity/seals/replay_QueenReplayTelemetryDecisions.json"
+     }
+    ]
+   }
+  ],
   "8315": [
    {
     "pr": 8316,
@@ -5463,6 +6602,21 @@
     "sha": "65c41e857c9a428e9fb3ff1e95e7fbd6a9893b4d",
     "touched": [],
     "specs": []
+   }
+  ],
+  "8333": [
+   {
+    "pr": 8370,
+    "sha": "891a9087afcbc45ca68c87c07a2e4ff0ae5db00c",
+    "touched": [
+     "specs/fpga/eth_rx.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/fpga/eth_rx.t27",
+      "seal": ".trinity/seals/fpga_EthRx.json"
+     }
+    ]
    }
   ],
   "8336": [
@@ -5549,6 +6703,159 @@
      {
       "path": "specs/automation/tri-claim-batch.t27",
       "seal": ".trinity/seals/automation_automation::tri_claim_batch.json"
+     }
+    ]
+   }
+  ],
+  "8351": [
+   {
+    "pr": 8391,
+    "sha": "aca4bf7fa0a28cd7224aabe26200167c2043d539",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "8354": [
+   {
+    "pr": 8374,
+    "sha": "cf94e2ec434babc03dbd8dfcb69109b8a195cbaa",
+    "touched": [
+     "specs/verified/seal_identity.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/verified/seal_identity.t27",
+      "seal": ".trinity/seals/verified_VerifiedSealIdentity.json"
+     }
+    ]
+   }
+  ],
+  "8356": [
+   {
+    "pr": 8373,
+    "sha": "ae25f99cee9561305c2aee63bd282cb9d6b90858",
+    "touched": [
+     "specs/fpga/trinet_node.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/fpga/trinet_node.t27",
+      "seal": ".trinity/seals/fpga_TrinetNode.json"
+     }
+    ]
+   }
+  ],
+  "8357": [
+   {
+    "pr": 8358,
+    "sha": "e6a5b067667d044c9966fb574e82022dc1a6503d",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "8361": [
+   {
+    "pr": 8375,
+    "sha": "fca3f7673a984eae8b3d4e2ad3095b5ca65dc982",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "8371": [
+   {
+    "pr": 8372,
+    "sha": "19a2327fa6063df60a2cbb7b76d6cb7af198af0f",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "8384": [
+   {
+    "pr": 8385,
+    "sha": "c01ed2b7f3ed059bb45126752a0bfdf574ca80a0",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "8386": [
+   {
+    "pr": 8387,
+    "sha": "6b69c4a5255e8f0e8603297e1b6b06a8ffe1d6ae",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "8390": [
+   {
+    "pr": 8415,
+    "sha": "43b810a3fb6f179b101bafda110e101a2fd0131d",
+    "touched": [
+     "specs/compiler/zig_empty_typed_array.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/compiler/zig_empty_typed_array.t27",
+      "seal": ".trinity/seals/compiler_ZigEmptyTypedArray.json"
+     }
+    ]
+   }
+  ],
+  "8419": [
+   {
+    "pr": 8420,
+    "sha": "b0c63a215dd274d095abafcb3f49d41ea1ac1a0d",
+    "touched": [
+     "specs/automation/tri-wallet-chains.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/automation/tri-wallet-chains.t27",
+      "seal": ".trinity/seals/automation_automation::tri_wallet_chains.json"
+     }
+    ]
+   }
+  ],
+  "8421": [
+   {
+    "pr": 8422,
+    "sha": "1e4269585eed1216f348a9981cde300ba74c925e",
+    "touched": [
+     "specs/automation/tri-claim-batch.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/automation/tri-claim-batch.t27",
+      "seal": ".trinity/seals/automation_automation::tri_claim_batch.json"
+     }
+    ]
+   }
+  ],
+  "8423": [
+   {
+    "pr": 8424,
+    "sha": "5fc049a2c91aeacd45352e7256408df86665198d",
+    "touched": [
+     "specs/trinet/tri-bridge.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/trinet/tri-bridge.t27",
+      "seal": ".trinity/seals/trinet_trinet::tri_bridge.json"
+     }
+    ]
+   }
+  ],
+  "8426": [
+   {
+    "pr": 8427,
+    "sha": "606611ced01f3970553dced70e1a2547ab8fb383",
+    "touched": [
+     "specs/trinet/node-work-credit.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/trinet/node-work-credit.t27",
+      "seal": ".trinity/seals/trinet_trinet::node_work_credit.json"
      }
     ]
    }
