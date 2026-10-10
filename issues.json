@@ -1,7 +1,7 @@
 {
  "repo": "gHashTag/t27",
- "generated_at": "2026-10-10T20:42:40.794Z",
- "watermark": "2026-10-10T20:38:39Z",
+ "generated_at": "2026-10-10T23:57:16.367Z",
+ "watermark": "2026-10-10T23:42:15Z",
  "issues": {
   "2279": [
    {
@@ -9368,6 +9368,21 @@
     ]
    }
   ],
+  "8763": [
+   {
+    "pr": 8795,
+    "sha": "b7bdcc7717f4e67fdb5224bae34c2f9d45dc6b26",
+    "touched": [
+     "cli/t27b/tests/i128_traps.t27",
+     "specs/tri/t27b/cmp_op.t27",
+     "specs/tri/t27b/conformance/i128_arith.t27",
+     "specs/tri/t27b/eval_arith.t27",
+     "specs/tri/t27b/i128_plan.t27",
+     "specs/tri/t27b/wide_plan.t27"
+    ],
+    "specs": []
+   }
+  ],
   "8774": [
    {
     "pr": 8775,
@@ -9403,6 +9418,71 @@
     ]
    }
   ],
+  "8788": [
+   {
+    "pr": 8807,
+    "sha": "49461b70e0d5bc9f4d2c5cd5e245bf5442e457fe",
+    "touched": [
+     "specs/network/mvp_v3.t27",
+     "specs/network/mvp_v3_ed25519.t27",
+     "specs/network/pool.t27",
+     "specs/network/quorum.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/network/mvp_v3.t27",
+      "seal": ".trinity/seals/network_NetworkMvpV3.json"
+     },
+     {
+      "path": "specs/network/mvp_v3_ed25519.t27",
+      "seal": ".trinity/seals/network_NetworkMvpV3Ed25519.json"
+     },
+     {
+      "path": "specs/network/pool.t27",
+      "seal": ".trinity/seals/network_NetworkPool.json"
+     },
+     {
+      "path": "specs/network/quorum.t27",
+      "seal": ".trinity/seals/network_NetworkQuorum.json"
+     }
+    ]
+   }
+  ],
+  "8789": [
+   {
+    "pr": 8818,
+    "sha": "c1469d0433963b44bc0baf3a160b911e65f75979",
+    "touched": [
+     "specs/network/attribution.t27",
+     "specs/network/mvp_v3.t27",
+     "specs/network/mvp_v3_ed25519.t27",
+     "specs/network/usage.t27",
+     "specs/tri/network/payout.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/network/attribution.t27",
+      "seal": ".trinity/seals/network_NetworkAttribution.json"
+     },
+     {
+      "path": "specs/network/mvp_v3.t27",
+      "seal": ".trinity/seals/network_NetworkMvpV3.json"
+     },
+     {
+      "path": "specs/network/mvp_v3_ed25519.t27",
+      "seal": ".trinity/seals/network_NetworkMvpV3Ed25519.json"
+     },
+     {
+      "path": "specs/network/usage.t27",
+      "seal": ".trinity/seals/network_NetworkUsage.json"
+     },
+     {
+      "path": "specs/tri/network/payout.t27",
+      "seal": ".trinity/seals/network_TriNetworkPayout.json"
+     }
+    ]
+   }
+  ],
   "8790": [
    {
     "pr": 8793,
@@ -9419,6 +9499,284 @@
      {
       "path": "specs/network/job_rules.t27",
       "seal": ".trinity/seals/network_NetworkJobRules.json"
+     }
+    ]
+   }
+  ],
+  "8796": [
+   {
+    "pr": 8820,
+    "sha": "23c53dbe40a1c1d17b2b61f393f3c35e3a43da0b",
+    "touched": [
+     "specs/tri/t27b/ast_shape.t27",
+     "specs/tri/t27b/conformance/verilog_lib.t27",
+     "specs/tri/t27b/conformance/verilog_prim.t27",
+     "specs/tri/t27b/conformance/verilog_use.t27",
+     "specs/tri/t27b/conformance/verilog_widths.t27",
+     "specs/tri/t27b/lazy_sig_plan.t27",
+     "specs/tri/t27b/text_escape.t27",
+     "specs/tri/t27b/verilog_emit.t27",
+     "specs/tri/t27b/verilog_plan.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/ast_shape.t27",
+      "seal": ".trinity/seals/t27b_T27bAstShape.json"
+     },
+     {
+      "path": "specs/tri/t27b/conformance/verilog_lib.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceVerilogLib.json"
+     },
+     {
+      "path": "specs/tri/t27b/conformance/verilog_prim.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceVerilogPrim.json"
+     },
+     {
+      "path": "specs/tri/t27b/conformance/verilog_use.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceVerilogUse.json"
+     },
+     {
+      "path": "specs/tri/t27b/conformance/verilog_widths.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceVerilogWidths.json"
+     },
+     {
+      "path": "specs/tri/t27b/lazy_sig_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bLazySigPlan.json"
+     },
+     {
+      "path": "specs/tri/t27b/text_escape.t27",
+      "seal": ".trinity/seals/t27b_T27bTextEscape.json"
+     },
+     {
+      "path": "specs/tri/t27b/verilog_emit.t27",
+      "seal": ".trinity/seals/t27b_T27bVerilogEmit.json"
+     },
+     {
+      "path": "specs/tri/t27b/verilog_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bVerilogPlan.json"
+     }
+    ]
+   }
+  ],
+  "8809": [
+   {
+    "pr": 8810,
+    "sha": "f8a558ca537510d398d83b4e7508786b54912d4d",
+    "touched": [
+     "specs/verified/bench_boards.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/verified/bench_boards.t27",
+      "seal": ".trinity/seals/verified_VerifiedBenchBoards.json"
+     }
+    ]
+   }
+  ],
+  "8816": [
+   {
+    "pr": 8848,
+    "sha": "666183941df6a4dce8645d3aa7af43a17ce1553c",
+    "touched": [
+     "specs/tri/mutate/lab.t27",
+     "specs/tri/network/payout.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/mutate/lab.t27",
+      "seal": ".trinity/seals/mutate_TriMutateLab.json"
+     },
+     {
+      "path": "specs/tri/network/payout.t27",
+      "seal": ".trinity/seals/network_TriNetworkPayout.json"
+     }
+    ]
+   }
+  ],
+  "8817": [
+   {
+    "pr": 8855,
+    "sha": "102fe3b6dcc242660df9d8903d0de93f6bd58010",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "8826": [
+   {
+    "pr": 8830,
+    "sha": "d0cd16975921274ef80f91c5b147c064bc4aa09c",
+    "touched": [
+     "specs/queen/actors_hw_jtag.t27",
+     "specs/queen/actors_hw_top.t27",
+     "specs/tri/t27b/any_param_plan.t27",
+     "specs/tri/t27b/text_escape.t27",
+     "specs/tri/t27b/verilog_emit.t27",
+     "specs/tri/t27b/verilog_plan.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/queen/actors_hw_jtag.t27",
+      "seal": ".trinity/seals/queen_QueenActorsHwJtag.json"
+     },
+     {
+      "path": "specs/queen/actors_hw_top.t27",
+      "seal": ".trinity/seals/queen_QueenActorsHwTop.json"
+     },
+     {
+      "path": "specs/tri/t27b/any_param_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bAnyParamPlan.json"
+     },
+     {
+      "path": "specs/tri/t27b/text_escape.t27",
+      "seal": ".trinity/seals/t27b_T27bTextEscape.json"
+     },
+     {
+      "path": "specs/tri/t27b/verilog_emit.t27",
+      "seal": ".trinity/seals/t27b_T27bVerilogEmit.json"
+     },
+     {
+      "path": "specs/tri/t27b/verilog_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bVerilogPlan.json"
+     }
+    ]
+   }
+  ],
+  "8832": [
+   {
+    "pr": 8833,
+    "sha": "59e2c87c4bd74c1137f4071b5e63095a285ce5e4",
+    "touched": [
+     "specs/fpga/xc7_primitives.t27",
+     "specs/queen/actors_hw_top.t27",
+     "specs/tri/t27b/conformance/verilog_prim.t27",
+     "specs/tri/t27b/verilog_plan.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/fpga/xc7_primitives.t27",
+      "seal": ".trinity/seals/fpga_FpgaXc7Primitives.json"
+     },
+     {
+      "path": "specs/queen/actors_hw_top.t27",
+      "seal": ".trinity/seals/queen_QueenActorsHwTop.json"
+     },
+     {
+      "path": "specs/tri/t27b/conformance/verilog_prim.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceVerilogPrim.json"
+     },
+     {
+      "path": "specs/tri/t27b/verilog_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bVerilogPlan.json"
+     }
+    ]
+   }
+  ],
+  "8835": [
+   {
+    "pr": 8836,
+    "sha": "8690effcd9b723ad137ee888a3d8d587d39b783d",
+    "touched": [
+     "specs/queen/actors_hw_jtag.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/queen/actors_hw_jtag.t27",
+      "seal": ".trinity/seals/queen_QueenActorsHwJtag.json"
+     }
+    ]
+   }
+  ],
+  "8839": [
+   {
+    "pr": 8857,
+    "sha": "fef92ca29a0bd367f622101fed0b36ba023f5ba1",
+    "touched": [
+     "specs/fpga/xc7_primitives.t27",
+     "specs/queen/actors_hw_top.t27",
+     "specs/tri/t27b/verilog_emit.t27",
+     "specs/tri/t27b/verilog_plan.t27",
+     "specs/verified/clock_constraints.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/fpga/xc7_primitives.t27",
+      "seal": ".trinity/seals/fpga_FpgaXc7Primitives.json"
+     },
+     {
+      "path": "specs/queen/actors_hw_top.t27",
+      "seal": ".trinity/seals/queen_QueenActorsHwTop.json"
+     },
+     {
+      "path": "specs/tri/t27b/verilog_emit.t27",
+      "seal": ".trinity/seals/t27b_T27bVerilogEmit.json"
+     },
+     {
+      "path": "specs/tri/t27b/verilog_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bVerilogPlan.json"
+     },
+     {
+      "path": "specs/verified/clock_constraints.t27",
+      "seal": ".trinity/seals/verified_VerifiedClockConstraints.json"
+     }
+    ]
+   }
+  ],
+  "8849": [
+   {
+    "pr": 8851,
+    "sha": "d01d772c19c3a59b4770c0c4af9e8f88e9000512",
+    "touched": [
+     "specs/network/job_rules.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/network/job_rules.t27",
+      "seal": ".trinity/seals/network_NetworkJobRules.json"
+     }
+    ]
+   }
+  ],
+  "8853": [
+   {
+    "pr": 8854,
+    "sha": "be30c2f78361de5a8fd698851deaf7dc01b9cd38",
+    "touched": [
+     "specs/hosting/credit.t27",
+     "specs/hosting/proof.t27",
+     "specs/hosting/statement.t27",
+     "specs/hosting/sybil.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/hosting/credit.t27",
+      "seal": ".trinity/seals/hosting_HostingCredit.json"
+     },
+     {
+      "path": "specs/hosting/proof.t27",
+      "seal": ".trinity/seals/hosting_HostingProof.json"
+     },
+     {
+      "path": "specs/hosting/statement.t27",
+      "seal": ".trinity/seals/hosting_HostingStatement.json"
+     },
+     {
+      "path": "specs/hosting/sybil.t27",
+      "seal": ".trinity/seals/hosting_HostingSybil.json"
+     }
+    ]
+   }
+  ],
+  "8859": [
+   {
+    "pr": 8860,
+    "sha": "d2570f4a8a391151e4a8ee246217ff02bbe6e767",
+    "touched": [
+     "specs/verified/clock_constraints.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/verified/clock_constraints.t27",
+      "seal": ".trinity/seals/verified_VerifiedClockConstraints.json"
      }
     ]
    }
