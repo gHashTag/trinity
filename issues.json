@@ -1,7 +1,7 @@
 {
  "repo": "gHashTag/t27",
- "generated_at": "2026-10-10T17:41:26.319Z",
- "watermark": "2026-10-10T17:31:44Z",
+ "generated_at": "2026-10-10T20:42:40.794Z",
+ "watermark": "2026-10-10T20:38:39Z",
  "issues": {
   "2279": [
    {
@@ -8767,6 +8767,51 @@
     ]
    }
   ],
+  "8658": [
+   {
+    "pr": 8729,
+    "sha": "a72281956ba0cfd6a1e366a2ad1f751b8cce43e4",
+    "touched": [
+     "specs/network/mvp_v2.t27",
+     "specs/trinet/ledger.t27",
+     "specs/verified/payout.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/network/mvp_v2.t27",
+      "seal": ".trinity/seals/network_NetworkMvpV2.json"
+     },
+     {
+      "path": "specs/trinet/ledger.t27",
+      "seal": ".trinity/seals/trinet_TrinetLedger.json"
+     },
+     {
+      "path": "specs/verified/payout.t27",
+      "seal": ".trinity/seals/verified_VerifiedPayout.json"
+     }
+    ]
+   }
+  ],
+  "8662": [
+   {
+    "pr": 8776,
+    "sha": "738771f781b0a29cb821b4806808326dca842239",
+    "touched": [
+     "specs/verified/bench_boards.t27",
+     "specs/verified/die_binding.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/verified/bench_boards.t27",
+      "seal": ".trinity/seals/verified_VerifiedBenchBoards.json"
+     },
+     {
+      "path": "specs/verified/die_binding.t27",
+      "seal": ".trinity/seals/verified_VerifiedDieBinding.json"
+     }
+    ]
+   }
+  ],
   "8664": [
    {
     "pr": 8665,
@@ -8963,6 +9008,81 @@
     ]
    }
   ],
+  "8707": [
+   {
+    "pr": 8720,
+    "sha": "a377363e6507274389a0cd3a9f623243a7211848",
+    "touched": [
+     "specs/hosting/credit.t27",
+     "specs/hosting/host.t27",
+     "specs/hosting/placement.t27",
+     "specs/hosting/proof.t27",
+     "specs/hosting/toolchain.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/hosting/credit.t27",
+      "seal": ".trinity/seals/hosting_HostingCredit.json"
+     },
+     {
+      "path": "specs/hosting/host.t27",
+      "seal": ".trinity/seals/hosting_HostingHost.json"
+     },
+     {
+      "path": "specs/hosting/placement.t27",
+      "seal": ".trinity/seals/hosting_HostingPlacement.json"
+     },
+     {
+      "path": "specs/hosting/proof.t27",
+      "seal": ".trinity/seals/hosting_HostingProof.json"
+     },
+     {
+      "path": "specs/hosting/toolchain.t27",
+      "seal": ".trinity/seals/hosting_HostingToolchain.json"
+     }
+    ]
+   }
+  ],
+  "8710": [
+   {
+    "pr": 8719,
+    "sha": "bba8efb243705055c59db46c5ba4a40fb5236200",
+    "touched": [
+     "specs/verified/verdict_audit.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/verified/verdict_audit.t27",
+      "seal": ".trinity/seals/verified_VerifiedVerdictAudit.json"
+     }
+    ]
+   }
+  ],
+  "8713": [
+   {
+    "pr": 8738,
+    "sha": "f8cbedce24cf37b2570af9f234a00588aa6a954e",
+    "touched": [
+     "specs/tri/t27b/any_param_plan.t27",
+     "specs/tri/t27b/ast_scan.t27",
+     "specs/tri/t27b/conformance/anytype_typeof.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/any_param_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bAnyParamPlan.json"
+     },
+     {
+      "path": "specs/tri/t27b/ast_scan.t27",
+      "seal": ".trinity/seals/t27b_T27bAstScan.json"
+     },
+     {
+      "path": "specs/tri/t27b/conformance/anytype_typeof.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceAnytypeTypeof.json"
+     }
+    ]
+   }
+  ],
   "8714": [
    {
     "pr": 8715,
@@ -8974,6 +9094,331 @@
      {
       "path": "specs/verified/corpus_receipt.t27",
       "seal": ".trinity/seals/verified_VerifiedCorpusReceipt.json"
+     }
+    ]
+   }
+  ],
+  "8716": [
+   {
+    "pr": 8733,
+    "sha": "cf42584c9beaf48f9b615331c2837bfdaafb02a4",
+    "touched": [
+     "specs/tri/network/payout.t27",
+     "specs/tri/reseal/seal.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/network/payout.t27",
+      "seal": ".trinity/seals/network_TriNetworkPayout.json"
+     },
+     {
+      "path": "specs/tri/reseal/seal.t27",
+      "seal": ".trinity/seals/reseal_TriResealSeal.json"
+     }
+    ]
+   }
+  ],
+  "8717": [
+   {
+    "pr": 8730,
+    "sha": "9a0f4c394a1474bb75103f141cc0b405d9de51b9",
+    "touched": [
+     "specs/tri/t27b/conformance/unreached_stub.t27",
+     "specs/tri/t27b/scaffold_plan.t27",
+     "specs/tri/t27b/source_text.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/conformance/unreached_stub.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceUnreachedStub.json"
+     },
+     {
+      "path": "specs/tri/t27b/scaffold_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bScaffoldPlan.json"
+     },
+     {
+      "path": "specs/tri/t27b/source_text.t27",
+      "seal": ".trinity/seals/t27b_T27bSourceText.json"
+     }
+    ]
+   }
+  ],
+  "8731": [
+   {
+    "pr": 8732,
+    "sha": "1394551716db477bfc33d85ff6afa6bd4bf6435e",
+    "touched": [
+     "specs/hosting/proof.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/hosting/proof.t27",
+      "seal": ".trinity/seals/hosting_HostingProof.json"
+     }
+    ]
+   }
+  ],
+  "8736": [
+   {
+    "pr": 8750,
+    "sha": "501944e7de42acc3b56a0dda4556b7bbc5ade30b",
+    "touched": [
+     "specs/tri/t27b/a64.t27",
+     "specs/tri/t27b/conformance/i128_return.t27",
+     "specs/tri/t27b/eval_arith.t27",
+     "specs/tri/t27b/i128_plan.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/a64.t27",
+      "seal": ".trinity/seals/t27b_T27bA64.json"
+     },
+     {
+      "path": "specs/tri/t27b/conformance/i128_return.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceI128Return.json"
+     },
+     {
+      "path": "specs/tri/t27b/eval_arith.t27",
+      "seal": ".trinity/seals/t27b_T27bEvalArith.json"
+     },
+     {
+      "path": "specs/tri/t27b/i128_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bI128Plan.json"
+     }
+    ]
+   }
+  ],
+  "8739": [
+   {
+    "pr": 8741,
+    "sha": "1c72b2786208e6edfbd9f76ebfab6013c1595f9b",
+    "touched": [
+     "specs/verified/gen_hash_cache.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/verified/gen_hash_cache.t27",
+      "seal": ".trinity/seals/verified_VerifiedGenHashCache.json"
+     }
+    ]
+   }
+  ],
+  "8740": [
+   {
+    "pr": 8742,
+    "sha": "12c6d91403e58584a44d9bab39547a5b3d35b418",
+    "touched": [
+     "specs/tri/network/payout.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/network/payout.t27",
+      "seal": ".trinity/seals/network_TriNetworkPayout.json"
+     }
+    ]
+   }
+  ],
+  "8743": [
+   {
+    "pr": 8746,
+    "sha": "3415cf3ba5d108416b81c158ab74a3094fa3da9d",
+    "touched": [
+     "specs/hosting/sybil.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/hosting/sybil.t27",
+      "seal": ".trinity/seals/hosting_HostingSybil.json"
+     }
+    ]
+   }
+  ],
+  "8744": [
+   {
+    "pr": 8747,
+    "sha": "d434e769833a46bc2bc22b63c381d4abc8317e48",
+    "touched": [
+     "specs/hosting/credit.t27",
+     "specs/hosting/statement.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/hosting/credit.t27",
+      "seal": ".trinity/seals/hosting_HostingCredit.json"
+     },
+     {
+      "path": "specs/hosting/statement.t27",
+      "seal": ".trinity/seals/hosting_HostingStatement.json"
+     }
+    ]
+   }
+  ],
+  "8748": [
+   {
+    "pr": 8751,
+    "sha": "59819bc3e939d24b9b32b7726d7c433a442fef35",
+    "touched": [
+     "specs/verified/watch.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/verified/watch.t27",
+      "seal": ".trinity/seals/verified_VerifiedWatch.json"
+     }
+    ]
+   }
+  ],
+  "8753": [
+   {
+    "pr": 8757,
+    "sha": "ddb84c5f58994da8afe3d59185f3ef121ae7065f",
+    "touched": [
+     "specs/hosting/host.t27",
+     "specs/hosting/placement.t27",
+     "specs/hosting/proof.t27",
+     "specs/hosting/row.t27",
+     "specs/hosting/toolchain.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/hosting/host.t27",
+      "seal": ".trinity/seals/hosting_HostingHost.json"
+     },
+     {
+      "path": "specs/hosting/placement.t27",
+      "seal": ".trinity/seals/hosting_HostingPlacement.json"
+     },
+     {
+      "path": "specs/hosting/proof.t27",
+      "seal": ".trinity/seals/hosting_HostingProof.json"
+     },
+     {
+      "path": "specs/hosting/row.t27",
+      "seal": ".trinity/seals/hosting_HostingRow.json"
+     },
+     {
+      "path": "specs/hosting/toolchain.t27",
+      "seal": ".trinity/seals/hosting_HostingToolchain.json"
+     }
+    ]
+   }
+  ],
+  "8758": [
+   {
+    "pr": 8764,
+    "sha": "cd569e3e04f2e4d33ba18633796611226406104d",
+    "touched": [
+     "specs/tri/t27b/a64.t27",
+     "specs/tri/t27b/conformance/big_frame.t27",
+     "specs/tri/t27b/conformance/large_frame.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/a64.t27",
+      "seal": ".trinity/seals/t27b_T27bA64.json"
+     },
+     {
+      "path": "specs/tri/t27b/conformance/big_frame.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceBigFrame.json"
+     },
+     {
+      "path": "specs/tri/t27b/conformance/large_frame.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceLargeFrame.json"
+     }
+    ]
+   }
+  ],
+  "8759": [
+   {
+    "pr": 8760,
+    "sha": "c31c059ef48ebb83353eef8b78322a8b0f921123",
+    "touched": [
+     "specs/hosting/statement.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/hosting/statement.t27",
+      "seal": ".trinity/seals/hosting_HostingStatement.json"
+     }
+    ]
+   }
+  ],
+  "8761": [
+   {
+    "pr": 8777,
+    "sha": "ef169733874f0c288ddc256601cffaf4fb9c0709",
+    "touched": [
+     "specs/vault/audit.t27",
+     "specs/vault/merge.t27",
+     "specs/vault/policy.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/vault/audit.t27",
+      "seal": ".trinity/seals/vault_VaultAudit.json"
+     },
+     {
+      "path": "specs/vault/merge.t27",
+      "seal": ".trinity/seals/vault_VaultMerge.json"
+     },
+     {
+      "path": "specs/vault/policy.t27",
+      "seal": ".trinity/seals/vault_VaultPolicy.json"
+     }
+    ]
+   }
+  ],
+  "8774": [
+   {
+    "pr": 8775,
+    "sha": "eb88ff84a0b26d77fe8a9df216d2abe1af8a5f45",
+    "touched": [
+     "specs/hosting/statement.t27",
+     "specs/hosting/sybil.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/hosting/statement.t27",
+      "seal": ".trinity/seals/hosting_HostingStatement.json"
+     },
+     {
+      "path": "specs/hosting/sybil.t27",
+      "seal": ".trinity/seals/hosting_HostingSybil.json"
+     }
+    ]
+   }
+  ],
+  "8785": [
+   {
+    "pr": 8786,
+    "sha": "97d6772da27fff0e27fd99d2dc79c1219ebcb28c",
+    "touched": [
+     "specs/verified/corpus_receipt.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/verified/corpus_receipt.t27",
+      "seal": ".trinity/seals/verified_VerifiedCorpusReceipt.json"
+     }
+    ]
+   }
+  ],
+  "8790": [
+   {
+    "pr": 8793,
+    "sha": "9be6ba8153f253ad6710a121c65137444fd0f650",
+    "touched": [
+     "specs/jobs/network_job.t27",
+     "specs/network/job_rules.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/jobs/network_job.t27",
+      "seal": ".trinity/seals/jobs_JobNetworkJob.json"
+     },
+     {
+      "path": "specs/network/job_rules.t27",
+      "seal": ".trinity/seals/network_NetworkJobRules.json"
      }
     ]
    }
