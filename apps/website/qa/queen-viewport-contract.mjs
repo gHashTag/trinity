@@ -222,10 +222,31 @@ await call('Page.enable');
 // and every other endpoint stay live. The fixture's numbers are far above any
 // real issue so no live board card lends one of them a review state.
 // --dead-api is untouched: there the route must stay dead.
+//
+// THE WORST CARD FIRST (#1588). Shaped like the live tasks, the fixture only
+// proved that today's cards fit, and a card is as tall as its data lets it be.
+// So every column opens with the worst card the data can send: a 255-character
+// title (the longest of 500 live titles read on 2026-10-10 was 216) with a
+// 100-character path in it and HARDWARE, the widest direction word; a
+// repository that is not the board's; a kind that is not an issue; a bee, 27
+// criteria and all four needs; and in DROPPED, failed as well. Check 11 reads
+// the first card of each column, so a layout that lets any of these outgrow
+// the box is red at every size where it does. The backlog is also full: 33
+// cards, more than one page of a column (CARD_PAGE), so the box scrolls and
+// its foot is drawn. All seven directions are present, so the chip row above
+// the board is as full as the fixture can make it.
 const FIXTURE_REPO = 'gHashTag/t27';
 const FIXTURE_AT = '2026-10-09T00:00:00Z';
+const FIXTURE_LONGEST = 'Port gHashTag/trinity:fpga/openxc7-synth/quantum_bridge_simple_with_a_deliberately_long_module_name_27.v (Verilog, 1 module) to specs/port/trinity/fpga/openxc7-synth/quantum_bridge_simple_with_a_deliberately_long_module_name_27.t27, bit-exact on the bench';
+const FIXTURE_NEEDS = ['boundary', 'scenarios', 'requirements', 'success criteria'];
 const FIXTURE_ROWS = [
-  // [state, kind, title, criteria, needs, bee]
+  // [state, kind, title, criteria, needs, bee, repo (the board's when absent)]
+  ['backlog', 'job', FIXTURE_LONGEST, 27, FIXTURE_NEEDS, 'quiet', 'gHashTag/trinity'],
+  ['blocked', 'review', FIXTURE_LONGEST, 27, FIXTURE_NEEDS, 'quiet', 'gHashTag/BrowserOS'],
+  ['running', 'job', FIXTURE_LONGEST, 27, FIXTURE_NEEDS, 'working', 'gHashTag/trinity'],
+  ['review', 'review', FIXTURE_LONGEST, 27, FIXTURE_NEEDS, 'quiet', 'gHashTag/trios'],
+  ['done', 'job', FIXTURE_LONGEST, 27, FIXTURE_NEEDS, 'quiet', 'gHashTag/trinity'],
+  ['failed', 'job', FIXTURE_LONGEST, 27, FIXTURE_NEEDS, 'quiet', 'gHashTag/trinity'],
   ['backlog', 'issue', 'spec: the queen board reads its column order from the tasks card', 4, [], null],
   ['backlog', 'issue', 'docs: one page for the kanban filter, written from the address it rides in', 3, [], null],
   ['blocked', 'issue', 'fpga: carry the GoldenFloat adder through the open toolchain on the ax7203', 0, ['scenarios', 'requirements'], null],
@@ -239,15 +260,46 @@ const FIXTURE_ROWS = [
   ['done', 'job', 'job: reseal the specs touched by the last wave', null, [], null],
   ['dropped', 'issue', 'web: a seventh column for failed tasks', 2, [], null],
   ['failed', 'job', 'job: rebuild the explorer manifest', null, [], null],
+  // the rest of a full backlog, one title per direction in turn
+  ['backlog', 'issue', 'Client onboarding funnel: the invoice step drops a lead when the subscription renews on the same day', 2, ['boundary'], null],
+  ['backlog', 'issue', 'Blog article on the first morning of the scheduler, with the translation and the locale strings for the landing', 0, ['scenarios', 'requirements'], null],
+  ['backlog', 'issue', 'Prove the ring buffer invariant holds after wraparound, and pin the bit-exact equivalence with the reference', 5, [], null],
+  ['backlog', 'issue', 'Railway deploy of the runner pool drops the health probe when the cron dispatch overlaps a rollout', 3, ['success criteria'], null],
+  ['backlog', 'issue', 'Parser refuses a struct literal whose last field is an array of pointers, and the error names the wrong token', 6, [], null],
+  ['backlog', 'issue', 'Wave 912 tidy: move the remaining notes from the old tracker and close what nobody has touched since August', 1, ['boundary', 'scenarios', 'requirements'], null],
+  ['backlog', 'issue', 'Client onboarding funnel: the invoice step drops a lead when the subscription renews on the same day', 2, ['boundary'], null],
+  ['backlog', 'issue', 'Blog article on the first morning of the scheduler, with the translation and the locale strings for the landing', 0, ['scenarios', 'requirements'], null],
+  ['backlog', 'issue', 'Prove the ring buffer invariant holds after wraparound, and pin the bit-exact equivalence with the reference', 5, [], null],
+  ['backlog', 'issue', 'Railway deploy of the runner pool drops the health probe when the cron dispatch overlaps a rollout', 3, ['success criteria'], null],
+  ['backlog', 'issue', 'Parser refuses a struct literal whose last field is an array of pointers, and the error names the wrong token', 6, [], null],
+  ['backlog', 'issue', 'Wave 912 tidy: move the remaining notes from the old tracker and close what nobody has touched since August', 1, ['boundary', 'scenarios', 'requirements'], null],
+  ['backlog', 'issue', 'Client onboarding funnel: the invoice step drops a lead when the subscription renews on the same day', 2, ['boundary'], null],
+  ['backlog', 'issue', 'Blog article on the first morning of the scheduler, with the translation and the locale strings for the landing', 0, ['scenarios', 'requirements'], null],
+  ['backlog', 'issue', 'Prove the ring buffer invariant holds after wraparound, and pin the bit-exact equivalence with the reference', 5, [], null],
+  ['backlog', 'issue', 'Railway deploy of the runner pool drops the health probe when the cron dispatch overlaps a rollout', 3, ['success criteria'], null],
+  ['backlog', 'issue', 'Parser refuses a struct literal whose last field is an array of pointers, and the error names the wrong token', 6, [], null],
+  ['backlog', 'issue', 'Wave 912 tidy: move the remaining notes from the old tracker and close what nobody has touched since August', 1, ['boundary', 'scenarios', 'requirements'], null],
+  ['backlog', 'issue', 'Client onboarding funnel: the invoice step drops a lead when the subscription renews on the same day', 2, ['boundary'], null],
+  ['backlog', 'issue', 'Blog article on the first morning of the scheduler, with the translation and the locale strings for the landing', 0, ['scenarios', 'requirements'], null],
+  ['backlog', 'issue', 'Prove the ring buffer invariant holds after wraparound, and pin the bit-exact equivalence with the reference', 5, [], null],
+  ['backlog', 'issue', 'Railway deploy of the runner pool drops the health probe when the cron dispatch overlaps a rollout', 3, ['success criteria'], null],
+  ['backlog', 'issue', 'Parser refuses a struct literal whose last field is an array of pointers, and the error names the wrong token', 6, [], null],
+  ['backlog', 'issue', 'Wave 912 tidy: move the remaining notes from the old tracker and close what nobody has touched since August', 1, ['boundary', 'scenarios', 'requirements'], null],
+  ['backlog', 'issue', 'Client onboarding funnel: the invoice step drops a lead when the subscription renews on the same day', 2, ['boundary'], null],
+  ['backlog', 'issue', 'Blog article on the first morning of the scheduler, with the translation and the locale strings for the landing', 0, ['scenarios', 'requirements'], null],
+  ['backlog', 'issue', 'Prove the ring buffer invariant holds after wraparound, and pin the bit-exact equivalence with the reference', 5, [], null],
+  ['backlog', 'issue', 'Railway deploy of the runner pool drops the health probe when the cron dispatch overlaps a rollout', 3, ['success criteria'], null],
+  ['backlog', 'issue', 'Parser refuses a struct literal whose last field is an array of pointers, and the error names the wrong token', 6, [], null],
+  ['backlog', 'issue', 'Wave 912 tidy: move the remaining notes from the old tracker and close what nobody has touched since August', 1, ['boundary', 'scenarios', 'requirements'], null],
 ];
 const FIXTURE_FEED = (() => {
   const tasks = [], bees = [];
-  FIXTURE_ROWS.forEach(([state, kind, title, criteria, needs, bee], i) => {
+  FIXTURE_ROWS.forEach(([state, kind, title, criteria, needs, bee, repo = FIXTURE_REPO], i) => {
     const number = 990001 + i;
-    const key = `${FIXTURE_REPO}#${number}`;
+    const key = `${repo}#${number}`;
     const beeId = bee ? `b${number}` : null;
-    tasks.push({ key, kind, repo: FIXTURE_REPO, number, title, state, criteria, needs, verdict: null, url: null, bee: beeId, updatedAt: FIXTURE_AT });
-    if (beeId) bees.push({ id: beeId, lane: i, kind: 'worker', task: key, repo: FIXTURE_REPO, number, state: bee, since: FIXTURE_AT, lastEventAt: FIXTURE_AT });
+    tasks.push({ key, kind, repo, number, title, state, criteria, needs, verdict: null, url: null, bee: beeId, updatedAt: FIXTURE_AT });
+    if (beeId) bees.push({ id: beeId, lane: i, kind: 'worker', task: key, repo, number, state: bee, since: FIXTURE_AT, lastEventAt: FIXTURE_AT });
   });
   return { at: FIXTURE_AT, tasks, bees, truncated: false, cursor: null };
 })();
