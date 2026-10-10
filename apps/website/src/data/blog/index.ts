@@ -492,6 +492,29 @@ export const postsIndex: PostMeta[] = [
     },
   },
   {
+    slug: "the-queen-knows-how-to-build-a-course",
+    title: "The Queen now knows how to build a course",
+    summary: "[a recipe, not a course; the recipe modules compile but no CI job runs their tests yet] The t27 course recipe moved from one agent's private folder into the repository as two t27 modules, and AGENTS.md points at them, so the Queen can assign a new 27-lesson course for any topic.",
+    date: "2026-10-07",
+    readingMinutes: 2,
+    tags: ["t27", "Course", "Agents"],
+    receipts: [
+      { label: "The recipe, specs/course_recipe/course-27.t27", href: "https://github.com/gHashTag/trinity/blob/main/specs/course_recipe/course-27.t27" },
+      { label: "The plan, specs/course_recipe/roadmap.t27", href: "https://github.com/gHashTag/trinity/blob/main/specs/course_recipe/roadmap.t27" },
+    ],
+    openQuestions: [
+      "No CI job runs the recipe's tests yet.",
+    ],
+    published: true,
+    ru: {
+      title: "Королева теперь знает, как собрать курс",
+      summary: "[рецепт, а не курс; модули рецепта собираются, но их тесты пока не запускает CI] Рецепт курса t27 переехал из личной папки одного агента в репозиторий двумя модулями t27, а AGENTS.md ссылается на них, так что Королева может поручить новый курс из 27 уроков на любую тему.",
+      openQuestions: [
+        "Тесты рецепта пока не запускает ни одно задание CI.",
+      ],
+    },
+  },
+  {
     slug: "a-course-pr-carries-its-post",
     title: "A course PR now carries its blog post",
     summary: "[open PR, not merged; binds only PRs opened or pushed after the merge; checks that a post file changed, not what it says] The T27 work report check now refuses a trinity PR that changes a course without adding or modifying a blog post body in the same PR. The rule's words live only in a t27 spec, specs/policy/course_post.t27, which the checker reads and fails closed on. Renamed lessons count by old and new path, renamed posts do not count, and an incomplete file list is reported as not decided. Seven planted mutants each failed their own test.",
