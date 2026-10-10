@@ -1,7 +1,7 @@
 {
  "repo": "gHashTag/t27",
- "generated_at": "2026-10-10T13:02:56.931Z",
- "watermark": "2026-10-10T13:01:01Z",
+ "generated_at": "2026-10-10T17:41:26.319Z",
+ "watermark": "2026-10-10T17:31:44Z",
  "issues": {
   "2279": [
    {
@@ -767,7 +767,392 @@
      "specs/trinity/capabilities/mcp.trinity-mcp.t27",
      "specs/trinity/capabilities/registry.commands.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/tools/catalog.t27",
+      "seal": ".trinity/seals/tools_ToolsCatalog.json"
+     },
+     {
+      "path": "specs/tools/mcp/gitbutler.t27",
+      "seal": ".trinity/seals/mcp_tool_mcp_gitbutler.json"
+     },
+     {
+      "path": "specs/tools/mcp/needle.t27",
+      "seal": ".trinity/seals/mcp_tool_mcp_needle.json"
+     },
+     {
+      "path": "specs/tools/mcp/neon.t27",
+      "seal": ".trinity/seals/mcp_tool_mcp_neon.json"
+     },
+     {
+      "path": "specs/tools/mcp/notebooklm.t27",
+      "seal": ".trinity/seals/mcp_tool_mcp_notebooklm.json"
+     },
+     {
+      "path": "specs/tools/mcp/railway-mcp-server.t27",
+      "seal": ".trinity/seals/mcp_tool_mcp_railway_mcp_server.json"
+     },
+     {
+      "path": "specs/tools/mcp/t27-traceability.t27",
+      "seal": ".trinity/seals/mcp_tool_mcp_t27_traceability.json"
+     },
+     {
+      "path": "specs/tools/mcp/tri-mcp.t27",
+      "seal": ".trinity/seals/mcp_tool_mcp_tri_mcp.json"
+     },
+     {
+      "path": "specs/tools/mcp/tri-ssot.t27",
+      "seal": ".trinity/seals/mcp_tool_mcp_tri_ssot.json"
+     },
+     {
+      "path": "specs/tools/mcp/trinity.t27",
+      "seal": ".trinity/seals/mcp_tool_mcp_trinity.json"
+     },
+     {
+      "path": "specs/tools/mcp/zig-docs.t27",
+      "seal": ".trinity/seals/mcp_tool_mcp_zig_docs.json"
+     },
+     {
+      "path": "specs/tools/mcp_protocol.t27",
+      "seal": ".trinity/seals/tools_McpProtocol.json"
+     },
+     {
+      "path": "specs/tools/tri/abandoned.t27",
+      "seal": ".trinity/seals/tri_tool_tri_abandoned.json"
+     },
+     {
+      "path": "specs/tools/tri/cell.t27",
+      "seal": ".trinity/seals/tri_tool_tri_cell.json"
+     },
+     {
+      "path": "specs/tools/tri/census.t27",
+      "seal": ".trinity/seals/tri_tool_tri_census.json"
+     },
+     {
+      "path": "specs/tools/tri/ci.t27",
+      "seal": ".trinity/seals/tri_tool_tri_ci.json"
+     },
+     {
+      "path": "specs/tools/tri/competitors.t27",
+      "seal": ".trinity/seals/tri_tool_tri_competitors.json"
+     },
+     {
+      "path": "specs/tools/tri/discard.t27",
+      "seal": ".trinity/seals/tri_tool_tri_discard.json"
+     },
+     {
+      "path": "specs/tools/tri/doctor.t27",
+      "seal": ".trinity/seals/tri_tool_tri_doctor.json"
+     },
+     {
+      "path": "specs/tools/tri/elab.t27",
+      "seal": ".trinity/seals/tri_tool_tri_elab.json"
+     },
+     {
+      "path": "specs/tools/tri/emit.t27",
+      "seal": ".trinity/seals/tri_tool_tri_emit.json"
+     },
+     {
+      "path": "specs/tools/tri/experience.t27",
+      "seal": ".trinity/seals/tri_tool_tri_experience.json"
+     },
+     {
+      "path": "specs/tools/tri/fleet.t27",
+      "seal": ".trinity/seals/tri_tool_tri_fleet.json"
+     },
+     {
+      "path": "specs/tools/tri/fmt.t27",
+      "seal": ".trinity/seals/tri_tool_tri_fmt.json"
+     },
+     {
+      "path": "specs/tools/tri/fpga.t27",
+      "seal": ".trinity/seals/tri_tool_tri_fpga.json"
+     },
+     {
+      "path": "specs/tools/tri/gates.t27",
+      "seal": ".trinity/seals/tri_tool_tri_gates.json"
+     },
+     {
+      "path": "specs/tools/tri/gen.t27",
+      "seal": ".trinity/seals/tri_tool_tri_gen.json"
+     },
+     {
+      "path": "specs/tools/tri/harness.t27",
+      "seal": ".trinity/seals/tri_tool_tri_harness.json"
+     },
+     {
+      "path": "specs/tools/tri/health.t27",
+      "seal": ".trinity/seals/tri_tool_tri_health.json"
+     },
+     {
+      "path": "specs/tools/tri/hooks.t27",
+      "seal": ".trinity/seals/tri_tool_tri_hooks.json"
+     },
+     {
+      "path": "specs/tools/tri/issues.t27",
+      "seal": ".trinity/seals/tri_tool_tri_issues.json"
+     },
+     {
+      "path": "specs/tools/tri/jumps.t27",
+      "seal": ".trinity/seals/tri_tool_tri_jumps.json"
+     },
+     {
+      "path": "specs/tools/tri/kinds.t27",
+      "seal": ".trinity/seals/tri_tool_tri_kinds.json"
+     },
+     {
+      "path": "specs/tools/tri/lean.t27",
+      "seal": ".trinity/seals/tri_tool_tri_lean.json"
+     },
+     {
+      "path": "specs/tools/tri/ledgers.t27",
+      "seal": ".trinity/seals/tri_tool_tri_ledgers.json"
+     },
+     {
+      "path": "specs/tools/tri/loop.t27",
+      "seal": ".trinity/seals/tri_tool_tri_loop.json"
+     },
+     {
+      "path": "specs/tools/tri/merging.t27",
+      "seal": ".trinity/seals/tri_tool_tri_merging.json"
+     },
+     {
+      "path": "specs/tools/tri/misread.t27",
+      "seal": ".trinity/seals/tri_tool_tri_misread.json"
+     },
+     {
+      "path": "specs/tools/tri/mods.t27",
+      "seal": ".trinity/seals/tri_tool_tri_mods.json"
+     },
+     {
+      "path": "specs/tools/tri/mutate.t27",
+      "seal": ".trinity/seals/tri_tool_tri_mutate.json"
+     },
+     {
+      "path": "specs/tools/tri/now.t27",
+      "seal": ".trinity/seals/tri_tool_tri_now.json"
+     },
+     {
+      "path": "specs/tools/tri/one-away.t27",
+      "seal": ".trinity/seals/tri_tool_tri_one_away.json"
+     },
+     {
+      "path": "specs/tools/tri/orphaned.t27",
+      "seal": ".trinity/seals/tri_tool_tri_orphaned.json"
+     },
+     {
+      "path": "specs/tools/tri/pr.t27",
+      "seal": ".trinity/seals/tri_tool_tri_pr.json"
+     },
+     {
+      "path": "specs/tools/tri/prose.t27",
+      "seal": ".trinity/seals/tri_tool_tri_prose.json"
+     },
+     {
+      "path": "specs/tools/tri/quantifiers.t27",
+      "seal": ".trinity/seals/tri_tool_tri_quantifiers.json"
+     },
+     {
+      "path": "specs/tools/tri/red.t27",
+      "seal": ".trinity/seals/tri_tool_tri_red.json"
+     },
+     {
+      "path": "specs/tools/tri/reseal.t27",
+      "seal": ".trinity/seals/tri_tool_tri_reseal.json"
+     },
+     {
+      "path": "specs/tools/tri/rtl.t27",
+      "seal": ".trinity/seals/tri_tool_tri_rtl.json"
+     },
+     {
+      "path": "specs/tools/tri/seals.t27",
+      "seal": ".trinity/seals/tri_tool_tri_seals.json"
+     },
+     {
+      "path": "specs/tools/tri/serve.t27",
+      "seal": ".trinity/seals/tri_tool_tri_serve.json"
+     },
+     {
+      "path": "specs/tools/tri/skill.t27",
+      "seal": ".trinity/seals/tri_tool_tri_skill.json"
+     },
+     {
+      "path": "specs/tools/tri/status.t27",
+      "seal": ".trinity/seals/tri_tool_tri_status.json"
+     },
+     {
+      "path": "specs/tools/tri/sweep.t27",
+      "seal": ".trinity/seals/tri_tool_tri_sweep.json"
+     },
+     {
+      "path": "specs/tools/tri/synth.t27",
+      "seal": ".trinity/seals/tri_tool_tri_synth.json"
+     },
+     {
+      "path": "specs/tools/tri/test.t27",
+      "seal": ".trinity/seals/tri_tool_tri_test.json"
+     },
+     {
+      "path": "specs/tools/tri/topic.t27",
+      "seal": ".trinity/seals/tri_tool_tri_topic.json"
+     },
+     {
+      "path": "specs/tools/tri/types.t27",
+      "seal": ".trinity/seals/tri_tool_tri_types.json"
+     },
+     {
+      "path": "specs/tools/tri/unparsed.t27",
+      "seal": ".trinity/seals/tri_tool_tri_unparsed.json"
+     },
+     {
+      "path": "specs/tools/tri/vectors.t27",
+      "seal": ".trinity/seals/tri_tool_tri_vectors.json"
+     },
+     {
+      "path": "specs/tools/tri/verdict.t27",
+      "seal": ".trinity/seals/tri_tool_tri_verdict.json"
+     },
+     {
+      "path": "specs/tools/tri/vsim.t27",
+      "seal": ".trinity/seals/tri_tool_tri_vsim.json"
+     },
+     {
+      "path": "specs/tools/tri/window.t27",
+      "seal": ".trinity/seals/tri_tool_tri_window.json"
+     },
+     {
+      "path": "specs/tools/tri/worktrees.t27",
+      "seal": ".trinity/seals/tri_tool_tri_worktrees.json"
+     },
+     {
+      "path": "specs/tools/trinity/tri/bench.t27",
+      "seal": ".trinity/seals/tri_tool_trinity_tri_bench.json"
+     },
+     {
+      "path": "specs/tools/trinity/tri/bio.t27",
+      "seal": ".trinity/seals/tri_tool_trinity_tri_bio.json"
+     },
+     {
+      "path": "specs/tools/trinity/tri/blindspots.t27",
+      "seal": ".trinity/seals/tri_tool_trinity_tri_blindspots.json"
+     },
+     {
+      "path": "specs/tools/trinity/tri/conscious.t27",
+      "seal": ".trinity/seals/tri_tool_trinity_tri_conscious.json"
+     },
+     {
+      "path": "specs/tools/trinity/tri/constants.t27",
+      "seal": ".trinity/seals/tri_tool_trinity_tri_constants.json"
+     },
+     {
+      "path": "specs/tools/trinity/tri/cosmos.t27",
+      "seal": ".trinity/seals/tri_tool_trinity_tri_cosmos.json"
+     },
+     {
+      "path": "specs/tools/trinity/tri/dashboard.t27",
+      "seal": ".trinity/seals/tri_tool_trinity_tri_dashboard.json"
+     },
+     {
+      "path": "specs/tools/trinity/tri/fib.t27",
+      "seal": ".trinity/seals/tri_tool_trinity_tri_fib.json"
+     },
+     {
+      "path": "specs/tools/trinity/tri/fpga.t27",
+      "seal": ".trinity/seals/tri_tool_trinity_tri_fpga.json"
+     },
+     {
+      "path": "specs/tools/trinity/tri/gematria.t27",
+      "seal": ".trinity/seals/tri_tool_trinity_tri_gematria.json"
+     },
+     {
+      "path": "specs/tools/trinity/tri/govern.t27",
+      "seal": ".trinity/seals/tri_tool_trinity_tri_govern.json"
+     },
+     {
+      "path": "specs/tools/trinity/tri/hardware.t27",
+      "seal": ".trinity/seals/tri_tool_trinity_tri_hardware.json"
+     },
+     {
+      "path": "specs/tools/trinity/tri/identity.t27",
+      "seal": ".trinity/seals/tri_tool_trinity_tri_identity.json"
+     },
+     {
+      "path": "specs/tools/trinity/tri/lucas.t27",
+      "seal": ".trinity/seals/tri_tool_trinity_tri_lucas.json"
+     },
+     {
+      "path": "specs/tools/trinity/tri/mesh.t27",
+      "seal": ".trinity/seals/tri_tool_trinity_tri_mesh.json"
+     },
+     {
+      "path": "specs/tools/trinity/tri/needle-check.t27",
+      "seal": ".trinity/seals/tri_tool_trinity_tri_needle_check.json"
+     },
+     {
+      "path": "specs/tools/trinity/tri/needle-search.t27",
+      "seal": ".trinity/seals/tri_tool_trinity_tri_needle_search.json"
+     },
+     {
+      "path": "specs/tools/trinity/tri/needle.t27",
+      "seal": ".trinity/seals/tri_tool_trinity_tri_needle.json"
+     },
+     {
+      "path": "specs/tools/trinity/tri/omega.t27",
+      "seal": ".trinity/seals/tri_tool_trinity_tri_omega.json"
+     },
+     {
+      "path": "specs/tools/trinity/tri/particles.t27",
+      "seal": ".trinity/seals/tri_tool_trinity_tri_particles.json"
+     },
+     {
+      "path": "specs/tools/trinity/tri/phi.t27",
+      "seal": ".trinity/seals/tri_tool_trinity_tri_phi.json"
+     },
+     {
+      "path": "specs/tools/trinity/tri/quantum.t27",
+      "seal": ".trinity/seals/tri_tool_trinity_tri_quantum.json"
+     },
+     {
+      "path": "specs/tools/trinity/tri/reputation.t27",
+      "seal": ".trinity/seals/tri_tool_trinity_tri_reputation.json"
+     },
+     {
+      "path": "specs/tools/trinity/tri/sacred-const.t27",
+      "seal": ".trinity/seals/tri_tool_trinity_tri_sacred_const.json"
+     },
+     {
+      "path": "specs/tools/trinity/tri/spiral.t27",
+      "seal": ".trinity/seals/tri_tool_trinity_tri_spiral.json"
+     },
+     {
+      "path": "specs/tools/trinity/tri/swarm.t27",
+      "seal": ".trinity/seals/tri_tool_trinity_tri_swarm.json"
+     },
+     {
+      "path": "specs/tools/trinity/tri/test.t27",
+      "seal": ".trinity/seals/tri_tool_trinity_tri_test.json"
+     },
+     {
+      "path": "specs/tools/trinity/tri/vsa.t27",
+      "seal": ".trinity/seals/tri_tool_trinity_tri_vsa.json"
+     },
+     {
+      "path": "specs/tools/trinity/tri/wallet.t27",
+      "seal": ".trinity/seals/tri_tool_trinity_tri_wallet.json"
+     },
+     {
+      "path": "specs/trinity/capabilities/cli.tri.t27",
+      "seal": ".trinity/seals/capabilities_trinity_capability_cli_tri.json"
+     },
+     {
+      "path": "specs/trinity/capabilities/mcp.trinity-mcp.t27",
+      "seal": ".trinity/seals/capabilities_trinity_capability_mcp_trinity_mcp.json"
+     },
+     {
+      "path": "specs/trinity/capabilities/registry.commands.t27",
+      "seal": ".trinity/seals/capabilities_trinity_capability_registry_commands.json"
+     }
+    ]
    }
   ],
   "3569": [
@@ -2098,7 +2483,36 @@
      "specs/tools/trinity/tri/particles.t27",
      "specs/tools/trinity/tri/phi.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/tools/trinity/tri/mesh.t27",
+      "seal": ".trinity/seals/tri_tool_trinity_tri_mesh.json"
+     },
+     {
+      "path": "specs/tools/trinity/tri/needle-check.t27",
+      "seal": ".trinity/seals/tri_tool_trinity_tri_needle_check.json"
+     },
+     {
+      "path": "specs/tools/trinity/tri/needle-search.t27",
+      "seal": ".trinity/seals/tri_tool_trinity_tri_needle_search.json"
+     },
+     {
+      "path": "specs/tools/trinity/tri/needle.t27",
+      "seal": ".trinity/seals/tri_tool_trinity_tri_needle.json"
+     },
+     {
+      "path": "specs/tools/trinity/tri/omega.t27",
+      "seal": ".trinity/seals/tri_tool_trinity_tri_omega.json"
+     },
+     {
+      "path": "specs/tools/trinity/tri/particles.t27",
+      "seal": ".trinity/seals/tri_tool_trinity_tri_particles.json"
+     },
+     {
+      "path": "specs/tools/trinity/tri/phi.t27",
+      "seal": ".trinity/seals/tri_tool_trinity_tri_phi.json"
+     }
+    ]
    }
   ],
   "6499": [
@@ -2112,7 +2526,28 @@
      "specs/agents/y.t27",
      "specs/agents/z.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/agents/v.t27",
+      "seal": ".trinity/seals/agents_agent_v.json"
+     },
+     {
+      "path": "specs/agents/w.t27",
+      "seal": ".trinity/seals/agents_agent_w.json"
+     },
+     {
+      "path": "specs/agents/x.t27",
+      "seal": ".trinity/seals/agents_agent_x.json"
+     },
+     {
+      "path": "specs/agents/y.t27",
+      "seal": ".trinity/seals/agents_agent_y.json"
+     },
+     {
+      "path": "specs/agents/z.t27",
+      "seal": ".trinity/seals/agents_agent_z.json"
+     }
+    ]
    }
   ],
   "6500": [
@@ -2128,7 +2563,36 @@
      "specs/tools/mcp/railway-mcp-server.t27",
      "specs/tools/mcp/t27-traceability.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/tools/mcp/gitbutler.t27",
+      "seal": ".trinity/seals/mcp_tool_mcp_gitbutler.json"
+     },
+     {
+      "path": "specs/tools/mcp/inngest-dev.t27",
+      "seal": ".trinity/seals/mcp_tool_mcp_inngest_dev.json"
+     },
+     {
+      "path": "specs/tools/mcp/needle.t27",
+      "seal": ".trinity/seals/mcp_tool_mcp_needle.json"
+     },
+     {
+      "path": "specs/tools/mcp/neon.t27",
+      "seal": ".trinity/seals/mcp_tool_mcp_neon.json"
+     },
+     {
+      "path": "specs/tools/mcp/notebooklm.t27",
+      "seal": ".trinity/seals/mcp_tool_mcp_notebooklm.json"
+     },
+     {
+      "path": "specs/tools/mcp/railway-mcp-server.t27",
+      "seal": ".trinity/seals/mcp_tool_mcp_railway_mcp_server.json"
+     },
+     {
+      "path": "specs/tools/mcp/t27-traceability.t27",
+      "seal": ".trinity/seals/mcp_tool_mcp_t27_traceability.json"
+     }
+    ]
    }
   ],
   "6505": [
@@ -2138,7 +2602,12 @@
     "touched": [
      "specs/docs/system.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/docs/system.t27",
+      "seal": ".trinity/seals/docs_docs_system.json"
+     }
+    ]
    }
   ],
   "6560": [
@@ -2907,6 +3376,36 @@
      {
       "path": "specs/compiler/theory/warmup_t27b.t27",
       "seal": ".trinity/seals/theory_CompilerTheoryWarmupT27b.json"
+     }
+    ]
+   }
+  ],
+  "7609": [
+   {
+    "pr": 7624,
+    "sha": "d292e28c24f6afcb1dd82adbfdb48956a558b86d",
+    "touched": [
+     "specs/port/trinity/src/phi-engine/vibeec_original/bogatyrs_spec_structure.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/port/trinity/src/phi-engine/vibeec_original/bogatyrs_spec_structure.t27",
+      "seal": ".trinity/seals/vibeec_original_port::bogatyrs_spec_structure.json"
+     }
+    ]
+   }
+  ],
+  "7617": [
+   {
+    "pr": 7623,
+    "sha": "26a975354c8ff05843fe6f374fe0ee4a8dad9945",
+    "touched": [
+     "specs/port/trios/crates/trios-chat/rings/CR-CHAT-05/src/envelope_size_distribution_uniformity.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/port/trios/crates/trios-chat/rings/CR-CHAT-05/src/envelope_size_distribution_uniformity.t27",
+      "seal": ".trinity/seals/src_envelope_size_distribution_uniformity.json"
      }
     ]
    }
@@ -4011,12 +4510,52 @@
     ]
    }
   ],
+  "7813": [
+   {
+    "pr": 8689,
+    "sha": "d1a3280f3a1c87b7db94baeb3f022440df060204",
+    "touched": [
+     "specs/tri/t27b/conformance/repeat_width_suffix.t27",
+     "specs/tri/t27b/literal_plan.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/conformance/repeat_width_suffix.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceRepeatWidthSuffix.json"
+     },
+     {
+      "path": "specs/tri/t27b/literal_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bLiteralPlan.json"
+     }
+    ]
+   }
+  ],
   "7815": [
    {
     "pr": 7816,
     "sha": "5263bba2214cd2aeabbdee320f8c1cbdf3bc3cf8",
     "touched": [],
     "specs": []
+   }
+  ],
+  "7817": [
+   {
+    "pr": 8676,
+    "sha": "0e856450557ed0f39395367b41f3547cbcbfc6e5",
+    "touched": [
+     "specs/tri/t27b/builtin_plan.t27",
+     "specs/tri/t27b/conformance/size_of.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/builtin_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bBuiltinPlan.json"
+     },
+     {
+      "path": "specs/tri/t27b/conformance/size_of.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceSizeOf.json"
+     }
+    ]
    }
   ],
   "7819": [
@@ -4673,6 +5212,32 @@
     "sha": "f8a5f4db8915e1d747a6bd46f82c8b69e4d423cf",
     "touched": [],
     "specs": []
+   }
+  ],
+  "7917": [
+   {
+    "pr": 8697,
+    "sha": "6a8e44b5f2a7718924ac378579d2d6aa4c73d8e4",
+    "touched": [],
+    "specs": []
+   },
+   {
+    "pr": 8696,
+    "sha": "204c17708adcd511df84b83e762384a9ec4c9691",
+    "touched": [
+     "specs/tri/t27b/conformance/carried_allocator.t27",
+     "specs/tri/t27b/opaque_plan.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/conformance/carried_allocator.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceCarriedAllocator.json"
+     },
+     {
+      "path": "specs/tri/t27b/opaque_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bOpaquePlan.json"
+     }
+    ]
    }
   ],
   "7921": [
@@ -5375,7 +5940,28 @@
      "specs/skills/t27-wave-audit.t27",
      "specs/system/unified-agent-operations.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/agents/c.t27",
+      "seal": ".trinity/seals/agents_agent_c.json"
+     },
+     {
+      "path": "specs/automation/inngest-queen-scheduler.t27",
+      "seal": ".trinity/seals/automation_automation::inngest_queen_scheduler.json"
+     },
+     {
+      "path": "specs/skills/t27-self-host.t27",
+      "seal": ".trinity/seals/skills_skill_t27_self_host.json"
+     },
+     {
+      "path": "specs/skills/t27-wave-audit.t27",
+      "seal": ".trinity/seals/skills_skill_t27_wave_audit.json"
+     },
+     {
+      "path": "specs/system/unified-agent-operations.t27",
+      "seal": ".trinity/seals/system_system::unified_agent_operations.json"
+     }
+    ]
    }
   ],
   "8068": [
@@ -5730,7 +6316,12 @@
     "touched": [
      "specs/port/trios/crates/trios-chat/rings/CR-CHAT-03/src/unmerged_leaves_bound_guard.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/port/trios/crates/trios-chat/rings/CR-CHAT-03/src/unmerged_leaves_bound_guard.t27",
+      "seal": ".trinity/seals/src_port::unmerged_leaves_bound_guard.json"
+     }
+    ]
    }
   ],
   "8133": [
@@ -5968,7 +6559,12 @@
     "touched": [
      "specs/port/trinity/src/vibeec/trinity_tokenizer.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/port/trinity/src/vibeec/trinity_tokenizer.t27",
+      "seal": ".trinity/seals/vibeec_port::trinity::src::vibeec::trinity_tokenizer.json"
+     }
+    ]
    }
   ],
   "8163": [
@@ -6464,7 +7060,12 @@
     "touched": [
      "specs/port/scripts/gen_w669.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/port/scripts/gen_w669.t27",
+      "seal": ".trinity/seals/scripts_gen_w669.json"
+     }
+    ]
    }
   ],
   "8264": [
@@ -7097,7 +7698,12 @@
     "touched": [
      "specs/port/trios/crates/trios-chat/rings/CR-CHAT-03/src/ratchet_tree_resolution_guard.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/port/trios/crates/trios-chat/rings/CR-CHAT-03/src/ratchet_tree_resolution_guard.t27",
+      "seal": ".trinity/seals/src_port::ratchet_tree_resolution_guard.json"
+     }
+    ]
    }
   ],
   "8371": [
@@ -7332,7 +7938,12 @@
     "touched": [
      "specs/port/trinity/src/tri-api/claude_md.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/port/trinity/src/tri-api/claude_md.t27",
+      "seal": ".trinity/seals/tri-api_port::trinity::src::tri-api::claude_md.json"
+     }
+    ]
    }
   ],
   "8440": [
@@ -7342,7 +7953,12 @@
     "touched": [
      "specs/port/trinity/src/tri/math/vocab_audit.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/port/trinity/src/tri/math/vocab_audit.t27",
+      "seal": ".trinity/seals/math_port::trinity::tri::math::vocab_audit.json"
+     }
+    ]
    }
   ],
   "8441": [
@@ -7362,7 +7978,12 @@
     "touched": [
      "specs/port/trinity/src/tri/gen_skiplist_impl.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/port/trinity/src/tri/gen_skiplist_impl.t27",
+      "seal": ".trinity/seals/tri_port::trinity::src::tri::gen_skiplist_impl.json"
+     }
+    ]
    }
   ],
   "8472": [
@@ -7403,7 +8024,28 @@
      "specs/lsp/language.t27",
      "specs/mesh_routing.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/basics/24_tri_commands.t27",
+      "seal": ".trinity/seals/basics_basics_24_tri_commands.json"
+     },
+     {
+      "path": "specs/benchmarks/bench_main.t27",
+      "seal": ".trinity/seals/bench_main.json"
+     },
+     {
+      "path": "specs/benchmarks/ternary_vs_binary.t27",
+      "seal": ".trinity/seals/benchmarks_ternary_vs_binary.json"
+     },
+     {
+      "path": "specs/lsp/language.t27",
+      "seal": ".trinity/seals/lsp-language.json"
+     },
+     {
+      "path": "specs/mesh_routing.t27",
+      "seal": ".trinity/seals/specs_mesh_routing.json"
+     }
+    ]
    },
    {
     "pr": 8499,
@@ -7416,7 +8058,32 @@
      "specs/multipath_router.t27",
      "specs/traffic_animator.t27"
     ],
-    "specs": []
+    "specs": [
+     {
+      "path": "specs/benchmarks/bench_main.t27",
+      "seal": ".trinity/seals/bench_main.json"
+     },
+     {
+      "path": "specs/benchmarks/ternary_vs_binary.t27",
+      "seal": ".trinity/seals/benchmarks_ternary_vs_binary.json"
+     },
+     {
+      "path": "specs/lsp/language.t27",
+      "seal": ".trinity/seals/lsp-language.json"
+     },
+     {
+      "path": "specs/mesh_routing.t27",
+      "seal": ".trinity/seals/specs_mesh_routing.json"
+     },
+     {
+      "path": "specs/multipath_router.t27",
+      "seal": ".trinity/seals/specs_multipath_router.json"
+     },
+     {
+      "path": "specs/traffic_animator.t27",
+      "seal": ".trinity/seals/specs_traffic_animator.json"
+     }
+    ]
    }
   ],
   "8475": [
@@ -7506,6 +8173,26 @@
     "specs": []
    }
   ],
+  "8546": [
+   {
+    "pr": 8616,
+    "sha": "223c0956e88e1e0f5175022436afcaa6620be1c2",
+    "touched": [
+     "specs/isa/ternary_gates.t27",
+     "specs/tri/t27b/discard_plan.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/isa/ternary_gates.t27",
+      "seal": ".trinity/seals/TernaryGates.json"
+     },
+     {
+      "path": "specs/tri/t27b/discard_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bDiscardPlan.json"
+     }
+    ]
+   }
+  ],
   "8549": [
    {
     "pr": 8550,
@@ -7545,6 +8232,21 @@
     "specs": []
    }
   ],
+  "8557": [
+   {
+    "pr": 8558,
+    "sha": "409b5718fa2e1c034265de9976b7fdb1e0f42a90",
+    "touched": [
+     "specs/automation/ci-bridge.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/automation/ci-bridge.t27",
+      "seal": ".trinity/seals/automation_automation::ci_bridge.json"
+     }
+    ]
+   }
+  ],
   "8560": [
    {
     "pr": 8561,
@@ -7564,6 +8266,714 @@
      {
       "path": "specs/tri/t27b/ast_shape.t27",
       "seal": ".trinity/seals/t27b_T27bAstShape.json"
+     }
+    ]
+   }
+  ],
+  "8565": [
+   {
+    "pr": 8566,
+    "sha": "e735c237495e11d52225f5378b0a512440b1df3d",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "8571": [
+   {
+    "pr": 8572,
+    "sha": "0b5309df07ff6187b5ec48efd1458ba0af88e175",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "8573": [
+   {
+    "pr": 8574,
+    "sha": "be89bf41bcf842493f9702b37ff9db973561b4b4",
+    "touched": [
+     "specs/verified/bitstream_share.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/verified/bitstream_share.t27",
+      "seal": ".trinity/seals/verified_VerifiedBitstreamShare.json"
+     }
+    ]
+   }
+  ],
+  "8575": [
+   {
+    "pr": 8585,
+    "sha": "a59676ab6ee4cdeca2b853465c88f03a51a588d9",
+    "touched": [
+     "specs/queen/drain.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/queen/drain.t27",
+      "seal": ".trinity/seals/queen_QueenDrain.json"
+     }
+    ]
+   }
+  ],
+  "8576": [
+   {
+    "pr": 8577,
+    "sha": "1a7c8b939b66bdc4a4b7e210c395769a08ec7bd9",
+    "touched": [
+     "specs/verified/seal_identity.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/verified/seal_identity.t27",
+      "seal": ".trinity/seals/verified_VerifiedSealIdentity.json"
+     }
+    ]
+   }
+  ],
+  "8578": [
+   {
+    "pr": 8583,
+    "sha": "69adbf4f39e7c22b4338c95f3151590be9634a00",
+    "touched": [
+     "specs/compiler/lexer.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/compiler/lexer.t27",
+      "seal": ".trinity/seals/Lexing.json"
+     }
+    ]
+   }
+  ],
+  "8579": [
+   {
+    "pr": 8582,
+    "sha": "3c0ae4d498d57f1fd9547bc18cfadc72170f95fd",
+    "touched": [
+     "specs/queen/review_lanes.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/queen/review_lanes.t27",
+      "seal": ".trinity/seals/queen_QueenReviewLanes.json"
+     }
+    ]
+   }
+  ],
+  "8580": [
+   {
+    "pr": 8584,
+    "sha": "e867246b3c5e2e938d6cdc91d7362f8b19fb34ec",
+    "touched": [
+     "specs/compiler/optimizer.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/compiler/optimizer.t27",
+      "seal": ".trinity/seals/Optimization.json"
+     }
+    ]
+   }
+  ],
+  "8586": [
+   {
+    "pr": 8588,
+    "sha": "ea44a17b597bb931278ae7c3ef8be22c66af8808",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "8587": [
+   {
+    "pr": 8589,
+    "sha": "5fa0a557b59222773bbb3d2dc1ac92a44b6f8084",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "8593": [
+   {
+    "pr": 8601,
+    "sha": "b8781fb756f94d173e832e8a295efa1f94126cb3",
+    "touched": [
+     "specs/tri/lab/receipt.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/lab/receipt.t27",
+      "seal": ".trinity/seals/lab_TriLabReceipt.json"
+     }
+    ]
+   }
+  ],
+  "8602": [
+   {
+    "pr": 8617,
+    "sha": "af4c8b8ac18a405fb30a2039c8d86502ca18e8bf",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "8604": [
+   {
+    "pr": 8670,
+    "sha": "e01a1980693ea03f187c8c1c347152b695bb30f7",
+    "touched": [
+     "specs/network/attribution.t27",
+     "specs/network/usage.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/network/attribution.t27",
+      "seal": ".trinity/seals/network_NetworkAttribution.json"
+     },
+     {
+      "path": "specs/network/usage.t27",
+      "seal": ".trinity/seals/network_NetworkUsage.json"
+     }
+    ]
+   }
+  ],
+  "8605": [
+   {
+    "pr": 8670,
+    "sha": "e01a1980693ea03f187c8c1c347152b695bb30f7",
+    "touched": [
+     "specs/network/attribution.t27",
+     "specs/network/usage.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/network/attribution.t27",
+      "seal": ".trinity/seals/network_NetworkAttribution.json"
+     },
+     {
+      "path": "specs/network/usage.t27",
+      "seal": ".trinity/seals/network_NetworkUsage.json"
+     }
+    ]
+   }
+  ],
+  "8608": [
+   {
+    "pr": 8614,
+    "sha": "0396793b8df8fe1a0b05fa5d4601cb0b47b438a9",
+    "touched": [
+     "specs/tri/actors/metrics.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/actors/metrics.t27",
+      "seal": ".trinity/seals/actors_TriActorsMetrics.json"
+     }
+    ]
+   }
+  ],
+  "8610": [
+   {
+    "pr": 8638,
+    "sha": "8b60baeb50d9d5bd1c31eb4964156d46bea74153",
+    "touched": [
+     "specs/network/mvp.t27",
+     "specs/verified/payout.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/network/mvp.t27",
+      "seal": ".trinity/seals/network_NetworkMvp.json"
+     },
+     {
+      "path": "specs/verified/payout.t27",
+      "seal": ".trinity/seals/verified_VerifiedPayout.json"
+     }
+    ]
+   }
+  ],
+  "8611": [
+   {
+    "pr": 8625,
+    "sha": "158b3253c45f806beef176b576b26575b7fcf390",
+    "touched": [
+     "specs/trinet/ledger.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/trinet/ledger.t27",
+      "seal": ".trinity/seals/trinet_TrinetLedger.json"
+     }
+    ]
+   }
+  ],
+  "8615": [
+   {
+    "pr": 8629,
+    "sha": "9a73c98837160dc8ddc17c8189e71654fc307549",
+    "touched": [
+     "specs/queen/actor_view.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/queen/actor_view.t27",
+      "seal": ".trinity/seals/queen_QueenActorView.json"
+     }
+    ]
+   }
+  ],
+  "8621": [
+   {
+    "pr": 8636,
+    "sha": "e19028926718a604405c44a95b29a87761c58af5",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "8622": [
+   {
+    "pr": 8623,
+    "sha": "a16231329d134aaaf8922cd7b65ef8890084ac77",
+    "touched": [
+     "specs/tri/lanes/lanes.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/lanes/lanes.t27",
+      "seal": ".trinity/seals/lanes_TriLanes.json"
+     }
+    ]
+   }
+  ],
+  "8624": [
+   {
+    "pr": 8626,
+    "sha": "6dded065453b1342d53ac554d2e42333349ae0cc",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "8627": [
+   {
+    "pr": 8644,
+    "sha": "55eb214ac51d571c7319bde726b4d093ef8e774b",
+    "touched": [
+     "specs/tri/t27b/conformance/rem_int.t27",
+     "specs/tri/t27b/libm_plan.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/conformance/rem_int.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceRemInt.json"
+     },
+     {
+      "path": "specs/tri/t27b/libm_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bLibmPlan.json"
+     }
+    ]
+   }
+  ],
+  "8628": [
+   {
+    "pr": 8631,
+    "sha": "4ac2c81fa977ab404ac0c03bbdb0ca8b6ac7d8ef",
+    "touched": [
+     "specs/tri/lanes/lanes.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/lanes/lanes.t27",
+      "seal": ".trinity/seals/lanes_TriLanes.json"
+     }
+    ]
+   }
+  ],
+  "8632": [
+   {
+    "pr": 8634,
+    "sha": "b8100e85322a8880a72a2d769f106266a05a2fb8",
+    "touched": [
+     "specs/queen/keyed_guard.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/queen/keyed_guard.t27",
+      "seal": ".trinity/seals/queen_QueenKeyedGuard.json"
+     }
+    ]
+   }
+  ],
+  "8639": [
+   {
+    "pr": 8643,
+    "sha": "a7fa9c530d28eb89854088662742aeb4b3e2ff1a",
+    "touched": [
+     "specs/verified/corpus_receipt.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/verified/corpus_receipt.t27",
+      "seal": ".trinity/seals/verified_VerifiedCorpusReceipt.json"
+     }
+    ]
+   }
+  ],
+  "8640": [
+   {
+    "pr": 8642,
+    "sha": "a2a5c732d0f769efd6e4eb6c236541878907cd0f",
+    "touched": [
+     "specs/queen/actor_events.t27",
+     "specs/queen/events.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/queen/actor_events.t27",
+      "seal": ".trinity/seals/queen_QueenActorEvents.json"
+     },
+     {
+      "path": "specs/queen/events.t27",
+      "seal": ".trinity/seals/queen_QueenEvents.json"
+     }
+    ]
+   }
+  ],
+  "8641": [
+   {
+    "pr": 8667,
+    "sha": "3d1f6cf9644678b9ff692662a893638ff01e77b4",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "8645": [
+   {
+    "pr": 8646,
+    "sha": "1f6fc41cd1f2c99e1a1348ca2c43fad8925df504",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "8648": [
+   {
+    "pr": 8685,
+    "sha": "6a7b774d1f5685088d70cc8f1e3ba7d902921751",
+    "touched": [
+     "specs/network/mvp_v2.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/network/mvp_v2.t27",
+      "seal": ".trinity/seals/network_NetworkMvpV2.json"
+     }
+    ]
+   }
+  ],
+  "8650": [
+   {
+    "pr": 8652,
+    "sha": "a5182115bed4b15dfdb33373aa42d4c09929a7bb",
+    "touched": [
+     "specs/queen/actor_events.t27",
+     "specs/queen/events.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/queen/actor_events.t27",
+      "seal": ".trinity/seals/queen_QueenActorEvents.json"
+     },
+     {
+      "path": "specs/queen/events.t27",
+      "seal": ".trinity/seals/queen_QueenEvents.json"
+     }
+    ]
+   }
+  ],
+  "8653": [
+   {
+    "pr": 8663,
+    "sha": "37789daffe9e112f99e9c806a579f0899ade2b62",
+    "touched": [
+     "specs/tri/t27b/conformance/let_reassigned.t27",
+     "specs/tri/t27b/ref_var_plan.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/conformance/let_reassigned.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceLetReassigned.json"
+     },
+     {
+      "path": "specs/tri/t27b/ref_var_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bRefVarPlan.json"
+     }
+    ]
+   }
+  ],
+  "8654": [
+   {
+    "pr": 8656,
+    "sha": "f21cbbb68df4a5ff3a2263380156a3ed187c1500",
+    "touched": [
+     "specs/jobs/t27b_ledger_steward.t27",
+     "specs/tri/t27b/ledger_steward.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/jobs/t27b_ledger_steward.t27",
+      "seal": ".trinity/seals/jobs_JobT27bLedgerSteward.json"
+     },
+     {
+      "path": "specs/tri/t27b/ledger_steward.t27",
+      "seal": ".trinity/seals/t27b_T27bLedgerSteward.json"
+     }
+    ]
+   }
+  ],
+  "8655": [
+   {
+    "pr": 8659,
+    "sha": "cc85f9cc6aed9480b0d3893960b79bcea1a80fa0",
+    "touched": [
+     "specs/fpga/die_probe.t27",
+     "specs/fpga/ro_race.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/fpga/die_probe.t27",
+      "seal": ".trinity/seals/fpga_DieProbe.json"
+     },
+     {
+      "path": "specs/fpga/ro_race.t27",
+      "seal": ".trinity/seals/fpga_RoRace.json"
+     }
+    ]
+   }
+  ],
+  "8657": [
+   {
+    "pr": 8666,
+    "sha": "a6627d1bbb6a95afd87106f105ed158c3c10afd1",
+    "touched": [
+     "specs/tri/t27b/conformance/array_length_expr.t27",
+     "specs/tri/t27b/type_text.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/conformance/array_length_expr.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceArrayLengthExpr.json"
+     },
+     {
+      "path": "specs/tri/t27b/type_text.t27",
+      "seal": ".trinity/seals/t27b_T27bTypeText.json"
+     }
+    ]
+   }
+  ],
+  "8664": [
+   {
+    "pr": 8665,
+    "sha": "5e037835d549d44b322f7cb1a0a038fa104cdd31",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "8668": [
+   {
+    "pr": 8669,
+    "sha": "dd8f542b44064fbfed5c54c4f04539a41220a438",
+    "touched": [
+     "specs/queen/actor_view.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/queen/actor_view.t27",
+      "seal": ".trinity/seals/queen_QueenActorView.json"
+     }
+    ]
+   }
+  ],
+  "8671": [
+   {
+    "pr": 8672,
+    "sha": "c2663978964e174660ce0a57e94b2408182679ac",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "8687": [
+   {
+    "pr": 8688,
+    "sha": "270f47dfbb68b0d919eaf7d7cabe9e80e734697c",
+    "touched": [],
+    "specs": []
+   }
+  ],
+  "8690": [
+   {
+    "pr": 8692,
+    "sha": "ac4027ab01a47b8c74ccc0edc56c76dbf26b98b2",
+    "touched": [
+     "specs/tri/t27b/conformance/slice_arg_one_element.t27",
+     "specs/tri/t27b/slice_lit_plan.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/conformance/slice_arg_one_element.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceSliceArgOneElement.json"
+     },
+     {
+      "path": "specs/tri/t27b/slice_lit_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bSliceLitPlan.json"
+     }
+    ]
+   }
+  ],
+  "8691": [
+   {
+    "pr": 8700,
+    "sha": "7de95ce39833cf60512e2b124e2ae518bcc6968d",
+    "touched": [
+     "specs/verified/seal_identity.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/verified/seal_identity.t27",
+      "seal": ".trinity/seals/verified_VerifiedSealIdentity.json"
+     }
+    ]
+   }
+  ],
+  "8693": [
+   {
+    "pr": 8709,
+    "sha": "dae6b17e4944dc2f4cf1fcae26fb67fd244b7ecb",
+    "touched": [
+     "specs/verified/seal_identity.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/verified/seal_identity.t27",
+      "seal": ".trinity/seals/verified_VerifiedSealIdentity.json"
+     }
+    ]
+   }
+  ],
+  "8694": [
+   {
+    "pr": 8695,
+    "sha": "76dab5063fee91deb721622e10707c1c7333cfe1",
+    "touched": [
+     "specs/tri/t27b/conformance/opt_void.t27",
+     "specs/tri/t27b/void_bind_plan.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/conformance/opt_void.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceOptVoid.json"
+     },
+     {
+      "path": "specs/tri/t27b/void_bind_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bVoidBindPlan.json"
+     }
+    ]
+   }
+  ],
+  "8698": [
+   {
+    "pr": 8703,
+    "sha": "36136f09263ac21c7290821de70fa0fb07dcb98b",
+    "touched": [
+     "specs/base/types.t27",
+     "specs/numeric/formats.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/base/types.t27",
+      "seal": ".trinity/seals/BaseTypes.json"
+     },
+     {
+      "path": "specs/numeric/formats.t27",
+      "seal": ".trinity/seals/Formats.json"
+     }
+    ]
+   }
+  ],
+  "8699": [
+   {
+    "pr": 8708,
+    "sha": "172e871ed9ee172879b4bf95d0aa4675c6ee2b43",
+    "touched": [
+     "specs/hosting/topology.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/hosting/topology.t27",
+      "seal": ".trinity/seals/hosting_HostingTopology.json"
+     }
+    ]
+   }
+  ],
+  "8701": [
+   {
+    "pr": 8706,
+    "sha": "407379abc7dd5d0e404f1d28597ac1e25965de69",
+    "touched": [
+     "specs/tri/t27b/conformance/carried_container.t27",
+     "specs/tri/t27b/opaque_plan.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/conformance/carried_container.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceCarriedContainer.json"
+     },
+     {
+      "path": "specs/tri/t27b/opaque_plan.t27",
+      "seal": ".trinity/seals/t27b_T27bOpaquePlan.json"
+     }
+    ]
+   }
+  ],
+  "8702": [
+   {
+    "pr": 8711,
+    "sha": "d9e2e28d6cff90944b0270ad2033b5838952da00",
+    "touched": [
+     "cli/t27b/tests/int_cast_traps.t27",
+     "specs/tri/t27b/conformance/int_cast.t27",
+     "specs/tri/t27b/int_cast_plan.t27"
+    ],
+    "specs": []
+   }
+  ],
+  "8705": [
+   {
+    "pr": 8712,
+    "sha": "8e2e44b7e7c1210ea17e985b0d73c53f97cf706f",
+    "touched": [
+     "specs/tri/t27b/conformance/nested_anon_struct.t27",
+     "specs/tri/t27b/type_text.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/tri/t27b/conformance/nested_anon_struct.t27",
+      "seal": ".trinity/seals/conformance_T27bConformanceNestedAnonStruct.json"
+     },
+     {
+      "path": "specs/tri/t27b/type_text.t27",
+      "seal": ".trinity/seals/t27b_T27bTypeText.json"
+     }
+    ]
+   }
+  ],
+  "8714": [
+   {
+    "pr": 8715,
+    "sha": "6075d696ec6347ffbed1de6108b80b27493309b9",
+    "touched": [
+     "specs/verified/corpus_receipt.t27"
+    ],
+    "specs": [
+     {
+      "path": "specs/verified/corpus_receipt.t27",
+      "seal": ".trinity/seals/verified_VerifiedCorpusReceipt.json"
      }
     ]
    }
