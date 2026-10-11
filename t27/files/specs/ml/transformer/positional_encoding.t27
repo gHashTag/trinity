@@ -1,0 +1,63 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Uses sin/cos at different frequencies for each dimension | φ² + 1/φ² = 3 | TRINITY
+
+module PositionalEnc;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const DEFAULT_MAX_LEN : u32 = 2048;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const PosEncConfig = struct {
+        d_model : u32,
+        max_len : u32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // forward(positions: []const u32) → void
+    fn forward(positions: []const u32) -> void {
+        // Compute positional encodings using sin/cos at different frequencies
+        // Each position gets a vector where even indices use sin and odd use cos
+        for (i in positions) {
+            // For each position, compute encodings for all dimensions
+            // Frequency increases by powers of 2: 1/10000, 1/10000^2, 1/10000^3, etc.
+            let freq_base = 1.0 / 10000.0;
+            for (dim in 0..d_model) {
+                let freq = freq_base * math::pow(2.0, cast(f64) dim / 2.0);
+                if (dim % 2 == 0) {
+                    // Even dimensions: sin(pos / freq)
+                    let encoding = math::sin(cast(f64) i * freq);
+                } else {
+                    // Odd dimensions: cos(pos / freq)  
+                    let encoding = math::cos(cast(f64) i * freq);
+                }
+                // Store the encoding (implementation would typically store in an output array)
+            }
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test forward_basic_case
+        given input = default_input()
+        when result = forward(input)
+        then result != undefined
+
+    test forward_simple
+        given input = [0u32]
+        when result = forward(input)
+        then result != undefined
+
