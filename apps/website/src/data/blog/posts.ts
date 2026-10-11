@@ -1,3 +1,4 @@
+import { body as body_a_3_mb_compiler_spec_to_aarch64_in_5_ms, ruBody as ruBody_a_3_mb_compiler_spec_to_aarch64_in_5_ms } from './bodies/a-3-mb-compiler-spec-to-aarch64-in-5-ms'
 import { body as body_actors_beat_the_loop_on_recovery_not_everywhere, ruBody as ruBody_actors_beat_the_loop_on_recovery_not_everywhere } from './bodies/actors-beat-the-loop-on-recovery-not-everywhere'
 import { body as body_rebuild_only_what_changed, ruBody as ruBody_rebuild_only_what_changed } from './bodies/rebuild-only-what-changed'
 import { body as body_two_keys_one_verdict, ruBody as ruBody_two_keys_one_verdict } from './bodies/two-keys-one-verdict'
@@ -108,6 +109,7 @@ import { body as body_features_that_change_no_bits, ruBody as ruBody_features_th
 import { body as body_one_commit_nine_workflow_outcomes, ruBody as ruBody_one_commit_nine_workflow_outcomes } from './bodies/one-commit-nine-workflow-outcomes'
 
 const bodies: Record<string, PostBody> = {
+  'a-3-mb-compiler-spec-to-aarch64-in-5-ms': { body: body_a_3_mb_compiler_spec_to_aarch64_in_5_ms, ruBody: ruBody_a_3_mb_compiler_spec_to_aarch64_in_5_ms },
   'actors-beat-the-loop-on-recovery-not-everywhere': { body: body_actors_beat_the_loop_on_recovery_not_everywhere, ruBody: ruBody_actors_beat_the_loop_on_recovery_not_everywhere },
   'rebuild-only-what-changed': { body: body_rebuild_only_what_changed, ruBody: ruBody_rebuild_only_what_changed },
   'two-keys-one-verdict': { body: body_two_keys_one_verdict, ruBody: ruBody_two_keys_one_verdict },
