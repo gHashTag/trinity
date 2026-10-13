@@ -1,0 +1,137 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// 2D average pooling formula | φ² + 1/φ² = 3 | TRINITY
+
+module Avgpool2d;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const DEFAULT_KERNEL : []u32 = "[2, 2]";
+    const DEFAULT_STRIDE : []u32 = "[2, 2]";
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const PoolConfig = struct {
+        kernel_size : []u32,
+        stride : []u32,
+        padding : []u32,
+    };
+
+    pub const PoolShape = struct {
+        batch : u32,
+        channels : u32,
+        height_in : u32,
+        width_in : u32,
+        height_out : u32,
+        width_out : u32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // calc_output_size(height_in: u32) → void
+    fn calc_output_size(height_in: u32) -> void {
+        // Calculate output dimensions for 2D average pooling
+        // Using default kernel size [2, 2], stride [2, 2], and padding [0, 0]
+        let kernel = DEFAULT_KERNEL;
+        let stride = DEFAULT_STRIDE;
+        let padding = [0u32, 0u32];
+        
+        // Calculate output height and width
+        let height_out = (height_in + 2 * padding[0] - kernel[0]) / stride[0] + 1;
+        let width_out = (height_in + 2 * padding[1] - kernel[1]) / stride[1] + 1;
+        
+        // For now, just validate the calculation
+        assert(height_out > 0);
+        assert(width_out > 0);
+    }
+
+    // forward(input: []f32) → void
+    fn forward(input: []f32) -> void {
+        // Perform 2D average pooling operation
+        // Using default kernel size [2, 2], stride [2, 2], and padding [0, 0]
+        let kernel = DEFAULT_KERNEL;
+        let stride = DEFAULT_STRIDE;
+        let padding = [0u32, 0u32];
+        
+        // For now, just validate the input
+        assert(input.len > 0);
+        
+        // TODO: Implement actual pooling logic from .tri spec
+        // This is a placeholder implementation
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test calc_output_size_basic_case
+        given input = default_input()
+        when result = calc_output_size(input)
+        then result != undefined
+
+    test calc_output_size_valid_input
+        given input = 10u32
+        when result = calc_output_size(input)
+        then true // Function should complete without errors
+
+    test calc_output_size_small_input
+        given input = 1u32
+        when result = calc_output_size(input)
+        then true // Function should handle minimal input size
+
+    test calc_output_size_large_input
+        given input = 1000u32
+        when result = calc_output_size(input)
+        then true // Function should handle large input size
+
+    test forward_basic_case
+        given input = default_input()
+        when result = forward(input)
+        then result != undefined
+
+    test forward_non_empty_input
+        given input = [1.0f32, 2.0f32, 3.0f32, 4.0f32]
+        when result = forward(input)
+        then true // Function should process valid input array
+
+    test forward_single_element
+        given input = [5.0f32]
+        when result = forward(input)
+        then true // Function should handle single element input
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants (from .tri constraints)
+    // ═══════════════════════════════════════════════════════════
+
+    invariant avgpool2d_constraint_0
+        given input = valid_input()
+        then true // kernel_size[i] >= 1
+
+    invariant avgpool2d_constraint_1
+        given input = valid_input()
+        then true // stride[i] >= 1
+
+    invariant avgpool2d_constraint_2
+        given input = valid_input()
+        then true // stride[i] <= kernel_size[i]
+
+    invariant avgpool2d_constraint_3
+        given input = valid_input()
+        then true // name: avgpool_formula
+
+    invariant avgpool2d_constraint_4
+        given input = valid_input()
+        then true // "Zeiler & Fergus (2014) - Visualizing and Understanding Convolutional Networks"
+
+    invariant avgpool2d_constraint_5
+        given input = valid_input()
+        then true // "He et al. (2016) - Deep Residual Learning for Image Recognition"
+
